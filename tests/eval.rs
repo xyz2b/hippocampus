@@ -11,6 +11,9 @@
 //! 录制模式：`EVAL_RECORD=<真实请求上限> cargo test --test eval -- --nocapture`。
 //! 未录制的请求转发到 DEEPSEEK_BASE_URL 的真实端点，成功的输出按顺序写回用例 JSON 的
 //! `recorded`；超出上限或真实请求失败的项仍记为 skipped。未设置时绝不发真实请求。
+//!
+//! 新录制带 `request` 指纹（去掉时钟与 review_binding 后的请求哈希）。运行时改变请求后，
+//! 指纹不符的录制视为过期：回放记为 skipped，录制模式下重录。无指纹的旧录制仍按 schema 顺序回放。
 
 use hippocampus::chat::{ChatConfig, ChatMemoryService, EnrichmentMode, RetrievalMode};
 use hippocampus::*;
@@ -144,6 +147,17 @@ fn scoring_rules() {
             &json!({"kind":"conflict"}),
             contract("insufficient_evidence", "现有记录证据不足", json!([]))
         ) == Outcome::Fail
+    );
+    let request = |now: i64, text: &str| {
+        json!({"model":"m","input":json!({"now":now,"review_binding":now,"text":text}).to_string()})
+    };
+    assert_eq!(
+        request_fingerprint(&request(1, "a")),
+        request_fingerprint(&request(2, "a"))
+    );
+    assert_ne!(
+        request_fingerprint(&request(1, "a")),
+        request_fingerprint(&request(1, "b"))
     );
     assert_eq!(scalar(&json!({"Boolean": false})), "false");
     assert_eq!(compact_value(&json!({"Text": "128 GB"})), "128gb");
@@ -612,7 +626,18 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
                 .cloned()
                 .unwrap_or_default();
             let schema_name = schema.as_str().unwrap_or("?").to_owned();
+            let fingerprint = request_fingerprint(&request);
             let mut replay = shared.lock().unwrap();
+            // A recording made for a different request is stale: never replay it.
+            let stale = replay.queue.front().is_some_and(|recording| {
+                recording["schema"] == schema
+                    && recording
+                        .get("request")
+                        .is_some_and(|recorded| *recorded != fingerprint)
+            });
+            if stale {
+                replay.queue.pop_front();
+            }
             let (status, body) = match replay.queue.front() {
                 Some(recording) if recording["schema"] == schema => {
                     let recording = replay.queue.pop_front().unwrap();
@@ -657,7 +682,9 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
                                 Some(text) => {
                                     let output =
                                         serde_json::from_str(&text).unwrap_or(Value::String(text));
-                                    replay.served.push(json!({"schema":schema,"output":output}));
+                                    replay.served.push(
+                                        json!({"schema":schema,"request":fingerprint,"output":output}),
+                                    );
                                     replay.captured = true;
                                 }
                                 None => {
@@ -677,7 +704,11 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
                     }
                 }
                 _ => {
-                    replay.missed = Some(schema_name);
+                    replay.missed = Some(if stale {
+                        format!("{schema_name}（录制过期：请求已变化）")
+                    } else {
+                        schema_name
+                    });
                     let body =
                         json!({"error":{"message":format!("eval: no recording for {schema}")}});
                     ("503 Service Unavailable".to_owned(), body.to_string())
@@ -691,6 +722,35 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
         }
     });
     replay
+}
+
+/// Stable request identity for a recording. Per-run values (clock, review binding) are removed;
+/// recordings without it predate fingerprints and still replay by schema order.
+fn request_fingerprint(request: &Value) -> Value {
+    fn strip(value: &mut Value) {
+        match value {
+            Value::Object(map) => {
+                for key in ["now", "trusted_at", "review_binding", "observed_at"] {
+                    map.remove(key);
+                }
+                map.values_mut().for_each(strip);
+            }
+            Value::Array(items) => items.iter_mut().for_each(strip),
+            _ => {}
+        }
+    }
+    let mut request = request.clone();
+    if let Some(input) = request["input"].as_str()
+        && let Ok(parsed) = serde_json::from_str::<Value>(input)
+    {
+        request["input"] = parsed;
+    }
+    strip(&mut request);
+    // serde_json maps are sorted, so this serialization is canonical.
+    let hash = request.to_string().bytes().fold(0xcbf29ce484222325u64, |hash, byte| {
+        (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3)
+    });
+    json!(format!("fnv1a64:{hash:016x}"))
 }
 
 /// Completed Responses output text; incomplete or refused responses are not recorded.
