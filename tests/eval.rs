@@ -504,10 +504,10 @@ fn call(
     tool: &str,
     arguments: Value,
 ) -> (Result<Value, Missing>, Option<Vec<Value>>) {
-    // Intake of long USER turns can exceed 16k output tokens (conflict_s2's review,
+    // Intake of long USER turns can exceed 32k output tokens (conflict_s2's review,
     // LongMemEval extractions did).
     let (extraction_output_tokens, review_output_tokens) = match phase {
-        Phase::Intake => (32_768, 32_768),
+        Phase::Intake => (65_536, 65_536),
         Phase::Recall => (16_384, 16_384),
     };
     let (retrieval, enrichment, per_operation, group) = match phase {

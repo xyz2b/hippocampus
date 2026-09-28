@@ -1727,28 +1727,41 @@ impl ChatMemoryService {
                 return Ok(result);
             }
             let before = serde_json::to_value((&state.repository, &state.staging))?;
-            let backup = (candidates.len() > 1)
-                .then(|| (state.repository.clone(), state.staging.clone()));
+            // A candidate the source review did not support is dropped on its own; it never
+            // reaches the engine and cannot roll back the reviewed candidates of its turn.
+            let reviewed = |candidate: &CandidateMemory| {
+                claim.is_none() || candidate.source_support_valid()
+            };
+            let batch_size = candidates.iter().filter(|candidate| reviewed(candidate)).count();
+            let backup =
+                (batch_size > 1).then(|| (state.repository.clone(), state.staging.clone()));
             let reports = state.with_engine(self.config.registry(), |engine, entities| {
                 candidates
                     .into_iter()
                     .map(|candidate| {
+                        if !reviewed(&candidate) {
+                            return Ok(None);
+                        }
                         let started = std::time::Instant::now();
                         let captured = crate::diagnostics::enabled().then(|| candidate.clone());
                         let report = engine.ingest_or_stage_with_trace(candidate, entities)?;
-                        Ok((captured, report, started.elapsed().as_millis()))
+                        Ok(Some((captured, report, started.elapsed().as_millis())))
                     })
                     .collect::<PersistenceResult<Vec<_>>>()
             })?;
             let batch_rejected = backup.is_some()
-                && reports.iter().any(|(_, report, _)| !matches!(report.outcome,
+                && reports.iter().flatten().any(|(_, report, _)| !matches!(report.outcome,
                     CandidateIngestOutcome::Ingested(IngestOutcome::Applied { .. } | IngestOutcome::Duplicate { .. })));
             if batch_rejected {
                 // Keep typed backups: JSON round-trips intentionally discard staged approvals.
                 (state.repository, state.staging) = backup.unwrap();
             }
             check_cancelled(cancelled)?;
-            let outcomes: Vec<_> = reports.into_iter().map(|(captured, report, duration)| {
+            let outcomes: Vec<_> = reports.into_iter().map(|report| {
+                let Some((captured, report, duration)) = report else {
+                    return CandidateIngestOutcome::Ingested(IngestOutcome::Rejected(
+                        "source review did not support this candidate"));
+                };
                 crate::diagnostics::record("candidate_decision", || json!({
                     "candidate":captured,"result":report.outcome,"decision_trace":report.trace,
                     "duration_ms":duration,"commit_status":if batch_rejected {"rolled_back"} else {"pending_transaction"}

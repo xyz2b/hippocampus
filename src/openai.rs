@@ -1449,10 +1449,29 @@ impl OpenAiAdapterContext {
     /// This also accepts recorded reviews for offline replay. It never edits a candidate.
     pub fn verify_source_support(
         &self,
+        candidates: Vec<CandidateMemory>,
+        current_user_turn: &str,
+        conversation_history: &[&str],
+        structured_output: &str,
+    ) -> Result<Vec<CandidateMemory>, OpenAiAdapterError> {
+        self.verify_source_support_with(
+            candidates,
+            current_user_turn,
+            conversation_history,
+            structured_output,
+            false,
+        )
+    }
+
+    /// `keep_supported_on_gap`: when the review names concrete missing USER spans, still bind
+    /// the candidates it fully supports (at least one); the gap stays in the raw source.
+    fn verify_source_support_with(
+        &self,
         mut candidates: Vec<CandidateMemory>,
         current_user_turn: &str,
         conversation_history: &[&str],
         structured_output: &str,
+        keep_supported_on_gap: bool,
     ) -> Result<Vec<CandidateMemory>, OpenAiAdapterError> {
         let review: SourceReview =
             serde_json::from_str(structured_output).map_err(structured_json_error)?;
@@ -1594,10 +1613,18 @@ impl OpenAiAdapterContext {
                 supported.push(entry.candidate_index);
             }
         }
-        // Fail the whole extraction before issuing any proof; preserve the original source
-        // through the existing capture failure path rather than silently committing a subset.
-        if !complete {
+        // Without a concrete, independently reviewed gap, fail the whole extraction before
+        // issuing any proof; the original source survives through the capture failure path.
+        let named_gap = keep_supported_on_gap
+            && matches!(review.coverage.status, CoverageStatus::Incomplete)
+            && !supported.is_empty();
+        if !complete && !named_gap {
             return Err(OpenAiAdapterError::SourceCoverageIncomplete);
+        }
+        if !complete {
+            crate::diagnostics::record("source_coverage_partial", || {
+                json!({"missing_user_spans":missing,"committed_candidates":supported})
+            });
         }
         for index in supported {
             candidates[index].bind_source_support();
@@ -1806,7 +1833,7 @@ impl OpenAiMemoryExtractor {
                         return Err(invalid("online source review requires current_user_quote"));
                     }
                     let candidates = self.context.verify_source_support(
-                        candidates,
+                        candidates.clone(),
                         current_user_turn,
                         conversation_history,
                         &review_output,
@@ -1843,6 +1870,17 @@ impl OpenAiMemoryExtractor {
                         "instruction":"Re-extract the complete current USER turn exactly once. Include every eligible assertion, preserving all subjects and properties. The listed spans are hints to inspect, never automatic facts or approval. Return a complete replacement candidate set, not additions to the previous set."});
                     continue;
                 }
+            }
+            if matches!(verified, Err(OpenAiAdapterError::SourceCoverageIncomplete)) {
+                // Repair is unavailable or spent: one missed assertion must not discard the
+                // reviewed ones. Unsupported candidates still get no proof.
+                return self.context.verify_source_support_with(
+                    candidates,
+                    current_user_turn,
+                    conversation_history,
+                    &review_output,
+                    true,
+                );
             }
             return verified;
         }
@@ -4572,6 +4610,26 @@ mod tests {
                 ));
             }
         }
+        // After repair: a named gap keeps the fully supported candidates; an uncertain gap,
+        // or a gap with nothing supported, still rejects the whole extraction.
+        let keep = |status: &str, value_check: &str| {
+            let mut review = supported_review(quote);
+            review["coverage"] = json!({"status":status,
+                "missing_user_spans":if status == "incomplete" {vec![quote]} else {vec![]}});
+            review["reviews"][0]["checks"]["value"] = json!(value_check);
+            review["review_binding"] =
+                json!(ctx.source_support_binding(&candidates, quote, &["昨天提过拿铁。"]));
+            ctx.verify_source_support_with(
+                candidates.clone(),
+                quote,
+                &["昨天提过拿铁。"],
+                &review.to_string(),
+                true,
+            )
+        };
+        assert!(keep("incomplete", "supported").unwrap()[0].source_support_valid());
+        assert!(keep("uncertain", "supported").is_err());
+        assert!(keep("incomplete", "insufficient").is_err());
     }
 
     #[test]
