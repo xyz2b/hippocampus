@@ -7,8 +7,9 @@
 | [overview.md](overview.md) | 部署形态、模块分层、数据模型、存储、配置模式、信任边界 |
 | [write-path.md](write-path.md) | 新增记忆：原文接收、模型提取、原文核验、准入与合并、提交、澄清与删除 |
 | [recall-path.md](recall-path.md) | 召回记忆：bootstrap、legacy、local、assisted 四条路径，结构化检索规则，答案契约与答案校验 |
+| [capabilities.md](capabilities.md) | 能力现状：信息抽取、多会话推理、知识更新、时间推理、弃答的实现方式、短板与改进优先级 |
 
-建议阅读顺序：先读 overview 的“分层”和“数据模型”，再按需读两条链路。
+建议阅读顺序：先读 overview 的“分层”和“数据模型”，再按需读两条链路；想了解系统能做到什么、还缺什么，读 capabilities。
 
 ## 一句话概括
 
