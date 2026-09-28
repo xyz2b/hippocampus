@@ -1,0 +1,363 @@
+{
+  "entities": [
+    {
+      "aliases": [
+        "白鹭会"
+      ],
+      "canonical_name": "白鹭读书会",
+      "entity_type": "Organization",
+      "id": "organization_bailu_bookclub"
+    },
+    {
+      "aliases": [
+        "赤枫会"
+      ],
+      "canonical_name": "赤枫读书会",
+      "entity_type": "Organization",
+      "id": "organization_chifeng_bookclub"
+    }
+  ],
+  "id": "organization_borrow_limit",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "organization_bailu_bookclub",
+            "value": "3"
+          }
+        ]
+      },
+      "id": "organization_s1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "constraint",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "organization_bailu_bookclub"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:fd4d01801fd54028",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "白鹭读书会规定，每名会员同时最多可借3册书。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "organization_chifeng_bookclub",
+            "value": "5"
+          }
+        ]
+      },
+      "id": "organization_s2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "organization_chifeng_bookclub"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "赤枫读书会规定，每名会员同时最多可借5册书。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:2cdfba95aa3edbf4",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "赤枫读书会规定，每名会员同时最多可借5册书。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "赤枫读书会规定，每名会员同时最多可借5册书。"
+    }
+  ],
+  "origin": "S6 holdout-v1-20260927 (inputs/labels); recordings from holdout-live-20260927-v1 traces",
+  "questions": [
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "kind": "clarify"
+      },
+      "id": "organization_q1",
+      "query": "每人同时最多能借几本书？"
+    },
+    {
+      "after": 2,
+      "context": [
+        "我问的是那个读书会。"
+      ],
+      "expect": {
+        "kind": "clarify"
+      },
+      "id": "organization_q2",
+      "query": "每人同时最多能借几本书？"
+    },
+    {
+      "after": 2,
+      "context": [
+        "我问的是白鹭读书会。"
+      ],
+      "expect": {
+        "answer": [
+          "3"
+        ],
+        "cite": [
+          "organization_s1"
+        ],
+        "forbid_cite": [
+          "organization_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "organization_q3",
+      "query": "每人同时最多能借几本书？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "白鹭读书会 借阅规则 每人 同时借阅 上限",
+              "白鹭读书会 会员 借书 最多 几本",
+              "白鹭读书会 同时借阅 图书 数量 限制"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "5"
+        ],
+        "cite": [
+          "organization_s2"
+        ],
+        "forbid_cite": [
+          "organization_s1"
+        ],
+        "kind": "answer"
+      },
+      "id": "organization_q4",
+      "query": "赤枫读书会每名会员同时最多能借几册书？",
+      "recorded": [
+        {
+          "output": {
+            "queries": []
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "3"
+        ],
+        "cite": [
+          "organization_s1"
+        ],
+        "forbid_cite": [
+          "organization_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "organization_q5",
+      "query": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "白鹭读书会 会员 借阅 册数 上限",
+              "读书会 借书 未归还 最多 本数",
+              "会员 同时 借阅 未还 图书 规定"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "forbid_cite": [
+          "organization_s1",
+          "organization_s2"
+        ],
+        "kind": "insufficient_evidence"
+      },
+      "id": "organization_q6",
+      "query": "赤枫读书会每本书可以借几天？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "赤枫读书会 借阅 天数",
+              "赤枫读书会 图书 外借 期限",
+              "赤枫读书会 借书 归还 规则"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

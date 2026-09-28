@@ -1,0 +1,333 @@
+{
+  "entities": [
+    {
+      "aliases": [
+        "折页终端"
+      ],
+      "canonical_name": "折页导航终端",
+      "entity_type": "Device",
+      "id": "device_zheye_terminal"
+    }
+  ],
+  "id": "task_isolation",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "device_zheye_terminal",
+            "value": "西班牙语"
+          }
+        ]
+      },
+      "id": "task_s1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "constraint",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": "s6-tide-exhibit",
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "device_zheye_terminal"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:0b05f6769179a099",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "task_id": "s6-tide-exhibit",
+      "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "device_zheye_terminal",
+            "value": "意大利语"
+          }
+        ]
+      },
+      "id": "task_s2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "constraint",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": "s6-plateau-demo",
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "device_zheye_terminal"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:65c736a21ee80438",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "task_id": "s6-plateau-demo",
+      "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+    }
+  ],
+  "origin": "S6 holdout-v1-20260927 (inputs/labels); recordings from holdout-live-20260927-v1 traces",
+  "questions": [
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "西班牙语"
+        ],
+        "cite": [
+          "task_s1"
+        ],
+        "forbid_cite": [
+          "task_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "task_q1",
+      "query": "折页导航终端开机应显示哪种语言？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "折页导航终端开机默认显示中文",
+              "折页导航终端启动后显示英文",
+              "折页导航终端语言配置为中文"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": "西班牙语",
+            "candidate_index": 0,
+            "verdict": "answer"
+          },
+          "schema": "personal_memory_answer_v1"
+        }
+      ],
+      "task_id": "s6-tide-exhibit"
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "意大利语"
+        ],
+        "cite": [
+          "task_s2"
+        ],
+        "forbid_cite": [
+          "task_s1"
+        ],
+        "kind": "answer"
+      },
+      "id": "task_q2",
+      "query": "折页导航终端开机应显示哪种语言？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "折页导航终端 开机 显示 中文",
+              "导航终端 启动 默认 语言 英文",
+              "折页导航 终端 开机 语言 配置"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": "意大利语",
+            "candidate_index": 0,
+            "verdict": "answer"
+          },
+          "schema": "personal_memory_answer_v1"
+        }
+      ],
+      "task_id": "s6-plateau-demo"
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "西班牙语"
+        ],
+        "cite": [
+          "task_s1"
+        ],
+        "forbid_cite": [
+          "task_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "task_q3",
+      "query": "继续潮汐展陈任务的展台演示配置：折页导航终端应沿用意大利语作为开机显示语言吗？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "折页导航终端 开机 默认 意大利语",
+              "展台演示 导航终端 显示语言 配置",
+              "潮汐展陈 终端 语言 设置 意大利语"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": "西班牙语",
+            "candidate_index": 0,
+            "verdict": "answer"
+          },
+          "schema": "personal_memory_answer_v1"
+        }
+      ],
+      "task_id": "s6-tide-exhibit"
+    }
+  ]
+}

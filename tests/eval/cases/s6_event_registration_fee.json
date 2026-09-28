@@ -1,0 +1,371 @@
+{
+  "entities": [
+    {
+      "aliases": [
+        "海盐工作坊"
+      ],
+      "canonical_name": "海盐折纸工作坊",
+      "entity_type": "Other",
+      "id": "event_haiyan_origami"
+    },
+    {
+      "aliases": [
+        "银杏工作坊"
+      ],
+      "canonical_name": "银杏折纸工作坊",
+      "entity_type": "Other",
+      "id": "event_yinxing_origami"
+    }
+  ],
+  "id": "event_registration_fee",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "event_haiyan_origami",
+            "value": "36"
+          }
+        ]
+      },
+      "id": "event_s1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "."
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "event_haiyan_origami"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:0582383a721177d8",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "海盐折纸工作坊的报名费为36元。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "海盐折纸工作坊的报名费为36元。"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "event_yinxing_origami",
+            "value": "58"
+          }
+        ]
+      },
+      "id": "event_s2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "event_yinxing_origami"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "银杏折纸工作坊的报名费为58元。  "
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:0f76afb00ed597f5",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "银杏折纸工作坊的报名费为58元。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "银杏折纸工作坊的报名费为58元。"
+    }
+  ],
+  "origin": "S6 holdout-v1-20260927 (inputs/labels); recordings from holdout-live-20260927-v1 traces",
+  "questions": [
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "kind": "clarify"
+      },
+      "id": "event_q1",
+      "query": "报名费是多少？"
+    },
+    {
+      "after": 2,
+      "context": [
+        "我说的是折纸工作坊。"
+      ],
+      "expect": {
+        "kind": "clarify"
+      },
+      "id": "event_q2",
+      "query": "报名费是多少？"
+    },
+    {
+      "after": 2,
+      "context": [
+        "我说的是海盐折纸工作坊。"
+      ],
+      "expect": {
+        "answer": [
+          "36"
+        ],
+        "cite": [
+          "event_s1"
+        ],
+        "forbid_cite": [
+          "event_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "event_q3",
+      "query": "报名费是多少？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "海盐折纸工作坊 报名费",
+              "海盐折纸工作坊 费用 价格",
+              "海盐折纸工作坊 报名 收费"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "58"
+        ],
+        "cite": [
+          "event_s2"
+        ],
+        "forbid_cite": [
+          "event_s1"
+        ],
+        "kind": "answer"
+      },
+      "id": "event_q4",
+      "query": "银杏折纸工作坊的报名费是多少？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "银杏折纸工作坊 缴纳 报名费",
+              "银杏折纸工作坊 参加 收费",
+              "银杏折纸工作坊 费用 标准"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "36"
+        ],
+        "cite": [
+          "event_s1"
+        ],
+        "forbid_cite": [
+          "event_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "event_q5",
+      "query": "参加海盐折纸工作坊，报名要交多少钱？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "海盐折纸工作坊 报名费",
+              "折纸工作坊 报名 收费",
+              "海盐 工作坊 报名 缴纳费用"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "forbid_cite": [
+          "event_s1",
+          "event_s2"
+        ],
+        "kind": "insufficient_evidence"
+      },
+      "id": "event_q6",
+      "query": "银杏折纸工作坊最多招收多少人？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "银杏折纸工作坊 招收人数上限",
+              "银杏折纸工作坊 名额限制",
+              "银杏折纸工作坊 报名满员"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}
