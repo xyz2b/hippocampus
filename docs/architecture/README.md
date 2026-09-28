@@ -8,6 +8,7 @@
 | [write-path.md](write-path.md) | 新增记忆：原文接收、模型提取、原文核验、准入与合并、提交、澄清与删除 |
 | [recall-path.md](recall-path.md) | 召回记忆：bootstrap、legacy、local、assisted 四条路径，结构化检索规则，答案契约与答案校验 |
 | [capabilities.md](capabilities.md) | 能力现状：信息抽取、多会话推理、知识更新、时间推理、弃答的实现方式、短板与改进优先级 |
+| [retention.md](retention.md) | 记忆留存：短期、长期层级的设定与升级，五种失效机制，留存检查的触发时机、问题与建议 |
 | [model-usage.md](model-usage.md) | 模型参与：哪些环节用了模型、实际效果（基于留存 trace）、应去除和应加入模型的环节 |
 
 建议阅读顺序：先读 overview 的“分层”和“数据模型”，再按需读两条链路；想了解系统能做到什么、还缺什么，读 capabilities。
