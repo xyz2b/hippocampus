@@ -12,7 +12,7 @@
 //! 未录制的请求转发到 DEEPSEEK_BASE_URL 的真实端点，成功的输出按顺序写回用例 JSON 的
 //! `recorded`；超出上限或真实请求失败的项仍记为 skipped。未设置时绝不发真实请求。
 //!
-//! 新录制带 `request` 指纹（去掉时钟与 review_binding 后的请求哈希）。运行时改变请求后，
+//! 新录制带 `request` 指纹（去掉时钟、review_binding 与 max_output_tokens 后的请求哈希）。运行时改变请求后，
 //! 指纹不符的录制视为过期：回放记为 skipped，录制模式下重录。无指纹的旧录制仍按 schema 顺序回放。
 
 use hippocampus::chat::{ChatConfig, ChatMemoryService, EnrichmentMode, RetrievalMode};
@@ -504,6 +504,11 @@ fn call(
     tool: &str,
     arguments: Value,
 ) -> (Result<Value, Missing>, Option<Vec<Value>>) {
+    // Intake reviews of long USER turns can exceed 16k output tokens (conflict_s2 did).
+    let review_output_tokens = match phase {
+        Phase::Intake => 32_768,
+        Phase::Recall => 16_384,
+    };
     let (retrieval, enrichment, per_operation, group) = match phase {
         Phase::Intake => (
             RetrievalMode::Local,
@@ -531,7 +536,7 @@ fn call(
             allow_extraction_repair: false,
             max_input_bytes: 65_536,
             extraction_output_tokens: 16_384,
-            review_output_tokens: 16_384,
+            review_output_tokens,
             query_output_tokens: 8_192,
         }),
         ..ChatConfig::default()
@@ -740,6 +745,8 @@ fn request_fingerprint(request: &Value) -> Value {
         }
     }
     let mut request = request.clone();
+    // An output allowance does not change what the model is asked; completed outputs fit it.
+    request.as_object_mut().map(|fields| fields.remove("max_output_tokens"));
     if let Some(input) = request["input"].as_str()
         && let Ok(parsed) = serde_json::from_str::<Value>(input)
     {

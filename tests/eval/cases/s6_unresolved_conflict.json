@@ -111,7 +111,7 @@
               }
             ]
           },
-          "request": "fnv1a64:c376c784a105bfb8",
+          "request": "fnv1a64:5a2d39f3f813799b",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -193,13 +193,13 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:3479e2eebd28fcb2",
+            "review_binding": "source-review-v3:e6881b8f829975bb",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "contradicted",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -209,12 +209,7 @@
                   "value": "supported"
                 },
                 "current_user_quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
-                "evidence": [
-                  {
-                    "quote": "我已确认栖风读书机的屏幕尺寸是7英寸。",
-                    "turn_index": 1
-                  }
-                ],
+                "evidence": [],
                 "issues": [
                   {
                     "check": "intent",
@@ -225,12 +220,24 @@
                       }
                     ],
                     "field": "intent",
-                    "reason": "User reports an unresolved conflict and states neither 7 nor 8 inches can be final; this is not a correction or supersede assertion."
+                    "reason": "Candidate intent asserts Supersede/Correction targeting turn 1, but USER states an unresolved conflict and says neither 7 nor 8 inches can be final, so no correction or superseding value is asserted."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "Candidate explicit_memory_request=true, but USER gives no instruction to remember/save/retain this memory; the turn only reports an unresolved conflict."
                   }
                 ]
               }
             ]
           },
+          "request": "fnv1a64:0534b09c396e433b",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -273,7 +280,7 @@
             "candidate_index": 0,
             "verdict": "answer"
           },
-          "request": "fnv1a64:5c15e5fd91252e2a",
+          "request": "fnv1a64:58ee8bf72bce5f7f",
           "schema": "personal_memory_answer_v1"
         }
       ]
@@ -303,7 +310,7 @@
             "candidate_index": null,
             "verdict": "conflict"
           },
-          "request": "fnv1a64:db8e3a2f11175787",
+          "request": "fnv1a64:81b4a7e2887cfaec",
           "schema": "personal_memory_answer_v1"
         }
       ]
@@ -333,7 +340,7 @@
             "candidate_index": null,
             "verdict": "conflict"
           },
-          "request": "fnv1a64:7a339ccc10d29961",
+          "request": "fnv1a64:3123fee350da54de",
           "schema": "personal_memory_answer_v1"
         }
       ]
