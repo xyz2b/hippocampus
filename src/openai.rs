@@ -592,7 +592,7 @@ impl OpenAiClient {
             || question.chars().count() > 24_000
             || context.len() > 8
             || candidates.is_empty()
-            || candidates.len() > 8
+            || candidates.len() > 16
         {
             return Err(OpenAiAdapterError::InvalidContext(
                 "answer question or candidate count is invalid".into(),

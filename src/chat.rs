@@ -2204,8 +2204,18 @@ impl ChatMemoryService {
             .flatten()
             .filter_map(Value::as_str)
             .collect();
-        let [subject_id] = bound.into_iter().collect::<Vec<_>>()[..] else {
-            return Ok(());
+        // Single-character self aliases (我/I) never bind lexically; an otherwise unbound
+        // first-person question is about the user.
+        let first_person = query.contains('我')
+            || query
+                .split(|c: char| !c.is_ascii_alphabetic())
+                .any(|word| {
+                    ["i", "my", "me", "mine", "myself"].contains(&word.to_lowercase().as_str())
+                });
+        let subject_id = match bound.into_iter().collect::<Vec<_>>()[..] {
+            [subject_id] => subject_id,
+            [] if first_person => "self",
+            _ => return Ok(()),
         };
         let state = self.store.read()?;
         let Some(subject) = state
@@ -2220,38 +2230,56 @@ impl ChatMemoryService {
             .chain(subject.aliases.iter().map(String::as_str))
             .filter(|name| !name.is_empty())
             .collect();
-        let sequence = |id: &str| {
-            state
-                .sources
-                .values()
-                .find(|source| source.id == id)
-                .map(|source| source.received_sequence)
+        let in_task =
+            |source: &&crate::SourceRecord| task.is_none_or(|id| crate::lexical::task(source) == Some(id));
+        let newest = |mut list: Vec<(u64, Value)>, limit: usize| {
+            list.sort_by_key(|(sequence, _)| *sequence);
+            let skip = list.len().saturating_sub(limit);
+            list.into_iter().skip(skip).collect::<Vec<_>>()
         };
-        let mut candidates: Vec<(u64, Value)> =
-            linked_candidates(&self.store, &subject, None, task)?
-                .into_iter()
-                .filter_map(|mut candidate| {
-                    candidate["committed"] = json!(true);
-                    Some((sequence(candidate["source_id"].as_str()?)?, candidate))
-                })
-                .collect();
-        // Unreconciled USER statements can only lower confidence: they are never citable.
-        candidates.extend(state.sources.values().filter_map(|source| {
-            let body = crate::lexical::body(source)?;
-            (source.enrichment != "committed"
-                && task.is_none_or(|id| crate::lexical::task(source) == Some(id))
-                && names.iter().any(|name| body.contains(name)))
-            .then(|| {
-                let quote: String = body.chars().take(1000).collect();
-                (source.received_sequence, json!({"source_id":source.id,"quote":quote,"committed":false}))
-            })
-        }));
-        candidates.sort_by_key(|(sequence, _)| *sequence);
-        let candidates: Vec<Value> = candidates
+        // Citable: the committed USER quote behind each of the subject's active memories.
+        let mut seen = BTreeSet::new();
+        let committed = state
+            .repository
+            .list_by_owner(self.store.owner())?
             .into_iter()
-            .rev()
-            .take(8)
-            .rev()
+            .filter(|memory| memory.status == MemoryStatus::Active && memory.subject_id == subject.id)
+            .flat_map(|memory| {
+                let id = memory.id;
+                memory.evidence.into_iter().map(move |evidence| (id, evidence))
+            })
+            .filter_map(|(memory_id, evidence)| {
+                let source = state.sources.values().filter(in_task).find(|source| {
+                    source.enrichment == "committed"
+                        && source.session_id == evidence.session_id.0
+                        && source.turn_id == evidence.turn_id.0
+                })?;
+                seen.insert(source.id.clone()).then(|| {
+                    let quote: String = evidence.quote.chars().take(1000).collect();
+                    (source.received_sequence, json!({"source_id":source.id,
+                        "memory_id":memory_id,"quote":quote,"committed":true}))
+                })
+            })
+            .collect();
+        // Unreconciled USER statements can only lower confidence: they are never citable.
+        let uncommitted = state
+            .sources
+            .values()
+            .filter(in_task)
+            .filter_map(|source| {
+                let body = crate::lexical::body(source)?;
+                (source.enrichment != "committed"
+                    && (subject.id.0 == "self" || names.iter().any(|name| body.contains(name))))
+                .then(|| {
+                    let quote: String = body.chars().take(1000).collect();
+                    (source.received_sequence, json!({"source_id":source.id,"quote":quote,"committed":false}))
+                })
+            })
+            .collect();
+        let mut candidates = newest(committed, 12);
+        candidates.extend(newest(uncommitted, 4));
+        let candidates: Vec<Value> = newest(candidates, 16)
+            .into_iter()
             .map(|(_, candidate)| candidate)
             .collect();
         if !candidates.iter().any(|candidate| candidate["committed"] == true) {
