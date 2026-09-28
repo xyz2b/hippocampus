@@ -1,0 +1,262 @@
+[
+  {
+    "id": "N01",
+    "category": "N01",
+    "answerability": "answerable",
+    "required_sources": [
+      "E1"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N02",
+    "category": "N02",
+    "answerability": "answerable",
+    "required_sources": [
+      "E1"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N03",
+    "category": "N03",
+    "answerability": "answerable",
+    "required_sources": [
+      "E1",
+      "E2"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N04",
+    "category": "N04",
+    "answerability": "answerable",
+    "required_sources": [
+      "E1",
+      "E2"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N05",
+    "category": "N05",
+    "answerability": "answerable",
+    "required_sources": [
+      "E1",
+      "E2"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N06",
+    "category": "N06",
+    "answerability": "answerable",
+    "required_sources": [
+      "E1",
+      "E2"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N06-no-context",
+    "category": "N06",
+    "answerability": "ambiguous",
+    "required_sources": [],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N06-ambiguous",
+    "category": "N06",
+    "answerability": "ambiguous",
+    "required_sources": [],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "negative",
+    "category": "negative",
+    "answerability": "absent",
+    "required_sources": [],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "partial",
+    "category": "partial",
+    "answerability": "partial",
+    "required_sources": [
+      "E1"
+    ],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  },
+  {
+    "id": "N04-ambiguous",
+    "category": "N04",
+    "answerability": "ambiguous",
+    "required_sources": [],
+    "forbidden_sources": [
+      "D1",
+      "D2",
+      "E3"
+    ],
+    "required_points": {
+      "E1": [
+        "SQLite",
+        "Redis 暂时不引入"
+      ],
+      "E2": [
+        "一台机器",
+        "减少维护成本"
+      ]
+    },
+    "equivalent_groups": []
+  }
+]

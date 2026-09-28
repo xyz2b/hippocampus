@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>hippocampus · Memory Inspector · 本地只读调试</title>
+<style>
+:root{--bg:#f3f5f4;--panel:#fff;--ink:#182b2c;--muted:#637678;--line:#dce5e2;--accent:#157a66;--accent-soft:#e8f5ef;--nav:#12292a;--danger:#b3473f;--warning:#9c651d;--code:#11282b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #55b7a1;outline-offset:2px}a{color:var(--accent)}.shell{display:flex;min-height:100vh}.sidebar{width:228px;flex-shrink:0;background:var(--nav);color:#dfeeea;padding:28px 20px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;gap:25px}.brand{font-size:19px;font-weight:750;letter-spacing:.04em;line-height:1.35}.brand small{display:block;font-size:11px;color:#82b9ac;font-weight:600;margin-bottom:10px;letter-spacing:.13em}.subtle{font-size:12px;color:var(--muted)}.sidebar .subtle{color:#a1b8b3}.nav{display:flex;flex-direction:column;gap:8px}.nav button{border:0;background:transparent;color:#bed0cb;border-radius:9px;text-align:left;padding:12px 13px;display:flex;justify-content:space-between;align-items:center}.nav button.active{background:#255048;color:#f2fff9}.nav .count{font-size:11px;border-radius:4px;padding:1px 6px;background:#163732;color:#9bc9b8}.sidebar-footer{margin-top:auto;border-top:1px solid #305051;padding-top:18px;font-size:12px;color:#a2b8b2}.sidebar-footer strong{color:#dbefe6;display:block;margin-bottom:6px}.main{margin-left:228px;padding:27px 32px 50px;width:calc(100% - 228px);min-width:0}.top{display:flex;justify-content:space-between;gap:20px;align-items:center}.eyebrow{font-size:11px;letter-spacing:.13em;color:var(--accent);font-weight:700}h1{margin:4px 0 4px;font-size:26px;letter-spacing:-.03em}h2{font-size:18px;margin:0}h3{font-size:14px;margin:0 0 12px}p{margin:7px 0 12px}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:8px 12px;color:var(--ink)}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.small{font-size:12px;padding:5px 9px}.banner{margin:22px 0 18px;padding:12px 15px;background:#fff4de;border:1px solid #ecd5a3;border-radius:8px;display:flex;gap:12px;color:#6f5026;font-size:13px}.banner.recorded{background:#eaf4f0;border-color:#c6ded3;color:#335c4f}.banner strong{white-space:nowrap}.message{padding:12px 15px;border-radius:8px;margin:12px 0;background:#ffeae6;color:#9c352d;border:1px solid #eebbb3;display:none}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 18px}.metric{background:white;border:1px solid var(--line);border-radius:9px;padding:14px 17px}.metric .label{font-size:12px;color:var(--muted)}.metric .value{font-size:26px;line-height:1.2;font-weight:650;margin:7px 0}.metric .note{font-size:11px;color:var(--muted)}.toolbar{display:flex;gap:10px;align-items:center;margin:14px 0}.search{min-width:180px;flex:1;border:1px solid var(--line);border-radius:7px;background:white;padding:9px 12px;color:var(--ink)}select{border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:white;color:var(--ink);max-width:260px}.section-caption{color:var(--muted);font-size:12px;margin-bottom:14px}.workspace{display:grid;grid-template-columns:292px minmax(0,1fr);gap:17px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}.panel-head{padding:14px 17px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:9px}.panel-body{padding:17px}.run-list{display:flex;flex-direction:column}.item{display:block;text-align:left;width:100%;border:0;border-bottom:1px solid #e7edeb;background:white;padding:15px 16px;color:var(--ink)}.item:last-child{border-bottom:0}.item:hover{background:#f7faf8}.item.selected{background:#edf6f1;border-left:3px solid var(--accent);padding-left:13px}.item-title{font-weight:650;overflow-wrap:anywhere}.item-meta{color:var(--muted);font-size:11px;margin-top:5px;overflow-wrap:anywhere}.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}.badge{font-size:11px;font-weight:550;padding:2px 7px;border-radius:4px;display:inline-block;background:#edf0ef;color:#647875;white-space:nowrap}.badge.ok{background:#e6f4eb;color:#267141}.badge.bad{background:#fdebe5;color:#a83e35}.badge.warn{background:#fff0d7;color:#946420}.badge.info{background:#e8f0f7;color:#336186}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.small{font-size:12px}.muted{color:var(--muted)}.divider{border:0;border-top:1px solid var(--line);margin:18px 0}.notice{font-size:12px;border-left:3px solid var(--accent);background:#f0f7f4;padding:11px 13px;margin:12px 0}.notice.warn{border-color:#ce9b42;background:#fff8e9}.notice.bad{border-color:#b95146;background:#fff1ed}.detail-header{padding:18px;border-bottom:1px solid var(--line)}.detail-header .id{color:var(--muted);font-size:11px;margin-bottom:5px}.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 17px;margin:13px 0}.fact label{display:block;color:var(--muted);font-size:11px}.fact div{font-size:12px;overflow-wrap:anywhere}.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.text-box{background:#f7f9f8;border:1px solid #e3ebe7;padding:13px;border-radius:7px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;max-height:340px;overflow:auto}.box-label{font-size:11px;color:var(--muted);margin-bottom:6px}.stage{border:1px solid var(--line);border-radius:7px;margin:8px 0;overflow:hidden}.stage summary{display:flex;align-items:center;gap:9px;padding:11px 12px;cursor:pointer;background:#fafcfb;list-style:none}.stage summary::before{content:'›';color:var(--muted);font-size:20px;line-height:1}.stage[open] summary::before{transform:rotate(90deg)}.stage-name{flex:1;font-weight:600;font-size:12px}.stage-body{padding:13px;border-top:1px solid var(--line)}.stage .ordinal{font-size:10px;color:var(--muted);width:20px}.stage-time{font-size:11px;color:var(--muted)}.raw{margin:7px 0 13px}.raw summary{font-size:12px;color:var(--accent);cursor:pointer;padding:7px 0}.raw pre{max-height:340px;overflow:auto;background:var(--code);color:#d5eae2;border-radius:7px;padding:13px;font-size:11px;line-height:1.7;margin:3px 0;white-space:pre-wrap;word-break:break-word}.link-btn{background:none;border:0;color:var(--accent);padding:0;font-size:12px;text-align:left;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}.link-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.pipe{border:1px solid var(--line);border-radius:6px;text-align:center;padding:10px 6px;background:#fafcfb}.pipe span{display:block;font-size:10px;color:var(--muted)}.pipe b{font-size:21px}.pipe.unknown{border-style:dashed}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th{font-size:11px;color:var(--muted);font-weight:550;text-align:left;background:#f8faf9}td,th{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:0}.empty{padding:25px 18px;color:var(--muted);font-size:13px;text-align:center}.call-list .item{padding:12px 14px}.tag{display:inline-block;font-size:10px;border-radius:3px;background:#f0f3f1;color:#5d726b;padding:1px 5px;margin:2px}.keyline{margin:5px 0;color:var(--muted);font-size:11px}.memory-body{font-size:16px;line-height:1.8;background:#f2f7f4;border-radius:7px;padding:16px;margin:13px 0}.warning-list{margin-top:12px;color:#865e2c;font-size:12px}.snapshot{font-size:12px;padding:10px 12px;background:#eff4f1;border-radius:6px;margin-bottom:14px}.footer-note{font-size:11px;color:var(--muted);margin:20px 0}.pill{font-size:11px;color:#3e7e6d;border:1px solid #c6ddd4;border-radius:20px;padding:3px 9px}.horizontal{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#file-input{display:none}.hint-line{font-size:11px;color:var(--muted);margin:5px 0 13px}.failure-reason{color:#ac4137;font-size:12px;font-weight:600;margin-top:7px}.memory-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.memory-tools select{font-size:12px;padding:6px 8px}.count-label{font-size:11px;font-weight:500;color:var(--muted)}.preview-note{color:#7e6650;font-size:11px}
+.source-text>summary{display:block;cursor:pointer;list-style:none;color:var(--accent);font-size:12px;padding:0;background:transparent}.source-text>summary::before,.source-text>summary::-webkit-details-marker{display:none}.source-text>summary:focus-visible{outline:3px solid #55b7a1;outline-offset:2px}.source-preview{display:block;color:var(--ink);margin-bottom:6px}.source-collapse,.source-text[open]>summary>.source-preview,.source-text[open]>summary>.source-expand{display:none}.source-text[open]>summary>.source-collapse{display:inline}.source-text[open]>.text-box{margin-top:6px;max-height:none}
+@media(min-width:1550px){.main{padding-left:45px;padding-right:45px}.workspace{grid-template-columns:330px minmax(0,1fr)}}
+@media(max-width:1100px){.sidebar{width:192px;padding:24px 14px}.main{margin-left:192px;width:calc(100% - 192px);padding:22px 22px}.workspace{grid-template-columns:235px minmax(0,1fr)}.metrics{gap:8px}.metric{padding:12px}.metric .value{font-size:23px}.two{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+@media(max-width:760px){.shell{display:block}.sidebar{position:static;width:100%;padding:18px 20px;gap:13px}.brand{font-size:17px}.brand small{display:inline;margin-right:12px}.nav{flex-direction:row;flex-wrap:wrap}.nav button{flex:1;padding:9px 10px;font-size:12px}.sidebar-footer{display:none}.main{margin:0;width:100%;padding:20px 16px}.workspace{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.top h1{font-size:23px}.banner{display:block}.banner strong{display:block;margin-bottom:5px}.toolbar{flex-wrap:wrap}.pipeline{grid-template-columns:repeat(2,1fr)}.run-list,.call-list{max-height:245px;overflow:auto}.facts{grid-template-columns:1fr 1fr}}
+.stage-info{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:5px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--accent);font-size:16px;font-weight:500;vertical-align:middle;cursor:help}.stage-info:hover,.stage-info:focus-visible{background:var(--accent-soft)}
+#stage-tooltip{position:fixed;z-index:1000;width:320px;max-width:calc(100vw - 24px);margin:0;padding:12px 14px;border:1px solid #bdd7ce;border-radius:8px;background:#fff;color:var(--ink);box-shadow:0 6px 24px #12292a26;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+.candidate-section .fact>div{white-space:pre-line}
+.admission-reason .text-box{border:0;border-radius:0;padding:0;background:transparent;font-size:inherit}
+.execution-phase{border:2px solid #bfd8cc;border-radius:9px;margin:18px 0;padding:14px;background:#f8fcfa}.execution-phase.recall{border-color:#bed2e6;background:#f7faff}.execution-phase.shared{border:1px solid var(--line);background:transparent}.phase-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:5px}.phase-header h4{font-size:16px;margin:0}.phase-note{font-size:12px;color:var(--muted);margin:4px 0 12px}.phase-result{font-size:12px;color:#355c4c;background:#e8f5ef;padding:4px 9px;border-radius:5px}.recall .phase-result{color:#345b7e;background:#e8f0f7}.stage-result{display:block;margin-top:4px;color:var(--accent);font-size:12px;font-weight:500}
+.retrieval-section,.candidate-section,.transaction-section{border:1px solid var(--line);border-radius:7px;padding:12px;margin:12px 0;background:#fff}.retrieval-section h4,.candidate-section h4,.transaction-section h4{display:flex;justify-content:space-between;gap:12px;margin:0 0 8px;font-size:13px}.retrieval-items{max-height:340px;overflow:auto}.retrieval-item{padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;overflow-wrap:anywhere}.retrieval-item:last-child{border-bottom:0}.retrieval-content{margin:5px 0;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="shell">
+ <aside class="sidebar">
+  <div class="brand"><small>HIPPOCAMPUS · LOCAL · READ ONLY</small>Memory<br>Inspector</div>
+  <div class="subtle">从原文到记忆，再到一次回答。<br>查看证据，不猜测内部过程。</div>
+  <nav class="nav" aria-label="主导航">
+   <button data-view="runs" class="active"><span>01　请求追踪</span><span class="count" id="runs-count">0</span></button>
+   <button data-view="memories"><span>02　记忆快照</span><span class="count" id="memories-count">0</span></button>
+   <button data-view="sources"><span>03　记忆原文</span><span class="count" id="sources-count">0</span></button>
+   <button data-view="calls"><span>04　模型调用</span><span class="count" id="calls-count">0</span></button>
+   <button data-view="logs"><span>05　运行日志</span><span class="count" id="logs-count">0</span></button>
+  </nav>
+  <div class="sidebar-footer"><strong>本地 · 只读 Inspector</strong>本地后台读取 SQLite 和日志。<br>不执行记忆操作，不调用模型。<br><br>离线重算、在线实验与修改记忆不在本版范围内。</div>
+ </aside>
+ <main class="main">
+  <header class="top"><div><div class="eyebrow">MEMORY DEBUGGING WORKSPACE</div><h1 id="page-title">请求追踪</h1><div class="subtle" id="page-description">检查入口、抽取、校验、提交与返回之间发生了什么。</div></div>
+   <div class="actions"><button class="btn" id="demo-failure">失败演示</button><button class="btn" id="demo-versions">版本演示</button><button class="btn primary" id="import-button">导入 Trace JSON</button><button class="btn" id="export-button">导出脱敏记录</button><input id="file-input" type="file" accept=".json,application/json"></div></header>
+  <div id="live-controls" class="notice" hidden><div class="actions"><button class="btn primary" id="live-connect">查看当前数据</button><button class="btn" id="live-pause">暂停刷新</button><button class="btn" id="live-archive">4096 历史记录</button><span id="live-status" role="status" aria-live="polite">正在连接本地后台…</span></div></div>
+  <div id="banner" class="banner"></div><div id="message" class="message" role="alert"></div>
+  <section class="metrics" id="metrics" aria-label="当前导入包统计"></section>
+  <div class="toolbar"><input id="search" class="search" placeholder="搜索请求、原文、状态、记忆或调用…" aria-label="搜索当前页面"><select id="status-filter" aria-label="按状态筛选"><option value="all">全部状态</option><option value="problem">异常 / 未完成</option><option value="completed">已完成</option></select><span class="pill" id="data-scope">仅当前导入包</span></div>
+  <div id="scope-note" class="section-caption"></div>
+  <div id="content"></div>
+  <div class="footer-note">当前记录只保存在本页内存，刷新不会自动保存。导出会再次执行基础脱敏，但不能保证识别所有自然语言中的秘密；对外分享前请人工检查。</div>
+ </main>
+</div>
+<div id="stage-tooltip" role="tooltip" hidden></div>
+<script>
+'use strict';
+const DEMO_FAILURE={"schema_version": "0.1.0", "meta": {"title": "生成额度耗尽 → 未写入 → 新聊天空召回", "data_kind": "demo", "created_at": null, "code_revision": null, "notes": "根据用户的失败描述制作的演示重建，不是后台原始日志。项目文本、候选内容、ID 和阶段拆分用于演示；未提供的模型、耗时与费用保留为空。", "channels": {"source_capture": "not_enabled", "lexical_index": "not_enabled"}}, "memory_snapshot": {"completeness": "complete", "scope": "演示用户 demo-owner", "captured_at": null, "revision": "DEMO-EMPTY"}, "sources": [{"id": "D-MSG-1", "kind": "synthetic_web_transcript", "text": "项目“青石7”现在用 SQLite。只是考虑用 Rust 重写网络模块，还没有决定。", "session_id": "DEMO-CHAT-A", "message_id": "DEMO-MSG-A1", "captured_at": null, "verification": "demo_not_original_log"}, {"id": "D-MSG-2", "kind": "synthetic_web_transcript", "text": "项目“青石7”用什么数据库？", "session_id": "DEMO-CHAT-B", "message_id": "DEMO-MSG-B1", "captured_at": null, "verification": "demo_not_original_log"}], "memories": [], "runs": [{"id": "DEMO-R1", "operation_id": "DEMO-OP-1", "session_id": "DEMO-CHAT-A", "tool": "memory_prepare", "mode": "recorded_view", "status": "failed", "started_at": null, "duration_ms": null, "save_status": "review_incomplete", "recall_status": "planning_incomplete", "read_revision": null, "committed_revision": null, "source_ids": ["D-MSG-1"], "input": {"mcp_text": "项目“青石7”现在用 SQLite。只是考虑用 Rust 重写网络模块，还没有决定。", "arguments": {"current_text": "项目“青石7”现在用 SQLite。只是考虑用 Rust 重写网络模块，还没有决定。", "history": []}}, "spans": [{"id": "DEMO-S1", "name": "MCP 接收参数", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": {"current_text": "项目“青石7”现在用 SQLite。只是考虑用 Rust 重写网络模块，还没有决定。"}, "output": null, "llm_call_ids": [], "error": null}, {"id": "DEMO-S2", "name": "首次事实抽取", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"facts": [{"subject": "项目青石7", "predicate": "database", "value": "SQLite"}, {"subject": "网络模块", "predicate": "language_change", "value": "Rust", "certainty": "considering"}]}, "llm_call_ids": ["DEMO-C1"], "error": null}, {"id": "DEMO-S3", "name": "抽取复核", "status": "incomplete", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": null, "llm_call_ids": ["DEMO-C2"], "error": {"kind": "generation_limit", "reason": "max_output_tokens", "note": "额度耗尽，复核没有完整结果；不是没有事实"}}, {"id": "DEMO-S4", "name": "正式记忆提交", "status": "not_run", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"committed": false, "reason": "review_incomplete"}, "llm_call_ids": [], "error": null}, {"id": "DEMO-S5", "name": "召回处理中的模型步骤", "status": "incomplete", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": null, "llm_call_ids": ["DEMO-C3"], "error": {"kind": "generation_limit", "reason": "max_output_tokens"}}, {"id": "DEMO-S6", "name": "形成 MCP 响应", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"save_status": "review_incomplete", "recall_status": "planning_incomplete"}, "llm_call_ids": [], "error": null}], "retrieval": {"query": null, "query_status": "incomplete", "scanned_count": null, "candidates": null, "selected_refs": null}, "write_changes": [{"candidate_id": "DEMO-CAND-1", "source_ids": ["D-MSG-1"], "llm_call_ids": ["DEMO-C1", "DEMO-C2"], "candidate": {"facts": [{"subject": "项目青石7", "predicate": "database", "value": "SQLite"}, {"subject": "网络模块", "predicate": "language_change", "value": "Rust", "certainty": "considering"}]}, "validation": {"status": "pending_review", "reason": "复核未完成，不越过准入校验"}, "commit_status": "not_committed", "before": null, "after": null, "memory_ref": null, "receipt_id": null}], "mcp_response": {"recorded": true, "delivery_status": "unknown", "returned_refs": [], "body": {"save_status": "review_incomplete", "recall_status": "planning_incomplete", "memories": [], "note": "演示响应结构，不是对当前服务返回字段的声明"}}, "host": {"input_observability": "unavailable", "request": null, "answer_text": null, "answer_source": null, "answer_evaluation": "not_evaluated"}, "notes": "首次抽取有候选，复核失败，所以正式快照仍为空。候选不是正式记忆。"}, {"id": "DEMO-R2", "operation_id": "DEMO-OP-2", "session_id": "DEMO-CHAT-B", "tool": "memory_recall", "mode": "recorded_view", "status": "completed", "started_at": null, "duration_ms": null, "save_status": "not_applicable", "recall_status": "completed_empty", "read_revision": "DEMO-EMPTY", "committed_revision": null, "source_ids": ["D-MSG-2"], "input": {"mcp_text": "项目“青石7”用什么数据库？", "arguments": {"query": "项目“青石7”用什么数据库？"}}, "spans": [{"id": "DEMO-S7", "name": "接收召回请求", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": null, "llm_call_ids": [], "error": null}, {"id": "DEMO-S8", "name": "查询已保存记忆", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"scanned_count": 0, "selected_refs": []}, "llm_call_ids": [], "error": null}, {"id": "DEMO-S9", "name": "形成 MCP 响应", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"status": "completed_empty", "memories": []}, "llm_call_ids": [], "error": null}], "retrieval": {"query": {"subject": "项目青石7", "predicate": "database"}, "query_status": "completed", "scanned_count": 0, "candidates": [], "selected_refs": []}, "write_changes": [], "mcp_response": {"recorded": true, "delivery_status": "unknown", "returned_refs": [], "body": {"status": "completed_empty", "memories": []}}, "host": {"input_observability": "unavailable", "request": null, "answer_text": "没有找到这个项目的数据库记录。", "answer_source": "synthetic_answer", "answer_evaluation": "演示：回答与空召回一致，不证明有数据时能正确召回"}, "related_runs": [{"run_id": "DEMO-R1", "relation": "investigator_reported_preceding_write_failure", "note": "用户描述的前序写入失败；不因时间相邻自动推断因果"}], "notes": "工具层执行完成，但只是空库测试。不得显示为跨聊天成功验收。"}], "llm_calls": [{"id": "DEMO-C1", "run_id": "DEMO-R1", "operation_id": "DEMO-R1", "attempt": 1, "stage": "事实抽取", "provider": null, "model": null, "prompt_version": null, "provider_request_id": null, "started_at": null, "duration_ms": null, "status": "completed", "finish_reason": null, "request": {"messages": [{"role": "user", "content": "项目“青石7”现在用 SQLite。只是考虑用 Rust 重写网络模块，还没有决定。"}], "note": "仅显示示例输入，不代表原始请求的全部字段"}, "response": {"facts": [{"subject": "项目青石7", "predicate": "database", "value": "SQLite"}, {"subject": "网络模块", "predicate": "language_change", "value": "Rust", "certainty": "considering"}]}, "parsed_result": {"facts": [{"subject": "项目青石7", "predicate": "database", "value": "SQLite"}, {"subject": "网络模块", "predicate": "language_change", "value": "Rust", "certainty": "considering"}]}, "usage": {"input_tokens": null, "output_tokens": null, "reasoning_tokens": null, "cached_input_tokens": null, "source": "demo"}, "cost": {"amount": null, "currency": null, "source": "unknown", "rate_version": null}}, {"id": "DEMO-C2", "run_id": "DEMO-R1", "operation_id": "DEMO-R1", "attempt": 1, "stage": "抽取复核", "provider": null, "model": null, "prompt_version": null, "provider_request_id": null, "started_at": null, "duration_ms": null, "status": "incomplete", "finish_reason": "max_output_tokens", "request": {"max_output_tokens": 4096, "reasoning_configuration": null, "review_feedback": "示例：核对候选是否把考虑变成决定", "messages": [{"role": "user", "content": "项目“青石7”现在用 SQLite。只是考虑用 Rust 重写网络模块，还没有决定。"}]}, "response": {"status": "incomplete", "incomplete_details": {"reason": "max_output_tokens"}, "visible_output": null}, "parsed_result": null, "usage": {"input_tokens": null, "output_tokens": 4096, "reasoning_tokens": 4096, "cached_input_tokens": null, "source": "demo"}, "cost": {"amount": null, "currency": null, "source": "unknown", "rate_version": null}}, {"id": "DEMO-C3", "run_id": "DEMO-R1", "operation_id": "DEMO-R1", "attempt": 1, "stage": "召回处理中的模型步骤", "provider": null, "model": null, "prompt_version": null, "provider_request_id": null, "started_at": null, "duration_ms": null, "status": "incomplete", "finish_reason": "max_output_tokens", "request": {"note": "该失败调用的精确请求与用量未在对话中提供"}, "response": {"status": "incomplete", "incomplete_details": {"reason": "max_output_tokens"}}, "parsed_result": null, "usage": {"input_tokens": null, "output_tokens": null, "reasoning_tokens": null, "cached_input_tokens": null, "source": "demo"}, "cost": {"amount": null, "currency": null, "source": "unknown", "rate_version": null}}]};
+const DEMO_VERSIONS={"schema_version": "0.1.0", "meta": {"title": "版本更新、规则过滤与来源对照", "data_kind": "demo", "created_at": null, "code_revision": null, "notes": "完全虚构的界面示例，用于展示已提交记忆与版本、规则过滤和返回链路。不是你的系统已经通过的测试。", "channels": {"source_capture": "not_enabled", "lexical_index": "not_enabled"}}, "memory_snapshot": {"completeness": "complete", "scope": "演示用户 demo-owner", "captured_at": null, "revision": "DEMO-v2"}, "sources": [{"id": "DEMO-E1", "kind": "synthetic_web_transcript", "text": "项目青石7现阶段使用 PostgreSQL。", "verification": "demo"}, {"id": "DEMO-E2", "kind": "synthetic_web_transcript", "text": "项目青石7现在正式改成 SQLite，先做单机版本。", "verification": "demo"}, {"id": "DEMO-E3", "kind": "synthetic_web_transcript", "text": "这次实验不调用付费 API。", "verification": "demo"}, {"id": "DEMO-E4", "kind": "synthetic_web_transcript", "text": "继续项目青石7的存储实现，要用什么数据库？", "verification": "demo"}], "memories": [{"id": "DEMO-M1", "version": "v1", "content": "项目青石7使用 PostgreSQL。", "memory_type": "fact", "time_horizon": null, "owner": "demo-owner", "subject": "项目青石7", "target": "PostgreSQL", "scope": {"project": "青石7"}, "status": "superseded", "observed_at": null, "valid_from": null, "valid_to": null, "expires_at": null, "source_ids": ["DEMO-E1"], "created_by_call_id": null, "superseded_by": "DEMO-M1@v2", "derived_from": []}, {"id": "DEMO-M1", "version": "v2", "content": "项目青石7现在使用 SQLite。", "memory_type": "fact", "time_horizon": null, "owner": "demo-owner", "subject": "项目青石7", "target": "SQLite", "scope": {"project": "青石7"}, "status": "active", "observed_at": null, "valid_from": null, "valid_to": null, "expires_at": null, "source_ids": ["DEMO-E2"], "created_by_call_id": "DEMO-C4", "superseded_by": null, "derived_from": []}, {"id": "DEMO-M2", "version": "v1", "content": "这次实验不调用付费 API。", "memory_type": "constraint", "time_horizon": "short", "owner": "demo-owner", "subject": "当前实验", "target": "付费 API", "scope": {"task_id": "DEMO-T1"}, "status": "active", "observed_at": null, "valid_from": null, "valid_to": null, "expires_at": null, "source_ids": ["DEMO-E3"], "created_by_call_id": null, "derived_from": []}], "runs": [{"id": "DEMO-R3", "operation_id": "DEMO-OP-3", "session_id": "DEMO-CHAT-C", "tool": "memory_prepare", "mode": "recorded_view", "status": "completed", "started_at": null, "duration_ms": null, "save_status": "committed", "recall_status": "completed", "read_revision": "DEMO-v2", "committed_revision": "DEMO-v2", "source_ids": ["DEMO-E2"], "input": {"mcp_text": "项目青石7现在正式改成 SQLite，先做单机版本。", "arguments": {"current_text": "项目青石7现在正式改成 SQLite，先做单机版本。"}}, "spans": [{"id": "DEMO-S10", "name": "事实抽取", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"subject": "项目青石7", "predicate": "database", "value": "SQLite", "change": "state_change"}, "llm_call_ids": ["DEMO-C4"], "error": null}, {"id": "DEMO-S11", "name": "Rust 校验与提交", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"before": "DEMO-M1@v1", "after": "DEMO-M1@v2", "receipt_id": "DEMO-RECEIPT-1"}, "llm_call_ids": [], "error": null}, {"id": "DEMO-S12", "name": "读取已提交修订", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"read_revision": "DEMO-v2"}, "llm_call_ids": [], "error": null}], "retrieval": {"query": {"subject": "项目青石7", "predicate": "database"}, "query_status": "completed", "scanned_count": 3, "candidates": [{"memory_ref": "DEMO-M1@v1", "outcome": "filtered", "reason_codes": ["superseded"], "rank": null, "score": null, "sort_basis": ["state"]}, {"memory_ref": "DEMO-M1@v2", "outcome": "selected", "reason_codes": ["subject_match", "scope_match", "currently_valid"], "rank": 1, "score": null, "sort_basis": ["scope_specificity", "type", "time"]}, {"memory_ref": "DEMO-M2@v1", "outcome": "filtered", "reason_codes": ["task_scope_mismatch"], "rank": null, "score": null, "sort_basis": ["scope"]}], "selected_refs": ["DEMO-M1@v2"]}, "write_changes": [{"candidate_id": "DEMO-CAND-2", "source_ids": ["DEMO-E2"], "llm_call_ids": ["DEMO-C4"], "candidate": {"subject": "项目青石7", "predicate": "database", "value": "SQLite", "change": "state_change"}, "validation": {"status": "accepted", "reason": "示例规则：明确状态变化，主体匹配"}, "commit_status": "committed", "before": {"id": "DEMO-M1", "version": "v1", "content": "项目青石7使用 PostgreSQL。", "memory_type": "fact", "time_horizon": null, "owner": "demo-owner", "subject": "项目青石7", "target": "PostgreSQL", "scope": {"project": "青石7"}, "status": "superseded", "observed_at": null, "valid_from": null, "valid_to": null, "expires_at": null, "source_ids": ["DEMO-E1"], "created_by_call_id": null, "superseded_by": "DEMO-M1@v2", "derived_from": []}, "after": {"id": "DEMO-M1", "version": "v2", "content": "项目青石7现在使用 SQLite。", "memory_type": "fact", "time_horizon": null, "owner": "demo-owner", "subject": "项目青石7", "target": "SQLite", "scope": {"project": "青石7"}, "status": "active", "observed_at": null, "valid_from": null, "valid_to": null, "expires_at": null, "source_ids": ["DEMO-E2"], "created_by_call_id": "DEMO-C4", "superseded_by": null, "derived_from": []}, "memory_ref": "DEMO-M1@v2", "receipt_id": "DEMO-RECEIPT-1"}], "mcp_response": {"recorded": true, "delivery_status": "unknown", "returned_refs": ["DEMO-M1@v2"], "body": {"save_status": "committed", "memories": [{"ref": "DEMO-M1@v2", "text": "项目青石7现在使用 SQLite。"}]}}, "host": {"input_observability": "unavailable", "request": null, "answer_text": null, "answer_source": null, "answer_evaluation": "not_evaluated"}, "notes": "数据库提交、服务端选择、服务端形成响应分别展示。未记录宿主输入。"}, {"id": "DEMO-R4", "operation_id": "DEMO-OP-4", "session_id": "DEMO-CHAT-D", "tool": "memory_recall", "mode": "recorded_view", "status": "completed", "started_at": null, "duration_ms": null, "save_status": "not_applicable", "recall_status": "completed", "read_revision": "DEMO-v2", "committed_revision": null, "source_ids": ["DEMO-E4"], "input": {"mcp_text": "继续项目青石7的存储实现，要用什么数据库？", "arguments": {"query": "继续项目青石7的存储实现，要用什么数据库？"}}, "spans": [{"id": "DEMO-S13", "name": "结构化查询", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"subject": "项目青石7", "predicate": "database"}, "llm_call_ids": [], "error": null}, {"id": "DEMO-S14", "name": "有效状态与范围过滤", "status": "completed", "parent_span_id": null, "started_at": null, "duration_ms": null, "input": null, "output": {"selected_refs": ["DEMO-M1@v2"]}, "llm_call_ids": [], "error": null}], "retrieval": {"query": {"subject": "项目青石7", "predicate": "database"}, "query_status": "completed", "scanned_count": 3, "candidates": [{"memory_ref": "DEMO-M1@v1", "outcome": "filtered", "reason_codes": ["superseded"], "rank": null, "score": null, "sort_basis": ["state"]}, {"memory_ref": "DEMO-M1@v2", "outcome": "selected", "reason_codes": ["subject_match", "scope_match", "currently_valid"], "rank": 1, "score": null, "sort_basis": ["scope_specificity", "type", "time"]}, {"memory_ref": "DEMO-M2@v1", "outcome": "filtered", "reason_codes": ["task_scope_mismatch"], "rank": null, "score": null, "sort_basis": ["scope"]}], "selected_refs": ["DEMO-M1@v2"]}, "write_changes": [], "mcp_response": {"recorded": true, "delivery_status": "unknown", "returned_refs": ["DEMO-M1@v2"], "body": {"memories": [{"ref": "DEMO-M1@v2", "text": "项目青石7现在使用 SQLite。"}]}}, "host": {"input_observability": "unavailable", "request": null, "answer_text": "项目青石7当前使用 SQLite。", "answer_source": "synthetic_answer", "answer_evaluation": "演示：文字与响应一致；不证明宿主实际依赖了这条记忆"}, "notes": "完全虚构的成功显示示例。"}], "llm_calls": [{"id": "DEMO-C4", "run_id": "DEMO-R3", "operation_id": "DEMO-R3", "attempt": 1, "stage": "事实抽取", "provider": null, "model": null, "prompt_version": null, "provider_request_id": null, "started_at": null, "duration_ms": null, "status": "completed", "finish_reason": null, "request": {"messages": [{"role": "user", "content": "项目青石7现在正式改成 SQLite，先做单机版本。"}]}, "response": {"candidate": {"subject": "项目青石7", "predicate": "database", "value": "SQLite", "change": "state_change"}}, "parsed_result": {"subject": "项目青石7", "predicate": "database", "value": "SQLite", "change": "state_change"}, "usage": {"input_tokens": null, "output_tokens": null, "reasoning_tokens": null, "cached_input_tokens": null, "source": "demo"}, "cost": {"amount": null, "currency": null, "source": "unknown", "rate_version": null}}]};
+const BUNDLE_SCHEMA={"$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "urn:memory-inspector:bundle:0.1.0", "title": "Memory Inspector local diagnostic bundle v0.1.0", "type": "object", "required": ["schema_version", "meta", "memory_snapshot", "sources", "memories", "runs", "llm_calls"], "properties": {"schema_version": {"const": "0.1.0"}, "meta": {"type": "object", "required": ["title", "data_kind"], "properties": {"title": {"type": "string"}, "data_kind": {"enum": ["demo", "recorded"]}, "notes": {"type": ["string", "null"]}, "channels": {"type": "object", "properties": {"source_capture": {"enum": ["not_enabled", "enabled", "unknown"]}, "lexical_index": {"enum": ["not_enabled", "enabled", "unknown"]}}}}}, "memory_snapshot": {"type": "object", "required": ["completeness"], "properties": {"completeness": {"enum": ["complete", "partial", "not_captured"]}, "scope": {"type": ["string", "null"]}, "revision": {"type": ["string", "null"]}, "captured_at": {"type": ["string", "null"]}}}, "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}}, "memories": {"type": "array", "items": {"$ref": "#/$defs/memory"}}, "runs": {"type": "array", "items": {"$ref": "#/$defs/run"}}, "llm_calls": {"type": "array", "items": {"$ref": "#/$defs/call"}}}, "$defs": {"source": {"type": "object", "required": ["id", "kind", "text"], "properties": {"id": {"type": "string", "minLength": 1}, "kind": {"type": "string", "minLength": 1}, "text": {"type": "string"}, "verification": {"type": ["string", "null"]}}}, "memory": {"type": "object", "required": ["id", "version", "content", "status", "source_ids"], "properties": {"id": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}, "content": {"type": "string"}, "status": {"type": "string", "minLength": 1}, "source_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}, "memory_type": {"type": ["string", "null"]}, "time_horizon": {"type": ["string", "null"]}, "owner": {"type": ["string", "null"]}, "subject": {"type": ["string", "null"]}, "target": {"type": ["string", "null"]}, "scope": {}, "observed_at": {"type": ["string", "null"]}, "valid_from": {"type": ["string", "null"]}, "valid_to": {"type": ["string", "null"]}, "expires_at": {"type": ["string", "null"]}, "derived_from": {"type": "array", "items": {"type": "string", "minLength": 1}}, "superseded_by": {"type": ["string", "null"]}, "created_by_call_id": {"type": ["string", "null"]}}}, "span": {"type": "object", "required": ["id", "name", "status"], "properties": {"id": {"type": "string", "minLength": 1}, "name": {"type": "string", "minLength": 1}, "status": {"enum": ["completed", "failed", "incomplete", "in_progress", "not_run", "unknown", "partial"]}, "duration_ms": {"type": ["number", "null"], "minimum": 0}, "input": {}, "output": {}, "error": {}, "llm_call_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}, "parent_span_id": {"type": ["string", "null"]}}}, "retrieval": {"type": "object", "properties": {"query": {}, "query_status": {"type": ["string", "null"]}, "scanned_count": {"type": ["integer", "null"], "minimum": 0}, "candidates": {"type": ["array", "null"], "items": {"type": "object", "required": ["memory_ref", "outcome"], "properties": {"memory_ref": {"type": "string", "minLength": 1}, "outcome": {"enum": ["selected", "filtered", "unknown"]}, "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}}, "rank": {"type": ["integer", "null"], "minimum": 1}, "score": {"type": ["number", "null"]}, "sort_basis": {"type": "array", "items": {"type": "string", "minLength": 1}}}}}, "selected_refs": {"type": ["array", "null"], "items": {"type": "string"}}}}, "run": {"type": "object", "required": ["id", "tool", "status", "spans", "retrieval", "mcp_response", "host"], "properties": {"id": {"type": "string", "minLength": 1}, "tool": {"type": "string", "minLength": 1}, "status": {"enum": ["completed", "failed", "incomplete", "in_progress", "not_run", "unknown", "partial"]}, "operation_id": {"type": ["string", "null"]}, "session_id": {"type": ["string", "null"]}, "started_at": {"type": ["string", "null"]}, "duration_ms": {"type": ["number", "null"], "minimum": 0}, "save_status": {"type": ["string", "null"]}, "recall_status": {"type": ["string", "null"]}, "source_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}, "input": {}, "read_revision": {"type": ["string", "null"]}, "committed_revision": {"type": ["string", "null"]}, "spans": {"type": "array", "items": {"$ref": "#/$defs/span"}}, "write_changes": {"type": "array", "items": {"type": "object"}}, "retrieval": {"$ref": "#/$defs/retrieval"}, "mcp_response": {"type": "object", "required": ["recorded", "returned_refs"], "properties": {"recorded": {"type": "boolean"}, "returned_refs": {"type": ["array", "null"], "items": {"type": "string"}}, "body": {}, "delivery_status": {"type": ["string", "null"]}}}, "host": {"type": "object", "required": ["input_observability"], "properties": {"input_observability": {"enum": ["unavailable", "provided"]}, "request": {}, "answer_text": {"type": ["string", "null"]}, "answer_source": {"type": ["string", "null"]}, "answer_evaluation": {"type": ["string", "null"]}}}, "evidence_status": {"enum": ["complete", "evidence_incomplete"]}}}, "call": {"type": "object", "required": ["id", "run_id", "stage", "status", "usage", "cost"], "properties": {"id": {"type": "string", "minLength": 1}, "run_id": {"type": "string", "minLength": 1}, "stage": {"type": "string", "minLength": 1}, "status": {"enum": ["completed", "failed", "incomplete", "in_progress", "not_run", "unknown", "partial"]}, "attempt": {"type": "integer", "minimum": 1}, "provider": {"type": ["string", "null"]}, "model": {"type": ["string", "null"]}, "prompt_version": {"type": ["string", "null"]}, "provider_request_id": {"type": ["string", "null"]}, "started_at": {"type": ["string", "null"]}, "duration_ms": {"type": ["number", "null"], "minimum": 0}, "finish_reason": {"type": ["string", "null"]}, "request": {}, "response": {}, "parsed_result": {}, "usage": {"type": "object", "properties": {"input_tokens": {"type": ["integer", "null"], "minimum": 0}, "output_tokens": {"type": ["integer", "null"], "minimum": 0}, "reasoning_tokens": {"type": ["integer", "null"], "minimum": 0}, "cached_input_tokens": {"type": ["integer", "null"], "minimum": 0}, "source": {"type": ["string", "null"]}}}, "cost": {"type": "object", "required": ["amount", "currency", "source"], "properties": {"amount": {"type": ["number", "null"], "minimum": 0}, "currency": {"type": ["string", "null"]}, "source": {"enum": ["provider", "estimate", "unknown", "demo"]}, "rate_version": {"type": ["string", "null"]}}}}}}};
+const STATES={ready:['可检索','ok'],disabled:['已关闭',''],extraction_incomplete:['抽取未完成','bad'],stored:['已留存','ok'],not_requested:['未请求',''],completed_no_facts:['完成 · 无新事实','info'],completed_pending:['完成 · 待澄清','warn'],completed_rejected:['完成 · 候选被拒绝','warn'],no_memory_change:['未新增或修改记忆',''],completed:['已完成','ok'],failed:['失败','bad'],incomplete:['未完成','bad'],in_progress:['处理中','info'],not_run:['未执行','warn'],unknown:['未知',''],partial:['部分完成','warn'],committed:['已提交','ok'],not_committed:['未提交','warn'],review_incomplete:['复核未完成','bad'],planning_incomplete:['查询处理未完成','bad'],completed_empty:['完成 · 空结果','info'],not_applicable:['不适用',''],active:['有效','ok'],superseded:['已被替代','warn'],expired:['已过期','warn'],retracted:['已撤回','warn'],pending:['待处理','info'],queued:['已排队','info'],running:['整理中','info'],stale_requires_review:['旧结果待复核','warn'],pending_review:['待复核','warn'],conflict:['冲突','bad'],archived:['已归档',''],deleted:['已删除',''],accepted:['已接受','ok'],rejected:['已拒绝','bad'],selected:['已选中','ok'],filtered:['已过滤','warn']};
+const REASONS={superseded:'已被替代',expired:'已过期',subject_mismatch:'主体不匹配',scope_mismatch:'作用域不匹配',task_scope_mismatch:'任务范围不匹配',subject_match:'主体匹配',scope_match:'范围匹配',currently_valid:'当前有效',context_budget_exceeded:'上下文预算不足',duplicate:'重复',review_incomplete:'复核未完成'};
+let bundle=null,view='runs',selectedRun=null,runIdFilter=null,selectedMemory=null,memoryIdFilter=null,selectedCall=null,selectedSource=null,sourceIdFilter=null,query='',filter='all',memFilter='all',warnings=[];
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const present=v=>v!==null&&v!==undefined&&v!=='';
+const val=(v,missing='未采集')=>present(v)?esc(typeof v==='object'?JSON.stringify(v):v):`<span class="muted">${esc(missing)}</span>`;
+function sourceText(value,maxChars=200,maxLines=4){
+ const text=String(value??''),chars=Array.from(text),lines=text.split(/\r\n?|\n/);
+ if(chars.length<=maxChars&&lines.length<=maxLines)return `<div class="text-box">${val(value)}</div>`;
+ const preview=chars.slice(0,maxChars).join('').split(/\r\n?|\n/).slice(0,maxLines).join('\n');
+ return `<details class="source-text"><summary><span class="text-box source-preview">${esc(preview)}…</span><span class="source-expand">展开全文（${chars.length} 字符）</span><span class="source-collapse">收起全文</span></summary><div class="text-box">${esc(text)}</div></details>`;
+}
+const num=v=>typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('zh-CN'):'—';
+const state=v=>{const s=STATES[v]||[v||'未知',''];return `<span class="badge ${s[1]}">${esc(s[0])}</span>`};
+const ref=m=>`${m.id}@${m.version}`;
+const memory=r=>(bundle.memories||[]).find(m=>ref(m)===r);
+const source=i=>(bundle.sources||[]).find(s=>s.id===i);
+const savedSources=()=>bundle.sources.filter(s=>s.kind==='persisted_source');
+const callById=i=>(bundle.llm_calls||[]).find(c=>c.id===i);
+const bad=s=>['failed','incomplete','partial','in_progress'].includes(s);
+const searchMatch=o=>!query||JSON.stringify(o).toLowerCase().includes(query.toLowerCase());
+const dur=v=>present(v)?`${num(v)} ms`:'耗时未采集';
+function sanitize(v,key='',depth=0){
+ if(depth>80)throw new Error('嵌套超过 80 层，请缩小或整理导出记录。');
+ if(/^(authorization|proxy-authorization|cookie|set-cookie|api[-_]?key|apikey|access[-_]?token|refresh[-_]?token|password|secret|client[-_]?secret|private[-_]?key)$/i.test(key))return '[已脱敏]';
+ if(/^(reasoning_content|thinking_content|chain_of_thought)$/i.test(key))return '[不展示推理正文；请使用用量计数]';
+ if(Array.isArray(v))return v.map(x=>sanitize(x,'',depth+1));
+ if(v&&typeof v==='object'){
+   if(['reasoning','thinking'].includes(v.type))return {type:v.type,display:'推理正文不展示'};
+   const o={};for(const [k,x]of Object.entries(v)){if(['__proto__','constructor','prototype'].includes(k))continue;o[k]=sanitize(x,k,depth+1);}return o;
+ }
+ if(typeof v==='string')return v.replace(/\bBearer\s+[A-Za-z0-9._~+\/-]{10,}/gi,'Bearer [已脱敏]').replace(/\bsk-[A-Za-z0-9_-]{10,}/g,'[已脱敏密钥]');
+ return v;
+}
+function json(v){return esc(JSON.stringify(v,null,2)??'null')}
+function raw(title,v,open=false){return `<details class="raw" ${open?'open':''}><summary>${esc(title)}</summary><pre>${json(v)}</pre></details>`}
+function factHtml(k,html,help){return `<div class="fact"><label>${esc(k)}${help?infoButton(k+'：说明',help):''}</label><div>${html}</div></div>`}
+function fact(k,v,help){return factHtml(k,val(v),help)}
+function linkCall(id){return `<button class="link-btn" data-call="${esc(id)}">查看调用 ${esc(id)}</button>`}
+function linkSource(id){return present(id)?`<a class="link-btn" href="#source=${esc(encodeURIComponent(id))}" data-source="${esc(id)}">${esc(id)} · 查看原文</a>`:val(null);}
+function linkRun(id){return `<a class="link-btn" href="#run=${esc(encodeURIComponent(id))}" data-run="${esc(id)}" data-run-link="true">${esc(id)}</a>`}
+function linkMem(id){return memory(id)?`<a class="link-btn" href="#memory=${esc(encodeURIComponent(id))}" data-memory="${esc(id)}">${esc(id)}</a>`:`<span class="mono">${esc(id)}</span><span class="muted">（版本未随包导出）</span>`}
+const memoryIdMatches=id=>(bundle?.memories||[]).filter(m=>String(m.id)===String(id));
+const memoryBusiness=record=>Object.fromEntries(Object.entries(record).filter(([key])=>!['retrieval_count','last_retrieved_at'].includes(key)));
+function memoryVersions(memories=bundle.memories){
+ const groups=new Map(),versions=[];
+ for(const m of memories){
+  const key=JSON.stringify([m.owner??null,String(m.id)]),peers=groups.get(key)||[];
+  const business=m.raw&&typeof m.raw==='object'&&!Array.isArray(m.raw)&&present(m.raw.id)&&present(m.raw.owner_id)?memoryBusiness(m.raw):null;
+  const match=business?peers.find(p=>sameRecordedValue(p.business,business)):null;
+  if(match){if(ref(m)===selectedMemory)versions[match.index]=m;}
+  else{peers.push({business,index:versions.length});versions.push(m);groups.set(key,peers);}
+ }
+ return versions;
+}
+function recordedMemoryRef(record){
+ const matches=record?memoryIdMatches(record.id).filter(m=>m.raw?.owner_id===record.owner_id&&sameRecordedValue(m.raw,record)):[];
+ return matches.length===1?ref(matches[0]):null;
+}
+function linkMemoryId(id,record=null){
+ if(!present(id))return val(null);
+ const reference=String(record?.id)===String(id)?recordedMemoryRef(record):null,label=`记忆 #${esc(id)}`;
+ if(reference)return `<a class="link-btn" href="#memory=${esc(encodeURIComponent(reference))}" data-memory="${esc(reference)}">${label}</a>`;
+ return memoryIdMatches(id).length?`<a class="link-btn" href="#memory-id=${esc(encodeURIComponent(id))}" data-memory-id="${esc(id)}">${label}</a>`:`${label}<span class="muted">（快照未随包导出）</span>`;
+}
+function hideMessage(){$('message').style.display='none';$('message').textContent=''}
+function showError(text){$('message').textContent=text;$('message').style.display='block'}
+function validate(data){
+ let errors=[];
+ function resolve(s){if(!s.$ref)return s;return s.$ref.split('/').slice(1).reduce((o,k)=>o[k],BUNDLE_SCHEMA)}
+ function typeOK(v,t){return t==='null'?v===null:t==='array'?Array.isArray(v):t==='object'?v!==null&&typeof v==='object'&&!Array.isArray(v):t==='integer'?Number.isInteger(v):typeof v===t}
+ function walk(v,s,path){
+  if(errors.length>12)return;s=resolve(s);
+  if(s.type){const ts=Array.isArray(s.type)?s.type:[s.type];if(!ts.some(t=>typeOK(v,t))){errors.push(`${path} 的类型应为 ${ts.join('/')}`);return;}}
+  if('const'in s&&v!==s.const)errors.push(`${path} 版本不支持，应为 ${s.const}`);
+  if(s.enum&&!s.enum.includes(v))errors.push(`${path} 不在允许的取值中`);
+  if(typeof v==='number'&&s.minimum!==undefined&&v<s.minimum)errors.push(`${path} 小于最小值`);
+  if(typeof v==='string'&&s.minLength&&v.length<s.minLength)errors.push(`${path} 不能为空`);
+  if(v&&typeof v==='object'&&!Array.isArray(v)){
+   for(const k of s.required||[])if(!(k in v))errors.push(`${path}.${k} 缺失`);
+   for(const[k,sub]of Object.entries(s.properties||{}))if(k in v)walk(v[k],sub,`${path}.${k}`);
+  }
+  if(Array.isArray(v)&&s.items)v.forEach((x,i)=>walk(x,s.items,`${path}[${i}]`));
+ }
+ walk(data,BUNDLE_SCHEMA,'bundle');if(errors.length)throw new Error(errors.slice(0,8).join('；'));
+ for(const [name,key]of [['runs',x=>x.id],['llm_calls',x=>x.id],['sources',x=>x.id],['memories',ref]]){const ids=data[name].map(key);if(new Set(ids).size!==ids.length)errors.push(`${name} 存在重复 ID／版本`);}
+ for(const r of data.runs){const ids=r.spans.map(s=>s.id);if(new Set(ids).size!==ids.length)errors.push(`运行 ${r.id} 中有重复 span ID`);}
+ if(errors.length)throw new Error(errors.join('；'));
+ const ws=[];const mids=new Set(data.memories.map(ref)),rids=new Set(data.runs.map(r=>r.id)),cids=new Set(data.llm_calls.map(c=>c.id)),sids=new Set(data.sources.map(s=>s.id));
+ data.llm_calls.forEach(c=>{if(!rids.has(c.run_id))ws.push(`调用 ${c.id} 对应的运行未导出`)});
+ data.runs.forEach(r=>{(r.spans||[]).forEach(s=>(s.llm_call_ids||[]).forEach(c=>{if(!cids.has(c))ws.push(`调用 ${c} 未随包导出`)}));
+  (r.retrieval.candidates||[]).forEach(c=>{if(!mids.has(c.memory_ref))ws.push(`候选版本 ${c.memory_ref} 未随包导出`)});
+  (r.source_ids||[]).forEach(s=>{if(!sids.has(s))ws.push(`来源 ${s} 未随包导出`)});
+  [...(r.retrieval.selected_refs||[]),...(r.mcp_response.returned_refs||[])].forEach(m=>{if(!mids.has(m))ws.push(`返回或选中版本 ${m} 未随包导出`)});
+  (r.write_changes||[]).forEach(w=>{if(w.memory_ref&&!mids.has(w.memory_ref))ws.push(`提交版本 ${w.memory_ref} 未随包导出`);(w.source_ids||[]).forEach(s=>{if(!sids.has(s))ws.push(`写入来源 ${s} 未随包导出`)});});
+  (r.related_runs||[]).forEach(x=>{if(!rids.has(x.run_id))ws.push(`关联运行 ${x.run_id} 未随包导出`)});
+  if(r.host.input_observability==='provided'&&!present(r.host.request))ws.push(`运行 ${r.id} 声明宿主输入可见，但未提供请求`);
+ });
+ data.memories.forEach(m=>(m.source_ids||[]).forEach(s=>{if(!sids.has(s))ws.push(`记忆来源 ${s} 未随包导出`)}));
+ return [...new Set(ws)];
+}
+function load(data){hideMessage();try{const clean=sanitize(data);warnings=validate(clean);bundle=clean;selectedSource=savedSources()[0]?.id||null;sourceIdFilter=null;selectedRun=clean.runs[0]?.id||null;selectedMemory=clean.memories[0]?ref(clean.memories[0]):null;selectedCall=clean.llm_calls[0]?.id||null;query='';filter='all';memFilter='all';$('search').value='';$('status-filter').value='all';memoryIdFilter=null;runIdFilter=null;if(!navigateDetailHash())render();window.scrollTo(0,0)}catch(e){showError('导入失败：'+e.message)}}
+function cost(c){if(!present(c.cost?.amount)||!present(c.cost?.currency))return '<span class="muted">未知</span>';const a=c.cost.amount;let n=a===0?'0':a<.000001?'<0.000001':Number(a.toFixed(6)).toString();return `${esc(c.cost.currency)} ${esc(n)}<div class="keyline">${esc(c.cost.source==='provider'?'服务商记录':c.cost.source==='estimate'?'本地估算':'演示记录')}</div>`}
+function aggregateCosts(){const sums={};let known=0;for(const c of bundle.llm_calls){if(present(c.cost?.amount)&&present(c.cost?.currency)){known++;sums[c.cost.currency]=(sums[c.cost.currency]||0)+c.cost.amount}}
+ return {known,text:known?Object.entries(sums).map(([k,v])=>`${k} ${v===0?'0':v<.000001?'<0.000001':Number(v.toFixed(6))}`).join(' / '):'未知',unknown:bundle.llm_calls.length-known}}
+function render(){hideStageHelp();if(!bundle)return;const titles={runs:['请求追踪','检查入口、抽取、校验、提交与返回之间发生了什么。'],memories:['记忆快照','查看实际导出的版本、适用范围与原始依据，而不是假定的实时状态。'],sources:['记忆原文','查看独立保存的原文全文、会话和消息来源。'],calls:['模型调用与费用','逐次查看后台请求、返回、用量和未完成原因。'],logs:['运行日志','只读查看实际日志尾部；自动读取追加与轮转，不执行日志里的指令。']};
+ $('page-title').textContent=titles[view][0];$('page-description').textContent=titles[view][1];
+ document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
+ $('sources-count').textContent=savedSources().length;$('runs-count').textContent=bundle.runs.length;$('memories-count').textContent=memoryVersions().length;$('calls-count').textContent=bundle.llm_calls.length;$('logs-count').textContent=bundle.live?.logs?.length||0;$('data-scope').textContent=bundle.live?'本机当前数据':'历史 / 导入记录';
+ const demo=bundle.meta.data_kind==='demo';$('banner').className='banner'+(demo?'':' recorded');$('banner').innerHTML=`<strong>${demo?'演示数据 · 非真实日志':bundle.live?'本地后台快照':'导入记录 · 非实时连接'}</strong><span>${esc(bundle.meta.title)}。${esc(bundle.meta.notes||'记录来源由导出方提供，界面不自动核验其真实性。')}</span>${bundle.live?.observability?`<span>${esc(bundle.live.observability)}</span>`:''}`;
+ const ac=aggregateCosts(),fails=bundle.runs.filter(r=>bad(r.status)).length;
+ const metrics=[['运行记录',bundle.runs.length,'工具完成不代表端到端验收通过'],['异常 / 未完成',fails,'状态按已导出记录显示'],['记忆条目',memoryVersions().length,bundle.memory_snapshot.completeness==='not_captured'?'快照未采集，不代表空库':'已合并仅召回次数和时间不同的快照'],['已知费用',ac.text,ac.unknown?`${ac.unknown} 次调用费用未知，不能当作 0`:(bundle.llm_calls.length?'按币种分别合计':'没有导入模型调用，不能推断实际费用')]];
+ $('metrics').innerHTML=metrics.map(m=>`<div class="metric"><div class="label">${esc(m[0])}</div><div class="value" style="${String(m[1]).length>15?'font-size:17px':''}">${esc(m[1])}</div><div class="note">${esc(m[2])}</div></div>`).join('');
+ $('status-filter').style.display=['memories','sources'].includes(view)?'none':'';
+ $('scope-note').innerHTML=`记录版本：<span class="mono">${esc(bundle.schema_version)}</span>　代码版本：${val(bundle.meta.code_revision)}　<span class="muted">本页只读；输入中的敏感字段执行基础脱敏。</span>${warnings.length?`<details class="warning-list"><summary>${warnings.length} 项导出关联提醒</summary>${warnings.map(w=>`<div>${esc(w)}</div>`).join('')}</details>`:''}`;
+ if(view==='runs')renderRuns();else if(view==='memories')renderMemories();else if(view==='sources')renderSources();else if(view==='logs')renderLogs();else renderCalls();
+}
+function renderRuns(){const rows=bundle.runs.filter(r=>(runIdFilter===null||r.id===runIdFilter)&&searchMatch(r)&&(filter==='all'||filter==='problem'&&bad(r.status)||filter==='completed'&&r.status==='completed'));
+ if(runIdFilter===null&&!rows.some(r=>r.id===selectedRun))selectedRun=rows[0]?.id||null;
+ const r=rows.find(r=>r.id===selectedRun);
+ $('content').innerHTML=`${runIdFilter!==null?`<div class="snapshot">当前请求：<span class="mono">${esc(runIdFilter)}</span> · <button class="link-btn" data-view="runs">查看全部请求</button></div>`:''}<div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">运行列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${x.id===selectedRun?'selected':''}" data-run="${esc(x.id)}" data-list-selection="true"><div class="item-top"><span class="item-title">${esc(x.tool)}</span>${state(x.status)}</div><div class="mono small">${esc(x.id)}</div><div class="item-meta">会话 ${esc(x.session_id||'未采集')} · ${esc(x.started_at||'时间未采集')}</div><div class="item-meta">原文保存：${esc(sourceSaveStatus(x))}<br>结构化记忆：${esc(STATES[x.save_status]?.[0]||x.save_status||'未知')}<br>召回：${esc(STATES[x.recall_status]?.[0]||x.recall_status||'未知')}</div></button>`).join(''):'<div class="empty">没有匹配的运行记录</div>'}</div></section><section class="panel">${r?runDetail(r):`<div class="empty">${runIdFilter!==null&&!bundle.runs.some(x=>x.id===runIdFilter)?'所链接的请求未随当前数据源导出。':'导入或选择一条运行记录'}</div>`}</section></div>`;
+}
+const STAGE_INFO={
+ 'source_receipt':['读取原文接收回执','记录原文接收结果与结构化整理状态；排队中的原文需另行显式处理，模型失败不撤销此前的原文保存。客户端消息标识不等于网页来源认证；索引状态按实际记录展示，缺少字段时不推断已经可检索。'],
+ 'run_start':['记录工具调用入参','记录本次工具名称、实际参数和归属用户，建立执行追踪；此时尚未抽取或保存记忆。'],
+ 'initial_snapshot / Rust 校验':['读取执行前快照','读取并解析 SQLite 中已有的记忆、实体和回执，作为本次执行前的对照；不调用模型，也不新增记忆。'],
+ '模型抽取候选':['模型抽取记忆候选','将当前原话和必要历史交给模型，提取可能值得保存的信息。返回内容仍需本地校验与规则裁决，尚未入库。'],
+ '抽取复核':['模型复核抽取结果','在触发复核条件时，将原话、首次输出和反馈交给模型检查遗漏或错误；复核结果仍需本地校验。'],
+ 'extraction / Rust 校验':['校验并转换抽取候选','在本地解析模型输出，检查字段、类型、证据与领域约束，并转换为候选结构；不调用模型，也不提交数据库。'],
+ 'extraction_review / Rust 校验':['校验并转换复核候选','对模型复核后的抽取结果执行本地格式与领域校验；通过后才进入候选规则裁决。'],
+ '候选规则裁决（提交结果见事务）':['执行候选准入与写入决策','对单条候选执行准入、实体解析及新建、更新、忽略等规则，记录拒绝或待澄清结果。决策在事务内执行，是否落库以事务提交为准。'],
+ 'transaction_committed':['提交数据库事务','事务已成功提交，记录提交前后的状态。变更也可能只是召回计数或回执，不一定新增了记忆。'],
+ 'transaction_rollback':['回滚数据库事务','事务中的业务操作失败，本次事务不提交。此前已成功提交的其他事务不受影响。'],
+ '模型规划查询':['模型生成检索条件','将查询交给模型，生成主体、属性、范围和时间等检索条件；这一步尚未检索记忆。'],
+ '查询复核':['模型复核检索条件','发现可能遗漏的实体或时间线索时，让模型结合原查询复查条件；返回条件仍需本地校验。'],
+ 'query / Rust 校验':['校验并转换检索条件','在本地解析查询模型输出，校验字段和允许的实体、属性等条件，转换为检索使用的结构。'],
+ 'query_review / Rust 校验':['校验并转换复核条件','对模型复核后的检索条件执行本地校验，检查通过后交给检索器。'],
+ 'lexical_raw':['关键词检索原文（内部）','在授权范围内执行本地全文检索，按实际记录展示原文候选、片段位置、索引版本和覆盖状态；不调用模型，不代表正式 MCP 回答已使用这些原文。'],
+ 'internal_run_end':['结束内部索引操作','记录内部原文查询或索引重建的最终结果；这不是正式 MCP 响应，也不证明宿主使用了候选原文。'],
+ 'internal_enrichment_run_end':['结束显式原文整理','记录 CLI 显式整理当前原文的结果；不是 MCP 响应。整理状态只说明本次记录，宿主是否使用了记忆仍不可观测。'],
+ 'retrieval':['检索、过滤并选择记忆','按实际检索条件扫描当前用户的记忆，执行有效期、范围等规则，记录每条候选的选择结果及过滤原因。'],
+ 'global_context':['读取全局回答要求','从本地快照读取不限定任务的全局回答要求，附加到工具结果中；不调用模型，也不将快照中的模拟更新写回数据库。'],
+ 'run_end':['汇总工具执行结果','汇总本次保存、召回、全局要求和错误，构造工具响应。此处耗时是整次工具执行的总耗时，不是单独汇总的耗时。'],
+ 'rpc_response':['记录工具响应','记录服务端返回的处理进度或结果；轮询共用同一操作，不代表又执行一次模型调用，也不能证明宿主已收到。'],
+ '持久保存回执':['读取历史保存回执','展示 SQLite 中留存的保存参数与结果。回执可证明当时的保存结果，不能还原未采集的模型请求和执行过程。'],
+ 'model_start':['发送模型请求','记录一次实际模型请求的参数和尝试编号；对应的响应见后续模型返回阶段或关联调用。'],
+ 'model_end':['接收并解析模型响应','记录本次模型请求的业务输出、错误、用量和耗时；模型完成不等于输出通过本地校验或已保存。'],
+ '首次输出 JSON 检查（离线诊断）':['离线检查首次输出格式','根据留存的首次模型输出检查 JSON 格式；从错误文本中识别出的候选只用于诊断，不表示运行时接受或保存。'],
+ '正式提交观测':['核对历史提交证据','对照历史快照与回执判断当时是否提交；这是事后证据核对，不是重新执行写入。'],
+ 'MCP 接收参数':['接收工具调用参数','记录工具入口收到的参数；服务端入参不能单独证明与网页用户原话完全一致。'],
+ '接收召回请求':['接收记忆召回请求','接收查询参数，准备后续查询处理和记忆检索；此时尚未选出记忆。'],
+ '正式记忆提交':['提交记忆变更','将通过前序处理的变更写入正式存储；是否实际执行及成功，以本阶段状态和提交证据为准。'],
+ 'Rust 校验与提交':['本地校验并提交变更','此演示将本地校验和正式提交合并为一个阶段；不能据此推断真实运行也采用相同的阶段划分。'],
+ '结构化查询':['构造结构化检索条件','形成检索所用的查询结构；条件是否由模型生成，以实际记录和关联模型调用为准。'],
+ '读取已提交修订':['读取已提交的记忆版本','读取此记录声明的已提交版本作为检索依据；未采集的原生修订号仍保持未知。']
+};
+const STAGE_ALIASES={'读取执行前快照':'initial_snapshot / Rust 校验','首次事实抽取':'模型抽取候选','事实抽取':'模型抽取候选','首次抽取（模型响应完成）':'模型抽取候选','同轮召回查询生成':'模型规划查询','下一聊查询生成':'模型规划查询','召回处理中的模型步骤':'模型规划查询','形成 MCP 响应':'run_end','查询已保存记忆':'retrieval','有效状态与范围过滤':'retrieval'};
+function stageInfo(span){
+ const suffix=span.name.match(/ · 第 \d+ 次发送$/)?.[0]||'',base=span.name.slice(0,span.name.length-suffix.length);
+ const key=base.startsWith('MCP 接收/服务端响应 ')?'rpc_response':STAGE_ALIASES[base]||base;
+ const info=STAGE_INFO[key];
+ let name=info?.[0]||base;
+ if(key==='rpc_response'&&span.status==='in_progress')return {name:'向调用方返回：任务仍在执行',description:'本次等待已达 45 秒，后台任务尚未结束。先通知调用方用相同参数继续等待同一任务，不重新启动抽取或新增模型调用。这是一次状态通知，不是新的记忆处理步骤；“处理中”是当时的状态，不代表现在仍未完成。'};
+ if(key==='rpc_response')name='记录工具结果响应';
+ if(key==='transaction_committed'&&span.status==='completed'){
+  const changes=sourceTransactionChanges(span.output),memories=transactionChanges(span.output);
+  const kind=sourceTransactionKind(span);
+  if(kind==='capture')return {name:'保存原文并建立索引',description:'独立保存收到的原文并建立本地索引，后续结构化整理失败不会撤销这次保存。'};
+  if(kind==='enrichment')return {name:'记录结构化整理状态',description:'记录已保存原文的整理状态、尝试次数和错误原因，本次事务未修改原文正文或索引，也没有结构化记忆变更。'};
+  if(changes?.rows.length&&memories?.total===0)name='提交原文变更';
+ }
+ return {name:name+suffix,description:info?.[1]||'此阶段由导入记录定义。请展开查看实际输入、输出与状态；当前没有更具体的步骤说明。'};
+}
+function infoButton(label,description){return `<button type="button" class="stage-info" data-stage-info="${esc(description)}" aria-label="${esc(label)}" aria-describedby="stage-tooltip">ⓘ</button>`;}
+function stageHeading(span,label){const info=stageInfo(span);if(label)info.name=label;return `${esc(info.name)}${infoButton(info.name+'：步骤说明',info.description)}`;}
+let stageHelpButton=null,stageHelpTimer=null;
+function hideStageHelp(){clearTimeout(stageHelpTimer);$('stage-tooltip').hidden=true;stageHelpButton=null;}
+function showStageHelp(button){
+ clearTimeout(stageHelpTimer);stageHelpButton=button;
+ const tip=$('stage-tooltip');tip.textContent=button.dataset.stageInfo;tip.hidden=false;
+ const rect=button.getBoundingClientRect();
+ tip.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-tip.offsetWidth-12))+'px';
+ tip.style.top=Math.max(12,rect.bottom+8+tip.offsetHeight>window.innerHeight?rect.top-tip.offsetHeight-8:rect.bottom+8)+'px';
+}
+function stageHelpTarget(event){return event.target.closest('.stage-info, #stage-tooltip');}
+document.addEventListener('pointerover',event=>{const target=stageHelpTarget(event);if(!target)return;clearTimeout(stageHelpTimer);if(target.dataset.stageInfo)showStageHelp(target);});
+document.addEventListener('pointerout',event=>{if(stageHelpTarget(event)&&!event.relatedTarget?.closest('.stage-info, #stage-tooltip'))stageHelpTimer=setTimeout(hideStageHelp,150);});
+document.addEventListener('focusin',event=>{const button=event.target.closest('.stage-info');if(button)showStageHelp(button);});
+document.addEventListener('focusout',event=>{if(event.target.closest('.stage-info'))hideStageHelp();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&stageHelpButton){hideStageHelp();event.preventDefault();}});
+document.addEventListener('scroll',hideStageHelp,true);
+
+function retrievalDecisionKind(decision){
+ if(decision==='Selected'||decision==='Mandatory')return decision;
+ if(decision&&typeof decision==='object')return ['Filtered','Conflict'].find(key=>Object.hasOwn(decision,key))||null;
+ return null;
+}
+function retrievalReason(decision){
+ const kind=retrievalDecisionKind(decision),reason=decision?.[kind];
+ if(kind==='Mandatory')return '全局必带要求';
+ if(kind==='Selected')return '通过检索规则并被选中';
+ if(kind==='Filtered'){
+  if(reason&&typeof reason==='object'&&Object.hasOwn(reason,'OverriddenBy'))return `本次由${linkMemoryId(reason.OverriddenBy)} 优先覆盖`;
+  return ({Status:'状态不符合本次查询',Temporal:'时间不匹配',Entity:'主体不匹配',Predicate:'属性不匹配',Target:'目标不匹配',Scope:'适用范围不匹配',Limit:'超过普通结果数量上限'})[reason]||`过滤原因：${esc(typeof reason==='object'?JSON.stringify(reason):reason??'未采集')}`;
+ }
+ if(kind==='Conflict')return `与${linkMemoryId(reason?.with)} 冲突：${esc(({EqualSpecificity:'相同优先级的内容不一致',SlotAlreadyConflicted:'同一属性已有未解决冲突'})[reason?.reason]||JSON.stringify(reason?.reason??'原因未采集'))}`;
+ return '选择原因未采集';
+}
+function retrievalMemoryItem(record,id,decision,reference=null){
+ // Only an exact, unique snapshot match can link a historical stage to a version.
+ const version=reference||recordedMemoryRef(record);
+ const stored=reference?memory(reference):null;
+ const content=record?`${record.subject_id??'主体未采集'} · ${record.predicate??'属性未采集'}：${typeof record.value?.Text==='string'?record.value.Text:JSON.stringify(record.value)??'值未采集'}`:stored?.content??'内容未随本阶段记录';
+ return `<div class="retrieval-item"><div>${version?linkMem(version):`<span>${linkMemoryId(id)}</span> <span class="muted">未关联唯一历史版本</span>`}</div><div class="retrieval-content">${esc(content)}</div><div class="muted">${retrievalReason(decision)}</div></div>`;
+}
+function renderRetrievalDetail(span){
+ const output=span.output||{},result=output.result,runtime=output.runtime;
+ const trace=Array.isArray(result?.trace)?result.trace:null;
+ const completeTrace=trace!==null&&trace.every(entry=>retrievalDecisionKind(entry?.decision));
+ const snapshot=id=>{const matches=(Array.isArray(output.memories)?output.memories:[]).filter(m=>m&&String(m.id)===String(id));return matches.length===1?matches[0]:null;};
+ const selected=Array.isArray(output.selected_refs)?output.selected_refs.map(reference=>retrievalMemoryItem(null,reference,null,reference)):selectedMemoryCount(result)!==null?['mandatory','constraints','preferences','facts','episodes'].flatMap(lane=>result[lane].map(record=>retrievalMemoryItem(record,record?.id??'未采集',lane==='mandatory'?'Mandatory':'Selected'))):null;
+ const rows=kind=>trace?.filter(entry=>retrievalDecisionKind(entry?.decision)===kind).map(entry=>retrievalMemoryItem(snapshot(entry.memory_id),entry.memory_id,entry.decision));
+ const section=(title,items,empty,missing,complete=true)=>`<section class="retrieval-section" aria-label="${title}"><h4>${title}<span class="count-label">${items&&(items.length||complete)?`${complete?'':'已记录 '}${items.length} 条`:'未采集'}</span></h4>${items?.length?`<div class="retrieval-items">${items.join('')}</div>`:`<div class="muted small">${items&&complete?empty:missing}</div>`}</section>`;
+ const conditionValue=value=>!present(value)||Array.isArray(value)&&!value.length?'未指定':typeof value==='object'?JSON.stringify(value):value;
+ const conditions=runtime&&typeof runtime==='object'?`<div class="facts">${[
+  ['查询主体',Array.isArray(runtime.entities)?runtime.entities.map(id=>id==='self'?'本人（self）':id).join('、'):runtime.entities],
+  ['属性范围',runtime.predicates],['目标',runtime.targets],['领域',runtime.domain],['任务',runtime.task_id],['适用情境',runtime.conditions],
+  ['时间模式',({Current:'当前',Historical:'历史'})[runtime.temporal_intent]||runtime.temporal_intent],['时间筛选',runtime.temporal_filter],
+  ['查询基准时间（Unix 秒）',runtime.at],['普通结果上限',runtime.limit]
+ ].map(([label,value])=>fact(label,conditionValue(value))).join('')}</div><p class="muted small">展示进入检索器时的条件；内部事件时间解析未单独采集。普通结果上限不包含全局必带要求。</p>${raw('完整检索条件',runtime)}`:'<div class="muted small">未采集本阶段的检索条件。</div>';
+ return `${span.status!=='completed'?'<div class="notice warn">本阶段尚未完成，以下仅展示已记录的明细。</div>':''}<section class="retrieval-section" aria-label="检索条件"><h4>检索条件</h4>${conditions}</section>${section('选中记忆',selected,'本阶段未选中记忆。','未采集选中记忆明细。')}${trace&&!completeTrace?'<div class="notice warn">部分检索决定无法识别，下列仅展示已识别的过滤与冲突明细；完整记录见下方。</div>':''}${section('过滤记忆及原因',rows('Filtered'),'本阶段没有过滤记忆。','未采集过滤记忆明细。',completeTrace)}${section('冲突记忆',rows('Conflict'),'本阶段没有冲突记忆。','未采集冲突记忆明细。',completeTrace)}<p class="muted small">过滤原因是本次记录的首个过滤决定；“本次优先覆盖”不表示删除或永久替换记忆。</p>`;
+}
+const CANDIDATE_ACTIONS={
+ New:['新增记忆','在本次事务内新建一条记忆。'],
+ Reinforce:['强化已有记忆','补充新证据并强化已有记忆。'],
+ Refine:['细化已有记忆','细化内容并生成替代版本。'],
+ Supersede:['更新并替代旧记忆','生成新版本并替代旧记忆。'],
+ Retract:['撤回旧记忆','撤回目标记忆，不生成新记忆。']
+};
+const CANDIDATE_REASONS={
+ 'evidence is incomplete':'证据不完整','subject is unresolved':'主体尚未确定','extraction confidence is low':'抽取置信度过低','source is not user evidence':'来源不是用户陈述或用户确认','episode has no cross-turn value':'该经历缺少跨轮使用价值',
+ 'admission policy admitted candidate':'准入已通过；本记录未采集逐项检查结果。默认规则说明见旁边的信息提示。',
+ 'evidence is complete':'证据完整：至少一条原文证据；证据编号、会话、轮次和引用均非空，且证据编号不重复',
+ 'subject is resolved':'主体明确：已解析为确定的实体编号',
+ 'extraction confidence is not low':'抽取可靠性达标：置信度为中或高，未触发低置信度拒绝条件',
+ 'source is user evidence':'证据来源符合要求：来自用户陈述或用户确认',
+ 'episode has cross-turn value':'经历具有跨轮使用价值',
+ 'user explicitly requested memory':'用户明确要求保存该经历',
+ 'candidate explicitly updates existing memory':'候选明确要求细化、替代或撤回已有记忆，无需新增的跨轮使用价值',
+ 'candidate is not an episode':'候选不是经历类记忆，无需检查经历的跨轮使用价值',
+ 'no active equal-scope memory matched':'未匹配到同一适用范围内、可合并的有效记忆',
+ 'same semantic slot, scope, and assertion matched independent evidence':'同类记忆的范围和内容一致，本次提供了独立的新证据',
+ 'candidate explicitly refines the matched memory':'候选明确要求细化匹配的旧记忆',
+ 'candidate explicitly supersedes the matched memory':'候选明确要求替代匹配的旧记忆',
+ 'candidate explicitly retracts the matched memory':'候选明确要求撤回匹配的旧记忆',
+ 'candidate explicitly requests no write':'候选明确要求不写入',
+ 'explicit update target was not found':'未找到明确指定的更新目标',
+ 'extractor marked the candidate as unresolved conflict':'抽取结果将候选标记为尚未解决的冲突',
+ 'same slot has a different assertion without explicit update intent':'同类记忆的内容不同，且没有明确的更新意图',
+ 'multiple old memories matched and no unique target was safe':'匹配到多条旧记忆，无法安全确定唯一目标',
+ 'duplicate evidence id; reconciliation skipped':'相同证据编号已处理，跳过写入决策',
+ 'same source turn already supports target; reinforcement skipped':'同一来源轮次已为目标记忆提供证据，跳过重复强化',
+ 'state-change boundary contradicts version validity':'状态变化时间与已有版本的有效期矛盾'
+};
+function candidateReason(reason){return typeof reason==='string'&&Object.hasOwn(CANDIDATE_REASONS,reason)?CANDIDATE_REASONS[reason]:reason;}
+const CANDIDATE_REASON_HELP={
+ '准入原因':'回答“这条候选是否符合保存条件”。默认规则依次检查：原文证据完整且编号不重复、主体已解析、抽取置信度不低、来源为用户陈述或确认。经历类记忆还须具备跨轮使用价值，或用户明确要求保存，或明确细化、替代、撤回旧记忆；其他类型不检查这一项。首次拒绝后不再执行后续检查。卡片只展示实际采集的检查项；旧记录或自定义策略未记录明细时显示未采集，不能把这段规则说明当作历史检查结果。通过准入后仍须作写入决策，并不代表已经保存。',
+ '写入决策原因':'回答“通过准入后，为什么选择新增、强化、更新、撤回，或跳过写入”。引擎检查已有记忆及证据，依据内容、适用范围、更新意图和重复情况作决定。例如未找到同一适用范围内可合并的有效记忆时新增；重复证据会跳过。准入拒绝或等待主体澄清时不执行这一步。实际是否保存以后续数据库事务提交为准。'
+};
+function admissionExplanation(trace){
+ const checks=trace.admission_checks,statuses={Passed:'通过',Failed:'未通过',NotApplicable:'不适用'};
+ return Array.isArray(checks)&&checks.length?checks.map(check=>`${Object.hasOwn(statuses,check?.status)?statuses[check.status]:'检查状态未采集'}：${candidateReason(check?.reason)??'检查原因未采集'}`).join('\n'):candidateReason(trace.admission_reason);
+}
+function candidateValue(value){
+ if(value&&typeof value==='object'){
+  for(const key of ['Text','Integer','Boolean','Entity'])if(Object.hasOwn(value,key))return key==='Entity'?`实体：${value[key]}`:key==='Boolean'&&typeof value[key]==='boolean'?(value[key]?'是':'否'):value[key];
+ }
+ return value;
+}
+function renderCandidateDetail(span){
+ const output=span.output||{},candidate=span.input??output.candidate;
+ const labels={Fact:'事实',Preference:'偏好',Constraint:'约束',Episode:'经历',High:'高',Medium:'中',Low:'低',UserStatement:'用户陈述',UserConfirmed:'用户确认',AssistantInference:'助手推断',Hypothetical:'假设',ControlMessage:'控制消息',GoalOrPlan:'目标或计划',Working:'工作记忆',ShortTerm:'短期',LongTerm:'长期',Durable:'持久',Positive:'正向',Negative:'负向',Weak:'弱',Moderate:'中',Strong:'强',Assert:'普通陈述',Refine:'细化',Supersede:'替代',Retract:'撤回',Ignore:'忽略',Conflict:'冲突'};
+ const label=value=>typeof value==='string'&&Object.hasOwn(labels,value)?labels[value]:value;
+ const yesNo=value=>typeof value==='boolean'?(value?'是':'否'):null;
+ const subject=candidate?.subject;
+ const subjectText=subject&&Object.hasOwn(subject,'Resolved')?(subject.Resolved==='self'?'本人（self）':subject.Resolved):subject&&Object.hasOwn(subject,'Unresolved')?`待解析：${subject.Unresolved}`:null;
+ const intent=candidate?.intent,intentKind=typeof intent==='string'?intent:intent&&typeof intent==='object'?Object.keys(intent)[0]:null;
+ const intentTarget=intent?.[intentKind]?.target;
+ const scope=candidate?.scope;
+ const scopeText=scope?`${scope.domain===null?'不限领域':scope.domain??'领域未采集'}；${Array.isArray(scope.conditions)?scope.conditions.length?`${scope.conditions.length} 项适用条件，详见完整 JSON`:'无附加条件':'适用条件未采集'}`:null;
+ let content='<div class="muted small">候选内容未采集</div>';
+ if(candidate&&typeof candidate==='object'&&!Array.isArray(candidate)&&Object.keys(candidate).length){
+  const fields=[['主体',subjectText],['属性',candidate.predicate],['记忆类型',label(candidate.memory_type)],['证据来源',label(candidate.source)],['抽取置信度',label(candidate.extraction_confidence)],['用户陈述确定性',label(candidate.certainty)],['候选提出的更新意图',null,present(intentKind)?`${esc(label(intentKind))}${present(intentTarget)?' · 目标'+linkMemoryId(intentTarget):''}`:val(null)],['建议初始留存',label(candidate.retention_tier)],['明确要求记住',yesNo(candidate.explicit_memory_request)],['可跨轮使用',yesNo(candidate.cross_turn_useful)],['适用范围',scopeText]];
+  if(present(candidate.polarity))fields.push(['方向',label(candidate.polarity)]);
+  if(present(candidate.strength))fields.push(['强度',label(candidate.strength)]);
+  content=`<div class="box-label">候选值</div><div class="text-box">${val(candidateValue(candidate.value))}</div><div class="facts">${fields.map(([key,value,html])=>html===undefined?fact(key,value):factHtml(key,html)).join('')}</div><div class="box-label">原文证据</div>${Array.isArray(candidate.evidence)?candidate.evidence.length?candidate.evidence.map(e=>`${sourceText(e?.quote)}<div class="keyline">证据 ${val(e?.id)} · 会话 ${val(e?.session_id)} · 轮次 ${val(e?.turn_id)}</div>`).join(''):'<div class="muted small">记录中没有原文证据。</div>':'<div class="muted small">原文证据未采集。</div>'}`;
+ }
+ const result=output.result,ingested=result?.Ingested,applied=ingested?.Applied,pending=result?.Pending;
+ let title='决策结果未采集',tone='',meaning='',reason='具体裁决原因未采集',details=[];
+ if(output.error||span.error){title='处理失败';tone='bad';reason=output.error||span.error?.reason||span.error?.kind||'错误原因未采集';}
+ else if(applied){
+  const action=Object.hasOwn(CANDIDATE_ACTIONS,applied.action)?CANDIDATE_ACTIONS[applied.action]:null;
+  title=action?.[0]||'未识别的写入动作';tone='info';meaning=action?.[1]||'详见完整决策结果 JSON。';
+  if(present(applied.memory_id))details.push(['结果记忆编号',null,linkMemoryId(applied.memory_id)]);
+  if(present(applied.target))details.push(['目标记忆编号',null,linkMemoryId(applied.target)]);
+ }else if(ingested&&Object.hasOwn(ingested,'Rejected')){
+  title='拒绝保存';tone='warn';meaning='候选未通过准入，不写入正式记忆。';reason=Object.hasOwn(CANDIDATE_REASONS,ingested.Rejected)?CANDIDATE_REASONS[ingested.Rejected]:ingested.Rejected??'具体拒绝原因未采集';
+ }else if(ingested?.Duplicate){
+  title='重复证据，跳过写入';meaning='不重复新增或修改记忆。';reason='相同证据或同一来源轮次已处理；本记录未区分具体重复类型。';
+  details.push(['已有记忆编号',null,linkMemoryId(ingested.Duplicate.memory_id)],['重复证据编号',ingested.Duplicate.evidence_id]);
+ }else if(ingested==='Ignored'){title='忽略本次候选';meaning='本次不新增或修改记忆。';}
+ else if(ingested&&Object.hasOwn(ingested,'Conflict')){
+  title='存在冲突，未写入';tone='warn';meaning='无法安全合并，本次不新增或修改记忆。';
+  if(present(ingested.Conflict?.target))details.push(['冲突目标记忆',null,linkMemoryId(ingested.Conflict.target)]);
+ }else if(pending){
+  title='等待主体澄清';tone='warn';meaning='候选暂存在正式记忆之外，等待明确被描述的对象。';
+  const resolution=pending.resolution;
+  reason=resolution==='NotFound'?'未找到对应主体':Array.isArray(resolution?.Ambiguous)?'存在多个可能的主体，无法唯一确定':'主体解析原因未采集';
+  details.push(['暂存候选编号',pending.staged_id]);
+  if(Array.isArray(resolution?.Ambiguous))details.push(['可能的主体',resolution.Ambiguous.join('、')]);
+ }else if(present(result)){title='未识别的决策结果';meaning='详见完整决策结果 JSON。';}
+ const trace=output.decision_trace;
+ if(trace&&typeof trace==='object'&&!Array.isArray(trace)){
+  const rejected=trace.admission&&typeof trace.admission==='object'&&Object.hasOwn(trace.admission,'Reject');
+  const admission=trace.admission==='Admit'?'通过':rejected?'拒绝':trace.admission;
+  const refs=ids=>Array.isArray(ids)?`${ids.length} 条${ids.length?' · '+ids.map(id=>linkMemoryId(id)).join('、'):''}`:val(null);
+  details.push(['准入结果',admission],['准入原因',admissionExplanation(trace)],
+   ['检查过的旧记忆',null,rejected?'未执行（准入拒绝）':refs(trace.existing_memory_ids)],
+   ['匹配的有效记忆',null,rejected?'未执行（准入拒绝）':refs(trace.matched_memory_ids)],
+   ['写入决策原因',rejected?'未执行（准入拒绝）':candidateReason(trace.reconciliation_reason)??'具体裁决原因未采集']);
+ }else if(pending){
+  details.push(['准入结果','未执行（等待主体澄清）'],['准入原因','未执行（等待主体澄清）'],['写入决策原因','未执行（等待主体澄清）']);
+ }else if(ingested&&Object.hasOwn(ingested,'Rejected')){
+  details.push(['准入结果','拒绝'],['准入原因',reason],['写入决策原因','未执行（准入拒绝）']);
+ }else{
+  details.push(['准入原因',null],['写入决策原因',output.error||span.error?'具体裁决原因未采集':reason]);
+ }
+ if(output.error||span.error)details.unshift(['错误原因',reason]);
+ else if(pending)details.unshift(['主体解析原因',reason]);
+ const commitLabels={pending_transaction:'等待事务提交（阶段记录时）',not_committed:'未提交',committed:'已提交（记录声明）'};
+ const commit=Object.hasOwn(commitLabels,output.commit_status)?commitLabels[output.commit_status]:output.commit_status??'提交状态未采集';
+ const decision=`${span.status!=='completed'?'<div class="notice warn">本阶段尚未成功完成，以下仅展示已记录的结果。</div>':''}<div class="horizontal"><strong>${esc(title)}</strong>${tone?`<span class="badge ${tone}">${esc(commit)}</span>`:''}</div>${meaning?`<p class="small">${esc(meaning)}</p>`:''}<div class="facts">${details.map(([key,value,html])=>key==='准入原因'?`<div class="fact"><label>${esc(key)}${infoButton(key+'：说明',CANDIDATE_REASON_HELP[key])}</label><div class="admission-reason">${sourceText(value,120,2)}</div></div>`:html===undefined?fact(key,value,CANDIDATE_REASON_HELP[key]):factHtml(key,html,CANDIDATE_REASON_HELP[key])).join('')}${fact('提交状态',commit)}</div><p class="muted small">本步骤的结果不代表已持久保存；是否落库以后续对应的数据库事务提交为准。</p>`;
+ return `<section class="candidate-section" aria-label="候选内容"><h4>候选内容</h4>${content}${candidate!==null&&candidate!==undefined?raw('完整候选内容 JSON',candidate):''}</section><section class="candidate-section" aria-label="决策结果与原因"><h4>决策结果与原因</h4>${decision}${span.output!==null&&span.output!==undefined?raw('完整决策结果 JSON',span.output):''}</section>`;
+}
+// Decode only the recorded, versioned token format; never re-tokenize a historical query.
+function lexicalPhrase(phrase,version){
+ if(version!=='cjk-position-v1'||typeof phrase!=='string')return String(phrase);
+ const parts=phrase.split(' '),decoded=[];
+ for(const token of parts){
+  const han=/^c[0-9a-f]{4,6}$/.test(token),word=/^w(?:[0-9a-f]{6})+$/.test(token);
+  if(!han&&!word)return phrase;
+  const codes=han?[token.slice(1)]:token.slice(1).match(/.{6}/g);
+  const points=codes.map(x=>parseInt(x,16));
+  if(points.some(x=>x>0x10ffff||(x>=0xd800&&x<=0xdfff)))return phrase;
+  decoded.push((word?' ':'')+String.fromCodePoint(...points)+(word?' ':''));
+ }
+ return decoded.join('').trim().replace(/ +/g,' ');
+}
+function lexicalPhrases(phrases,version){
+ return Array.isArray(phrases)?(phrases.length?phrases.map(p=>lexicalPhrase(p,version)).join(' ｜ '):'无检索词项'):null;
+}
+function entityHints(ids){
+ return Array.isArray(ids)?(ids.length?ids.join(' ｜ '):'未匹配到登记实体（不等于没有对象）'):null;
+}
+function renderLexicalMethod(data){
+ const natural=['natural-v1','natural-v2'].includes(data.alias_policy),keyword=data.alias_policy==='registered_exact_query_expansion_v1';
+ const policy=natural?'中文相邻双字；非汉字连续字母／数字为词项；独立单字保留。识别到登记名称或别名时，追加该实体的登记名称与别名。'+(data.alias_policy==='natural-v2'?'名称按索引词项边界匹配。':''):keyword?'按空白拆分查询组，各组作为相邻词项短语；整组匹配登记名称或别名时展开同一实体名称。':null;
+ const known=(natural||keyword)&&data.processing_version==='cjk-position-v1';
+ const ranked=data.ranking_policy==='literal-hints-v1';
+ const order={query_entity_matches_desc:'当前问题的登记实体命中数降序',query_phrase_matches_desc:'当前问题的词项组命中数降序',query_context_entity_matches_desc:'查询及上文的登记实体命中数降序',received_sequence_desc:'原文接收序号降序（新接收优先）',source_id:'原文 ID 升序',byte_start:'片段起始字节升序'};
+ return `<details class="raw retrieval-section"><summary>如何检索</summary><div class="facts">${fact('查询处理',known?policy:'未采集可解释的查询策略')}${fact('检索策略版本',data.alias_policy)}${fact('实际检索词项',lexicalPhrases(data.query_phrases,data.processing_version))}${fact('匹配方式',data.fact_index?.status==='ready'?'原文词项＋当前规则允许的事实词项，任一词项组命中后统一排序；证据仍取原文。':data.match_mode==='any_phrase'||known?'SQLite FTS5：词项组之间 OR，任一组命中即可；组内词项按顺序相邻匹配。不是整句匹配或语义相似度。':null)}${fact('归属范围 owner',data.owner)}${fact('任务范围',Object.hasOwn(data,'task_id')?(data.task_id??'未限定任务（仍限定 owner）'):null)}${fact('索引范围',data.generation)}${fact('排序策略版本',data.ranking_policy)}${fact('排序依据',Array.isArray(data.sort_basis)?data.sort_basis.map(x=>order[x]||x).join(' → '):null)}${ranked?`${fact('排序使用的当前问题',data.primary_query)}${fact('当前问题的名称线索（实体 ID）',entityHints(data.query_entity_ids))}${fact('查询及上文的名称线索（实体 ID）',entityHints(data.query_context_entity_ids))}`:''}${fact('候选上限',data.limit)}${fact('后台生成调用',data.backend_generation_calls)}</div>${ranked?'<p class="small muted">先在授权的 owner／任务范围内排序，再按候选上限截取。名称仅影响排序，不改变范围或直接排除其他项目；这些是字面线索，不证明语义相关。</p>':''}${known?'<p class="small muted">中文按字位置建索引，字母转小写，标点不进入索引；词项以编码形式交给 FTS。仅使用登记名称扩展，不推断同义词。候选再核对原文、索引版本及任务范围。</p>':''}${raw('实际 FTS MATCH 表达式',data.match_expression??null)}${raw('记录的编码词项',data.query_phrases??null)}</details>`;
+}
+function renderFactIndex(data){
+ if(!data)return '';
+ const labels={ready:'可用',disabled:'关闭',unavailable:'不可用，使用原文索引'};
+ return `<details class="raw retrieval-section"><summary>事实增强索引 · ${esc(labels[data.status]||data.status||'未知')}</summary><p class="small muted">已提交事实仅帮助匹配和排序；返回的证据仍是原文，事实提示没有指令权限。</p><div class="facts">${fact('处理版本',data.renderer_version)}${fact('退回原因',data.reason)}</div>${raw('有效覆盖与版本记录',data)}</details>`;
+}
+function renderLexicalDetail(output){
+ const data=output||{},candidates=Array.isArray(data.candidates)?data.candidates:null;
+ const complete=data.coverage_complete===true;
+ return `<section class="retrieval-section" aria-label="原文关键词检索"><h4>原文关键词检索 · lexical_raw${state(data.status||'unknown')}</h4><p class="small muted">内部只读检索记录；原文候选不是结构化记忆，不代表正式 MCP 回答已使用。</p><div class="facts">${fact('查询原文',data.query)}${fact('任务范围',data.task_id??'未限定任务')}${fact('文本处理版本',data.processing_version)}${fact('索引代次',data.generation)}${fact('原文修订',data.source_revision)}${fact('查询耗时',dur(data.duration_ms))}${fact('记录候选数',data.candidate_count)}${fact('覆盖状态',complete?'完整':data.coverage_complete===false?'不完整':'未采集')}</div>${renderLexicalMethod(data)}${renderFactIndex(data.fact_index)}${data.reason?`<div class="notice warn">${esc(data.reason)}</div>`:''}${!complete?'<div class="notice warn">覆盖未确认完整，空候选不能解释为没有相关原文。</div>':''}${candidates?.length?`<div class="retrieval-items">${candidates.map(candidate=>`<article class="retrieval-item"><div class="mono">原文 ${linkSource(candidate.source_id)} · 片段 ${esc(candidate.segment_id)}</div>${sourceText(candidate.text)}<div class="facts">${fact('本片段命中的词项',Array.isArray(candidate.matched_query_phrases)?lexicalPhrases(candidate.matched_query_phrases,data.processing_version):'未采集（旧记录不推测命中词项）')}${candidate.ranking_signals?`${fact('当前问题的登记实体命中数',candidate.ranking_signals.query_entity_matches)}${fact('当前问题的词项组命中数',candidate.ranking_signals.query_phrase_matches)}${fact('查询及上文的登记实体命中数',candidate.ranking_signals.query_context_entity_matches)}`:''}${fact('片段版本',candidate.segment_version)}${fact('UTF-8 字节范围',present(candidate.byte_start)&&present(candidate.byte_end)?`${candidate.byte_start}–${candidate.byte_end}（右端不含）`:null)}${fact('会话',candidate.session_id)}${fact('消息',candidate.turn_id)}${fact('观测时间',candidate.observed_at)}${fact('结构化整理',STATES[candidate.enrichment]?.[0]||candidate.enrichment)}</div>${candidate.mapping_uncertain===true?'<div class="notice warn">原文与事实的对应关系不确定，不能将整段判定为当前有效或已被纠正。</div>':''}${Array.isArray(candidate.known_memories)?`<div class="link-row">${candidate.known_memories.map(m=>`${linkMemoryId(m?.memory_id)}${present(m?.supersedes)?' · 替代 '+linkMemoryId(m.supersedes):''}${present(m?.superseded_by)?' · 被替代为 '+linkMemoryId(m.superseded_by):''}`).join('；')}</div>`:''}${raw('已知事实状态与纠正关系',candidate.known_memories??null)}${candidate.fact_hint_matches?raw('事实提示匹配依据（不是原文引文）',candidate.fact_hint_matches):''}</article>`).join('')}</div>`:`<div class="muted small">${candidates?(complete?'已记录 0 条原文候选。':'已记录候选为空；检索覆盖不完整。'):'未采集原文候选明细。'}</div>`}</section>`;
+}
+function stageBody(s,candidate=false){
+ candidate=candidate||s.name==='候选规则裁决（提交结果见事务）';
+ const retrieval=(STAGE_ALIASES[s.name]||s.name)==='retrieval',transaction=s.name==='transaction_committed',lexical=s.name==='lexical_raw';
+ return `<div class="keyline mono">${esc(s.id)}${s.parent_span_id?' · parent '+esc(s.parent_span_id):''}</div>${s.error?`<div class="notice bad">${esc(s.error.reason||s.error.kind||'处理失败')}${s.error.note?'<br>'+esc(s.error.note):''}</div>`:''}${candidate?renderCandidateDetail(s):`${s.input!==null&&s.input!==undefined?raw('输入',s.input):''}${lexical?renderLexicalDetail(s.output):retrieval?renderRetrievalDetail(s):transaction?renderTransactionDetail(s):''}${s.output!==null&&s.output!==undefined?raw(lexical?'完整原文检索记录':retrieval?'完整检索原始记录':transaction?'完整事务提交 JSON':'输出 / 状态',s.output):''}`}<div class="link-row">${(s.llm_call_ids||[]).map(linkCall).join('')}</div>${!candidate&&!retrieval&&!transaction&&!lexical&&!s.error&&!present(s.input)&&!present(s.output)&&!s.llm_call_ids?.length?'<span class="muted small">没有导出更多阶段数据</span>':''}`;
+}
+function stageGroups(spans){
+ const groups=[];
+ for(const span of spans){
+  const candidate=span.name==='候选规则裁决（提交结果见事务）';
+  if(candidate&&groups.at(-1)?.[0].name===span.name)groups.at(-1).push(span);
+  else groups.push([span]);
+ }
+ return groups;
+}
+function renderStageGroup(spans,index,run){
+ const grouped=spans.length>1,first=spans[0];
+ const status=['failed','incomplete','in_progress','partial','unknown','not_run','completed'].find(value=>spans.some(s=>s.status===value))||'unknown';
+ const duration=spans.every(s=>typeof s.duration_ms==='number')?spans.reduce((total,s)=>total+s.duration_ms,0):null;
+ const title=stageHeading(first,grouped?'候选准入与写入决策 · '+spans.length+' 条候选':null);
+ const body=grouped?`<div class="hint-line">逐条查看候选内容和决策；是否已保存，以后续数据库事务提交为准。阶段耗时为下列已记录耗时之和。</div>${spans.map((s,i)=>`<details class="stage" ${['failed','incomplete'].includes(s.status)?'open':''}><summary><span class="stage-name">候选 ${i+1}${s.input?.predicate?' · '+esc(s.input.predicate):''}</span>${state(s.status)}<span class="stage-time">${esc(dur(s.duration_ms))}</span></summary><div class="stage-body">${stageBody(s,true)}</div></details>`).join('')}`:stageBody(first);
+ return `<details class="stage" ${['failed','incomplete'].includes(status)?'open':''}><summary><span class="ordinal">${String(index+1).padStart(2,'0')}</span><span class="stage-name">${title}${!grouped&&stageResult(first,run)?`<span class="stage-result">${esc(stageResult(first,run))}</span>`:''}</span>${state(status)}<span class="stage-time">${grouped?'累计 ':''}${esc(dur(duration))}</span></summary><div class="stage-body">${body}</div></details>`;
+}
+
+
+function sameRecordedValue(a,b){
+ if(a===b)return true;
+ if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b))return false;
+ const keys=Object.keys(a);return keys.length===Object.keys(b).length&&keys.every(k=>Object.hasOwn(b,k)&&sameRecordedValue(a[k],b[k]));
+}
+function sourceSaveStatus(run){return STATES[run.source?.status]?.[0]||run.source?.status||(run.save_status==='not_applicable'?'不适用':'未记录');}
+function eventTime(value){
+ if(!present(value))return null;
+ const date=new Date(value);
+ return Number.isNaN(date.getTime())?String(value):date.toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false})+'.'+String(date.getUTCMilliseconds()).padStart(3,'0')+'（北京时间）';
+}
+function sourceTransactionChanges(output){
+ const before=output?.before?.sources,after=output?.after?.sources;
+ const valid=table=>table&&typeof table==='object'&&!Array.isArray(table)&&Object.values(table).every(s=>s&&typeof s==='object'&&present(s.id)&&Object.hasOwn(s,'request')&&(s.request===null||typeof s.request.text==='string'));
+ if(!valid(before)||!valid(after))return null;
+ const rows=[];
+ for(const key of new Set([...Object.keys(before),...Object.keys(after)])){
+  const old=before[key],next=after[key];
+  if(sameRecordedValue(old,next))continue;
+  const kind=!old?.request&&next?.request?'新增原文':old?.request&&!next?.request?'删除原文':'更新原文记录';
+  rows.push({old,next,kind,id:next?.id||old.id});
+ }
+ return {rows,beforeCount:Object.values(before).filter(s=>s.request!==null).length,afterCount:Object.values(after).filter(s=>s.request!==null).length};
+}
+function sourceTransactionKind(span){
+ if(span.status!=='completed')return null;
+ const changes=transactionChanges(span.output),rows=changes?.sourceChanges?.rows;
+ if(changes?.total!==0||!rows?.length)return null;
+ if(rows.some(r=>r.kind==='新增原文')&&rows.every(r=>r.kind!=='删除原文'&&(r.kind!=='新增原文'||r.next.index?.status==='ready')))return 'capture';
+ const withoutResult=record=>Object.fromEntries(Object.entries(record).filter(([key])=>!['enrichment','error','result','task'].includes(key)));
+ if(rows.every(r=>r.kind==='更新原文记录'&&r.old&&r.next&&sameRecordedValue(withoutResult(r.old),withoutResult(r.next))))return 'enrichment';
+ return null;
+}
+function sourceTransactionSummary(changes){
+ if(!changes)return '原文变更未采集';
+ if(!changes.rows.length)return '原文无变化';
+ return ['新增原文','更新原文记录','删除原文'].map(kind=>{const n=changes.rows.filter(r=>r.kind===kind).length;return n?`${kind} ${n} 条`:''}).filter(Boolean).join(' · ');
+}
+function renderSourceTransaction(span){
+ if(span.status!=='completed')return '';
+ const changes=sourceTransactionChanges(span.output);
+ const label=value=>STATES[value]?.[0]||value||'未记录';
+ const transition=(old,next)=>`${label(old)} → ${label(next)}`;
+ return `<section class="transaction-section" aria-label="原文提交变更"><h4>原文提交变更</h4><div class="facts">${fact('事务提交记录时间',eventTime(span.recorded_at))}${fact('原文总数（本次事务前 → 后）',changes?`${changes.beforeCount} → ${changes.afterCount} 条`:null)}</div>${!changes?'<p class="muted small">缺少提交前后的原文快照，无法判断原文变化。</p>':`<strong>${esc(sourceTransactionSummary(changes))}</strong>${changes.rows.map(({old,next,kind,id})=>`<article class="retrieval-item"><h4>${esc(kind)}</h4>${linkSource(id)}${next?.request?sourceText(next.request.text):'<div class="muted">原文已删除；不展示删除前的正文。</div>'}<div class="facts">${fact('结构化整理状态',transition(old?.enrichment,next?.enrichment))}${fact('索引状态',transition(old?.index?.status,next?.index?.status))}${[['source_revision','索引关联原文修订'],['generation','索引代次'],['source_version','索引原文版本'],['processing_version','索引处理版本']].filter(([key])=>!sameRecordedValue(old?.index?.[key],next?.index?.[key])).map(([key,title])=>fact(title,`${old?.index?.[key]??'无'} → ${next?.index?.[key]??'无'}`)).join('')}${fact('正文变化',kind==='新增原文'?'首次保存':kind==='删除原文'?'已删除':old?.request?.text===next?.request?.text?'正文未变':'正文已变更')}${fact('错误信息',next?.error||'无')}</div></article>`).join('')}`}</section>`;
+}
+function transactionChanges(output){
+ const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+ const before=output?.before?.repository?.memories,after=output?.after?.repository?.memories;
+ const valid=table=>object(table)&&Object.entries(table).every(([id,memory])=>object(memory)&&(!Object.hasOwn(memory,'id')||String(memory.id)===id));
+ if(!valid(before)||!valid(after))return null;
+ // Match the exporter's business comparison: independent evidence and retention changes count.
+ const changes={added:[],modified:[],removed:[],statistics:[],sourceChanges:sourceTransactionChanges(output)};
+ for(const id of new Set([...Object.keys(before),...Object.keys(after)])){
+  if(!Object.hasOwn(before,id))changes.added.push(id);
+  else if(!Object.hasOwn(after,id))changes.removed.push(id);
+  else if(!sameRecordedValue(before[id],after[id]))changes[sameRecordedValue(memoryBusiness(before[id]),memoryBusiness(after[id]))?'statistics':'modified'].push(id);
+ }
+ changes.businessCount=changes.added.length+changes.modified.length+changes.removed.length;
+ changes.total=changes.businessCount+changes.statistics.length;
+ changes.unchanged=sameRecordedValue(output.before,output.after);
+ return changes;
+}
+function transactionResult(changes){
+ if(!changes)return '记忆变更数量未采集';
+ if(changes.unchanged)return '无变更提交 · 记忆变更 0 条';
+ const parts=[`记忆变更 ${changes.businessCount} 条`];
+ if(changes.businessCount)parts.push(`新增 ${changes.added.length} 条`,`修改 ${changes.modified.length} 条`);
+ if(changes.removed.length)parts.push(`移除 ${changes.removed.length} 条`);
+ if(changes.statistics.length)parts.push(`仅召回统计更新 ${changes.statistics.length} 条`);
+ if(!changes.total&&!changes.sourceChanges?.rows.length)parts.push('其他状态已提交');
+ return parts.join(' · ');
+}
+function renderTransactionDetail(span){
+ const changes=span.status==='completed'?transactionChanges(span.output):null;
+ if(sourceTransactionKind(span)==='enrichment')return `<section class="transaction-section" aria-label="结构化整理状态"><h4>结构化整理状态</h4>${fact('记录时间',eventTime(span.recorded_at))}${changes.sourceChanges.rows.map(({old,next,id})=>`<div class="facts">${factHtml('关联原文',linkSource(id))}${fact('整理状态',`${STATES[old.enrichment]?.[0]||old.enrichment||'未记录'} → ${STATES[next.enrichment]?.[0]||next.enrichment||'未记录'}`)}${next.task?fact('整理尝试次数',next.task.attempt_count):''}${next.task?.accepted_mode?fact('接收时整理方式',next.task.accepted_mode):''}${fact('失败原因',next.error==='model_network_disabled'?'后台模型网络被禁用（model_network_disabled）':next.error||'无')}</div>`).join('')}</section>`;
+ const rows=changes?[["新增记忆",changes.added],["修改记忆",changes.modified],["移除记忆",changes.removed],["仅召回统计更新",changes.statistics]]:[];
+ return `${renderSourceTransaction(span)}<section class="transaction-section" aria-label="结构化记忆提交变更"><h4>结构化记忆提交变更</h4>${span.status!=='completed'?'<div class="notice warn">事务尚未确认提交，不统计已落库的记忆变更。</div>':!changes?'<div class="muted small">记忆变更数量未采集：缺少可比较的提交前后记忆快照。</div>':`<strong>${esc(transactionResult(changes))}</strong><p class="small">记忆记录实际变动 ${changes.total} 条（含仅召回统计更新）。</p><div class="facts">${rows.map(([title,ids])=>factHtml(`${title} · ${ids.length} 条`,ids.length?ids.map(id=>linkMemoryId(id,span.output[title==='移除记忆'?'before':'after'].repository.memories[id])).join('、'):'无')).join('')}</div>`}<p class="muted small">逐条对比本次事务提交前后的记忆版本记录。修改包含内容、证据、状态及留存变化；仅召回次数和时间更新单列。替代旧版本可能同时新增一条并修改一条；回执、实体与暂存记录不计入记忆条数。</p></section>`;
+}
+function emptySaveConfirmed(run){
+ const body=run?.mcp_response?.body?.structuredContent,remember=body?.remember;
+ return remember?.status==='completed'&&Array.isArray(remember.result?.outcomes)&&remember.result.outcomes.length===0;
+}
+function selectedMemoryCount(result){
+ const lanes=['mandatory','constraints','preferences','facts','episodes'];
+ return lanes.every(key=>Array.isArray(result?.[key]))?lanes.reduce((count,key)=>count+result[key].length,0):null;
+}
+function retrievalStageResult(output){
+ // Each step describes its own recorded result, not the run's final retrieval.
+ const selected=Array.isArray(output?.selected_refs)?output.selected_refs.length:selectedMemoryCount(output?.result);
+ const trace=output?.result?.trace;
+ const checked=Array.isArray(trace)?trace.length:Number.isInteger(output?.scanned_count)&&output.scanned_count>=0?output.scanned_count:null;
+ const parts=[selected===null?'选中数量未采集':`选中 ${selected} 条记忆`];
+ if(checked!==null)parts.push(`检查 ${checked} 条`);
+ if(Array.isArray(trace)){
+  const decisions=trace.map(entry=>entry?.decision);
+  if(decisions.every(retrievalDecisionKind)){
+   parts.push(`过滤 ${decisions.filter(d=>retrievalDecisionKind(d)==='Filtered').length} 条`);
+   const conflicts=decisions.filter(d=>retrievalDecisionKind(d)==='Conflict').length;
+   if(conflicts)parts.push(`冲突 ${conflicts} 条`);
+  }
+ }
+ return selected===null&&checked===null?'检索数量未采集':parts.join(' · ');
+}
+function stageResult(span,run){
+ if(span.status!=='completed')return '';
+ const output=span.output,parsed=output?.parsed_result;
+ const kind=STAGE_ALIASES[span.name]||span.name;
+ if(kind==='lexical_raw')return Array.isArray(output?.candidates)?`原文候选 ${output.candidates.length} 条 · ${output.coverage_complete===true?'覆盖完整':output.coverage_complete===false?'覆盖不完整':'覆盖状态未采集'}`:'候选数量未采集';
+ if(kind==='retrieval')return retrievalStageResult(output);
+ if(kind==='global_context'){
+  const context=output?.result;
+  if(context?.status==='unavailable')return '全局要求读取失败';
+  const count=context?.status==='available'?selectedMemoryCount(context.result):null;
+  return count===null?'全局要求数量未采集':`读取 ${count} 条全局要求`;
+ }
+ if(span.name==='transaction_committed'){if(sourceTransactionKind(span)==='enrichment')return '已记录整理状态';const sources=sourceTransactionChanges(output);return transactionResult(transactionChanges(output))+(sources?' · '+sourceTransactionSummary(sources):'');}
+ const candidates=Array.isArray(parsed)?parsed:parsed?.candidates;
+ if(!Array.isArray(candidates))return '';
+ if(candidates.length===0&&output?.stage==='extraction_review'&&emptySaveConfirmed(run))return '复核确认无需保存';
+ return `${candidates.length} 条候选${parsed?.omission_reason==='no_personal_assertion'?' · 未发现新的个人事实':''}`;
+}
+function executionSections(run){
+ const sections=[];
+ let active=run.tool==='memory_recall'?'recall':/^memory_(prepare|remember|clarify|forget)/.test(run.tool)?'save':'shared';
+ stageGroups(run.spans).forEach((spans,index)=>{
+  const span=spans[0],name=span.name;
+  const call=(span.llm_call_ids||[]).map(callById).find(Boolean);
+  const semantic=call?.stage||name;
+  let section;
+  if(name==='source_receipt'||name==='transaction_committed'&&sourceTransactionChanges(span.output)?.rows.length&&transactionChanges(span.output)?.total===0)section='source';
+  else if(name==='run_start'||name.startsWith('initial_snapshot'))section='entry';
+  else if(name==='rpc_response'||name.startsWith('MCP 接收/服务端响应 '))section=span.status==='in_progress'?'notification':'response';
+  else if(['run_end','global_context','internal_run_end','internal_enrichment_run_end'].includes(name)||name==='形成 MCP 响应')section='response';
+  else if(name==='MCP 接收参数'||name==='接收召回请求')section='entry';
+  else if(/lexical_raw|runtime_context|query|retrieval|查询|检索|召回|有效状态与范围过滤|读取已提交修订/.test(semantic))section=active='recall';
+  else if(/candidates|extraction|抽取|候选|正式.*提交|校验与提交|持久保存回执/.test(semantic))section=active='save';
+  else if(['transaction_committed','transaction_rollback'].includes(name))section=active;
+  else section='shared';
+  if(sections.at(-1)?.key!==section)sections.push({key:section,groups:[]});
+  sections.at(-1).groups.push({spans,index});
+ });
+ return sections;
+}
+function renderExecution(run){
+ if(!run.spans.length)return '<div class="empty">阶段未导出，不代表没有执行</div>';
+ const sections=executionSections(run),seen=new Set();
+ const reviewEmpty=sections.some(s=>s.key==='save'&&s.groups.some(g=>stageResult(g.spans[0],run)==='复核确认无需保存'));
+ const titles={source:['原文保存与处理状态','原文独立保存并建立索引；后续结构化整理失败不撤销原文保存。'],entry:['请求准备','记录入参并读取执行前状态。'],save:['新增记忆','抽取、复核和保存本次原话中的新信息，也可能更新已有记忆。'],recall:['检索记忆','根据当前问题查询已有记忆，包括本次刚保存的内容。'],notification:['过程通知','向调用方通知当时的处理状态，后续步骤继续执行。'],response:['响应','读取全局回答要求、汇总执行结果并记录工具响应。'],shared:['其他记录','按原始顺序展示的其他执行记录。']};
+ return '<div class="hint-line">步骤按记录顺序从上到下展示；同一流程被通知打断后接续展示。</div>'+sections.map(({key,groups},index)=>{
+  const [name,note]=titles[key],business=key==='save'||key==='recall';
+  const title=name+(business&&seen.has(key)?'（续）':'');
+  seen.add(key);
+  let summary='';
+  if(business&&!sections.slice(index+1).some(s=>s.key===key)){
+   if(key==='save')summary=reviewEmpty?'复核确认无需保存':emptySaveConfirmed(run)?'未新增记忆':'结构化记忆：'+(STATES[run.save_status]?.[0]||'未记录');
+   if(key==='recall')summary=run.retrieval?.query_status==='completed'&&Array.isArray(run.retrieval.selected_refs)?`选中 ${run.retrieval.selected_refs.length} 条记忆`:STATES[run.recall_status]?.[0]||'';
+  }
+  return `<section class="execution-phase ${business?key:'shared'}" aria-label="${title}"><div class="phase-header"><h4>${title}</h4>${summary?`<span class="phase-result">${esc(summary)}</span>`:''}</div><div class="phase-note">${note}</div>${groups.map(g=>renderStageGroup(g.spans,g.index,run)).join('')}</section>`;
+ }).join('');
+}
+
+function renderLocalRecall(data){
+ const budget=data.budget||{},config=budget.config||{};
+ const evidence={sufficiency_not_verified:'尚未验证这些证据能否完整回答问题',ambiguous:'有限规则检测到问题指代不明确，需要结合上下文确认'};
+ const reasons={fact_index_unavailable:'事实增强索引不可用，本次退回原文索引',structured_enrichment_incomplete:'部分原文尚未完成结构化整理，本次可提供原文作为参考',lexical_coverage_incomplete:'原文索引覆盖不完整，可能遗漏相关内容',context_budget_incomplete:'受正文容量或返回数量限制，部分内容未返回',ambiguous_reference:'无法确定问题指向的对象',candidate_quota_reached:'原文候选已达到检索上限，可能还有其他匹配内容'};
+ const evidenceText=Object.hasOwn(evidence,data.evidence_status)?evidence[data.evidence_status]:present(data.evidence_status)?'未识别的证据状态：'+data.evidence_status:'证据充分性未采集';
+ const reasonText=Array.isArray(data.degraded_reasons)?(data.degraded_reasons.length?data.degraded_reasons.map(r=>Object.hasOwn(reasons,r)?reasons[r]:'未识别的限制：'+r).join('；'):'未记录降级原因'):null;
+ const count=(v,unit)=>typeof v==='number'&&Number.isFinite(v)?num(v)+' '+unit:'未采集';
+ const sources=Array.isArray(data.source_evidence)?data.source_evidence.length:null;
+ const historical=Array.isArray(data.historical_or_conflicting)?data.historical_or_conflicting.length:null;
+ const reference=data.reference_resolution||{};
+ const referenceStatus={unconfirmed:'对象尚未确认（仅做字面匹配）',ambiguous:'已检测到有限规则歧义'};
+ return `<section class="retrieval-section" aria-label="本地双通道召回"><h4>本地召回结果${state(data.recall_status||'unknown')}</h4>
+ <p class="small muted">从结构化记忆和原文中查找。完成表示检索流程结束；返回证据不等于已被聊天模型采用。</p>
+ <div class="facts">${fact('返回的结构化记忆',count(selectedMemoryCount(data.result),'条'))}${fact('返回的原文证据',count(sources,'个片段'))}${fact('历史或冲突参考',count(historical,'项'))}${fact('本次召回的后台模型调用',count(data.backend_generation_calls_in_recall,'次'))}</div>
+ <div class="notice warn"><strong>是否足够回答？</strong><br>${esc(evidenceText)}</div>
+ <div class="facts">${fact('对象识别状态',Object.hasOwn(referenceStatus,reference.status)?referenceStatus[reference.status]:reference.status)}${fact('语义／指代判断',reference.semantic_resolution==='not_performed'?'未执行':reference.semantic_resolution)}${fact('当前问题的名称线索（实体 ID）',entityHints(reference.query_entity_ids))}${fact('上文的名称线索（实体 ID）',entityHints(reference.context_entity_ids))}${fact('可信任务范围',Object.hasOwn(reference,'task_scope')?(reference.task_scope??'未限定任务'):null)}</div>
+ ${data.reference_resolution?'<p class="small muted">名称线索不表示对象或指代已经确认；多个实体可以表示比较或关联。对象未确认不等于存在歧义，也不自动要求追问；任务范围也不代表指代已确认。</p>':''}
+ ${fact('本次限制与原因',reasonText)}${renderFactIndex(data.fact_index)}
+ ${raw('状态原始记录',{evidence_status:data.evidence_status,degraded_reasons:data.degraded_reasons,reference_resolution:data.reference_resolution})}${raw('查询条件来源',data.conditions_provenance)}${raw('原文证据',data.source_evidence)}${raw('历史与冲突',data.historical_or_conflicting)}${raw('选择／排除原因',data.source_decisions)}</section>
+ <section class="retrieval-section" aria-label="返回内容与容量"><h4>返回内容与容量</h4><div class="facts">${fact('正文已用 / 上限',count(budget.content_bytes,'字节')+' / '+count(config.content_bytes,'字节'))}${fact('原文候选检索上限',count(config.candidate_k,'条'))}${fact('原文片段返回上限',count(config.source_limit,'个'))}${fact('选择时排除的条目',count(budget.excluded_count,'项'))}${fact('容量与数量检查',budget.coverage_complete===true?'未因容量或数量限制裁剪内容':budget.coverage_complete===false?'部分内容因容量或数量限制未返回':null)}${fact('读取的数据版本',data.read_revision)}</div>
+ <p class="small muted">按 UTF-8 字节计算，不是模型 token 数，也不是完整 MCP 响应大小。未裁剪不代表找全了全部相关信息；排除项也可能来自相关性筛选。</p>
+ ${raw('容量原始记录',data.budget)}${raw('结构化选择／预算排除',budget.excluded)}</section>`;
+}
+
+function relatedSourceRuns(r){const id=r.source?.source_id;return id&&Array.isArray(bundle?.runs)?bundle.runs.filter(other=>other.id!==r.id&&other.source?.source_id===id):[];}
+function runDetail(r){const cand=r.retrieval?.candidates,selected=r.retrieval?.selected_refs,returned=r.mcp_response?.returned_refs;
+ const sources=(r.source_ids||[]).map(source).filter(Boolean),web=sources.find(s=>['synthetic_web_transcript','manual_web_transcript','host_capture'].includes(s.kind));
+ const mcp=r.input?.mcp_text,match=web&&present(mcp)?(web.text===mcp?'正文逐字一致；来源真实性仍按记录方式判断':'正文不同：需要检查改写、遗漏或标准化；这里不自动作语义判断'):'未形成网页原话与 MCP 入参的双侧记录，无法比较';
+ const failure=r.spans.find(s=>['failed','incomplete'].includes(s.status));
+ const sameSource=relatedSourceRuns(r);
+ return `<div class="detail-header"><div class="id mono">${esc(r.id)}　/　${esc(r.operation_id||'操作 ID 未采集')}</div><div class="horizontal"><h2>${esc(r.tool)}</h2>${state(r.status)}</div>
+ ${r.evidence_status==='evidence_incomplete'?'<div class="notice bad">evidence_incomplete：诊断证据不完整，不影响已完成的业务结果。</div>':''}
+ ${bundle.meta.channels?`<div class="notice">独立原文留存：${esc(bundle.meta.channels.source_capture==='not_enabled'?'该版本未启用':bundle.meta.channels.source_capture==='enabled'?'已启用':bundle.meta.channels.source_capture==='unknown'?'尚未观测到':bundle.meta.channels.source_capture||'未知')} · 全文索引：${esc(bundle.meta.channels.lexical_index==='not_enabled'?'该版本未启用':bundle.meta.channels.lexical_index==='enabled'?'已观测启用':bundle.meta.channels.lexical_index==='unknown'?'尚未观测到':bundle.meta.channels.lexical_index||'未知')}</div>`:''}
+ <div class="notice">原文接收：${state(r.source?.status||'未记录')} · 索引：${state(r.index?.status||'未记录')} · 结构化整理：${state(r.enrichment?.status||'未记录')}${r.enrichment?.error?`<div class="failure-reason">${esc(r.enrichment.error)}</div>`:''}${r.source?`<div class="keyline">来源：${val(r.source.provenance)} · 消息标识：${val(r.source.message_id_trust)}${present(r.source.received_sequence)?` · 接收序号：${val(r.source.received_sequence)}`:''}</div>`:'<div class="keyline">此记录未提供独立原文回执，无法判断原文是否已留存；结构化保存结果见下方保存状态。</div>'}</div>
+ ${r.index?raw('索引回执与版本',r.index):''}
+ <div class="facts">${fact('原文保存状态',sourceSaveStatus(r))}${fact('结构化记忆保存状态',STATES[r.save_status]?.[0]||r.save_status)}${fact('召回状态',STATES[r.recall_status]?.[0]||r.recall_status)}${present(r.enrichment_task?.attempt_count)?fact('整理尝试次数',r.enrichment_task.attempt_count):''}${r.enrichment_task?.accepted_mode?fact('接收时整理方式',r.enrichment_task.accepted_mode):''}${r.enrichment_task?.processing_version?fact('整理处理版本',r.enrichment_task.processing_version):''}${fact('提交后修订',r.committed_revision)}${fact('召回读取修订',r.read_revision)}</div>
+ ${failure?`<div class="notice bad"><strong>按记录顺序，最早观察到的失败：${esc(stageInfo(failure).name)}</strong><br>${esc(failure.error?.reason||'打开阶段详情查看错误')}。这定位失败位置，不自动推断根本原因。</div>`:''}
+ ${r.notes?`<div class="small muted">${esc(r.notes)}</div>`:''}</div><div class="panel-body">
+ <h3>01　入口：原文与实际入参</h3><div class="two"><div><div class="box-label">网页文本 / 人工记录</div>${sourceText(web?web.text:'未采集；MCP 服务端本身没有网页原文证明')}<div class="hint-line">${web?'来源类型：'+esc(web.kind):'可在网页验收时单独记录并关联'}</div></div><div><div class="box-label">${r.entrypoint==='internal_cli'?(r.tool==='source_enrichment'?'内部原文整理参数':'内部索引操作输入'):'MCP 实际收到的文本'}</div>${sourceText(mcp)}<div class="hint-line">接口输入，不自动视为已验证的用户原话</div></div></div><div class="notice">${esc(match)}</div>${raw('展开工具完整参数',r.input?.arguments??null)}${r.input?.receipt_request?raw('保存回执参数（非 MCP 原始输入）',r.input.receipt_request):''}
+ <hr class="divider"><h3>02　执行阶段</h3>${renderExecution(r)}
+ <hr class="divider"><h3>03　写入 / 修改证据链</h3>${r.write_changes?.length?r.write_changes.map((w,i)=>`<details class="stage" ${w.commit_status!=='committed'?'open':''}><summary><span class="stage-name">候选 ${esc(w.candidate_id||String(i+1))}</span>${state(w.commit_status)}</summary><div class="stage-body"><div class="two"><div><div class="box-label">支持原文</div>${sourceText((w.source_ids||[]).map(s=>source(s)?source(s).text:s+'（未导出）').join('\n\n')||'未导出来源')}</div><div><div class="box-label">抽取候选，不等于已入库</div><div class="text-box mono small">${json(w.candidate)}</div></div></div>${raw('Rust 校验与决策',w.validation)}<div class="two"><div>${raw('变更前版本',w.before)}</div><div>${raw('已提交的新版本',w.after)}</div></div><div class="keyline">回执：${val(w.receipt_id)}　关联版本：${w.memory_ref?linkMem(w.memory_ref):'没有正式提交'}</div><div class="link-row">${(w.llm_call_ids||[]).map(linkCall).join('')}</div></div></details>`).join(''):'<div class="notice">本记录没有导出结构化记忆写入变更；原文保存情况见上方原文保存状态与事务详情。</div>'}
+ <hr class="divider"><h3>04　检索、选择与响应边界</h3><div class="pipeline"><div class="pipe"><span>结构化候选</span><b>${Array.isArray(cand)?cand.length:'—'}</b></div><div class="pipe"><span>结构化选中</span><b>${Array.isArray(selected)?selected.length:'—'}</b></div><div class="pipe"><span>返回结构化记忆</span><b>${r.mcp_response.recorded&&Array.isArray(returned)?returned.length:'—'}</b></div>${r.local_recall?`<div class="pipe"><span>返回原文证据</span><b>${num(r.mcp_response.returned_source_count)}</b></div>`:''}<div class="pipe unknown"><span>宿主最终输入</span><b style="font-size:14px">${r.host.input_observability==='provided'&&r.host.request?'有提供记录':'不可观测'}</b></div></div>
+ <div class="hint-line">候选数是实际导出的候选记录数，不自动等于扫描量。当前扫描量：${num(r.retrieval.scanned_count)}。未采集显示“—”，不是 0。</div>
+ ${r.lexical_raw?renderLexicalDetail(r.lexical_raw):''}
+ ${r.local_recall?renderLocalRecall(r.local_recall):''}
+ ${raw('结构化查询与状态',{status:r.retrieval.query_status,query:r.retrieval.query})}
+ ${Array.isArray(cand)&&cand.length?`<div class="table-wrap"><table><thead><tr><th>记忆版本</th><th>结果 / 依据</th><th>实际排序</th></tr></thead><tbody>${cand.map(c=>`<tr><td>${linkMem(c.memory_ref)}<div class="keyline">${memory(c.memory_ref)?esc(memory(c.memory_ref).content):''}</div></td><td>${state(c.outcome)}<div>${(c.reason_codes||[]).map(q=>`<span class="tag">${esc(REASONS[q]||q)}</span>`).join('')}</div></td><td>${present(c.rank)?'第 '+esc(c.rank)+' 位':'排序未记录'}${present(c.score)?'<div>已记录分数 '+esc(c.score)+'</div>':'<div class="keyline">无分数记录</div>'}<div class="keyline">${esc((c.sort_basis||[]).join(' → '))}</div></td></tr>`).join('')}</tbody></table></div>`:`<div class="notice ${Array.isArray(cand)?'':'warn'}">${Array.isArray(cand)?'该次候选列表已记录，长度为 0。':'未采集候选或查询未完成，不能解释为“没有相关记忆”。'}</div>`}
+ <div class="link-row">${(selected||[]).map(linkMem).join('')}</div>${r.entrypoint==='internal_cli'?'<div class="hint-line">此内部 CLI 操作不构造 MCP 响应；处理结果见上方状态和阶段原始记录。</div>':`${raw('服务端记录的 MCP 响应',r.mcp_response.body)}<div class="hint-line">传递状态：${val(r.mcp_response.delivery_status)}。形成工具响应，不证明宿主把全部内容送入回答模型。</div>`}
+ <hr class="divider"><h3>05　宿主回答与可观测边界</h3>${r.host.input_observability==='provided'&&r.host.request?raw('由宿主另外提供的模型请求',r.host.request):'<div class="notice warn">宿主完整模型输入不可观测。这里不会用 MCP 返回内容拼一份“实际宿主 prompt”。</div>'}
+ <div class="box-label">网页最终回答 / 关联记录</div><div class="text-box">${present(r.host.answer_text)?esc(r.host.answer_text):'未采集'}</div><div class="hint-line">记录来源：${val(r.host.answer_source)}<br>判定：${val(r.host.answer_evaluation)}</div>
+ ${sameSource.length?`<div class="notice">同一原文的其他记录（按 source_id 关联）：${sameSource.map(x=>linkRun(x.id)).join('、')}<div class="keyline">这只证明记录引用同一原文，不证明宿主已使用整理结果。</div></div>`:''}${(r.related_runs||[]).length?`<div class="notice">关联运行：${r.related_runs.map(x=>linkRun(x.run_id)+'<div class="keyline">'+esc(x.note||x.relation)+'</div>').join('')}</div>`:''}
+ ${raw('查看本运行完整脱敏记录',r)}</div>`;
+}
+function renderSources(){
+ const all=savedSources(),rows=all.filter(searchMatch);
+ if(sourceIdFilter===null&&!rows.some(s=>s.id===selectedSource))selectedSource=rows[0]?.id||null;
+ const s=rows.find(s=>s.id===selectedSource);
+ $('content').innerHTML=`<div class="snapshot">${bundle.live?'当前用户已保存的原文':'当前导出记录中的独立原文'} · 共 ${all.length} 条${query?` · 匹配 ${rows.length} 条`:''}<br>只展示当前数据源提供的原文；查询入参和记忆摘录不计入原文列表。</div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">原文列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${x.id===selectedSource?'selected':''}" data-source="${esc(x.id)}" data-list-selection="true"><div class="small">${esc(Array.from(x.text).slice(0,100).join(''))}${Array.from(x.text).length>100?'…':''}</div><div class="item-meta">${esc(x.captured_at||'时间未采集')}</div><div class="mono small">${esc(x.id)}</div></button>`).join(''):'<div class="empty">没有匹配的原文；当前数据源未导出原文时，不代表数据库没有原文。</div>'}</div></section><section class="panel">${s?`<div class="panel-head"><h3 style="margin:0">原文详情</h3><span class="count-label">${num(Array.from(s.text).length)} 字符</span></div><div class="panel-body"><h3>完整原文</h3><div class="text-box">${esc(s.text)}</div><h3>来源信息</h3><div class="facts">${fact('原文编号',s.id)}${fact('接收时间',s.captured_at)}${fact('会话',s.session_id)}${fact('消息',s.message_id)}</div><div class="notice">${val(s.verification,'来源说明未采集')}</div>${raw('原文记录',s)}</div>`:`<div class="empty">${sourceIdFilter!==null?'所链接的原文未随当前数据源导出，无法查看完整原文。':'选择一条原文查看详情。'}</div>`}</section></div>`;
+}
+function renderMemories(){const all=memoryVersions();const types=[...new Set(all.map(m=>m.memory_type).filter(Boolean))];const rows=memoryVersions(bundle.memories.filter(m=>(memoryIdFilter===null||String(m.id)===memoryIdFilter)&&searchMatch(m)&&(memFilter==='all'||m.memory_type===memFilter)));
+ if(!rows.some(m=>ref(m)===selectedMemory)&&memoryIdFilter===null&&(!selectedMemory||memory(selectedMemory)))selectedMemory=rows[0]?ref(rows[0]):null;const m=rows.find(m=>ref(m)===selectedMemory),ss=bundle.memory_snapshot;
+ const snap=ss.completeness==='not_captured'?'没有采集记忆快照；空页面不代表数据库为空。':ss.completeness==='partial'?'这是部分导出快照，不能据此判断完整数据库内容。':bundle.live?'本地后台读取的当前 owner 一致性快照；下方时间为读取时间。':'这是导出方声明的完整范围快照；不是实时连接，也不代表其他用户的数据库。';
+ $('content').innerHTML=`<div class="snapshot">${memoryIdFilter!==null?`<strong>记忆 #${esc(memoryIdFilter)} · 已导出的版本</strong><br>${m?'已显示所选版本详情，可在列表中切换版本。':'请选择要查看的快照。'}<br>`:''}${esc(snap)}<br>范围：${val(ss.scope)}　修订：${val(ss.revision)}　采集时间：${val(ss.captured_at)}</div><div class="memory-tools"><select id="memory-type-filter" aria-label="记忆类型"><option value="all">所有内容类型</option>${types.map(t=>`<option value="${esc(t)}" ${memFilter===t?'selected':''}>${esc(t)}</option>`).join('')}</select><span class="muted small">相同记忆仅展示一次；召回次数和时间的变化不计为新版本。</span></div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">记忆列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${ref(x)===selectedMemory?'selected':''}" data-memory="${esc(ref(x))}" data-list-selection="true"><div class="item-top"><span class="mono small">${esc(ref(x))}</span>${state(x.status)}</div><div class="small">${esc(x.content)}</div><div class="item-meta">${esc(x.memory_type||'类型未采集')} · ${esc(x.subject||'主体未采集')}</div></button>`).join(''):`<div class="empty">${ss.completeness==='not_captured'?'快照未采集':query||memFilter!=='all'||memoryIdFilter!==null?'没有匹配结果':'本次快照包含 0 条正式记忆'}<br><br>首次抽取完成但复核失败时，候选仍可在请求追踪里查看。</div>`}</div></section><section class="panel">${m?memoryDetail(m):`<div class="empty">${selectedMemory&&!memory(selectedMemory)?'所链接的记忆版本未随当前数据源导出。':'请选择一条已导出的记忆版本。'}<br>当前快照由所选数据源提供，不会生成记忆。</div>`}</section></div>`;
+ if(ss.pending) $('content').insertAdjacentHTML('afterbegin',raw('待处理候选（不计入正式记忆）',ss.pending));
+ $('memory-type-filter').addEventListener('change',e=>{memFilter=e.target.value;renderMemories()});
+}
+function memoryDetail(m){const versions=memoryVersions(bundle.memories.filter(x=>x.id===m.id&&x.owner===m.owner)),rref=ref(m);
+ const returned=bundle.runs.filter(r=>(r.mcp_response.returned_refs||[]).includes(rref));const selected=bundle.runs.filter(r=>(r.retrieval.selected_refs||[]).includes(rref));
+ const depend=bundle.memories.filter(x=>(x.derived_from||[]).includes(rref));
+ return `<div class="detail-header"><div class="horizontal"><h2 class="mono">${esc(rref)}</h2>${state(m.status)}</div><div class="memory-body">${esc(m.content)}</div><div class="facts">${fact('内容类型',m.memory_type)}${fact('时间层次',m.time_horizon)}${fact('归属用户 owner',m.owner)}${fact('描述主体 subject',m.subject)}${fact('目标 target',m.target)}${fact('作用范围 scope',m.scope)}</div></div><div class="panel-body"><h3>原始依据与处理后内容</h3><div class="two"><div><div class="box-label">原始证据</div>${sourceText(m.source_ids.map(id=>source(id)?source(id).text+'\n['+id+']':id+'（未导出）').join('\n\n')||'来源未导出')}</div><div><div class="box-label">当前选中版本的记忆</div><div class="text-box">${esc(m.content)}</div></div></div>
+ <hr class="divider"><h3>时间含义分别展示</h3><div class="facts">${fact('observed_at · 系统得知时间',m.observed_at)}${fact('valid_from · 事实开始成立',m.valid_from)}${fact('valid_to · 事实结束成立',m.valid_to_unbounded?'无结束时间':m.valid_to)}${fact('expires_at · 记录过期时间',m.expires_at)}</div><div class="hint-line">时间字段不自动决定短／中／长期；未提供时保持未知。</div>
+ ${versions.length>1?`<hr class="divider"><h3>不同的记忆版本</h3><div class="link-row">${versions.map(v=>linkMem(ref(v))).join('')}</div><p class="small muted">不使用最新版本替代历史运行实际读取的旧版本。</p>`:''}${m.superseded_by?'<div class="small">被替代为：'+linkMem(m.superseded_by)+'</div>':present(m.superseded_by_id)?'<div class="small">被替代为：'+linkMemoryId(m.superseded_by_id)+'</div>':''}${m.created_by_call_id?'<div class="link-row">'+linkCall(m.created_by_call_id)+'</div>':''}
+ <hr class="divider"><h3>反向关联：选中与返回，不声明实际影响</h3><div class="box-label">曾被引擎选中</div><div class="link-row">${selected.map(r=>linkRun(r.id)).join('')||'<span class="muted small">当前导入包中未记录</span>'}</div><div class="box-label" style="margin-top:14px">曾进入服务端 MCP 响应</div><div class="link-row">${returned.map(r=>linkRun(r.id)).join('')||'<span class="muted small">当前导入包中未记录</span>'}</div><div class="notice warn">这些关联只能证明选择或返回记录，不能证明宿主模型内部依赖了此记忆。</div>
+ <h3>派生依赖（仅已导出的关联）</h3><div class="small">本条依赖：${(m.derived_from||[]).map(linkMem).join('、')||'未记录'}</div><div class="small">依赖本条：${depend.map(x=>linkMem(ref(x))).join('、')||'未记录'}</div>${m.supersedes?'<div class="small">替代的旧版本：'+linkMem(m.supersedes)+'</div>':present(m.supersedes_id)?'<div class="small">替代的旧版本：'+linkMemoryId(m.supersedes_id)+'</div>':''}${raw('完整记忆版本记录',m)}</div>`;
+}
+function renderCalls(){const rows=bundle.llm_calls.filter(c=>searchMatch(c)&&(filter==='all'||filter==='problem'&&bad(c.status)||filter==='completed'&&c.status==='completed'));
+ if(!rows.some(c=>c.id===selectedCall))selectedCall=rows[0]?.id||null;const c=rows.find(c=>c.id===selectedCall);
+ $('content').innerHTML=`<div class="notice">推理 token 是单独展示的用量明细，不自动额外加到输出总量上。费用未知保持未知；未取得宿主回答调用时，不计入也不伪造其成本。</div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">独立调用 / 尝试</h3><span class="count-label">${rows.length} 次</span></div><div class="call-list">${rows.length?rows.map(x=>`<button class="item ${x.id===selectedCall?'selected':''}" data-call="${esc(x.id)}" data-list-selection="true"><div class="item-top"><span class="item-title">${esc(x.stage)}</span>${state(x.status)}</div><div class="mono small">${esc(x.id)}</div><div class="item-meta">${esc(x.model||'模型未采集')} · 尝试 ${esc(x.attempt??'未知')}</div><div class="item-meta">输入 ${num(x.usage.input_tokens)} → 输出 ${num(x.usage.output_tokens)}</div><div class="item-meta">其中推理 ${num(x.usage.reasoning_tokens)}</div>${x.finish_reason?'<div class="failure-reason mono">'+esc(x.finish_reason)+'</div>':''}</button>`).join(''):'<div class="empty">未导出匹配的调用记录。<br>不能据此认定没有发生 API 调用。</div>'}</div></section><section class="panel">${c?callDetail(c):'<div class="empty">选择一条调用查看真实请求、返回和用量。</div>'}</section></div>`;
+}
+function callDetail(c){return `<div class="detail-header"><div class="id mono">${esc(c.id)}</div><div class="horizontal"><h2>${esc(c.stage)}</h2>${state(c.status)}</div><div class="facts">${fact('实际模型',c.model)}${fact('服务商',c.provider)}${fact('提示词版本',c.prompt_version)}${fact('服务商请求 ID',c.provider_request_id)}${fact('开始时间',c.started_at)}${fact('耗时（ms）',c.duration_ms)}</div><div class="link-row">所属运行：${linkRun(c.run_id)}</div></div><div class="panel-body">
+ ${c.finish_reason?`<div class="notice ${c.status==='incomplete'?'bad':''}"><strong>终止原因：<span class="mono">${esc(c.finish_reason)}</span></strong>${c.status==='incomplete'?'<br>生成未完成不能解释为“没有需要保存的事实”。返回的业务候选是否能提交，仍由既有校验策略决定。':''}</div>`:''}
+ <h3>请求参数与实际输出用量</h3><div class="table-wrap"><table><thead><tr><th>输入</th><th>输出总量</th><th>其中推理</th><th>缓存输入</th><th>费用</th></tr></thead><tbody><tr><td>${num(c.usage.input_tokens)}</td><td>${num(c.usage.output_tokens)}</td><td>${num(c.usage.reasoning_tokens)}</td><td>${num(c.usage.cached_input_tokens)}</td><td>${cost(c)}</td></tr></tbody></table></div><div class="hint-line">用量来源：${val(c.usage.source)}。输出包含推理时，不重复相加；具体计费按导出方口径记录。</div>
+ ${raw('实际请求（脱敏；不是模板）',c.request,true)}${raw('原始响应（脱敏；推理正文不展示）',c.response,true)}${raw('解析后的业务结果',c.parsed_result)}${raw('完整调用元数据与费用依据',c)}</div>`}
+function clearDetailRoute(){sourceIdFilter=null;memoryIdFilter=null;runIdFilter=null;if(/^#(?:memory(?:-id)?|run|source)=/.test(location.hash||''))window.history?.replaceState(null,'',location.pathname+location.search);}
+function navigateRunHash(){
+ const match=/^#run=(.*)$/.exec(location.hash||'');
+ if(!bundle||!match)return false;
+ let target;try{target=decodeURIComponent(match[1]);if(!target)throw new Error('empty');}catch{view='runs';runIdFilter=location.hash;selectedRun=null;render();showError('请求链接地址无效');return true;}
+ view='runs';runIdFilter=target;selectedRun=target;memoryIdFilter=null;
+ hideMessage();query='';filter='all';$('search').value='';$('status-filter').value='all';render();window.scrollTo(0,0);return true;
+}
+function navigateDetailHash(){return navigateRunHash()||navigateMemoryHash()||navigateSourceHash();}
+function navigateSourceHash(){
+ const match=/^#source=(.*)$/.exec(location.hash||'');
+ if(!bundle||!match)return false;
+ let target;try{target=decodeURIComponent(match[1]);if(!target)throw new Error('empty');}catch{view='sources';sourceIdFilter=location.hash;selectedSource=null;render();showError('原文链接地址无效');return true;}
+ const keepScroll=view==='sources';
+ view='sources';sourceIdFilter=target;selectedSource=target;runIdFilter=null;memoryIdFilter=null;
+ hideMessage();query='';$('search').value='';render();if(!keepScroll)window.scrollTo(0,0);return true;
+}
+function navigateMemoryHash(){
+ const match=/^#(memory|memory-id)=(.*)$/.exec(location.hash||'');
+ if(!bundle||!match)return false;
+ let target;try{target=decodeURIComponent(match[2]);if(!target)throw new Error('empty');}catch{view='memories';memoryIdFilter=null;selectedMemory=location.hash;render();showError('记忆链接地址无效');return true;}
+ const byId=match[1]==='memory-id',targetId=byId?target:memory(target)?.id;
+ const keepScroll=view==='memories'&&memoryIdFilter!==null&&memoryIdFilter===String(targetId);
+ view='memories';runIdFilter=null;memoryIdFilter=present(targetId)?String(targetId):null;
+ const versions=byId?memoryVersions(memoryIdMatches(target)):[];
+ selectedMemory=byId?(versions.length===1?ref(versions[0]):null):target;
+ hideMessage();query='';memFilter='all';$('search').value='';render();if(!keepScroll)window.scrollTo(0,0);return true;
+}
+window.addEventListener('hashchange',()=>{if(!navigateDetailHash()&&bundle)activate('runs');});
+function activate(v){clearDetailRoute();view=v;query='';filter='all';$('search').value='';$('status-filter').value='all';render();window.scrollTo(0,0);}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button, a[data-memory], a[data-memory-id], a[data-run-link], a[data-source]');
+ if(!b){if(!e.target.closest('#stage-tooltip'))hideStageHelp();return;}
+ if(b.dataset.stageInfo){e.preventDefault();showStageHelp(b);return;}
+ hideStageHelp();
+ if(b.dataset.listSelection){
+  e.preventDefault();
+  if(b.dataset.run)selectedRun=b.dataset.run;
+  else if(b.dataset.memory)selectedMemory=b.dataset.memory;
+  else if(b.dataset.call)selectedCall=b.dataset.call;
+  else if(b.dataset.source){clearDetailRoute();selectedSource=b.dataset.source;}
+  render();return;
+ }
+ if(b.dataset.source){
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0)return;
+  e.preventDefault();location.hash='#source='+encodeURIComponent(b.dataset.source);navigateSourceHash();return;
+ }
+ if(b.dataset.runLink){
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0)return;
+  e.preventDefault();location.hash='#run='+encodeURIComponent(b.dataset.run);navigateRunHash();return;
+ }
+ if(b.dataset.memory||b.dataset.memoryId){
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0)return;
+  e.preventDefault();location.hash=b.dataset.memory?'#memory='+encodeURIComponent(b.dataset.memory):'#memory-id='+encodeURIComponent(b.dataset.memoryId);
+  navigateMemoryHash();return;
+ }
+ if(b.dataset.view){activate(b.dataset.view);return;}
+ if(b.dataset.run){view='runs';selectedRun=b.dataset.run;query='';filter='all';$('search').value='';$('status-filter').value='all';render();window.scrollTo(0,0);return;}
+ if(b.dataset.call){clearDetailRoute();view='calls';selectedCall=b.dataset.call;query='';filter='all';$('search').value='';$('status-filter').value='all';render();window.scrollTo(0,0);return;}
+});
+$('search').addEventListener('input',e=>{clearDetailRoute();query=e.target.value;render()});$('status-filter').addEventListener('change',e=>{filter=e.target.value;render()});
+$('demo-failure').addEventListener('click',()=>{stopLive('演示模式 · 自动刷新已停止');clearDetailRoute();view='runs';load(DEMO_FAILURE)});$('demo-versions').addEventListener('click',()=>{stopLive('演示模式 · 自动刷新已停止');clearDetailRoute();view='runs';load(DEMO_VERSIONS)});
+$('import-button').addEventListener('click',()=>{$('file-input').value='';$('file-input').click()});
+$('file-input').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>20*1024*1024){showError('文件超过 20 MiB。请按运行或用户范围导出较小记录包。');return;}try{const imported=JSON.parse(await f.text());validate(imported);stopLive('文件导入模式 · 自动刷新已停止');load(imported)}catch(x){showError('无法读取 JSON：'+x.message)}});
+$('export-button').addEventListener('click',()=>{if(!bundle)return;const b=new Blob([JSON.stringify(sanitize(bundle),null,2)],{type:'application/json;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='memory-inspector-export.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)});
+function renderLogs(){
+ const logs=bundle.live?.logs||[];
+ $('content').innerHTML=bundle.live?`<div class="snapshot">数据库：${esc(bundle.live.database)} · owner：${esc(bundle.live.owner)}<br>${esc(bundle.live.observability)}</div>${bundle.live.errors.map(x=>`<div class="notice bad">${esc(x)}</div>`).join('')}${logs.map(log=>`<section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>${esc(log.name)}</h3><span>${log.status==='available'?'可读取':log.status==='privacy_filtered'?'隐私过滤':'不可读取'}</span></div><div class="panel-body"><div class="small muted">${esc(log.path)}<br>最后修改：${val(log.modified_at)} · ${num(log.size_bytes)} bytes${log.truncated?' · 仅展示最近 64 KiB / 100 行':''}${log.final_line_complete===false?' · 末行尚未写完':''}</div>${log.error?`<div class="notice bad">${esc(log.error)}</div>`:''}<pre class="text-box mono small">${esc(log.lines.filter(line=>!query||line.toLowerCase().includes(query.toLowerCase())).join('\n')||(log.status==='privacy_filtered'?'privacy_filtered：日志正文已按当前隐私状态隐藏，不能解释为无记录。':'没有匹配日志行'))}</pre></div></section>`).join('')}`:'<div class="empty">历史包不包含实时日志。点击“查看当前数据”连接本机后台。</div>';
+}
+let liveMode=false,liveTimer=null,liveGeneration=0,lastLiveRevision=null;
+function stopLive(message){liveMode=false;liveGeneration++;clearTimeout(liveTimer);$('live-status').textContent=message;}
+async function pollLive(){
+ if(!liveMode)return;const generation=liveGeneration;const abort=new AbortController();const timeout=setTimeout(()=>abort.abort(),5000);
+ try{
+  const response=await fetch('/api/live',{cache:'no-store',signal:abort.signal});
+  if(!response.ok)throw new Error(`HTTP ${response.status}`);
+  const next=sanitize(await response.json());validate(next);
+  if(generation!==liveGeneration)return;
+  if(lastLiveRevision!==next.live.revision){
+   const opened=[...document.querySelectorAll('#content details')].map((d,i)=>d.open?i:-1);
+   const scroll=window.scrollY,initial=lastLiveRevision===null;
+   bundle=next;warnings=validate(next);lastLiveRevision=next.live.revision;
+   if(!initial||!navigateDetailHash())render();document.querySelectorAll('#content details').forEach((d,i)=>{if(opened.includes(i))d.open=true;});window.scrollTo(0,scroll);
+  }
+  $('live-status').textContent=`${next.live.status==='partial'?'数据源异常':'已连接'} · 每 2 秒读取 · 最近成功读取 ${new Date(next.live.captured_at).toLocaleTimeString()}`;
+ }catch(error){if(generation===liveGeneration)$('live-status').textContent=`连接失败（${error.message}）· 保留上次数据，正在重试`;}
+ finally{clearTimeout(timeout);if(liveMode&&generation===liveGeneration)liveTimer=setTimeout(pollLive,2000);}
+}
+function startLive(){stopLive('正在连接…');liveMode=true;lastLiveRevision=null;pollLive();}
+$('live-connect').addEventListener('click',()=>{view='memories';startLive();});
+$('live-pause').addEventListener('click',()=>stopLive('已暂停刷新 · 当前显示上次读取的数据'));
+$('live-archive').addEventListener('click',async()=>{stopLive('历史模式 · 自动刷新已停止');const generation=liveGeneration;try{const response=await fetch('/api/recorded',{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json();if(generation!==liveGeneration)return;clearDetailRoute();view='runs';load(data);}catch(error){showError('历史记录读取失败：'+error.message);}});
+if(location.protocol==='http:'&&location.hostname==='127.0.0.1'){$('live-controls').hidden=false;view='memories';startLive();}else{load(DEMO_FAILURE);}
+</script>
+</body>
+</html>

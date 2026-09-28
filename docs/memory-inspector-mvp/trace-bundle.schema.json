@@ -1,0 +1,724 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:memory-inspector:bundle:0.1.0",
+  "title": "Memory Inspector local diagnostic bundle v0.1.0",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "meta",
+    "memory_snapshot",
+    "sources",
+    "memories",
+    "runs",
+    "llm_calls"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "title",
+        "data_kind"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "data_kind": {
+          "enum": [
+            "demo",
+            "recorded"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "channels": {
+          "type": "object",
+          "properties": {
+            "source_capture": {
+              "enum": [
+                "not_enabled",
+                "enabled",
+                "unknown"
+              ]
+            },
+            "lexical_index": {
+              "enum": [
+                "not_enabled",
+                "enabled",
+                "unknown"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "memory_snapshot": {
+      "type": "object",
+      "required": [
+        "completeness"
+      ],
+      "properties": {
+        "completeness": {
+          "enum": [
+            "complete",
+            "partial",
+            "not_captured"
+          ]
+        },
+        "scope": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "captured_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "memories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/memory"
+      }
+    },
+    "runs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/run"
+      }
+    },
+    "llm_calls": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/call"
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "verification": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "content",
+        "status",
+        "source_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "memory_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope": {},
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "derived_from": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "superseded_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_by_call_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "span": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "incomplete",
+            "in_progress",
+            "not_run",
+            "unknown",
+            "partial"
+          ]
+        },
+        "duration_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "input": {},
+        "output": {},
+        "error": {},
+        "llm_call_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "parent_span_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "retrieval": {
+      "type": "object",
+      "properties": {
+        "query": {},
+        "query_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scanned_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "candidates": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "required": [
+              "memory_ref",
+              "outcome"
+            ],
+            "properties": {
+              "memory_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "outcome": {
+                "enum": [
+                  "selected",
+                  "filtered",
+                  "unknown"
+                ]
+              },
+              "reason_codes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "rank": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "sort_basis": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "selected_refs": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "id",
+        "tool",
+        "status",
+        "spans",
+        "retrieval",
+        "mcp_response",
+        "host"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "incomplete",
+            "in_progress",
+            "not_run",
+            "unknown",
+            "partial"
+          ]
+        },
+        "operation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "session_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duration_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "save_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recall_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "input": {},
+        "read_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "committed_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/span"
+          }
+        },
+        "write_changes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "retrieval": {
+          "$ref": "#/$defs/retrieval"
+        },
+        "mcp_response": {
+          "type": "object",
+          "required": [
+            "recorded",
+            "returned_refs"
+          ],
+          "properties": {
+            "recorded": {
+              "type": "boolean"
+            },
+            "returned_refs": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "body": {},
+            "delivery_status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "host": {
+          "type": "object",
+          "required": [
+            "input_observability"
+          ],
+          "properties": {
+            "input_observability": {
+              "enum": [
+                "unavailable",
+                "provided"
+              ]
+            },
+            "request": {},
+            "answer_text": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "answer_source": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "answer_evaluation": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "evidence_status": {
+          "enum": [
+            "complete",
+            "evidence_incomplete"
+          ]
+        }
+      }
+    },
+    "call": {
+      "type": "object",
+      "required": [
+        "id",
+        "run_id",
+        "stage",
+        "status",
+        "usage",
+        "cost"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "incomplete",
+            "in_progress",
+            "not_run",
+            "unknown",
+            "partial"
+          ]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prompt_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duration_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "finish_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request": {},
+        "response": {},
+        "parsed_result": {},
+        "usage": {
+          "type": "object",
+          "properties": {
+            "input_tokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "output_tokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "reasoning_tokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cached_input_tokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "source": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "cost": {
+          "type": "object",
+          "required": [
+            "amount",
+            "currency",
+            "source"
+          ],
+          "properties": {
+            "amount": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "enum": [
+                "provider",
+                "estimate",
+                "unknown",
+                "demo"
+              ]
+            },
+            "rate_version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

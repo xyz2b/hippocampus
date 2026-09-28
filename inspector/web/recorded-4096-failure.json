@@ -1,0 +1,1519 @@
+{
+  "schema_version": "0.1.0",
+  "meta": {
+    "title": "真实记录：首次输出含候选，4096 复核耗尽，未提交，下一聊空召回",
+    "data_kind": "recorded",
+    "notes": "历史隔离网页测试的真实执行；非真实生活事实。仅导出已捕获字段；未新增模型调用。",
+    "evidence_index_sha256": "d60420e384e60b8d3fda260106dd061083f5c6f52f344a963a91a5f1286fa882",
+    "artifacts": {
+      "web-A.before.json": "7da9bd19617e289e7855addaf5b6706cffa98d0ed8a63a433fcebc1d8d58cb39",
+      "web-A.after.json": "d4cbffa349b85c14304987ab60c3c789aaa416038afcde91b4f0048edd1ad9fe",
+      "web-B.before.json": "06782d642adf0af3094d68699312af7d9c245d559cdeee1a6c981f36345d9fd8",
+      "web-B.after.json": "d4cbffa349b85c14304987ab60c3c789aaa416038afcde91b4f0048edd1ad9fe",
+      "A.case.json": "0f444376561ca6e1052c8ad8589c79009484f7b372b18c6c080e92a9291a1d5d",
+      "B.case.json": "0045da59f5039fe82786146b988d5f517bbd4360b691cc827d89e25126b41f6a",
+      "A.observation.json": "9148a37b9e98b21e92875e34cad62fcbad0f262e5a79851189a653b262b1bf03",
+      "B.observation.json": "882dae95f05f1cc2281a66734228b6951aa32538f53f414843cb3e52477227cd",
+      "rpc-74727.jsonl": "dbcf245930986e3bd6c771256470fca6774c93a7cb75b4ce4b98008012eb01d7",
+      "server-74727.stderr": "9a5df271170a39070f7cbfa6f110a2c93534236a97c0efdee3f96ed5a33f9428"
+    },
+    "capture_source_hashes": {
+      "tests/web_memory_capture.py": "eec78a59fcf75a7f93e54af85a44ec314e7cfa6354bfb732fe244f7ca570e103",
+      "tests/web_prepare_audit.py": "f9e420d4374cf55a27f515dd472a8ab6f0c705baa28c138e4be820ce98509a7f",
+      "tests/auto_memory_acceptance.py": "d1ce934fe5dac51741fa56a1196c0c2c7e72ab2f6ca28a0dc9bbdf421f181225",
+      "src/bin/pmr-mcp.rs": "c97c2e44b3bb0032cf3ab7c06a42feb7b08e91b4b1fa50e86e2906d483958aef",
+      "src/chat.rs": "630487cf5388dce266220bb72e35b78decea43c1a50331802ef45e1ce2b35285",
+      "src/openai.rs": "58dde9f115402efd5b338617ac316fbad391245745b454f448afb5af2487c972",
+      "Cargo.toml": "32d58164c5c227df18e20af99ff2b7879b3614074e0ec0ecb2cfa267fa832336",
+      "Cargo.lock": "e464931b34a354b5d56158bb08f8e071107995754247adb4c8f0cd049f35acc8"
+    },
+    "excluded_rpc_ids": [
+      "74727:1",
+      "74727:13"
+    ],
+    "limitations": [
+      "HTTP 请求体/失败正文/原生 LLM span 关联未采集",
+      "检索 trace 在 MCP 出口清空；不把空 trace 当扫描 0",
+      "候选来自非法整体输出的 JSON 尾部；不是引擎接受",
+      "宿主完整输入 unavailable",
+      "费用未知，不是 0"
+    ]
+  },
+  "memory_snapshot": {
+    "completeness": "complete",
+    "scope": "auto-test-user 的历史隔离前后快照；不代表正式库或全部历史",
+    "revision": null,
+    "captured_at": null,
+    "state": {
+      "repository": {
+        "next_id": 0,
+        "memories": {}
+      },
+      "entities": {
+        "entities": {
+          "self": {
+            "id": "self",
+            "owner_id": "auto-test-user",
+            "entity_type": "Person",
+            "canonical_name": "用户本人",
+            "aliases": [
+              "我",
+              "自己",
+              "本人",
+              "I",
+              "me"
+            ]
+          }
+        }
+      },
+      "staging": {
+        "next_id": 0,
+        "pending": {}
+      },
+      "receipts": {}
+    },
+    "snapshot_files": [
+      "web-A.before.json",
+      "web-A.after.json",
+      "web-B.before.json",
+      "web-B.after.json"
+    ],
+    "identity_note": "文件 SHA256 在 meta.artifacts；不是引擎事务修订号"
+  },
+  "sources": [
+    {
+      "id": "web-A",
+      "kind": "manual_web_transcript",
+      "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。",
+      "verification": "AI 操作的隔离测试原话；case/before 记录与网页复盘对照；非用户真实生活事实，未获人工签收。",
+      "chat_url": "https://chatgpt.com/c/6aaf9f12-3d04-83e9-b68f-255fbde3644a",
+      "evidence": [
+        "A.case.json",
+        "web-A.before.json"
+      ]
+    },
+    {
+      "id": "mcp-A",
+      "kind": "mcp_arguments",
+      "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。",
+      "verification": "实际服务端收到的参数；与 case 文本逐字检查，不等于宿主完整输入。"
+    },
+    {
+      "id": "web-B",
+      "kind": "manual_web_transcript",
+      "text": "我平时喜欢喝什么茶？我用的杯子是什么颜色、多大容量？",
+      "verification": "AI 操作的隔离测试原话；case/before 记录与网页复盘对照；非用户真实生活事实，未获人工签收。",
+      "chat_url": "https://chatgpt.com/c/6aafa0cd-29a0-83ea-956a-89f13dddbec1",
+      "evidence": [
+        "B.case.json",
+        "web-B.before.json"
+      ]
+    },
+    {
+      "id": "mcp-B",
+      "kind": "mcp_arguments",
+      "text": "我平时喜欢喝什么茶？我用的杯子是什么颜色、多大容量？",
+      "verification": "实际服务端收到的参数；与 case 文本逐字检查，不等于宿主完整输入。"
+    }
+  ],
+  "memories": [],
+  "runs": [
+    {
+      "id": "prepare-74727:3",
+      "tool": "memory_prepare",
+      "operation_id": "prepare-74727:3",
+      "session_id": "session_20260920_e64dd4fe519b",
+      "operation_id_source": "exporter_local_association",
+      "source_ids": [
+        "web-A",
+        "mcp-A"
+      ],
+      "status": "incomplete",
+      "save_status": "not_committed",
+      "recall_status": "planning_incomplete",
+      "input": {
+        "mcp_text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。",
+        "arguments": {
+          "limit": 10,
+          "user_turn": {
+            "session_id": "session_20260920_e64dd4fe519b",
+            "turn_id": "turn_20260920_001",
+            "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+          }
+        }
+      },
+      "started_at": "2026-09-20T08:54:18.778388+00:00",
+      "duration_ms": 333849.628,
+      "read_revision": null,
+      "committed_revision": null,
+      "write_changes": [
+        {
+          "candidate_id": "log-candidate-1",
+          "candidate": {
+            "subject_id": "self",
+            "unresolved_subject": null,
+            "memory_type": "preference",
+            "predicate": "likes",
+            "value": {
+              "kind": "text",
+              "text": "无糖乌龙茶",
+              "integer": null,
+              "boolean": null,
+              "entity_id": null
+            },
+            "polarity": "positive",
+            "strength": "moderate",
+            "scope": {
+              "domain": null,
+              "conditions": {
+                "companion_roles": [],
+                "companion_entity_ids": [],
+                "geography": null,
+                "country": null,
+                "city": null,
+                "date": null,
+                "time_of_day": null,
+                "activities": [],
+                "task_id": null
+              }
+            },
+            "retention_tier": "long_term",
+            "valid_from": null,
+            "valid_to": null,
+            "expires_at": null,
+            "expiry_expression": null,
+            "temporal_expression": null,
+            "extraction_confidence": "high",
+            "certainty": "high",
+            "source": "user_statement",
+            "intent": {
+              "kind": "assert",
+              "target_memory_id": null,
+              "reason": null
+            },
+            "explicit_memory_request": false,
+            "cross_turn_useful": true,
+            "tags": []
+          },
+          "source_ids": [
+            "web-A",
+            "mcp-A"
+          ],
+          "commit_status": "not_committed",
+          "memory_ref": null,
+          "receipt_id": null,
+          "before": null,
+          "after": null,
+          "llm_call_ids": [
+            "12ed423a-516e-412a-88c5-29548b0c7e9b",
+            "9ef3a6d2-6889-45f8-a409-f2a9f0905a09"
+          ],
+          "validation": {
+            "status": "diagnostic_candidate_only",
+            "parsing": {
+              "status": "invalid_json_with_candidate_suffix",
+              "performed_by": "offline_exporter",
+              "rust_acceptance": "not_recorded",
+              "candidate_suffix_offset": 4135
+            },
+            "rust_validation_result": null,
+            "review_status": "incomplete",
+            "note": "离线读取尾部 JSON；无 Rust 领域解析成功证据。未提交不是 rejected/合法空候选。"
+          }
+        },
+        {
+          "candidate_id": "log-candidate-2",
+          "candidate": {
+            "subject_id": "self",
+            "unresolved_subject": null,
+            "memory_type": "fact",
+            "predicate": "uses",
+            "value": {
+              "kind": "text",
+              "text": "雾蓝色的 420 毫升陶瓷杯",
+              "integer": null,
+              "boolean": null,
+              "entity_id": null
+            },
+            "polarity": null,
+            "strength": null,
+            "scope": {
+              "domain": null,
+              "conditions": {
+                "companion_roles": [],
+                "companion_entity_ids": [],
+                "geography": null,
+                "country": null,
+                "city": null,
+                "date": null,
+                "time_of_day": null,
+                "activities": [],
+                "task_id": null
+              }
+            },
+            "retention_tier": "long_term",
+            "valid_from": null,
+            "valid_to": null,
+            "expires_at": null,
+            "expiry_expression": null,
+            "temporal_expression": null,
+            "extraction_confidence": "high",
+            "certainty": "high",
+            "source": "user_statement",
+            "intent": {
+              "kind": "assert",
+              "target_memory_id": null,
+              "reason": null
+            },
+            "explicit_memory_request": false,
+            "cross_turn_useful": true,
+            "tags": []
+          },
+          "source_ids": [
+            "web-A",
+            "mcp-A"
+          ],
+          "commit_status": "not_committed",
+          "memory_ref": null,
+          "receipt_id": null,
+          "before": null,
+          "after": null,
+          "llm_call_ids": [
+            "12ed423a-516e-412a-88c5-29548b0c7e9b",
+            "9ef3a6d2-6889-45f8-a409-f2a9f0905a09"
+          ],
+          "validation": {
+            "status": "diagnostic_candidate_only",
+            "parsing": {
+              "status": "invalid_json_with_candidate_suffix",
+              "performed_by": "offline_exporter",
+              "rust_acceptance": "not_recorded",
+              "candidate_suffix_offset": 4135
+            },
+            "rust_validation_result": null,
+            "review_status": "incomplete",
+            "note": "离线读取尾部 JSON；无 Rust 领域解析成功证据。未提交不是 rejected/合法空候选。"
+          }
+        }
+      ],
+      "spans": [
+        {
+          "id": "rpc-74727:3",
+          "name": "MCP 接收/服务端响应 74727:3",
+          "status": "in_progress",
+          "input": {
+            "limit": 10,
+            "user_turn": {
+              "session_id": "session_20260920_e64dd4fe519b",
+              "turn_id": "turn_20260920_001",
+              "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+            }
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"error\":\"Operation is still running; reuse previously loaded global requirements.\",\"status\":\"unavailable\"},\"next_action\":\"Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.\",\"status\":\"in_progress\"}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "error": "Operation is still running; reuse previously loaded global requirements.",
+                    "status": "unavailable"
+                  },
+                  "next_action": "Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.",
+                  "status": "in_progress"
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": {
+              "key": "[\"memory_remember\",\"session_20260920_e64dd4fe519b\",\"turn_20260920_001\"]",
+              "observed_at": 1789894503.780857,
+              "status": "absent",
+              "value": null
+            }
+          },
+          "duration_ms": 45002.271,
+          "started_at": "2026-09-20T08:54:18.778388+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "rpc-74727:5",
+          "name": "MCP 接收/服务端响应 74727:5",
+          "status": "in_progress",
+          "input": {
+            "limit": 10,
+            "user_turn": {
+              "session_id": "session_20260920_e64dd4fe519b",
+              "turn_id": "turn_20260920_001",
+              "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+            }
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"error\":\"Operation is still running; reuse previously loaded global requirements.\",\"status\":\"unavailable\"},\"next_action\":\"Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.\",\"status\":\"in_progress\"}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "error": "Operation is still running; reuse previously loaded global requirements.",
+                    "status": "unavailable"
+                  },
+                  "next_action": "Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.",
+                  "status": "in_progress"
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": {
+              "key": "[\"memory_remember\",\"session_20260920_e64dd4fe519b\",\"turn_20260920_001\"]",
+              "observed_at": 1789894558.407566,
+              "status": "absent",
+              "value": null
+            }
+          },
+          "duration_ms": 45003.179,
+          "started_at": "2026-09-20T08:55:13.404253+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "rpc-74727:7",
+          "name": "MCP 接收/服务端响应 74727:7",
+          "status": "in_progress",
+          "input": {
+            "limit": 10,
+            "user_turn": {
+              "session_id": "session_20260920_e64dd4fe519b",
+              "turn_id": "turn_20260920_001",
+              "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+            }
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"error\":\"Operation is still running; reuse previously loaded global requirements.\",\"status\":\"unavailable\"},\"next_action\":\"Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.\",\"status\":\"in_progress\"}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "error": "Operation is still running; reuse previously loaded global requirements.",
+                    "status": "unavailable"
+                  },
+                  "next_action": "Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.",
+                  "status": "in_progress"
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": {
+              "key": "[\"memory_remember\",\"session_20260920_e64dd4fe519b\",\"turn_20260920_001\"]",
+              "observed_at": 1789894610.724868,
+              "status": "absent",
+              "value": null
+            }
+          },
+          "duration_ms": 45002.34,
+          "started_at": "2026-09-20T08:56:05.722369+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "rpc-74727:9",
+          "name": "MCP 接收/服务端响应 74727:9",
+          "status": "in_progress",
+          "input": {
+            "limit": 10,
+            "user_turn": {
+              "session_id": "session_20260920_e64dd4fe519b",
+              "turn_id": "turn_20260920_001",
+              "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+            }
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"error\":\"Operation is still running; reuse previously loaded global requirements.\",\"status\":\"unavailable\"},\"next_action\":\"Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.\",\"status\":\"in_progress\"}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "error": "Operation is still running; reuse previously loaded global requirements.",
+                    "status": "unavailable"
+                  },
+                  "next_action": "Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.",
+                  "status": "in_progress"
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": {
+              "key": "[\"memory_remember\",\"session_20260920_e64dd4fe519b\",\"turn_20260920_001\"]",
+              "observed_at": 1789894664.757115,
+              "status": "absent",
+              "value": null
+            }
+          },
+          "duration_ms": 45002.908,
+          "started_at": "2026-09-20T08:56:59.754123+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "rpc-74727:11",
+          "name": "MCP 接收/服务端响应 74727:11",
+          "status": "in_progress",
+          "input": {
+            "limit": 10,
+            "user_turn": {
+              "session_id": "session_20260920_e64dd4fe519b",
+              "turn_id": "turn_20260920_001",
+              "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+            }
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"error\":\"Operation is still running; reuse previously loaded global requirements.\",\"status\":\"unavailable\"},\"next_action\":\"Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.\",\"status\":\"in_progress\"}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "error": "Operation is still running; reuse previously loaded global requirements.",
+                    "status": "unavailable"
+                  },
+                  "next_action": "Call memory_prepare again with exactly the same arguments to wait for the result. This resumes the existing operation; do not create new IDs or call memory_remember. Do not report success or failure until remember and recall results arrive.",
+                  "status": "in_progress"
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": {
+              "key": "[\"memory_remember\",\"session_20260920_e64dd4fe519b\",\"turn_20260920_001\"]",
+              "observed_at": 1789894723.233886,
+              "status": "absent",
+              "value": null
+            }
+          },
+          "duration_ms": 45002.444,
+          "started_at": "2026-09-20T08:57:58.231271+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "rpc-74727:15",
+          "name": "MCP 接收/服务端响应 74727:15",
+          "status": "completed",
+          "input": {
+            "limit": 10,
+            "user_turn": {
+              "session_id": "session_20260920_e64dd4fe519b",
+              "turn_id": "turn_20260920_001",
+              "text": "我更喜欢无糖乌龙茶，平时喝茶用的是一只雾蓝色的 420 毫升陶瓷杯。给我两条简单的杯子日常清洁建议。"
+            }
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]},\"source\":\"local_snapshot\",\"status\":\"available\"},\"recall\":{\"error\":\"DeepSeek response incomplete: max_output_tokens\",\"status\":\"failed\"},\"remember\":{\"error\":\"DeepSeek response incomplete: max_output_tokens\",\"status\":\"failed\"}}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "result": {
+                      "conflicts": [],
+                      "constraints": [],
+                      "episodes": [],
+                      "facts": [],
+                      "mandatory": [],
+                      "preferences": [],
+                      "trace": []
+                    },
+                    "source": "local_snapshot",
+                    "status": "available"
+                  },
+                  "recall": {
+                    "error": "DeepSeek response incomplete: max_output_tokens",
+                    "status": "failed"
+                  },
+                  "remember": {
+                    "error": "DeepSeek response incomplete: max_output_tokens",
+                    "status": "failed"
+                  }
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": {
+              "key": "[\"memory_remember\",\"session_20260920_e64dd4fe519b\",\"turn_20260920_001\"]",
+              "observed_at": 1789894792.628165,
+              "status": "absent",
+              "value": null
+            }
+          },
+          "duration_ms": 1.394,
+          "started_at": "2026-09-20T08:59:52.626622+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "model-12ed423a-516e-412a-88c5-29548b0c7e9b",
+          "name": "首次抽取（模型响应完成）",
+          "status": "completed",
+          "duration_ms": 139913,
+          "input": {
+            "request": null,
+            "observability": "not_captured"
+          },
+          "output": {
+            "parsed_result": {
+              "omission_reason": null,
+              "candidates": [
+                {
+                  "subject_id": "self",
+                  "unresolved_subject": null,
+                  "memory_type": "preference",
+                  "predicate": "likes",
+                  "value": {
+                    "kind": "text",
+                    "text": "无糖乌龙茶",
+                    "integer": null,
+                    "boolean": null,
+                    "entity_id": null
+                  },
+                  "polarity": "positive",
+                  "strength": "moderate",
+                  "scope": {
+                    "domain": null,
+                    "conditions": {
+                      "companion_roles": [],
+                      "companion_entity_ids": [],
+                      "geography": null,
+                      "country": null,
+                      "city": null,
+                      "date": null,
+                      "time_of_day": null,
+                      "activities": [],
+                      "task_id": null
+                    }
+                  },
+                  "retention_tier": "long_term",
+                  "valid_from": null,
+                  "valid_to": null,
+                  "expires_at": null,
+                  "expiry_expression": null,
+                  "temporal_expression": null,
+                  "extraction_confidence": "high",
+                  "certainty": "high",
+                  "source": "user_statement",
+                  "intent": {
+                    "kind": "assert",
+                    "target_memory_id": null,
+                    "reason": null
+                  },
+                  "explicit_memory_request": false,
+                  "cross_turn_useful": true,
+                  "tags": []
+                },
+                {
+                  "subject_id": "self",
+                  "unresolved_subject": null,
+                  "memory_type": "fact",
+                  "predicate": "uses",
+                  "value": {
+                    "kind": "text",
+                    "text": "雾蓝色的 420 毫升陶瓷杯",
+                    "integer": null,
+                    "boolean": null,
+                    "entity_id": null
+                  },
+                  "polarity": null,
+                  "strength": null,
+                  "scope": {
+                    "domain": null,
+                    "conditions": {
+                      "companion_roles": [],
+                      "companion_entity_ids": [],
+                      "geography": null,
+                      "country": null,
+                      "city": null,
+                      "date": null,
+                      "time_of_day": null,
+                      "activities": [],
+                      "task_id": null
+                    }
+                  },
+                  "retention_tier": "long_term",
+                  "valid_from": null,
+                  "valid_to": null,
+                  "expires_at": null,
+                  "expiry_expression": null,
+                  "temporal_expression": null,
+                  "extraction_confidence": "high",
+                  "certainty": "high",
+                  "source": "user_statement",
+                  "intent": {
+                    "kind": "assert",
+                    "target_memory_id": null,
+                    "reason": null
+                  },
+                  "explicit_memory_request": false,
+                  "cross_turn_useful": true,
+                  "tags": []
+                }
+              ]
+            },
+            "parsing": {
+              "status": "invalid_json_with_candidate_suffix",
+              "performed_by": "offline_exporter",
+              "rust_acceptance": "not_recorded",
+              "candidate_suffix_offset": 4135
+            }
+          },
+          "error": null,
+          "llm_call_ids": [
+            "12ed423a-516e-412a-88c5-29548b0c7e9b"
+          ]
+        },
+        {
+          "id": "parse-initial",
+          "name": "首次输出 JSON 检查（离线诊断）",
+          "status": "failed",
+          "output": {
+            "status": "invalid_json_with_candidate_suffix",
+            "performed_by": "offline_exporter",
+            "rust_acceptance": "not_recorded",
+            "candidate_suffix_offset": 4135
+          },
+          "error": {
+            "reason": "响应 completed，但整体输出不是合法 JSON；尾部候选不等于 Rust 解析通过。"
+          },
+          "llm_call_ids": [
+            "12ed423a-516e-412a-88c5-29548b0c7e9b"
+          ]
+        },
+        {
+          "id": "model-9ef3a6d2-6889-45f8-a409-f2a9f0905a09",
+          "name": "抽取复核",
+          "status": "incomplete",
+          "duration_ms": 92942,
+          "input": {
+            "request": null,
+            "observability": "not_captured"
+          },
+          "output": {
+            "parsed_result": null,
+            "parsing": null
+          },
+          "error": {
+            "reason": "max_output_tokens"
+          },
+          "llm_call_ids": [
+            "9ef3a6d2-6889-45f8-a409-f2a9f0905a09"
+          ]
+        },
+        {
+          "id": "model-53971391-3bb9-48f5-b954-bbf1886d74ea",
+          "name": "同轮召回查询生成",
+          "status": "incomplete",
+          "duration_ms": 100981,
+          "input": {
+            "request": null,
+            "observability": "not_captured"
+          },
+          "output": {
+            "parsed_result": null,
+            "parsing": null
+          },
+          "error": {
+            "reason": "max_output_tokens"
+          },
+          "llm_call_ids": [
+            "53971391-3bb9-48f5-b954-bbf1886d74ea"
+          ]
+        },
+        {
+          "id": "commit-observation",
+          "name": "正式提交观测",
+          "status": "not_run",
+          "output": {
+            "committed_changes": [],
+            "receipt_status": "absent",
+            "before_after_equal": true,
+            "memories": 0,
+            "pending": 0,
+            "receipts": 0,
+            "basis": "MCP remember failed + all six receipt snapshots absent + unchanged before/after snapshots",
+            "transaction_log": null
+          },
+          "llm_call_ids": []
+        }
+      ],
+      "retrieval": {
+        "query": null,
+        "query_status": "incomplete",
+        "scanned_count": null,
+        "candidates": null,
+        "selected_refs": null,
+        "trace_observability": "not_captured: MCP clears trace before returning",
+        "query_model_output": null,
+        "runtime_context_observability": "not_captured; model output is not final runtime context"
+      },
+      "mcp_response": {
+        "recorded": true,
+        "returned_refs": [],
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 0,
+          "result": {
+            "resultType": "complete",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"global_context\":{\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]},\"source\":\"local_snapshot\",\"status\":\"available\"},\"recall\":{\"error\":\"DeepSeek response incomplete: max_output_tokens\",\"status\":\"failed\"},\"remember\":{\"error\":\"DeepSeek response incomplete: max_output_tokens\",\"status\":\"failed\"}}"
+              }
+            ],
+            "structuredContent": {
+              "global_context": {
+                "result": {
+                  "conflicts": [],
+                  "constraints": [],
+                  "episodes": [],
+                  "facts": [],
+                  "mandatory": [],
+                  "preferences": [],
+                  "trace": []
+                },
+                "source": "local_snapshot",
+                "status": "available"
+              },
+              "recall": {
+                "error": "DeepSeek response incomplete: max_output_tokens",
+                "status": "failed"
+              },
+              "remember": {
+                "error": "DeepSeek response incomplete: max_output_tokens",
+                "status": "failed"
+              }
+            },
+            "isError": false
+          }
+        },
+        "delivery_status": "server_stdio_recorded; host_receipt_unknown"
+      },
+      "host": {
+        "input_observability": "unavailable",
+        "request": null,
+        "answer_text": "1. 喝完及时用温水冲洗，再用柔软海绵轻洗，避免茶渍积在杯壁和杯底。\n2. 若已有茶渍，用小苏打加温水浸泡 10 分钟后轻擦；别用钢丝球，以免刮伤雾蓝色釉面。\n\n另外，你刚提到的饮茶偏好和杯子信息这次未能成功保存。",
+        "answer_source": "AI via native Chrome accessibility tree; manual signoff pending",
+        "answer_evaluation": "与服务端失败/空结果相符；不证明宿主如何使用。人工签收 pending。"
+      },
+      "notes": "操作 ID 为导出关联键；阶段按证据分组，非严格时间线。完整 HTTP 请求与宿主输入未采集。",
+      "related_runs": [
+        {
+          "run_id": "recall-74727:19",
+          "relation": "next_chat",
+          "note": "独立新聊天实际空召回"
+        }
+      ]
+    },
+    {
+      "id": "recall-74727:19",
+      "tool": "memory_recall",
+      "operation_id": "recall-74727:19",
+      "session_id": null,
+      "operation_id_source": "exporter_local_association",
+      "source_ids": [
+        "web-B",
+        "mcp-B"
+      ],
+      "status": "completed",
+      "save_status": "not_applicable",
+      "recall_status": "completed_empty",
+      "input": {
+        "mcp_text": "我平时喜欢喝什么茶？我用的杯子是什么颜色、多大容量？",
+        "arguments": {
+          "query": "我平时喜欢喝什么茶？我用的杯子是什么颜色、多大容量？",
+          "limit": 10
+        }
+      },
+      "started_at": "2026-09-20T09:01:46.024896+00:00",
+      "duration_ms": 73988.659,
+      "read_revision": null,
+      "committed_revision": null,
+      "write_changes": [],
+      "spans": [
+        {
+          "id": "rpc-74727:17",
+          "name": "MCP 接收/服务端响应 74727:17",
+          "status": "completed",
+          "input": {
+            "query": "全局回答要求",
+            "bootstrap": true
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]},\"source\":\"local_snapshot\",\"status\":\"available\"},\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]}}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "result": {
+                      "conflicts": [],
+                      "constraints": [],
+                      "episodes": [],
+                      "facts": [],
+                      "mandatory": [],
+                      "preferences": [],
+                      "trace": []
+                    },
+                    "source": "local_snapshot",
+                    "status": "available"
+                  },
+                  "result": {
+                    "conflicts": [],
+                    "constraints": [],
+                    "episodes": [],
+                    "facts": [],
+                    "mandatory": [],
+                    "preferences": [],
+                    "trace": []
+                  }
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": null
+          },
+          "duration_ms": 2.906,
+          "started_at": "2026-09-20T09:01:39.114228+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "rpc-74727:19",
+          "name": "MCP 接收/服务端响应 74727:19",
+          "status": "completed",
+          "input": {
+            "query": "我平时喜欢喝什么茶？我用的杯子是什么颜色、多大容量？",
+            "limit": 10
+          },
+          "output": {
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 0,
+              "result": {
+                "resultType": "complete",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"global_context\":{\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]},\"source\":\"local_snapshot\",\"status\":\"available\"},\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]}}"
+                  }
+                ],
+                "structuredContent": {
+                  "global_context": {
+                    "result": {
+                      "conflicts": [],
+                      "constraints": [],
+                      "episodes": [],
+                      "facts": [],
+                      "mandatory": [],
+                      "preferences": [],
+                      "trace": []
+                    },
+                    "source": "local_snapshot",
+                    "status": "available"
+                  },
+                  "result": {
+                    "conflicts": [],
+                    "constraints": [],
+                    "episodes": [],
+                    "facts": [],
+                    "mandatory": [],
+                    "preferences": [],
+                    "trace": []
+                  }
+                },
+                "isError": false
+              }
+            },
+            "prepare_receipt": null
+          },
+          "duration_ms": 73988.659,
+          "started_at": "2026-09-20T09:01:46.024896+00:00",
+          "llm_call_ids": [],
+          "notes": "工具交互完成不等于保存成功；in_progress 是继续等待，不是模型重试。"
+        },
+        {
+          "id": "model-927f7f13-5f24-4cfa-b56d-ef0848b36fd0",
+          "name": "下一聊查询生成",
+          "status": "completed",
+          "duration_ms": 73985,
+          "input": {
+            "request": null,
+            "observability": "not_captured"
+          },
+          "output": {
+            "parsed_result": {
+              "domain": null,
+              "entity_ids": [
+                "self"
+              ],
+              "task_id": null,
+              "conditions": {
+                "companion_roles": [],
+                "companion_entity_ids": [],
+                "geography": null,
+                "country": null,
+                "city": null,
+                "date": null,
+                "time_of_day": null,
+                "activities": [],
+                "task_id": null
+              },
+              "predicates": [
+                "likes",
+                "uses",
+                "fact"
+              ],
+              "targets": [],
+              "temporal_intent": "current",
+              "temporal_expression": null
+            },
+            "parsing": {
+              "status": "valid_json",
+              "performed_by": "offline_exporter",
+              "rust_acceptance": "not_recorded",
+              "candidate_suffix_offset": 0
+            }
+          },
+          "error": null,
+          "llm_call_ids": [
+            "927f7f13-5f24-4cfa-b56d-ef0848b36fd0"
+          ]
+        }
+      ],
+      "retrieval": {
+        "query": null,
+        "query_status": "completed",
+        "scanned_count": null,
+        "candidates": null,
+        "selected_refs": [],
+        "trace_observability": "not_captured: MCP clears trace before returning",
+        "query_model_output": {
+          "domain": null,
+          "entity_ids": [
+            "self"
+          ],
+          "task_id": null,
+          "conditions": {
+            "companion_roles": [],
+            "companion_entity_ids": [],
+            "geography": null,
+            "country": null,
+            "city": null,
+            "date": null,
+            "time_of_day": null,
+            "activities": [],
+            "task_id": null
+          },
+          "predicates": [
+            "likes",
+            "uses",
+            "fact"
+          ],
+          "targets": [],
+          "temporal_intent": "current",
+          "temporal_expression": null
+        },
+        "runtime_context_observability": "not_captured; model output is not final runtime context"
+      },
+      "mcp_response": {
+        "recorded": true,
+        "returned_refs": [],
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 0,
+          "result": {
+            "resultType": "complete",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"global_context\":{\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]},\"source\":\"local_snapshot\",\"status\":\"available\"},\"result\":{\"conflicts\":[],\"constraints\":[],\"episodes\":[],\"facts\":[],\"mandatory\":[],\"preferences\":[],\"trace\":[]}}"
+              }
+            ],
+            "structuredContent": {
+              "global_context": {
+                "result": {
+                  "conflicts": [],
+                  "constraints": [],
+                  "episodes": [],
+                  "facts": [],
+                  "mandatory": [],
+                  "preferences": [],
+                  "trace": []
+                },
+                "source": "local_snapshot",
+                "status": "available"
+              },
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              }
+            },
+            "isError": false
+          }
+        },
+        "delivery_status": "server_stdio_recorded; host_receipt_unknown"
+      },
+      "host": {
+        "input_observability": "unavailable",
+        "request": null,
+        "answer_text": "我目前没有查到相关记录，所以无法确定：\n\n• 你平时喜欢喝什么茶\n• 杯子的颜色\n• 杯子的容量\n\n你告诉我后，我可以记下来。",
+        "answer_source": "AI via native Chrome accessibility tree; manual signoff pending",
+        "answer_evaluation": "与服务端失败/空结果相符；不证明宿主如何使用。人工签收 pending。"
+      },
+      "notes": "操作 ID 为导出关联键；阶段按证据分组，非严格时间线。完整 HTTP 请求与宿主输入未采集。",
+      "related_runs": [
+        {
+          "run_id": "prepare-74727:3",
+          "relation": "prior_chat",
+          "note": "上一聊天未提交"
+        }
+      ]
+    }
+  ],
+  "llm_calls": [
+    {
+      "id": "12ed423a-516e-412a-88c5-29548b0c7e9b",
+      "run_id": "prepare-74727:3",
+      "stage": "首次抽取（模型响应完成）",
+      "provider": null,
+      "model": "deepseek-v4-pro",
+      "status": "completed",
+      "provider_request_id": "12ed423a-516e-412a-88c5-29548b0c7e9b",
+      "prompt_version": null,
+      "duration_ms": 139913,
+      "started_at": null,
+      "request": null,
+      "request_observability": "not_captured",
+      "parsed_result": {
+        "omission_reason": null,
+        "candidates": [
+          {
+            "subject_id": "self",
+            "unresolved_subject": null,
+            "memory_type": "preference",
+            "predicate": "likes",
+            "value": {
+              "kind": "text",
+              "text": "无糖乌龙茶",
+              "integer": null,
+              "boolean": null,
+              "entity_id": null
+            },
+            "polarity": "positive",
+            "strength": "moderate",
+            "scope": {
+              "domain": null,
+              "conditions": {
+                "companion_roles": [],
+                "companion_entity_ids": [],
+                "geography": null,
+                "country": null,
+                "city": null,
+                "date": null,
+                "time_of_day": null,
+                "activities": [],
+                "task_id": null
+              }
+            },
+            "retention_tier": "long_term",
+            "valid_from": null,
+            "valid_to": null,
+            "expires_at": null,
+            "expiry_expression": null,
+            "temporal_expression": null,
+            "extraction_confidence": "high",
+            "certainty": "high",
+            "source": "user_statement",
+            "intent": {
+              "kind": "assert",
+              "target_memory_id": null,
+              "reason": null
+            },
+            "explicit_memory_request": false,
+            "cross_turn_useful": true,
+            "tags": []
+          },
+          {
+            "subject_id": "self",
+            "unresolved_subject": null,
+            "memory_type": "fact",
+            "predicate": "uses",
+            "value": {
+              "kind": "text",
+              "text": "雾蓝色的 420 毫升陶瓷杯",
+              "integer": null,
+              "boolean": null,
+              "entity_id": null
+            },
+            "polarity": null,
+            "strength": null,
+            "scope": {
+              "domain": null,
+              "conditions": {
+                "companion_roles": [],
+                "companion_entity_ids": [],
+                "geography": null,
+                "country": null,
+                "city": null,
+                "date": null,
+                "time_of_day": null,
+                "activities": [],
+                "task_id": null
+              }
+            },
+            "retention_tier": "long_term",
+            "valid_from": null,
+            "valid_to": null,
+            "expires_at": null,
+            "expiry_expression": null,
+            "temporal_expression": null,
+            "extraction_confidence": "high",
+            "certainty": "high",
+            "source": "user_statement",
+            "intent": {
+              "kind": "assert",
+              "target_memory_id": null,
+              "reason": null
+            },
+            "explicit_memory_request": false,
+            "cross_turn_useful": true,
+            "tags": []
+          }
+        ]
+      },
+      "response": {
+        "diagnostic_metadata": {
+          "elapsed_ms": 139913,
+          "model": "deepseek-v4-pro",
+          "reasoning": {
+            "effort": "high",
+            "summary": null
+          },
+          "response_id": "12ed423a-516e-412a-88c5-29548b0c7e9b",
+          "schema": "personal_memory_candidates_v1",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 8269,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2655,
+            "output_tokens_details": {
+              "reasoning_tokens": 1144
+            },
+            "total_tokens": 10924
+          }
+        },
+        "output_text": "{\n  \"omission_reason\": null,\n  \"candidates\": [\n    {\n      \"subject_id\": \"self\",\n      \"unresolved_subject\": null,\n      \"memory_type\": \"preference\",\n      \"predicate\": \"likes\",\n      \"value\": {\n        \"kind\": \"text\",\n        \"text\": \"无糖乌龙茶\",\n        \"integer\": null,\n        \"boolean\": null,\n        \"entity_id\": null\n      },\n      \"polarity\": \"positive\",\n      \"strength\": \"moderate\",\n      \"scope\": {\n        \"domain\": null,\n        \"conditions\": {\n          \"companion_roles\": [],\n          \"companion_entity_ids\": [],\n          \"geography\": null,\n          \"country\": null,\n          \"city\": null,\n          \"date\": null,\n          \"time_of_day\": null,\n          \"activities\": [],\n          \"task_id\": null\n        }\n      },\n      \"retention_tier\": \"long_term\",\n      \"valid_from\": null,\n      \"valid_to\": null,\n      \"expires_at\": null,\n      \"expiry_expression\": null,\n      \"temporal_expression\": null,\n      \"extraction_confidence\": \"high\",\n      \"certainty\": \"high\",\n      \"source\": \"user_statement\",\n      \"intent\": {\n        \"kind\": \"assert\",\n        \"target_memory_id\": null,\n        \"reason\": null\n      },\n      \"explicit_memory_request\": false,\n      \"cross_turn_useful\": true,\n      \"tags\": []\n    },\n    {\n      \"subject_id\": \"self\",\n      \"unresolved_subject\": null,\n      \"memory_type\": \"fact\",\n      \"predicate\": \"uses\",\n      \"value\": {\n        \"kind\": \"text\",\n        \"text\": \"雾蓝色的 420 毫升陶瓷杯\",\n        \"integer\": null,\n        \"boolean\": null,\n        \"entity_id\": null\n      },\n      \"polarity\": null,\n      \"strength\": null,\n      \"scope\": {\n        \"domain\": null,\n        \"conditions\": {\n          \"companion_roles\": [],\n          \"companion_entity_ids\": [],\n          \"geography\": null,\n          \"country\": null,\n          \"city\": null,\n          \"date\": null,\n          \"time_of_day\": null,\n          \"activities\": [],\n          \"task_id\": null\n        }\n      },\n      \"retention_tier\": \"long_term\",\n      \"valid_from\": null,\n      \"valid_to\": null,\n      \"expires_at\": null,\n      \"expiry_expression\": null,\n      \"temporal_expression\": null,\n      \"extraction_confidence\": \"high\",\n      \"certainty\": \"high\",\n      \"source\": \"user_statement\",\n      \"intent\": {\n        \"kind\": \"assert\",\n        \"target_memory_id\": null,\n        \"reason\": null\n      },\n      \"explicit_memory_request\": false,\n      \"cross_turn_useful\": true,\n      \"tags\": []\n    }\n  ]\n}",
+        "envelope_observability": "partial",
+        "output_sha256": "8150efd25e92c9d6ec862d01319b401460551a1e30a43529d3f109f03e46035f",
+        "omitted_prefix_chars": 4135,
+        "output_note": "保留业务 JSON 片段；前置说明/推理正文不展示。完整原文仅在私有日志。"
+      },
+      "usage": {
+        "input_tokens": 8269,
+        "output_tokens": 2655,
+        "reasoning_tokens": 1144,
+        "cached_input_tokens": 0,
+        "source": "recorded_provider_usage"
+      },
+      "cost": {
+        "amount": null,
+        "currency": null,
+        "source": "unknown"
+      },
+      "evidence": {
+        "file": "server-74727.stderr",
+        "line": 1
+      },
+      "notes": "HTTP 请求体、开始时间和底层传输重试未采集；不是用当前模板还原的请求。",
+      "parsing": {
+        "status": "invalid_json_with_candidate_suffix",
+        "performed_by": "offline_exporter",
+        "rust_acceptance": "not_recorded",
+        "candidate_suffix_offset": 4135
+      },
+      "association": "capture_layout_checked; sequential schema order + RPC/receipt evidence; not native span IDs",
+      "finish_reason": null
+    },
+    {
+      "id": "9ef3a6d2-6889-45f8-a409-f2a9f0905a09",
+      "run_id": "prepare-74727:3",
+      "stage": "抽取复核",
+      "provider": null,
+      "model": "deepseek-v4-pro",
+      "status": "incomplete",
+      "provider_request_id": "9ef3a6d2-6889-45f8-a409-f2a9f0905a09",
+      "prompt_version": null,
+      "duration_ms": 92942,
+      "started_at": null,
+      "request": null,
+      "request_observability": "not_captured",
+      "parsed_result": null,
+      "response": {
+        "diagnostic_metadata": {
+          "elapsed_ms": 92942,
+          "model": "deepseek-v4-pro",
+          "reasoning": {
+            "effort": "high",
+            "summary": null
+          },
+          "response_id": "9ef3a6d2-6889-45f8-a409-f2a9f0905a09",
+          "schema": "personal_memory_candidates_verification_v1",
+          "status": "incomplete",
+          "usage": {
+            "input_tokens": 10042,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4096,
+            "output_tokens_details": {
+              "reasoning_tokens": 4096
+            },
+            "total_tokens": 14138
+          }
+        },
+        "output_text": null,
+        "envelope_observability": "partial"
+      },
+      "usage": {
+        "input_tokens": 10042,
+        "output_tokens": 4096,
+        "reasoning_tokens": 4096,
+        "cached_input_tokens": 0,
+        "source": "recorded_provider_usage"
+      },
+      "cost": {
+        "amount": null,
+        "currency": null,
+        "source": "unknown"
+      },
+      "evidence": {
+        "file": "server-74727.stderr",
+        "line": 3
+      },
+      "notes": "HTTP 请求体、开始时间和底层传输重试未采集；不是用当前模板还原的请求。",
+      "association": "capture_layout_checked; sequential schema order + RPC/receipt evidence; not native span IDs",
+      "finish_reason": "max_output_tokens",
+      "finish_reason_source": "prepare terminal MCP error; diagnostic status/usage corroborate"
+    },
+    {
+      "id": "53971391-3bb9-48f5-b954-bbf1886d74ea",
+      "run_id": "prepare-74727:3",
+      "stage": "同轮召回查询生成",
+      "provider": null,
+      "model": "deepseek-v4-pro",
+      "status": "incomplete",
+      "provider_request_id": "53971391-3bb9-48f5-b954-bbf1886d74ea",
+      "prompt_version": null,
+      "duration_ms": 100981,
+      "started_at": null,
+      "request": null,
+      "request_observability": "not_captured",
+      "parsed_result": null,
+      "response": {
+        "diagnostic_metadata": {
+          "elapsed_ms": 100981,
+          "model": "deepseek-v4-pro",
+          "reasoning": {
+            "effort": "high",
+            "summary": null
+          },
+          "response_id": "53971391-3bb9-48f5-b954-bbf1886d74ea",
+          "schema": "personal_memory_runtime_context_v1",
+          "status": "incomplete",
+          "usage": {
+            "input_tokens": 4063,
+            "input_tokens_details": {
+              "cached_tokens": 3968
+            },
+            "output_tokens": 4096,
+            "output_tokens_details": {
+              "reasoning_tokens": 4096
+            },
+            "total_tokens": 8159
+          }
+        },
+        "output_text": null,
+        "envelope_observability": "partial"
+      },
+      "usage": {
+        "input_tokens": 4063,
+        "output_tokens": 4096,
+        "reasoning_tokens": 4096,
+        "cached_input_tokens": 3968,
+        "source": "recorded_provider_usage"
+      },
+      "cost": {
+        "amount": null,
+        "currency": null,
+        "source": "unknown"
+      },
+      "evidence": {
+        "file": "server-74727.stderr",
+        "line": 4
+      },
+      "notes": "HTTP 请求体、开始时间和底层传输重试未采集；不是用当前模板还原的请求。",
+      "association": "capture_layout_checked; sequential schema order + RPC/receipt evidence; not native span IDs",
+      "finish_reason": "max_output_tokens",
+      "finish_reason_source": "prepare terminal MCP error; diagnostic status/usage corroborate"
+    },
+    {
+      "id": "927f7f13-5f24-4cfa-b56d-ef0848b36fd0",
+      "run_id": "recall-74727:19",
+      "stage": "下一聊查询生成",
+      "provider": null,
+      "model": "deepseek-v4-pro",
+      "status": "completed",
+      "provider_request_id": "927f7f13-5f24-4cfa-b56d-ef0848b36fd0",
+      "prompt_version": null,
+      "duration_ms": 73985,
+      "started_at": null,
+      "request": null,
+      "request_observability": "not_captured",
+      "parsed_result": {
+        "domain": null,
+        "entity_ids": [
+          "self"
+        ],
+        "task_id": null,
+        "conditions": {
+          "companion_roles": [],
+          "companion_entity_ids": [],
+          "geography": null,
+          "country": null,
+          "city": null,
+          "date": null,
+          "time_of_day": null,
+          "activities": [],
+          "task_id": null
+        },
+        "predicates": [
+          "likes",
+          "uses",
+          "fact"
+        ],
+        "targets": [],
+        "temporal_intent": "current",
+        "temporal_expression": null
+      },
+      "response": {
+        "diagnostic_metadata": {
+          "elapsed_ms": 73985,
+          "model": "deepseek-v4-pro",
+          "reasoning": {
+            "effort": "high",
+            "summary": null
+          },
+          "response_id": "927f7f13-5f24-4cfa-b56d-ef0848b36fd0",
+          "schema": "personal_memory_runtime_context_v1",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 4051,
+            "input_tokens_details": {
+              "cached_tokens": 3968
+            },
+            "output_tokens": 2979,
+            "output_tokens_details": {
+              "reasoning_tokens": 2880
+            },
+            "total_tokens": 7030
+          }
+        },
+        "output_text": "{\"domain\":null,\"entity_ids\":[\"self\"],\"task_id\":null,\"conditions\":{\"companion_roles\":[],\"companion_entity_ids\":[],\"geography\":null,\"country\":null,\"city\":null,\"date\":null,\"time_of_day\":null,\"activities\":[],\"task_id\":null},\"predicates\":[\"likes\",\"uses\",\"fact\"],\"targets\":[],\"temporal_intent\":\"current\",\"temporal_expression\":null}",
+        "envelope_observability": "partial",
+        "output_sha256": "143db2a146f88ab2bad48fb953aa056b42af6e494a133b1d9d44d9cf15c4a32e",
+        "omitted_prefix_chars": 0,
+        "output_note": "保留业务 JSON 片段；前置说明/推理正文不展示。完整原文仅在私有日志。"
+      },
+      "usage": {
+        "input_tokens": 4051,
+        "output_tokens": 2979,
+        "reasoning_tokens": 2880,
+        "cached_input_tokens": 3968,
+        "source": "recorded_provider_usage"
+      },
+      "cost": {
+        "amount": null,
+        "currency": null,
+        "source": "unknown"
+      },
+      "evidence": {
+        "file": "server-74727.stderr",
+        "line": 5
+      },
+      "notes": "HTTP 请求体、开始时间和底层传输重试未采集；不是用当前模板还原的请求。",
+      "parsing": {
+        "status": "valid_json",
+        "performed_by": "offline_exporter",
+        "rust_acceptance": "not_recorded",
+        "candidate_suffix_offset": 0
+      },
+      "association": "capture_layout_checked; sequential schema order + RPC/receipt evidence; not native span IDs",
+      "finish_reason": null
+    }
+  ]
+}

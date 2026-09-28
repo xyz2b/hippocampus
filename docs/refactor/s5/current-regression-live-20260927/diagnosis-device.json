@@ -1,0 +1,86 @@
+{
+  "operation": "device_s1",
+  "classification": "candidate_schema_violation_safely_rejected",
+  "candidate": {
+    "subject_id": "device_wulan_printer",
+    "unresolved_subject": null,
+    "memory_type": "fact",
+    "predicate": "fact",
+    "value": {
+      "kind": "text",
+      "text": "雾岚打印机的默认纸张规格是A4。",
+      "integer": null,
+      "boolean": null,
+      "entity_id": null
+    },
+    "polarity": null,
+    "strength": null,
+    "scope": {
+      "domain": [],
+      "conditions": {
+        "companion_roles": [],
+        "companion_entity_ids": [],
+        "geography": null,
+        "country": null,
+        "city": null,
+        "date": null,
+        "time_of_day": null,
+        "activities": [],
+        "task_id": null
+      }
+    },
+    "retention_tier": "long_term",
+    "valid_from": null,
+    "valid_to": null,
+    "expires_at": null,
+    "expiry_expression": null,
+    "temporal_expression": null,
+    "extraction_confidence": "high",
+    "certainty": "high",
+    "source": "user_statement",
+    "intent": {
+      "kind": "assert",
+      "target_memory_id": null,
+      "reason": null
+    },
+    "explicit_memory_request": false,
+    "cross_turn_useful": true,
+    "tags": [
+      "device_setting",
+      "paper_size"
+    ]
+  },
+  "scope_schema": {
+    "type": "object",
+    "properties": {
+      "domain": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "minLength": 1
+      },
+      "conditions": {
+        "$ref": "#/$defs/scope_condition"
+      }
+    },
+    "required": [
+      "domain",
+      "conditions"
+    ],
+    "additionalProperties": false
+  },
+  "local_validation_errors": [
+    {
+      "stage": "extraction",
+      "status": "failed",
+      "error": "invalid structured output: JSON does not match the V1 schema: invalid type: sequence, expected a string at line 1 column 318",
+      "duration_ms": 0
+    }
+  ],
+  "raw_source_stored": true,
+  "raw_index_ready": true,
+  "committed_memories": 0,
+  "independent_source_review_called": false,
+  "reason": "scope.domain要求string或null，实际输出[]。在候选反序列化时拒绝，未进入独立原文复核和提交。A4完整原句被保留，但正常整理未完成。"
+}

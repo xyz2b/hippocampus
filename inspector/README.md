@@ -1,0 +1,88 @@
+# hippocampus Memory Inspector
+
+Inspector 是同一 Cargo workspace 内的独立 Rust package / 可执行程序 `pmr-inspector`。
+它只读已有 SQLite、日志和 Trace，不启动 MCP、不调用模型、不执行记忆操作。
+记忆服务与 Inspector 分别启动，关闭 Inspector 不会停止记忆服务。
+
+## 启动与配置
+
+从项目根目录启动：
+
+```sh
+./scripts/start-memory-inspector.sh --trace-dir "$HOME/.local/share/personal-memory-runtime/traces"
+```
+
+脚本每次执行增量 release 构建，再用 `exec` 启动服务；前端改动会重新嵌入。
+首次构建需要 Rust 工具链，编译完成后的二进制可单独运行，无需 Python、Node 或源码目录：
+
+```sh
+cargo build -p pmr-inspector --release
+./target/release/pmr-inspector --help
+./target/release/pmr-inspector --port 8765 --owner local-user \
+  --db "$HOME/.local/share/personal-memory-runtime/memory.sqlite3" \
+  --trace-dir "$HOME/.local/share/personal-memory-runtime/traces"
+```
+
+| 参数 | 默认值与用途 |
+| --- | --- |
+| `--port PORT` | `8765`；仅监听 `127.0.0.1` |
+| `--db PATH` | `~/.local/share/personal-memory-runtime/memory.sqlite3`；只读已有数据库 |
+| `--owner ID` | `local-user`；选取该 owner 的持久快照与 Trace |
+| `--log PATH` | 可重复；未指定时读取 `~/Library/Application Support/tunnel-client/logs/` 下的 `personal-memory.log` 与 `launchd.stderr.log` |
+| `--trace-dir PATH` | 默认不启用；读取目录中的 `trace-*.jsonl`，应与记忆运行时的 `PMR_TRACE_DIR` 一致 |
+| `--dump` | 将当前 SQLite、日志及所选 Trace 整理为 JSON，写入标准输出，不启动 HTTP |
+| `--export-trace PATH` | 将一个运行时 Trace JSONL 转换为 TraceBundle JSON，写入标准输出，不启动 HTTP |
+
+打开终端输出的授权链接；授权后地址回到 `/`。每次启动生成新凭据，重启后重新打开新链接。
+访问凭据仅用于本机页面，不是模型 API Key。按 `Ctrl-C` 停止；同一端口已有服务时先停止旧服务，或指定其他端口。
+
+页面每 2 秒获取最新记录；暂停刷新、切换历史记录或导入 JSON 的行为与原页面相同。
+独立原文回执直接从 SQLite 读取，即使关闭诊断采集也能显示保存及整理状态；本地原文索引按记录的实际状态展示。存在 source 删除墓碑或无法核验当前数据库时，会保守隐藏旧 Trace、保存回执及日志正文，并明确显示原因；静态导出文件不会自动撤销。
+
+数据库以只读模式访问并启用 `query_only`，保留 WAL 可见性；日志只读取末尾 64 KiB / 100 行。
+未采集、未完成、不可读等状态直接展示，不能用当前快照补造历史执行过程。
+
+离线查看当前数据或转换运行时 Trace 使用同一个 Rust 程序：
+
+```sh
+./target/release/pmr-inspector --dump --trace-dir "$HOME/.local/share/personal-memory-runtime/traces"
+./target/release/pmr-inspector --export-trace /absolute/path/trace-ID.jsonl
+```
+
+`--export-trace` 接受运行时 JSONL；早期历史捕获的 `index.json` 不是该格式。S5 deferred 的接收调用与显式 CLI 整理是两条运行记录，Inspector 按同一个 `source_id` 关联；CLI 结果不是 MCP 响应，状态和尝试次数取自各自记录时刻。Trace 目录须预先创建并设为私有（Unix 权限 `0700`）。
+已经导出的历史失败记录仍随程序内置，可以直接在页面查看。
+
+## 目录与开发
+
+- `inspector/src/main.rs`：独立 Rust HTTP 服务入口。
+- `inspector/web/index.html`：页面的唯一源码，沿用原 HTML/CSS/JS，无外部前端依赖。
+- `inspector/web/recorded-4096-failure.json`：真实历史失败记录的唯一静态包，内容未改写。
+- `docs/memory-inspector-mvp/trace-bundle.schema.json`：导出数据格式。
+- `tests/inspector_support.py`：测试共享驱动，直接启动 Rust 程序、调用其接口并检查结果，不包含旧 Python 后端实现。
+
+Rust 将页面和历史包在编译时嵌入二进制。修改 HTML 后必须重新构建并重启，浏览器刷新后生效。
+使用上述启动脚本即可完成构建与启动；直接执行旧二进制不会自动读取刚修改的 HTML。
+
+## 回归检查与历史验收
+
+仓库随源码保留必要合成样本；完整历史验收档案保存在开发者本地。
+当前回归直接测试 Rust 实现；Python 仅用于隔离测试数据及驱动 Rust CLI/HTTP，
+不再提供另一份 Inspector 服务或数据转换逻辑：
+
+```sh
+cargo build -p pmr-inspector --release
+cargo build --bin pmr-mcp
+cargo test -p pmr-inspector
+node tests/s1_inspector.js
+python3 tests/memory_inspector_live.py
+python3 tests/s0_offline.py
+python3 tests/s1_trace.py
+python3 tests/s5_inspector.py
+python3 tests/mcp_prepare.py
+```
+
+测试默认使用 `target/release/pmr-inspector`，可用 `PMR_INSPECTOR_BINARY` 指定其他已构建的二进制。
+S0、S1 和 prepare 测试还使用 debug `pmr-mcp`；模型响应来自本机合成桩，不调用真实模型。
+
+历史报告、原型资料和 `.ai-coding-flow/` 早期验收资料中的 Python 命令描述当时的实现，
+不再是可执行的当前入口；保留这些记录不表示旧实现仍在项目中。

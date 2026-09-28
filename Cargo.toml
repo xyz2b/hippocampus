@@ -1,0 +1,20 @@
+[package]
+name = "hippocampus"
+version = "0.1.0"
+edition = "2024"
+description = "Personal memory for AI assistants, with original words, changing context, and traceable sources."
+repository = "https://github.com/xyz2b/hippocampus"
+
+[workspace]
+members = ["inspector"]
+default-members = ["."]
+resolver = "3"
+
+[dependencies]
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "json", "rustls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+time = { version = "0.3", features = ["formatting"] }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+rmcp = { version = "3.2.0", default-features = false, features = ["server", "transport-io", "schemars"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std"] }

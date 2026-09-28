@@ -1,0 +1,281 @@
+[
+  {
+    "id": "N01",
+    "query": "松石47用了什么数据库？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N02",
+    "query": "松石47的数据准备存在哪里？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N03",
+    "query": "松石47为什么先不加缓存？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N04",
+    "query": "先搁置的那种内存缓存服务叫什么？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N05",
+    "query": "松石47的技术选择和部署限制是否一致？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N06",
+    "query": "那它当时为什么没上？",
+    "context": [
+      "继续聊松石47的 Redis"
+    ],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N06-no-context",
+    "query": "那它当时为什么没上？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N06-ambiguous",
+    "query": "那它当时为什么没上？",
+    "context": [
+      "松石47和赤铜82都讨论过"
+    ],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "negative",
+    "query": "琥珀93的维护预算是多少？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "partial",
+    "query": "松石47为什么先不加缓存？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  },
+  {
+    "id": "N04-ambiguous",
+    "query": "先搁置的那种内存缓存服务叫什么？",
+    "context": [],
+    "sources": [
+      {
+        "id": "E1",
+        "text": "项目松石47选用 SQLite，Redis 暂时不引入。"
+      },
+      {
+        "id": "E2",
+        "text": "松石47当前只部署在一台机器上；暂不引入 Redis，是为了减少维护成本。"
+      },
+      {
+        "id": "D1",
+        "text": "项目赤铜82选用 PostgreSQL，部署在三台机器上。"
+      },
+      {
+        "id": "D2",
+        "text": "周末计划去公园散步。"
+      },
+      {
+        "id": "E3",
+        "text": "赤铜82暂不引入 Memcached，也是为了减少维护成本。"
+      }
+    ],
+    "owner": "s4-synthetic",
+    "at": 1800000000
+  }
+]
