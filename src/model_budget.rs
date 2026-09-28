@@ -96,6 +96,8 @@ pub enum ModelStage {
     Query,
     QueryReview,
     Assistance,
+    /// Recall's answer check over candidate USER quotes.
+    Answer,
     Reader,
     Judge,
 }
@@ -110,6 +112,7 @@ impl ModelStage {
             Self::Query => "query",
             Self::QueryReview => "query_review",
             Self::Assistance => "assistance",
+            Self::Answer => "answer",
             Self::Reader => "reader",
             Self::Judge => "judge",
         }
@@ -117,7 +120,7 @@ impl ModelStage {
     pub(crate) fn timeout(self, config: &ModelBudgetConfig) -> Duration {
         Duration::from_secs(if matches!(self, Self::Query) {
             15
-        } else if matches!(self, Self::Assistance) {
+        } else if matches!(self, Self::Assistance | Self::Answer) {
             180
         } else if self.output_tokens(config) > 16384 {
             360
@@ -134,7 +137,7 @@ impl ModelStage {
             | Self::ExtractionRepairReview
             | Self::QueryReview
             | Self::Judge => config.review_output_tokens,
-            Self::Query | Self::Assistance => config.query_output_tokens,
+            Self::Query | Self::Assistance | Self::Answer => config.query_output_tokens,
         }
     }
 }

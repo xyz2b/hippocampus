@@ -871,7 +871,6 @@ pub(crate) fn verify(
     if quote.contains(['？', '?'])
         || memory.subject_id != question.subject_id
         || memory.status != MemoryStatus::Active
-        || memory.memory_type == MemoryType::Constraint
         || memory.polarity == Some(Polarity::Negative)
         || !memory
             .evidence
@@ -898,10 +897,7 @@ pub(crate) fn verify(
             .strip_prefix("规定，")
             .or_else(|| rest.strip_prefix("规定,"))
             .unwrap_or(rest);
-        if !one_clause(assertion)
-            || !assertion.starts_with('每')
-            || memory.memory_type != MemoryType::Fact
-        {
+        if !one_clause(assertion) || !assertion.starts_with('每') {
             return None;
         }
         let (role, tail) = per_person(assertion)?;

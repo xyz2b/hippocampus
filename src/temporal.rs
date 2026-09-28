@@ -457,6 +457,23 @@ fn last_year_month(expression: &str) -> Option<u8> {
     })
 }
 
+// ponytail: lexical sanity check only; it never resolves a time, it just refuses filler.
+/// Whether an expression contains any time word or digit at all.
+pub(crate) fn mentions_time(expression: &str) -> bool {
+    let lower = expression.to_lowercase();
+    lower.chars().any(|c| {
+        c.is_ascii_digit() || "年月日号天周星礼拜时点分秒今明昨前后早晚午夜晨季旬初底末刚曾将现目当近久往过去来以此期间际次".contains(c)
+    }) || [
+        "now", "day", "week", "month", "year", "ago", "later", "recent", "since", "until",
+        "before", "after", "morning", "evening", "night", "tonight", "weekend", "hour",
+        "minute", "today", "tomorrow", "yesterday", "monday", "tuesday", "wednesday",
+        "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall",
+        "winter", "next", "last", "past", "future", "currently", "then",
+    ]
+    .iter()
+    .any(|word| lower.split(|c: char| !c.is_ascii_alphabetic()).any(|w| w.starts_with(word)))
+}
+
 pub(crate) fn is_valid_iso_date(value: &str) -> bool {
     parse_iso_date(value).is_some()
 }
@@ -483,6 +500,16 @@ fn parse_iso_date(value: &str) -> Option<Date> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn filler_is_not_a_time_expression() {
+        for filler in ["从", "青", ".", "n", "]", "墨"] {
+            assert!(!mentions_time(filler), "{filler}");
+        }
+        for expression in ["明天", "2027年4月1日", "上周末", "这次", "3 days ago", "next month"] {
+            assert!(mentions_time(expression), "{expression}");
+        }
+    }
 
     #[test]
     fn relative_days_cover_named_and_counted_days_without_truncation() {
