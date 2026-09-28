@@ -2459,6 +2459,17 @@ impl RawCandidate {
             }
         }
 
+        let intent = self.intent.into_domain()?;
+        // Saying an earlier record was wrong is itself an instruction about memory; a
+        // real-world change (moved, changed preference) is not.
+        let explicit_memory_request = explicit_memory_request
+            || matches!(
+                intent,
+                CandidateIntent::Supersede {
+                    reason: SupersedeReason::Correction | SupersedeReason::UserRetracted,
+                    ..
+                }
+            );
         Ok(CandidateMemory {
             owner_id: context.owner_id.clone(),
             evidence: vec![evidence],
@@ -2474,7 +2485,7 @@ impl RawCandidate {
             extraction_confidence: self.extraction_confidence.into(),
             certainty: self.certainty.into(),
             source: self.source.into(),
-            intent: self.intent.into_domain()?,
+            intent,
             explicit_memory_request,
             cross_turn_useful: self.cross_turn_useful,
             tags: self.tags,
@@ -7039,6 +7050,24 @@ mod tests {
             scope_schema(&ctx)["properties"]["domain"]["type"],
             json!(["string", "null"])
         );
+    }
+
+    #[test]
+    fn user_corrections_are_explicit_memory_requests() {
+        let ctx = context();
+        for (reason, explicit) in [("correction", true), ("user_retracted", true), ("state_changed", false)] {
+            let mut raw = candidate_json();
+            raw["intent"] = json!({"kind":"supersede","target_memory_id":null,"reason":reason});
+            let decoded = ctx
+                .decode_extraction(
+                    &json!({"omission_reason":null,"candidates":[raw]}).to_string(),
+                    "早餐不喝咖啡。",
+                    &SessionId::from("s"),
+                    &TurnId::from("t"),
+                )
+                .unwrap();
+            assert_eq!(decoded[0].explicit_memory_request, explicit, "{reason}");
+        }
     }
 
     #[test]

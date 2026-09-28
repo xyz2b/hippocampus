@@ -190,13 +190,13 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:b238861ad732c265",
+            "review_binding": "source-review-v3:b93c5909bc9c2eda",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "contradicted",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -212,23 +212,11 @@
                     "turn_index": 1
                   }
                 ],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "用户以命令式明确要求更正上一条记忆记录（'更正上一条'），并指明'128GB是这条记录的最终正确值'，这是对记忆记录的显式更新/保存指令，explicit_memory_request 应为 true，而非 false。"
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:b304d5ce8c5941fe",
+          "request": "fnv1a64:bb0342688c086c6d",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -306,11 +294,11 @@
         },
         {
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "conflict"
+            "answer_text": "128GB",
+            "candidate_index": 0,
+            "verdict": "answer"
           },
-          "request": "fnv1a64:645f25935e29faa4",
+          "request": "fnv1a64:04aee0de5783568b",
           "schema": "personal_memory_answer_v1"
         }
       ]
@@ -345,11 +333,11 @@
         },
         {
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "conflict"
+            "answer_text": "128GB",
+            "candidate_index": 0,
+            "verdict": "answer"
           },
-          "request": "fnv1a64:df70d4089c1bc897",
+          "request": "fnv1a64:da447f14a812b418",
           "schema": "personal_memory_answer_v1"
         }
       ]
