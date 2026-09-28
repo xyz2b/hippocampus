@@ -124,6 +124,16 @@ pub fn resolve_temporal_expression(
         return day_range(date, TemporalSource::Explicit, offset);
     }
 
+    if let [span] = absolute_spans(expression)[..]
+        && span.text == expression
+    {
+        return Ok(range(
+            local_midnight(span.start, offset).0,
+            local_midnight(span.end, offset).0,
+            TemporalSource::Explicit,
+        ));
+    }
+
     Ok(TemporalResolution::Reference(TemporalReference::Unknown {
         expression: expression.to_owned(),
         source: TemporalSource::Unknown,
@@ -183,6 +193,19 @@ pub(crate) fn normalized_calendar(
             ));
         }
         return normalized_date(expression, proposed_start, now, offset);
+    }
+    if let [span] = absolute_spans(expression)[..]
+        && span.text == expression
+    {
+        // The USER wrote the calendar dates; a model proposal may only restate them.
+        if proposed_start.is_some_and(|start| parse_iso_date(start) != Some(span.start))
+            || proposed_end_exclusive.is_some_and(|end| parse_iso_date(end) != Some(span.end))
+        {
+            return Err(TemporalResolveError(
+                "model dates do not match the USER calendar dates".into(),
+            ));
+        }
+        return resolve_temporal_expression(expression, now, offset).map(Some);
     }
     if !calendar_interval(expression) {
         return no_calendar_proposal(proposed_start.is_some() || proposed_end_exclusive.is_some());
@@ -457,6 +480,67 @@ fn last_year_month(expression: &str) -> Option<u8> {
     })
 }
 
+/// A literal calendar date or inclusive date range in USER text, e.g. 2027年4月1日至4月14日.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct AbsoluteSpan<'a> {
+    pub(crate) text: &'a str,
+    pub(crate) start: Date,
+    /// Exclusive: the day after the last named day.
+    pub(crate) end: Date,
+}
+
+fn leading_number(text: &str, max_digits: usize) -> Option<(u32, &str)> {
+    let digits = text.bytes().take_while(u8::is_ascii_digit).count();
+    (1..=max_digits)
+        .contains(&digits)
+        .then(|| Some((text[..digits].parse().ok()?, &text[digits..])))
+        .flatten()
+}
+
+/// Parses `[YYYY年]M月D日|号` at the start of text; the year falls back to `year`.
+fn cjk_date(text: &str, year: Option<i32>) -> Option<(Date, &str)> {
+    let (year, rest) = match leading_number(text, 4) {
+        Some((year, rest)) if rest.starts_with('年') && text.len() - rest.len() == 4 => {
+            (year as i32, &rest['年'.len_utf8()..])
+        }
+        _ => (year?, text),
+    };
+    let (month, rest) = leading_number(rest, 2)?;
+    let rest = rest.strip_prefix('月')?;
+    let (day, rest) = leading_number(rest, 2)?;
+    let rest = rest.strip_prefix(['日', '号'])?;
+    let date = Date::from_calendar_date(year, Month::try_from(month as u8).ok()?, day as u8).ok()?;
+    Some((date, rest))
+}
+
+// ponytail: full-year CJK dates and "A至|到B" ranges only; relative or weekday ranges stay
+// unresolved until a real case needs them.
+/// Every literal absolute date or date range in text, left to right.
+pub(crate) fn absolute_spans(text: &str) -> Vec<AbsoluteSpan<'_>> {
+    let mut spans = Vec::new();
+    let mut at = 0;
+    while at < text.len() {
+        let tail = &text[at..];
+        let starts_year = text[..at].chars().next_back().is_none_or(|c| !c.is_ascii_digit());
+        if let Some((start, rest)) = starts_year.then(|| cjk_date(tail, None)).flatten() {
+            let (last, rest) = ["至", "到", "-", "~", "～", "—", "－"]
+                .iter()
+                .find_map(|joint| rest.strip_prefix(joint))
+                .and_then(|rest| cjk_date(rest, Some(start.year())))
+                .filter(|(last, _)| *last >= start)
+                .unwrap_or((start, rest));
+            let end = at + tail.len() - rest.len();
+            if let Some(next) = last.next_day() {
+                spans.push(AbsoluteSpan { text: &text[at..end], start, end: next });
+            }
+            at = end;
+        } else {
+            at += tail.chars().next().map_or(1, char::len_utf8);
+        }
+    }
+    spans
+}
+
 // ponytail: lexical sanity check only; it never resolves a time, it just refuses filler.
 /// Whether an expression contains any time word or digit at all.
 pub(crate) fn mentions_time(expression: &str) -> bool {
@@ -500,6 +584,31 @@ fn parse_iso_date(value: &str) -> Option<Date> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn absolute_dates_and_ranges_are_read_from_user_text() {
+        let text = "从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。另有2028年1月3号和12月9日。";
+        let spans = absolute_spans(text);
+        let dates: Vec<_> = spans
+            .iter()
+            .map(|s| (s.text, s.start.to_string(), s.end.to_string()))
+            .collect();
+        assert_eq!(
+            dates,
+            [
+                ("2027年4月15日至2027年4月30日", "2027-04-15".into(), "2027-05-01".into()),
+                ("2028年1月3号", "2028-01-03".into(), "2028-01-04".into()),
+            ]
+        );
+        assert_eq!(absolute_spans("2027年4月1日至4月14日")[0].end.to_string(), "2027-04-15");
+        assert!(absolute_spans("2027年2月30日 12027年1月1日 2027年5月1日至4月1日")
+            .iter()
+            .all(|s| s.text == "2027年5月1日"));
+        let now = Timestamp(1790514274);
+        let range = |text| normalized_calendar(text, Some("2027-04-15"), Some("2027-05-01"), now, 28800);
+        assert!(matches!(range("2027年4月15日至2027年4月30日"), Ok(Some(_))));
+        assert!(range("2027年4月15日至2027年4月29日").is_err());
+    }
 
     #[test]
     fn filler_is_not_a_time_expression() {

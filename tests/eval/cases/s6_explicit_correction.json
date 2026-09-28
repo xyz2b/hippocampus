@@ -190,12 +190,12 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:91b95a3f6042339d",
+            "review_binding": "source-review-v3:b238861ad732c265",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "insufficient",
+                  "intent": "supported",
                   "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
@@ -214,21 +214,6 @@
                 ],
                 "issues": [
                   {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "墨湾相机目前使用的存储卡容量是64GB。",
-                        "turn_index": 1
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "Candidate intent is Supersede/UserRetracted with target null. USER explicitly corrects 上一条 and identifies 64GB as wrong while giving 128GB as final correct value, so the correction target and correction meaning are not fully represented."
-                  },
-                  {
                     "check": "metadata",
                     "evidence": [
                       {
@@ -237,13 +222,13 @@
                       }
                     ],
                     "field": "explicit_memory_request",
-                    "reason": "USER explicitly instructs 更正上一条 and says 128GB is 这条记录的最终正确值, an explicit request to correct/retain this memory record; explicit_memory_request=false contradicts that."
+                    "reason": "用户以命令式明确要求更正上一条记忆记录（'更正上一条'），并指明'128GB是这条记录的最终正确值'，这是对记忆记录的显式更新/保存指令，explicit_memory_request 应为 true，而非 false。"
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:8606ec00da823696",
+          "request": "fnv1a64:b304d5ce8c5941fe",
           "schema": "personal_memory_source_support_v1"
         }
       ],

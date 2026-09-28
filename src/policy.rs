@@ -301,8 +301,11 @@ fn explicit_update(
     let matches: Vec<_> = existing
         .iter()
         .filter(|memory| {
+            // An explicit target names the memory being replaced, so its old value need
+            // not equal the new one even in a multi-value slot.
+            let slot = if requested_target.is_some() { Cardinality::Single } else { cardinality };
             memory.status == MemoryStatus::Active
-                && same_semantic_slot(memory, candidate, cardinality)
+                && same_semantic_slot(memory, candidate, slot)
                 && requested_target.is_none_or(|target| memory.id == target)
                 // Untargeted updates may refine ordinary conditions, but cannot cross task identities.
                 && (requested_target.is_some()

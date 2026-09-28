@@ -1041,6 +1041,9 @@ pub struct OpenAiAdapterContext {
     pub utc_offset_seconds: i32,
     /// Retrieval candidate limit; never delegated to the model.
     pub retrieval_limit: usize,
+    /// The owner's active memories, used only to resolve an untargeted update locally.
+    /// Never sent to the model.
+    pub update_targets: Vec<crate::Memory>,
 }
 
 impl OpenAiAdapterContext {
@@ -1081,7 +1084,40 @@ impl OpenAiAdapterContext {
             now,
             utc_offset_seconds: 0,
             retrieval_limit: 20,
+            update_targets: Vec::new(),
         })
+    }
+
+    /// The extractor never sees memory IDs. An untargeted update names its slot's only
+    /// active memory (same subject, predicate, type and task); otherwise it stays untargeted.
+    fn resolve_update_targets(&self, candidates: &mut [CandidateMemory]) {
+        let tasks = |conditions: &[ScopeCondition]| {
+            conditions
+                .iter()
+                .filter(|c| matches!(c, ScopeCondition::Task(_)))
+                .cloned()
+                .collect::<Vec<_>>()
+        };
+        for candidate in candidates {
+            let mut slot = self.update_targets.iter().filter(|memory| {
+                memory.status == crate::MemoryStatus::Active
+                    && candidate.subject_id() == Some(&memory.subject_id)
+                    && memory.predicate == candidate.predicate
+                    && memory.memory_type == candidate.memory_type
+                    && tasks(&memory.scope.conditions) == tasks(&candidate.scope.conditions)
+            });
+            let only = match (slot.next(), slot.next()) {
+                (Some(memory), None) => memory.id,
+                _ => continue,
+            };
+            if let CandidateIntent::Supersede { target, .. }
+            | CandidateIntent::Refine { target }
+            | CandidateIntent::Retract { target } = &mut candidate.intent
+                && target.is_none()
+            {
+                *target = Some(only);
+            }
+        }
     }
 
     /// Overrides the default retrieval limit after checking its safe range.
@@ -1726,7 +1762,8 @@ impl OpenAiMemoryExtractor {
                 input["extraction_correction"] = extraction_correction(json!([issue]));
                 continue;
             }
-            let candidates = result?;
+            let mut candidates = result?;
+            self.context.resolve_update_targets(&mut candidates);
             let mut review_input = input.clone();
             for field in ["coverage_correction", "extraction_correction"] {
                 review_input.as_object_mut().unwrap().remove(field);
@@ -2200,9 +2237,23 @@ impl RawCandidate {
             .as_deref()
             .is_some_and(|e| !crate::temporal::mentions_time(e))
         {
-            self.temporal_expression = None;
-            self.temporal_date = None;
-            self.temporal_end_date = None;
+            // The runtime copies the time itself when the USER wrote exactly one absolute
+            // date or range and the model's dates restate it.
+            let spans = crate::temporal::absolute_spans(&evidence.quote);
+            self.temporal_expression = match spans[..] {
+                [span]
+                    if self.temporal_date.as_deref() == Some(&span.start.to_string())
+                        && self.temporal_end_date.as_deref()
+                            .is_none_or(|end| end == span.end.to_string()) =>
+                {
+                    Some(span.text.to_owned())
+                }
+                _ => {
+                    self.temporal_date = None;
+                    self.temporal_end_date = None;
+                    None
+                }
+            };
         }
         if self
             .expiry_expression

@@ -1874,7 +1874,7 @@ impl ChatMemoryService {
             client_report = Some(client.clone());
             let candidates = OpenAiMemoryExtractor::new(
                 client,
-                context,
+                self.with_update_targets(context)?,
                 SessionId(input.session_id),
                 TurnId(input.turn_id),
             )
@@ -2142,7 +2142,7 @@ impl ChatMemoryService {
             client_report = Some(client.clone());
             let candidates = OpenAiMemoryExtractor::new(
                 client,
-                context,
+                self.with_update_targets(context)?,
                 SessionId(input.session_id),
                 TurnId(input.turn_id),
             )
@@ -2280,6 +2280,21 @@ impl ChatMemoryService {
             Err(error) => json!({"status":assistance_failure(&error)}),
         };
         Ok(())
+    }
+
+    fn with_update_targets(
+        &self,
+        mut context: OpenAiAdapterContext,
+    ) -> PersistenceResult<OpenAiAdapterContext> {
+        context.update_targets = self
+            .store
+            .read()?
+            .repository
+            .list_by_owner(self.store.owner())?
+            .into_iter()
+            .filter(|memory| memory.status == MemoryStatus::Active)
+            .collect();
+        Ok(context)
     }
 
     fn model_client(&self, operation_id: &str) -> PersistenceResult<OpenAiClient> {

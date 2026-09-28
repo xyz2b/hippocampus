@@ -87,7 +87,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:1c230dcb6e2cd7f5",
+            "review_binding": "source-review-v3:8d169bbd78f66df5",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -108,7 +108,7 @@
               }
             ]
           },
-          "request": "fnv1a64:3f702ae9d700d0e4",
+          "request": "fnv1a64:05b0b26306f96723",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -194,7 +194,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:c15a63f57c2c71e5",
+            "review_binding": "source-review-v3:3d8f6eee65733fa8",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -206,38 +206,16 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "insufficient",
-                  "value": "insufficient"
+                  "temporal": "supported",
+                  "value": "supported"
                 },
                 "current_user_quote": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "value.Text is not a complete verbatim USER sentence: it appends an extra ASCII period after 闭馆。"
-                  },
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal.valid_from, temporal.valid_to",
-                    "reason": "temporal.valid_from and temporal.valid_to are null, so the user-asserted 2027-04-15 to 2027-04-30 interval is not represented; observed_at is only system time."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
+          "request": "fnv1a64:adf656e24a1f3f7a",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -280,7 +258,7 @@
             "candidate_index": 0,
             "verdict": "answer"
           },
-          "request": "fnv1a64:4418d05605ee7d21",
+          "request": "fnv1a64:aead0a18f3cd6d5a",
           "schema": "personal_memory_answer_v1"
         }
       ]
@@ -315,11 +293,11 @@
         },
         {
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "insufficient"
+            "answer_text": "19:00",
+            "candidate_index": 1,
+            "verdict": "answer"
           },
-          "request": "fnv1a64:627a8607dc260960",
+          "request": "fnv1a64:e1341658484bf573",
           "schema": "personal_memory_answer_v1"
         }
       ]
@@ -353,7 +331,7 @@
             "candidate_index": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:1932ff40ea92104c",
+          "request": "fnv1a64:cba7836d56685869",
           "schema": "personal_memory_answer_v1"
         }
       ]
