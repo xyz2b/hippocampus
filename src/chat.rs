@@ -2206,12 +2206,7 @@ impl ChatMemoryService {
             .collect();
         // Single-character self aliases (我/I) never bind lexically; an otherwise unbound
         // first-person question is about the user.
-        let first_person = query.contains('我')
-            || query
-                .split(|c: char| !c.is_ascii_alphabetic())
-                .any(|word| {
-                    ["i", "my", "me", "mine", "myself"].contains(&word.to_lowercase().as_str())
-                });
+        let first_person = crate::local_recall::first_person(query);
         let subject_id = match bound.into_iter().collect::<Vec<_>>()[..] {
             [subject_id] => subject_id,
             [] if first_person => "self",

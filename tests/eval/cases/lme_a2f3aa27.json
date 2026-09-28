@@ -1,0 +1,819 @@
+{
+  "entities": [],
+  "id": "lme_a2f3aa27",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:f21a7e8026de72b4",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:853634c402c3cafd",
+            "reviews": []
+          },
+          "request": "fnv1a64:11e2e627ae9b4fb8",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm looking to optimize my Instagram content strategy, can you give me some tips on how to increase engagement and grow my audience?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "instagram"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "instagram"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've got 1250 followers on Instagram now"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:69e364c231d01630",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:ee3cc27981c17d9b",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:d90c328e4b5a3a3b",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:56482a35f74e73c7",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:0ab67aafdb7c9880",
+            "reviews": []
+          },
+          "request": "fnv1a64:68b7e0727a054a53",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "What are some tips for creating engaging captions for my posts?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:70e0c0749cf502a1",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:ee569c0bf770d597",
+            "reviews": []
+          },
+          "request": "fnv1a64:ca45fce2fa4f1d1e",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm actually thinking of trying out Instagram Live more often. Do you have any tips on how to make my live streams more engaging and interactive?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:50164a7cdfc42022",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:07cba3f7a59ed38c",
+            "reviews": []
+          },
+          "request": "fnv1a64:e94f5f5488c9b340",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm thinking of doing a Q&A session on my next live stream. Do you have any tips on how to make it more engaging and interactive? For example, how can I encourage viewers to ask questions?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?"
+                }
+              },
+              {
+                "certainty": "medium",
+                "cross_turn_useful": true,
+                "extraction_confidence": "medium",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:d68b4f78dcd849bd",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "my audience is mostly from the US, UK, and Australia"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:c54d6d29b2ded95e",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "contradicted",
+                  "scope": "supported",
+                  "source": "contradicted",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "contradicted"
+                },
+                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "Predicate 'fact' mislabels an assistant-directed help request as a factual property; the sentence asserts no property or action of the user."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Text is an interrogative request for caption help, not a proposition the user asserted as true, so it cannot be the value of a fact memory."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Intent 'Assert' is wrong: the user poses a question and asks for help rather than asserting, correcting or updating anything."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Current USER turn contains a request for assistance, not a new user assertion or update of this memory; a question is not an assertion."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "memory_type 'Fact' does not match the user's request for caption help, and retention_tier 'LongTerm' has no basis in anything the user said."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:7adc0060a09e0bf6",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "constraint",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:f51a3e5814ec6342",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:5c22cd7abfef21fa",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "insufficient",
+                  "metadata": "insufficient",
+                  "polarity": "insufficient",
+                  "relation": "insufficient",
+                  "scope": "insufficient",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I like the options! For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "User requests a hashtag edit; does not assert a fact. Predicate 'fact' misrepresents a control instruction as a proposition."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Text is a verbatim request/question, not a proposition with true/false meaning; it is a control instruction."
+                  },
+                  {
+                    "check": "polarity",
+                    "evidence": [
+                      {
+                        "quote": "instead of the general #industryevent",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "polarity",
+                    "reason": "User excludes general #industryevent via 'instead of', but polarity is null; exclusion direction omitted."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "User limits request to Option 1 and niche hashtags, but scope conditions/domain are empty."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "can you modify the hashtags",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Intent is 'Assert' but user is requesting a modification, not asserting a fact."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Current turn is a control instruction requesting hashtag changes; control instructions are not user assertions."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "LongTerm retention not stated; request is task-specific to Option 1."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:b8d4a785c50c559c",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I like the options! For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t3",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:12ef0ecf09e8860d",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:49f135773358d1ee",
+            "reviews": []
+          },
+          "request": "fnv1a64:2bcc89427780dddd",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "Can you suggest some relevant influencers or content creators in my niche that I could collaborate with, considering my recent growth and engagement on social media?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t4",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:4e4504fc76330640",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:6e92b1c758c603cf",
+            "reviews": []
+          },
+          "request": "fnv1a64:6ce79406ac8a1324",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I think I'll start with micro-influencers and see how it goes. Can you suggest some potential collaboration ideas for me to reach out to them?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t5",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:a2a5418a1deb9c14",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'll reach out to Ashley Gaida and propose a guest blog post collaboration."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:94f8800f22c668b2",
+            "reviews": []
+          },
+          "request": "fnv1a64:fc9eb9fc3fc308db",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\""
+    }
+  ],
+  "origin": "LongMemEval oracle a2f3aa27 (knowledge-update); session dates ['2023/05/28 (Sun) 06:23', '2023/05/28 (Sun) 14:10'], asked 2023/06/03 (Sat) 09:01",
+  "questions": [
+    {
+      "after": 10,
+      "context": [],
+      "expect": {
+        "answer": [
+          "1300"
+        ],
+        "kind": "answer"
+      },
+      "id": "q",
+      "query": "How many followers do I have on Instagram now?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "Instagram follower count",
+              "my Instagram account has followers",
+              "follower count reached"
+            ]
+          },
+          "request": "fnv1a64:0444ea0ae53c7318",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": "1250 followers",
+            "candidate_index": 0,
+            "verdict": "answer"
+          },
+          "request": "fnv1a64:72a513d24906ff7b",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}
