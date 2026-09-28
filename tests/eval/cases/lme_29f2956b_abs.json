@@ -1,0 +1,512 @@
+{
+  "entities": [],
+  "id": "lme_29f2956b_abs",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "guitar",
+                  "music"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been practicing guitar for 30 minutes daily, and it's been helping me progress nicely."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:b40133ffa0790646",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm looking to improve my guitar playing"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:825d050aa30f7cbf",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking to improve my guitar playing and was wondering if you could recommend some online resources for learning more about music theory and fingerpicking techniques. By the way, I've been practicing guitar for 30 minutes daily, and it's been helping me progress nicely.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:1b3d6b98eed131a6",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm looking to improve my guitar playing and was wondering if you could recommend some online resources for learning more about music theory and fingerpicking techniques. By the way, I've been practicing guitar for 30 minutes daily, and it's been helping me progress nicely."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "medium",
+                "cross_turn_useful": false,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-30",
+                  "expression": "j",
+                  "kind": "retain_until"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "music"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "jazz",
+                  "saxophone"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm also interested in learning more about jazz music, especially saxophone."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:c011a10fd243a5ad",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:bd386e16b348cac1",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm also interested in learning more about jazz music, especially saxophone. Can you recommend some online resources for learning jazz theory and improvisation?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I'm also interested in learning more about jazz music, especially saxophone. Can you recommend some online resources for learning jazz theory and improvisation?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "expires_at",
+                    "reason": "USER gives no time qualifier; proposed expiry date 2026-09-30 with expression 'j' is not asserted. No validity or retention boundary is justified by the current turn."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:5ed41a3b99111297",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm also interested in learning more about jazz music, especially saxophone. Can you recommend some online resources for learning jazz theory and improvisation?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:9c7111641060afaf",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've been thinking of getting a digital audio workstation to record my jam sessions with my friend Alex."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:aaf01c49192b3d9a",
+            "reviews": []
+          },
+          "request": "fnv1a64:e9680b0d45173fe0",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I've been thinking of getting a digital audio workstation to record my jam sessions with my friend Alex. Can you recommend some popular DAWs for beginners, and maybe some online resources to learn how to use them?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:cf83e82d04de11e0",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:cabda7b4a26e6912",
+            "reviews": []
+          },
+          "request": "fnv1a64:ef061e474f88febe",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm thinking of buying a diatonic harmonica. Can you recommend some online resources for learning harmonica, and maybe some beginner-friendly harmonica tabs or songs to start with?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "low",
+                "cross_turn_useful": false,
+                "extraction_confidence": "low",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been reading about the history of the electric guitar and I'm fascinated by the evolution of guitar gear."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:ee859be36a62541f",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:a5392d0581d145f9",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm thinking of upgrading my guitar setup and was wondering if you could recommend some online resources for learning about guitar amplifiers and effects pedals? I've been reading about the history of the electric guitar and I'm fascinated by the evolution of guitar gear.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:664d216af1a76ade",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm thinking of upgrading my guitar setup and was wondering if you could recommend some online resources for learning about guitar amplifiers and effects pedals? I've been reading about the history of the electric guitar and I'm fascinated by the evolution of guitar gear."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "guitar gear and effects pedals"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:55ac4c8fd9aeaf5d",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've been thinking about upgrading my setup to get a better sound for my jam sessions with Alex."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:bf05e4ddb8ac58b9",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm excited to dive deeper into the world of guitar gear and effects pedals. I've been thinking about upgrading my setup to get a better sound for my jam sessions with Alex. Do you think I should consider getting a tube amp or a solid-state amp?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:194f8b6499e80642",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm excited to dive deeper into the world of guitar gear and effects pedals. I've been thinking about upgrading my setup to get a better sound for my jam sessions with Alex. Do you think I should consider getting a tube amp or a solid-state amp?"
+    }
+  ],
+  "origin": "LongMemEval oracle 29f2956b_abs (single-session-user); session dates ['2023/05/22 (Mon) 16:01'], asked 2023/05/29 (Mon) 04:31",
+  "questions": [
+    {
+      "after": 6,
+      "context": [],
+      "expect": {
+        "kind": "insufficient_evidence"
+      },
+      "id": "q",
+      "query": "How much time do I dedicate to practicing violin every day?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "practice violin daily minutes",
+              "daily violin practice duration",
+              "time spent practicing violin each day"
+            ]
+          },
+          "request": "fnv1a64:b04e98e36b02363f",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:ff6066b8ddb7c1f0",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,760 @@
+{
+  "entities": [],
+  "id": "lme_f4f1d8a4_abs",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-29",
+                  "expression": "I",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "cooking"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": "morning"
+                  },
+                  "domain": "Food & Drink"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "baking",
+                  "caramel",
+                  "pastries"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been experimenting with different baking recipes and I was wondering if you could give me some suggestions on what types of pastries I could make that feature caramel as a main ingredient?"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:c8f0edfa2aea16ee",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "I've been experimenting with different baking recipes and I was wondering if you could give me some suggestions on what types of pastries I could make that feature caramel as a main ingredient?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "food",
+                  "baking",
+                  "pastry"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "caramel éclairs"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "我"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "family Sunday dinner"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [
+                      "family"
+                    ],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "food",
+                  "baking",
+                  "pastry",
+                  "caramel",
+                  "family"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I recently made a caramel apple tart for my family's Sunday dinner and it was a huge hit."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:1c0ff70a4b587dd6",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:d45711d284ca68c6",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's a great list! I'm especially interested in trying out the caramel éclairs. Speaking of caramel, I recently made a caramel apple tart for my family's Sunday dinner and it was a huge hit.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's a great list! I'm especially interested in trying out the caramel éclairs. Speaking of caramel, I recently made a caramel apple tart for my family's Sunday dinner and it was a huge hit.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:241c0b94030c3fc0",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's a great list! I'm especially interested in trying out the caramel éclairs. Speaking of caramel, I recently made a caramel apple tart for my family's Sunday dinner and it was a huge hit."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "baking",
+                  "caramel",
+                  "equipment"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "new stand mixer"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "baking",
+                  "caramel",
+                  "recipe"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:45a77824c847db0e",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "as a birthday gift from my sister last month"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:dc3651f358ed50c6",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually got my new stand mixer as a birthday gift from my sister last month, and it's been a game-changer for making caramel. I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce. It's worked out really well so far!",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually got my new stand mixer as a birthday gift from my sister last month, and it's been a game-changer for making caramel. I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce. It's worked out really well so far!",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:6ed6c7f25002cb53",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I actually got my new stand mixer as a birthday gift from my sister last month, and it's been a game-changer for making caramel. I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce. It's worked out really well so far!"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "making caramel"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "whisk attachment when making caramel"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:26a60c2881798093",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:7b78515ce2c5e65d",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I usually use the whisk attachment when making caramel, I find it helps to incorporate the cream more evenly. I haven't tried using different types of sugar yet, but that's a great idea - I'll have to experiment with that soon. As for using the caramel sauce, I've been using it mostly as a topping for my baked goods, like the apple tart I mentioned earlier. But I've also been thinking of using it to make some caramel macchiatos - have you got any tips on how to do that?",
+                "evidence": [
+                  {
+                    "quote": "I usually use the whisk attachment when making caramel",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:e59606ec7fefcfd4",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I usually use the whisk attachment when making caramel, I find it helps to incorporate the cream more evenly. I haven't tried using different types of sugar yet, but that's a great idea - I'll have to experiment with that soon. As for using the caramel sauce, I've been using it mostly as a topping for my baked goods, like the apple tart I mentioned earlier. But I've also been thinking of using it to make some caramel macchiatos - have you got any tips on how to do that?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-28",
+                  "expression": "I",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm more of a DIY coffee enthusiast, and I've been experimenting with different coffee recipes at home."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-28",
+                  "expression": "I",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I recently got a new coffee grinder and a milk frother, so I've been having fun trying out different coffee drinks and flavor combinations."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:f5d6ca91a5347b91",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've also been thinking of starting a small coffee and baking blog, where I can share my recipes and experiments with others."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:d28379b08ca8324b",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm more of a DIY coffee enthusiast, and I've been experimenting with different coffee recipes at home. I recently got a new coffee grinder and a milk frother, so I've been having fun trying out different coffee drinks and flavor combinations. I've also been thinking of starting a small coffee and baking blog, where I can share my recipes and experiments with others. Do you have any tips on how to get started with blogging, or any favorite coffee and baking blogs that I should check out?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm more of a DIY coffee enthusiast, and I've been experimenting with different coffee recipes at home. I recently got a new coffee grinder and a milk frother, so I've been having fun trying out different coffee drinks and flavor combinations. I've also been thinking of starting a small coffee and baking blog, where I can share my recipes and experiments with others. Do you have any tips on how to get started with blogging, or any favorite coffee and baking blogs that I should check out?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:3c61982039d206b0",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm more of a DIY coffee enthusiast, and I've been experimenting with different coffee recipes at home. I recently got a new coffee grinder and a milk frother, so I've been having fun trying out different coffee drinks and flavor combinations. I've also been thinking of starting a small coffee and baking blog, where I can share my recipes and experiments with others. Do you have any tips on how to get started with blogging, or any favorite coffee and baking blogs that I should check out?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:005ca3e56e8c3eac",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've been thinking of calling it \"The Daily Grind\""
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:a47bf080ca0159a7",
+            "reviews": []
+          },
+          "request": "fnv1a64:7f7f07124b022e00",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's really helpful, thanks! I'll definitely check out those blogs and take your tips into consideration as I start my own blog. I've been thinking of calling it \"The Daily Grind\" - what do you think?"
+    }
+  ],
+  "origin": "LongMemEval oracle f4f1d8a4_abs (single-session-user); session dates ['2023/05/20 (Sat) 01:42'], asked 2023/05/20 (Sat) 23:21",
+  "questions": [
+    {
+      "after": 6,
+      "context": [],
+      "expect": {
+        "kind": "insufficient_evidence"
+      },
+      "id": "q",
+      "query": "What did my dad gave me as a birthday gift?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "dad gave me a birthday gift",
+              "my father got me a birthday present",
+              "dad bought me for my birthday"
+            ]
+          },
+          "request": "fnv1a64:ec21db1c62c24c82",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:cd750969ece95d82",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

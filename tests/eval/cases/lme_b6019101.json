@@ -1,0 +1,645 @@
+{
+  "entities": [],
+  "id": "lme_b6019101",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:7cbc25b42919e90d",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:68c379a64b3fe5b7",
+            "reviews": []
+          },
+          "request": "fnv1a64:3cc416c17bc9da1a",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm planning a movie marathon with my family over the long weekend and I want to re-watch some classic films from my childhood. Can you recommend some popular movies from the 80s and 90s that are suitable for a family movie night?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "i"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "media_viewing"
+                    ],
+                    "city": "shanghao",
+                    "companion_entity_ids": [
+                      "fam_1_9A7F"
+                    ],
+                    "companion_roles": [
+                      "family"
+                    ],
+                    "country": "CN",
+                    "date": "2026-10-01",
+                    "geography": "domestic",
+                    "task_id": null,
+                    "time_of_day": "evening"
+                  },
+                  "domain": "entertainment"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "Marvel",
+                  "MCU"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been on a Marvel binge recently and I'd love to share that with my family."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:08eae25d8827daec",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "Can you suggest some MCU films that are suitable for my family movie night as well? I've been on a Marvel binge recently and I'd love to share that with my family."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "movie night"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [
+                      "self"
+                    ],
+                    "companion_roles": [
+                      "family"
+                    ],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "MCU",
+                  "movies",
+                  "family movie night"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've actually watched 4 MCU films in the last 3 months, and I think Spider-Man: Homecoming would be a great choice for our family movie night."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:95d2894d7c0be9f8",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "I've actually watched 4 MCU films in the last 3 months, and I think Spider-Man: Homecoming would be a great choice for our family movie night. Can you give me some suggestions for snacks and activities that would complement the movie?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:7bb7af18478ae56d",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:bc3db416fc0ec2e1",
+            "reviews": []
+          },
+          "request": "fnv1a64:939ceca78304ecdf",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I was thinking of creating a Marvel-themed photo booth with props like Spider-Man masks and capes. Do you have any suggestions for other props I could include?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:2537a2504d639fb2",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I think I'll also include some DIY signs that say \"Spider-Man's Neighborhood\" or \"Queens, NY\" to give it a more authentic feel."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:94705ddb31ffb0c8",
+            "reviews": []
+          },
+          "request": "fnv1a64:523b45cf6c9c2ac8",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's a great list of props! I think I'll also include some DIY signs that say \"Spider-Man's Neighborhood\" or \"Queens, NY\" to give it a more authentic feel. Do you have any suggestions for how to create a DIY cityscape backdrop?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:2309877462776892",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:e2f00ba4f7223f88",
+            "reviews": []
+          },
+          "request": "fnv1a64:d57d0f0fddbb9529",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I think I'll go with the cardboard box cityscape option. It's easy to set up and can be customized to fit my Spider-Man theme. I'll also add some DIY signs that say \"Spider-Man's Neighborhood\" or \"Queens, NY\" to give it a more authentic feel. Thanks for the ideas!"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:7c25143bdd7be4c4",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:3f635f1622919d7f",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood. Can you give me some suggestions on what to watch? By the way, I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "in the last 3 months",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "USER asserted a relative period 'in the last 3 months', but candidate temporal has null valid_from/valid_to/reference; observed_at is not a validity boundary."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:b28d5e97c4416c85",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood. Can you give me some suggestions on what to watch? By the way, I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:5b3f48d54cff2c01",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I was thinking of including The Lion King and Back to the Future in the marathon"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:42e22e3d7254a6ca",
+            "reviews": []
+          },
+          "request": "fnv1a64:4bb7879ffbcb164b",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I was thinking of including The Lion King and Back to the Future in the marathon, but I'm not sure about the others. Can you give me more info on The Goonies and The NeverEnding Story? Are they suitable for kids?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t3",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-29",
+                  "expression": "未",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [
+                      "family"
+                    ],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "family",
+                  "kids",
+                  "movie_night",
+                  "The NeverEnding Story"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "The NeverEnding Story might be a bit too intense for some of the younger kids in my family, so I might save that for a later time."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:32254e65bc5bb76a",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:a440305cb65839e0",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list. The NeverEnding Story might be a bit too intense for some of the younger kids in my family, so I might save that for a later time. Thanks for the suggestions!",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "The NeverEnding Story might be a bit too intense for some of the younger kids in my family, so I might save that for a later time.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "certainty",
+                    "reason": "User hedges with 'might be a bit' and 'might save'; certainty 'High' overstates the user's expressed uncertainty."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:4c9c7018c6859d88",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list. The NeverEnding Story might be a bit too intense for some of the younger kids in my family, so I might save that for a later time. Thanks for the suggestions!"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t4",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:f34c005d547b3519",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I think I'll plan a treasure hunt with clues inspired by The Goonies, and serve some popcorn and snacks during the movies."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:3a2253d1b536da18",
+            "reviews": []
+          },
+          "request": "fnv1a64:98fefca7f0a28a5f",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's a great idea about the snacks and activities! I think I'll plan a treasure hunt with clues inspired by The Goonies, and serve some popcorn and snacks during the movies. What about some movie-themed games or quizzes during the breaks? Do you have any suggestions?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t5",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "unsupported_predicate"
+          },
+          "request": "fnv1a64:cd0f1aba963e6f35",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I think I'll go with the movie trivia and quote-along competition."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:ac8bb7fcce5f5215",
+            "reviews": []
+          },
+          "request": "fnv1a64:fd92bdb042166a2a",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's a great list of ideas! I think I'll go with the movie trivia and quote-along competition. They seem like a lot of fun and easy to set up. Do you think I could also have a \"guess the movie poster\" game, where I print out posters of different movies and they have to guess which one it is?"
+    }
+  ],
+  "origin": "LongMemEval oracle b6019101 (knowledge-update); session dates ['2023/05/20 (Sat) 09:06', '2023/05/25 (Thu) 17:09'], asked 2023/06/06 (Tue) 10:43",
+  "questions": [
+    {
+      "after": 11,
+      "context": [],
+      "expect": {
+        "answer": [
+          "5"
+        ],
+        "kind": "answer"
+      },
+      "id": "q",
+      "query": "How many MCU films did I watch in the last 3 months?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "watched MCU movie",
+              "saw Marvel film",
+              "streamed Marvel Studios movie"
+            ]
+          },
+          "request": "fnv1a64:af8c1cf3a91ba999",
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    }
+  ]
+}
