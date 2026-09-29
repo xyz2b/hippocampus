@@ -291,6 +291,129 @@
           },
           "request": "fnv1a64:5ef46c57982f9b7d",
           "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I recently organized my collection and have 17 cameras now",
+                "including the new Brownie Hawkeye I got last week"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:8e89e39fad933680",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "contradicted",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "evidence": [
+                  {
+                    "quote": "including the new Brownie Hawkeye I got last week",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I'm also curious about the best way to display my cameras.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Candidate scope asserts food/cooking conditions in Guangzhou on 2026-10-28, but USER only discusses camera display, collection size, Brownie Hawkeye ownership, and shelf placement; no food, cooking, or Guangzhou condition is asserted."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "including the new Brownie Hawkeye I got last week",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "No USER time qualifier justifies the proposed expiry 2026-10-28/'M'; USER only says the Brownie Hawkeye was got last week, which is an acquisition event, not a validity or retention deadline."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "contradicted",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "evidence": [
+                  {
+                    "quote": "I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I'm also curious about the best way to display my cameras.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Candidate scope asserts food/cooking conditions in Guangzhou on 2026-10-28, but USER only discusses camera display, collection size, Brownie Hawkeye ownership, and shelf placement; no food, cooking, or Guangzhou condition is asserted."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "No USER time qualifier justifies the proposed expiry 2026-10-28/'M'; the shelf statement has no validity or retention deadline."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:255e98355b9d4764",
+          "schema": "personal_memory_source_support_v1"
         }
       ],
       "text": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off."

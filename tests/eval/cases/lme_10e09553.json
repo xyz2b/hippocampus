@@ -542,6 +542,139 @@
           },
           "request": "fnv1a64:414de38008d45fad",
           "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm planning to fish from Illinois, probably around the Waukegan harbor area."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:be76a04cf575ee00",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "insufficient",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "when I was there with Alex on 7/22",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Scope lists only Activity=fishing; it omits the companion Alex and the location/time context asserted in the value."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "on 7/22 - we caught 9 largemouth bass that day",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "USER's 7/22 is the past trip date for the catch; candidate temporal has no valid_from/valid_to, and the proposed expiry_date misuses that event date as a retention deadline."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "contradicted",
+                  "scope": "insufficient",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "USER says they are planning to fish from Illinois around Waukegan harbor area, not that they visited it; 'visited' contradicts the planning modality."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Scope is empty/domain travel only; it omits the asserted planning activity, fishing from Illinois, and Waukegan harbor area as a probable location."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "on 7/22 - we caught 9 largemouth bass that day",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "Proposed 2026-07-22 is the past trip date for the lure/catch event, not a time for the planned Waukegan harbor area; candidate temporal is null."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Current USER turn only mentions Waukegan harbor area as a planned fishing location; it does not assert a prior visit to it."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "probably around the Waukegan harbor area",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "certainty",
+                    "reason": "USER says 'probably around the Waukegan harbor area', so certainty=High is not justified."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:6e88ebcd06320415",
+          "schema": "personal_memory_source_support_v1"
         }
       ],
       "text": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
@@ -677,6 +810,39 @@
           },
           "request": "fnv1a64:70e3d6be2b5ad390",
           "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm planning to try out some of those deer calls during our next hunting trip."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:d3fee3bf2214978a",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to try out some of those deer calls during our next hunting trip. By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan. Remember that trip when we caught 9 largemouth bass with Alex?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:d677b6f36c5e5d92",
+          "schema": "personal_memory_source_support_v1"
         }
       ],
       "text": "I'm planning to try out some of those deer calls during our next hunting trip. By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan. Remember that trip when we caught 9 largemouth bass with Alex?"
@@ -713,7 +879,7 @@
             "candidate_index": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:9b1bb0a57eaf0ad7",
+          "request": "fnv1a64:ea25fcb143527801",
           "schema": "personal_memory_answer_v1"
         }
       ]
