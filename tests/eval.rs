@@ -24,6 +24,10 @@
 //! 顺序回放冻结的输出，只按用例统计“输入漂移”，所以分数变化只来自代码。漂移多说明模型看到的
 //! 内容已实质改变，冻结输出不再代表真实行为，届时按批重录。`EVAL_STRICT=1` 与录制模式按指纹
 //! 判过期：回放记为 skipped，录制模式下重录。提示词或 schema 改动必须重录。
+//!
+//! 录制带 `model` 标识（可读的模型名，接入点 ID 另记为 `endpoint`）：每个模型配置各有一套
+//! 冻结录制，并列保存；回放和重录只动当前模型（MODEL）那一套，没有标识的旧录制视为当前模型的。
+//! 换模型时同时改 MODEL 与 DEEPSEEK_MODEL，再为它录一套。
 
 use hippocampus::chat::{ChatConfig, ChatMemoryService, EnrichmentMode, RetrievalMode};
 use hippocampus::*;
@@ -36,6 +40,9 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 const OWNER: &str = "eval";
+/// The model behind the DEEPSEEK_MODEL endpoint; recordings are labelled with it, so change it
+/// together with the endpoint. An endpoint ID alone does not say which model answered.
+const MODEL: &str = "DeepSeek-V4.1-Flash";
 /// Fixed clock for cases without their own times: 2026-09-28 12:00 UTC+8, a minute per
 /// message, so replays resolve relative dates the same way on any day. Cases may set
 /// `observed_at` per message and `at` per question (Unix seconds).
@@ -913,10 +920,18 @@ fn call(
         )),
         ..ChatConfig::default()
     };
+    // Each model configuration keeps its own frozen set side by side; only the current model's
+    // recordings are replayed. Unlabelled recordings predate the label and belong to it.
+    let (mine, others): (Vec<Value>, Vec<Value>) =
+        recorded.as_array().unwrap().iter().cloned().partition(|recording| {
+            recording
+                .get("model")
+                .is_none_or(|model| model == MODEL)
+        });
     replay.lock().unwrap().cases.insert(
         case_id.to_owned(),
         Queue {
-            queue: recorded.as_array().unwrap().iter().cloned().collect(),
+            queue: mine.into_iter().collect(),
             ..Queue::default()
         },
     );
@@ -934,7 +949,13 @@ fn call(
     }
     let queue = replay.lock().unwrap().cases.remove(case_id).unwrap();
     // Partial captures are kept: they are valid prefixes for the next replay.
-    let captured = queue.captured.then_some(queue.served);
+    let captured = queue.captured.then(|| {
+        let mut served = queue.served;
+        for recording in &mut served {
+            recording["model"] = json!(MODEL);
+        }
+        others.into_iter().chain(served).collect()
+    });
     if let Some(schema) = queue.missed {
         return (Err(Missing(schema)), captured);
     }
@@ -1099,7 +1120,8 @@ fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blockin
                             let output = serde_json::from_str(&text).unwrap_or(Value::String(text));
                             replay
                                 .served
-                                .push(json!({"schema":schema,"request":fingerprint,
+                                .push(json!({"schema":schema,"model":MODEL,
+                                "endpoint":request["model"],"request":fingerprint,
                                 "output":output,"usage":usage}));
                             replay.captured = true;
                         }
