@@ -11,9 +11,295 @@
       "observed_at": 1691723760,
       "recorded": [
         {
-          "output": "{\"candidates\":[{\"certainty\": \"high\", \"cross_turn_useful\": true, \"extraction_confidence\": \n\n\n      \n  \"high\", \"fact_time\": null, \"intent\": \n      \n \n        \n      \n      {\n      \n        \"kind\": \"assert\"\n      \n      \n      , \"reason\": null, \"target_memory_id\": null}, \"memory_request\": {\"kind\": \"not_requested\"}, \"memory_type\": \"preference\", \"polarity\": \"positive\", \"predicate\": \"likes\", \"retention_tier\": \"long_term\", \"scope\": {\"conditions\": \n        \n      \n  \n\n\n      \n  {\"activities\": [], \"city\": null, \"companion_entity_ids\": [], \"companion_roles\": [], \"country\": null, \"date\": null, \"geography\": null, \"task_id\": null, \"time_of_day\": null}, \"domain\": \n      \n   null}, \"source\": \"user_statement\", \"strength\": \"strong\", \"subject\": {\"entity_id\": \"self\"}, \"tags\": [\"gin\", \"cocktails\", \"drinks\"], \"value\": \n      \n      {\"boolean\": null, \"entity_id\": null, \"integer\": null, \"kind\": \"text\", \"text\": \"Hendrick's gin\"}}\n\n\n      \n      \n      , {\"certainty\": \"high\", \"cross_turn_useful\": true, \"extraction_confidence\": \n      \n      \n      \n   \"high\", \"fact_time\": null, \"intent\": \n      \n      \n      \n      \n      \n      \n      \n      \n   {\"kind\": \"assert\", \"reason\": null, \"target_memory_id\": null}, \"memory_request\": {\"kind\": \"not_requested\"}, \"memory_type\": \"fact\", \"polarity\": null, \"predicate\": \"fact\", \"retention_tier\": \"short_term\", \n      \n      \n      \n   \"scope\": {\"conditions\": {\"activities\": [], \"city\": null, \"companion_entity_ids\": [], \"companion_roles\": [], \"country\": null, \"date\": null, \"geography\": null, \"task_id\": null, \"time_of_day\": null}, \"domain\": null}, \"source\": \"user_statement\", \"strength\": \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n      \n",
-          "request": "fnv1a64:23b347ab5ac904f3",
-          "schema": "personal_memory_candidates_v1"
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Hendrick's gin"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "last week"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden?"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:dbe87b594abcbf25",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3934,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 22127,
+            "output_tokens_details": {
+              "reasoning_tokens": 21479
+            },
+            "total_tokens": 26061
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:2b3fa09accf7c59a",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking for some inspiration for new cocktails to try. Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden? By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking for some inspiration for new cocktails to try. Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden? By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I'm looking for some inspiration for new cocktails to try. Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden? By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "value.Text is a question the USER asks the assistant, not a truth-evaluable proposition asserted about the USER; the USER requested recommendations rather than stating a fact."
+                  },
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "predicate \"fact\" requires an asserted proposition; this sentence is an information request, so no fact relation is asserted by the USER."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "intent Assert is contradicted: the USER's words are an interrogative request for recommendations, not an assertion/update of a memory."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The current turn does not assert this content as a memory; the USER only asks a question, and questions are not eligible user assertions to store."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "memory_type Fact is unsupported: a recommendation request is not a factual memory the USER asserted; certainty High also has no asserted proposition to attach to."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:29eda2507e703bc4",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3140,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4682,
+            "output_tokens_details": {
+              "reasoning_tokens": 3918
+            },
+            "total_tokens": 7822
+          }
         }
       ],
       "text": "I'm looking for some inspiration for new cocktails to try. Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden? By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
@@ -58,19 +344,14 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "negroni",
-                  "cocktails",
-                  "gin",
-                  "home"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -78,21 +359,79 @@
                   "kind": "text",
                   "text": "I've been experimenting with different Negroni recipes at home"
                 }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Hendrick's gin"
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4fe707a172bacd95",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:0c00668071fcca63",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4014,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 16120,
+            "output_tokens_details": {
+              "reasoning_tokens": 15598
+            },
+            "total_tokens": 20134
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I've been thinking of experimenting with it"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:b9590a9b8de78779",
+            "review_binding": "source-review-v3:e43ca40bc707018e",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -108,18 +447,73 @@
                   "value": "supported"
                 },
                 "current_user_quote": "What do you think about using lavender in a cocktail? I've been thinking of experimenting with it, and I'm curious if you have any recommendations for a good lavender syrup recipe or a cocktail that pairs well with it. By the way, speaking of gin, I've been experimenting with different Negroni recipes at home, and I've found that the Hendrick's gin really brings out the flavors.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "What do you think about using lavender in a cocktail? I've been thinking of experimenting with it, and I'm curious if you have any recommendations for a good lavender syrup recipe or a cocktail that pairs well with it. By the way, speaking of gin, I've been experimenting with different Negroni recipes at home, and I've found that the Hendrick's gin really brings out the flavors.",
                 "evidence": [
                   {
-                    "quote": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week.",
+                    "quote": "I've really been enjoying the Hendrick's gin I picked up last week.",
                     "turn_index": 1
                   }
                 ],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I've found that the Hendrick's gin really brings out the flavors.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "The current turn asserts that Hendrick's gin brings out flavors in Negroni, not that the user likes Hendrick's gin; the 'likes' predicate is not asserted in the current turn."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "I've found that the Hendrick's gin really brings out the flavors.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I've really been enjoying the Hendrick's gin I picked up last week.",
+                        "turn_index": 1
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The current turn does not assert or clarify the preference 'likes Hendrick's gin'; that liking statement appears in prior history, not as a new current assertion."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:4815ff1ffc89cd46",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b9479d5573a5cadb",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2887,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 16320,
+            "output_tokens_details": {
+              "reasoning_tokens": 15779
+            },
+            "total_tokens": 19207
+          }
         }
       ],
       "text": "What do you think about using lavender in a cocktail? I've been thinking of experimenting with it, and I'm curious if you have any recommendations for a good lavender syrup recipe or a cocktail that pairs well with it. By the way, speaking of gin, I've been experimenting with different Negroni recipes at home, and I've found that the Hendrick's gin really brings out the flavors."
@@ -139,72 +533,29 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "null"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-08-11",
-                  "expression": "夸",
+                  "date": "2026-09-29",
+                  "expression": "明天",
                   "kind": "retain_until"
                 },
                 "memory_type": "fact",
-                "polarity": "positive",
+                "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've been trying to perfect my Negroni recipe."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-08-11",
-                  "expression": "夸",
-                  "kind": "retain_until"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
                     "activities": [
-                      "making a Negroni"
+                      "breakfast"
                     ],
                     "city": null,
                     "companion_entity_ids": [],
@@ -213,229 +564,43 @@
                     "date": null,
                     "geography": null,
                     "task_id": null,
-                    "time_of_day": null
+                    "time_of_day": "morning"
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "breakfast",
+                  "routine"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Negroni made with Hendrick's gin and Carpano Antica vermouth"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-08-11",
-                  "expression": "夸",
-                  "kind": "retain_until"
-                },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-08-11",
-                  "expression": "夸",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "unresolved_reference": "E"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "Emma teached me how to make it"
+                  "text": "每天早上我都会在酒店的餐厅吃早饭。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:6b9817f3434bbacd",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:d800be823ab4698b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4135,
+            "input_tokens_details": {
+              "cached_tokens": 3456
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:285ddf428f93750a",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful, thanks! I'll definitely try out that lavender syrup recipe and experiment with the cocktails you suggested. By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors. I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right. Do you have any recommendations for other bitter liqueurs I could try in place of Campari?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful, thanks! I'll definitely try out that lavender syrup recipe and experiment with the cocktails you suggested. By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors. I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right. Do you have any recommendations for other bitter liqueurs I could try in place of Campari?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "USER asserts that Hendrick's gin and Carpano Antica vermouth bring out the flavors, not that they like Negroni made with them; 'likes' is an unsupported preference abstraction."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful, thanks! I'll definitely try out that lavender syrup recipe and experiment with the cocktails you suggested. By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors. I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right. Do you have any recommendations for other bitter liqueurs I could try in place of Campari?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 3,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "contradicted",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful, thanks! I'll definitely try out that lavender syrup recipe and experiment with the cocktails you suggested. By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors. I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right. Do you have any recommendations for other bitter liqueurs I could try in place of Campari?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "subject",
-                    "evidence": [
-                      {
-                        "quote": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "subject",
-                    "reason": "The value sentence is first-person ('I've tried...'); Emma is only mentioned as the person who taught the user. Subject 'E' does not match the asserted subject."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:8a4c6085de579d6c",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 3572,
+            "output_tokens_details": {
+              "reasoning_tokens": 3306
+            },
+            "total_tokens": 7707
+          }
         }
       ],
       "text": "That's really helpful, thanks! I'll definitely try out that lavender syrup recipe and experiment with the cocktails you suggested. By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors. I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right. Do you have any recommendations for other bitter liqueurs I could try in place of Campari?"
@@ -453,8 +618,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:6b05a5ce78de3f55",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:abb55364a59cc6a3",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4220,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 776,
+            "output_tokens_details": {
+              "reasoning_tokens": 753
+            },
+            "total_tokens": 4996
+          }
         },
         {
           "output": {
@@ -494,291 +670,9 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cocktail",
-                  "citrus"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I'm also curious about using different types of citrus in my cocktails."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "uses",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cocktail",
-                  "citrus",
-                  "grapefruit"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "grapefruit"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "uses",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cocktail",
-                  "citrus",
-                  "lemon"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "lemon"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:f6d0b6f957ea258f",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I've been experimenting with grapefruit and lemon",
-                "but I want to try out some other options"
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:de06157bd3f9690f",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "insufficient",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've been experimenting with grapefruit and lemon",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "Candidate predicate is 'uses', but USER says 'experimenting with' grapefruit and lemon; the asserted action is experimentation, not a general use relation."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "using different types of citrus in my cocktails",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope",
-                    "reason": "Candidate scope is empty, but USER limits the experimentation/use to cocktails ('in my cocktails'); omitted limiting domain."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "insufficient",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've been experimenting with grapefruit and lemon",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "Candidate predicate is 'uses', but USER says 'experimenting with' grapefruit and lemon; the asserted action is experimentation, not a general use relation."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "using different types of citrus in my cocktails",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope",
-                    "reason": "Candidate scope is empty, but USER limits the experimentation/use to cocktails ('in my cocktails'); omitted limiting domain."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:bedfdb73536a6ddb",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s2_t1",
-      "observed_at": 1701345300,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-08-11",
+                  "expression": "I'm also curious about using different types of citrus in my cocktails.",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -809,25 +703,81 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm looking for some inspiration for a new cocktail to serve at my next dinner party."
+                  "text": "I'm also curious about using different types of citrus in my cocktails."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-08-11",
+                  "expression": "I've been experimenting with grapefruit and lemon.",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been experimenting with grapefruit and lemon."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:e80b4f84dd381e21",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:395ce1f3c348c5f1",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4271,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 9120,
+            "output_tokens_details": {
+              "reasoning_tokens": 8578
+            },
+            "total_tokens": 13391
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:833ca1fcd5b473cf",
+            "review_binding": "source-review-v3:42352fe200d71b7e",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -842,14 +792,126 @@
                   "temporal": "supported",
                   "value": "supported"
                 },
-                "current_user_quote": "I'm looking for some inspiration for a new cocktail to serve at my next dinner party. Do you have any unique recipes that incorporate lavender or grapefruit? By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it.",
+                "current_user_quote": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?",
                 "evidence": [],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:83c956057e8264e3",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:d88702e5ba66c0e9",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3076,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1821,
+            "output_tokens_details": {
+              "reasoning_tokens": 1499
+            },
+            "total_tokens": 4897
+          }
+        }
+      ],
+      "text": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t1",
+      "observed_at": 1701345300,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": false,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-11-30",
+                  "expression": "today",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": "negative",
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "making Negroni"
+                    ],
+                    "city": "home",
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "weak",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "negroni",
+                  "cocktail",
+                  "practice"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:42e6a33725b5586f",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4339,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 4205,
+            "output_tokens_details": {
+              "reasoning_tokens": 3864
+            },
+            "total_tokens": 8544
+          }
         }
       ],
       "text": "I'm looking for some inspiration for a new cocktail to serve at my next dinner party. Do you have any unique recipes that incorporate lavender or grapefruit? By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
@@ -867,8 +929,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:634c6af85324e0a9",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:26323e86742bc1e7",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4382,
+            "input_tokens_details": {
+              "cached_tokens": 3712
+            },
+            "output_tokens": 444,
+            "output_tokens_details": {
+              "reasoning_tokens": 422
+            },
+            "total_tokens": 4826
+          }
         },
         {
           "output": {
@@ -899,8 +972,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:027a942f22d1677d",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:85b218ea99da381b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4418,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 399,
+            "output_tokens_details": {
+              "reasoning_tokens": 378
+            },
+            "total_tokens": 4817
+          }
         },
         {
           "output": {
@@ -938,7 +1022,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "r"
+                  "expression": "recently"
                 },
                 "intent": {
                   "kind": "assert",
@@ -955,7 +1039,7 @@
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "dinner party"
+                      "dinner  party"
                     ],
                     "city": null,
                     "companion_entity_ids": [],
@@ -979,26 +1063,119 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": " By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit."
+                  "text": "I  recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "since my friend Emma showed me how to make it"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've also  been perfecting my Negroni game - I've tried making it at home 10 times now since my friend  Emma showed me how to make it."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:597356dff6066d10",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:a4b5df629a2e606a",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4521,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 11463,
+            "output_tokens_details": {
+              "reasoning_tokens": 10933
+            },
+            "total_tokens": 15984
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                ":{",
+                "quote",
+                "turn_index"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:c1f7d916e096cd6b",
+            "review_binding": "source-review-v3:700a83699f58eebb",
             "reviews": [
               {
                 "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's really helpful! I think I'll start with infusing gin with cucumber and mint separately to see how the flavors develop. By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit. I've also been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other classic cocktails that I should try making?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER said only 'recently'; the proposed valid_from 2023-10-31 and valid_to 2023-11-30 are extractor-inferred boundaries not asserted by USER. No precise validity window exists; the bound must remain unknown/open-ended."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
                   "metadata": "supported",
@@ -1016,8 +1193,19 @@
               }
             ]
           },
-          "request": "fnv1a64:98eec6d33114689c",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:8693b8f02c7d2046",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3598,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 5478,
+            "output_tokens_details": {
+              "reasoning_tokens": 4988
+            },
+            "total_tokens": 9076
+          }
         }
       ],
       "text": "That's really helpful! I think I'll start with infusing gin with cucumber and mint separately to see how the flavors develop. By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit. I've also been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other classic cocktails that I should try making?"
@@ -1081,8 +1269,19 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d3b3208f81fb1d9b",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:288fccae106caabd",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4601,
+            "input_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "output_tokens": 9222,
+            "output_tokens_details": {
+              "reasoning_tokens": 9003
+            },
+            "total_tokens": 13823
+          }
         },
         {
           "output": {
@@ -1149,7 +1348,7 @@
                 },
                 "memory_type": "fact",
                 "polarity": null,
-                "predicate": "fact",
+                "predicate": "owns",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
@@ -1163,20 +1362,23 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "cocktail",
+                  "honey_syrup"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm excited to try out the Bee's Knees with my homemade honey syrup."
+                  "text": "my homemade honey syrup"
                 }
               },
               {
@@ -1198,7 +1400,9 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      "experimenting with different types of gin"
+                    ],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -1208,14 +1412,18 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "gin",
+                  "cocktail",
+                  "experimenting"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -1231,7 +1439,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "recently"
                 },
                 "intent": {
                   "kind": "assert",
@@ -1241,7 +1449,7 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "fact",
+                "memory_type": "episode",
                 "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
@@ -1257,38 +1465,154 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "gin",
+                  "purchase"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I recently picked up a bottle of Hendrick's gin, which I'm really enjoying."
+                  "text": "I recently picked up a bottle of Hendrick's gin."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "gin",
+                  "Hendrick's"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Hendrick's gin"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "since my friend Emma showed me how to make it"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "making a Negroni"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "Negroni",
+                  "cocktail"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:f5bfa292afeb81f1",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:3b5ca03ae489f5df",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4697,
+            "input_tokens_details": {
+              "cached_tokens": 4608
+            },
+            "output_tokens": 21037,
+            "output_tokens_details": {
+              "reasoning_tokens": 19701
+            },
+            "total_tokens": 25734
+          }
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it."
+                "I'm excited to try out the Bee's Knees with my homemade honey syrup."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d065b3be0ee9aec1",
+            "review_binding": "source-review-v3:af1345a99a76cd5e",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -1334,6 +1658,52 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm excited to try out the Bee's Knees with my homemade honey syrup. I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying. By the way, speaking of gin, I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other gin-based cocktails that I should try making?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I recently picked up a bottle of Hendrick's gin",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from/valid_to",
+                    "reason": "USER only says 'recently'; the exact one-month valid_from boundary and valid_to ending one second after now are inferred, not asserted."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 3,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm excited to try out the Bee's Knees with my homemade honey syrup. I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying. By the way, speaking of gin, I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other gin-based cocktails that I should try making?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 4,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
                   "temporal": "supported",
                   "value": "supported"
                 },
@@ -1343,8 +1713,19 @@
               }
             ]
           },
-          "request": "fnv1a64:d5d9d732124fa1c9",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:a23ba37ed5769b3a",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 4984,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 11376,
+            "output_tokens_details": {
+              "reasoning_tokens": 10448
+            },
+            "total_tokens": 16360
+          }
         }
       ],
       "text": "I'm excited to try out the Bee's Knees with my homemade honey syrup. I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying. By the way, speaking of gin, I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other gin-based cocktails that I should try making?"
@@ -1379,11 +1760,24 @@
         {
           "output": {
             "answer_text": "10 times",
-            "candidate_index": 10,
+            "candidate_index": 8,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:76e8f84484943010",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:6b89c59092b98888",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1329,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 371,
+            "output_tokens_details": {
+              "reasoning_tokens": 343
+            },
+            "total_tokens": 1700
+          }
         }
       ]
     }

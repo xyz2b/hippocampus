@@ -38,14 +38,15 @@
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "expires_at": null,
-                "expiry_expression": null,
-                "explicit_memory_request": false,
                 "extraction_confidence": "high",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -67,27 +68,34 @@
                 },
                 "source": "user_statement",
                 "strength": null,
-                "subject_id": "device_wulan_printer",
-                "tags": [
-                  "printer_configuration",
-                  "paper_size"
-                ],
-                "temporal_expression": null,
-                "unresolved_subject": null,
-                "valid_from": null,
-                "valid_to": null,
+                "subject": {
+                  "entity_id": "device_wulan_printer"
+                },
+                "tags": [],
                 "value": {
-                  "boolean": false,
+                  "boolean": null,
                   "entity_id": null,
                   "integer": null,
-                  "kind": "boolean",
-                  "text": null
+                  "kind": "text",
+                  "text": "雾岚打印机的默认纸张规格是A4。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:4e668bc410dcae8c",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3946,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 723,
+            "output_tokens_details": {
+              "reasoning_tokens": 497
+            },
+            "total_tokens": 4669
+          }
         },
         {
           "output": {
@@ -96,7 +104,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:4d7bcea8854b1e35",
+            "review_binding": "source-review-v3:d12eabc04f9b5dec",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -117,8 +125,19 @@
               }
             ]
           },
-          "request": "fnv1a64:2d632120e8210837",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:8d0fd4dcb45aaff6",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2358,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 5008,
+            "output_tokens_details": {
+              "reasoning_tokens": 4886
+            },
+            "total_tokens": 7366
+          }
         }
       ],
       "text": "雾岚打印机的默认纸张规格是A4。"
@@ -145,7 +164,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "]"
+                  "expression": "null"
                 },
                 "intent": {
                   "kind": "assert",
@@ -153,8 +172,8 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2026-09-28",
-                  "expression": "青",
+                  "date": "0000-00-00",
+                  "expression": "null",
                   "kind": "retain_until"
                 },
                 "memory_type": "fact",
@@ -180,9 +199,7 @@
                 "subject": {
                   "entity_id": "device_qingtai_printer"
                 },
-                "tags": [
-                  "printer"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -194,7 +211,19 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:440d047975580b03",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3957,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 857,
+            "output_tokens_details": {
+              "reasoning_tokens": 590
+            },
+            "total_tokens": 4814
+          }
         },
         {
           "output": {
@@ -203,7 +232,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:29ee49c8940ad20e",
+            "review_binding": "source-review-v3:ff9824176931e960",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -224,8 +253,19 @@
               }
             ]
           },
-          "request": "fnv1a64:c5b04970a86922bf",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:aef5ced51558a4c1",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2368,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 5281,
+            "output_tokens_details": {
+              "reasoning_tokens": 5133
+            },
+            "total_tokens": 7649
+          }
         }
       ],
       "text": "青苔打印机的默认纸张规格是B5。"
@@ -276,12 +316,24 @@
         {
           "output": {
             "queries": [
-              "雾岚打印机 默认纸张规格",
-              "雾岚打印机 纸张尺寸 默认设置",
-              "雾岚打印机 打印首选项 纸张大小 默认"
+              "雾岚打印机 默认纸张规格 设置",
+              "雾岚打印机 出厂默认纸张尺寸",
+              "雾岚打印机 纸张默认配置 纸型"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:d4b2951055fc36c6",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 279,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1644,
+            "output_tokens_details": {
+              "reasoning_tokens": 1607
+            },
+            "total_tokens": 1923
+          }
         }
       ]
     },
@@ -306,12 +358,24 @@
         {
           "output": {
             "queries": [
-              "青苔打印机 默认纸张 规格",
-              "打印机 默认纸张尺寸 设置",
-              "默认纸张大小 打印机 配置"
+              "青苔打印机 默认纸张规格 B5",
+              "青苔打印机 默认纸张 设置为 B5",
+              "青苔打印机 出厂默认纸张尺寸 B5"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:c572f58fa50ecc00",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 276,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2024,
+            "output_tokens_details": {
+              "reasoning_tokens": 1985
+            },
+            "total_tokens": 2300
+          }
         }
       ]
     },
@@ -335,13 +399,21 @@
       "recorded": [
         {
           "output": {
-            "queries": [
-              "雾岚打印机 默认打印尺寸",
-              "不调整纸张设置 打印机 输出尺寸",
-              "纸张设置未修改 打印大小"
-            ]
+            "queries": []
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:8e8abf53f4d33108",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 281,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 869,
+            "output_tokens_details": {
+              "reasoning_tokens": 862
+            },
+            "total_tokens": 1150
+          }
         }
       ]
     },
@@ -361,21 +433,46 @@
         {
           "output": {
             "queries": [
-              "青苔打印机 墨盒 规格",
+              "青苔打印机 墨盒型号",
               "青苔打印机 更换 墨盒 型号",
-              "青苔打印机 耗材 兼容 墨盒"
+              "青苔打印机 墨盒 规格 兼容"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:db64a3a3fc0aff4b",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1933,
+            "output_tokens_details": {
+              "reasoning_tokens": 1896
+            },
+            "total_tokens": 2199
+          }
         },
         {
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:94f803dcf6a0330b",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:167017c5ce3bae17",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 519,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 66,
+            "output_tokens_details": {
+              "reasoning_tokens": 38
+            },
+            "total_tokens": 585
+          }
         }
       ]
     }

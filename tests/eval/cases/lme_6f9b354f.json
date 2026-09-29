@@ -20,7 +20,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "再"
+                  "expression": "recently"
                 },
                 "intent": {
                   "kind": "assert",
@@ -28,16 +28,18 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-01-01",
+                  "expression": "recently",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
-                    "city": null,
+                    "city": "上海",
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": null,
@@ -65,8 +67,19 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d8bb131e061ea438",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:e3f9dcb97af31f42",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3918,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 4007,
+            "output_tokens_details": {
+              "reasoning_tokens": 3735
+            },
+            "total_tokens": 7925
+          }
         },
         {
           "output": {
@@ -75,29 +88,63 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:35606417da58e8fb",
+            "review_binding": "source-review-v3:4ff7aa4b84a11a6c",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "supported",
+                  "temporal": "insufficient",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER said only 'recently'; exact valid_from/valid_to calendar boundaries are not justified and should remain open-ended."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "USER gave no instruction to remember/save/retain this memory, so explicit_memory_request must be false."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:ce915702e3662dc5",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:851c0fd6e3b92650",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2472,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 16213,
+            "output_tokens_details": {
+              "reasoning_tokens": 15893
+            },
+            "total_tokens": 18685
+          }
         }
       ],
       "text": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
@@ -120,7 +167,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "recently"
                 },
                 "intent": {
                   "kind": "assert",
@@ -153,20 +200,98 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "home_decor"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter! 実は 最近 寝室の壁を 明るい灰色に 塗り替えた んだ - it が 部屋を より 明るく 感じさせて くれる！"
+                  "text": "I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4d2d4961407d855a",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:6423333ff1b9efc0",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3991,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1761,
+            "output_tokens_details": {
+              "reasoning_tokens": 1492
+            },
+            "total_tokens": 5752
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:4b4d3353863f5994",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "recently repainted my bedroom walls a lighter shade of gray",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER only says 'recently'; the exact inferred start 2023-04-21 is not asserted and no precise validity start is given."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "it's made the room feel so much brighter!",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_to",
+                    "reason": "USER states the repainting recently happened and the room now feels brighter; no exact end/expiry 2023-05-21T09:12:01 is asserted."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:db309d3a5a96321e",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2586,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 16247,
+            "output_tokens_details": {
+              "reasoning_tokens": 15891
+            },
+            "total_tokens": 18833
+          }
         }
       ],
       "text": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
@@ -184,8 +309,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b7eb51988b4c7b4e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:791dd9bf58732174",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4025,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 2711,
+            "output_tokens_details": {
+              "reasoning_tokens": 2689
+            },
+            "total_tokens": 6736
+          }
         },
         {
           "output": {
@@ -216,8 +352,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b34b5ba9ee25e312",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:c27df772a6a9d268",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4112,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 627,
+            "output_tokens_details": {
+              "reasoning_tokens": 606
+            },
+            "total_tokens": 4739
+          }
         },
         {
           "output": {
@@ -248,8 +395,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:a8a04ae3e972d97b",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:b77617f59968455d",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4197,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1304,
+            "output_tokens_details": {
+              "reasoning_tokens": 1285
+            },
+            "total_tokens": 5501
+          }
         },
         {
           "output": {

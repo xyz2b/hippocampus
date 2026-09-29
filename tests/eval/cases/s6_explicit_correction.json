@@ -33,11 +33,140 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "墨"
+                  "expression": "目前"
                 },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "device_mowan_camera"
+                },
+                "tags": [
+                  "storage_card",
+                  "capacity"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:0be020423ab108f0",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3917,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 6942,
+            "output_tokens_details": {
+              "reasoning_tokens": 3411
+            },
+            "total_tokens": 10859
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:531745bc99db7283",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "墨湾相机目前使用的存储卡容量是64GB。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:dfdfe9bb5b1f82aa",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2413,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 5731,
+            "output_tokens_details": {
+              "reasoning_tokens": 5611
+            },
+            "total_tokens": 8144
+          }
+        }
+      ],
+      "text": "墨湾相机目前使用的存储卡容量是64GB。"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "device_mowan_camera",
+            "value": "128GB"
+          }
+        ]
+      },
+      "id": "correction_s2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "null"
+                },
+                "intent": {
+                  "kind": "supersede",
+                  "reason": "user_retracted",
                   "target_memory_id": null
                 },
                 "memory_request": {
@@ -72,116 +201,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "墨湾相机目前使用"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:ef15aa85d959fad5",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "墨湾相机目前使用的存储卡容量是64GB。",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:4e51dc94987a6c6e",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "墨湾相机目前使用的存储卡容量是64GB。"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": [
-          {
-            "subject": "device_mowan_camera",
-            "value": "128GB"
-          }
-        ]
-      },
-      "id": "correction_s2",
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "supersede",
-                  "reason": "user_retracted",
-                  "target_memory_id": "墨湾相机使用的存储卡容量是64GB"
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "device_mowan_camera"
-                },
-                "tags": [
-                  "device",
-                  "storage",
-                  "camera"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
                   "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:11d1a934dc600444",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3945,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 983,
+            "output_tokens_details": {
+              "reasoning_tokens": 710
+            },
+            "total_tokens": 4928
+          }
         },
         {
           "output": {
@@ -190,7 +228,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:b93c5909bc9c2eda",
+            "review_binding": "source-review-v3:80abf9184ce4ae38",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -216,8 +254,19 @@
               }
             ]
           },
-          "request": "fnv1a64:23fdecbb2e70189e",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:a092e4820da3b820",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2406,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 7613,
+            "output_tokens_details": {
+              "reasoning_tokens": 7454
+            },
+            "total_tokens": 10019
+          }
         }
       ],
       "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
@@ -246,21 +295,46 @@
         {
           "output": {
             "queries": [
-              "墨湾相机 支持 存储卡 最大容量",
-              "墨湾相机 配备 内存卡 规格",
-              "墨湾 相机 SD卡 容量"
+              "墨湾相机 存储卡 容量",
+              "墨湾相机 使用 内存卡 规格",
+              "墨湾相机 支持 SD卡 容量"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:3b96dc8e96f20f50",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 743,
+            "output_tokens_details": {
+              "reasoning_tokens": 706
+            },
+            "total_tokens": 1009
+          }
         },
         {
           "output": {
             "answer_text": "64GB",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:0c0666be08e0c749",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:7930c5b49de3bfdb",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 520,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 97,
+            "output_tokens_details": {
+              "reasoning_tokens": 69
+            },
+            "total_tokens": 617
+          }
         }
       ]
     },
@@ -285,21 +359,46 @@
         {
           "output": {
             "queries": [
-              "墨湾相机 存储卡 容量",
-              "墨湾相机 内存卡 多大",
-              "墨湾相机 支持 存储卡 容量"
+              "墨湾相机 存储卡 容量 配置",
+              "墨湾相机 使用 存储卡 大小",
+              "墨湾相机 支持 存储卡 规格"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:3b96dc8e96f20f50",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 451,
+            "output_tokens_details": {
+              "reasoning_tokens": 411
+            },
+            "total_tokens": 717
+          }
         },
         {
           "output": {
             "answer_text": "128GB",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:5d9fc95b15fef68d",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:ef1754518d263047",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 536,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 149,
+            "output_tokens_details": {
+              "reasoning_tokens": 121
+            },
+            "total_tokens": 685
+          }
         }
       ]
     },
@@ -324,21 +423,46 @@
         {
           "output": {
             "queries": [
-              "墨湾相机 存储卡 64GB",
-              "墨湾相机 内存卡 128GB",
-              "墨湾相机 SD卡 容量"
+              "墨湾相机 配了 64GB 存储卡",
+              "墨湾相机 用 128GB 内存卡",
+              "墨湾相机 存储卡 容量大小"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:f59122c3c314de79",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 271,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 680,
+            "output_tokens_details": {
+              "reasoning_tokens": 638
+            },
+            "total_tokens": 951
+          }
         },
         {
           "output": {
             "answer_text": "128GB",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:0e4741d7c9d6770c",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:b6ad149f56190cc2",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 541,
+            "input_tokens_details": {
+              "cached_tokens": 512
+            },
+            "output_tokens": 127,
+            "output_tokens_details": {
+              "reasoning_tokens": 99
+            },
+            "total_tokens": 668
+          }
         }
       ]
     }

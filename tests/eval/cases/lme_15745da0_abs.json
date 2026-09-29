@@ -49,7 +49,11 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "vintage cameras",
+                  "collection",
+                  "hobby"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -57,12 +61,70 @@
                   "kind": "text",
                   "text": "growing collection of vintage cameras"
                 }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "vintage cameras"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras."
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:2b8860a4900f6569",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:78c1945c84384227",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3916,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 1150,
+            "output_tokens_details": {
+              "reasoning_tokens": 662
+            },
+            "total_tokens": 5066
+          }
         },
         {
           "output": {
@@ -71,7 +133,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:9784cbc09b36d5e4",
+            "review_binding": "source-review-v3:930afe8b3912dc5b",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -89,11 +151,39 @@
                 "current_user_quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:22f7c611d0a2c6a9",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:090085192ad21c45",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2713,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8264,
+            "output_tokens_details": {
+              "reasoning_tokens": 8017
+            },
+            "total_tokens": 10977
+          }
         }
       ],
       "text": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?"
@@ -115,12 +205,14 @@
                 "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
-                  "kind": "refine",
+                  "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-23",
+                  "expression": "today",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -145,234 +237,104 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "cameras",
-                  "collection",
-                  "count"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I have 17 cameras now"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "refine",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cameras",
-                  "collection",
-                  "organization"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I recently organized my collection"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": "2023-05-15",
-                  "end_date": "2023-05-22",
-                  "expression": "I"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "owns",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cameras",
-                  "Brownie Hawkeye"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": "Brownie Hawkeye",
-                  "integer": null,
-                  "kind": "entity",
-                  "text": null
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "uses",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cameras",
-                  "display",
-                  "shelf"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "shelf"
+                  "text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7d15c0cefae60d44",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:98564194501012ce",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3978,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 8759,
+            "output_tokens_details": {
+              "reasoning_tokens": 8443
+            },
+            "total_tokens": 12737
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                ":{",
+                "quote",
+                "turn_index"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:bee5d02f890fe01d",
+            "review_binding": "source-review-v3:e71a10b4779dbdee",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
+                  "temporal": "insufficient",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
                 "evidence": [],
                 "issues": [
                   {
-                    "check": "relation",
+                    "check": "temporal",
                     "evidence": [
                       {
-                        "quote": "I've got them on a shelf",
+                        "quote": "have 17 cameras now",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I got last week",
                         "turn_index": 0
                       }
                     ],
-                    "field": "predicate",
-                    "reason": "The USER asserts a current placement of the cameras ('I've got them on a shelf'), not a 'uses' relation between self and a shelf; the asserted property/action differs from 'uses' even though the value 'shelf' matches."
+                    "field": "expires_at",
+                    "reason": "No USER retention deadline; 'now' and 'last week' describe the current count and acquisition, not an expiry at end of 2023-05-23. expires_at should be unknown/absent."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "USER did not give an explicit remember/save/retain instruction for this memory; explicit_memory_request should be false."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:5254f5fe1a7d9de6",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:3be8054bed1bf256",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2500,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 10003,
+            "output_tokens_details": {
+              "reasoning_tokens": 9654
+            },
+            "total_tokens": 12503
+          }
         }
       ],
       "text": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off."
@@ -389,10 +351,14 @@
           "output": {
             "candidates": [
               {
-                "certainty": "low",
+                "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "low",
-                "fact_time": null,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "for three months now"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -430,13 +396,13 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been collecting vintage cameras for three months now."
+                  "text": "I've been collecting vintage cameras for three months now"
                 }
               },
               {
-                "certainty": "low",
+                "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "low",
+                "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -475,13 +441,13 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "a pretty impressive collection of vintage cameras."
+                  "text": "collection of vintage cameras"
                 }
               },
               {
-                "certainty": "low",
+                "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "low",
+                "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -520,14 +486,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "my cameras"
+                  "text": "vintage cameras"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:f40a0f8e08013485",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:77ea823252905633",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4021,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 20490,
+            "output_tokens_details": {
+              "reasoning_tokens": 19847
+            },
+            "total_tokens": 24511
+          }
         },
         {
           "output": {
@@ -536,7 +513,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:80f4fea6806a2f0a",
+            "review_binding": "source-review-v3:0951a9795d1bdb44",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -583,28 +560,27 @@
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "insufficient"
+                  "value": "supported"
                 },
                 "current_user_quote": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "Typed value is the bare possessive fragment 'my cameras'. As the object of 'owns' it is self-referential and names no camera or collection, so it does not supply an exact owned object; the only current-turn occurrence sits inside an advice-seeking question."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:bc32c0d9866888b9",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:cc44f5595aeb696e",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3179,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 13301,
+            "output_tokens_details": {
+              "reasoning_tokens": 12939
+            },
+            "total_tokens": 16480
+          }
         }
       ],
       "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?"
@@ -634,7 +610,7 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "fact",
-                "polarity": "positive",
+                "polarity": null,
                 "predicate": "owns",
                 "retention_tier": "long_term",
                 "scope": {
@@ -656,24 +632,31 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "collection",
-                  "display",
-                  "funk_pops"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures"
+                  "text": "a large collection of Funko POP! figures, including the entire set of Marvel Cinematic Universe figures"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:949617eb4a7ca7cf",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:650ffc68e11497b1",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4078,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 15593,
+            "output_tokens_details": {
+              "reasoning_tokens": 15360
+            },
+            "total_tokens": 19671
+          }
         },
         {
           "output": {
@@ -684,7 +667,7 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d6c457fef3e12fbb",
+            "review_binding": "source-review-v3:0ef8876802e9eb91",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -705,8 +688,19 @@
               }
             ]
           },
-          "request": "fnv1a64:35e8e5fe17c28822",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:8b49d8384571a416",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2550,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 12924,
+            "output_tokens_details": {
+              "reasoning_tokens": 12741
+            },
+            "total_tokens": 15474
+          }
         }
       ],
       "text": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely."
@@ -771,7 +765,11 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "recently"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -815,17 +813,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:fd15fed7a2359b3e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:3ef55440a0c3f0c4",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4141,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 11324,
+            "output_tokens_details": {
+              "reasoning_tokens": 10830
+            },
+            "total_tokens": 15465
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I want to make sure it's displayed prominently."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:dd4cb040b0a1e74e",
+            "review_binding": "source-review-v3:725fac2e4db696f2",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -854,17 +865,40 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "supported",
+                  "temporal": "insufficient",
                   "value": "supported"
                 },
                 "current_user_quote": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER said only 'recently'; no exact validity start or end date was asserted. The proposed 2023-04-23 to 2023-05-23 interval is extractor inference, not a USER-asserted time."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:f7167eb11b4fabff",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:e87baf921dca7ab4",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3052,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8811,
+            "output_tokens_details": {
+              "reasoning_tokens": 8410
+            },
+            "total_tokens": 11863
+          }
         }
       ],
       "text": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?"
@@ -883,7 +917,7 @@
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "medium",
+                "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -909,7 +943,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "personal_collection"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -932,12 +966,8 @@
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "medium",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "a"
-                },
+                "extraction_confidence": "high",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -962,7 +992,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "personal_collection"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -980,14 +1010,78 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
+                  "text": "a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "recently"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "poster",
+                  "Mondo",
+                  "Harry Potter"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:48d4e44360ba1d2a",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:501926d8f7a38db0",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4211,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 9472,
+            "output_tokens_details": {
+              "reasoning_tokens": 8790
+            },
+            "total_tokens": 13683
+          }
         },
         {
           "output": {
@@ -996,7 +1090,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:a7158fd3859dfb74",
+            "review_binding": "source-review-v3:49f1d02fcf75a431",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -1031,11 +1125,56 @@
                 "current_user_quote": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?",
+                "evidence": [
+                  {
+                    "quote": "I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER only says 'recently'; the concrete bounds 2023-04-23 to 2023-05-23 are not asserted. The extractor's window is anchored to the system clock (observed_at), which is not a real-world start date, so the interval should remain an unknown/open-ended 'recently'."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:70c2803d0491c108",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:7007aca79a4cced3",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3563,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4778,
+            "output_tokens_details": {
+              "reasoning_tokens": 4101
+            },
+            "total_tokens": 8341
+          }
         }
       ],
       "text": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?"
@@ -1068,10 +1207,23 @@
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:8411d06f2fe37332",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:02aa4d647e02491b",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 960,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 163,
+            "output_tokens_details": {
+              "reasoning_tokens": 135
+            },
+            "total_tokens": 1123
+          }
         }
       ]
     }

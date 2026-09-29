@@ -20,7 +20,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "recently during Black Friday"
                 },
                 "intent": {
                   "kind": "assert",
@@ -28,7 +28,9 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2022-11-18",
+                  "expression": "the user cannot be remembered",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -53,11 +55,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "tv",
-                  "electronics",
-                  "black_friday"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -69,17 +67,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:1864cc56c90a9055",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:ec70729f007187a3",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3919,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 2074,
+            "output_tokens_details": {
+              "reasoning_tokens": 1825
+            },
+            "total_tokens": 5993
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I want to make sure I get a good mount for it."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:0b6f54145b4bf9d3",
+            "review_binding": "source-review-v3:8513b332d83e620e",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -100,8 +111,19 @@
               }
             ]
           },
-          "request": "fnv1a64:84602d444f348ab0",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:794c0e3c0b7f8d92",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2392,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8793,
+            "output_tokens_details": {
+              "reasoning_tokens": 8626
+            },
+            "total_tokens": 11185
+          }
         }
       ],
       "text": "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?"
@@ -115,9 +137,20 @@
       "observed_at": 1668721680,
       "recorded": [
         {
-          "output": "{\"candidates\":[{\"certainty\":\"high\",\"cross_turn_useful\":true,\"extraction_confidence\":\"high\",\"fact_time\":{\"date\":null,\"end_date\":null,\"expression\":\":\"}\n\n\n\n\n  \n\n\n  ,\"intent\": \t{\"kind\":\"assert\" \n\n  \n\n\n  \n\n\n  ,\"reason\" \n\n  \n  \n\n\n  :\n\n  \n  \n\n\n  null,\"target_memory_id\":null}\n\n\n\n\n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n\n\n\n  ,\"memory_request\":{\"kind\":\"not_requested\"},\"memory_type\":\"fact\",\"polarity\":null,\"predicate\" \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  :\"fact\",\"retention_tier\":\"long_term\",\"scope\": \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  {\"conditions\":  {\n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n  \n\n",
-          "request": "fnv1a64:1451af9155850556",
-          "schema": "personal_memory_candidates_v1"
+          "output": "{\"candidates\":[{\"certainty\":\"high\",\"cross_turn_useful\":true,\"extraction_confidence\":\"high\",\"fact_time\":{\"date\":null,\"end_date\":null,\"expression\":\"]},\"}\n,\"intent\":  \n\n       \n    \n  \n  \n  \n   \n\n\n    \n\n   \n      \n      \n\n\n      \n  \n    \n     \n    \n   \n  \n   \n   \n   \n   \n   \n  \n    \n   \n    \n     \n  \n\n  \n \n\n   \n  \n   \n  \n  \n  \n     \n     \n  \n \n\n \n  \n\n  \n   \n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n  \n   \n   \n \n\n \n \n \n \n\n \n    \n   \n  \n \n \n\n\n\n  \n\n\n    \n  \n\n\n  \n   \n   \n    \n   \n   \n   \n    \n     \n      \n      \n   \n     \n  \n  \n\n  \n   \n  \n   \n    \n  \n   \n    \n  \n  \n   \n    \n   \n    \n \n \n     \n  \n\n\n\n  \n   \n  \n    \n     \n \n  \n \n  \n   \n    \n   \n    \n\n  \n \n\n\n\n  \n   \n  \n   \n   \n  \n\n\n\n  \n\n\n \n\n \n  \n \n  \n \n    \n     \n   \n   \n   \n  \n    \n    \n   \n  \n\n \n \n  \n\n  \n \n \n   \n  \n    \n     \n \n  \n\n    \n  \n    \n  \n\n  \n     \n  \n  \n  \n   \n     \n    \n  \n \n   \n  \n \n\n\n\n    \n  \n\n\n\n\n    \n  \n  \n\n   \n  \n\n \n   \n  \n  \n    \n   \n   \n   \n  \n\n  \n   \n \n  \n   \n   \n   \n   \n    \n   \n    \n   \n  \n\n \n  \n\n  \n\n\n  \n   \n   \n   \n    \n   \n   \n   \n   \n    \n   \n   \n   \n  \n\n\n\n \n \n   \n\n  \n    \n  \n   \n   \n   \n  \n\n   \n   \n   \n   \n  \n\n   \n  \n   \n \n   \n    \n \n  \n   \n  \n   \n   \n  \n  \n\n  \n   \n   \n   \n  \n \n  \n\n  \n   \n  \n    \n     \n   \n     \n     \n     \n    \n      \n      \n      \n      \n      \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n\n  \n  \n\n   \n  \n     \n\n \n \n\n \n \n   \n  \n\n  \n   \n  \n    \n     \n    \n    \n     \n    \n     \n     \n    \n    \n     \n     \n     \n     \n     \n     \n   \n   \n   \n    \n   \n    \n   \n   \n  \n\n  \n    \n     \n   \n\n\n \n\n   \n \n  \n\n\n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n  \n\n   \n \n \n\n   \n   \n   \n   \n   \n   \n   \n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n\n\n   \n   \n   \n\n   \n   \n   \n   \n   \n\n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n\n\n\n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n\n\n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n\n\n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n\n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n",
+          "request": "fnv1a64:899b40fd7477fa2c",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4040,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7015,
+            "output_tokens_details": {
+              "reasoning_tokens": 5322
+            },
+            "total_tokens": 11055
+          }
         }
       ],
       "text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?"
@@ -148,7 +181,7 @@
                 },
                 "memory_type": "fact",
                 "polarity": null,
-                "predicate": "uses",
+                "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
@@ -169,20 +202,26 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "family"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "4K TV for gaming, movie nights, and casual viewing"
+                  "text": "I've got a pretty big family"
                 }
               },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "lately"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -214,56 +253,10 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "l"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
+                "tags": [
+                  "holiday",
+                  "shopping"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -291,8 +284,10 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
-                    "city": null,
+                    "activities": [
+                      "holiday market"
+                    ],
+                    "city": "our city",
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": null,
@@ -308,7 +303,11 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "gifts",
+                  "siblings",
+                  "shopping"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -336,8 +335,10 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
-                    "city": null,
+                    "activities": [
+                      "holiday market"
+                    ],
+                    "city": "our city",
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": null,
@@ -353,7 +354,10 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "stocking stuffers",
+                  "shopping"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -365,17 +369,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d6c303d47f1bd2c6",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:6c3a70f152fee4bc",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4150,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7545,
+            "output_tokens_details": {
+              "reasoning_tokens": 6641
+            },
+            "total_tokens": 11695
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                ">"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:7d28d9de5212afea",
+            "review_binding": "source-review-v3:7caaf530df7c8af6",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -391,12 +408,7 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
-                "evidence": [
-                  {
-                    "quote": "I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it.",
-                    "turn_index": 1
-                  }
-                ],
+                "evidence": [],
                 "issues": []
               },
               {
@@ -440,7 +452,7 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "supported",
+                  "scope": "insufficient",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
@@ -448,29 +460,35 @@
                 },
                 "current_user_quote": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
                 "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 4,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
-                "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions",
+                    "reason": "The sentence says only that the user also got stocking stuffers; it does not state they were obtained at the holiday market. The scope adds holiday market as an activity not stated in this assertion."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:491ee4c84d9fed7b",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:94d5812eac143baa",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3946,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 11063,
+            "output_tokens_details": {
+              "reasoning_tokens": 10240
+            },
+            "total_tokens": 15009
+          }
         }
       ],
       "text": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates."
@@ -488,8 +506,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:6d8c7e453d1b9839",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7f3194e7cb544157",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4202,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 2246,
+            "output_tokens_details": {
+              "reasoning_tokens": 2224
+            },
+            "total_tokens": 6448
+          }
         },
         {
           "output": {
@@ -523,8 +552,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:fc5e75edbab321c4",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:df9319ba2bf2554e",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4275,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 360,
+            "output_tokens_details": {
+              "reasoning_tokens": 341
+            },
+            "total_tokens": 4635
+          }
         },
         {
           "output": {
@@ -555,8 +595,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b71976a75c10d2d4",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:1042d9f7db2c01fe",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4308,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 187,
+            "output_tokens_details": {
+              "reasoning_tokens": 168
+            },
+            "total_tokens": 4495
+          }
         },
         {
           "output": {

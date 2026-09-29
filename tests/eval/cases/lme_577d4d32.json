@@ -15,8 +15,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:8df95190de8904a0",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:80c39f29ad04701a",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3903,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 135,
+            "output_tokens_details": {
+              "reasoning_tokens": 116
+            },
+            "total_tokens": 4038
+          }
         },
         {
           "output": {
@@ -49,11 +60,7 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "."
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -78,27 +85,89 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "preference"
                 },
                 "source": "user_statement",
                 "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "literary fiction",
+                  "books"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "literary fiction"
+                  "text": "literary fiction section"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "general"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "books",
+                  "The Seven Husbands of Evelyn Hugo"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've heard great things about The Seven Husbands of Evelyn Hugo."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:6a1b138a6c068466",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:da37ab13ef91869c",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3935,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 10812,
+            "output_tokens_details": {
+              "reasoning_tokens": 10230
+            },
+            "total_tokens": 14747
+          }
         },
         {
           "output": {
@@ -107,7 +176,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:0710f8ddf3884089",
+            "review_binding": "source-review-v3:d262115eb710b75f",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -125,11 +194,39 @@
                 "current_user_quote": "I'm really interested in the literary fiction section. I've heard great things about The Seven Husbands of Evelyn Hugo. Can you tell me more about it?",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm really interested in the literary fiction section. I've heard great things about The Seven Husbands of Evelyn Hugo. Can you tell me more about it?",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:b1dc6555152f13de",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:9e3056f9cd78f8bc",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2714,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 7592,
+            "output_tokens_details": {
+              "reasoning_tokens": 7357
+            },
+            "total_tokens": 10306
+          }
         }
       ],
       "text": "I'm really interested in the literary fiction section. I've heard great things about The Seven Husbands of Evelyn Hugo. Can you tell me more about it?"
@@ -149,16 +246,22 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": ". "
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2004-05-29",
+                  "expression": "not_requested",
+                  "kind": "retain_until"
                 },
-                "memory_type": "constraint",
+                "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
@@ -187,14 +290,69 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life. It's really helped me relax and not think about work during my personal time."
+                  "text": "I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:ba3dd9db825ee663",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:dbce356c150efc75",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4027,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 5357,
+            "output_tokens_details": {
+              "reasoning_tokens": 5073
+            },
+            "total_tokens": 9384
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "It's really helped me relax and not think about work during my personal time."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:f65d0f375e3e2650",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've heard that this book is a great choice for a evening read, something to unwind with after a long day. Speaking of unwinding, I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life. It's really helped me relax and not think about work during my personal time. Do you have any recommendations for some relaxing evening activities that I could incorporate into my routine?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:24a4be568c99dee7",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2545,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 8167,
+            "output_tokens_details": {
+              "reasoning_tokens": 7948
+            },
+            "total_tokens": 10712
+          }
         }
       ],
       "text": "I've heard that this book is a great choice for a evening read, something to unwind with after a long day. Speaking of unwinding, I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life. It's really helped me relax and not think about work during my personal time. Do you have any recommendations for some relaxing evening activities that I could incorporate into my routine?"
@@ -230,53 +388,7 @@
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "reading"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
+                      "reading",
                       "taking a walk around my neighborhood"
                     ],
                     "city": null,
@@ -286,7 +398,7 @@
                     "date": null,
                     "geography": null,
                     "task_id": null,
-                    "time_of_day": null
+                    "time_of_day": "evening"
                   },
                   "domain": null
                 },
@@ -371,53 +483,7 @@
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "light stretching"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": "evening"
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've also started practicing guitar and doing some light stretching and meditation before bed."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
+                      "light stretching",
                       "meditation"
                     ],
                     "city": null,
@@ -493,8 +559,19 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:1f480726b75e9a5c",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:c4a91e59134d5016",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4081,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 19053,
+            "output_tokens_details": {
+              "reasoning_tokens": 18078
+            },
+            "total_tokens": 23134
+          }
         },
         {
           "output": {
@@ -503,7 +580,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:eba1e3ea494f96e2",
+            "review_binding": "",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -519,7 +596,12 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "Do you have any recommendations for some relaxing evening activities that I could incorporate into my routine?",
+                    "turn_index": 3
+                  }
+                ],
                 "issues": []
               },
               {
@@ -536,7 +618,12 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life.",
+                    "turn_index": 3
+                  }
+                ],
                 "issues": []
               },
               {
@@ -553,7 +640,12 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life.",
+                    "turn_index": 3
+                  }
+                ],
                 "issues": []
               },
               {
@@ -572,45 +664,22 @@
                 "current_user_quote": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 4,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 5,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
-                "evidence": [],
-                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:eb5db5396b61dfdf",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:4303fad064910b67",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3646,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 5966,
+            "output_tokens_details": {
+              "reasoning_tokens": 5369
+            },
+            "total_tokens": 9612
+          }
         }
       ],
       "text": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep."
@@ -642,7 +711,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -687,7 +756,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -719,7 +788,7 @@
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "medium",
+                "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -729,10 +798,10 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -758,7 +827,7 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "playing guitar"
+                  "text": "It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part."
                 }
               },
               {
@@ -777,7 +846,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "uses",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -803,52 +872,7 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "an app that offers guided sessions"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "body scan meditation"
+                  "text": "a guided meditation app (offers guided sessions)"
                 }
               },
               {
@@ -867,7 +891,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -878,7 +902,52 @@
                     "date": null,
                     "geography": null,
                     "task_id": null,
-                    "time_of_day": "night"
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've found the body scan meditation to be really helpful."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
                   },
                   "domain": null
                 },
@@ -912,52 +981,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": "morning"
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "medium",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -983,25 +1007,37 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "It's amazing how something as simple as deep breathing can make such a big difference in how I feel."
+                  "text": "I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c7bb5ec45c57823a",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:be18c99c00cbd560",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4274,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 9497,
+            "output_tokens_details": {
+              "reasoning_tokens": 8027
+            },
+            "total_tokens": 13771
+          }
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part."
+                "It's amazing how something as simple as deep breathing can make such a big difference in how I feel.",
+                "I'm looking to learn some new songs to add to my repertoire."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:91ad03feba9ad104",
+            "review_binding": "source-review-v3:55fe9b3123d11b95",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -1043,7 +1079,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -1052,23 +1088,7 @@
                 },
                 "current_user_quote": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool.",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "User asserts guitar helped develop hand-eye coordination/fine motor skills and is a challenging way to feel accomplishment; no statement of liking playing guitar is made. 'likes' is an inferred attitude, not the asserted relation."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 3,
@@ -1093,7 +1113,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -1102,23 +1122,7 @@
                 },
                 "current_user_quote": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've found the body scan meditation to be really helpful.",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "It's great for relaxing my muscles and calming my mind before bed.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "User reports the body scan meditation is helpful and great for relaxing muscles/calming the mind; no liking of the body scan meditation is stated. 'likes' is inferred from a benefit statement, not the asserted relation."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 5,
@@ -1153,28 +1157,22 @@
                 "current_user_quote": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire.",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 7,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire.",
-                "evidence": [],
-                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:73c05117dbaf16f5",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:c9c94159c0e18c15",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 5878,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 18307,
+            "output_tokens_details": {
+              "reasoning_tokens": 16281
+            },
+            "total_tokens": 24185
+          }
         }
       ],
       "text": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire."
@@ -1208,12 +1206,25 @@
         },
         {
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "insufficient"
+            "answer_text": "7 pm",
+            "candidate_index": 2,
+            "event_date": null,
+            "unit": null,
+            "verdict": "answer"
           },
-          "request": "fnv1a64:184cfaceb9f7599c",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:00d3e693da694c29",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1002,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 429,
+            "output_tokens_details": {
+              "reasoning_tokens": 401
+            },
+            "total_tokens": 1431
+          }
         }
       ]
     }

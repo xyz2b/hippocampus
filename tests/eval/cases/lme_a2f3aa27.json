@@ -15,8 +15,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b5717548d0bd4a2d",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d65ee2c2873d3d2b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3904,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 313,
+            "output_tokens_details": {
+              "reasoning_tokens": 292
+            },
+            "total_tokens": 4217
+          }
         },
         {
           "output": {
@@ -56,12 +67,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-28",
+                  "expression": "now",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -74,7 +87,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "social_media"
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -100,7 +113,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "的"
+                  "expression": "now"
                 },
                 "intent": {
                   "kind": "assert",
@@ -108,12 +121,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-28",
+                  "expression": "now",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -126,7 +141,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "social_media"
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -135,7 +150,7 @@
                 },
                 "tags": [
                   "instagram",
-                  "audience"
+                  "followers"
                 ],
                 "value": {
                   "boolean": null,
@@ -148,8 +163,19 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c8392d9a77527fb7",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:063cf0e4d8efb4e9",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4007,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7945,
+            "output_tokens_details": {
+              "reasoning_tokens": 7180
+            },
+            "total_tokens": 11952
+          }
         },
         {
           "output": {
@@ -158,13 +184,13 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:82d842e23313dc8e",
+            "review_binding": "source-review-v3:da09a36089d2269b",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -175,13 +201,36 @@
                 },
                 "current_user_quote": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I've been doing some of these already, like posting regularly and using a consistent aesthetic.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "User did not explicitly ask to remember, save, or retain this memory; explicit_memory_request is true but no such instruction appears."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I've been doing some of these already, like posting regularly and using a consistent aesthetic.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "User gave no retention instruction or deadline; ShortTerm retention is not justified by USER words."
+                  }
+                ]
               },
               {
                 "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -192,12 +241,46 @@
                 },
                 "current_user_quote": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "User did not explicitly ask to remember, save, or retain this memory; explicit_memory_request is true but no such instruction appears."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "User gave no retention instruction or deadline; ShortTerm retention is not justified by USER words."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:6f7316526a71874d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:e7cfeaa38fbbd18f",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3052,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 17052,
+            "output_tokens_details": {
+              "reasoning_tokens": 16370
+            },
+            "total_tokens": 20104
+          }
         }
       ],
       "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
@@ -215,8 +298,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b2275ff0458c7af4",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:26ec689b24194ede",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4021,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 215,
+            "output_tokens_details": {
+              "reasoning_tokens": 193
+            },
+            "total_tokens": 4236
+          }
         },
         {
           "output": {
@@ -247,8 +341,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:9061ca94b61b8e3a",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7f88b9a754d12160",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4051,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1621,
+            "output_tokens_details": {
+              "reasoning_tokens": 1600
+            },
+            "total_tokens": 5672
+          }
         },
         {
           "output": {
@@ -279,10 +384,21 @@
         {
           "output": {
             "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "omission_reason": "unsupported_predicate"
           },
-          "request": "fnv1a64:efe38351a57380d3",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:47d70fbc662d5fc5",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4094,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 294,
+            "output_tokens_details": {
+              "reasoning_tokens": 275
+            },
+            "total_tokens": 4388
+          }
         },
         {
           "output": {
@@ -312,61 +428,13 @@
           "output": {
             "candidates": [
               {
-                "certainty": "high",
+                "certainty": "medium",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "conflict",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "social_media",
-                  "instagram"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "my audience is mostly from the US, UK, and Australia"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
+                "extraction_confidence": "medium",
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "n"
+                  "expression": "recent"
                 },
                 "intent": {
                   "kind": "assert",
@@ -399,39 +467,108 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "social_media",
-                  "instagram",
-                  "follower_count"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been meaning to check my current follower count - I think I'm close to 1300 now."
+                  "text": "I'm looking to create a new Instagram post about a recent industry event I attended."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "considering my audience is mostly from the US, UK, and Australia"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c363279266c73790",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:92eee4c91bc636ea",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4167,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 10252,
+            "output_tokens_details": {
+              "reasoning_tokens": 9788
+            },
+            "total_tokens": 14419
+          }
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                ".",
-                "."
+                "considering my audience is mostly from the US, UK, and Australia?",
+                "By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
               ],
-              "status": "complete"
+              "status": "incomplete"
             },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:1543992a49f88f0c",
+            "omission_supported": false,
+            "review_binding": "source-review-v3:ebc5edebd8340fba",
             "reviews": [
               {
                 "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
                 "checks": {
                   "intent": "contradicted",
                   "metadata": "contradicted",
@@ -455,7 +592,7 @@
                       }
                     ],
                     "field": "predicate",
-                    "reason": "The candidate value is a question/request for caption help, not a factual proposition, so predicate 'fact' is contradicted."
+                    "reason": "The user asked a question and requested help; no factual relation/property about the user was asserted, so predicate 'fact' is not justified by this utterance."
                   },
                   {
                     "check": "value",
@@ -466,7 +603,7 @@
                       }
                     ],
                     "field": "value.Text",
-                    "reason": "The typed value is the user's question asking for caption help, not a true/false factual object to remember."
+                    "reason": "value.Text is a verbatim user question asking the assistant for help, not a factual proposition; storing it as a fact misstates its true meaning."
                   },
                   {
                     "check": "intent",
@@ -477,7 +614,7 @@
                       }
                     ],
                     "field": "intent",
-                    "reason": "Candidate labels this 'Conflict', but the value is a caption request/question; no conflict is asserted in the value."
+                    "reason": "The utterance's intent is a request/question, not an assertion; labeling intent as 'Assert' misstates the user's meaning."
                   },
                   {
                     "check": "source",
@@ -488,7 +625,7 @@
                       }
                     ],
                     "field": "source",
-                    "reason": "The current turn contains a request/question, not a user assertion of this memory."
+                    "reason": "The current turn does not assert, update or clarify a memory here; it asks the assistant a question, so UserStatement sourcing is not justified."
                   },
                   {
                     "check": "metadata",
@@ -499,43 +636,25 @@
                       }
                     ],
                     "field": "memory_type",
-                    "reason": "The value is a question/request for caption help, not a factual memory, so memory_type 'Fact' is unsupported."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I think I'm close to 1300 now.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "certainty",
-                    "reason": "User says 'I think I'm close to 1300 now,' indicating uncertainty; certainty 'High' overstates it."
+                    "reason": "memory_type 'Fact' mislabels a question/request for help as a factual memory; no user fact is asserted by this text."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:e7bc7a0b4d25a101",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b564d9c552b4e69c",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3060,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 7196,
+            "output_tokens_details": {
+              "reasoning_tokens": 6416
+            },
+            "total_tokens": 10256
+          }
         }
       ],
       "text": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
@@ -553,8 +672,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:c05919cd90bac51f",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:8fa5aa4e188e56a1",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4211,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1654,
+            "output_tokens_details": {
+              "reasoning_tokens": 1634
+            },
+            "total_tokens": 5865
+          }
         },
         {
           "output": {
@@ -585,8 +715,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:46bbe09888de3286",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7b714fef12b0c8fc",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4240,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 415,
+            "output_tokens_details": {
+              "reasoning_tokens": 393
+            },
+            "total_tokens": 4655
+          }
         },
         {
           "output": {
@@ -617,8 +758,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:0e86a7a720a88f85",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:38e16e703dc68133",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4272,
+            "input_tokens_details": {
+              "cached_tokens": 3712
+            },
+            "output_tokens": 317,
+            "output_tokens_details": {
+              "reasoning_tokens": 296
+            },
+            "total_tokens": 4589
+          }
         },
         {
           "output": {
@@ -651,8 +803,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:0912b20c3488ee57",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:221612f0d0373549",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4350,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 2299,
+            "output_tokens_details": {
+              "reasoning_tokens": 2278
+            },
+            "total_tokens": 6649
+          }
         },
         {
           "output": {

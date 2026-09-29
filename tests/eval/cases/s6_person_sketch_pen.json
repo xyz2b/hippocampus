@@ -37,14 +37,15 @@
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "expires_at": null,
-                "expiry_expression": null,
-                "explicit_memory_request": false,
                 "extraction_confidence": "high",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -68,15 +69,10 @@
                 },
                 "source": "user_statement",
                 "strength": null,
-                "subject_id": "person_feng_yanchuan",
-                "tags": [
-                  "速写",
-                  "炭笔"
-                ],
-                "temporal_expression": null,
-                "unresolved_subject": null,
-                "valid_from": null,
-                "valid_to": null,
+                "subject": {
+                  "entity_id": "person_feng_yanchuan"
+                },
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -88,7 +84,19 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:1057ffd708c93417",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3949,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 10346,
+            "output_tokens_details": {
+              "reasoning_tokens": 10116
+            },
+            "total_tokens": 14295
+          }
         },
         {
           "output": {
@@ -97,7 +105,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:f78554211daee25c",
+            "review_binding": "source-review-v3:95df4b09f3bb31f7",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -118,7 +126,19 @@
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:46a7d83fd92361c4",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2365,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6310,
+            "output_tokens_details": {
+              "reasoning_tokens": 6186
+            },
+            "total_tokens": 8675
+          }
         }
       ],
       "text": "冯砚川画速写时固定使用炭笔。"
@@ -141,14 +161,17 @@
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "expires_at": null,
-                "expiry_expression": null,
-                "explicit_memory_request": false,
                 "extraction_confidence": "high",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-29",
+                  "expression": "钢笔",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -157,7 +180,7 @@
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "画速写"
+                      "绘画"
                     ],
                     "city": null,
                     "companion_entity_ids": [],
@@ -172,14 +195,10 @@
                 },
                 "source": "user_statement",
                 "strength": null,
-                "subject_id": "person_feng_xuning",
-                "tags": [
-                  "sketching_tool"
-                ],
-                "temporal_expression": null,
-                "unresolved_subject": null,
-                "valid_from": null,
-                "valid_to": null,
+                "subject": {
+                  "entity_id": "person_feng_xuning"
+                },
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -191,16 +210,30 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:88a2740044398ab2",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3960,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1647,
+            "output_tokens_details": {
+              "reasoning_tokens": 1376
+            },
+            "total_tokens": 5607
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "画速写时"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:dd212513bb765a46",
+            "review_binding": "source-review-v3:de7ab380eb67e87f",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -209,7 +242,7 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "supported",
+                  "scope": "insufficient",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
@@ -217,11 +250,35 @@
                 },
                 "current_user_quote": "冯序宁画速写时固定使用钢笔。",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "画速写时",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions[0].Activity",
+                    "reason": "USER limits the pen use to sketching (画速写时), but candidate scope Activity is generic 绘画, omitting the 速写 condition."
+                  }
+                ]
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b75e09f8fe0a64ea",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2369,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 16591,
+            "output_tokens_details": {
+              "reasoning_tokens": 16399
+            },
+            "total_tokens": 18960
+          }
         }
       ],
       "text": "冯序宁画速写时固定使用钢笔。"
@@ -275,12 +332,24 @@
         {
           "output": {
             "queries": [
-              "冯砚川 速写 固定 用 笔",
-              "冯砚川 画速写 一直 用 铅笔",
-              "冯砚川 速写 习惯 用 炭笔"
+              "冯砚川 画速写 固定使用 炭笔",
+              "冯砚川 速写 固定 用笔",
+              "冯砚川 画速写 固定 笔 炭笔"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:9abb8054cd2f514c",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 284,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1020,
+            "output_tokens_details": {
+              "reasoning_tokens": 972
+            },
+            "total_tokens": 1304
+          }
         }
       ]
     },
@@ -306,12 +375,24 @@
         {
           "output": {
             "queries": [
-              "冯序宁 速写 一直用 笔",
-              "冯序宁 写生 习惯用 铅笔",
-              "冯序宁 画画 固定使用 炭笔"
+              "冯序宁 速写 用笔",
+              "冯序宁 画速写 常用 画笔",
+              "冯序宁 速写 习惯 用笔"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:605f0297de6aba25",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 268,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1323,
+            "output_tokens_details": {
+              "reasoning_tokens": 1282
+            },
+            "total_tokens": 1591
+          }
         }
       ]
     },
@@ -337,12 +418,24 @@
         {
           "output": {
             "queries": [
-              "冯砚川 速写 用 铅笔",
-              "冯砚川 画速写 拿 钢笔",
-              "冯砚川 速写 使用 炭笔"
+              "冯砚川 速写 炭笔",
+              "冯砚川 画速写 使用 炭笔",
+              "冯砚川 速写 固定使用 炭笔"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:706ad39103a42719",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 279,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2679,
+            "output_tokens_details": {
+              "reasoning_tokens": 2636
+            },
+            "total_tokens": 2958
+          }
         }
       ]
     },
@@ -362,21 +455,24 @@
         {
           "output": {
             "queries": [
-              "冯序宁 画速写 通常 耗时",
-              "冯序宁 速写 一般 花 分钟",
-              "冯序宁 平时 速写 用时"
+              "冯序宁 速写 用时",
+              "冯序宁 画速写 耗时",
+              "冯序宁 速写 练习 时间"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
-        },
-        {
-          "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "insufficient"
-          },
-          "request": "fnv1a64:752dc142679c72f4",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:acef7c275423753e",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1617,
+            "output_tokens_details": {
+              "reasoning_tokens": 1580
+            },
+            "total_tokens": 1883
+          }
         }
       ]
     }

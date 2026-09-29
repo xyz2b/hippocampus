@@ -17,11 +17,7 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "l"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -53,16 +49,58 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "cloud computing",
-                  "AWS"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS."
+                  "text": "I'm trying to learn more about cloud computing"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been keeping track of my educational activities"
                 }
               },
               {
@@ -72,7 +110,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "l"
+                  "expression": "lately"
                 },
                 "intent": {
                   "kind": "assert",
@@ -85,7 +123,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -105,23 +143,80 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "education",
-                  "Crash Course"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "By the way, I've been keeping track of my educational activities and noticed I've watched a lot of Crash Course videos lately - I've already finished 10 videos in the past few weeks!"
+                  "text": "I've watched a lot of Crash Course videos lately"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "in the past few weeks"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've already finished 10 videos in the past few weeks"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7dcd3dce72b8c361",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:16dcd44f88a5e82f",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3941,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 25447,
+            "output_tokens_details": {
+              "reasoning_tokens": 24625
+            },
+            "total_tokens": 29388
+          }
         },
         {
           "output": {
@@ -130,24 +225,69 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:f2f6f57c5ddb9a42",
+            "review_binding": "source-review-v3:21214023ab3dac73",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
+                  "intent": "insufficient",
+                  "metadata": "insufficient",
                   "polarity": "supported",
-                  "relation": "supported",
+                  "relation": "insufficient",
                   "scope": "supported",
-                  "source": "supported",
+                  "source": "insufficient",
                   "subject": "supported",
                   "temporal": "supported",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS. By the way, I've been keeping track of my educational activities and noticed I've watched a lot of Crash Course videos lately - I've already finished 10 videos in the past few weeks!",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "Predicate 'fact' does not match the request/question in the value; the sentence asks for recommendations, not a factual property."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Intent is Assert, but the sentence is a request/question seeking recommendations."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Value includes a control instruction/request ('could you recommend...'), which is not a USER assertion; only the learning intent is asserted."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "Memory_type Fact is not supported for a request/question; the eligible assertion would be only the learning intent."
+                  }
+                ]
               },
               {
                 "candidate_index": 1,
@@ -165,11 +305,56 @@
                 "current_user_quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS. By the way, I've been keeping track of my educational activities and noticed I've watched a lot of Crash Course videos lately - I've already finished 10 videos in the past few weeks!",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS. By the way, I've been keeping track of my educational activities and noticed I've watched a lot of Crash Course videos lately - I've already finished 10 videos in the past few weeks!",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 3,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS. By the way, I've been keeping track of my educational activities and noticed I've watched a lot of Crash Course videos lately - I've already finished 10 videos in the past few weeks!",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:43119708b9aac2f3",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:faed493bd59e04e5",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3616,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 24451,
+            "output_tokens_details": {
+              "reasoning_tokens": 23620
+            },
+            "total_tokens": 28067
+          }
         }
       ],
       "text": "I'm trying to learn more about cloud computing and was wondering if you could recommend some online courses or tutorials on AWS. By the way, I've been keeping track of my educational activities and noticed I've watched a lot of Crash Course videos lately - I've already finished 10 videos in the past few weeks!"
@@ -196,12 +381,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-08-11",
+                  "expression": "I've been listening to the podcast",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
-                "predicate": "uses",
-                "retention_tier": "long_term",
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [
@@ -229,7 +416,7 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "How I Built This podcast"
+                  "text": "I've been listening to the \"How I Built This\" podcast."
                 }
               },
               {
@@ -243,12 +430,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-08-11",
+                  "expression": "I've been inspired by the stories of entrepreneurs",
+                  "kind": "retain_until"
                 },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -264,7 +453,7 @@
                   "domain": null
                 },
                 "source": "user_statement",
-                "strength": "strong",
+                "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
@@ -274,14 +463,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "stories of entrepreneurs"
+                  "text": "I'm really inspired by the stories of entrepreneurs."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c4e579be72bdb120",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:2d949be13d9dd29a",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3979,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 14417,
+            "output_tokens_details": {
+              "reasoning_tokens": 13642
+            },
+            "total_tokens": 18396
+          }
         },
         {
           "output": {
@@ -290,7 +490,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:3b0294deea9a2284",
+            "review_binding": "source-review-v3:05f679f39656a150",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -315,7 +515,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -324,24 +524,23 @@
                 },
                 "current_user_quote": "I've been listening to the \"How I Built This\" podcast and I'm really inspired by the stories of entrepreneurs. Do you have any recommendations for other similar podcasts that I might enjoy?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I'm really inspired by the stories of entrepreneurs.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "Candidate asserts predicate 'likes' with value 'stories of entrepreneurs', but the USER only says they are 'really inspired by' those stories; liking is a different relation and is not asserted by the USER's words."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:f63dc292155f4e7d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:69dfbf5271d865ab",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2788,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 11527,
+            "output_tokens_details": {
+              "reasoning_tokens": 11280
+            },
+            "total_tokens": 14315
+          }
         }
       ],
       "text": "I've been listening to the \"How I Built This\" podcast and I'm really inspired by the stories of entrepreneurs. Do you have any recommendations for other similar podcasts that I might enjoy?"
@@ -359,8 +558,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:1c8be03a6833909e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:dabcf9963e883b64",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4025,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1025,
+            "output_tokens_details": {
+              "reasoning_tokens": 1003
+            },
+            "total_tokens": 5050
+          }
         },
         {
           "output": {
@@ -410,7 +620,9 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      "learning machine learning"
+                    ],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -435,12 +647,75 @@
                   "kind": "text",
                   "text": "I've already taken a Python programming course on edX"
                 }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "learning machine learning"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "machine learning",
+                  "python",
+                  "online courses",
+                  "edx"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm interested in learning more about machine learning. Can you recommend some online courses or tutorials on machine learning, specifically using Python?"
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:b1383e725be839ca",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:83b6823ac402e090",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4065,
+            "input_tokens_details": {
+              "cached_tokens": 3968
+            },
+            "output_tokens": 6670,
+            "output_tokens_details": {
+              "reasoning_tokens": 6221
+            },
+            "total_tokens": 10735
+          }
         },
         {
           "output": {
@@ -449,7 +724,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:05740fd9cf58c6a9",
+            "review_binding": "source-review-v3:f75ee2276b47dcc5",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -470,8 +745,19 @@
               }
             ]
           },
-          "request": "fnv1a64:d30cc617a5b54227",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:2b7c062db107de53",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2526,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 13172,
+            "output_tokens_details": {
+              "reasoning_tokens": 13022
+            },
+            "total_tokens": 15698
+          }
         }
       ],
       "text": "I've already taken a Python programming course on edX, but I'm interested in learning more about machine learning. Can you recommend some online courses or tutorials on machine learning, specifically using Python?"
@@ -503,7 +789,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -529,107 +815,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been following your recommendations and I'm making good progress on my AWS and machine learning journey."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've also been continuing to watch Crash Course videos - I just finished my 12th video on computer science!"
+                  "text": "I'm making good progress on my AWS and machine learning journey.}}]}}]}?? Wait I made a mistake. I need output valid JSON. I'm sorry. Let me start over and produce correct JSON. I should not have written that. I need output exactly one JSON object. I'll produce a clean one now.{"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:a013236c5cc8bb68",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:cc4829b9299a0952",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4109,
+            "input_tokens_details": {
+              "cached_tokens": 3456
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:5e03ee38abbd77a4",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've been following your recommendations and I'm making good progress on my AWS and machine learning journey. I've also been continuing to watch Crash Course videos - I just finished my 12th video on computer science!",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've been following your recommendations and I'm making good progress on my AWS and machine learning journey. I've also been continuing to watch Crash Course videos - I just finished my 12th video on computer science!",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:5e395adf5e402004",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 15070,
+            "output_tokens_details": {
+              "reasoning_tokens": 14783
+            },
+            "total_tokens": 19179
+          }
         }
       ],
       "text": "I've been following your recommendations and I'm making good progress on my AWS and machine learning journey. I've also been continuing to watch Crash Course videos - I just finished my 12th video on computer science!"
@@ -645,10 +849,21 @@
         {
           "output": {
             "candidates": [],
-            "omission_reason": "unsupported_predicate"
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:6f31b0221319a038",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:57055c4aa1e85b42",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4147,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 6288,
+            "output_tokens_details": {
+              "reasoning_tokens": 6266
+            },
+            "total_tokens": 10435
+          }
         },
         {
           "output": {
@@ -683,58 +898,10 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "natural_language_processing",
-                  "learning"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I'm trying to learn more about natural language processing, can you recommend some online resources or courses that cover this topic? "
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "l"
+                  "expression": "in the past few weeks"
                 },
                 "intent": {
                   "kind": "assert",
@@ -742,15 +909,20 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-10-07",
+                  "expression": "in the past few weeks",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      "waching Crash Course videos",
+                      "learning"
+                    ],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -763,75 +935,40 @@
                   "domain": null
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "weak",
                 "subject": {
                   "entity_id": "self"
                 },
                 "tags": [
-                  "crash_course",
-                  "learning_streak"
+                  "learning_streak",
+                  "Crash_Course_videos",
+                  "natural_language_processing",
+                  "short_term"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "By the way, I've been on a learning streak lately, having watched 15 Crash Course videos in the past few weeks. "
+                  "text": "I'm trying to learn more about natural language processing, can you recommend some online resources or courses that cover this topic? By the way, I've been on a learning streak lately, having watched 15 Crash Course videos in the past few weeks."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d87c158b18599c98",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:4da2875aa4c8a4e2",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4198,
+            "input_tokens_details": {
+              "cached_tokens": 2048
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:9c4bd34b82268a74",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm trying to learn more about natural language processing, can you recommend some online resources or courses that cover this topic? By the way, I've been on a learning streak lately, having watched 15 Crash Course videos in the past few weeks.",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm trying to learn more about natural language processing, can you recommend some online resources or courses that cover this topic? By the way, I've been on a learning streak lately, having watched 15 Crash Course videos in the past few weeks.",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:602edcf1fca0f17e",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 14253,
+            "output_tokens_details": {
+              "reasoning_tokens": 13837
+            },
+            "total_tokens": 18451
+          }
         }
       ],
       "text": "I'm trying to learn more about natural language processing, can you recommend some online resources or courses that cover this topic? By the way, I've been on a learning streak lately, having watched 15 Crash Course videos in the past few weeks."
@@ -849,8 +986,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:9b79d8c64c8c67be",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:8e0538caf1eb3544",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4240,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 841,
+            "output_tokens_details": {
+              "reasoning_tokens": 819
+            },
+            "total_tokens": 5081
+          }
         },
         {
           "output": {
@@ -888,7 +1036,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "."
+                  "expression": "null"
                 },
                 "intent": {
                   "kind": "assert",
@@ -896,14 +1044,12 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2026-09-29",
-                  "expression": "不",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "preference",
                 "polarity": "positive",
                 "predicate": "likes",
-                "retention_tier": "durable",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -916,30 +1062,41 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "programming"
+                  "domain": null
                 },
                 "source": "user_statement",
-                "strength": "moderate",
+                "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
                 "tags": [
-                  "transformers",
-                  "hugging-face"
+                  "programming",
+                  "nlp"
                 ],
                 "value": {
-                  "boolean": true,
+                  "boolean": null,
                   "entity_id": null,
                   "integer": null,
-                  "kind": "boolean",
-                  "text": null
+                  "kind": "text",
+                  "text": "the transformers library by Hugging Face"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:6deeb41b028761fb",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:1455b0939e51f1dd",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4281,
+            "input_tokens_details": {
+              "cached_tokens": 3712
+            },
+            "output_tokens": 1051,
+            "output_tokens_details": {
+              "reasoning_tokens": 775
+            },
+            "total_tokens": 5332
+          }
         },
         {
           "output": {
@@ -948,7 +1105,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:59773c0757ba5e71",
+            "review_binding": "source-review-v3:1463af2fd511c3b0",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -961,28 +1118,27 @@
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "insufficient"
+                  "value": "supported"
                 },
                 "current_user_quote": "I'm particularly interested in the transformers library by Hugging Face, can you tell me more about how I can use it for text classification tasks, and are there any specific models I should consider using?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "I'm particularly interested in the transformers library by Hugging Face",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value",
-                    "reason": "The typed value is Boolean(true) and does not identify the object of the preference. USER specifically named 'the transformers library by Hugging Face'; tags cannot substitute for the missing typed object."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:5a8cf6d9f001d4d8",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b57e3f6524acbbe5",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2731,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 5123,
+            "output_tokens_details": {
+              "reasoning_tokens": 4972
+            },
+            "total_tokens": 7854
+          }
         }
       ],
       "text": "I'm particularly interested in the transformers library by Hugging Face, can you tell me more about how I can use it for text classification tasks, and are there any specific models I should consider using?"
@@ -1000,8 +1156,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:658ac93a4b179069",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:61ff79de2f3a3d27",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4334,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 204,
+            "output_tokens_details": {
+              "reasoning_tokens": 185
+            },
+            "total_tokens": 4538
+          }
         },
         {
           "output": {
@@ -1037,7 +1204,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "null"
                 },
                 "intent": {
                   "kind": "assert",
@@ -1046,13 +1213,13 @@
                 },
                 "memory_request": {
                   "date": "2023-09-30",
-                  "expression": "I",
+                  "expression": "null",
                   "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": "positive",
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -1065,40 +1232,40 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "learning"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "online communities",
-                  "Kaggle",
-                  "Reddit",
-                  "NLP",
-                  "machine learning"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been engaging with online communities like Kaggle and Reddit to learn from others, get feedback on my projects, and stay up-to-date with the latest developments in NLP and machine learning."
+                  "text": " I've been engaging with online communities like Kaggle and Reddit to learn from others, get feedback on my projects, and stay up-to-date with the latest developments in NLP and machine learning."
                 }
               },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "null"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-09-30",
+                  "expression": "null",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": "positive",
@@ -1116,38 +1283,40 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "learning"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "online communities",
-                  "learning",
-                  "feedback"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've found that these communities are great resources for learning from experts and practitioners, and for getting feedback on my ideas and projects."
+                  "text": " I've found that these communities are great resources for learning from experts and practitioners, and for getting feedback on my ideas and projects."
                 }
               },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "null"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-09-30",
+                  "expression": "null",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": "positive",
@@ -1165,31 +1334,38 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "learning"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "online communities",
-                  "collaboration",
-                  "learning"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Additionally, I've been able to connect with like-minded individuals and potential collaborators, which has been really valuable for my learning journey."
+                  "text": " Additionally, I've been able to connect with like-minded individuals and potential collaborators, which has been really valuable for my learning journey."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:6eeb811f82f50d2c",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:b098b81cd68117c6",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4426,
+            "input_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "output_tokens": 10173,
+            "output_tokens_details": {
+              "reasoning_tokens": 9227
+            },
+            "total_tokens": 14599
+          }
         },
         {
           "output": {
@@ -1198,7 +1374,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:be406c1a5f06cd86",
+            "review_binding": "source-review-v3:201c1f44f01362c5",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -1221,7 +1397,7 @@
                 "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "insufficient",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -1232,25 +1408,13 @@
                 },
                 "current_user_quote": "I've been engaging with online communities like Kaggle and Reddit to learn from others, get feedback on my projects, and stay up-to-date with the latest developments in NLP and machine learning. I've found that these communities are great resources for learning from experts and practitioners, and for getting feedback on my ideas and projects. Additionally, I've been able to connect with like-minded individuals and potential collaborators, which has been really valuable for my learning journey.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I've found that these communities are great resources for learning from experts and practitioners, and for getting feedback on my ideas and projects.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "retention_tier",
-                    "reason": "USER did not request long-term retention; no explicit memory instruction supports LongTerm."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 2,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "insufficient",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -1261,24 +1425,23 @@
                 },
                 "current_user_quote": "I've been engaging with online communities like Kaggle and Reddit to learn from others, get feedback on my projects, and stay up-to-date with the latest developments in NLP and machine learning. I've found that these communities are great resources for learning from experts and practitioners, and for getting feedback on my ideas and projects. Additionally, I've been able to connect with like-minded individuals and potential collaborators, which has been really valuable for my learning journey.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Additionally, I've been able to connect with like-minded individuals and potential collaborators, which has been really valuable for my learning journey.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "retention_tier",
-                    "reason": "USER did not request long-term retention; no explicit memory instruction supports LongTerm."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:adeadb74272bb68d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:18d0a902afea9af2",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3756,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 5378,
+            "output_tokens_details": {
+              "reasoning_tokens": 4868
+            },
+            "total_tokens": 9134
+          }
         }
       ],
       "text": "I've been engaging with online communities like Kaggle and Reddit to learn from others, get feedback on my projects, and stay up-to-date with the latest developments in NLP and machine learning. I've found that these communities are great resources for learning from experts and practitioners, and for getting feedback on my ideas and projects. Additionally, I've been able to connect with like-minded individuals and potential collaborators, which has been really valuable for my learning journey."
@@ -1312,12 +1475,25 @@
         },
         {
           "output": {
-            "answer_text": "15 Crash Course videos",
-            "candidate_index": 5,
+            "answer_text": "10 videos",
+            "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:f0fb8fcd5faf0657",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:6e6cb3a300b46e23",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1163,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 922,
+            "output_tokens_details": {
+              "reasoning_tokens": 895
+            },
+            "total_tokens": 2085
+          }
         }
       ]
     }

@@ -14,10 +14,14 @@
           "output": {
             "candidates": [
               {
-                "certainty": "high",
+                "certainty": "low",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "just"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -26,10 +30,10 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "fact",
+                "memory_type": "episode",
                 "polarity": null,
-                "predicate": "uses",
-                "retention_tier": "long_term",
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -55,59 +59,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Ibotta"
+                  "text": "I&#39;ve just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it. "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:43cbb7804309b7c0",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I've just downloaded Ibotta"
-              ],
-              "status": "incomplete"
+          "request": "fnv1a64:57e9eac2f60f36fa",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3943,
+            "input_tokens_details": {
+              "cached_tokens": 3456
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:46b3b0451af6e129",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've just downloaded Ibotta",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "User states they just downloaded Ibotta, not that they use it; 'uses' is an inferred action not asserted."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:bb81c9a92a88e714",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 9216,
+            "output_tokens_details": {
+              "reasoning_tokens": 8955
+            },
+            "total_tokens": 13159
+          }
         }
       ],
       "text": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
@@ -134,15 +104,19 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-04-16",
+                  "expression": "current_date",
+                  "kind": "retain_until"
                 },
-                "memory_type": "fact",
+                "memory_type": "constraint",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      "grocery shopping"
+                    ],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -157,52 +131,7 @@
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
+                  "unresolved_reference": "我"
                 },
                 "tags": [],
                 "value": {
@@ -212,72 +141,44 @@
                   "kind": "text",
                   "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
                 }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
-                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:9a2dde0572ebfcf9",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:460799389593dd97",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4028,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 8066,
+            "output_tokens_details": {
+              "reasoning_tokens": 7793
+            },
+            "total_tokens": 12094
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
+              "missing_user_spans": [
+                "I don't have any dietary restrictions or preferences",
+                "I'm the only one in my household.",
+                "I don't have a preferred store",
+                "I do try to shop at places that offer cashback through Ibotta.",
+                "I've been eyeing that rebate on eggs, so I'll probably prioritize that."
+              ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:1ea326ee28ebd505",
+            "review_binding": "source-review-v3:3089e50c69b3f654",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -288,46 +189,39 @@
                 },
                 "current_user_quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
                 "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
-                "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I don't have any dietary restrictions or preferences",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "User states a habitual grocery buying pattern, not a constraint or restriction; labeling it Constraint is unsupported by the user's words."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:e4d1fd2832baae29",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:97873e35be886d34",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2539,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 8667,
+            "output_tokens_details": {
+              "reasoning_tokens": 8315
+            },
+            "total_tokens": 11206
+          }
         }
       ],
       "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that."
@@ -342,88 +236,48 @@
       "recorded": [
         {
           "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?"
-                }
-              }
-            ],
-            "omission_reason": null
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:74ea3955a5198b4e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:4a2e837fd8473174",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4061,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 725,
+            "output_tokens_details": {
+              "reasoning_tokens": 703
+            },
+            "total_tokens": 4786
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm also thinking of trying to reduce my plastic usage"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:e9be938230d240b6",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
+            "review_binding": "source-review-v3:8e4b1e1bf95e664f",
+            "reviews": []
           },
-          "request": "fnv1a64:b01c36fe794b0f0d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:48b933c776a04b8c",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2174,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1555,
+            "output_tokens_details": {
+              "reasoning_tokens": 1491
+            },
+            "total_tokens": 3729
+          }
         }
       ],
       "text": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?"
@@ -446,7 +300,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "now"
                 },
                 "intent": {
                   "kind": "assert",
@@ -458,7 +312,7 @@
                 },
                 "memory_type": "fact",
                 "polarity": null,
-                "predicate": "fact",
+                "predicate": "uses",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
@@ -487,9 +341,285 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+                  "text": "reusable bags"
                 }
               },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "not contributing to the plastic waste"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:2c5d247a4553f24a",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4113,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 12221,
+            "output_tokens_details": {
+              "reasoning_tokens": 11795
+            },
+            "total_tokens": 16334
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:5eb6f14eae5327e2",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER gives no validity start date. \"I've been carrying ... and it's become a habit now\" describes an already ongoing state, but valid_from is set to the observed_at system clock (1681591980), which is not a USER-asserted real-world start date."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:e523bf19400c85f3",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2996,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 3864,
+            "output_tokens_details": {
+              "reasoning_tokens": 3481
+            },
+            "total_tokens": 6860
+          }
+        }
+      ],
+      "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1681592040,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "a few weeks ago"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "grocery delivery service trial"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "grocery",
+                  "delivery",
+                  "trial",
+                  "FreshToDoor"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago.  Do you know of any other services that offer similar promotions or discounts, especially for first-time users? "
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:ada2d2ac1c3311d6",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4161,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 11803,
+            "output_tokens_details": {
+              "reasoning_tokens": 11510
+            },
+            "total_tokens": 15964
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:d1f14e946a3b6eed",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2702,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4942,
+            "output_tokens_details": {
+              "reasoning_tokens": 4794
+            },
+            "total_tokens": 7644
+          }
+        }
+      ],
+      "text": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1681592100,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
@@ -532,329 +662,34 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I feel good about not contributing to the plastic waste."
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:22e63172f63207b0",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:066c6cf54f204103",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:53faeecc71346edd",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t5",
-      "observed_at": 1681592040,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "a"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "uses",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "grocery_delivery",
-                  "cashback"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I tried FreshToDoor a few weeks ago."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "a"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "grocery_delivery",
-                  "future_intent"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago."
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:cf078647df0ded9c",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:b3ca48ab3ac60d35",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "which I tried a few weeks ago",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "USER describes a single past trial ('which I tried a few weeks ago') and is now seeking other services; predicate 'uses' asserts ongoing current use of FreshToDoor, which the USER words do not assert."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:9230a5aec22e0f3c",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t6",
-      "observed_at": 1681592100,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2026-09-30",
-                  "expression": "I",
-                  "kind": "retain_until"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
                   "text": "I've been trying to incorporate more organic and natural products into my diet."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:0eaeae4a4e260335",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:57fef06c9c0c20c3",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4207,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7794,
+            "output_tokens_details": {
+              "reasoning_tokens": 7527
+            },
+            "total_tokens": 12001
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'm thinking of trying out Thrive Market",
-                "I've been trying to incorporate more organic and natural products into my diet."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:986c0743c4d4df59",
+            "review_binding": "source-review-v3:b82c4d239f556646",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -862,7 +697,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -871,24 +706,23 @@
                 },
                 "current_user_quote": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I've been trying to incorporate more organic and natural products into my diet.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "USER states an ongoing effort to incorporate more organic and natural products, not that they like them; predicate 'likes' is not asserted."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:c8627a83534a2277",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:c318ead3ed25e172",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2672,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1741,
+            "output_tokens_details": {
+              "reasoning_tokens": 1587
+            },
+            "total_tokens": 4413
+          }
         }
       ],
       "text": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?"
@@ -924,10 +758,23 @@
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:6e70ee388ec2e28f",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:bb95f32a8786cde2",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 965,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 503,
+            "output_tokens_details": {
+              "reasoning_tokens": 475
+            },
+            "total_tokens": 1468
+          }
         }
       ]
     }

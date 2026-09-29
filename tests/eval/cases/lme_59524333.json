@@ -15,8 +15,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:f3b6d84ca0e4bb0b",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:0785a5f9ca92670d",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3901,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 130,
+            "output_tokens_details": {
+              "reasoning_tokens": 111
+            },
+            "total_tokens": 4031
+          }
         },
         {
           "output": {
@@ -44,154 +55,48 @@
       "recorded": [
         {
           "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-02-11",
-                  "expression": "I",
-                  "kind": "retain_until"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "Todoist"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-02-11",
-                  "expression": "I",
-                  "kind": "retain_until"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "Trello"
-                }
-              }
-            ],
-            "omission_reason": null
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:17016a52e9d201f3",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:81cefdfdc2956c25",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3925,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 918,
+            "output_tokens_details": {
+              "reasoning_tokens": 897
+            },
+            "total_tokens": 4843
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm particularly interested in Todoist and Trello."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:0bb2c6484c1a3a05",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm particularly interested in Todoist and Trello. Can you tell me more about how they integrate with Google Calendar?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm particularly interested in Todoist and Trello. Can you tell me more about how they integrate with Google Calendar?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
+            "review_binding": "source-review-v3:afe45b3d1bbff2c0",
+            "reviews": []
           },
-          "request": "fnv1a64:5dd4dfedd1625c90",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:7c95ac359ec98202",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2037,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1369,
+            "output_tokens_details": {
+              "reasoning_tokens": 1307
+            },
+            "total_tokens": 3406
+          }
         }
       ],
       "text": "I'm particularly interested in Todoist and Trello. Can you tell me more about how they integrate with Google Calendar?"
@@ -208,9 +113,9 @@
           "output": {
             "candidates": [
               {
-                "certainty": "high",
+                "certainty": "low",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
+                "extraction_confidence": "medium",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -218,12 +123,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-02-12",
+                  "expression": "tomorrow",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "uses",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -236,14 +143,18 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "productivity"
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "app",
+                  "task_management",
+                  "todoist"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -256,14 +167,20 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "usually"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-02-12",
+                  "expression": "tomorrow",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -281,7 +198,7 @@
                     "date": null,
                     "geography": null,
                     "task_id": null,
-                    "time_of_day": "evening"
+                    "time_of_day": "morning"
                   },
                   "domain": null
                 },
@@ -290,7 +207,11 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "gym",
+                  "routine",
+                  "schedule"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -298,81 +219,100 @@
                   "kind": "text",
                   "text": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?"
                 }
+              },
+              {
+                "certainty": "medium",
+                "cross_turn_useful": true,
+                "extraction_confidence": "medium",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-02-12",
+                  "expression": "tomorrow",
+                  "kind": "retain_until"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "productivity"
+                },
+                "source": "user_statement",
+                "strength": "weak",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "app",
+                  "todoist"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Todoist"
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:99fc69dc17733e22",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:ef9044f5619842d8",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3991,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 10182,
+            "output_tokens_details": {
+              "reasoning_tokens": 9305
+            },
+            "total_tokens": 14173
+          }
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I'm leaning towards Todoist",
-                "I want to make sure it can fit into my daily routine",
-                "for task management",
-                "which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays"
+                ":-,-;\n\"coverage_incomplete\": true"
               ],
               "status": "incomplete"
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:10d95a360a6c0ba0",
+            "omission_supported": true,
+            "review_binding": "source-review-v3:931b573bc391970c",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
+                  "intent": "contradicted",
+                  "metadata": "contradicted",
                   "polarity": "supported",
-                  "relation": "supported",
+                  "relation": "contradicted",
                   "scope": "insufficient",
-                  "source": "supported",
+                  "source": "contradicted",
                   "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
+                  "temporal": "contradicted",
+                  "value": "contradicted"
                 },
                 "current_user_quote": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
-                "evidence": [
-                  {
-                    "quote": "I already use it for task management",
-                    "turn_index": 0
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "for task management",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.conditions",
-                    "reason": "Candidate leaves scope.conditions empty and omits the user's limiting purpose 'for task management', broadening 'uses Todoist' beyond the asserted use."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "insufficient",
-                  "metadata": "insufficient",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "supported",
-                  "source": "insufficient",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "insufficient"
-                },
-                "current_user_quote": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
-                "evidence": [
-                  {
-                    "quote": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
-                    "turn_index": 0
-                  }
-                ],
+                "evidence": [],
                 "issues": [
                   {
                     "check": "relation",
@@ -383,29 +323,51 @@
                       }
                     ],
                     "field": "predicate",
-                    "reason": "Predicate 'fact' is applied to the whole question/request, while only the embedded relative clause asserts the user's usual gym schedule."
+                    "reason": "predicate 'fact' is not asserted: the quoted sentence is an interrogative request for advice, not a proposition the USER stated."
                   },
                   {
                     "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "value.Text is the USER's question, not a complete verbatim USER sentence carrying a proposition; the gym timing information inside it is not represented as the fact."
+                  },
+                  {
+                    "check": "scope",
                     "evidence": [
                       {
                         "quote": "which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays",
                         "turn_index": 0
                       }
                     ],
-                    "field": "value.Text",
-                    "reason": "value.Text stores the request/question as the fact; the asserted proposition is only the embedded clause about usual gym days/times."
+                    "field": "scope.conditions",
+                    "reason": "scope limits the memory to Activity=gym although the sentence is a question; no scoped fact is asserted and the stated gym schedule is not captured as the value."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.expires_at",
+                    "reason": "expires_at at local midnight ending 2023-02-12 relies on proposed_expiry_expression 'tomorrow', which appears nowhere in USER words; no retention deadline was stated."
                   },
                   {
                     "check": "intent",
                     "evidence": [
                       {
-                        "quote": "Can you suggest the best way to set reminders for my gym sessions",
+                        "quote": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
                         "turn_index": 0
                       }
                     ],
                     "field": "intent",
-                    "reason": "The main speech act is a request for suggestions, not an assertion of the entire sentence as a fact."
+                    "reason": "intent 'Assert' is wrong: the USER is requesting a recommendation, not asserting this memory."
                   },
                   {
                     "check": "source",
@@ -416,25 +378,109 @@
                       }
                     ],
                     "field": "source",
-                    "reason": "A question/request is not itself a user-asserted memory; only the relative clause is an assertion of the gym schedule."
+                    "reason": "the current USER turn asks a question; it does not assert or update this memory, so UserStatement is not justified."
                   },
                   {
                     "check": "metadata",
                     "evidence": [
                       {
-                        "quote": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
+                        "quote": "",
                         "turn_index": 0
                       }
                     ],
-                    "field": "memory_type",
-                    "reason": "memory_type 'Fact' is applied to a request/question rather than to the embedded asserted schedule."
+                    "field": "explicit_memory_request",
+                    "reason": "explicit_memory_request=true is wrong: the USER gave no instruction to remember or retain anything in this turn."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "retention_tier LongTerm contradicts the candidate's own next-day expiry and no USER retention instruction supports it."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "contradicted",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I'm leaning towards Todoist since I already use it for task management",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "USER says 'I'm leaning towards Todoist' and 'I already use it', neither of which asserts the property 'likes'; the same value Todoist is attached to a different, unasserted property."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.expires_at",
+                    "reason": "expires_at at local midnight ending 2023-02-12 relies on proposed_expiry_expression 'tomorrow', which appears nowhere in USER words; no validity or retention boundary was stated."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "explicit_memory_request=true is wrong: the USER only asks about setting reminders and gave no instruction to remember or retain this preference."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "retention_tier LongTerm contradicts the candidate's own next-day expiry and is unsupported by any USER retention instruction."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:b81ba449b9bb5bf2",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:c14041f66c35957c",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2932,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6176,
+            "output_tokens_details": {
+              "reasoning_tokens": 4994
+            },
+            "total_tokens": 9108
+          }
         }
       ],
       "text": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?"
@@ -492,14 +538,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I have a lot of projects going on at the same time, and I want to make sure I'm prioritizing the right tasks."
+                  "text": "I have a lot of projects going on at the same time"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:1f628f9a7a9f4ca8",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:efb28620901f7012",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4031,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7049,
+            "output_tokens_details": {
+              "reasoning_tokens": 6833
+            },
+            "total_tokens": 11080
+          }
         },
         {
           "output": {
@@ -548,8 +605,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:2871e6bc58dd5329",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:1610d0369276aa67",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4065,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 154,
+            "output_tokens_details": {
+              "reasoning_tokens": 135
+            },
+            "total_tokens": 4219
+          }
         },
         {
           "output": {
@@ -580,8 +648,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:80c206558334564f",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:193d3272aef72231",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4096,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 254,
+            "output_tokens_details": {
+              "reasoning_tokens": 233
+            },
+            "total_tokens": 4350
+          }
         },
         {
           "output": {
@@ -629,7 +708,9 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      "gym"
+                    ],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -652,25 +733,82 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays. "
+                  "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "negative",
+                "predicate": "avoids",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'd prefer to avoid scheduling the meeting during those times"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:688ba94015dfce5e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d4cf232e2ab516a4",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4150,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 6486,
+            "output_tokens_details": {
+              "reasoning_tokens": 6065
+            },
+            "total_tokens": 10636
+          }
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I'm pretty flexible, but I do have a few commitments already."
+                "I'm pretty flexible",
+                "I do have a few commitments already"
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:861705190a0a5ec5",
+            "review_binding": "source-review-v3:1e87e6bbd779642c",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -688,11 +826,51 @@
                 "current_user_quote": "I'm pretty flexible, but I do have a few commitments already. I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times. How about we focus on Tuesday or Thursday?",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "insufficient",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm pretty flexible, but I do have a few commitments already. I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times. How about we focus on Tuesday or Thursday?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions",
+                    "reason": "Scope is empty, but the preference is limited to 'during those times', referring to the gym times on Mondays, Wednesdays, and Fridays; the limiting condition is omitted from the structured scope."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:5d50efd4d894feb8",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:5a8fd8bfafc0b326",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2978,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 13998,
+            "output_tokens_details": {
+              "reasoning_tokens": 13607
+            },
+            "total_tokens": 16976
+          }
         }
       ],
       "text": "I'm pretty flexible, but I do have a few commitments already. I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times. How about we focus on Tuesday or Thursday?"
@@ -709,74 +887,27 @@
           "output": {
             "candidates": [
               {
-                "certainty": "low",
+                "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "low",
+                "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
-                  "kind": "assert",
-                  "reason": null,
+                  "kind": "supersede",
+                  "reason": "user_retracted",
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "constraint",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "meeting"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
-                }
-              },
-              {
-                "certainty": "low",
-                "cross_turn_useful": true,
-                "extraction_confidence": "low",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-30",
+                  "expression": "I think Tuesday afternoon at 2:00 pm could work well.",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "gym"
-                    ],
+                    "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -789,112 +920,38 @@
                   "domain": null
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "心gym",
+                  "routeen"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
+                  "text": "I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm. "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:b7618021b1712286",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I think Tuesday afternoon at 2:00 pm could work well."
-              ],
-              "status": "incomplete"
+          "request": "fnv1a64:d9702ddfbf3cb8fc",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4193,
+            "input_tokens_details": {
+              "cached_tokens": 3456
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:6f4e9666fe9d0de9",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "insufficient",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I think Tuesday afternoon at 2:00 pm could work well. I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm.",
-                "evidence": [
-                  {
-                    "quote": "before I head to the gym, which is usually at 6:00 pm.",
-                    "turn_index": 0
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "before I head to the gym, which is usually at 6:00 pm.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.conditions",
-                    "reason": "Scope lists only meeting but the constraint also depends on the gym and its 6:00 pm time; omitting the gym condition loses meaning."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "insufficient",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I think Tuesday afternoon at 2:00 pm could work well. I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm.",
-                "evidence": [
-                  {
-                    "quote": "which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
-                    "turn_index": 3
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "which is usually at 6:00 pm",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
-                        "turn_index": 3
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "History states gym at 7:00 pm; current says usually at 6:00 pm, so this is a correction/refinement, not plain Assert."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:d3708c17e0ccd79e",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 11006,
+            "output_tokens_details": {
+              "reasoning_tokens": 10688
+            },
+            "total_tokens": 15199
+          }
         }
       ],
       "text": "I think Tuesday afternoon at 2:00 pm could work well. I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
@@ -912,8 +969,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:9db568177be44a79",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d744ba4464f29b17",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4221,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 3309,
+            "output_tokens_details": {
+              "reasoning_tokens": 3287
+            },
+            "total_tokens": 7530
+          }
         },
         {
           "output": {
@@ -944,8 +1012,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:1a4fb3dccfc31bcf",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:658f1b386d31cbb1",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4254,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1963,
+            "output_tokens_details": {
+              "reasoning_tokens": 1942
+            },
+            "total_tokens": 6217
+          }
         },
         {
           "output": {
@@ -976,8 +1055,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:5cc51ba282a6cfda",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d057245b5452d840",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4290,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 417,
+            "output_tokens_details": {
+              "reasoning_tokens": 398
+            },
+            "total_tokens": 4707
+          }
         },
         {
           "output": {
@@ -1026,10 +1116,23 @@
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:1a809eabef937ca1",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:48363f6a835d64ae",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 861,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 305,
+            "output_tokens_details": {
+              "reasoning_tokens": 277
+            },
+            "total_tokens": 1166
+          }
         }
       ]
     }

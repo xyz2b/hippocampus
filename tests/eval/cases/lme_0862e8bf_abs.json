@@ -20,7 +20,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": ": null"
                 },
                 "intent": {
                   "kind": "assert",
@@ -28,9 +28,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-20",
-                  "expression": "I",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -55,20 +53,34 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "pet_health",
+                  "cat"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.  "
+                  "text": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:0c59f7074e86d46f",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:ccf06edd24696311",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3906,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 1148,
+            "output_tokens_details": {
+              "reasoning_tokens": 897
+            },
+            "total_tokens": 5054
+          }
         },
         {
           "output": {
@@ -77,29 +89,96 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:1a40cbd64ff1b689",
+            "review_binding": "source-review-v3:3cc8c779f5095df1",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
+                  "intent": "contradicted",
+                  "metadata": "insufficient",
                   "polarity": "supported",
-                  "relation": "supported",
+                  "relation": "contradicted",
                   "scope": "supported",
-                  "source": "supported",
+                  "source": "insufficient",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "supported"
+                  "value": "insufficient"
                 },
                 "current_user_quote": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "The candidate's value is a question/request, not a factual assertion; predicate 'fact' mischaracterizes the whole turn."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I was wondering if you could recommend some good probiotic supplements for cats.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Text includes the user's question/request for probiotic recommendations, which is not part of the factual proposition about the cat's digestive health."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "The user is asking for a recommendation, not asserting the whole sentence as a fact."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The turn contains a request/question; the whole sentence is not a user assertion."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "User did not specify retention; LongTerm is not justified by user words."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:65e7777f7366f57d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:a902272287bb649d",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2362,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 14213,
+            "output_tokens_details": {
+              "reasoning_tokens": 13728
+            },
+            "total_tokens": 16575
+          }
         }
       ],
       "text": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats."
@@ -122,7 +201,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "已"
+                  "expression": "I've_actually"
                 },
                 "intent": {
                   "kind": "assert",
@@ -130,19 +209,17 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-21",
-                  "expression": "已",
+                  "date": "2023-05-20",
+                  "expression": "0.95",
                   "kind": "retain_until"
                 },
                 "memory_type": "fact",
-                "polarity": "positive",
+                "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "giving cat probiotic supplement"
-                    ],
+                    "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -152,141 +229,42 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
-                "strength": "moderate",
+                "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
                 "tags": [
-                  "cat",
-                  "probiotics",
-                  "supplements"
+                  "cat_health",
+                  "probiotic",
+                  "pet_care"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "已"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-05-21",
-                  "expression": "已",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": "positive",
-                "predicate": "uses",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "giving cat probiotic supplement"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": "moderate",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cat",
-                  "probiotics",
-                  "supplements"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "vet recommended probiotic supplement"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-05-21",
-                  "expression": "已",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": "positive",
-                "predicate": "owns",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "giving cat probiotic supplement"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": "moderate",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cat",
-                  "litter",
-                  "litter box"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "new litter box with low sides"
+                  "text": "I've_actually_already_started_giving_my_cat_a_probiotic_supplement,_and_it_seems_to_be_helping. "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:899a2bba8d15f72c",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:525d457d687a61c6",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3991,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7676,
+            "output_tokens_details": {
+              "reasoning_tokens": 7360
+            },
+            "total_tokens": 11667
+          }
         }
       ],
       "text": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter."
@@ -307,9 +285,9 @@
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
-                  "date": null,
+                  "date": "2023-01-25",
                   "end_date": null,
-                  "expression": "l"
+                  "expression": "January 25th"
                 },
                 "intent": {
                   "kind": "assert",
@@ -317,12 +295,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-01-25",
+                  "expression": "January 25th",
+                  "kind": "retain_until"
                 },
                 "memory_type": "episode",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -348,14 +328,72 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I actually just washed all of her blankets and beds on January 25th because they were getting stinky too."
+                  "text": ""
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-05-20",
+                  "expression": "今天",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:6621a28e6d26fbdd",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:fe43707ef57a803b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4051,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 23552,
+            "output_tokens_details": {
+              "reasoning_tokens": 23046
+            },
+            "total_tokens": 27603
+          }
         },
         {
           "output": {
@@ -364,29 +402,63 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:36962121bc0ca063",
+            "review_binding": "source-review-v3:874ff3ce5fabcf1e",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "supported",
+                  "temporal": "contradicted",
                   "value": "supported"
                 },
                 "current_user_quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I actually just washed all of her blankets and beds on January 25th because they were getting stinky too.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "expires_at",
+                    "reason": "USER gives no validity or retention qualifier; the only date (January 25th) is the event date for washing the cat's blankets and beds, not a memory-retention deadline. The asserted expiry at end of 2023-05-20 (extractor-proposed expression \"今天\") is not asserted by USER, so no boundary should be set."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "The current USER turn contains no instruction to remember, save or retain this memory; USER only reports litter box odor, reports washing blankets/beds, and asks a question. explicit_memory_request must therefore be false, not true."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:16cff55a77338de6",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:711e98fa6a183e99",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2592,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8289,
+            "output_tokens_details": {
+              "reasoning_tokens": 7860
+            },
+            "total_tokens": 10881
+          }
         }
       ],
       "text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?"
@@ -404,8 +476,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:a3c98404b3d625e9",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:fea60a49cd453aa7",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4081,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 757,
+            "output_tokens_details": {
+              "reasoning_tokens": 735
+            },
+            "total_tokens": 4838
+          }
         },
         {
           "output": {
@@ -470,15 +553,201 @@
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
-                  "unresolved_reference": "门"
+                  "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "cat",
+                  "home",
+                  "front door",
+                  "microchip"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "门坏了，关不上"
+                  "text": "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:e0abfaab8e2bbadb",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4123,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7636,
+            "output_tokens_details": {
+              "reasoning_tokens": 7369
+            },
+            "total_tokens": 11759
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:6c898aa03b70c4c5",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:27d715c609bd1629",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2614,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4611,
+            "output_tokens_details": {
+              "reasoning_tokens": 4457
+            },
+            "total_tokens": 7225
+          }
+        }
+      ],
+      "text": "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1684523220,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": {
+                    "name": null,
+                    "source": "none"
+                  }
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cat",
+                  "pet",
+                  "name"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "my cat's name is Luna"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "throughout all the changes we've been making to her environment"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": {
+                    "name": null,
+                    "source": "none"
+                  }
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "unresolved_reference": "Luna"
+                },
+                "tags": [
+                  "cat",
+                  "pet",
+                  "temperament"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "she's been such a sweetie throughout all the changes we've been making to her environment."
                 }
               },
               {
@@ -510,76 +779,10 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "担心她跑出去"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:ae1c4ab57d00e7bd",
-          "schema": "personal_memory_candidates_v1"
-        }
-      ],
-      "text": "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out."
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t6",
-      "observed_at": 1684523220,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "."
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
+                  "domain": {
+                    "name": null,
+                    "source": "none"
+                  }
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -587,54 +790,33 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "pet",
                   "cat",
-                  "naming"
+                  "home"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment."
+                  "text": "I'm just glad I can provide her with a happy and healthy home."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7d9874e6c29a0aa7",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:7243a5c730e479b9",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4170,
+            "input_tokens_details": {
+              "cached_tokens": 3456
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:8fd43e11289a7f0f",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment. I'm just glad I can provide her with a happy and healthy home.",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:5eb7a3b166aadad8",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 16387,
+            "output_tokens_details": {
+              "reasoning_tokens": 15573
+            },
+            "total_tokens": 20557
+          }
         }
       ],
       "text": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment. I'm just glad I can provide her with a happy and healthy home."
@@ -667,10 +849,23 @@
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:ba01c77a517cbd9a",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:a30c7fad09e36cc0",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 866,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 122,
+            "output_tokens_details": {
+              "reasoning_tokens": 94
+            },
+            "total_tokens": 988
+          }
         }
       ]
     }

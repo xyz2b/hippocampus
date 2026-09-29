@@ -15,8 +15,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:be0b5e1b044d3576",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:9b88f608dbe7838c",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3901,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 214,
+            "output_tokens_details": {
+              "reasoning_tokens": 195
+            },
+            "total_tokens": 4115
+          }
         },
         {
           "output": {
@@ -49,14 +60,20 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "null"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2026-02-15",
+                  "expression": "保留到明天",
+                  "kind": "retain_until"
                 },
                 "memory_type": "preference",
                 "polarity": "positive",
@@ -64,71 +81,59 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      " breakfast"
+                    ],
                     "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
+                    "companion_entity_ids": [
+                      "wife",
+                      "son"
+                    ],
+                    "companion_roles": [
+                      "partner",
+                      "children"
+                    ],
                     "country": null,
                     "date": null,
                     "geography": null,
                     "task_id": null,
-                    "time_of_day": null
+                    "time_of_day": "morning"
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
-                "strength": "moderate",
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
                 "tags": [
-                  "photography",
-                  "astrophotography"
+                  "coffee",
+                  "location:home"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "astrophotography"
+                  "text": "我 最近 喜欢 吃 甜 的 早饭； 我 和 我 老婆 和 我 儿子 在 家 吃 早饭。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:afd2dc5f6777178a",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:9e838f95bd872bd0",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3951,
+            "input_tokens_details": {
+              "cached_tokens": 3456
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:178a04962a8887a3",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm interested in astrophotography, can you recommend some apps or software for editing and processing astrophotography images? Additionally, do you know of any online communities or forums where I can share my astrophotography work and get feedback from others?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:a275a99989724565",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 4541,
+            "output_tokens_details": {
+              "reasoning_tokens": 4224
+            },
+            "total_tokens": 8492
+          }
         }
       ],
       "text": "I'm interested in astrophotography, can you recommend some apps or software for editing and processing astrophotography images? Additionally, do you know of any online communities or forums where I can share my astrophotography work and get feedback from others?"
@@ -145,9 +150,9 @@
           "output": {
             "candidates": [
               {
-                "certainty": "high",
+                "certainty": "low",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
+                "extraction_confidence": "low",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -158,7 +163,7 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "fact",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "fact",
                 "retention_tier": "short_term",
                 "scope": {
@@ -186,7 +191,217 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively?"
+                  "text": "I'm interested in learning more about image stacking"
+                }
+              },
+              {
+                "certainty": "low",
+                "cross_turn_useful": true,
+                "extraction_confidence": "low",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": "positive",
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been looking for a good camera remote shutter release"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:79a209436b3db7f8",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3998,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 10948,
+            "output_tokens_details": {
+              "reasoning_tokens": 10298
+            },
+            "total_tokens": 14946
+          }
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:ade54cde87660ebc",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively? Also, I've been looking for a good camera remote shutter release, do you have any recommendations?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm interested in learning more about image stacking",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "certainty",
+                    "reason": "User directly asserts interest with no hedging; Low certainty does not match the user's certain statement."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively? Also, I've been looking for a good camera remote shutter release, do you have any recommendations?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I've been looking for a good camera remote shutter release",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "certainty",
+                    "reason": "User directly asserts ongoing search with no hedging; Low certainty does not match the user's certain statement."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:acb83df4317a27ae",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2818,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 19526,
+            "output_tokens_details": {
+              "reasoning_tokens": 19151
+            },
+            "total_tokens": 22344
+          }
+        }
+      ],
+      "text": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively? Also, I've been looking for a good camera remote shutter release, do you have any recommendations?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1698817080,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-11-01",
+                  "end_date": null,
+                  "expression": "today"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "photography workshop"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
                 }
               },
               {
@@ -202,7 +417,7 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "preference",
+                "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
@@ -231,272 +446,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Also, I've been looking for a good camera remote shutter release, do you have any recommendations?"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:40a9496133b03802",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:16403622ebd888e5",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "insufficient",
-                  "metadata": "insufficient",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "insufficient",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "insufficient"
-                },
-                "current_user_quote": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively? Also, I've been looking for a good camera remote shutter release, do you have any recommendations?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "can you explain the process and provide some tips on how to do it effectively?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "value.Text is typed as a Fact, but the quoted sentence asks the assistant a question ('can you explain the process and provide some tips on how to do it effectively?'). A question/request does not carry a stored proposition, so this Text does not justify the claimed fact value."
-                  },
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "can you explain the process and provide some tips on how to do it effectively?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "The user's intent in this turn is to request an explanation and tips about image stacking; no memory is asserted, so intent 'Assert' misrepresents the turn."
-                  },
-                  {
-                    "check": "source",
-                    "evidence": [
-                      {
-                        "quote": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "source",
-                    "reason": "The current USER turn asks the assistant a question about image stacking; it does not state, update or clarify a memory fact, so source 'UserStatement' is not justified for a Fact."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "retention_tier",
-                    "reason": "No USER words mention retention or storing this; 'ShortTerm' is extractor-assigned, and candidate 1 labels the same turn 'LongTerm', so the tier is not justified by what the user said."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "insufficient",
-                  "metadata": "insufficient",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "insufficient",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "insufficient"
-                },
-                "current_user_quote": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively? Also, I've been looking for a good camera remote shutter release, do you have any recommendations?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "do you have any recommendations?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "value.Text is a request for product recommendations ('do you have any recommendations?'), not a proposition the user asserted; a question cannot be the Text value of a stored preference/fact."
-                  },
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "do you have any recommendations?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "The user asks for camera remote shutter release recommendations; the turn is a question, not an assertion, so intent 'Assert' is not justified."
-                  },
-                  {
-                    "check": "source",
-                    "evidence": [
-                      {
-                        "quote": "Also, I've been looking for a good camera remote shutter release, do you have any recommendations?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "source",
-                    "reason": "The current USER turn asks whether the assistant has recommendations; it does not assert, update or clarify a memory preference, so source 'UserStatement' is unjustified."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Also, I've been looking for a good camera remote shutter release, do you have any recommendations?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "retention_tier",
-                    "reason": "The USER never mentions retention or long-term storage; 'LongTerm' is extractor-assigned and conflicts with candidate 0's 'ShortTerm' for the same turn, so the tier is not justified by user words."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:c03029de3ec80a47",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm interested in learning more about image stacking, can you explain the process and provide some tips on how to do it effectively? Also, I've been looking for a good camera remote shutter release, do you have any recommendations?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t4",
-      "observed_at": 1698817080,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "photography workshop"
-                    ],
-                    "city": "nearby city",
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": "2023-11-01",
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "photography",
-                  "workshop",
-                  "learning"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
-                }
-              },
-              {
-                "certainty": "medium",
-                "cross_turn_useful": true,
-                "extraction_confidence": "medium",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "dark frames",
-                  "bias frames",
-                  "astrophotography"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
                   "text": "I'm curious about dark frames and bias frames."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d82949eb7c94752c",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d26a053a8a65ffc6",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4086,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 14441,
+            "output_tokens_details": {
+              "reasoning_tokens": 13977
+            },
+            "total_tokens": 18527
+          }
         },
         {
           "output": {
@@ -507,7 +475,7 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:4cfec56bd9ad467f",
+            "review_binding": "source-review-v3:8697e0a9b010aff7",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -532,7 +500,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -541,24 +509,23 @@
                 },
                 "current_user_quote": "That's really helpful, thank you!  I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography. I'm curious about dark frames and bias frames. Can you explain what they are and how they help in image stacking? Also, I've been thinking of getting a new camera lens, do you have any recommendations for a good wide-angle lens for astrophotography?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I'm curious about dark frames and bias frames.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "USER says 'I'm curious about dark frames and bias frames,' which asserts curiosity/interest, not the predicate 'likes'."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:dd31b1f231c28504",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b2a7009f2fb91c3e",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3076,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 2795,
+            "output_tokens_details": {
+              "reasoning_tokens": 2436
+            },
+            "total_tokens": 5871
+          }
         }
       ],
       "text": "That's really helpful, thank you!  I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography. I'm curious about dark frames and bias frames. Can you explain what they are and how they help in image stacking? Also, I've been thinking of getting a new camera lens, do you have any recommendations for a good wide-angle lens for astrophotography?"
@@ -585,29 +552,25 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-11-21",
-                  "expression": "s",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
-                "polarity": "positive",
+                "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "photography"
-                    ],
-                    "city": "上海",
+                    "activities": [],
+                    "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": null,
                     "date": null,
                     "geography": null,
                     "task_id": null,
-                    "time_of_day": "morning"
+                    "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -620,14 +583,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm interested in learning more about camera sensors and how they affect astrophotography images."
+                  "text": "I'm interested in learning more about camera sensors and how they affect astrophotography images. "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4ef66282edde1195",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:849a147a43a1ce63",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4149,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1584,
+            "output_tokens_details": {
+              "reasoning_tokens": 1355
+            },
+            "total_tokens": 5733
+          }
         },
         {
           "output": {
@@ -638,7 +612,7 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:eb3df1ce8163e97c",
+            "review_binding": "source-review-v3:d09c7ca46f71658d",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -647,7 +621,7 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "contradicted",
+                  "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
@@ -655,24 +629,23 @@
                 },
                 "current_user_quote": "I'm interested in learning more about camera sensors and how they affect astrophotography images. Can you explain how camera sensors work and what factors affect their performance in low-light conditions? Additionally, I've been thinking of upgrading my camera, do you have any recommendations for cameras that are suitable for astrophotography?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "I'm interested in learning more about camera sensors and how they affect astrophotography images.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.domain",
-                    "reason": "scope.domain is set to \"food\", but the current turn is entirely about camera sensors and astrophotography/photography; the USER never mentions food, cooking, or any food domain."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:3c12ca535378773a",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:800ae34e332b81db",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2624,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 10306,
+            "output_tokens_details": {
+              "reasoning_tokens": 10124
+            },
+            "total_tokens": 12930
+          }
         }
       ],
       "text": "I'm interested in learning more about camera sensors and how they affect astrophotography images. Can you explain how camera sensors work and what factors affect their performance in low-light conditions? Additionally, I've been thinking of upgrading my camera, do you have any recommendations for cameras that are suitable for astrophotography?"
@@ -706,12 +679,25 @@
         },
         {
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "insufficient"
+            "answer_text": "today",
+            "candidate_index": 3,
+            "event_date": "2023-11-01",
+            "unit": "month",
+            "verdict": "elapsed"
           },
-          "request": "fnv1a64:aadf3024d3c0b5f8",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:aae89b39ce018a01",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 876,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 360,
+            "output_tokens_details": {
+              "reasoning_tokens": 327
+            },
+            "total_tokens": 1236
+          }
         }
       ]
     }

@@ -24,14 +24,12 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-08-11",
-                  "expression": "I",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "durable",
                 "scope": {
                   "conditions": {
                     "activities": [
@@ -54,23 +52,31 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "fishing",
-                  "hunting"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been getting back into fishing and hunting, and I'm trying to keep track of my gear and experiences. \n"
+                  "text": "I've been getting back into fishing and hunting"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:83b34131fa13fce6",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:8097260ac3929d1c",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3928,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 10226,
+            "output_tokens_details": {
+              "reasoning_tokens": 9991
+            },
+            "total_tokens": 14154
+          }
         },
         {
           "output": {
@@ -79,7 +85,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:9fc919a7442c0e89",
+            "review_binding": "source-review-v3:d10cc63e9c65e4f7",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -100,8 +106,19 @@
               }
             ]
           },
-          "request": "fnv1a64:11b34c31473b3bf9",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b69e2329835c85d3",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2406,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6814,
+            "output_tokens_details": {
+              "reasoning_tokens": 6651
+            },
+            "total_tokens": 9220
+          }
         }
       ],
       "text": "I've been getting back into fishing and hunting, and I'm trying to keep track of my gear and experiences. Can you recommend some good apps or tools to help me organize my fishing and hunting trips, like logging my catches and noting what worked well?"
@@ -124,7 +141,7 @@
                 "fact_time": {
                   "date": "2023-07-10",
                   "end_date": null,
-                  "expression": "7"
+                  "expression": "7/10"
                 },
                 "intent": {
                   "kind": "assert",
@@ -137,7 +154,7 @@
                 "memory_type": "episode",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "durable",
                 "scope": {
                   "conditions": {
                     "activities": [
@@ -162,6 +179,7 @@
                 "tags": [
                   "fishing",
                   "Lake Michigan",
+                  "largemouth bass",
                   "Alex"
                 ],
                 "value": {
@@ -175,8 +193,19 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:e7ffefd6c2d688d3",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:b45e9ac3738be7c5",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4000,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 5221,
+            "output_tokens_details": {
+              "reasoning_tokens": 4918
+            },
+            "total_tokens": 9221
+          }
         },
         {
           "output": {
@@ -187,7 +216,7 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:75f492d859717d1d",
+            "review_binding": "source-review-v3:9e0b5ef822beda78",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -208,8 +237,19 @@
               }
             ]
           },
-          "request": "fnv1a64:46a963fc1011a581",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:76177e3284d0bfd1",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2542,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 11946,
+            "output_tokens_details": {
+              "reasoning_tokens": 11748
+            },
+            "total_tokens": 14488
+          }
         }
       ],
       "text": "I was thinking of getting a tree stand for deer hunting this season. Can you tell me what to consider when buying one, and do you have any recommendations for a good beginner stand? Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
@@ -227,8 +267,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b7c77e06f3ed23cd",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:b0f9ed872330c28b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4029,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 399,
+            "output_tokens_details": {
+              "reasoning_tokens": 380
+            },
+            "total_tokens": 4428
+          }
         },
         {
           "output": {
@@ -273,7 +324,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -294,8 +345,8 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "tree stand",
                   "hunting",
+                  "tree_stand_setup",
                   "learning"
                 ],
                 "value": {
@@ -309,8 +360,19 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:5d85346dba4c0e6c",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:b9de804424bbf586",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4071,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1710,
+            "output_tokens_details": {
+              "reasoning_tokens": 1462
+            },
+            "total_tokens": 5781
+          }
         },
         {
           "output": {
@@ -319,7 +381,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:fc203861e5213300",
+            "review_binding": "source-review-v3:79233efabe6b38ff",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -340,8 +402,19 @@
               }
             ]
           },
-          "request": "fnv1a64:77dfef0623fa5042",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:9883ba4bbeac8e6b",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2527,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1236,
+            "output_tokens_details": {
+              "reasoning_tokens": 1083
+            },
+            "total_tokens": 3763
+          }
         }
       ],
       "text": "That's really helpful, thanks! I've been trying to learn more about tree stand setup and placement. Do you have any tips on how to choose the right tree and set up a tree stand safely?"
@@ -357,10 +430,21 @@
         {
           "output": {
             "candidates": [],
-            "omission_reason": "low_value_episode"
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:a503d0f71afbfe67",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:0e581b60fbbe14f9",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4105,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 2272,
+            "output_tokens_details": {
+              "reasoning_tokens": 2250
+            },
+            "total_tokens": 6377
+          }
         },
         {
           "output": {
@@ -391,8 +475,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:f83145b0615bf769",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:a26282c62e3eb427",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4131,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 3471,
+            "output_tokens_details": {
+              "reasoning_tokens": 3452
+            },
+            "total_tokens": 7602
+          }
         },
         {
           "output": {
@@ -428,7 +523,7 @@
                 "fact_time": {
                   "date": "2023-07-22",
                   "end_date": null,
-                  "expression": "7"
+                  "expression": "7/22"
                 },
                 "intent": {
                   "kind": "assert",
@@ -436,7 +531,9 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-07-22",
+                  "expression": "7/22",
+                  "kind": "retain_until"
                 },
                 "memory_type": "episode",
                 "polarity": null,
@@ -447,16 +544,16 @@
                     "activities": [
                       "fishing"
                     ],
-                    "city": "Waukegan",
+                    "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
-                    "country": "US",
-                    "date": "2023-07-22",
+                    "country": null,
+                    "date": null,
                     "geography": null,
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "travel"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -465,11 +562,9 @@
                 },
                 "tags": [
                   "fishing",
-                  "bass",
-                  "Lake Michigan",
+                  "largemouth bass",
                   "Alex",
-                  "spinnerbaits",
-                  "plastic worms"
+                  "Lake Michigan"
                 ],
                 "value": {
                   "boolean": null,
@@ -482,25 +577,36 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d71f6aad1ee7d577",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:de839c61e7f21429",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4197,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 7483,
+            "output_tokens_details": {
+              "reasoning_tokens": 7172
+            },
+            "total_tokens": 11680
+          }
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I'm planning to fish from Illinois, probably around the Waukegan harbor area."
+                ""
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:e4e6210bb60624c3",
+            "review_binding": "source-review-v3:42bd69b6a8a898d0",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -511,12 +617,35 @@
                 },
                 "current_user_quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "USER did not ask to remember/save/retain this memory; the turn only states plans and a past fishing experience."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:b803db3754aa6127",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:932dcfe07438cde3",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2755,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 12315,
+            "output_tokens_details": {
+              "reasoning_tokens": 11975
+            },
+            "total_tokens": 15070
+          }
         }
       ],
       "text": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
@@ -534,8 +663,19 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:2502140c8b1fcd90",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:75c46910f4ee6cea",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4213,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 463,
+            "output_tokens_details": {
+              "reasoning_tokens": 444
+            },
+            "total_tokens": 4676
+          }
         },
         {
           "output": {
@@ -563,11 +703,68 @@
       "recorded": [
         {
           "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "unresolved_reference": "Alex"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "property"
+                }
+              }
+            ],
+            "omission_reason": null
           },
-          "request": "fnv1a64:0bd06295ff795edc",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:cb5056b8e7eb2096",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4249,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 10809,
+            "output_tokens_details": {
+              "reasoning_tokens": 10591
+            },
+            "total_tokens": 15058
+          }
         },
         {
           "output": {
@@ -578,11 +775,40 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:b2db1181a0a8f4e5",
-            "reviews": []
+            "review_binding": "source-review-v3:f01efa9a36f64d36",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to help Alex set up some more tree stands on his property soon. Do you have any recommendations for the best types of deer calls to use during hunting season?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
           },
-          "request": "fnv1a64:8348fcb3792c0221",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:96efd04f20110ca6",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2678,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 14761,
+            "output_tokens_details": {
+              "reasoning_tokens": 14598
+            },
+            "total_tokens": 17439
+          }
         }
       ],
       "text": "I'm planning to help Alex set up some more tree stands on his property soon. Do you have any recommendations for the best types of deer calls to use during hunting season?"
@@ -609,33 +835,29 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-11-22",
-                  "expression": "y",
+                  "date": "2023-12-04",
+                  "expression": "before our last fishing trip to Lake Michigan",
                   "kind": "retain_until"
                 },
                 "memory_type": "episode",
                 "polarity": null,
-                "predicate": "visited",
-                "retention_tier": "long_term",
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [
                       "fishing"
                     ],
-                    "city": "Lake Michigan",
-                    "companion_entity_ids": [
-                      "Alex"
-                    ],
-                    "companion_roles": [
-                      "friends"
-                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
                     "country": null,
-                    "date": "2023-11-22",
-                    "geography": null,
+                    "date": null,
+                    "geography": "international",
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "recreation"
+                  "domain": "travel"
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -644,24 +866,35 @@
                 },
                 "tags": [
                   "fishing",
-                  "hunting",
-                  "bas",
-                  "catching",
-                  "trip"
+                  "largemouth",
+                  "bass",
+                  "alex",
+                  "lake_michigan"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been watching some YouTube videos on deer hunting stratgies and tactics, just like I did befor our last fishing trip to Lake Michigan. Remember that trip when we caught 9 lago mouth bas with Alex?"
+                  "text": "Remember that trip when we caught 9 largemouth bass with Alex? Our trip was to Lake Michigan, where we caught 9 largemouth bass together with Alex on that trip. That counts as one of our fishing trips, and I remember it."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:268d717110278a8e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:88451b3b6ed40234",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4317,
+            "input_tokens_details": {
+              "cached_tokens": 3712
+            },
+            "output_tokens": 11609,
+            "output_tokens_details": {
+              "reasoning_tokens": 11252
+            },
+            "total_tokens": 15926
+          }
         }
       ],
       "text": "I'm planning to try out some of those deer calls during our next hunting trip. By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan. Remember that trip when we caught 9 largemouth bass with Alex?"
@@ -695,12 +928,25 @@
         },
         {
           "output": {
-            "answer_text": "7 largemouth bass",
-            "candidate_index": 1,
-            "verdict": "answer"
+            "answer_text": null,
+            "candidate_index": null,
+            "event_date": null,
+            "unit": null,
+            "verdict": "insufficient"
           },
-          "request": "fnv1a64:b50f8effc87ef4ee",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:9155829d1ce2bd85",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 924,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 629,
+            "output_tokens_details": {
+              "reasoning_tokens": 601
+            },
+            "total_tokens": 1553
+          }
         }
       ]
     }

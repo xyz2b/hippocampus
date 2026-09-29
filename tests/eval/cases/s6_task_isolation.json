@@ -62,7 +62,11 @@
                 "subject": {
                   "entity_id": "device_zheye_terminal"
                 },
-                "tags": [],
+                "tags": [
+                  "tide_exhibit_task",
+                  "device_configuration",
+                  "display_language"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -74,7 +78,19 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:05c59e97b7b10c0b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3941,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 1834,
+            "output_tokens_details": {
+              "reasoning_tokens": 1569
+            },
+            "total_tokens": 5775
+          }
         },
         {
           "output": {
@@ -83,7 +99,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:0b05f6769179a099",
+            "review_binding": "source-review-v3:4b98f18f183e236d",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -104,7 +120,19 @@
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:72e403ea902b8e8b",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2414,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 7627,
+            "output_tokens_details": {
+              "reasoning_tokens": 7485
+            },
+            "total_tokens": 10041
+          }
         }
       ],
       "task_id": "s6-tide-exhibit",
@@ -136,74 +164,553 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2026-09-28",
+                  "expression": "today",
+                  "kind": "retain_until"
                 },
                 "memory_type": "constraint",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
+                    "activities": [
+                      "breakfast"
+                    ],
+                    "city": "Austin",
+                    "companion_entity_ids": [
+                      "self"
+                    ],
                     "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
+                    "country": "US",
+                    "date": "2026-09-28",
+                    "geography": "domestic",
                     "task_id": "s6-plateau-demo",
-                    "time_of_day": null
+                    "time_of_day": "morning"
                   },
-                  "domain": null
+                  "domain": "food"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
-                  "entity_id": "device_zheye_terminal"
+                  "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "breakfast",
+                  "morning",
+                  "Austin",
+                  "outdoor seating",
+                  "rice porridge"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                  "text": "I want to have breakfast with my family at the hotel restaurant in Austin tomorrow morning, and I want to sit outside on the patio. I don’t think spicy food is good for me. For breakfast, my family and I usually eat rice porridge or oatmeal, and we like to sit outside in the morning."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-28",
+                  "expression": "today",
+                  "kind": "retain_until"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "breakfast"
+                    ],
+                    "city": "Austin",
+                    "companion_entity_ids": [
+                      "self"
+                    ],
+                    "companion_roles": [],
+                    "country": "US",
+                    "date": "2026-09-28",
+                    "geography": "domestic",
+                    "task_id": "s6-plateau-demo",
+                    "time_of_day": "morning"
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "breakfast",
+                  "morning",
+                  "Austin",
+                  "rice porridge",
+                  "oatmeal",
+                  "outdoor seating"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "rice porridge or oatmeal"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-28",
+                  "expression": "today",
+                  "kind": "retain_until"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "breakfast"
+                    ],
+                    "city": "Austin",
+                    "companion_entity_ids": [
+                      "self"
+                    ],
+                    "companion_roles": [],
+                    "country": "US",
+                    "date": "2026-09-28",
+                    "geography": "domestic",
+                    "task_id": "s6-plateau-demo",
+                    "time_of_day": "morning"
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "breakfast",
+                  "morning",
+                  "Austin",
+                  "outdoor seating"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "sitting outside in the morning"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-28",
+                  "expression": "today",
+                  "kind": "retain_until"
+                },
+                "memory_type": "constraint",
+                "polarity": "negative",
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "breakfast"
+                    ],
+                    "city": "Austin",
+                    "companion_entity_ids": [
+                      "self"
+                    ],
+                    "companion_roles": [],
+                    "country": "US",
+                    "date": "2026-09-28",
+                    "geography": "domestic",
+                    "task_id": "s6-plateau-demo",
+                    "time_of_day": "morning"
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "spicy food",
+                  "health"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I don’t think spicy food is good for me."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2026-09-28",
+                  "expression": "today",
+                  "kind": "retain_until"
+                },
+                "memory_type": "constraint",
+                "polarity": "positive",
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "breakfast"
+                    ],
+                    "city": "Austin",
+                    "companion_entity_ids": [
+                      "self"
+                    ],
+                    "companion_roles": [],
+                    "country": "US",
+                    "date": "2026-09-28",
+                    "geography": "domestic",
+                    "task_id": "s6-plateau-demo",
+                    "time_of_day": "morning"
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "breakfast",
+                  "morning",
+                  "Austin",
+                  "outdoor seating"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I want to sit outside on the patio."
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7dd74e90d268cebf",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3942,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 4372,
+            "output_tokens_details": {
+              "reasoning_tokens": 2796
+            },
+            "total_tokens": 8314
+          }
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:65c736a21ee80438",
+            "review_binding": "source-review-v3:4d59edd3fa08a9a7",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
+                  "intent": "contradicted",
+                  "metadata": "contradicted",
+                  "polarity": "insufficient",
+                  "relation": "contradicted",
+                  "scope": "contradicted",
+                  "source": "contradicted",
+                  "subject": "contradicted",
+                  "temporal": "contradicted",
+                  "value": "insufficient"
                 },
                 "current_user_quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "subject",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "subject",
+                    "reason": "Candidate subject is self, but current turn asserts a task requirement for the folding navigation terminal, not a user preference."
+                  },
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "Candidate predicate is 'likes', but current turn states a task requirement ('要求...设为意大利语'), not a liking relation."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value",
+                    "reason": "Candidate value 'rice porridge or oatmeal' is not present; current turn concerns display language set to Italian."
+                  },
+                  {
+                    "check": "polarity",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "polarity",
+                    "reason": "Candidate polarity Positive is not justified; current turn contains no food preference to compare."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Candidate scope includes food, breakfast, Austin, morning, etc.; current turn scope is plateau roadshow task, folding navigation terminal, touring demo configuration."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "Candidate sets expiry at end of 2026-09-28, but current turn has no time qualifier or validity boundary."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Candidate intent Assert is for a user preference, but current turn asserts a device/task requirement, not this preference."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Current user turn does not assert, update, or clarify the claimed preference; it describes a device configuration requirement."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "Candidate marks explicit_memory_request=true and memory_type Preference, but current turn contains no memory request or user preference."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "contradicted",
+                  "polarity": "insufficient",
+                  "relation": "contradicted",
+                  "scope": "contradicted",
+                  "source": "contradicted",
+                  "subject": "contradicted",
+                  "temporal": "contradicted",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "subject",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "subject",
+                    "reason": "Candidate subject is self, but current turn asserts a task requirement for the folding navigation terminal, not a user preference."
+                  },
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "Candidate predicate is 'likes', but current turn states a task requirement ('要求...设为意大利语'), not a liking relation."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value",
+                    "reason": "Candidate value 'sitting outside in the morning' is not present; current turn concerns display language set to Italian."
+                  },
+                  {
+                    "check": "polarity",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "polarity",
+                    "reason": "Candidate polarity Positive is not justified; current turn contains no food preference to compare."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Candidate scope includes food, breakfast, Austin, morning, etc.; current turn scope is plateau roadshow task, folding navigation terminal, touring demo configuration."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "Candidate sets expiry at end of 2026-09-28, but current turn has no time qualifier or validity boundary."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Candidate intent Assert is for a user preference, but current turn asserts a device/task requirement, not this preference."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Current user turn does not assert, update, or clarify the claimed preference; it describes a device configuration requirement."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "explicit_memory_request",
+                    "reason": "Candidate marks explicit_memory_request=true and memory_type Preference, but current turn contains no memory request or user preference."
+                  }
+                ]
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:662739a63e600f82",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2933,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 18312,
+            "output_tokens_details": {
+              "reasoning_tokens": 16595
+            },
+            "total_tokens": 21245
+          }
         }
       ],
       "task_id": "s6-plateau-demo",
@@ -233,21 +740,46 @@
         {
           "output": {
             "queries": [
-              "折页导航终端开机默认显示中文",
-              "折页导航终端启动后显示英文",
-              "折页导航终端语言配置为中文"
+              "折页导航终端 开机默认显示语言",
+              "导航终端 启动显示语言 设置",
+              "折页终端 开机界面 语言 配置"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:409cb3ede60984c5",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 271,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 928,
+            "output_tokens_details": {
+              "reasoning_tokens": 891
+            },
+            "total_tokens": 1199
+          }
         },
         {
           "output": {
             "answer_text": "西班牙语",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:432b47ad860df422",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:7155cec5916ba66e",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 539,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 140,
+            "output_tokens_details": {
+              "reasoning_tokens": 112
+            },
+            "total_tokens": 679
+          }
         }
       ],
       "task_id": "s6-tide-exhibit"
@@ -273,21 +805,24 @@
         {
           "output": {
             "queries": [
-              "折页导航终端 开机 显示 中文",
-              "导航终端 启动 默认 语言 英文",
-              "折页导航 终端 开机 语言 配置"
+              "折页导航终端 开机 默认 显示 语言",
+              "折叠导航终端 启动 后 显示 语言",
+              "导航终端 开机 语言 设置 要求"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
-        },
-        {
-          "output": {
-            "answer_text": "意大利语",
-            "candidate_index": 0,
-            "verdict": "answer"
-          },
-          "request": "fnv1a64:b08057f913b7ab41",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:18b8b807bc01587f",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 272,
+            "input_tokens_details": {
+              "cached_tokens": 256
+            },
+            "output_tokens": 1982,
+            "output_tokens_details": {
+              "reasoning_tokens": 1939
+            },
+            "total_tokens": 2254
+          }
         }
       ],
       "task_id": "s6-plateau-demo"
@@ -313,21 +848,46 @@
         {
           "output": {
             "queries": [
-              "折页导航终端 开机 默认 意大利语",
-              "展台演示 导航终端 显示语言 配置",
-              "潮汐展陈 终端 语言 设置 意大利语"
+              "折页导航终端 开机显示语言 意大利语",
+              "展台演示 终端 启动语言 设置 意大利语",
+              "潮汐展陈 折页导航 系统语言 保持 意大利语"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:cb1aa9731ff7b0dc",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 286,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 862,
+            "output_tokens_details": {
+              "reasoning_tokens": 812
+            },
+            "total_tokens": 1148
+          }
         },
         {
           "output": {
             "answer_text": "西班牙语",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:a07d94347005f3e1",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:f5bb8aca9293aebd",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 554,
+            "input_tokens_details": {
+              "cached_tokens": 512
+            },
+            "output_tokens": 1047,
+            "output_tokens_details": {
+              "reasoning_tokens": 1019
+            },
+            "total_tokens": 1601
+          }
         }
       ],
       "task_id": "s6-tide-exhibit"
