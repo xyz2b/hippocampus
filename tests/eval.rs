@@ -12,7 +12,8 @@
 //! 未录制的请求转发到 DEEPSEEK_BASE_URL 的真实端点，成功的输出按顺序写回用例 JSON 的
 //! `recorded`；超出上限或真实请求失败的项仍记为 skipped。未设置时绝不发真实请求。
 //!
-//! 新录制带 `request` 指纹（去掉时钟与当天日期、review_binding 与 max_output_tokens 后的请求哈希）。
+//! 新录制带 `request` 指纹（去掉时钟读数、review_binding 与 max_output_tokens 后的请求哈希；
+//! 时钟固定，所以当天日期保留在指纹里，按别的日期解析相对日期的录制会被判过期）。
 //! 评测使用固定时钟（CLOCK，或用例自带的 observed_at / at），相对日期在任何一天回放都一致。运行时改变请求后，
 //! 指纹不符的录制视为过期：回放记为 skipped，录制模式下重录。无指纹的旧录制仍按 schema 顺序回放。
 
@@ -155,7 +156,7 @@ fn scoring_rules() {
     );
     let request = |now: i64, text: &str| {
         json!({"model":"m","max_output_tokens":now,
-            "input":json!({"now":now,"current_date":format!("2026-09-{now:02}"),"review_binding":now,"text":text}).to_string()})
+            "input":json!({"now":now,"review_binding":now,"text":text}).to_string()})
     };
     assert_eq!(
         request_fingerprint(&request(1, "a")),
@@ -743,13 +744,14 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
     replay
 }
 
-/// Stable request identity for a recording. Per-run values (clock and date, review binding) are removed;
+/// Stable request identity for a recording. Per-run values (clock readings, review binding) are
+/// removed; the eval clock is fixed, so the request date stays in and pins relative dates;
 /// recordings without it predate fingerprints and still replay by schema order.
 fn request_fingerprint(request: &Value) -> Value {
     fn strip(value: &mut Value) {
         match value {
             Value::Object(map) => {
-                for key in ["now", "current_date", "trusted_at", "review_binding", "observed_at"] {
+                for key in ["now", "trusted_at", "review_binding", "observed_at"] {
                     map.remove(key);
                 }
                 map.values_mut().for_each(strip);

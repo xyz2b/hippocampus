@@ -1353,12 +1353,18 @@ impl OpenAiAdapterContext {
             "expression_authority":"untrusted_extractor_proposal_check_against_USER",
             "boundary_origin":"model_calendar_dates_verified_and_converted_by_backend",
             "candidates":candidates.iter().zip(normalized).enumerate().map(|(index, (candidate, raw))| {
+                // Show only what the runtime kept, never a discarded filler proposal.
+                let quote = candidate.evidence.first().map_or("", |e| e.quote.as_str());
+                let (expression, date, end_date) = kept_fact_time(
+                    raw.temporal_expression, raw.temporal_date, raw.temporal_end_date, quote);
+                let expiry = kept_expiry(raw.expiry_expression.as_deref()).map(str::to_owned);
+                let expiry_date = expiry.as_ref().and(raw.expiry_date);
                 json!({"candidate_index":index,
-                    "proposed_temporal_expression":raw.temporal_expression,
-                    "proposed_expiry_expression":raw.expiry_expression,
-                    "proposed_temporal_date":raw.temporal_date,
-                    "proposed_temporal_end_date":raw.temporal_end_date,
-                    "proposed_expiry_date":raw.expiry_date,
+                    "proposed_temporal_expression":expression,
+                    "proposed_expiry_expression":expiry,
+                    "proposed_temporal_date":date,
+                    "proposed_temporal_end_date":end_date,
+                    "proposed_expiry_date":expiry_date,
                     "observed_at":display(Some(candidate.temporal.observed_at)),
                     "valid_from":display(candidate.temporal.valid_from.map(|value| value.at)),
                     "valid_to":display(candidate.temporal.valid_to.map(|value| value.at)),
@@ -2306,33 +2312,18 @@ impl RawCandidate {
         self = self.normalize_wire()?;
         // A "time expression" with no time word is filler for a required field, not a USER
         // qualifier; drop it with its dates instead of rejecting the whole fact.
-        if self
-            .temporal_expression
-            .as_deref()
-            .is_some_and(|e| !crate::temporal::mentions_time(e))
-        {
-            // The runtime copies the time itself when the USER wrote exactly one absolute
-            // date or range and the model's dates restate it.
-            let spans = crate::temporal::absolute_spans(&evidence.quote);
-            self.temporal_expression = match spans[..] {
-                [span]
-                    if self.temporal_date.as_deref() == Some(&span.start.to_string())
-                        && self.temporal_end_date.as_deref()
-                            .is_none_or(|end| end == span.end.to_string()) =>
-                {
-                    Some(span.text.to_owned())
-                }
-                _ => {
-                    self.temporal_date = None;
-                    self.temporal_end_date = None;
-                    None
-                }
-            };
-        }
-        if self
-            .expiry_expression
-            .as_deref()
-            .is_some_and(|e| !crate::temporal::mentions_time(e))
+        (
+            self.temporal_expression,
+            self.temporal_date,
+            self.temporal_end_date,
+        ) = kept_fact_time(
+            self.temporal_expression.take(),
+            self.temporal_date.take(),
+            self.temporal_end_date.take(),
+            &evidence.quote,
+        );
+        if self.expiry_expression.is_some()
+            && kept_expiry(self.expiry_expression.as_deref()).is_none()
         {
             self.expiry_expression = None;
             self.expiry_date = None;
@@ -3424,6 +3415,39 @@ fn expiry_deadline(
             "expiry_expression requires a finite future calendar deadline",
         )),
     }
+}
+
+/// The fact time the runtime keeps from a model proposal. A "time expression" with no time
+/// word is filler for a required field and is dropped with its dates; the runtime copies the
+/// USER's only absolute date or range instead when the model's dates restate it.
+fn kept_fact_time(
+    expression: Option<String>,
+    date: Option<String>,
+    end_date: Option<String>,
+    quote: &str,
+) -> (Option<String>, Option<String>, Option<String>) {
+    if expression
+        .as_deref()
+        .is_none_or(crate::temporal::mentions_time)
+    {
+        return (expression, date, end_date);
+    }
+    match crate::temporal::absolute_spans(quote)[..] {
+        [span]
+            if date.as_deref() == Some(&span.start.to_string())
+                && end_date
+                    .as_deref()
+                    .is_none_or(|end| end == span.end.to_string()) =>
+        {
+            (Some(span.text.to_owned()), date, end_date)
+        }
+        _ => (None, None, None),
+    }
+}
+
+/// A retention expression with no time word is filler; it and its date are dropped.
+fn kept_expiry(expression: Option<&str>) -> Option<&str> {
+    expression.filter(|expression| crate::temporal::mentions_time(expression))
 }
 
 fn optional_non_empty(
