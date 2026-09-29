@@ -222,6 +222,7 @@ flowchart LR
 | `DEEPSEEK_BASE_URL`、`DEEPSEEK_API_KEY` | 模型端点与凭据 |
 | `PMR_MODEL_NETWORK` | `offline`（默认，只允许本机回环地址）/ `deny` / `live` |
 | `PMR_TRACE_DIR` | 开启诊断 Trace，输出 `trace-*.jsonl`，供 Inspector 读取 |
+| `PMR_MODEL_TIMEOUT_SECS` | 单次模型请求超时秒数，默认 600 |
 | `PMR_OPENAI_TRACE`、`PMR_OPENAI_TRACE_CONTENT` | 在 stderr 打印模型调用摘要，可选打印模型原始输出 |
 
 **模型调用预算**（`src/model_budget.rs`）：每次发送前，先在账本中以事务方式预留一条记录，并检查三项上限：分组总次数、单次操作的次数，以及同一操作内每个阶段最多调用一次。阶段包括 extraction、extraction_review、extraction_repair、extraction_repair_review、query、query_review、assistance。请求失败不退还额度，也没有自动重试。

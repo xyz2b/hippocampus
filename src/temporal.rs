@@ -292,6 +292,24 @@ fn proposed_day(
     resolve_temporal_expression(expression, now, offset)
 }
 
+/// The part of a USER time phrase the runtime can check a model date against: the whole
+/// phrase, or the USER's own calendar dates inside it ("2027年4月1日至2027年4月14日" in
+/// "从2027年4月1日至2027年4月14日（含首尾两日）"). Relative words are never cut out of a longer
+/// phrase: "明天后" is not "明天".
+pub(crate) fn checkable_part(expression: &str) -> Option<&str> {
+    let expression = expression.trim();
+    if relative_day_offset(expression).is_some()
+        || parse_iso_date(expression).is_some()
+        || calendar_interval(expression)
+    {
+        return Some(expression);
+    }
+    match absolute_spans(expression)[..] {
+        [span] => Some(span.text),
+        _ => None,
+    }
+}
+
 fn calendar_interval(expression: &str) -> bool {
     matches!(expression, "下个月" | "next month" | "去年" | "last year")
         || last_year_month(expression).is_some_and(|month| (1..=12).contains(&month))
@@ -572,7 +590,7 @@ pub(crate) fn is_valid_iso_date(value: &str) -> bool {
     parse_iso_date(value).is_some()
 }
 
-fn parse_iso_date(value: &str) -> Option<Date> {
+pub(crate) fn parse_iso_date(value: &str) -> Option<Date> {
     let mut parts = value.split('-');
     let (year, month, day) = (parts.next()?, parts.next()?, parts.next()?);
     if parts.next().is_some()
