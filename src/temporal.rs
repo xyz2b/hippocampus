@@ -545,9 +545,19 @@ pub(crate) fn absolute_spans(text: &str) -> Vec<AbsoluteSpan<'_>> {
 /// Whether an expression contains any time word or digit at all.
 pub(crate) fn mentions_time(expression: &str) -> bool {
     let lower = expression.to_lowercase();
-    lower.chars().any(|c| {
-        c.is_ascii_digit() || "年月日号天周星礼拜时点分秒今明昨前后早晚午夜晨季旬初底末刚曾将现目当近久往过去来以此期间际次".contains(c)
-    }) || [
+    let chars: Vec<char> = lower.chars().collect();
+    // A bare count ("7") is not a time; digits need a date/clock separator (7/10, 17:30,
+    // 2026-09-28) or must form a plausible year.
+    let numeric_time = chars.windows(3).any(|w| {
+        w[0].is_ascii_digit() && matches!(w[1], '/' | ':' | '-' | '.') && w[2].is_ascii_digit()
+    }) || lower
+        .split(|c: char| !c.is_ascii_digit())
+        .any(|n| n.len() == 4 && n.parse::<u32>().is_ok_and(|y| (1900..=2100).contains(&y)));
+    numeric_time
+        || chars.iter().any(|c| {
+            "年月日号天周星礼拜时点分秒今明昨前后早晚午夜晨季旬初底末刚曾将现目当近久往过去来以此期间际次".contains(*c)
+        })
+        || [
         "now", "day", "week", "month", "year", "ago", "later", "recent", "since", "until",
         "before", "after", "morning", "evening", "night", "tonight", "weekend", "hour",
         "minute", "today", "tomorrow", "yesterday", "monday", "tuesday", "wednesday",
@@ -612,10 +622,13 @@ mod tests {
 
     #[test]
     fn filler_is_not_a_time_expression() {
-        for filler in ["从", "青", ".", "n", "]", "墨"] {
+        for filler in ["从", "青", ".", "n", "]", "墨", "7", "12"] {
             assert!(!mentions_time(filler), "{filler}");
         }
-        for expression in ["明天", "2027年4月1日", "上周末", "这次", "3 days ago", "next month"] {
+        for expression in [
+            "明天", "2027年4月1日", "上周末", "这次", "3 days ago", "next month", "7/10", "17:30",
+            "2026-09-28", "in 1990",
+        ] {
             assert!(mentions_time(expression), "{expression}");
         }
     }

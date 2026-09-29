@@ -1603,13 +1603,18 @@ impl OpenAiAdapterContext {
                         "candidate observation time must match the source clock",
                     ));
                 }
-                crate::temporal_grounding::validate(
+                // Ungrounded time drops only this candidate, like any unsupported check.
+                if let Err(reason) = crate::temporal_grounding::validate(
                     candidate,
                     current_user_turn,
                     &self.known_entities,
                     self.utc_offset_seconds,
-                )
-                .map_err(invalid)?;
+                ) {
+                    crate::diagnostics::record("temporal_grounding_rejected", || {
+                        json!({"candidate_index":entry.candidate_index,"reason":reason})
+                    });
+                    continue;
+                }
                 supported.push(entry.candidate_index);
             }
         }
@@ -4864,7 +4869,7 @@ mod tests {
                 _ => bad.temporal.observed_at = Timestamp(ctx.now.0 - 1),
             }
             assert!(
-                verify(bad).is_err(),
+                verify(bad).map_or(true, |c| !c[0].source_support_valid()),
                 "model-approved {field} must still need USER evidence"
             );
         }
@@ -4874,7 +4879,7 @@ mod tests {
             at: ctx.now,
             source: TemporalSource::Supersession,
         });
-        assert!(verify(forged).is_err());
+        assert!(verify(forged).map_or(true, |c| !c[0].source_support_valid()));
     }
 
     #[test]
@@ -7680,10 +7685,12 @@ mod tests {
             let mut review = supported_review(quote);
             review["review_binding"] = json!(ctx.source_support_binding(&candidates, quote, &[]));
             let verified = ctx.verify_source_support(candidates, quote, &[], &review.to_string());
-            assert_eq!(verified.is_ok(), accepted, "{quote}: {verified:?}");
-            if accepted {
-                assert!(verified.unwrap()[0].source_support_valid());
-            }
+            // An ungrounded time is not approved; it drops only that candidate.
+            assert_eq!(
+                verified.as_ref().is_ok_and(|c| c[0].source_support_valid()),
+                accepted,
+                "{quote}: {verified:?}"
+            );
         }
     }
 
