@@ -1,0 +1,735 @@
+{
+  "entities": [],
+  "id": "lme_gpt4_b5700ca9",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "observed_at": 1680780900,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "volunteering"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I just helped out at an Easter Egg Hunt event last week"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:01661fb83fd52ddd",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:7bf5f9bc9b354cc6",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking for some information on local volunteer opportunities. I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I just helped out at an Easter Egg Hunt event last week",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.reference",
+                    "reason": "USER says the Easter Egg Hunt help was 'last week', but candidate temporal has no reference or valid_from to justify that event time; observed_at is only the runtime clock."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm interested in finding more ways to give back to the community.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "USER gave no memory-retention instruction or retention tier; ShortTerm is not stated or justified by the current turn."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:8513d3ff08fb04a7",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm looking for some information on local volunteer opportunities. I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1680780960,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "medium",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "community service or helping the underprivileged"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "constraint",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:4cc8a3873790c198",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm open to various causes",
+                "I think I'd prefer something related to community service or helping the underprivileged"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:dede6a2c698eb971",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "insufficient",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule.",
+                "evidence": [
+                  {
+                    "quote": "I'm looking for some information on local volunteer opportunities.",
+                    "turn_index": 1
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I think I'd prefer something related to community service or helping the underprivileged.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "USER says 'I'd prefer something related to...' (a comparative preference), not 'likes'; the predicate asserts a different relation."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I think I'd prefer something related to community service or helping the underprivileged.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Candidate value drops 'something related to' and treats the causes themselves as the liked object; USER preferred something related to those causes, not necessarily the causes themselves."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I'm open to various causes",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I'm looking for some information on local volunteer opportunities.",
+                        "turn_index": 1
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "The preference is scoped to causes/volunteer opportunities ('open to various causes', 'something related to'); empty scope omits that domain."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:29ed38ff9ec08a36",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "observed_at": 1680781020,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:6687d2b7bad63be3",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:4c8df9f3047a70ea",
+            "reviews": []
+          },
+          "request": "fnv1a64:96eac0b77682b0ed",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I think the Food Bank Volunteer opportunity sounds interesting. Can you provide me with more information on the food bank's location, the types of tasks I'd be doing, and the time commitment required? Also, do they have any requirements for volunteers, such as training or background checks?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1680781080,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-04-06",
+                  "end_date": null,
+                  "expression": "T"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": {
+                      "date": null,
+                      "expression": null,
+                      "kind": "unspecified"
+                    },
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "Maundy Thursday",
+                  "Episcopal Church"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "By the way, I'm glad I got to attend the Maundy Thursday service    at the Episcopal Church today, it was a beautiful and moving experience."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-04-06",
+                  "end_date": null,
+                  "expression": "T"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "visited",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": {
+                      "date": null,
+                      "expression": null,
+                      "kind": "unspecified"
+                    },
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "Episcopal Church"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "the Episcopal Church"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:15fdf33992f4b810",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "Yes, I'd like to take the next step. Please provide me with the contact information and application form. I'm looking forward to volunteering at the food bank and making a difference in my community. By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1680781140,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:711f762632ae2b09",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'd love to invite some friends to join me in volunteering at the food bank."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:7c6d2a58726c38e3",
+            "reviews": []
+          },
+          "request": "fnv1a64:fea4d4aa27e6b321",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'd like to ask, are there any opportunities to volunteer with a group from my church or community? I'd love to invite some friends to join me in volunteering at the food bank."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1680781200,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:4a386fab74178de4",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "We're looking for ways to make a more significant impact and contribute to the food bank's mission."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:d8c73dbca8f375b8",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "contradicted",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "insufficient",
+                  "source": "contradicted",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event? We're looking for ways to make a more significant impact and contribute to the food bank's mission.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "Predicate is 'fact', but the value is an interrogative request for information, not a proposition asserting a fact."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "The Text is verbatim but is a question, so it has no truth-evaluable proposition for a Fact memory."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "Scope is empty while the question names a church group, food bank, project/program and example tasks; no asserted condition is captured as scope."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Intent is 'Assert', but the USER turn asks a question and does not assert, correct, retract or refine a memory."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Source is UserStatement, but the current USER turn is a question requesting information, not a current assertion or memory update."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "memory_type Fact and retention_tier LongTerm treat an interrogative request as a retained fact; USER did not assert or ask to remember it."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:536f0b165b707ba5",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event? We're looking for ways to make a more significant impact and contribute to the food bank's mission."
+    }
+  ],
+  "origin": "LongMemEval oracle gpt4_b5700ca9 (temporal-reasoning); session dates ['2023/04/06 (Thu) 19:35'], asked 2023/04/10 (Mon) 07:43",
+  "questions": [
+    {
+      "after": 6,
+      "at": 1681083780,
+      "context": [],
+      "expect": {
+        "answer": [
+          "4 days"
+        ],
+        "kind": "answer"
+      },
+      "id": "q",
+      "query": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "attended Maundy Thursday service Episcopal Church",
+              "went to Episcopal church Maundy Thursday",
+              "Maundy Thursday worship service Episcopal"
+            ]
+          },
+          "request": "fnv1a64:ecb6848907ed97cf",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:e75bc16c0c43d4dd",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

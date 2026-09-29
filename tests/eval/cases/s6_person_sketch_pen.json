@@ -1,0 +1,384 @@
+{
+  "entities": [
+    {
+      "aliases": [
+        "砚川"
+      ],
+      "canonical_name": "冯砚川",
+      "entity_type": "Person",
+      "id": "person_feng_yanchuan"
+    },
+    {
+      "aliases": [
+        "序宁"
+      ],
+      "canonical_name": "冯序宁",
+      "entity_type": "Person",
+      "id": "person_feng_xuning"
+    }
+  ],
+  "id": "person_sketch_pen",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "person_feng_yanchuan",
+            "value": "炭笔"
+          }
+        ]
+      },
+      "id": "person_s1",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "expires_at": null,
+                "expiry_expression": null,
+                "explicit_memory_request": false,
+                "extraction_confidence": "high",
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "速写"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject_id": "person_feng_yanchuan",
+                "tags": [
+                  "速写",
+                  "炭笔"
+                ],
+                "temporal_expression": null,
+                "unresolved_subject": null,
+                "valid_from": null,
+                "valid_to": null,
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "炭笔"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:f78554211daee25c",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "冯砚川画速写时固定使用炭笔。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "冯砚川画速写时固定使用炭笔。"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": [
+          {
+            "subject": "person_feng_xuning",
+            "value": "钢笔"
+          }
+        ]
+      },
+      "id": "person_s2",
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "expires_at": null,
+                "expiry_expression": null,
+                "explicit_memory_request": false,
+                "extraction_confidence": "high",
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "画速写"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject_id": "person_feng_xuning",
+                "tags": [
+                  "sketching_tool"
+                ],
+                "temporal_expression": null,
+                "unresolved_subject": null,
+                "valid_from": null,
+                "valid_to": null,
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "钢笔"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:dd212513bb765a46",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "冯序宁画速写时固定使用钢笔。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "冯序宁画速写时固定使用钢笔。"
+    }
+  ],
+  "origin": "S6 holdout-v1-20260927 (inputs/labels); recordings from holdout-live-20260927-v1 traces",
+  "questions": [
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "kind": "clarify"
+      },
+      "id": "person_q1",
+      "query": "画速写时固定用哪种笔？",
+      "recorded": []
+    },
+    {
+      "after": 2,
+      "context": [
+        "我问的是姓冯的那位。"
+      ],
+      "expect": {
+        "kind": "clarify"
+      },
+      "id": "person_q2",
+      "query": "画速写时固定用哪种笔？",
+      "recorded": []
+    },
+    {
+      "after": 2,
+      "context": [
+        "我问的是冯砚川。"
+      ],
+      "expect": {
+        "answer": [
+          "炭笔"
+        ],
+        "cite": [
+          "person_s1"
+        ],
+        "forbid_cite": [
+          "person_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "person_q3",
+      "note": "S6 已知失败：入库保留“画速写时”活动条件，查询未带入该条件，正确事实被 Scope 过滤。",
+      "query": "画速写时固定用哪种笔？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "冯砚川 速写 固定 用 笔",
+              "冯砚川 画速写 一直 用 铅笔",
+              "冯砚川 速写 习惯 用 炭笔"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "钢笔"
+        ],
+        "cite": [
+          "person_s2"
+        ],
+        "forbid_cite": [
+          "person_s1"
+        ],
+        "kind": "answer"
+      },
+      "id": "person_q4",
+      "note": "S6 已知失败：同 person_q3，活动条件被过滤导致拒答。",
+      "query": "冯序宁画速写时固定用哪种笔？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "冯序宁 速写 一直用 笔",
+              "冯序宁 写生 习惯用 铅笔",
+              "冯序宁 画画 固定使用 炭笔"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "answer": [
+          "炭笔"
+        ],
+        "cite": [
+          "person_s1"
+        ],
+        "forbid_cite": [
+          "person_s2"
+        ],
+        "kind": "answer"
+      },
+      "id": "person_q5",
+      "note": "S6 已知失败：同 person_q3，活动条件被过滤导致拒答。",
+      "query": "冯砚川画速写拿的是哪种笔？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "冯砚川 速写 用 铅笔",
+              "冯砚川 画速写 拿 钢笔",
+              "冯砚川 速写 使用 炭笔"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        }
+      ]
+    },
+    {
+      "after": 2,
+      "context": [],
+      "expect": {
+        "forbid_cite": [
+          "person_s1",
+          "person_s2"
+        ],
+        "kind": "insufficient_evidence"
+      },
+      "id": "person_q6",
+      "query": "冯序宁画速写通常花多长时间？",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "冯序宁 画速写 通常 耗时",
+              "冯序宁 速写 一般 花 分钟",
+              "冯序宁 平时 速写 用时"
+            ]
+          },
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:752dc142679c72f4",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

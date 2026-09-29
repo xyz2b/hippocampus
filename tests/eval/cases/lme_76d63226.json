@@ -1,0 +1,612 @@
+{
+  "entities": [],
+  "id": "lme_76d63226",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "observed_at": 1684834680,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-05-23",
+                  "expression": "I",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "old laptop"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "old laptop"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:f575f4fbe4e2ff3f",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm considering upgrading my old laptop"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:367e6d3a386f3c40",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm considering upgrading my old laptop, can you tell me the key differences between a MacBook Air and a Lenovo ThinkPad?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:89088f644084d275",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm considering upgrading my old laptop, can you tell me the key differences between a MacBook Air and a Lenovo ThinkPad?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1684834740,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "."
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "TV",
+                  "home_setup"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "new TV"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:3277c8469ef9c575",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm also thinking of mounting my new TV on the wall",
+                "I'm worried about the cables being visible."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:98b9429ce0e1a03b",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm also thinking of mounting my new TV on the wall, but I'm worried about the cables being visible. Do you have any suggestions on how to hide them?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:2ccff1b50919d14e",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm also thinking of mounting my new TV on the wall, but I'm worried about the cables being visible. Do you have any suggestions on how to hide them?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "observed_at": 1684834800,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-05-20",
+                  "end_date": null,
+                  "expression": "2"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Samsung 55-inch 4K smart TV"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I used a combination of cable ties and cable clips to keep everything organized and out of sight."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:526cb60775a4b498",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:dad91d81c67a9b14",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:d3a87fc752bb365f",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1684834860,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "sci-fi",
+                  "fantasy",
+                  "tv"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "sci-fi and fantasy shows"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:083de76d87003f26",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:6aeab62f3dd03570",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm a big fan of sci-fi and fantasy shows. Do you think any of these services have a good selection of that type of content?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:fa1bd602b80f0701",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm a big fan of sci-fi and fantasy shows. Do you think any of these services have a good selection of that type of content?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1684834920,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:6500fee314cad1d3",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:563bd2d8da31b9a5",
+            "reviews": []
+          },
+          "request": "fnv1a64:4eacb2cedfa005d7",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I think I'll check out Disney+ and Amazon Prime Video for their sci-fi and fantasy content. I've heard great things about The Mandalorian and The Expanse. Do you have any recommendations for sci-fi or fantasy books that I might enjoy?"
+    }
+  ],
+  "origin": "LongMemEval oracle 76d63226 (single-session-user); session dates ['2023/05/23 (Tue) 17:38'], asked 2023/05/24 (Wed) 19:09",
+  "questions": [
+    {
+      "after": 5,
+      "at": 1684926540,
+      "context": [],
+      "expect": {
+        "answer": [
+          "55-inch"
+        ],
+        "kind": "answer"
+      },
+      "id": "q",
+      "query": "What size is my new Samsung TV?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "bought new Samsung TV",
+              "Samsung TV inches",
+              "Samsung television dimensions"
+            ]
+          },
+          "request": "fnv1a64:279b33d1727f4f7a",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:55da3297de66d912",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

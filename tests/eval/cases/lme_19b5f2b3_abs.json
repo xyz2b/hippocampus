@@ -1,0 +1,485 @@
+{
+  "entities": [],
+  "id": "lme_19b5f2b3_abs",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "observed_at": 1684792860,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:bf1f488497ad24c7",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm planning a trip to Asia",
+                "I'm considering visiting Japan"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:a7823c1ee9c8b8b6",
+            "reviews": []
+          },
+          "request": "fnv1a64:4b9c10917cf7cd90",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm planning a trip to Asia and I'm considering visiting Japan. Can you recommend some must-see attractions in Kyoto?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1684792920,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "visited",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Fushimi Inari Shrine"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "a"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "traveling"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I spent two weeks traveling solo around the country and it was an incredible experience."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:c5d51b27f1cb8995",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "when I was in Japan a few months ago"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:c48007c8fba3d047",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "insufficient",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago. I spent two weeks traveling solo around the country and it was an incredible experience. Can you recommend some good places to stay in Kyoto that are budget-friendly?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "when I was in Japan",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions",
+                    "reason": "Candidate scope has no conditions, omitting USER's location condition that the visit occurred in Japan."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "a few months ago",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.reference",
+                    "reason": "USER places the visit 'a few months ago', but candidate temporal reference/validity fields are null, omitting the historical qualifier."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "insufficient",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago. I spent two weeks traveling solo around the country and it was an incredible experience. Can you recommend some good places to stay in Kyoto that are budget-friendly?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "traveling solo around the country",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions",
+                    "reason": "Candidate scope only records Activity 'traveling', omitting companion 'solo' and location 'around the country'."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:90ad7ce328986a1c",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago. I spent two weeks traveling solo around the country and it was an incredible experience. Can you recommend some good places to stay in Kyoto that are budget-friendly?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "observed_at": 1684792980,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "我"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-05-23",
+                  "expression": "我",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": "Kyoto",
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": "JP",
+                    "date": null,
+                    "geography": "international",
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "travel"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "solo_travel",
+                  "hostels",
+                  "guesthouses",
+                  "meeting_travelers",
+                  "japan",
+                  "japanese_alps",
+                  "onsen"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I stayed in small hostels and guesthouses during my solo trip to Japan, and it was a great way to meet other travelers."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:9d628ae1d5f88c45",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I visited one in the mountains during my trip and it was amazing."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:567b76d0e55b3fe5",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I stayed in small hostels and guesthouses during my solo trip to Japan, and it was a great way to meet other travelers. Speaking of which, do you have any recommendations for good onsen (hot springs) in the Kyoto area? I visited one in the mountains during my trip and it was amazing.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:5cf7817fb4013e90",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I stayed in small hostels and guesthouses during my solo trip to Japan, and it was a great way to meet other travelers. Speaking of which, do you have any recommendations for good onsen (hot springs) in the Kyoto area? I visited one in the mountains during my trip and it was amazing."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1684793040,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:ab187e8671cdc2d0",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:01e26c834386964d",
+            "reviews": []
+          },
+          "request": "fnv1a64:835cb249e4ebd8b8",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm actually considering visiting other parts of Asia after Japan. Do you have any recommendations for must-see destinations in Asia?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1684793100,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:ee40eac57c1b46e5",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:d7c86eab2f76c89e",
+            "reviews": []
+          },
+          "request": "fnv1a64:c4103d46989239ad",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm actually thinking of visiting South Korea. I've heard great things about Seoul and the food there. Do you have any recommendations for must-try dishes or restaurants in Seoul?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1684793160,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:7bf9bf926bb38951",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:719d3d4e22ec9feb",
+            "reviews": []
+          },
+          "request": "fnv1a64:447c14b70dfd1e58",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm thinking of visiting the Demilitarized Zone (DMZ) between North and South Korea. Do you have any recommendations for guided tours or attractions in the area?"
+    }
+  ],
+  "origin": "LongMemEval oracle 19b5f2b3_abs (single-session-user); session dates ['2023/05/23 (Tue) 06:01'], asked 2023/05/27 (Sat) 17:25",
+  "questions": [
+    {
+      "after": 6,
+      "at": 1685179500,
+      "context": [],
+      "expect": {
+        "kind": "insufficient_evidence"
+      },
+      "id": "q",
+      "query": "How long was I in Korea for?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "I was in Korea for",
+              "I stayed in Korea for",
+              "my trip to Korea lasted"
+            ]
+          },
+          "request": "fnv1a64:2399c57fa0f7903d",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:829d365803f6cfbc",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

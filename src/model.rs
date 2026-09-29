@@ -602,36 +602,12 @@ impl CandidateMemory {
         let MemoryValue::Text(value) = &self.value else {
             return false;
         };
-        fn terminal(text: &str) -> &str {
-            text.trim()
-                .trim_end_matches(['。', '.', '！', '!', '？', '?', ';', '；', '\n', '\r'])
-                .trim()
-        }
-        let value = terminal(value);
+        let value = fact_terminal(value);
         !value.is_empty()
             && self.evidence.iter().any(|evidence| {
-                if terminal(&evidence.quote) == value {
-                    return true;
-                }
-                let mut start = 0;
-                for (at, mark) in evidence.quote.char_indices() {
-                    let end = at + mark.len_utf8();
-                    let boundary = matches!(
-                        mark,
-                        '。' | '！' | '!' | '？' | '?' | ';' | '；' | '\n' | '\r'
-                    ) || mark == '.'
-                        && evidence.quote[end..]
-                            .chars()
-                            .next()
-                            .is_none_or(char::is_whitespace);
-                    if boundary {
-                        if terminal(&evidence.quote[start..end]) == value {
-                            return true;
-                        }
-                        start = end;
-                    }
-                }
-                terminal(&evidence.quote[start..]) == value
+                fact_terminal(&evidence.quote) == value
+                    || user_sentences(&evidence.quote)
+                        .any(|sentence| fact_terminal(sentence) == value)
             })
     }
 
@@ -805,4 +781,68 @@ pub trait RuntimeContextBuilder {
     type Error;
 
     fn build(&self, query: &str) -> Result<RuntimeContext, Self::Error>;
+}
+
+fn fact_terminal(text: &str) -> &str {
+    text.trim()
+        .trim_end_matches(['。', '.', '！', '!', '？', '?', ';', '；', '\n', '\r'])
+        .trim()
+}
+
+/// USER sentences in order, each with its closing mark; a '.' closes only before space or end.
+fn user_sentences(quote: &str) -> impl Iterator<Item = &str> {
+    let mut start = 0;
+    let mut marks = quote.char_indices().peekable();
+    std::iter::from_fn(move || {
+        while let Some((at, mark)) = marks.next() {
+            let end = at + mark.len_utf8();
+            let boundary = matches!(mark, '。' | '！' | '!' | '？' | '?' | ';' | '；' | '\n' | '\r')
+                || mark == '.' && marks.peek().is_none_or(|(_, next)| next.is_whitespace());
+            if boundary {
+                let sentence = &quote[start..end];
+                start = end;
+                return Some(sentence);
+            }
+        }
+        let rest = &quote[start..];
+        start = quote.len();
+        (!fact_terminal(rest).is_empty()).then_some(rest)
+    })
+    .filter(|sentence| !fact_terminal(sentence).is_empty())
+}
+
+/// The generic fact value is runtime-owned: the complete USER sentence the model pointed at.
+/// A text fragment selects the one sentence containing it; any other value kind is only
+/// unambiguous when the quote is a single sentence. Otherwise the value is left unchanged.
+pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryValue {
+    // Whitespace is not USER content: a model copy with extra or missing spaces still points
+    // at the same sentence, and the stored value is always the USER's own text.
+    let squash = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let whole = squash(fact_terminal(quote));
+    let pick = |fragment: Option<&str>| {
+        let mut hits = user_sentences(quote).filter(|sentence| {
+            fragment.is_none_or(|f| squash(fact_terminal(sentence)).contains(f))
+        });
+        let hit = hits.next()?;
+        hits.next().is_none().then(|| hit.trim().to_owned())
+    };
+    let chosen = match &value {
+        MemoryValue::Text(text) => {
+            let text = squash(fact_terminal(text));
+            if text.is_empty() {
+                None
+            } else if text == whole {
+                Some(quote.trim().to_owned())
+            } else if let Some(sentence) =
+                user_sentences(quote).find(|s| squash(fact_terminal(s)) == text)
+            {
+                // Store the USER's exact sentence, not the model's copy with stray marks.
+                Some(sentence.trim().to_owned())
+            } else {
+                pick(Some(&text))
+            }
+        }
+        _ => pick(None),
+    };
+    chosen.map_or(value, MemoryValue::Text)
 }

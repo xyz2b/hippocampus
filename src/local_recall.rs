@@ -92,6 +92,14 @@ fn unbound_reference(
     nominal_unbound || pronoun_unbound || modifier_unbound
 }
 
+/// A question about the asker: 我… in Chinese, or an English first-person word.
+pub(crate) fn first_person(query: &str) -> bool {
+    query.trim_start_matches("请问").starts_with('我')
+        || query
+            .split(|c: char| !c.is_ascii_alphabetic())
+            .any(|word| ["i", "my", "me", "mine", "myself"].contains(&word.to_lowercase().as_str()))
+}
+
 fn literal_phrase(text: &str, phrase: &str) -> bool {
     let words = format!(" {} ", crate::lexical::tokens(text).join(" "));
     let phrase = crate::lexical::tokens(phrase).join(" ");
@@ -1571,7 +1579,7 @@ impl SqliteMemoryStore {
                 && (context_hints.len() != 1
                     || raw_causal_relation.is_some() && causal_relation.is_none()
                     || raw_time_relation.is_some() && time_relation.is_none())
-                && !query.trim_start_matches("请问").starts_with('我');
+                && !first_person(query);
         let cannot_answer = ambiguous || needs_clarification;
         let task = trusted.task_id.as_ref().map(|t| t.0.as_str());
         let reference_resolution = json!({

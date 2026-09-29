@@ -7,6 +7,31 @@ use crate::{
 };
 
 const UNSUPPORTED: &str = "temporal metadata lacks locally grounded USER support";
+/// Negated, hypothetical, reported or contrastive frames: a time inside them is not asserted.
+const UNGROUNDED_FRAMES: &[&str] = &[
+        "不是",
+        "并非",
+        "不在",
+        "没有说",
+        "未说",
+        "不从",
+        "未从",
+        "并未",
+        "假设",
+        "假如",
+        "如果",
+        "据说",
+        "有人说",
+        "他说",
+        "她说",
+        "我说",
+        "听说",
+        "引用",
+        "提到",
+        "且",
+        "但是",
+        "而是",
+    ];
 
 pub(crate) fn validate(
     candidate: &CandidateMemory,
@@ -32,35 +57,30 @@ pub(crate) fn validate(
     {
         return Ok(());
     }
+    // A generic fact keeps the whole USER sentence; a literal calendar date or range in it
+    // needs no anchor inference, so its validity is grounded when it is the only one.
+    if candidate.predicate.0 == "fact"
+        && let MemoryValue::Text(text) = &candidate.value
+        && current_user_turn.contains(text.as_str())
+        && unquoted(text).as_deref() == Some(text.as_str())
+        && !UNGROUNDED_FRAMES.iter().any(|word| text.contains(word))
+        && t.reference.is_none()
+        && t.expires_at.is_none()
+        && dates.is_empty()
+        && let [span] = crate::temporal::absolute_spans(text)[..]
+        && let Ok(TemporalResolution::Range(range)) = crate::temporal::resolve_temporal_expression(
+            span.text,
+            t.observed_at,
+            utc_offset_seconds,
+        )
+        && t.valid_from.as_ref().map(|d| d.at) == Some(range.start)
+        && t.valid_to.as_ref().map(|d| d.at) == Some(range.end)
+    {
+        return Ok(());
+    }
     let sentence = assertion(candidate, current_user_turn, known_entities).ok_or(UNSUPPORTED)?;
     let text = unquoted(sentence).ok_or(UNSUPPORTED)?;
-    if [
-        "不是",
-        "并非",
-        "不在",
-        "没有说",
-        "未说",
-        "不从",
-        "未从",
-        "并未",
-        "假设",
-        "假如",
-        "如果",
-        "据说",
-        "有人说",
-        "他说",
-        "她说",
-        "我说",
-        "听说",
-        "引用",
-        "提到",
-        "且",
-        "但是",
-        "而是",
-    ]
-    .iter()
-    .any(|word| text.contains(word))
-    {
+    if UNGROUNDED_FRAMES.iter().any(|word| text.contains(word)) {
         return Err(UNSUPPORTED);
     }
     let aliases = subject_names(candidate, known_entities);

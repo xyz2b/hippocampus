@@ -1,0 +1,681 @@
+{
+  "entities": [],
+  "id": "lme_bc8a6e93_abs",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "observed_at": 1684975740,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:cfd257a1785cb023",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:85d9b6f4d2c5bfed",
+            "reviews": []
+          },
+          "request": "fnv1a64:39c48fcb2f3324cb",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm thinking of making some lemon-based desserts for an upcoming dinner party. Do you have any recommendations for a good lemon curd recipe or any tips on using it as a filling for cakes and tarts?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1684975800,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "在"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": "positive",
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "在"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": "positive",
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "the combination of the tangy lemon and sweet blueberries"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:fe034d223e08f000",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                ">I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:5a1746240dcc3cb9",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
+                "evidence": [
+                  {
+                    "quote": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit.",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
+                "evidence": [
+                  {
+                    "quote": "I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit.",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
+                "evidence": [
+                  {
+                    "quote": "I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect.",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "USER evaluates one cake's flavor combination as \"perfect\"; she does not assert a dispositional preference expressed by predicate \"likes\"."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "value.Text is a truncated noun-phrase fragment of the USER sentence and drops the asserted predicate \"was perfect\"; it is not a complete verbatim USER sentence."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:6f5f3483eb52aac9",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "observed_at": 1684975860,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:aee78a5de3b6099d",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:d4709f3ea584457a",
+            "reviews": []
+          },
+          "request": "fnv1a64:1c247a39c15f09fd",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "What are some good ways to incorporate lemon zest into my baking? I've heard it can add a lot of depth to desserts, but I'm not sure how to use it effectively."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1684975920,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "l"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been experimenting with different types of flour lately"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:41909f38803a0ebd",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:b59f2c1fd230518e",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's really helpful, thanks! I've been experimenting with different types of flour lately, and I've been wondering if there's a particular type of flour that's best suited for lemon-based desserts. Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:503b5c31ba1ce01d",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "That's really helpful, thanks! I've been experimenting with different types of flour lately, and I've been wondering if there's a particular type of flour that's best suited for lemon-based desserts. Would bread flour or all-purpose flour work better for a lemon cake or tart crust?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1684975980,
+      "recorded": [
+        {
+          "output": "{\"candidates\":[{\"certainty\":\"high\",\"cross_turn_useful\":true,\"extraction_confidence\":  \"high\",\"fact_time\":{\"date\":null,\"end_date\":null,\"expression\":\"l\"}\n\n\n\n\n  \n\n\n      \n\n\n  \n\n\n  \n\n\n      \n    \n\n\n   \n\n\n \n   \n\n\n   \n\n\n\n\n    \n\n   \n   \n   \n \n\n\n   \n\n\n   \n\n\n  \n \n    \n  \n     \n   \n    \n\n\n  \n     \n   \n   \n   \n\n\n   \n\n\n  \n \n    \n    \n       \n      \n     \n     \n         \n     \n  \n  \n  \n      \n      \n      \n     \n    \n  \n  \n     \n     \n  \n  \n      \n   \n     \n     \n    \n   \n   \n    \n   \n    \n   \n     \n    \n   \n   \n   \n     \n   \n   \n\n   \n   \n   \n\n\n \n\n \n \n    \n   \n  \n  \n\n   \n  \n\n   \n   \n   \n\n\n   \n  \n\n   \n   \n\n\n   \n   \n   \n   \n  \n    \n   \n   \n   \n   \n     \n   \n   \n   \n   \n    \n   \n   \n\n   \n    \n  \n \n    \n      \n    \n\n  \n   \n   \n     \n  \n\n  \n    \n   \n    \n   \n   \n  \n   \n   \n   \n  \n\n   \n   \n   \n  \n   \n   \n    \n  \n\n  \n  \n\n  \n   \n   \n   \n    \n  \n\n   \n   \n  \n  \n   \n \n   \n   \n   \n   \n    \n   \n   \n   \n  \n\n  \n\n   \n   \n  \n   \n  \n   \n  \n   \n   \n   \n   \n  \n   \n   \n   \n   \n   \n   \n    \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n  ,\"intent\" :\n   \n   \n   \n   \n   \n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n    \n \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n  { \n\n\n\n  \"kind\":\"retract\"\n\n      \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n\n\n \n   \n   \n   \n   \n\n\n  \n   \n   \n  \n \n   \n   \n   \n   \n   \n   \n  \n  \n   \n   \n   \n   \n   \n   \n  \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n   \n",
+          "request": "fnv1a64:1935314fbb00f26c",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar. I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well. Do you have any thoughts on using honey in lemon desserts?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1684976040,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "baking",
+                  "honey",
+                  "lemon desserts"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "honey in lemon desserts"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "food"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "baking",
+                  "honey",
+                  "sweeteners"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:617e10abfde83c5d",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other.",
+                "The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:8989bafaa01e2953",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other. The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon. I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "User reports having success with honey in lemon desserts and that flavors complement/pair well, but does not explicitly assert liking them; 'likes' is an inference."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "User describes a successful experience and flavor pairing, not an explicit personal preference; labeling it Preference is unsupported."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other. The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon. I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:0802bf3ec77926cc",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other. The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon. I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+    }
+  ],
+  "origin": "LongMemEval oracle bc8a6e93_abs (single-session-user); session dates ['2023/05/25 (Thu) 08:49'], asked 2023/05/30 (Tue) 06:23",
+  "questions": [
+    {
+      "after": 6,
+      "at": 1685398980,
+      "context": [],
+      "expect": {
+        "kind": "insufficient_evidence"
+      },
+      "id": "q",
+      "query": "What did I bake for my uncle's birthday party?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "baked a cake for my uncle's birthday party",
+              "made dessert for uncle's birthday",
+              "uncle's birthday cake I baked"
+            ]
+          },
+          "request": "fnv1a64:2d7ba15a32bac047",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:9d788c69ce24c86b",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}

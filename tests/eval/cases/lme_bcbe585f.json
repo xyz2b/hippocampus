@@ -1,0 +1,1189 @@
+{
+  "entities": [],
+  "id": "lme_bcbe585f",
+  "messages": [
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t1",
+      "observed_at": 1680318120,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-04-01",
+                  "end_date": null,
+                  "expression": "t"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-04-01",
+                  "expression": "t",
+                  "kind": "retain_until"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "bird_watching",
+                  "workshop",
+                  "audubon"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I just got back from a bird watching workshop at the local Audubon society today, which was really informative."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:7ff27e26585b6163",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm planning a trip to the nearby wildlife refuge this weekend"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:5b2b53878883da6f",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning a trip to the nearby wildlife refuge this weekend and I'm wondering if you can give me some info on what birds I might see this time of year. By the way, I just got back from a bird watching workshop at the local Audubon society today, which was really informative.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:18350f23cf88b48b",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm planning a trip to the nearby wildlife refuge this weekend and I'm wondering if you can give me some info on what birds I might see this time of year. By the way, I just got back from a bird watching workshop at the local Audubon society today, which was really informative."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1680318180,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": "domestic",
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "It's located in the southeast region"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "c"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": "domestic",
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "it's currently spring"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've heard they're good spots for spotting waterfowl and songbirds"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:8b378d2b342f12a1",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "It's located in the southeast region",
+                "it's currently spring"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:efe694277470c9fd",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "contradicted",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "It's located in the southeast region, and it's currently spring. I'm planning to explore the wetlands and forests areas, as I've heard they're good spots for spotting waterfowl and songbirds.",
+                "evidence": [
+                  {
+                    "quote": "the nearby wildlife refuge",
+                    "turn_index": 1
+                  },
+                  {
+                    "quote": "It's located in the southeast region",
+                    "turn_index": 0
+                  },
+                  {
+                    "quote": "it's currently spring",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "subject",
+                    "evidence": [
+                      {
+                        "quote": "the nearby wildlife refuge",
+                        "turn_index": 1
+                      },
+                      {
+                        "quote": "It's located in the southeast region",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "subject",
+                    "reason": "Candidate subject is self, but USER's 'It' refers to the nearby wildlife refuge from history, not the user."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "it's currently spring",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.reference",
+                    "reason": "USER says 'currently spring', but candidate temporal reference and validity bounds are null; the current seasonal qualifier is not represented."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "contradicted",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "It's located in the southeast region, and it's currently spring. I'm planning to explore the wetlands and forests areas, as I've heard they're good spots for spotting waterfowl and songbirds.",
+                "evidence": [
+                  {
+                    "quote": "the nearby wildlife refuge",
+                    "turn_index": 1
+                  },
+                  {
+                    "quote": "It's located in the southeast region",
+                    "turn_index": 0
+                  },
+                  {
+                    "quote": "it's currently spring",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "subject",
+                    "evidence": [
+                      {
+                        "quote": "the nearby wildlife refuge",
+                        "turn_index": 1
+                      },
+                      {
+                        "quote": "It's located in the southeast region",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "subject",
+                    "reason": "Candidate subject is self, but USER's 'It' refers to the nearby wildlife refuge from history, not the user."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "it's currently spring",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.reference",
+                    "reason": "USER says 'currently spring', but candidate temporal reference and validity bounds are null; the current seasonal qualifier is not represented."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "It's located in the southeast region, and it's currently spring. I'm planning to explore the wetlands and forests areas, as I've heard they're good spots for spotting waterfowl and songbirds.",
+                "evidence": [
+                  {
+                    "quote": "this weekend",
+                    "turn_index": 1
+                  },
+                  {
+                    "quote": "I'm planning to explore the wetlands and forests areas",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "this weekend",
+                        "turn_index": 1
+                      },
+                      {
+                        "quote": "I'm planning to explore the wetlands and forests areas",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER plans to explore the wetlands/forests, and history frames the trip as 'this weekend', but candidate temporal has no valid_from/valid_to, so the plan's timeframe is not represented."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:8ce5563bb76bd32c",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "It's located in the southeast region, and it's currently spring. I'm planning to explore the wetlands and forests areas, as I've heard they're good spots for spotting waterfowl and songbirds."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "observed_at": 1680318240,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-02-15",
+                  "end_date": null,
+                  "expression": "a"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "guided bird walk"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm really hoping to spot some warblers, as I've been trying to add more of them to my life list."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:5cad42ebf4b53510",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "the Yellow Warblers I saw on my guided bird walk a month and a half ago"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:629f95e47200aecf",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "contradicted",
+                  "scope": "supported",
+                  "source": "contradicted",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "contradicted"
+                },
+                "current_user_quote": "I'm really hoping to spot some warblers, as I've been trying to add more of them to my life list. Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "Predicate 'fact' is asserted, but this value carries no proposition: the USER asks a question about whether the Yellow Warblers are still around rather than asserting a property of self."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Text is an information-seeking question, not a complete USER sentence carrying an asserted proposition; the past sighting is only presupposed inside the question, so no fact value is stated."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "intent 'Assert' mislabels the segment: the USER asks a question with unresolved alternatives (still around vs. moved on), not an assertion, correction, refinement or retraction."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "source 'UserStatement' requires the current USER turn to assert this memory; the current turn asks a question, and a question is not a USER assertion of a fact."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "a month and a half ago",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "No USER-justified validity or expiry exists here; observed_at is only the runtime clock, and the USER's historical sighting time ('a month and a half ago') is left out of valid_from/valid_to."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "memory_type Episode with certainty High and retention_tier LongTerm attach to a question-valued candidate; the USER asserted no episode and gave no retention instruction in this segment (explicit_memory_request=false is correct)."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm really hoping to spot some warblers, as I've been trying to add more of them to my life list. Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:80546d7817a8a69e",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm really hoping to spot some warblers, as I've been trying to add more of them to my life list. Do you think the Yellow Warblers I saw on my guided bird walk a month and a half ago might still be around, or have they already moved on to their breeding grounds?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1680318300,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:8780e48fbcfd5f4a",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've been meaning to try out the Merlin Bird ID app that Sarah recommended at the workshop today"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:fceccd9ff4cd3c26",
+            "reviews": []
+          },
+          "request": "fnv1a64:c22c49882a2c68b5",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I've been meaning to try out the Merlin Bird ID app that Sarah recommended at the workshop today, do you think it would be helpful in identifying warblers?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1680318360,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird songs"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird sounds"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird song identification"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird songs"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird songs"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird songs"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird songs"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}],"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "birding",
+                  "bird songs"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to improve my skills in identifying birds by their songs.}}"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:539e18d41f304c0d",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "I'm wondering if Merlin can also help with bird calls and songs, as I've been trying to improve my skills in identifying birds by their songs."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1680318420,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:36a214c4686eab38",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm planning to focus on the wetlands area first"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:127e5edb55132cdf",
+            "reviews": []
+          },
+          "request": "fnv1a64:919abe8e340588d2",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm planning to focus on the wetlands area first, as I've heard that's where the warblers tend to congregate during migration. Do you think the Merlin app would be able to help me identify any warblers I might spot in the wetlands?"
+    }
+  ],
+  "origin": "LongMemEval oracle bcbe585f (temporal-reasoning); session dates ['2023/04/01 (Sat) 11:02'], asked 2023/05/01 (Mon) 06:46",
+  "questions": [
+    {
+      "after": 6,
+      "at": 1682894760,
+      "context": [],
+      "expect": {
+        "answer": [
+          "4"
+        ],
+        "kind": "answer"
+      },
+      "id": "q",
+      "query": "How many weeks ago did I attend a bird watching workshop at the local Audubon society?",
+      "recorded": [
+        {
+          "output": {
+            "queries": [
+              "attended bird watching workshop at Audubon society",
+              "went to birding workshop local Audubon chapter",
+              "participated in Audubon bird watching class"
+            ]
+          },
+          "request": "fnv1a64:7e7a0abc111747e3",
+          "schema": "personal_memory_assistance_queries_v1"
+        },
+        {
+          "output": {
+            "answer_text": "today",
+            "candidate_index": 0,
+            "verdict": "answer"
+          },
+          "request": "fnv1a64:1b3fd45492f062a9",
+          "schema": "personal_memory_answer_v1"
+        }
+      ]
+    }
+  ]
+}
