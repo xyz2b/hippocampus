@@ -2479,8 +2479,12 @@ impl RawCandidate {
                 self.predicate
             )));
         }
+        // A bad secondary field costs only that field, never the candidate.
         if memory_type != MemoryType::Preference && self.strength.is_some() {
-            return Err(invalid("strength is only valid for Preference"));
+            crate::diagnostics::record("field_dropped", || {
+                json!({"field":"strength","reason":"strength is only valid for Preference"})
+            });
+            self.strength = None;
         }
         // 必须在任何 Scope/情境转换前校验，不能因清空表达式绕过 schema 互斥约束。
         if self.temporal_expression.is_some()
@@ -3334,7 +3338,13 @@ impl RawScopeCondition {
                         EntityId(id),
                     ))])
                 }
-                (Some(id), None) => Err(invalid(format!("unknown companion entity id {id}"))),
+                // An unknown companion costs only this condition, never the candidate.
+                (Some(id), None) => {
+                    crate::diagnostics::record("field_dropped", || {
+                        json!({"field":"companion","reason":"unknown companion entity id","id":id})
+                    });
+                    Ok(Vec::new())
+                }
                 (None, Some(role)) => Ok(vec![ScopeCondition::Companion(EntityOrRole::Role(
                     role.into(),
                 ))]),
@@ -3547,6 +3557,11 @@ fn kept_fact_time(
             if crate::temporal::mentions_time(&expression) && in_quote(&expression, quote) =>
         {
             if date.is_none() && end_date.is_none() {
+                // A relative day without the model's date cannot be checked, and the runtime
+                // never fills it in: the time is dropped, the words stay in the quote.
+                if crate::temporal::relative_day_offset(&expression).is_some() {
+                    return (None, None, None);
+                }
                 return (Some(expression), None, None);
             }
             return match crate::temporal::checkable_part(&expression) {
@@ -4678,10 +4693,9 @@ mod tests {
             "incorrect model date must never be silently corrected"
         );
         raw["temporal_date"] = Value::Null;
-        assert!(
-            decode(&raw).is_err(),
-            "model must normalize relative dates explicitly"
-        );
+        // Without the model's date the runtime never fills one in: the time is dropped.
+        let undated = decode(&raw).expect("a missing date costs only the time");
+        assert!(undated[0].temporal.valid_from.is_none() && undated[0].temporal.reference.is_none());
     }
 
     #[test]
@@ -5140,8 +5154,6 @@ mod tests {
         let mut wrong_day = candidate_json();
         wrong_day["temporal_expression"] = json!("明天");
         wrong_day["temporal_date"] = json!("not-a-date");
-        let mut missing_day = candidate_json();
-        missing_day["temporal_expression"] = json!("昨天");
         let mut unknown_subject = wrong_expiry.clone();
         unknown_subject["subject_id"] = json!("unknown");
         let mut numeric_time = candidate_json();
@@ -5150,7 +5162,6 @@ mod tests {
         for (raw, field, schema_error) in [
             (wrong_expiry, Some("memory_request"), false),
             (wrong_day, Some("fact_time"), false),
-            (missing_day, Some("fact_time"), false),
             (unknown_subject, None, false),
             (numeric_time, None, true),
         ] {
@@ -6374,7 +6385,6 @@ mod tests {
         // Other axes still use their original validation even alongside a compatible empty date.
         for (field, value) in [
             ("country", json!("JX")),
-            ("companion_entity_ids", json!(["unknown"])),
             ("task_id", json!("invented-task")),
             ("unknown_axis", Value::Null),
         ] {
@@ -7780,7 +7790,6 @@ mod tests {
             json!({"memory_request":{"kind":"remember","date":"2026-09-29"}}),
             json!({"memory_request":{"kind":"retain_until","expression":"明天"}}),
             json!({"fact_time":{"expression":"昨天","date":"2026-09-26","end_date":null}}),
-            json!({"fact_time":{"expression":"昨天","date":null,"end_date":null}}),
         ] {
             let mut bad = raw.clone();
             bad.as_object_mut()
@@ -8232,7 +8241,8 @@ mod tests {
         axes["geography"] = Value::Null;
         axes["companion_entity_ids"] = json!(["unknown-child"]);
         let raw = serde_json::from_value(axes).unwrap();
-        assert!(decode_conditions(raw, &context(), true).is_err());
+        // An unknown companion costs only that condition.
+        assert!(decode_conditions(raw, &context(), true).unwrap().is_empty());
     }
 
     #[test]

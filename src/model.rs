@@ -832,9 +832,17 @@ fn sentence_runs(quote: &str) -> Vec<&str> {
 /// A text fragment selects the one sentence containing it; any other value kind is only
 /// unambiguous when the quote is a single sentence. Otherwise the value is left unchanged.
 pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryValue {
-    // Whitespace is not USER content: a model copy with extra or missing spaces still points
-    // at the same sentence, and the stored value is always the USER's own text.
-    let squash = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    // Whitespace and quote typography are not USER content: a model copy with extra spaces or
+    // straight/doubled quotes still points at the same sentence, and the stored value is always
+    // the USER's own text.
+    let squash = |text: &str| {
+        text.split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .replace(['\u{2018}', '\u{2019}', '\u{201B}'], "'")
+            .replace(['\u{201C}', '\u{201D}'], "\"")
+            .replace("''", "'")
+    };
     let whole = squash(fact_terminal(quote));
     let pick = |fragment: Option<&str>| {
         let mut hits = user_sentences(quote).filter(|sentence| {
@@ -845,6 +853,7 @@ pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryV
     };
     let chosen = match &value {
         MemoryValue::Text(text) => {
+            let raw = squash(text);
             let text = squash(fact_terminal(text));
             if text.is_empty() {
                 None
@@ -856,8 +865,22 @@ pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryV
             {
                 // Store the USER's exact sentence(s), not the model's copy with stray marks.
                 Some(sentence.trim().to_owned())
+            } else if let Some(sentence) = pick(Some(&text)) {
+                Some(sentence)
             } else {
-                pick(Some(&text))
+                // The model appended non-USER text (a translation, a note, a repeat, a stray
+                // token) after complete USER sentences: keep only those sentences.
+                sentence_runs(quote)
+                    .into_iter()
+                    .filter(|run| raw.starts_with(&squash(run.trim())))
+                    .max_by_key(|run| run.len())
+                    .map(|kept| {
+                        crate::diagnostics::record("fact_value_trimmed", || {
+                            serde_json::json!({"kept":kept.trim(),
+                                "dropped":raw[squash(kept.trim()).len()..]})
+                        });
+                        kept.trim().to_owned()
+                    })
             }
         }
         _ => pick(None),
@@ -870,6 +893,25 @@ mod tests {
     use super::{MemoryValue, complete_fact_sentence};
 
     #[test]
+    fn generic_fact_keeps_user_sentences_despite_quotes_and_appended_text() {
+        let quote = "I\u{2019}ve been tidying daily. It helps a lot. Any tips?";
+        let fact = |text: &str| complete_fact_sentence(MemoryValue::Text(text.into()), quote);
+        let user = |text: &str| MemoryValue::Text(text.into());
+        // Straight or doubled quotes still point at the USER's curly-quoted sentence.
+        assert_eq!(fact("I've been tidying daily."), user("I\u{2019}ve been tidying daily."));
+        assert_eq!(fact("I''ve been tidying daily."), user("I\u{2019}ve been tidying daily."));
+        // Appended translation, repeat or stray token: only the USER sentences are kept.
+        assert_eq!(
+            fact("I've been tidying daily. It helps a lot.我每天整理。"),
+            user("I\u{2019}ve been tidying daily. It helps a lot.")
+        );
+        assert_eq!(fact("It helps a lot.It helps a lot."), user("It helps a lot."));
+        // A rewrite or a mid-sentence start is not USER text and stays unchanged (rejected).
+        assert_eq!(fact("Tidying helps me a lot."), user("Tidying helps me a lot."));
+        assert_eq!(fact("helps a lot. Any tips?x"), user("helps a lot. Any tips?x"));
+    }
+
+    #[test]
     fn generic_fact_accepts_consecutive_whole_sentences_only() {
         let quote = "Books help. I stop emails by 7 pm. It helps me relax. Any tips?";
         let fact = |text: &str| complete_fact_sentence(MemoryValue::Text(text.into()), quote);
@@ -877,10 +919,10 @@ mod tests {
             fact("I stop emails by 7 pm. It helps me relax."),
             MemoryValue::Text("I stop emails by 7 pm. It helps me relax.".into())
         );
-        // Not consecutive: left unchanged, so the completeness check rejects it.
+        // Not consecutive: only the leading run of USER sentences is kept.
         assert_eq!(
             fact("Books help. It helps me relax."),
-            MemoryValue::Text("Books help. It helps me relax.".into())
+            MemoryValue::Text("Books help.".into())
         );
     }
 }
