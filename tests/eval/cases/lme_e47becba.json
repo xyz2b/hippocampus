@@ -394,20 +394,54 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "education",
+                  "career"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. ool"
+                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:512709930bc1c5b0",
+          "request": "fnv1a64:5292c7a1c9e950c5",
           "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:acf385c41663c3f2",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:f6e369b268581345",
+          "schema": "personal_memory_source_support_v1"
         }
       ],
       "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?"
@@ -425,22 +459,20 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:11c8f3f7b5513e80",
+          "request": "fnv1a64:4f00e37d3cec14ef",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'm thinking of implementing a system to track my personal expenses as well, not just work-related ones."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:cd292387644b0aca",
+            "omission_supported": true,
+            "review_binding": "source-review-v3:4fa5c370843d4eb8",
             "reviews": []
           },
-          "request": "fnv1a64:e205636651d534e9",
+          "request": "fnv1a64:ffaf9d6ac5c25330",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -458,7 +490,7 @@
           "output": {
             "candidates": [
               {
-                "certainty": "high",
+                "certainty": "low",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": null,
@@ -468,7 +500,9 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-22",
+                  "expression": "I",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -499,46 +533,18 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I feel like I'm spending a lot on those things and I want to cut back."
+                  "text": "I feel like I'm spending a lot on those things and I want to cut back. "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:34ff19baf2483e2b",
+          "request": "fnv1a64:303935f1522b5680",
           "schema": "personal_memory_candidates_v1"
         },
         {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I think I'll try out Mint and Personal Capital to see which one I like better."
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:b961f02b479c6cd1",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I think I'll try out Mint and Personal Capital to see which one I like better. I've heard great things about both of them. By the way, do you have any tips on how to save money on everyday expenses, like groceries and household items? I feel like I'm spending a lot on those things and I want to cut back.",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:1849c809c921fc40",
+          "output": "{\"coverage\":{\"missing_user_spans\":[\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r",
+          "request": "fnv1a64:c8daab9ce4a4058d",
           "schema": "personal_memory_source_support_v1"
         }
       ],

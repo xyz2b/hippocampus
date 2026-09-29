@@ -355,14 +355,20 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": "2023-04-01",
+                  "end_date": "2023-05-01",
+                  "expression": "上"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-04-01",
+                  "expression": "上",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -387,17 +393,64 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "baking",
-                  "caramel",
-                  "equipment"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
                   "text": "new stand mixer"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-04-01",
+                  "end_date": "2023-05-01",
+                  "expression": "上"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-04-01",
+                  "expression": "上",
+                  "kind": "retain_until"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I actually got my new stand mixer as a birthday gift from my sister last month, and it's been a game-changer for making caramel."
                 }
               },
               {
@@ -411,7 +464,9 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-20",
+                  "expression": "上",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -436,35 +491,32 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "baking",
-                  "caramel",
-                  "recipe"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce"
+                  "text": "caramel sauce recipe"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:45a77824c847db0e",
+          "request": "fnv1a64:a452eb65ae8105e2",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "as a birthday gift from my sister last month"
+                "I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce.",
+                "It's worked out really well so far!"
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:dc3651f358ed50c6",
+            "review_binding": "source-review-v3:9e9344cab67d4402",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -499,10 +551,39 @@
                 "current_user_quote": "I actually got my new stand mixer as a birthday gift from my sister last month, and it's been a game-changer for making caramel. I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce. It's worked out really well so far!",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I actually got my new stand mixer as a birthday gift from my sister last month, and it's been a game-changer for making caramel. I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce. It's worked out really well so far!",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I've been using a recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Candidate value 'caramel sauce recipe' is a generic label; USER asserted a specific recipe that involves melting sugar and butter together, then slowly adding heavy cream to create a smooth caramel sauce. The defining ingredients and method are omitted."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:6ed6c7f25002cb53",
+          "request": "fnv1a64:0b851de38e369b23",
           "schema": "personal_memory_source_support_v1"
         }
       ],

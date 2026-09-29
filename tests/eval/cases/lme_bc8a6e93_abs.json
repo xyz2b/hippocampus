@@ -52,7 +52,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "y"
+                  "expression": "在"
                 },
                 "intent": {
                   "kind": "assert",
@@ -63,7 +63,7 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "fact",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
@@ -78,7 +78,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -91,7 +91,7 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past"
                 }
               },
               {
@@ -101,7 +101,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "y"
+                  "expression": "在"
                 },
                 "intent": {
                   "kind": "assert",
@@ -112,7 +112,7 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "episode",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
@@ -127,7 +127,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -140,7 +140,7 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                  "text": "I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
                 }
               },
               {
@@ -172,10 +172,10 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
-                "strength": "strong",
+                "strength": "moderate",
                 "subject": {
                   "entity_id": "self"
                 },
@@ -185,25 +185,25 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "lemon blueberry cake"
+                  "text": "the combination of the tangy lemon and sweet blueberries"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:db17d48669148d49",
+          "request": "fnv1a64:fe034d223e08f000",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "the combination of the tangy lemon and sweet blueberries was perfect"
+                ">I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:c9edf36e3728c8ef",
+            "review_binding": "source-review-v3:5a1746240dcc3cb9",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -219,7 +219,12 @@
                   "value": "supported"
                 },
                 "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit.",
+                    "turn_index": 0
+                  }
+                ],
                 "issues": []
               },
               {
@@ -236,63 +241,62 @@
                   "value": "supported"
                 },
                 "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit.",
+                    "turn_index": 0
+                  }
+                ],
                 "issues": []
               },
               {
                 "candidate_index": 2,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "insufficient",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "insufficient",
                   "scope": "supported",
-                  "source": "insufficient",
+                  "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "supported"
+                  "value": "insufficient"
                 },
                 "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect.",
+                    "turn_index": 0
+                  }
+                ],
                 "issues": [
                   {
                     "check": "relation",
                     "evidence": [
                       {
-                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect",
+                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect.",
                         "turn_index": 0
                       }
                     ],
                     "field": "predicate",
-                    "reason": "User did not assert liking; she said the combination was perfect, an evaluation of flavor, not the preference predicate 'likes'."
+                    "reason": "USER evaluates one cake's flavor combination as \"perfect\"; she does not assert a dispositional preference expressed by predicate \"likes\"."
                   },
                   {
-                    "check": "source",
+                    "check": "value",
                     "evidence": [
                       {
-                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect",
+                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect.",
                         "turn_index": 0
                       }
                     ],
-                    "field": "source",
-                    "reason": "Current turn does not assert the memory 'self likes lemon blueberry cake'; it only reports making the cake and evaluating its flavor."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "the combination of the tangy lemon and sweet blueberries was perfect",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "memory_type",
-                    "reason": "memory_type Preference and strength Strong are not justified; user did not state a preference, only a positive evaluation of a specific cake."
+                    "field": "value.Text",
+                    "reason": "value.Text is a truncated noun-phrase fragment of the USER sentence and drops the asserted predicate \"was perfect\"; it is not a complete verbatim USER sentence."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:beec7bfb17758d63",
+          "request": "fnv1a64:6f5f3483eb52aac9",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -311,7 +315,7 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:1f00c26007ebf15e",
+          "request": "fnv1a64:aee78a5de3b6099d",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -321,10 +325,10 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:258870fde0d6ac84",
+            "review_binding": "source-review-v3:d4709f3ea584457a",
             "reviews": []
           },
-          "request": "fnv1a64:55c2cff52d778178",
+          "request": "fnv1a64:1c247a39c15f09fd",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -356,19 +360,15 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2026-09-29",
-                  "expression": "l",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "baking"
-                    ],
+                    "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -385,24 +385,19 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "baking",
-                  "lemon",
-                  "flour",
-                  "experimenting"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been experimenting with different types of flour lately."
+                  "text": "I've been experimenting with different types of flour lately"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:739cf86a458a1dec",
+          "request": "fnv1a64:41909f38803a0ebd",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -412,7 +407,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:bad8b5539a0a7b1e",
+            "review_binding": "source-review-v3:b59f2c1fd230518e",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -433,7 +428,7 @@
               }
             ]
           },
-          "request": "fnv1a64:ef9a467d83a95084",
+          "request": "fnv1a64:503b5c31ba1ce01d",
           "schema": "personal_memory_source_support_v1"
         }
       ],

@@ -8,6 +8,7 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1622553000,
       "recorded": [
         {
           "output": {
@@ -17,7 +18,7 @@
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
-                  "date": "2026-09-29",
+                  "date": "2021-06-01",
                   "end_date": null,
                   "expression": "I"
                 },
@@ -32,240 +33,6 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "时"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": "2026-09-29",
-                  "end_date": null,
-                  "expression": "I"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "时"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "Coda"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": "2026-09-29",
-                  "end_date": null,
-                  "expression": "I"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "时"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing."
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:96f0fd65186cbd08",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:47450b5f1d014a60",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:da93a60effb60694",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?",
-      "observed_at": 1622553000
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t2",
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
@@ -292,7 +59,108 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "film distribution and marketing"
+                  "text": "I just saw \"Coda\" at the Seattle International Film Festival today"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:7ddf7cd903bd17a0",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:8bac2442d9b0b207",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:2b2ee7c83a598464",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1622553060,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "film distribution",
+                  "marketing"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm also interested in learning more about film distribution and marketing. "
                 }
               },
               {
@@ -329,21 +197,26 @@
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
-                  "entity_id": "self"
+                  "unresolved_reference": "我"
                 },
-                "tags": [],
+                "tags": [
+                  "panel discussion",
+                  "SIFF",
+                  "film distribution",
+                  "marketing"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "The panel discussion I attended at SIFF was really informative."
+                  "text": "The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process. "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d3a153bcef657c65",
+          "request": "fnv1a64:d3b2f89604f88d7d",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -353,7 +226,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ff997192265a70fd",
+            "review_binding": "source-review-v3:7bab7275b5015c6b",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -361,7 +234,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -370,19 +243,7 @@
                 },
                 "current_user_quote": "I'm also interested in learning more about film distribution and marketing. The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process. Can you explain how independent films usually get distributed and marketed?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I'm also interested in learning more about film distribution and marketing.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "User expressed interest in learning more about the topic, not a general liking."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 1,
@@ -393,34 +254,42 @@
                   "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
-                  "subject": "supported",
+                  "subject": "insufficient",
                   "temporal": "supported",
-                  "value": "insufficient"
+                  "value": "supported"
                 },
                 "current_user_quote": "I'm also interested in learning more about film distribution and marketing. The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process. Can you explain how independent films usually get distributed and marketed?",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "The panel discussion I attended at SIFF was really informative",
+                    "turn_index": 0
+                  },
+                  {
+                    "quote": "I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing.",
+                    "turn_index": 1
+                  }
+                ],
                 "issues": [
                   {
-                    "check": "value",
+                    "check": "subject",
                     "evidence": [
                       {
-                        "quote": "The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process.",
+                        "quote": "The panel discussion I attended at SIFF was really informative",
                         "turn_index": 0
                       }
                     ],
-                    "field": "value.Text",
-                    "reason": "The value bundles a factual episode with a separate desire, so it does not represent a single episode fact."
+                    "field": "subject",
+                    "reason": "Subject is left as {\"Unresolved\":\"我\"} even though 我 is a listed alias of known entity self/用户本人; the first-person referent is unambiguous and should resolve to self rather than remain unresolved."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:c4a64c4c7e7d90e1",
+          "request": "fnv1a64:a5e073d5a89daacb",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm also interested in learning more about film distribution and marketing. The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process. Can you explain how independent films usually get distributed and marketed?",
-      "observed_at": 1622553060
+      "text": "I'm also interested in learning more about film distribution and marketing. The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process. Can you explain how independent films usually get distributed and marketed?"
     },
     {
       "expect": {
@@ -428,13 +297,14 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1622553120,
       "recorded": [
         {
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:ff8c3ad889360a3b",
+          "request": "fnv1a64:2627a35beffc3baf",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -444,15 +314,14 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:cc8bc1f7c1a8963f",
+            "review_binding": "source-review-v3:e3da8531f91835ce",
             "reviews": []
           },
-          "request": "fnv1a64:663ef4b5faa7e916",
+          "request": "fnv1a64:0f1d26c006bbe4fa",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'd like to know more about the role of film critics in the distribution and marketing process. How do they influence the success of a film, and what's the current state of film criticism in the age of social media and online reviews?",
-      "observed_at": 1622553120
+      "text": "I'd like to know more about the role of film critics in the distribution and marketing process. How do they influence the success of a film, and what's the current state of film criticism in the age of social media and online reviews?"
     },
     {
       "expect": {
@@ -460,6 +329,7 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1622553180,
       "recorded": [
         {
           "output": {
@@ -475,139 +345,14 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2026-09-29",
+                  "date": "2026-05-08",
                   "expression": "I",
                   "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
-                "predicate": "fact",
+                "predicate": "visited",
                 "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      ""
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [
-                      "role",
-                      "role"
-                    ],
-                    "companion_roles": [
-                      "family",
-                      "family"
-                    ],
-                    "country": null,
-                    "date": "2026-09-29",
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": "evening"
-                  },
-                  "domain": "travel"
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "visited"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films. And can you tell me more about how film festivals can help filomakers get their start, and what role they play in shaping the industry's future?"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:3d00ad4fbb3a6867",
-          "schema": "personal_memory_candidates_v1"
-        }
-      ],
-      "text": "I'd love to know more about the impact of film festivals on the careers of filmmakers and the industry as a whole. As someone who's attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films. Can you tell me more about how film festivals can help filmmakers get their start, and what role they play in shaping the industry's future?",
-      "observed_at": 1622553180
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t5",
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "film festival attendance"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "SIFF",
-                  "film festivals"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "As someone who's attended several festivals, including SIFF"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -628,32 +373,33 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "diversity",
-                  "inclusion",
-                  "film festivals"
+                  "film_festivals",
+                  "SIFF"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've seen firsthand the importance of showcasing diverse voices and stories."
+                  "text": "several festivals, including SIFF"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:3df97debaa339b4e",
+          "request": "fnv1a64:ff55b720f058295f",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I've seen firsthand how these events can launch careers and generate buzz around new films."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:84be31018fb08463",
+            "review_binding": "source-review-v3:49e5cfeaeef95c6e",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -668,45 +414,98 @@
                   "temporal": "supported",
                   "value": "supported"
                 },
-                "current_user_quote": "I'd like to know more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?",
-                "evidence": [
-                  {
-                    "quote": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories.",
-                    "turn_index": 0
-                  }
-                ],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'd like to know more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?",
-                "evidence": [
-                  {
-                    "quote": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories.",
-                    "turn_index": 0
-                  }
-                ],
+                "current_user_quote": "I'd love to know more about the impact of film festivals on the careers of filmmakers and the industry as a whole. As someone who's attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films. Can you tell me more about how film festivals can help filmmakers get their start, and what role they play in shaping the industry's future?",
+                "evidence": [],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:9cf4024d624e3417",
+          "request": "fnv1a64:8e469b8ec195a896",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'd like to know more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?",
-      "observed_at": 1622553240
+      "text": "I'd love to know more about the impact of film festivals on the careers of filmmakers and the industry as a whole. As someone who's attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films. Can you tell me more about how film festivals can help filmmakers get their start, and what role they play in shaping the industry's future?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1622553240,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "."
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2021-06-01",
+                  "expression": ".",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "visited",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "diversity",
+                      "inclusion"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [
+                      "seattle_international_film_festival"
+                    ],
+                    "companion_roles": [
+                      "family"
+                    ],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "travel"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "film_festivals",
+                  "diversity_inclusion"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've attended several festivals, including SIFF."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:8568b6c31a21a056",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "I'd like to know more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?"
     },
     {
       "expect": {
@@ -714,6 +513,7 @@
         "store": []
       },
       "id": "s1_t6",
+      "observed_at": 1622553300,
       "recorded": [
         {
           "output": {
@@ -731,7 +531,7 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "episode",
+                "memory_type": "fact",
                 "polarity": null,
                 "predicate": "visited",
                 "retention_tier": "long_term",
@@ -754,76 +554,34 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "film_festival"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "SIFF"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+                  "text": "several festivals, including SIFF"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:b34e7825cf438629",
+          "request": "fnv1a64:491c8e99e8843af1",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry."
+                "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry.",
+                "I've seen firsthand the importance of showcasing diverse voices and stories"
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d47a8ee9cdc88b40",
+            "review_binding": "source-review-v3:395755c43dc25aa2",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -841,38 +599,21 @@
                 "current_user_quote": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?",
-                "evidence": [],
-                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:b61524e3d12543ef",
+          "request": "fnv1a64:c1e2cb74a96441d9",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?",
-      "observed_at": 1622553300
+      "text": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry. As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories. Can you tell me more about how festivals are working to increase representation and opportunities for underrepresented groups?"
     }
   ],
   "origin": "LongMemEval oracle gpt4_6dc9b45b (temporal-reasoning); session dates ['2021/06/01 (Tue) 21:10'], asked 2021/10/02 (Sat) 09:44",
   "questions": [
     {
       "after": 6,
+      "at": 1633139040,
       "context": [],
       "expect": {
         "answer": [
@@ -900,11 +641,10 @@
             "candidate_index": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:16578bb5988fdd92",
+          "request": "fnv1a64:405edf2645975f1b",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1633139040
+      ]
     }
   ]
 }
