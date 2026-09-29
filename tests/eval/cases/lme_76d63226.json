@@ -8,6 +8,7 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1684834680,
       "recorded": [
         {
           "output": {
@@ -97,8 +98,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm considering upgrading my old laptop, can you tell me the key differences between a MacBook Air and a Lenovo ThinkPad?",
-      "observed_at": 1684834680
+      "text": "I'm considering upgrading my old laptop, can you tell me the key differences between a MacBook Air and a Lenovo ThinkPad?"
     },
     {
       "expect": {
@@ -106,6 +106,7 @@
         "store": []
       },
       "id": "s1_t2",
+      "observed_at": 1684834740,
       "recorded": [
         {
           "output": {
@@ -193,8 +194,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm also thinking of mounting my new TV on the wall, but I'm worried about the cables being visible. Do you have any suggestions on how to hide them?",
-      "observed_at": 1684834740
+      "text": "I'm also thinking of mounting my new TV on the wall, but I'm worried about the cables being visible. Do you have any suggestions on how to hide them?"
     },
     {
       "expect": {
@@ -202,6 +202,7 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1684834800,
       "recorded": [
         {
           "output": {
@@ -476,7 +477,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:59425ab631cac488",
+            "review_binding": "source-review-v3:2520ce346bed38f1",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -485,7 +486,7 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "supported",
+                  "scope": "insufficient",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
@@ -493,7 +494,19 @@
                 },
                 "current_user_quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions[0].Time.Date",
+                    "reason": "Candidate limits ownership to 2026-09-26, but the user gave no such date or condition for owning the TV."
+                  }
+                ]
               },
               {
                 "candidate_index": 1,
@@ -505,12 +518,24 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "supported",
+                  "temporal": "insufficient",
                   "value": "supported"
                 },
                 "current_user_quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal_context.proposed_temporal_date",
+                    "reason": "Candidate proposes 2026-09-26 for the setup date, but the user said only on Saturday relative to current date 2023-05-23; 2026-09-26 is not justified."
+                  }
+                ]
               },
               {
                 "candidate_index": 2,
@@ -537,7 +562,7 @@
                       }
                     ],
                     "field": "memory_type",
-                    "reason": "USER reported a completed action/episode (used cable ties and cable clips), not a preference or disposition; memory_type=Preference is not established by the USER words, whose content is a factual account."
+                    "reason": "Candidate labels this Preference, but the sentence reports an action or method used, not a preference."
                   }
                 ]
               },
@@ -545,14 +570,14 @@
                 "candidate_index": 3,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "insufficient",
                   "polarity": "supported",
                   "relation": "insufficient",
-                  "scope": "supported",
-                  "source": "supported",
+                  "scope": "insufficient",
+                  "source": "insufficient",
                   "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
+                  "temporal": "insufficient",
+                  "value": "insufficient"
                 },
                 "current_user_quote": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
                 "evidence": [],
@@ -566,15 +591,70 @@
                       }
                     ],
                     "field": "predicate",
-                    "reason": "USER asserted only the appearance/condition of the setup ('looks really clean and neat now'), an evaluation of the result; no liking relation or liked object is asserted, so predicate 'likes' with polarity Positive is inferred rather than stated."
+                    "reason": "Predicate likes is not asserted; the user describes appearance, not liking."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "It looks really clean and neat now.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "For predicate likes, value should identify the liked object; the text is an observation sentence, not an object."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "It looks really clean and neat now.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope.conditions[0].Time.Date",
+                    "reason": "Candidate adds condition 2026-09-26; the user said now and gave no such date."
+                  },
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "It looks really clean and neat now.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal_context.proposed_temporal_date",
+                    "reason": "Proposed 2026-09-26 is not supported by now or the current date."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "It looks really clean and neat now.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "Current turn does not assert a preference or liking; it only describes the appearance."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "It looks really clean and neat now.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "Memory type Preference is not justified; the sentence is an observation or evaluation, not a stated preference."
                   }
                 ]
               },
               {
                 "candidate_index": 4,
                 "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
+                  "intent": "insufficient",
+                  "metadata": "insufficient",
                   "polarity": "supported",
                   "relation": "insufficient",
                   "scope": "supported",
@@ -595,7 +675,18 @@
                       }
                     ],
                     "field": "predicate",
-                    "reason": "The USER only names the two services as ones to look beyond when asking for recommendations ('besides Netflix and Amazon Prime Video'); no using/subscribing action is asserted, so predicate 'uses' is an inference from a question."
+                    "reason": "The user asks for recommendations besides Netflix and Amazon Prime Video; they do not assert using those services."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "Candidate marks Assert, but the current turn is a question asking for recommendations, not an assertion."
                   },
                   {
                     "check": "source",
@@ -606,18 +697,28 @@
                       }
                     ],
                     "field": "source",
-                    "reason": "The current turn is a request for recommendations; the mention of Netflix and Amazon Prime Video is a presupposition inside that question, not a current USER assertion of use, so source=UserStatement is not justified."
+                    "reason": "A question mentioning services is not a current USER assertion that the user uses them."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "Memory type Fact is not supported because the current turn is a question, not a factual assertion."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:6ee3a69dc959a344",
+          "request": "fnv1a64:0cec314ed394c920",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?",
-      "observed_at": 1684834800
+      "text": "I actually just set up my new Samsung 55-inch 4K smart TV on Saturday, and I spent a lot of time hiding the cables behind the TV. I used a combination of cable ties and cable clips to keep everything organized and out of sight. It looks really clean and neat now. By the way, do you have any recommendations for good streaming services besides Netflix and Amazon Prime Video?"
     },
     {
       "expect": {
@@ -625,6 +726,7 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1684834860,
       "recorded": [
         {
           "output": {
@@ -712,8 +814,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm a big fan of sci-fi and fantasy shows. Do you think any of these services have a good selection of that type of content?",
-      "observed_at": 1684834860
+      "text": "I'm a big fan of sci-fi and fantasy shows. Do you think any of these services have a good selection of that type of content?"
     },
     {
       "expect": {
@@ -721,6 +822,7 @@
         "store": []
       },
       "id": "s1_t5",
+      "observed_at": 1684834920,
       "recorded": [
         {
           "output": {
@@ -744,14 +846,14 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I think I'll check out Disney+ and Amazon Prime Video for their sci-fi and fantasy content. I've heard great things about The Mandalorian and The Expanse. Do you have any recommendations for sci-fi or fantasy books that I might enjoy?",
-      "observed_at": 1684834920
+      "text": "I think I'll check out Disney+ and Amazon Prime Video for their sci-fi and fantasy content. I've heard great things about The Mandalorian and The Expanse. Do you have any recommendations for sci-fi or fantasy books that I might enjoy?"
     }
   ],
   "origin": "LongMemEval oracle 76d63226 (single-session-user); session dates ['2023/05/23 (Tue) 17:38'], asked 2023/05/24 (Wed) 19:09",
   "questions": [
     {
       "after": 5,
+      "at": 1684926540,
       "context": [],
       "expect": {
         "answer": [
@@ -782,8 +884,7 @@
           "request": "fnv1a64:55da3297de66d912",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1684926540
+      ]
     }
   ]
 }

@@ -8,6 +8,7 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1685202840,
       "recorded": [
         {
           "output": {
@@ -31,8 +32,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm trying to get better at packing for my trips. Can you help me come up with a list of essentials to pack for a 3-day business trip?",
-      "observed_at": 1685202840
+      "text": "I'm trying to get better at packing for my trips. Can you help me come up with a list of essentials to pack for a 3-day business trip?"
     },
     {
       "expect": {
@@ -40,6 +40,7 @@
         "store": []
       },
       "id": "s1_t2",
+      "observed_at": 1685202900,
       "recorded": [
         {
           "output": {
@@ -63,8 +64,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm also trying to figure out what to pack in my carry-on versus my checked luggage. Can you give me some general guidelines on that?",
-      "observed_at": 1685202900
+      "text": "I'm also trying to figure out what to pack in my carry-on versus my checked luggage. Can you give me some general guidelines on that?"
     },
     {
       "expect": {
@@ -72,6 +72,7 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1685202960,
       "recorded": [
         {
           "output": {
@@ -95,8 +96,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm still trying to figure out how to pack clothes more strategically. Do you have any tips on how to determine what to pack for a trip, and how many outfits I should aim to create with the clothes I bring?",
-      "observed_at": 1685202960
+      "text": "I'm still trying to figure out how to pack clothes more strategically. Do you have any tips on how to determine what to pack for a trip, and how many outfits I should aim to create with the clothes I bring?"
     },
     {
       "expect": {
@@ -104,6 +104,7 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1685203020,
       "recorded": [
         {
           "output": {
@@ -264,13 +265,11 @@
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I guess I need to work on packing more essentials and fewer \"just in case\" items."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:a702b1b218935e38",
+            "review_binding": "source-review-v3:4d51dcc94f435d30",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -303,7 +302,12 @@
                   "value": "supported"
                 },
                 "current_user_quote": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items.",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "on my last trip to Costa Rica",
+                    "turn_index": 0
+                  }
+                ],
                 "issues": [
                   {
                     "check": "scope",
@@ -313,8 +317,8 @@
                         "turn_index": 0
                       }
                     ],
-                    "field": "scope",
-                    "reason": "Scope encodes Location Country as CG (Congo), but the USER said Costa Rica; this country code is contradicted."
+                    "field": "scope.conditions[0].Location.Country",
+                    "reason": "Scope encodes country code CG, but USER says Costa Rica (CR); the location qualifier is wrong."
                   }
                 ]
               },
@@ -325,7 +329,7 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "contradicted",
+                  "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
@@ -333,28 +337,15 @@
                 },
                 "current_user_quote": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "on my last trip to Costa Rica",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope",
-                    "reason": "Scope encodes Location Country as CG (Congo), but the USER said Costa Rica; this country code is contradicted."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:58cdb14e2befcc1f",
+          "request": "fnv1a64:a3b5435c337d765a",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items.",
-      "observed_at": 1685203020
+      "text": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items."
     },
     {
       "expect": {
@@ -362,6 +353,7 @@
         "store": []
       },
       "id": "s1_t5",
+      "observed_at": 1685203080,
       "recorded": [
         {
           "output": {
@@ -721,14 +713,14 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I think I'm starting to get the hang of this packing thing! Thanks for the advice. I've also been trying to get better at packing my toiletries more efficiently. I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized.",
-      "observed_at": 1685203080
+      "text": "I think I'm starting to get the hang of this packing thing! Thanks for the advice. I've also been trying to get better at packing my toiletries more efficiently. I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized."
     }
   ],
   "origin": "LongMemEval oracle af8d2e46 (single-session-user); session dates ['2023/05/27 (Sat) 23:54'], asked 2023/05/30 (Tue) 20:28",
   "questions": [
     {
       "after": 5,
+      "at": 1685449680,
       "context": [],
       "expect": {
         "answer": [
@@ -759,8 +751,7 @@
           "request": "fnv1a64:b868e528ba4b7de1",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1685449680
+      ]
     }
   ]
 }

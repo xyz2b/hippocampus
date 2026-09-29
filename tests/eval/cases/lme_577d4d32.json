@@ -8,6 +8,7 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1685336940,
       "recorded": [
         {
           "output": {
@@ -31,8 +32,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm trying to find some new book recommendations. Can you suggest some popular fiction novels that were released in the past year?",
-      "observed_at": 1685336940
+      "text": "I'm trying to find some new book recommendations. Can you suggest some popular fiction novels that were released in the past year?"
     },
     {
       "expect": {
@@ -40,6 +40,7 @@
         "store": []
       },
       "id": "s1_t2",
+      "observed_at": 1685337000,
       "recorded": [
         {
           "output": {
@@ -127,8 +128,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm really interested in the literary fiction section. I've heard great things about The Seven Husbands of Evelyn Hugo. Can you tell me more about it?",
-      "observed_at": 1685337000
+      "text": "I'm really interested in the literary fiction section. I've heard great things about The Seven Husbands of Evelyn Hugo. Can you tell me more about it?"
     },
     {
       "expect": {
@@ -136,6 +136,7 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1685337060,
       "recorded": [
         {
           "output": {
@@ -197,13 +198,11 @@
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "It's really helped me relax and not think about work during my personal time."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d72aff4f5615a94b",
+            "review_binding": "source-review-v3:a0d844738212cd9d",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -224,12 +223,11 @@
               }
             ]
           },
-          "request": "fnv1a64:40a78e55a376f964",
+          "request": "fnv1a64:7f4a159a38c2b0f9",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I've heard that this book is a great choice for a evening read, something to unwind with after a long day. Speaking of unwinding, I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life. It's really helped me relax and not think about work during my personal time. Do you have any recommendations for some relaxing evening activities that I could incorporate into my routine?",
-      "observed_at": 1685337060
+      "text": "I've heard that this book is a great choice for a evening read, something to unwind with after a long day. Speaking of unwinding, I've been trying to establish a better evening routine, stopping work emails and messages by 7 pm to separate my work and personal life. It's really helped me relax and not think about work during my personal time. Do you have any recommendations for some relaxing evening activities that I could incorporate into my routine?"
     },
     {
       "expect": {
@@ -237,6 +235,7 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1685337120,
       "recorded": [
         {
           "output": {
@@ -480,8 +479,7 @@
           "schema": "personal_memory_candidates_v1"
         }
       ],
-      "text": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep.",
-      "observed_at": 1685337120
+      "text": "I've been trying out some of these activities already, like reading and taking a walk around my neighborhood. I've also started practicing guitar and doing some light stretching and meditation before bed. It's been really helpful in calming my mind and preparing my body for sleep."
     },
     {
       "expect": {
@@ -489,6 +487,7 @@
         "store": []
       },
       "id": "s1_t5",
+      "observed_at": 1685337180,
       "recorded": [
         {
           "output": {
@@ -977,14 +976,14 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire.",
-      "observed_at": 1685337180
+      "text": "I've found that playing guitar has actually helped me develop better hand-eye coordination and fine motor skills, which is really cool. And yeah, it's definitely helped me become more patient and focused, especially when I'm trying to learn a new song or technique. It's a great way to challenge myself and feel a sense of accomplishment when I finally nail a difficult part.\n\nAs for meditation, I've been using an app that offers guided sessions, and I've found the body scan meditation to be really helpful. It's great for relaxing my muscles and calming my mind before bed. I've also been trying to focus on my breath more during the day, especially when I'm feeling stressed or overwhelmed. It's amazing how something as simple as deep breathing can make such a big difference in how I feel.\n\nDo you have any recommendations for some good guitar songs for beginners? I'm looking to learn some new songs to add to my repertoire."
     }
   ],
   "origin": "LongMemEval oracle 577d4d32 (single-session-user); session dates ['2023/05/29 (Mon) 13:09'], asked 2023/05/30 (Tue) 12:46",
   "questions": [
     {
       "after": 5,
+      "at": 1685421960,
       "context": [],
       "expect": {
         "answer": [
@@ -1015,8 +1014,7 @@
           "request": "fnv1a64:89030d2c6615039c",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1685421960
+      ]
     }
   ]
 }
