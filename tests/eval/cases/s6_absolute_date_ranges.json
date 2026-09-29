@@ -93,6 +93,50 @@
             },
             "total_tokens": 5470
           }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:03164e231aa44163",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:3d39cb6b7d4e6056",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2527,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6454,
+            "output_tokens_details": {
+              "reasoning_tokens": 6304
+            },
+            "total_tokens": 8981
+          }
         }
       ],
       "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
@@ -238,18 +282,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:f372e7cfbee961e8",
+          "request": "fnv1a64:a5884f097be385a9",
           "schema": "personal_memory_answer_v1",
           "usage": {
             "input_tokens": 652,
             "input_tokens_details": {
-              "cached_tokens": 384
+              "cached_tokens": 0
             },
-            "output_tokens": 336,
+            "output_tokens": 152,
             "output_tokens_details": {
-              "reasoning_tokens": 308
+              "reasoning_tokens": 123
             },
-            "total_tokens": 988
+            "total_tokens": 804
           }
         }
       ]
@@ -306,18 +350,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:4431a1fc61ccd351",
+          "request": "fnv1a64:84b83573a4254060",
           "schema": "personal_memory_answer_v1",
           "usage": {
             "input_tokens": 652,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 247,
+            "output_tokens": 167,
             "output_tokens_details": {
-              "reasoning_tokens": 218
+              "reasoning_tokens": 138
             },
-            "total_tokens": 899
+            "total_tokens": 819
           }
         }
       ]
@@ -369,18 +413,18 @@
             "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:9cb3bcc5e7ca6053",
+          "request": "fnv1a64:7eecd69ab5cbc820",
           "schema": "personal_memory_answer_v1",
           "usage": {
             "input_tokens": 652,
             "input_tokens_details": {
-              "cached_tokens": 384
+              "cached_tokens": 0
             },
-            "output_tokens": 145,
+            "output_tokens": 96,
             "output_tokens_details": {
-              "reasoning_tokens": 117
+              "reasoning_tokens": 68
             },
-            "total_tokens": 797
+            "total_tokens": 748
           }
         }
       ]
