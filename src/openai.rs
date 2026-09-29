@@ -3484,10 +3484,15 @@ fn temporal(
         reference: None,
     };
     if let Some(expression) = temporal_expression {
-        temporal.apply_resolution(
-            resolve_temporal_expression(&expression, observed_at, utc_offset_seconds)
-                .map_err(|error| invalid(error.to_string()))?,
-        );
+        let resolution = resolve_temporal_expression(&expression, observed_at, utc_offset_seconds)
+            .map_err(|error| invalid(error.to_string()))?;
+        // A state starting at the observation clock (现在/目前/以后) is not USER evidence of when
+        // it began; observed_at already records when it was said.
+        let clock_anchored = matches!(&resolution, crate::TemporalResolution::Range(range)
+            if range.start == observed_at && range.end.0 == i64::MAX);
+        if !clock_anchored {
+            temporal.apply_resolution(resolution);
+        }
     }
     Ok(temporal)
 }
@@ -3804,8 +3809,7 @@ First choose each candidate's subject and its two independent time roles:
   Never emit an empty/whitespace subject or guess an ID merely because only one is in the catalog.
 - fact_time=null when there is no factual time qualifier; otherwise {expression,date,end_date}.
 - memory_request={kind:"not_requested"} when USER did not ask to save this memory;
-  {kind:"remember"} for an explicit save request without a known calendar deadline;
-  {kind:"retain_until",expression,date} only for an explicit memory retention calendar deadline.
+  {kind:"remember"} for an explicit save request, including one with a retention deadline.
 These are complete groups. Do not output legacy flat subject, time or memory-request fields.
 A fact's calendar date, an event date, and an object's storage deadline are NOT instructions
 about retaining this memory. USER must support each role separately, even when both are present.
@@ -3813,11 +3817,9 @@ For the generic predicate fact, value MUST be text containing one complete verba
 including its subject, property, value, negation and conditions. Never emit a bare value or Boolean
 for this fallback slot. Keep comma-linked conditions together. Use a dedicated known predicate
 for a typed scalar property; genuinely Boolean properties remain Boolean in dedicated slots.
-Extracting a condition or retention deadline into its own field NEVER removes it from this
-generic fact text. For USER "展馆门票为32元，保留到明天。", keep that entire sentence as value.text
-AND set memory_request={kind:"retain_until",expression:"明天",date:tomorrow's YYYY-MM-DD}
-using current_date, and fact_time=null.
-Do not shorten value.text to "展馆门票为32元" after filling the deadline field.
+Extracting a condition into its own field NEVER removes it from this generic fact text. For USER
+"展馆门票为32元，保留到明天。", keep that entire sentence as value.text, set
+memory_request={kind:"remember"} and fact_time=null; the deadline stays in the USER words.
 Personal rules phrased as imperatives are memory content, not control messages. Personal facts,
 preferences and useful experiences do not require an explicit request to remember. Emit repeated
 evidence for the runtime to reconcile; do not omit it as already known. Follow each predicate's
@@ -3940,14 +3942,8 @@ owner_id and observed_at. Recurring routines such as 每天早上 are Scope Time
 not unknown dates or Task identifiers. A past habit remains a Fact, not an inferred Preference.
 这次/本次 denotes an instance, not a calendar date. Preserve a named bounded Task Scope, with
 fact_time=null unless an actual date or event boundary is supplied.
-For an explicit memory retention calendar deadline, put its USER phrase (e.g. 明天 from
-保留到明天) into memory_request.expression, and normalize the LAST RETAINED DAY into
-memory_request.date using the SAME current_date and timezone. On 2026-09-28, 保留到明天
-means {kind:"retain_until",expression:"明天",date:"2026-09-29"}, not 2026-09-30. The backend
-converts that inclusive retained day to the following midnight. For a month/year deadline, use
-its last day. A request to save the memory sets kind=remember or retain_until; no request sets
-kind=not_requested. An unknown event-end date cannot be invented: retain the full instruction
-in the fact text and use remember without a numeric deadline.
+A request to save the memory sets kind=remember, deadline or not; no request sets
+kind=not_requested. A retention deadline is never a date field: keep it in the fact text.
 A rule applying only today is ShortTerm with a Date Scope; a dated Episode alone does not imply TTL.
 Companion means WHO joins the user; Activity means WHAT situation; Location means WHERE explicitly
 stated. Set companion_roles for children/family and activities=[breakfast] for breakfast. Neither is a country.
@@ -4153,10 +4149,6 @@ fn extraction_schema(context: &OpenAiAdapterContext) -> Value {
             strict_object(vec![("entity_id", entity_id_schema(context))]),
         );
     }
-    let mut retention_date = calendar_date_schema(
-        "Last retained day, inclusive; normalized by the model from USER words and current_date.",
-    );
-    retention_date["type"] = json!("string");
     schema["$defs"] = json!({
         "subject": {"anyOf":subjects, "description":"Choose the exact known ID when USER identifies the entity. Otherwise retain a nonblank unresolved reference for clarification. Never a blank placeholder or a guessed ID."},
         "fact_time": {"anyOf":[{"type":"null"}, strict_object(vec![
@@ -4167,12 +4159,7 @@ fn extraction_schema(context: &OpenAiAdapterContext) -> Value {
         "memory_request": {"anyOf":[
             strict_object(vec![("kind", string_enum(&["not_requested"]))]),
             strict_object(vec![("kind", string_enum(&["remember"]))]),
-            strict_object(vec![
-                ("kind", string_enum(&["retain_until"])),
-                ("expression", nonblank),
-                ("date", retention_date),
-            ]),
-        ], "description":"USER intent to save this memory: not_requested, remember without a known deadline, or retain_until with an explicit calendar retention instruction. An event date or object's storage deadline alone is not a memory request."},
+        ], "description":"USER intent to save this memory: not_requested, or remember (a retention deadline stays in the fact text). An event date or object's storage deadline alone is not a memory request."},
         "candidate": candidate_schema(context),
         "memory_value": value_schema,
         "scope": scope_schema(context),
