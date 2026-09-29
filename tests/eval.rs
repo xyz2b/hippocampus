@@ -1104,7 +1104,7 @@ fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blockin
             let Replay { cases, live, .. } = &mut *guard;
             let live = live.as_mut().unwrap();
             live.retries += retries;
-            let replay = cases.entry(case).or_default();
+            let replay = cases.entry(case.clone()).or_default();
             match forwarded {
                 Ok((status, body)) => {
                     let envelope = serde_json::from_str::<Value>(&body).unwrap_or_default();
@@ -1126,9 +1126,27 @@ fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blockin
                             replay.captured = true;
                         }
                         None => {
+                            // Keep what an unfinished (e.g. runaway) output said, to see why.
+                            let partial = partial_text(&envelope);
+                            let saved = std::env::temp_dir().join(format!(
+                                "eval-incomplete-{case}-{}.txt",
+                                std::process::id()
+                            ));
+                            let _ = std::fs::write(&saved, &partial);
+                            let tail: String = partial
+                                .chars()
+                                .rev()
+                                .take(300)
+                                .collect::<Vec<_>>()
+                                .into_iter()
+                                .rev()
+                                .collect();
                             replay.missed = Some(format!(
-                                "{schema_name}（真实请求未完成 {status} status={} {}）",
-                                envelope["status"], envelope["incomplete_details"]
+                                "{schema_name}（真实请求未完成 {status} status={} {}；已生成 {} 字符，全文 {}，结尾：{tail:?}）",
+                                envelope["status"],
+                                envelope["incomplete_details"],
+                                partial.chars().count(),
+                                saved.display()
                             ))
                         }
                     }
@@ -1250,14 +1268,20 @@ fn output_text(envelope: &Value) -> Option<String> {
     if envelope["status"] != "completed" {
         return None;
     }
-    let text: String = envelope["output"]
-        .as_array()?
-        .iter()
+    let text = partial_text(envelope);
+    (!text.is_empty()).then_some(text)
+}
+
+/// All output text in a Responses envelope, finished or not.
+fn partial_text(envelope: &Value) -> String {
+    envelope["output"]
+        .as_array()
+        .into_iter()
+        .flatten()
         .flat_map(|item| item["content"].as_array().into_iter().flatten())
         .filter(|part| part["type"] == "output_text")
         .filter_map(|part| part["text"].as_str())
-        .collect();
-    (!text.is_empty()).then_some(text)
+        .collect()
 }
 
 struct TempDb(std::path::PathBuf);
