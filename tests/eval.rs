@@ -255,6 +255,253 @@ fn forward_retries_rate_limits_and_dropped_connections() {
     assert_eq!(retries, 2);
 }
 
+/// Offline, no model calls: re-validates every recorded extraction and review output under the
+/// current code, so a validation change is judged on all real outputs instead of a re-record.
+/// Candidates are decoded one by one, so each keeps its own rejection reason. Compare two code
+/// versions by diffing the output: `cargo test --test eval validation_corpus -- --nocapture`.
+#[test]
+fn validation_corpus() {
+    let config = ChatConfig::default();
+    let owner = UserId::from(OWNER);
+    let mut rejected: BTreeMap<String, usize> = BTreeMap::new();
+    let mut reviews: BTreeMap<String, usize> = BTreeMap::new();
+    let (mut kept_total, mut candidate_total) = (0, 0);
+    let mut messages: BTreeMap<&str, usize> = BTreeMap::new();
+    let mut details = Vec::new();
+    // What accepted candidates would store, not just whether they pass.
+    let mut stored: BTreeMap<&str, usize> = BTreeMap::new();
+    let mut paths: Vec<_> =
+        std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval/cases"))
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+            .collect();
+    paths.sort();
+    // Variable parts (line/column, unknown ids) would split one cause into many rows.
+    let reason = |error: &dyn std::fmt::Display| {
+        let text = error.to_string();
+        let text = text.split(" at line ").next().unwrap_or(&text).to_owned();
+        match text.split_once("unknown companion entity id ") {
+            Some((head, _)) => format!("{head}unknown companion entity id …"),
+            None => text,
+        }
+    };
+    for path in &paths {
+        let case: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        let case_id = case["id"].as_str().unwrap();
+        let mut entities: Vec<Entity> = case["entities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entity| {
+                let mut entity = entity.clone();
+                entity["owner_id"] = json!(OWNER);
+                // memory_entity_upsert's input form: a bare "Other" is Other("Other").
+                if entity["entity_type"] == "Other" {
+                    entity["entity_type"] = json!({"Other":"Other"});
+                }
+                serde_json::from_value(entity).unwrap()
+            })
+            .collect();
+        // ChatMemoryService registers the user as "self" before any turn.
+        entities.push(Entity {
+            id: EntityId::from("self"),
+            owner_id: owner.clone(),
+            entity_type: EntityType::Person,
+            canonical_name: "用户本人".into(),
+            aliases: vec![
+                "我".into(),
+                "自己".into(),
+                "本人".into(),
+                "I".into(),
+                "me".into(),
+            ],
+        });
+        let all = case["messages"].as_array().unwrap();
+        for (index, message) in all.iter().enumerate() {
+            let recorded = message["recorded"].as_array().cloned().unwrap_or_default();
+            let Some(extraction) = recorded
+                .iter()
+                .find(|r| r["schema"] == "personal_memory_candidates_v1")
+            else {
+                continue;
+            };
+            let id = message["id"].as_str().unwrap();
+            let text = message["text"].as_str().unwrap();
+            let task = message.get("task_id");
+            let history: Vec<&str> = all[..index]
+                .iter()
+                .filter(|earlier| earlier.get("task_id") == task)
+                .filter_map(|earlier| earlier["text"].as_str())
+                .collect();
+            let now = message["observed_at"]
+                .as_i64()
+                .unwrap_or(CLOCK + 60 * index as i64);
+            let mut context =
+                OpenAiAdapterContext::new(owner.clone(), entities.clone(), Timestamp(now))
+                    .unwrap()
+                    .with_utc_offset_seconds(config.utc_offset_seconds)
+                    .unwrap()
+                    .with_semantic_catalog(config.predicates.clone(), config.domains.clone())
+                    .unwrap()
+                    .with_predicate_value_kinds(config.value_kinds.clone())
+                    .unwrap()
+                    .with_predicate_memory_types(config.memory_types.clone())
+                    .unwrap();
+            if let Some(task) = task.and_then(Value::as_str) {
+                context = context.with_task_id(TaskId(task.to_owned())).unwrap();
+            }
+            let decode = |output: &str| {
+                context.decode_extraction(output, text, &SessionId::from("s"), &TurnId::from(id))
+            };
+            let output = match &extraction["output"] {
+                Value::String(text) => text.clone(),
+                other => other.to_string(),
+            };
+            let raw: Value = match serde_json::from_str(&output) {
+                Ok(raw) => raw,
+                Err(error) => {
+                    *rejected
+                        .entry(format!("输出不是 JSON：{}", reason(&error)))
+                        .or_default() += 1;
+                    *messages.entry("输出无法解析").or_default() += 1;
+                    details.push(format!("DETAIL {case_id}/{id}: 输出无法解析"));
+                    continue;
+                }
+            };
+            let raw_candidates = raw["candidates"].as_array().cloned().unwrap_or_default();
+            // Whole-output checks (omission_reason, wire schema) apply before any candidate.
+            if let Err(error) = decode(&output)
+                && !raw_candidates.is_empty()
+                && raw_candidates.iter().all(|candidate| {
+                    decode(&json!({"omission_reason":null,"candidates":[candidate]}).to_string())
+                        .is_ok()
+                })
+            {
+                *rejected
+                    .entry(format!("整条输出：{}", reason(&error)))
+                    .or_default() += 1;
+            }
+            let mut kept = Vec::new();
+            for candidate in &raw_candidates {
+                candidate_total += 1;
+                match decode(&json!({"omission_reason":null,"candidates":[candidate]}).to_string())
+                {
+                    Ok(mut one) => kept.append(&mut one),
+                    Err(error) => *rejected.entry(reason(&error)).or_default() += 1,
+                }
+            }
+            kept_total += kept.len();
+            for candidate in &kept {
+                for (label, present) in [
+                    ("保留期限", candidate.temporal.expires_at.is_some()),
+                    (
+                        "期限待核标记",
+                        candidate
+                            .tags
+                            .iter()
+                            .any(|t| t == "retention_deadline_unverified"),
+                    ),
+                    ("要求记住", candidate.explicit_memory_request),
+                    (
+                        "事实起止时间",
+                        candidate.temporal.valid_from.is_some()
+                            || candidate.temporal.valid_to.is_some(),
+                    ),
+                    ("未解析的时间原文", candidate.temporal.reference.is_some()),
+                ] {
+                    *stored.entry(label).or_default() += usize::from(present);
+                }
+            }
+            let verdict = if raw_candidates.is_empty() {
+                "无候选"
+            } else if kept.is_empty() {
+                "候选全部被拒"
+            } else {
+                "有候选通过"
+            };
+            *messages.entry(verdict).or_default() += 1;
+            let review = recorded
+                .iter()
+                .find(|r| r["schema"] == "personal_memory_source_support_v1");
+            let review_verdict = match review {
+                None => "无审核录制".to_owned(),
+                Some(review)
+                    if review["output"]["reviews"].as_array().map(Vec::len) != Some(kept.len()) =>
+                {
+                    "候选集已变化，审核录制不适用".to_owned()
+                }
+                Some(review) => {
+                    let mut output = review["output"].clone();
+                    output["review_binding"] =
+                        json!(context.source_support_binding(&kept, text, &history));
+                    match context.verify_source_support(
+                        kept.clone(),
+                        text,
+                        &history,
+                        &output.to_string(),
+                    ) {
+                        Ok(verified) => format!(
+                            "通过（{}/{} 个候选获得支持）",
+                            verified.iter().filter(|c| c.source_support_valid()).count(),
+                            verified.len()
+                        ),
+                        Err(OpenAiAdapterError::SourceCoverageIncomplete) => {
+                            "覆盖缺口（生产会保留已获支持的候选）".to_owned()
+                        }
+                        Err(error) => format!("被拒：{}", reason(&error)),
+                    }
+                }
+            };
+            let bucket = review_verdict.split('（').next().unwrap().to_owned();
+            *reviews.entry(bucket).or_default() += 1;
+            let times: Vec<String> = kept
+                .iter()
+                .map(|c| {
+                    format!(
+                        "{}{}{}",
+                        if c.temporal.expires_at.is_some() {
+                            "期限"
+                        } else {
+                            ""
+                        },
+                        if c.explicit_memory_request {
+                            "记住"
+                        } else {
+                            ""
+                        },
+                        if c.temporal.valid_from.is_some() || c.temporal.reference.is_some() {
+                            "时间"
+                        } else {
+                            ""
+                        }
+                    )
+                })
+                .collect();
+            details.push(format!(
+                "DETAIL {case_id}/{id}: 候选 {}/{} 通过 {times:?}；审核 {review_verdict}",
+                kept.len(),
+                raw_candidates.len()
+            ));
+        }
+    }
+    println!(
+        "\n校验语料：{} 个用例，提取候选 {candidate_total} 个，通过 {kept_total} 个",
+        paths.len()
+    );
+    println!("消息：{messages:?}");
+    println!("审核：{reviews:?}");
+    println!("通过的候选带有：{stored:?}");
+    let mut rejected: Vec<_> = rejected.into_iter().collect();
+    rejected.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    for (reason, count) in rejected {
+        println!("REJECT {count:>4}  {reason}");
+    }
+    for detail in details {
+        println!("{detail}");
+    }
+}
+
 /// Returns newly recorded outputs to write back: (list, index, recorded).
 fn run_case(
     case: &Value,

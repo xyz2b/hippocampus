@@ -1442,7 +1442,8 @@ impl OpenAiAdapterContext {
                 let quote = candidate.evidence.first().map_or("", |e| e.quote.as_str());
                 let (expression, date, end_date) = kept_fact_time(
                     raw.temporal_expression, raw.temporal_date, raw.temporal_end_date, quote);
-                let expiry = kept_expiry(raw.expiry_expression.as_deref()).0.map(str::to_owned);
+                let expiry =
+                    kept_expiry(raw.expiry_expression.as_deref(), quote).0.map(str::to_owned);
                 let expiry_date = expiry.as_ref().and(raw.expiry_date);
                 json!({"candidate_index":index,
                     "proposed_temporal_expression":expression,
@@ -2407,7 +2408,8 @@ impl RawCandidate {
             &evidence.quote,
         );
         if self.expiry_expression.is_some() {
-            let (kept, unverified) = kept_expiry(self.expiry_expression.as_deref());
+            let (kept, unverified) =
+                kept_expiry(self.expiry_expression.as_deref(), &evidence.quote);
             let kept = kept.map(str::to_owned);
             if kept.is_none() {
                 self.expiry_date = None;
@@ -3512,9 +3514,17 @@ fn expiry_deadline(
     }
 }
 
+/// Time phrases are copied from the USER, never written by the model: case and spacing aside,
+/// the phrase must appear in the quote.
+fn in_quote(expression: &str, quote: &str) -> bool {
+    let squash = |text: &str| text.split_whitespace().collect::<String>().to_lowercase();
+    let expression = squash(expression);
+    !expression.is_empty() && squash(quote).contains(&expression)
+}
+
 /// The fact time the runtime keeps from a model proposal. A "time expression" with no time
-/// word is filler for a required field and is dropped with its dates; the runtime copies the
-/// USER's only absolute date or range instead when the model's dates restate it. Dates on a
+/// word, or one the USER never wrote, is filler and is dropped with its dates; the runtime
+/// copies the USER's only absolute date or range instead when the model's dates restate it. Dates on a
 /// phrase the runtime cannot check are dropped, keeping the USER's words; the USER's calendar
 /// dates inside the phrase replace it so the model dates are still verified.
 fn kept_fact_time(
@@ -3525,7 +3535,9 @@ fn kept_fact_time(
 ) -> (Option<String>, Option<String>, Option<String>) {
     match expression {
         None => return (None, date, end_date),
-        Some(expression) if crate::temporal::mentions_time(&expression) => {
+        Some(expression)
+            if crate::temporal::mentions_time(&expression) && in_quote(&expression, quote) =>
+        {
             if date.is_none() && end_date.is_none() {
                 return (Some(expression), None, None);
             }
@@ -3552,12 +3564,14 @@ fn kept_fact_time(
 /// Tag on a memory whose USER-requested retention deadline could not be checked and was dropped.
 pub(crate) const RETENTION_UNVERIFIED_TAG: &str = "retention_deadline_unverified";
 
-/// The retention phrase the runtime keeps: its checkable part. A phrase with no time word is
-/// filler and dropped (false); a time phrase the runtime cannot check is dropped too, but
-/// flagged (true) because the USER did ask for a deadline.
-fn kept_expiry(expression: Option<&str>) -> (Option<&str>, bool) {
+/// The retention phrase the runtime keeps: its checkable part. A phrase with no time word, or
+/// one the USER never wrote, is filler and dropped (false); a USER time phrase the runtime
+/// cannot check is dropped too, but flagged (true) because the USER did ask for a deadline.
+fn kept_expiry<'a>(expression: Option<&'a str>, quote: &str) -> (Option<&'a str>, bool) {
     match expression {
-        Some(expression) if crate::temporal::mentions_time(expression) => {
+        Some(expression)
+            if crate::temporal::mentions_time(expression) && in_quote(expression, quote) =>
+        {
             match crate::temporal::checkable_part(expression) {
                 Some(part) => (Some(part), false),
                 None => (None, true),
@@ -4560,11 +4574,16 @@ mod tests {
     }
 
     fn evidence() -> Evidence {
+        evidence_saying("早餐不要推荐咖啡。")
+    }
+
+    /// Time phrases must be USER words, so time fixtures quote the phrases they use.
+    fn evidence_saying(quote: &str) -> Evidence {
         Evidence::new(
             EvidenceId::from("session-1:turn-1:0"),
             SessionId::from("session-1"),
             TurnId::from("turn-1"),
-            "早餐不要推荐咖啡。",
+            quote,
         )
     }
 
@@ -4685,7 +4704,8 @@ mod tests {
             raw["expiry_date"] = json!("2026-09-29");
             raw["explicit_memory_request"] = json!(true);
             let raw: RawCandidate = serde_json::from_value(raw).unwrap();
-            let candidate = raw.into_domain(&context(), evidence()).unwrap();
+            let said = evidence_saying(&format!("早餐不要推荐咖啡，保留到{expression}。"));
+            let candidate = raw.into_domain(&context(), said).unwrap();
             assert!(candidate.temporal.expires_at.is_none(), "{expression}");
             assert!(candidate.explicit_memory_request, "{expression}");
             assert!(
@@ -5150,7 +5170,7 @@ mod tests {
                 json!({"omission_reason":null,"candidates":[candidate_json(),raw.clone()]});
             let kept = ctx.decode_extraction(
                 &mixed.to_string(),
-                "早餐不喝咖啡。",
+                "昨天说过早餐不喝咖啡，这条保留到明天。",
                 &SessionId::from("s"),
                 &TurnId::from("t"),
             );
@@ -5161,7 +5181,7 @@ mod tests {
             let error = ctx
                 .decode_extraction_with_feedback(
                     &output,
-                    "早餐不喝咖啡。",
+                    "昨天说过早餐不喝咖啡，这条保留到明天。",
                     &SessionId::from("s"),
                     &TurnId::from("t"),
                     &mut feedback,
@@ -5170,7 +5190,7 @@ mod tests {
             assert_eq!(
                 ctx.decode_extraction(
                     &output,
-                    "早餐不喝咖啡。",
+                    "昨天说过早餐不喝咖啡，这条保留到明天。",
                     &SessionId::from("s"),
                     &TurnId::from("t")
                 )
@@ -6630,12 +6650,12 @@ mod tests {
         assert!(
             serde_json::from_value::<RawCandidate>(mixed_time)
                 .unwrap()
-                .into_domain(&context(), evidence())
+                .into_domain(&context(), evidence_saying("每天早上早餐不要推荐咖啡。"))
                 .is_err()
         );
         let candidate = serde_json::from_value::<RawCandidate>(candidate)
             .unwrap()
-            .into_domain(&context(), evidence())
+            .into_domain(&context(), evidence_saying("每天早上早餐不要推荐咖啡。"))
             .unwrap();
         assert!(candidate.temporal.reference.is_none());
         assert!(
@@ -6878,7 +6898,7 @@ mod tests {
         let decode = |raw: Value| {
             serde_json::from_value::<RawCandidate>(raw)
                 .unwrap()
-                .into_domain(&context, evidence())
+                .into_domain(&context, evidence_saying("这次早餐不要推荐咖啡。"))
                 .unwrap()
         };
         assert!(decode(raw.clone()).temporal.reference.is_some());
@@ -6906,7 +6926,10 @@ mod tests {
         let decode = |raw: Value| {
             serde_json::from_value::<RawCandidate>(raw)
                 .unwrap()
-                .into_domain(&context, evidence())
+                .into_domain(
+                    &context,
+                    evidence_saying("早餐不要推荐咖啡，这条保留到明天，旅行结束后再说。"),
+                )
         };
         let candidate = decode(raw.clone()).unwrap();
         assert_eq!(
@@ -7369,7 +7392,12 @@ mod tests {
     #[test]
     fn unverifiable_dates_are_dropped_and_checkable_pieces_kept() {
         let kept = |expression: &str, date: Option<&str>| {
-            kept_fact_time(Some(expression.into()), date.map(Into::into), None, "")
+            kept_fact_time(
+                Some(expression.into()),
+                date.map(Into::into),
+                None,
+                "I went there today, not last week.",
+            )
         };
         // Dates on a phrase the runtime cannot check are dropped; the USER words stay.
         assert_eq!(
@@ -7389,10 +7417,14 @@ mod tests {
             Some("2027年4月1日至2027年4月14日")
         );
         assert_eq!(crate::temporal::checkable_part("明天后"), None);
-        assert_eq!(kept_expiry(Some("明天")), (Some("明天"), false));
-        assert_eq!(kept_expiry(Some("保留到明天")), (None, true));
-        assert_eq!(kept_expiry(Some("recently")), (None, true));
-        assert_eq!(kept_expiry(Some("forever and always")), (None, false));
+        let said = "这条请保留到明天，最近常用。";
+        assert_eq!(kept_expiry(Some("明天"), said), (Some("明天"), false));
+        assert_eq!(kept_expiry(Some("保留到明天"), said), (None, true));
+        assert_eq!(kept_expiry(Some("最近"), said), (None, true));
+        assert_eq!(kept_expiry(Some("forever and always"), said), (None, false));
+        // A phrase the USER never wrote is model filler: dropped silently, never flagged.
+        assert_eq!(kept_expiry(Some("today"), said), (None, false));
+        assert_eq!(kept("yesterday", Some("2023-04-05")), (None, None, None));
     }
 
     #[test]
@@ -7709,7 +7741,10 @@ mod tests {
         let decode = |raw: Value| {
             serde_json::from_value::<RawCandidate>(raw)
                 .map_err(structured_json_error)?
-                .into_domain(&ctx, evidence())
+                .into_domain(
+                    &ctx,
+                    evidence_saying("昨天说过早餐不要推荐咖啡，这条保留到明天。"),
+                )
         };
         let candidate = decode(raw.clone()).unwrap();
         assert_eq!(
@@ -7970,7 +8005,8 @@ mod tests {
         candidate["temporal_date"] = json!("2026-06-01");
         candidate["temporal_end_date"] = json!("2026-07-01");
         let raw: RawCandidate = serde_json::from_value(candidate).unwrap();
-        let candidate = raw.into_domain(&context(), evidence()).unwrap();
+        let said = evidence_saying("去年六月起早餐不要推荐咖啡。");
+        let candidate = raw.into_domain(&context(), said).unwrap();
         assert_eq!(
             candidate.temporal.valid_from.unwrap().source,
             TemporalSource::Inferred
