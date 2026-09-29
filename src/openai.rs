@@ -444,6 +444,8 @@ impl OpenAiClient {
                  Preserve whitespace inside string values verbatim.\n\n{instructions}"
             ),
             "input": input.to_string(),
+            // Least sampling randomness: a recorded eval set stays representative.
+            "temperature": 0,
             "reasoning": { "effort": "medium" },
             "max_output_tokens": stage.output_tokens(&budget.config),
             "store": false,
@@ -473,6 +475,7 @@ impl OpenAiClient {
         let request = json!({
             "model": DEEPSEEK_MODEL,
             "input": prompt,
+            "temperature": 0,
             "reasoning": { "effort": "medium" },
             "max_output_tokens": stage.output_tokens(&budget.config),
             "store": false,
@@ -5833,6 +5836,7 @@ mod tests {
                 assert_eq!(request["model"], DEEPSEEK_MODEL);
                 assert_eq!(request["input"], prompt);
                 assert_eq!(request["reasoning"]["effort"], "medium");
+                assert_eq!(request["temperature"], 0);
                 assert_eq!(request["text"]["format"]["type"], "text");
                 assert_eq!(request["max_output_tokens"], tokens);
                 let body =
@@ -6173,6 +6177,7 @@ mod tests {
                                 let request = read_http_request(&mut stream);
                                 assert_eq!(request["model"], "ep-20260923215039-vxgxg");
                                 assert_eq!(request["reasoning"]["effort"], "medium");
+                                assert_eq!(request["temperature"], 0);
                                 assert_eq!(request["max_output_tokens"], output_tokens);
                             }
                             if let Some(status) = status {
