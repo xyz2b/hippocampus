@@ -292,6 +292,7 @@ fn validation_corpus() {
     let (mut kept_total, mut candidate_total) = (0, 0);
     let mut messages: BTreeMap<&str, usize> = BTreeMap::new();
     let mut details = Vec::new();
+    let mut rejections = Vec::new();
     // What accepted candidates would store, not just whether they pass.
     let mut stored: BTreeMap<&str, usize> = BTreeMap::new();
     let mut paths: Vec<_> =
@@ -407,12 +408,21 @@ fn validation_corpus() {
                     .or_default() += 1;
             }
             let mut kept = Vec::new();
-            for candidate in &raw_candidates {
+            for (index, candidate) in raw_candidates.iter().enumerate() {
                 candidate_total += 1;
                 match decode(&json!({"omission_reason":null,"candidates":[candidate]}).to_string())
                 {
                     Ok(mut one) => kept.append(&mut one),
-                    Err(error) => *rejected.entry(reason(&error)).or_default() += 1,
+                    Err(error) => {
+                        *rejected.entry(reason(&error)).or_default() += 1;
+                        let value = &candidate["value"];
+                        let value = value["text"].as_str().map_or_else(|| value.to_string(), str::to_owned);
+                        rejections.push(format!(
+                            "REJECTED {case_id}/{id}#{index} [{}] {}={value:?}",
+                            reason(&error),
+                            candidate["predicate"].as_str().unwrap_or("?")
+                        ));
+                    }
                 }
             }
             kept_total += kept.len();
@@ -520,6 +530,9 @@ fn validation_corpus() {
     rejected.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
     for (reason, count) in rejected {
         println!("REJECT {count:>4}  {reason}");
+    }
+    for rejection in rejections {
+        println!("{rejection}");
     }
     for detail in details {
         println!("{detail}");
