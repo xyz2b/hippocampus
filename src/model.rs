@@ -815,25 +815,31 @@ fn user_sentences(quote: &str) -> impl Iterator<Item = &str> {
 /// A text fragment selects the one sentence containing it; any other value kind is only
 /// unambiguous when the quote is a single sentence. Otherwise the value is left unchanged.
 pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryValue {
-    let whole = fact_terminal(quote);
+    // Whitespace is not USER content: a model copy with extra or missing spaces still points
+    // at the same sentence, and the stored value is always the USER's own text.
+    let squash = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let whole = squash(fact_terminal(quote));
     let pick = |fragment: Option<&str>| {
-        let mut hits = user_sentences(quote)
-            .filter(|sentence| fragment.is_none_or(|f| fact_terminal(sentence).contains(f)));
+        let mut hits = user_sentences(quote).filter(|sentence| {
+            fragment.is_none_or(|f| squash(fact_terminal(sentence)).contains(f))
+        });
         let hit = hits.next()?;
         hits.next().is_none().then(|| hit.trim().to_owned())
     };
     let chosen = match &value {
         MemoryValue::Text(text) => {
-            let text = fact_terminal(text);
+            let text = squash(fact_terminal(text));
             if text.is_empty() {
                 None
             } else if text == whole {
                 Some(quote.trim().to_owned())
-            } else if let Some(sentence) = user_sentences(quote).find(|s| fact_terminal(s) == text) {
+            } else if let Some(sentence) =
+                user_sentences(quote).find(|s| squash(fact_terminal(s)) == text)
+            {
                 // Store the USER's exact sentence, not the model's copy with stray marks.
                 Some(sentence.trim().to_owned())
             } else {
-                pick(Some(text))
+                pick(Some(&text))
             }
         }
         _ => pick(None),

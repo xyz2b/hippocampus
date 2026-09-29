@@ -173,6 +173,51 @@
           },
           "request": "fnv1a64:9613735421729880",
           "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I was thinking of getting a tree stand for deer hunting this season."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:145e296e846d8635",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I was thinking of getting a tree stand for deer hunting this season. Can you tell me what to consider when buying one, and do you have any recommendations for a good beginner stand? Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "on 7/10",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "valid_from",
+                    "reason": "USER asserted the event date 'on 7/10', but the candidate temporal has valid_from/valid_to null and only observed_at set to the system clock, so the asserted event date is not represented as temporal validity."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:ed2801715be1eec9",
+          "schema": "personal_memory_source_support_v1"
         }
       ],
       "text": "I was thinking of getting a tree stand for deer hunting this season. Can you tell me what to consider when buying one, and do you have any recommendations for a good beginner stand? Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"

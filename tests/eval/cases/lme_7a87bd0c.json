@@ -287,6 +287,39 @@
           },
           "request": "fnv1a64:d389cf6b72723e58",
           "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:9c4bb753bdf1150c",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm feeling pretty good about getting started, thanks for the tips! I think I'll start with the tools and sports equipment, those are the categories that are most cluttered. I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:a6ffcf68a2805f44",
+          "schema": "personal_memory_source_support_v1"
         }
       ],
       "text": "I'm feeling pretty good about getting started, thanks for the tips! I think I'll start with the tools and sports equipment, those are the categories that are most cluttered. I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too."
@@ -989,10 +1022,10 @@
         {
           "output": {
             "answer_text": "4 weeks",
-            "candidate_index": 2,
+            "candidate_index": 3,
             "verdict": "answer"
           },
-          "request": "fnv1a64:c66d84d732b39b41",
+          "request": "fnv1a64:129321202cb9dc9e",
           "schema": "personal_memory_answer_v1"
         }
       ]

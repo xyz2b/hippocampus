@@ -1306,13 +1306,26 @@ impl OpenAiAdapterContext {
     ) -> Result<Value, OpenAiAdapterError> {
         let raw: RawExtraction =
             serde_json::from_str(extraction_output).map_err(structured_json_error)?;
-        if raw.candidates.len() != candidates.len() {
+        if candidates.is_empty() != raw.candidates.is_empty() {
             return Err(invalid("temporal view must cover the frozen candidate set"));
         }
-        let normalized = raw
+        let mut normalized = raw
             .candidates
             .into_iter()
-            .map(RawCandidate::normalize_wire)
+            .map(|candidate| candidate.normalize_wire().map(Some))
+            .collect::<Result<Vec<_>, _>>()?;
+        // Dropped malformed candidates leave gaps; each kept one names its raw ordinal in
+        // its runtime evidence id (session:turn:index).
+        let normalized = candidates
+            .iter()
+            .map(|candidate| {
+                candidate
+                    .evidence
+                    .first()
+                    .and_then(|evidence| evidence.id.0.rsplit(':').next()?.parse::<usize>().ok())
+                    .and_then(|index| normalized.get_mut(index)?.take())
+                    .ok_or_else(|| invalid("temporal view must cover the frozen candidate set"))
+            })
             .collect::<Result<Vec<_>, _>>()?;
         let offset = UtcOffset::from_whole_seconds(self.utc_offset_seconds)
             .map_err(|error| OpenAiAdapterError::InvalidContext(error.to_string()))?;
@@ -1409,7 +1422,8 @@ impl OpenAiAdapterContext {
                 "non-empty extraction requires source conversation".to_owned(),
             ));
         }
-        raw.candidates
+        let results = raw
+            .candidates
             .into_iter()
             .enumerate()
             .map(|(index, candidate)| {
@@ -1441,7 +1455,24 @@ impl OpenAiAdapterContext {
                 }
                 Ok(candidate)
             })
-            .collect()
+            .collect::<Vec<_>>();
+        // One malformed candidate is dropped on its own; only an extraction with no valid
+        // candidate fails, keeping the first error and its repair feedback.
+        if results.iter().all(Result::is_err) {
+            return results.into_iter().collect();
+        }
+        Ok(results
+            .into_iter()
+            .filter_map(|result| {
+                result
+                    .inspect_err(|error| {
+                        crate::diagnostics::record("candidate_decode_dropped", || {
+                            json!({"reason":error.to_string()})
+                        })
+                    })
+                    .ok()
+            })
+            .collect())
     }
 
     /// Validate an independent, read-only source review and bind it to these exact candidates.
@@ -4944,15 +4975,27 @@ mod tests {
         unknown_subject["subject_id"] = json!("unknown");
         let mut numeric_time = candidate_json();
         numeric_time["valid_from"] = json!(123);
-        for (raw, field) in [
-            (wrong_expiry, Some("memory_request")),
-            (wrong_day, Some("fact_time")),
-            (missing_day, Some("fact_time")),
-            (unknown_subject, None),
-            (numeric_time, None),
+        // (candidate, repair field, whether the whole output violates the wire schema)
+        for (raw, field, schema_error) in [
+            (wrong_expiry, Some("memory_request"), false),
+            (wrong_day, Some("fact_time"), false),
+            (missing_day, Some("fact_time"), false),
+            (unknown_subject, None, false),
+            (numeric_time, None, true),
         ] {
-            let output =
-                json!({"omission_reason":null,"candidates":[candidate_json(),raw]}).to_string();
+            // Beside a valid candidate, a bad one is dropped on its own; a wire-schema
+            // violation still rejects the whole output.
+            let mixed =
+                json!({"omission_reason":null,"candidates":[candidate_json(),raw.clone()]});
+            let kept = ctx.decode_extraction(
+                &mixed.to_string(),
+                "早餐不喝咖啡。",
+                &SessionId::from("s"),
+                &TurnId::from("t"),
+            );
+            assert_eq!(kept.map(|c| c.len()).ok(), (!schema_error).then_some(1));
+            // Alone, it still rejects the extraction with localized repair feedback.
+            let output = json!({"omission_reason":null,"candidates":[raw]}).to_string();
             let mut feedback = None;
             let error = ctx
                 .decode_extraction_with_feedback(
@@ -4976,7 +5019,7 @@ mod tests {
             );
             assert_eq!(feedback.as_ref().and_then(|f| f["field"].as_str()), field);
             if let Some(feedback) = feedback {
-                assert_eq!(feedback["candidate_index"], 1);
+                assert_eq!(feedback["candidate_index"], 0);
                 assert!(
                     error
                         .to_string()
