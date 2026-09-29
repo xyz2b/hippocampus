@@ -9,7 +9,6 @@ import os
 import socket
 import tempfile
 import threading
-from datetime import datetime, timezone
 from pathlib import Path
 
 from mcp_smoke import Client, Responses
@@ -130,9 +129,9 @@ def main():
             'reconciliation':None,'reconciliation_reason':None}
         assert not rejected['write_changes']
         assert any(x['outcome']=='filtered' and 'Predicate' in x['reason_codes'][0] for x in filtered_recall['retrieval']['candidates'])
+        # "现在…" says when it was said, not when the state began: no start at the observation clock.
         dated=next(m for m in bundle['memories'] if m['raw']['predicate']=='fact')
-        observed=datetime.fromtimestamp(dated['raw']['temporal']['observed_at'],timezone.utc).isoformat()
-        assert dated['valid_from']==observed and dated['valid_to'] is None and dated['valid_to_unbounded']
+        assert dated['raw']['temporal']['observed_at'] and dated['valid_from'] is None and dated['valid_to'] is None
         assert a['save_status']=='not_committed' and a['recall_status']=='planning_incomplete'
         assert a['retrieval']['candidates'] is None
         assert [x['status'] for x in bundle['llm_calls'][:3]]==['completed','incomplete','incomplete']

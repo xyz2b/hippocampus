@@ -11,14 +11,29 @@
       "observed_at": 1685226180,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b5717548d0bd4a2d",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7ace943924ce2620",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3711,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 205,
+            "output_tokens_details": {
+              "reasoning_tokens": 184
+            },
+            "total_tokens": 3916
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -28,8 +43,19 @@
             "review_binding": "source-review-v3:f2fb56ac4dcd0eb8",
             "reviews": []
           },
-          "request": "fnv1a64:9fad642d1accdbbd",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:1983e7f55db017b5",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2015,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 220,
+            "output_tokens_details": {
+              "reasoning_tokens": 171
+            },
+            "total_tokens": 2235
+          }
         }
       ],
       "text": "I'm looking to optimize my Instagram content strategy, can you give me some tips on how to increase engagement and grow my audience?"
@@ -43,13 +69,19 @@
       "observed_at": 1685226240,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "ânull"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -81,10 +113,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "instagram",
-                  "content_strategy"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -100,7 +129,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "的"
+                  "expression": "now"
                 },
                 "intent": {
                   "kind": "assert",
@@ -133,10 +162,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "instagram",
-                  "audience"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -148,17 +174,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c8392d9a77527fb7",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7d41b8302bf1052e",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3814,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 4356,
+            "output_tokens_details": {
+              "reasoning_tokens": 3846
+            },
+            "total_tokens": 8170
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:82d842e23313dc8e",
+            "review_binding": "source-review-v3:5c656c619b02a51b",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -196,8 +235,19 @@
               }
             ]
           },
-          "request": "fnv1a64:6f7316526a71874d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:3aac551105d3d11f",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2945,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2294,
+            "output_tokens_details": {
+              "reasoning_tokens": 1915
+            },
+            "total_tokens": 5239
+          }
         }
       ],
       "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
@@ -211,14 +261,29 @@
       "observed_at": 1685226300,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b2275ff0458c7af4",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:35595dd6cd9cdf25",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3828,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 184,
+            "output_tokens_details": {
+              "reasoning_tokens": 165
+            },
+            "total_tokens": 4012
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -228,8 +293,19 @@
             "review_binding": "source-review-v3:e1d04bddee6de5e3",
             "reviews": []
           },
-          "request": "fnv1a64:3b3f4fd9b7cc544e",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:7f4eef4825b5a6da",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2133,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 205,
+            "output_tokens_details": {
+              "reasoning_tokens": 155
+            },
+            "total_tokens": 2338
+          }
         }
       ],
       "text": "What are some tips for creating engaging captions for my posts?"
@@ -243,14 +319,29 @@
       "observed_at": 1685226360,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:9061ca94b61b8e3a",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d697c3b759df2c77",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3858,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 4949,
+            "output_tokens_details": {
+              "reasoning_tokens": 4930
+            },
+            "total_tokens": 8807
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -262,8 +353,19 @@
             "review_binding": "source-review-v3:96e580535eabdeb8",
             "reviews": []
           },
-          "request": "fnv1a64:176ac2b5bf302123",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:2aacd4e7f37b546b",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2160,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2179,
+            "output_tokens_details": {
+              "reasoning_tokens": 2119
+            },
+            "total_tokens": 4339
+          }
         }
       ],
       "text": "I'm actually thinking of trying out Instagram Live more often. Do you have any tips on how to make my live streams more engaging and interactive?"
@@ -277,14 +379,29 @@
       "observed_at": 1685226420,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:efe38351a57380d3",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:d2de80788795bc92",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3901,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 851,
+            "output_tokens_details": {
+              "reasoning_tokens": 829
+            },
+            "total_tokens": 4752
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -294,8 +411,19 @@
             "review_binding": "source-review-v3:91e14e4e99467a59",
             "reviews": []
           },
-          "request": "fnv1a64:f0c4ed0ebf171c7d",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b40dfa2af3406c79",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2205,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2053,
+            "output_tokens_details": {
+              "reasoning_tokens": 2004
+            },
+            "total_tokens": 4258
+          }
         }
       ],
       "text": "I'm thinking of doing a Q&A session on my next live stream. Do you have any tips on how to make it more engaging and interactive? For example, how can I encourage viewers to ask questions?"
@@ -309,6 +437,8 @@
       "observed_at": 1685254200,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -317,7 +447,7 @@
                 "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
-                  "kind": "conflict",
+                  "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
@@ -347,10 +477,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "social_media",
-                  "instagram"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -360,13 +487,215 @@
                 }
               },
               {
+                "certainty": "medium",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "now"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I think I'm close to 1300 now."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:f2c2232398957859",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3974,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 12984,
+            "output_tokens_details": {
+              "reasoning_tokens": 12036
+            },
+            "total_tokens": 16958
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm looking to create a new Instagram post about a recent industry event I attended.",
+                "my audience is mostly from the US, UK, and Australia"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:5cd2344164118c7b",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "insufficient",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "The candidate asserts predicate 'fact', but the quoted value is a request for help, not a factual proposition."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "The value Text is a question/request, not a complete verbatim USER sentence carrying a factual proposition."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "The USER is asking a question/request, not asserting a memory as 'Assert'."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The current USER turn contains a request for help, which is not a user assertion of a memory."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "memory_type Fact is not supported because the quoted sentence is a question/request, not a factual assertion."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:f47d9e8a009ebb15",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3045,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 18019,
+            "output_tokens_details": {
+              "reasoning_tokens": 17198
+            },
+            "total_tokens": 21064
+          }
+        }
+      ],
+      "text": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t2",
+      "observed_at": 1685254260,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [
+              {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "n"
+                  "expression": "for the current Instagram post about the recent industry event"
                 },
                 "intent": {
                   "kind": "assert",
@@ -400,174 +729,145 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "social_media",
-                  "instagram",
-                  "follower_count"
+                  "Instagram",
+                  "content strategy",
+                  "hashtags"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been meaning to check my current follower count - I think I'm close to 1300 now."
+                  "text": "I like the options! For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c363279266c73790",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:244d5446cf201b26",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4018,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 4059,
+            "output_tokens_details": {
+              "reasoning_tokens": 3770
+            },
+            "total_tokens": 8077
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                ".",
-                "."
-              ],
+              "missing_user_spans": [],
               "status": "complete"
             },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:1543992a49f88f0c",
+            "omission_supported": false,
+            "review_binding": "source-review-v3:e84662587db1551d",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "contradicted",
                   "metadata": "contradicted",
-                  "polarity": "supported",
+                  "polarity": "insufficient",
                   "relation": "contradicted",
-                  "scope": "supported",
+                  "scope": "insufficient",
                   "source": "contradicted",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "contradicted"
+                  "value": "supported"
                 },
-                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+                "current_user_quote": "I like the options! For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
                 "evidence": [],
                 "issues": [
                   {
                     "check": "relation",
                     "evidence": [
                       {
-                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
                         "turn_index": 0
                       }
                     ],
                     "field": "predicate",
-                    "reason": "The candidate value is a question/request for caption help, not a factual proposition, so predicate 'fact' is contradicted."
+                    "reason": "USER is requesting a modification of hashtags, not asserting a factual proposition; predicate 'fact' misrepresents the request/control instruction."
                   },
                   {
-                    "check": "value",
+                    "check": "polarity",
                     "evidence": [
                       {
-                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "quote": "instead of the general #industryevent",
                         "turn_index": 0
                       }
                     ],
-                    "field": "value.Text",
-                    "reason": "The typed value is the user's question asking for caption help, not a true/false factual object to remember."
+                    "field": "polarity",
+                    "reason": "USER expresses a preference for specific hashtags instead of the general #industryevent; candidate polarity is null and does not encode this exclusion/constraint direction."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "USER limits the request to Option 1 and to niche-specific hashtags (#contentcreation or #digitalmarketing) instead of #industryevent; scope is empty and omits these conditions."
                   },
                   {
                     "check": "intent",
                     "evidence": [
                       {
-                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
                         "turn_index": 0
                       }
                     ],
                     "field": "intent",
-                    "reason": "Candidate labels this 'Conflict', but the value is a caption request/question; no conflict is asserted in the value."
+                    "reason": "USER asks a question/request to modify Option 1 hashtags; intent 'Assert' misclassifies the control instruction."
                   },
                   {
                     "check": "source",
                     "evidence": [
                       {
-                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
                         "turn_index": 0
                       }
                     ],
                     "field": "source",
-                    "reason": "The current turn contains a request/question, not a user assertion of this memory."
+                    "reason": "Current turn is a control instruction/request to modify generated hashtags, not a USER assertion of a durable memory; control instructions are not user assertions."
                   },
                   {
                     "check": "metadata",
                     "evidence": [
                       {
-                        "quote": "Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia?",
+                        "quote": "For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
                         "turn_index": 0
                       }
                     ],
-                    "field": "memory_type",
-                    "reason": "The value is a question/request for caption help, not a factual memory, so memory_type 'Fact' is unsupported."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I think I'm close to 1300 now.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "certainty",
-                    "reason": "User says 'I think I'm close to 1300 now,' indicating uncertainty; certainty 'High' overstates it."
+                    "field": "retention_tier",
+                    "reason": "No USER instruction to retain this; the turn is a request to modify Option 1 hashtags, not a LongTerm Fact. memory_type=Fact and retention_tier=LongTerm are unjustified."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:e7bc7a0b4d25a101",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s2_t2",
-      "observed_at": 1685254260,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
-          },
-          "request": "fnv1a64:c05919cd90bac51f",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:102844f9016e8005",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2697,
+            "input_tokens_details": {
+              "cached_tokens": 0
             },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:d186e68a1e95e81c",
-            "reviews": []
-          },
-          "request": "fnv1a64:118a874d80298b3f",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 15398,
+            "output_tokens_details": {
+              "reasoning_tokens": 14700
+            },
+            "total_tokens": 18095
+          }
         }
       ],
       "text": "I like the options! For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?"
@@ -581,14 +881,29 @@
       "observed_at": 1685254320,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:46bbe09888de3286",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:ecfbce9bf575266b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4047,
+            "input_tokens_details": {
+              "cached_tokens": 3328
+            },
+            "output_tokens": 3797,
+            "output_tokens_details": {
+              "reasoning_tokens": 3778
+            },
+            "total_tokens": 7844
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -598,8 +913,19 @@
             "review_binding": "source-review-v3:18976bd27048b463",
             "reviews": []
           },
-          "request": "fnv1a64:b3238779532e4d08",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:2fcbbc897faae2b0",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2348,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 168,
+            "output_tokens_details": {
+              "reasoning_tokens": 122
+            },
+            "total_tokens": 2516
+          }
         }
       ],
       "text": "Can you suggest some relevant influencers or content creators in my niche that I could collaborate with, considering my recent growth and engagement on social media?"
@@ -613,14 +939,29 @@
       "observed_at": 1685254380,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:0e86a7a720a88f85",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:c896b50f5ebebac8",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4079,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 3354,
+            "output_tokens_details": {
+              "reasoning_tokens": 3332
+            },
+            "total_tokens": 7433
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -632,8 +973,19 @@
             "review_binding": "source-review-v3:dc031d05b9bcbd71",
             "reviews": []
           },
-          "request": "fnv1a64:3b59da18a969ad45",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:53d88ff8b9e9396d",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2382,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 3858,
+            "output_tokens_details": {
+              "reasoning_tokens": 3793
+            },
+            "total_tokens": 6240
+          }
         }
       ],
       "text": "I think I'll start with micro-influencers and see how it goes. Can you suggest some potential collaboration ideas for me to reach out to them?"
@@ -647,30 +999,147 @@
       "observed_at": 1685254440,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I've been following your content on content creation and digital marketing, and I love your insights"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "content creation",
+                  "digital marketing",
+                  "instagram"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been following your content on content creation and digital marketing, and I love your insights"
+                }
+              }
+            ],
+            "omission_reason": null
           },
-          "request": "fnv1a64:0912b20c3488ee57",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:7e9bbbeb7703de0e",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4157,
+            "input_tokens_details": {
+              "cached_tokens": 3584
+            },
+            "output_tokens": 8673,
+            "output_tokens_details": {
+              "reasoning_tokens": 8393
+            },
+            "total_tokens": 12830
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
                 "I'll reach out to Ashley Gaida and propose a guest blog post collaboration.",
-                "I've been following your content on content creation and digital marketing",
-                "I love your insights",
-                "my blog about creating engaging Instagram content"
+                "I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content.",
+                "Would you be interested in writing a post for my audience?"
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:4b1810185381f52f",
-            "reviews": []
+            "review_binding": "source-review-v3:f80b58bb5e6be854",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\"",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I'll reach out to Ashley Gaida and propose a guest blog post collaboration.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "Would you be interested in writing a post for my audience?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "value.Text is an incomplete fragment: it omits the user's asserted plan to reach out to Ashley Gaida and propose a guest blog post collaboration, and truncates the quoted message; it is not a complete verbatim USER sentence carrying the proposition."
+                  }
+                ]
+              }
+            ]
           },
-          "request": "fnv1a64:f94df41e7cf8fade",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:a65560d3dbf593a4",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2856,
+            "input_tokens_details": {
+              "cached_tokens": 1792
+            },
+            "output_tokens": 11374,
+            "output_tokens_details": {
+              "reasoning_tokens": 10996
+            },
+            "total_tokens": 14230
+          }
         }
       ],
       "text": "I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\""
@@ -692,24 +1161,52 @@
       "query": "How many followers do I have on Instagram now?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "Instagram follower count",
-              "my Instagram account has followers",
-              "follower count reached"
+              "I have followers on Instagram",
+              "my Instagram follower count is",
+              "Instagram account has followers"
             ]
           },
-          "request": "fnv1a64:0444ea0ae53c7318",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:5336e45183fc98d4",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1865,
+            "output_tokens_details": {
+              "reasoning_tokens": 1841
+            },
+            "total_tokens": 2131
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "answer_text": "1250 followers",
-            "candidate_index": 0,
+            "answer_text": "close to 1300",
+            "candidate_index": 5,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:cf1bbcae095c7426",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:9314b30a4c8ff806",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1229,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 735,
+            "output_tokens_details": {
+              "reasoning_tokens": 704
+            },
+            "total_tokens": 1964
+          }
         }
       ]
     }

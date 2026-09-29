@@ -11,6 +11,8 @@
       "observed_at": 1680780900,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -18,9 +20,9 @@
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
+                  "date": "2023-03-27",
+                  "end_date": "2023-04-03",
+                  "expression": "last week"
                 },
                 "intent": {
                   "kind": "assert",
@@ -33,11 +35,11 @@
                 "memory_type": "episode",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "volunteering"
+                      "Easter Egg Hunt"
                     ],
                     "city": null,
                     "companion_entity_ids": [],
@@ -55,7 +57,10 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "volunteering",
+                  "Easter Egg Hunt"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -67,17 +72,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:01661fb83fd52ddd",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:f5e488209df77670",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3725,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 8595,
+            "output_tokens_details": {
+              "reasoning_tokens": 8344
+            },
+            "total_tokens": 12320
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:7bf5f9bc9b354cc6",
+            "review_binding": "source-review-v3:606b2493721b8d54",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -89,23 +107,12 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "insufficient",
+                  "temporal": "supported",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm looking for some information on local volunteer opportunities. I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community.",
                 "evidence": [],
                 "issues": [
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "I just helped out at an Easter Egg Hunt event last week",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal.reference",
-                    "reason": "USER says the Easter Egg Hunt help was 'last week', but candidate temporal has no reference or valid_from to justify that event time; observed_at is only the runtime clock."
-                  },
                   {
                     "check": "metadata",
                     "evidence": [
@@ -114,15 +121,26 @@
                         "turn_index": 0
                       }
                     ],
-                    "field": "retention_tier",
-                    "reason": "USER gave no memory-retention instruction or retention tier; ShortTerm is not stated or justified by the current turn."
+                    "field": "memory_type",
+                    "reason": "The value includes a current interest/preference ('I'm interested in finding more ways to give back to the community'), but memory_type is Episode, which does not represent the preference meaning."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:8513d3ff08fb04a7",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:cce65c7e07bb17ae",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2419,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 23631,
+            "output_tokens_details": {
+              "reasoning_tokens": 23406
+            },
+            "total_tokens": 26050
+          }
         }
       ],
       "text": "I'm looking for some information on local volunteer opportunities. I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
@@ -136,12 +154,59 @@
       "observed_at": 1680780960,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
-                "certainty": "medium",
+                "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "various causes"
+                }
+              },
+              {
+                "certainty": "medium",
+                "cross_turn_useful": true,
+                "extraction_confidence": "medium",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -231,20 +296,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4cc8a3873790c198",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:54fa8554be3bb6d1",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3773,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 20848,
+            "output_tokens_details": {
+              "reasoning_tokens": 20215
+            },
+            "total_tokens": 24621
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'm open to various causes",
-                "I think I'd prefer something related to community service or helping the underprivileged"
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:dede6a2c698eb971",
+            "review_binding": "source-review-v3:e21b9c94cd1fd1f4",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -253,56 +328,25 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "insufficient",
-                  "scope": "insufficient",
+                  "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "insufficient"
+                  "value": "supported"
                 },
                 "current_user_quote": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule.",
-                "evidence": [
-                  {
-                    "quote": "I'm looking for some information on local volunteer opportunities.",
-                    "turn_index": 1
-                  }
-                ],
+                "evidence": [],
                 "issues": [
                   {
                     "check": "relation",
                     "evidence": [
                       {
-                        "quote": "I think I'd prefer something related to community service or helping the underprivileged.",
+                        "quote": "I'm open to various causes",
                         "turn_index": 0
                       }
                     ],
                     "field": "predicate",
-                    "reason": "USER says 'I'd prefer something related to...' (a comparative preference), not 'likes'; the predicate asserts a different relation."
-                  },
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "I think I'd prefer something related to community service or helping the underprivileged.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "Candidate value drops 'something related to' and treats the causes themselves as the liked object; USER preferred something related to those causes, not necessarily the causes themselves."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "I'm open to various causes",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "I'm looking for some information on local volunteer opportunities.",
-                        "turn_index": 1
-                      }
-                    ],
-                    "field": "scope",
-                    "reason": "The preference is scoped to causes/volunteer opportunities ('open to various causes', 'something related to'); empty scope omits that domain."
+                    "reason": "USER only states being open to various causes, immediately refined by a stated preference for community service or helping the underprivileged. The asserted relation 'likes' is stronger than the actual 'open to' stance, so the typed predicate/relation is not justified."
                   }
                 ]
               },
@@ -322,11 +366,39 @@
                 "current_user_quote": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule.",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule.",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:29ed38ff9ec08a36",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b0054eec7c56bc01",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3131,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4389,
+            "output_tokens_details": {
+              "reasoning_tokens": 3925
+            },
+            "total_tokens": 7520
+          }
         }
       ],
       "text": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged. I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
@@ -340,25 +412,119 @@
       "observed_at": 1680781020,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "~I think the Food Bank Volunteer opportunity sounds interesting~"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "weak",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Food Bank Volunteer opportunity"
+                }
+              }
+            ],
+            "omission_reason": null
           },
-          "request": "fnv1a64:6687d2b7bad63be3",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:3affc8fdf3927902",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3830,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 12613,
+            "output_tokens_details": {
+              "reasoning_tokens": 12373
+            },
+            "total_tokens": 16443
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:4c8df9f3047a70ea",
-            "reviews": []
+            "omission_supported": false,
+            "review_binding": "source-review-v3:10ad068f8ef10767",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I think the Food Bank Volunteer opportunity sounds interesting. Can you provide me with more information on the food bank's location, the types of tasks I'd be doing, and the time commitment required? Also, do they have any requirements for volunteers, such as training or background checks?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
           },
-          "request": "fnv1a64:96eac0b77682b0ed",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:35a39483a4fd79a9",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2482,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8614,
+            "output_tokens_details": {
+              "reasoning_tokens": 8421
+            },
+            "total_tokens": 11096
+          }
         }
       ],
       "text": "I think the Food Bank Volunteer opportunity sounds interesting. Can you provide me with more information on the food bank's location, the types of tasks I'd be doing, and the time commitment required? Also, do they have any requirements for volunteers, such as training or background checks?"
@@ -372,6 +538,8 @@
       "observed_at": 1680781080,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -381,7 +549,7 @@
                 "fact_time": {
                   "date": "2023-04-06",
                   "end_date": null,
-                  "expression": "T"
+                  "expression": "today"
                 },
                 "intent": {
                   "kind": "assert",
@@ -392,7 +560,7 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "episode",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
@@ -402,11 +570,7 @@
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": null,
-                    "date": {
-                      "date": null,
-                      "expression": null,
-                      "kind": "unspecified"
-                    },
+                    "date": null,
                     "geography": null,
                     "task_id": null,
                     "time_of_day": null
@@ -419,77 +583,79 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "Maundy Thursday",
-                  "Episcopal Church"
+                  "religion",
+                  "event"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "By the way, I'm glad I got to attend the Maundy Thursday service    at the Episcopal Church today, it was a beautiful and moving experience."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": "2023-04-06",
-                  "end_date": null,
-                  "expression": "T"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "visited",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": {
-                      "date": null,
-                      "expression": null,
-                      "kind": "unspecified"
-                    },
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "Episcopal Church"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "the Episcopal Church"
+                  "text": "I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:15fdf33992f4b810",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:4e1a531b1deac8d9",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3901,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 11321,
+            "output_tokens_details": {
+              "reasoning_tokens": 11020
+            },
+            "total_tokens": 15222
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I'm looking forward to volunteering at the food bank and making a difference in my community."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:c74158ee0650f55d",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "Yes, I'd like to take the next step. Please provide me with the contact information and application form. I'm looking forward to volunteering at the food bank and making a difference in my community. By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:d90a91b09059802d",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2685,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 10489,
+            "output_tokens_details": {
+              "reasoning_tokens": 10290
+            },
+            "total_tokens": 13174
+          }
         }
       ],
       "text": "Yes, I'd like to take the next step. Please provide me with the contact information and application form. I'm looking forward to volunteering at the food bank and making a difference in my community. By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
@@ -503,27 +669,51 @@
       "observed_at": 1680781140,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:711f762632ae2b09",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:c7a2ee48167f1304",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3940,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 5650,
+            "output_tokens_details": {
+              "reasoning_tokens": 5628
+            },
+            "total_tokens": 9590
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'd love to invite some friends to join me in volunteering at the food bank."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
-            "omission_supported": false,
+            "omission_supported": true,
             "review_binding": "source-review-v3:7c6d2a58726c38e3",
             "reviews": []
           },
-          "request": "fnv1a64:fea4d4aa27e6b321",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:1e1a09e0924e8559",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2246,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 793,
+            "output_tokens_details": {
+              "reasoning_tokens": 742
+            },
+            "total_tokens": 3039
+          }
         }
       ],
       "text": "I'd like to ask, are there any opportunities to volunteer with a group from my church or community? I'd love to invite some friends to join me in volunteering at the food bank."
@@ -537,13 +727,19 @@
       "observed_at": 1680781200,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "./."
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -587,10 +783,23 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4a386fab74178de4",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:11c0b629999f2af5",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4000,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 4310,
+            "output_tokens_details": {
+              "reasoning_tokens": 4048
+            },
+            "total_tokens": 8310
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -599,16 +808,16 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d8c73dbca8f375b8",
+            "review_binding": "",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "contradicted",
-                  "metadata": "contradicted",
+                  "metadata": "insufficient",
                   "polarity": "supported",
                   "relation": "insufficient",
-                  "scope": "insufficient",
+                  "scope": "supported",
                   "source": "contradicted",
                   "subject": "supported",
                   "temporal": "supported",
@@ -626,7 +835,7 @@
                       }
                     ],
                     "field": "predicate",
-                    "reason": "Predicate is 'fact', but the value is an interrogative request for information, not a proposition asserting a fact."
+                    "reason": "The turn asks whether such opportunities exist; it asserts no 'fact' relation or proposition for the user."
                   },
                   {
                     "check": "value",
@@ -637,18 +846,7 @@
                       }
                     ],
                     "field": "value.Text",
-                    "reason": "The Text is verbatim but is a question, so it has no truth-evaluable proposition for a Fact memory."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope",
-                    "reason": "Scope is empty while the question names a church group, food bank, project/program and example tasks; no asserted condition is captured as scope."
+                    "reason": "The typed value is the user's question, which carries no truth-evaluable proposition, so it cannot be the Text of an asserted fact."
                   },
                   {
                     "check": "intent",
@@ -659,7 +857,7 @@
                       }
                     ],
                     "field": "intent",
-                    "reason": "Intent is 'Assert', but the USER turn asks a question and does not assert, correct, retract or refine a memory."
+                    "reason": "Intent is labeled Assert, but the turn is a request for information about possible options, not an assertion."
                   },
                   {
                     "check": "source",
@@ -670,7 +868,7 @@
                       }
                     ],
                     "field": "source",
-                    "reason": "Source is UserStatement, but the current USER turn is a question requesting information, not a current assertion or memory update."
+                    "reason": "The current USER turn asks a question rather than asserting, updating, or clarifying this memory; a question alone is not a user assertion."
                   },
                   {
                     "check": "metadata",
@@ -681,14 +879,25 @@
                       }
                     ],
                     "field": "memory_type",
-                    "reason": "memory_type Fact and retention_tier LongTerm treat an interrogative request as a retained fact; USER did not assert or ask to remember it."
+                    "reason": "Labeled Fact/LongTerm with High certainty although the user only asked a question and gave no retention instruction or asserted certainty."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:536f0b165b707ba5",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:ec472a164a1c7669",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2689,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6014,
+            "output_tokens_details": {
+              "reasoning_tokens": 5388
+            },
+            "total_tokens": 8703
+          }
         }
       ],
       "text": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event? We're looking for ways to make a more significant impact and contribute to the food bank's mission."
@@ -710,24 +919,52 @@
       "query": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "attended Maundy Thursday service Episcopal Church",
-              "went to Episcopal church Maundy Thursday",
-              "Maundy Thursday worship service Episcopal"
+              "attended Maundy Thursday service at Episcopal Church",
+              "went to Maundy Thursday Eucharist Episcopal Church",
+              "Maundy Thursday Holy Week worship Episcopal Church"
             ]
           },
-          "request": "fnv1a64:ecb6848907ed97cf",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:1700f04da5811013",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 273,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1073,
+            "output_tokens_details": {
+              "reasoning_tokens": 1038
+            },
+            "total_tokens": 1346
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "insufficient"
+            "answer_text": "today",
+            "candidate_index": 3,
+            "event_date": "2023-04-06",
+            "unit": "day",
+            "verdict": "elapsed"
           },
-          "request": "fnv1a64:e75bc16c0c43d4dd",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:f2fa828b0333a9f3",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 981,
+            "input_tokens_details": {
+              "cached_tokens": 384
+            },
+            "output_tokens": 375,
+            "output_tokens_details": {
+              "reasoning_tokens": 342
+            },
+            "total_tokens": 1356
+          }
         }
       ]
     }

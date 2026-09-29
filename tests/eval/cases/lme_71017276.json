@@ -11,13 +11,19 @@
       "observed_at": 1677911220,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "recently"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -49,13 +55,17 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "antique",
+                  "furniture",
+                  "armchair"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "antique furniture"
+                  "text": "vintage armchair from the 1950s"
                 }
               },
               {
@@ -65,7 +75,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "r"
+                  "expression": "today"
                 },
                 "intent": {
                   "kind": "assert",
@@ -98,64 +108,128 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "crystal",
+                  "chandelier",
+                  "inheritance"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "beautiful vintage armchair from the 1950s"
+                  "text": "crystal chandelier from my aunt, which used to belong to my great-grandmother"
                 }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": "2023-03-04",
-                  "end_date": null,
-                  "expression": "t"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "owns",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "stunning crystal chandelier"
-                }
-              },
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:681b410a170a1c51",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3784,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 2421,
+            "output_tokens_details": {
+              "reasoning_tokens": 1946
+            },
+            "total_tokens": 6205
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": "{\"coverage\":{\"missing_user_spans\":[\":{\",\"quote\" \n\n\n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n",
+          "request": "fnv1a64:5dc299c2a5f29863",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2576,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8876,
+            "output_tokens_details": {
+              "reasoning_tokens": 8354
+            },
+            "total_tokens": 11452
+          }
+        }
+      ],
+      "text": "I'm looking for some advice on cleaning and maintaining my antique furniture. I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it. By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light. Do you have any general tips on how to dust and polish these types of pieces?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1677911280,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:5cf38e042a3e8021",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3830,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 1777,
+            "output_tokens_details": {
+              "reasoning_tokens": 1757
+            },
+            "total_tokens": 5607
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:3f4d1b1050d4253b",
+            "reviews": []
+          },
+          "request": "fnv1a64:6b681ced68093e49",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2136,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2855,
+            "output_tokens_details": {
+              "reasoning_tokens": 2804
+            },
+            "total_tokens": 4991
+          }
+        }
+      ],
+      "text": "I'm also thinking of doing some research on the history of my great-grandmother's crystal chandelier. Do you know of any online resources or databases where I can find information about antique crystal chandeliers and their makers?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t3",
+      "observed_at": 1677911340,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
@@ -192,29 +266,44 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "family_history"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light."
+                  "text": "I'm  also interested in learning more about the history of my great-grandmother's estate, particularly the mansion  where the chandelier originally hung."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:12b0b93701cd1f18",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:4cbc9af4e233c1d6",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3884,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 4522,
+            "output_tokens_details": {
+              "reasoning_tokens": 4279
+            },
+            "total_tokens": 8406
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ba799f0d2806830e",
+            "review_binding": "source-review-v3:2db4bdaad88d70a9",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -229,110 +318,40 @@
                   "temporal": "supported",
                   "value": "supported"
                 },
-                "current_user_quote": "I'm looking for some advice on cleaning and maintaining my antique furniture. I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it. By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light. Do you have any general tips on how to dust and polish these types of pieces?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking for some advice on cleaning and maintaining my antique furniture. I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it. By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light. Do you have any general tips on how to dust and polish these types of pieces?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking for some advice on cleaning and maintaining my antique furniture. I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it. By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light. Do you have any general tips on how to dust and polish these types of pieces?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 3,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm looking for some advice on cleaning and maintaining my antique furniture. I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it. By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light. Do you have any general tips on how to dust and polish these types of pieces?",
+                "current_user_quote": "I'm also interested in learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung. Do you know of any online resources or archives where I can find information about historic mansions or estates in my area?",
                 "evidence": [],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:a48e6876abbbc27a",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm looking for some advice on cleaning and maintaining my antique furniture. I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it. By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light. Do you have any general tips on how to dust and polish these types of pieces?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t2",
-      "observed_at": 1677911280,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
-          },
-          "request": "fnv1a64:38fe19bffd941308",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:917648cecbf7f1e1",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2553,
+            "input_tokens_details": {
+              "cached_tokens": 0
             },
-            "omission_supported": true,
-            "review_binding": "",
-            "reviews": []
-          },
-          "request": "fnv1a64:50a10c3d675eddcd",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 7132,
+            "output_tokens_details": {
+              "reasoning_tokens": 6967
+            },
+            "total_tokens": 9685
+          }
         }
       ],
-      "text": "I'm also thinking of doing some research on the history of my great-grandmother's crystal chandelier. Do you know of any online resources or databases where I can find information about antique crystal chandeliers and their makers?"
+      "text": "I'm also interested in learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung. Do you know of any online resources or archives where I can find information about historic mansions or estates in my area?"
     },
     {
       "expect": {
         "forbid": [],
         "store": []
       },
-      "id": "s1_t3",
-      "observed_at": 1677911340,
+      "id": "s1_t4",
+      "observed_at": 1677911400,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -348,7 +367,7 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "fact",
+                "memory_type": "episode",
                 "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
@@ -377,29 +396,9 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm also interested in learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung. Maybe I'll find some online resources or archives, but I'm not sure where to look yet."
+                  "text": "I'm also curious about the history of the estate sale where I found my vintage armchair."
                 }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:7c6a2e748cb6e26f",
-          "schema": "personal_memory_candidates_v1"
-        }
-      ],
-      "text": "I'm also interested in learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung. Do you know of any online resources or archives where I can find information about historic mansions or estates in my area?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t4",
-      "observed_at": 1677911400,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
+              },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
@@ -444,66 +443,34 @@
                   "kind": "text",
                   "text": "vintage armchair"
                 }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "visited",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "estate sale"
-                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:9350ec5a92cbf6bf",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:adef62cf4ec77d86",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3928,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 10109,
+            "output_tokens_details": {
+              "reasoning_tokens": 9574
+            },
+            "total_tokens": 14037
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:6ef69321669f05a1",
+            "review_binding": "source-review-v3:413a2e9e49c821ee",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -536,13 +503,29 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I'm also curious about the history of the estate sale where I found my vintage armchair. Do you know of any online resources or archives where I can find information about estate sales or antique dealers in my area?",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it.",
+                    "turn_index": 1
+                  }
+                ],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:1d0d9d1006a27f90",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:4b8434dfe10db80f",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2903,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 3359,
+            "output_tokens_details": {
+              "reasoning_tokens": 3064
+            },
+            "total_tokens": 6262
+          }
         }
       ],
       "text": "I'm also curious about the history of the estate sale where I found my vintage armchair. Do you know of any online resources or archives where I can find information about estate sales or antique dealers in my area?"
@@ -556,14 +539,29 @@
       "observed_at": 1677911460,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:729db66f3c56a3e9",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:15711bef34e0b9a4",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3969,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 3227,
+            "output_tokens_details": {
+              "reasoning_tokens": 3205
+            },
+            "total_tokens": 7196
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -573,8 +571,19 @@
             "review_binding": "source-review-v3:bd10c627a25f4d01",
             "reviews": []
           },
-          "request": "fnv1a64:e7a177cbe8124450",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:dd73a36337b04d28",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2273,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 1791,
+            "output_tokens_details": {
+              "reasoning_tokens": 1742
+            },
+            "total_tokens": 4064
+          }
         }
       ],
       "text": "I'm thinking of visiting some local antique dealers in my area to see if they have any information about the estate sale where I found my vintage armchair. Do you think that's a good idea?"
@@ -588,14 +597,82 @@
       "observed_at": 1677911520,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "my vintage armchair"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "antique",
+                  "furniture"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "vintage armchair"
+                }
+              }
+            ],
+            "omission_reason": null
           },
-          "request": "fnv1a64:b86752a7303b6ef3",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:731e62b4d2900772",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4024,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 9884,
+            "output_tokens_details": {
+              "reasoning_tokens": 9610
+            },
+            "total_tokens": 13908
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -605,11 +682,40 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d05a348618cecb6d",
-            "reviews": []
+            "review_binding": "source-review-v3:a3b8c0b03b59a449",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm going to visit some local antique dealers in my area to see if they have any information about the estate sale where I found my vintage armchair. I'll bring photos of the armchair and ask if they recognize the dealer or auction house that conducted the sale.",
+                "evidence": [],
+                "issues": []
+              }
+            ]
           },
-          "request": "fnv1a64:3aea15d77e1e413a",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:00aef1607602690d",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2674,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 15512,
+            "output_tokens_details": {
+              "reasoning_tokens": 15289
+            },
+            "total_tokens": 18186
+          }
         }
       ],
       "text": "I'm going to visit some local antique dealers in my area to see if they have any information about the estate sale where I found my vintage armchair. I'll bring photos of the armchair and ask if they recognize the dealer or auction house that conducted the sale."
@@ -631,24 +737,52 @@
       "query": "How many weeks ago did I meet up with my aunt and receive the crystal chandelier?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "met up with my aunt and received a crystal chandelier",
-              "my aunt gave me a crystal chandelier",
-              "picked up crystal chandelier from my aunt"
+              "met up with aunt received crystal chandelier",
+              "aunt gave me crystal chandelier",
+              "picked up crystal chandelier from aunt"
             ]
           },
-          "request": "fnv1a64:102b3f9476c37204",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:c856ad32ec3ea180",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 275,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 532,
+            "output_tokens_details": {
+              "reasoning_tokens": 496
+            },
+            "total_tokens": 807
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "today",
             "candidate_index": 0,
-            "verdict": "answer"
+            "event_date": "2023-03-04",
+            "unit": "week",
+            "verdict": "elapsed"
           },
-          "request": "fnv1a64:b6cecde342ae4f5a",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:988fe5d04efe1c37",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1011,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1524,
+            "output_tokens_details": {
+              "reasoning_tokens": 1491
+            },
+            "total_tokens": 2535
+          }
         }
       ]
     }

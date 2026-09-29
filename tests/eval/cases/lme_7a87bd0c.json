@@ -11,85 +11,26 @@
       "observed_at": 1686436380,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "."
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-06-12",
-                  "expression": ".",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "owns",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "garage",
-                  "home",
-                  "organizing"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "garage"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "."
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-06-12",
-                  "expression": ".",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
@@ -110,33 +51,91 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "routine",
-                  "tidying",
-                  "habit"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                  "text": "garage"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "tidying"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:49a3127e2beb8dd2",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:2c0498c98d45bc9f",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3745,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 12185,
+            "output_tokens_details": {
+              "reasoning_tokens": 11756
+            },
+            "total_tokens": 15930
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I need help organizing my garage this weekend."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:9c8b5618ccf7732f",
+            "review_binding": "source-review-v3:f91dd57ef5cb1eb6",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -174,8 +173,19 @@
               }
             ]
           },
-          "request": "fnv1a64:d99e0d7fe6e56c03",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:43588f5c6caed6b8",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2779,
+            "input_tokens_details": {
+              "cached_tokens": 2688
+            },
+            "output_tokens": 17845,
+            "output_tokens_details": {
+              "reasoning_tokens": 17545
+            },
+            "total_tokens": 20624
+          }
         }
       ],
       "text": "I need help organizing my garage this weekend. Can you give me some tips on how to sort through all the boxes and storage bins? Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
@@ -189,14 +199,29 @@
       "observed_at": 1686436440,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:986f8265982a40c6",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:f3822e0209f145ab",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3789,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 1046,
+            "output_tokens_details": {
+              "reasoning_tokens": 1027
+            },
+            "total_tokens": 4835
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -206,8 +231,19 @@
             "review_binding": "source-review-v3:0568427351e36b72",
             "reviews": []
           },
-          "request": "fnv1a64:4699dd3dcd66d759",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:570e3c7dbf841bb5",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2091,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2478,
+            "output_tokens_details": {
+              "reasoning_tokens": 2431
+            },
+            "total_tokens": 4569
+          }
         }
       ],
       "text": "That's really helpful, thanks! I think I'll start with purging and categorizing all the items in my garage. Do you have any tips on how to decide what to keep and what to get rid of?"
@@ -221,6 +257,8 @@
       "observed_at": 1686436500,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -261,7 +299,8 @@
                 },
                 "tags": [
                   "garage",
-                  "decluttering"
+                  "home organization",
+                  "clutter"
                 ],
                 "value": {
                   "boolean": null,
@@ -309,8 +348,8 @@
                 },
                 "tags": [
                   "garage",
-                  "decluttering",
-                  "furniture"
+                  "furniture",
+                  "decluttering"
                 ],
                 "value": {
                   "boolean": null,
@@ -323,17 +362,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:69445916e3190169",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:83efda57c8737b24",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3853,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 6623,
+            "output_tokens_details": {
+              "reasoning_tokens": 6161
+            },
+            "total_tokens": 10476
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:f7e89fe09961a7e8",
+            "review_binding": "source-review-v3:e47e9597bcbbbe4b",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -371,8 +423,19 @@
               }
             ]
           },
-          "request": "fnv1a64:56392bce82698409",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:7c539c868636720e",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2923,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 7723,
+            "output_tokens_details": {
+              "reasoning_tokens": 7425
+            },
+            "total_tokens": 10646
+          }
         }
       ],
       "text": "I'm feeling pretty good about getting started, thanks for the tips! I think I'll start with the tools and sports equipment, those are the categories that are most cluttered. I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too."
@@ -386,71 +449,8 @@
       "observed_at": 1686436560,
       "recorded": [
         {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "unresolved_reference": "我"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space."
-                }
-              }
-            ],
-            "omission_reason": "no_personal_assertion"
-          },
-          "request": "fnv1a64:29c1cf245a924ac0",
-          "schema": "personal_memory_candidates_v1"
-        }
-      ],
-      "text": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space."
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t5",
-      "observed_at": 1686436620,
-      "recorded": [
-        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -495,7 +495,207 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized.  "
+                  "text": "There's this one old desk that's been taking up a lot of space and I haven't used it in years."
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "It's just been collecting dust and clutter."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:9cf53d31905d2169",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3915,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 10172,
+            "output_tokens_details": {
+              "reasoning_tokens": 9608
+            },
+            "total_tokens": 14087
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:299eac882c84e714",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space.",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "contradicted",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "subject",
+                    "evidence": [
+                      {
+                        "quote": "There's this one old desk that's been taking up a lot of space and I haven't used it in years.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "It's just been collecting dust and clutter.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "subject",
+                    "reason": "The pronoun 'It' refers to the old desk, not the user; candidate resolves subject as self."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:638b9b348b0ee8ce",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2945,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 13451,
+            "output_tokens_details": {
+              "reasoning_tokens": 13071
+            },
+            "total_tokens": 16396
+          }
+        }
+      ],
+      "text": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1686436620,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized. "
                 }
               },
               {
@@ -546,14 +746,29 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c1e8331ac3eaac17",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:6e1930449c343ace",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3997,
+            "input_tokens_details": {
+              "cached_tokens": 3328
+            },
+            "output_tokens": 5868,
+            "output_tokens_details": {
+              "reasoning_tokens": 5391
+            },
+            "total_tokens": 9865
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm thinking of turning that space into a little workstation for my daily tidying routine."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
             "review_binding": "source-review-v3:f56f927d3a6fe30d",
@@ -594,8 +809,19 @@
               }
             ]
           },
-          "request": "fnv1a64:d09cc8962a0475bd",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:6c818e8d1032e021",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3099,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 10275,
+            "output_tokens_details": {
+              "reasoning_tokens": 9870
+            },
+            "total_tokens": 13374
+          }
         }
       ],
       "text": "I'm thinking of turning that space into a little workstation for my daily tidying routine. I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized. Plus, it'll be a great way to stay consistent with my daily routine, now that I've been doing it for 3 weeks."
@@ -609,484 +835,8 @@
       "observed_at": 1686436680,
       "recorded": [
         {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-06-18",
-                  "expression": "1",
-                  "kind": "retain_until"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "organizing garage"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cleaning",
-                  "organization"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I'm planing to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2023-06-18",
-                  "expression": "1",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "cleaning",
-                  "acceptance"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew. But anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find."
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:faf853cbe11f894b",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels.",
-                "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly.",
-                "I've really been loving the all-natural brand I started using last week for the bathroom.",
-                "It's been doing a great job of getting rid of soap scum and mildew.",
-                "I'm thinking of using some stackable bins and labels to keep everything organized and easy to find."
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:20cc658ad4181678",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "insufficient",
-                  "scope": "contradicted",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "contradicted"
-                },
-                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
-                "evidence": [
-                  {
-                    "quote": "I'm thinking of turning that space into a little workstation for my daily tidying routine. I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized.",
-                    "turn_index": 5
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "Candidate predicate 'likes' is not asserted; the span says only that the user is planning to keep cleaning supplies and has/uses specialized tools."
-                  },
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "value.Text is not verbatim: it has 'planing' instead of USER's 'planning', and it bundles multiple sentences under predicate 'likes' rather than the liked object."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly.",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "But anyway, back to the garage organization project.",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "I'm thinking of turning that space into a little workstation for my daily tidying routine. I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized.",
-                        "turn_index": 5
-                      }
-                    ],
-                    "field": "scope.conditions",
-                    "reason": "Candidate scopes the cleaning supplies to 'organizing garage', but the user keeps them at the workstation and reintroduces the garage project separately."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "memory_type",
-                    "reason": "memory_type Preference is unsupported; the text is a plan and possession/use statement, not a preference."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "retention_tier",
-                    "reason": "retention_tier ShortTerm is unsupported; the USER did not set a retention period or instruction for this memory."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "contradicted",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "insufficient",
-                  "value": "contradicted"
-                },
-                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "value.Text is not a complete verbatim USER sentence; it combines the liking statement with the separate garage-planning sentence and omits the paragraph break."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "I've really been loving the all-natural brand I started using last week for the bathroom.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.conditions",
-                    "reason": "scope.conditions is empty, but USER limits the all-natural brand to the bathroom."
-                  },
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "I've really been loving the all-natural brand I started using last week for the bathroom.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal.valid_from",
-                    "reason": "USER says the brand was started last week, but temporal.valid_from is null, so the asserted start is not represented."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I've really been loving the all-natural brand I started using last week for the bathroom.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "memory_type",
-                    "reason": "memory_type Fact conflicts with the expressed preference 'loving'; this is a preference, not a fact."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I've really been loving the all-natural brand I started using last week for the bathroom.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "retention_tier",
-                    "reason": "retention_tier ShortTerm is unsupported; the USER did not set a retention period."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:56e80b6cba32b6ba",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s2_t1",
-      "observed_at": 1696081380,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "."
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "daily_tidying"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:88d325294c535b07",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I'm planning to clean out the garage this weekend"
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:957fbb8a6be5990f",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment.",
-                "evidence": [
-                  {
-                    "quote": "I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!",
-                    "turn_index": 1
-                  },
-                  {
-                    "quote": "now that I've been doing it for 3 weeks",
-                    "turn_index": 5
-                  }
-                ],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:8533947aad52ed15",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s2_t2",
-      "observed_at": 1696081440,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
-          },
-          "request": "fnv1a64:d46eeceb79d41217",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:e1051a2f3813c4dd",
-            "reviews": []
-          },
-          "request": "fnv1a64:e25970566e0b8638",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm planning to use some of those tips to organize my garage, especially the one about categorizing and grouping similar items. I've also been thinking about implementing a \"one-touch rule\" when it comes to cleaning, do you have any advice on how to make it a habit?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s2_t3",
-      "observed_at": 1696081500,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
-          },
-          "request": "fnv1a64:94f79ee4837e62c5",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:a896c3d0658c3ab9",
-            "reviews": []
-          },
-          "request": "fnv1a64:91af7f41c8328a6a",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'll definitely try to implement the \"one-touch rule\" when I'm cleaning out the garage this weekend. I've also been thinking about using a label maker to label all the storage bins and shelves, do you have any recommendations for a good label maker?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s2_t4",
-      "observed_at": 1696081560,
-      "recorded": [
-        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -1126,102 +876,615 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "personal_property",
-                  "bookshelf"
+                  "cleaning_tools"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "bookshelf"
+                  "text": "cordless vacuum"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cleaning_tools"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "microfiber mop"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cleaning_tools"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "cordless vacuum"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cleaning_tools"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "microfiber mop"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cleaning",
+                  "bathroom"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "all-natural brand for the bathroom"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "unresolved_reference": "the all-natural brand the user has been using for the bathroom"
+                },
+                "tags": [
+                  "cleaning",
+                  "bathroom"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "It's been doing a great job of getting rid of soap scum and mildew."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:cb09fe0b59910026",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:cf3551a0f707355a",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4142,
+            "input_tokens_details": {
+              "cached_tokens": 3328
+            },
+            "output_tokens": 16726,
+            "output_tokens_details": {
+              "reasoning_tokens": 15237
+            },
+            "total_tokens": 20868
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I think I'll go with the Brother P-Touch label maker, I've heard good things about it."
+                "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels.",
+                "I started using last week for the bathroom.",
+                "I'm thinking of using some stackable bins and labels to keep everything organized and easy to find."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d017634df92e0851",
+            "review_binding": "source-review-v3:184cfa3a4d840bc3",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "insufficient",
+                  "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
-                  "source": "insufficient",
+                  "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
                   "value": "supported"
                 },
-                "current_user_quote": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?",
+                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "The user asks for advice on organizing their bookshelf; they do not assert ownership as the property/action."
-                  },
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "Can you give me some advice on how to organize my bookshelf?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "The bookshelf is mentioned in a question requesting advice, not as an assertion of ownership."
-                  },
-                  {
-                    "check": "source",
-                    "evidence": [
-                      {
-                        "quote": "Can you give me some advice on how to organize my bookshelf?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "source",
-                    "reason": "The bookshelf mention occurs only within a question requesting advice, not a current user assertion of ownership."
-                  }
-                ]
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 3,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 4,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 5,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:0d82d0e2bf12b028",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:2bd7970f729d6177",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 5129,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 16752,
+            "output_tokens_details": {
+              "reasoning_tokens": 15405
+            },
+            "total_tokens": 21881
+          }
         }
       ],
-      "text": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?"
+      "text": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?"
     },
     {
       "expect": {
         "forbid": [],
         "store": []
       },
-      "id": "s2_t5",
-      "observed_at": 1696081620,
+      "id": "s2_t1",
+      "observed_at": 1696081380,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "for 4 weeks now"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment. How much of a difference it's made in my apartment."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:338c5d73e8295cde",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4212,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 10502,
+            "output_tokens_details": {
+              "reasoning_tokens": 10231
+            },
+            "total_tokens": 14714
+          }
+        }
+      ],
+      "text": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t2",
+      "observed_at": 1696081440,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:b56cf6cb398180ce",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4271,
+            "input_tokens_details": {
+              "cached_tokens": 3456
+            },
+            "output_tokens": 724,
+            "output_tokens_details": {
+              "reasoning_tokens": 703
+            },
+            "total_tokens": 4995
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:e1051a2f3813c4dd",
+            "reviews": []
+          },
+          "request": "fnv1a64:3ee840ff7421f9b0",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2575,
+            "input_tokens_details": {
+              "cached_tokens": 1408
+            },
+            "output_tokens": 2464,
+            "output_tokens_details": {
+              "reasoning_tokens": 2415
+            },
+            "total_tokens": 5039
+          }
+        }
+      ],
+      "text": "I'm planning to use some of those tips to organize my garage, especially the one about categorizing and grouping similar items. I've also been thinking about implementing a \"one-touch rule\" when it comes to cleaning, do you have any advice on how to make it a habit?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t3",
+      "observed_at": 1696081500,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:cb430080f2647a08",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4325,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 615,
+            "output_tokens_details": {
+              "reasoning_tokens": 596
+            },
+            "total_tokens": 4940
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": true,
+            "review_binding": "source-review-v3:a896c3d0658c3ab9",
+            "reviews": []
+          },
+          "request": "fnv1a64:d9bc82f9bf8d7086",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2629,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1782,
+            "output_tokens_details": {
+              "reasoning_tokens": 1733
+            },
+            "total_tokens": 4411
+          }
+        }
+      ],
+      "text": "I'll definitely try to implement the \"one-touch rule\" when I'm cleaning out the garage this weekend. I've also been thinking about using a label maker to label all the storage bins and shelves, do you have any recommendations for a good label maker?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t4",
+      "observed_at": 1696081560,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -1240,7 +1503,135 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "owns",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "bookshelf"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:fb13aa125dc0694b",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4362,
+            "input_tokens_details": {
+              "cached_tokens": 3712
+            },
+            "output_tokens": 7297,
+            "output_tokens_details": {
+              "reasoning_tokens": 7052
+            },
+            "total_tokens": 11659
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I think I'll go with the Brother P-Touch label maker"
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:8ef38c37cdd8ce2c",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:72c69e505336d187",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2991,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6553,
+            "output_tokens_details": {
+              "reasoning_tokens": 6390
+            },
+            "total_tokens": 9544
+          }
+        }
+      ],
+      "text": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s2_t5",
+      "observed_at": 1696081620,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "current turn"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -1273,7 +1664,11 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "current turn"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -1285,7 +1680,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "owns",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -1317,17 +1712,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7ed098ac2d4aba54",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:8b68d813ee7b4045",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4424,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 10437,
+            "output_tokens_details": {
+              "reasoning_tokens": 9862
+            },
+            "total_tokens": 14861
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ccba837969527caf",
+            "review_binding": "source-review-v3:1de6579400f13193",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -1365,8 +1773,19 @@
               }
             ]
           },
-          "request": "fnv1a64:6391525dd4ad479a",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:ccf3a6b26b62834c",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3428,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 3859,
+            "output_tokens_details": {
+              "reasoning_tokens": 3566
+            },
+            "total_tokens": 7287
+          }
         }
       ],
       "text": "I'm planning to use some of those tips to organize my bookshelf, especially the one about categorizing and grouping similar books together. Speaking of categorizing, do you have any advice on how to categorize my cleaning supplies? I've been thinking of organizing them by room or by type of cleaning product."
@@ -1388,24 +1807,52 @@
       "query": "How long have I been sticking to my daily tidying routine?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
               "started daily tidying routine",
-              "daily tidying streak",
-              "kept up with tidying every day"
+              "have been tidying every day since",
+              "kept up daily cleaning habit"
             ]
           },
-          "request": "fnv1a64:c41192c790198bf0",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:bd5e919f42f7f35c",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 269,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 736,
+            "output_tokens_details": {
+              "reasoning_tokens": 707
+            },
+            "total_tokens": 1005
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "4 weeks",
-            "candidate_index": 4,
+            "candidate_index": 6,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:310111941ad8bcb1",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:0a75e0729ead30cf",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1522,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 326,
+            "output_tokens_details": {
+              "reasoning_tokens": 296
+            },
+            "total_tokens": 1848
+          }
         }
       ]
     }

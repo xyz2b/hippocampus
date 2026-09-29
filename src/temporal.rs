@@ -197,9 +197,14 @@ pub(crate) fn normalized_calendar(
     if let [span] = absolute_spans(expression)[..]
         && span.text == expression
     {
-        // The USER wrote the calendar dates; a model proposal may only restate them.
+        // The USER wrote the calendar dates; a model proposal may only restate them. Its end may
+        // name the last day (inclusive) or the day after it; the USER's span is what is kept.
+        let restates_end = |end: &str| {
+            parse_iso_date(end)
+                .is_some_and(|end| end == span.end || end.next_day() == Some(span.end))
+        };
         if proposed_start.is_some_and(|start| parse_iso_date(start) != Some(span.start))
-            || proposed_end_exclusive.is_some_and(|end| parse_iso_date(end) != Some(span.end))
+            || proposed_end_exclusive.is_some_and(|end| !restates_end(end))
         {
             return Err(TemporalResolveError(
                 "model dates do not match the USER calendar dates".into(),
@@ -290,6 +295,24 @@ fn proposed_day(
         ));
     }
     resolve_temporal_expression(expression, now, offset)
+}
+
+/// The part of a USER time phrase the runtime can check a model date against: the whole
+/// phrase, or the USER's own calendar dates inside it ("2027年4月1日至2027年4月14日" in
+/// "从2027年4月1日至2027年4月14日（含首尾两日）"). Relative words are never cut out of a longer
+/// phrase: "明天后" is not "明天".
+pub(crate) fn checkable_part(expression: &str) -> Option<&str> {
+    let expression = expression.trim();
+    if relative_day_offset(expression).is_some()
+        || parse_iso_date(expression).is_some()
+        || calendar_interval(expression)
+    {
+        return Some(expression);
+    }
+    match absolute_spans(expression)[..] {
+        [span] => Some(span.text),
+        _ => None,
+    }
 }
 
 fn calendar_interval(expression: &str) -> bool {
@@ -572,7 +595,7 @@ pub(crate) fn is_valid_iso_date(value: &str) -> bool {
     parse_iso_date(value).is_some()
 }
 
-fn parse_iso_date(value: &str) -> Option<Date> {
+pub(crate) fn parse_iso_date(value: &str) -> Option<Date> {
     let mut parts = value.split('-');
     let (year, month, day) = (parts.next()?, parts.next()?, parts.next()?);
     if parts.next().is_some()
@@ -618,6 +641,19 @@ mod tests {
         let range = |text| normalized_calendar(text, Some("2027-04-15"), Some("2027-05-01"), now, 28800);
         assert!(matches!(range("2027年4月15日至2027年4月30日"), Ok(Some(_))));
         assert!(range("2027年4月15日至2027年4月29日").is_err());
+        // An end naming the last day restates the same USER span; the kept end stays exclusive.
+        let inclusive = |end| {
+            normalized_calendar("2027年4月15日至2027年4月30日", Some("2027-04-15"), Some(end), now, 28800)
+        };
+        let Ok(Some(TemporalResolution::Range(kept))) = inclusive("2027-04-30") else {
+            panic!("inclusive end must restate the USER span");
+        };
+        let Ok(Some(TemporalResolution::Range(exclusive))) = range("2027年4月15日至2027年4月30日")
+        else {
+            unreachable!()
+        };
+        assert_eq!((kept.start, kept.end), (exclusive.start, exclusive.end));
+        assert!(inclusive("2027-04-29").is_err());
     }
 
     #[test]

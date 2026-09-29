@@ -24,6 +24,8 @@
       "id": "conflict_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -33,117 +35,11 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "n"
+                  "expression": "无"
                 },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "device_qifeng_reader"
-                },
-                "tags": [
-                  "device_spec",
-                  "screen_size"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:47087fe2e39ed9ee",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "我已确认栖风读书机的屏幕尺寸是7英寸。",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:218552ac58afbeb6",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
-    },
-    {
-      "expect": {
-        "forbid": [
-          {
-            "subject": "device_qifeng_reader",
-            "value": "7"
-          },
-          {
-            "subject": "device_qifeng_reader",
-            "value": "8"
-          }
-        ],
-        "store": []
-      },
-      "id": "conflict_s2",
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "supersede",
-                  "reason": "correction",
                   "target_memory_id": null
                 },
                 "memory_request": {
@@ -178,28 +74,284 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:387dd28bc1ce454d",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3726,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 968,
+            "output_tokens_details": {
+              "reasoning_tokens": 731
+            },
+            "total_tokens": 4694
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:e6881b8f829975bb",
+            "review_binding": "source-review-v3:974359b06b25c0f6",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "contradicted",
-                  "metadata": "contradicted",
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:01fa3cd01b79dcd8",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2337,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6131,
+            "output_tokens_details": {
+              "reasoning_tokens": 6007
+            },
+            "total_tokens": 8468
+          }
+        }
+      ],
+      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+    },
+    {
+      "expect": {
+        "forbid": [
+          {
+            "subject": "device_qifeng_reader",
+            "value": "7"
+          },
+          {
+            "subject": "device_qifeng_reader",
+            "value": "8"
+          }
+        ],
+        "store": []
+      },
+      "id": "conflict_s2",
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "device_qifeng_reader"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "unresolved_reference": "两份记录"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "retract",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "device_qifeng_reader"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:1b98e537c49160de",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3776,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 21750,
+            "output_tokens_details": {
+              "reasoning_tokens": 21011
+            },
+            "total_tokens": 25526
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:b13ca4410b68a91c",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
+                "evidence": [
+                  {
+                    "quote": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+                    "turn_index": 1
+                  }
+                ],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -210,35 +362,23 @@
                 },
                 "current_user_quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "Candidate intent asserts Supersede/Correction targeting turn 1, but USER states an unresolved conflict and says neither 7 nor 8 inches can be final, so no correction or superseding value is asserted."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "Candidate explicit_memory_request=true, but USER gives no instruction to remember/save/retain this memory; the turn only reports an unresolved conflict."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:0534b09c396e433b",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:7d15198b3d744511",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2795,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 14598,
+            "output_tokens_details": {
+              "reasoning_tokens": 14306
+            },
+            "total_tokens": 17393
+          }
         }
       ],
       "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
@@ -265,23 +405,52 @@
       "query": "栖风读书机的屏幕是几英寸？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "栖风读书机 采用 英寸 墨水屏",
-              "栖风读书机 配备 显示屏 尺寸",
-              "栖风阅读器 搭载 墨水屏 规格"
+              "栖风读书机 屏幕 尺寸 英寸",
+              "栖风读书机 显示屏 规格 几寸",
+              "栖风读书机 墨水屏 尺寸"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:75908cea304ffda9",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 265,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 522,
+            "output_tokens_details": {
+              "reasoning_tokens": 482
+            },
+            "total_tokens": 787
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "7英寸",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:d9488ebc49b7f512",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:1e069d0a2ebcac20",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 551,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 46,
+            "output_tokens_details": {
+              "reasoning_tokens": 18
+            },
+            "total_tokens": 597
+          }
         }
       ]
     },
@@ -295,23 +464,52 @@
       "query": "栖风读书机的屏幕到底是几英寸？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "栖风读书机 屏幕尺寸 英寸",
-              "栖风读书机 配备 显示屏 英寸",
-              "栖风读书机 屏幕 大小 规格"
+              "栖风读书机 采用 英寸 屏幕",
+              "栖风读书机 配备 英寸 墨水屏",
+              "栖风读书机 屏幕 规格 参数"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:9fe56209aefa5430",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 265,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 370,
+            "output_tokens_details": {
+              "reasoning_tokens": 329
+            },
+            "total_tokens": 635
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "conflict"
           },
-          "request": "fnv1a64:667b6c1b83d77c81",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:ddc42411d0421cd5",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 626,
+            "input_tokens_details": {
+              "cached_tokens": 512
+            },
+            "output_tokens": 80,
+            "output_tokens_details": {
+              "reasoning_tokens": 52
+            },
+            "total_tokens": 706
+          }
         }
       ]
     },
@@ -325,23 +523,52 @@
       "query": "能确定栖风读书机是7英寸屏幕吗？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "栖风读书机 7英寸 屏幕 参数",
-              "栖风阅读器 7寸 墨水屏 规格",
-              "栖风电纸书 屏幕尺寸 7英寸 配置"
+              "栖风读书机配备7英寸屏幕",
+              "栖风读书机屏幕尺寸7英寸",
+              "栖风读书机7寸显示屏规格"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:5a6569594fdb3cf8",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 268,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1088,
+            "output_tokens_details": {
+              "reasoning_tokens": 1054
+            },
+            "total_tokens": 1356
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "conflict"
           },
-          "request": "fnv1a64:756fc525f09e6c1f",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:e8b0f33efd425313",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 629,
+            "input_tokens_details": {
+              "cached_tokens": 512
+            },
+            "output_tokens": 100,
+            "output_tokens_details": {
+              "reasoning_tokens": 72
+            },
+            "total_tokens": 729
+          }
         }
       ]
     }

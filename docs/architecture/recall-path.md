@@ -216,7 +216,9 @@ flowchart TD
     P6 -- 否 --> C7["insufficient_evidence"]
 ```
 
-契约字段：`version=1`、`query`、`context`、`task_id`、`status`、`safe_answer`、`safe_source_ids`、`sources`（引用编号与原文）、`read_revision`、`source_revision`。只有 `source_linked_fact` 和 `source_linked_exact_identity` 允许引用事实来源；其他状态下，客户端应原样使用 `safe_answer`。
+契约字段：`version=1`、`query`、`context`、`task_id`、`status`、`safe_answer`、`safe_source_ids`、`sources`（引用编号、原文和证据等级 `grade`）、`read_revision`、`source_revision`。允许引用来源的状态有 `source_linked_fact`、`source_linked_exact_identity`，以及 assisted 模式下本地规则核准不了时由模型答案检查给出的 `source_linked_model_answer`（答案是原文逐字片段）和 `source_linked_computed_elapsed`（模型给出事件日期，代码计算间隔）；其他状态下，客户端应原样使用 `safe_answer`。
+
+证据等级只做标注，不做分支（见 `roadmap.md` 3.4）：`committed` 表示原文已整理进记忆，`uncommitted` 表示原文已保存但尚未整理。模型答案检查两类原文都可以引用，是否为同一主体、是否被后来的话更正、是不是提问或假设，都由模型判断；代码只核验答案是原文的逐字片段、来源归属和任务范围。
 
 ### 7.2 `memory_validate_answer`
 

@@ -11,6 +11,8 @@
       "observed_at": 1684631460,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -20,7 +22,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "再"
+                  "expression": "recently"
                 },
                 "intent": {
                   "kind": "assert",
@@ -53,29 +55,45 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "vase",
+                  "kitchen"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
+                  "text": "I recently added a vase with fresh greenery to my kitchen countertop."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d8bb131e061ea438",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:1521b5d2ba661cb1",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3725,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 10215,
+            "output_tokens_details": {
+              "reasoning_tokens": 9975
+            },
+            "total_tokens": 13940
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:35606417da58e8fb",
+            "review_binding": "source-review-v3:2b4644fe708daa23",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -87,17 +105,40 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "supported",
+                  "temporal": "insufficient",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "I recently added a vase with fresh greenery to my kitchen countertop",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "USER only said 'recently', a vague past qualifier with no explicit dates. The frozen valid_from 2023-04-21 and valid_to 2023-05-21T09:11:01 are extractor-inferred guesses, so these bounds are not justified by the USER words and should remain unknown/open-ended."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:ce915702e3662dc5",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:dfbb052822b22959",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2467,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2298,
+            "output_tokens_details": {
+              "reasoning_tokens": 2034
+            },
+            "total_tokens": 4765
+          }
         }
       ],
       "text": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
@@ -111,6 +152,8 @@
       "observed_at": 1684631520,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -120,7 +163,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "recently"
                 },
                 "intent": {
                   "kind": "assert",
@@ -153,20 +196,92 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "home",
+                  "bedroom",
+                  "redecorating",
+                  "painting"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter! 実は 最近 寝室の壁を 明るい灰色に 塗り替えた んだ - it が 部屋を より 明るく 感じさせて くれる！"
+                  "text": "By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter! "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4d2d4961407d855a",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:fcdcf59b95c20a57",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3798,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 2061,
+            "output_tokens_details": {
+              "reasoning_tokens": 1792
+            },
+            "total_tokens": 5859
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:08ec4cd87e72fb9b",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "recently repainted my bedroom walls a lighter shade of gray",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal",
+                    "reason": "USER said only 'recently repainted' and did not assert the exact valid_from 2023-04-21T09:12+08:00 or valid_to 2023-05-21T09:12:01+08:00; the exact boundaries are inferred, so they should remain unknown/open-ended."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:a94213b3a05d9065",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2594,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 10704,
+            "output_tokens_details": {
+              "reasoning_tokens": 10386
+            },
+            "total_tokens": 13298
+          }
         }
       ],
       "text": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
@@ -180,14 +295,29 @@
       "observed_at": 1684631580,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b7eb51988b4c7b4e",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:c104dedc451175c3",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3832,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 447,
+            "output_tokens_details": {
+              "reasoning_tokens": 426
+            },
+            "total_tokens": 4279
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -197,8 +327,19 @@
             "review_binding": "source-review-v3:8f33ef9e8b1e15bc",
             "reviews": []
           },
-          "request": "fnv1a64:ece6458488a005df",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:290d4e86c0bdb287",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2138,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 954,
+            "output_tokens_details": {
+              "reasoning_tokens": 903
+            },
+            "total_tokens": 3092
+          }
         }
       ],
       "text": "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?"
@@ -212,14 +353,29 @@
       "observed_at": 1684631640,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:b34b5ba9ee25e312",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:6909906fb8d8aedf",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3919,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 2329,
+            "output_tokens_details": {
+              "reasoning_tokens": 2308
+            },
+            "total_tokens": 6248
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -229,8 +385,19 @@
             "review_binding": "source-review-v3:6d548e88b370564e",
             "reviews": []
           },
-          "request": "fnv1a64:1572a6e6f569a26b",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b22e9bd9a4bc4cf3",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2222,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1274,
+            "output_tokens_details": {
+              "reasoning_tokens": 1224
+            },
+            "total_tokens": 3496
+          }
         }
       ],
       "text": "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?"
@@ -244,25 +411,55 @@
       "observed_at": 1684631700,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:a8a04ae3e972d97b",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:48da3308390125aa",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 4004,
+            "input_tokens_details": {
+              "cached_tokens": 3328
+            },
+            "output_tokens": 4974,
+            "output_tokens_details": {
+              "reasoning_tokens": 4952
+            },
+            "total_tokens": 8978
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm considering a pendant light above the desk and some table lamps for task lighting.",
+                "I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents.",
+                "For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space."
+              ],
+              "status": "incomplete"
             },
-            "omission_supported": true,
+            "omission_supported": false,
             "review_binding": "source-review-v3:8b9470c2bd389767",
             "reviews": []
           },
-          "request": "fnv1a64:f14a078f30e4e2d7",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:f79b5d8e4b9ea81b",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2307,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 4223,
+            "output_tokens_details": {
+              "reasoning_tokens": 4108
+            },
+            "total_tokens": 6530
+          }
         }
       ],
       "text": "I'm considering a pendant light above the desk and some table lamps for task lighting. I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents. For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space. Do you have any suggestions on how to choose the right pendant light for my home office nook?"
@@ -284,24 +481,52 @@
       "query": "What color did I repaint my bedroom walls?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "repainted bedroom walls color",
-              "painted bedroom walls new shade",
-              "bedroom wall paint color picked"
+              "repainted bedroom walls",
+              "bedroom walls painted",
+              "bedroom wall paint color"
             ]
           },
-          "request": "fnv1a64:2fed03d218572b44",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:e995e06e63044840",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 993,
+            "output_tokens_details": {
+              "reasoning_tokens": 970
+            },
+            "total_tokens": 1259
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "verdict": "insufficient"
+            "answer_text": "a lighter shade of gray",
+            "candidate_index": 1,
+            "event_date": null,
+            "unit": null,
+            "verdict": "answer"
           },
-          "request": "fnv1a64:3a0accf896d22f3b",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:302c360cc8eb34bc",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 955,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 313,
+            "output_tokens_details": {
+              "reasoning_tokens": 282
+            },
+            "total_tokens": 1268
+          }
         }
       ]
     }

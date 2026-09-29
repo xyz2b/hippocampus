@@ -606,8 +606,9 @@ impl CandidateMemory {
         !value.is_empty()
             && self.evidence.iter().any(|evidence| {
                 fact_terminal(&evidence.quote) == value
-                    || user_sentences(&evidence.quote)
-                        .any(|sentence| fact_terminal(sentence) == value)
+                    || sentence_runs(&evidence.quote)
+                        .into_iter()
+                        .any(|run| fact_terminal(run) == value)
             })
     }
 
@@ -811,7 +812,23 @@ fn user_sentences(quote: &str) -> impl Iterator<Item = &str> {
     .filter(|sentence| !fact_terminal(sentence).is_empty())
 }
 
-/// The generic fact value is runtime-owned: the complete USER sentence the model pointed at.
+/// Every run of consecutive whole USER sentences, as slices of the quote.
+fn sentence_runs(quote: &str) -> Vec<&str> {
+    let bounds: Vec<(usize, usize)> = user_sentences(quote)
+        .map(|sentence| {
+            let start = sentence.as_ptr() as usize - quote.as_ptr() as usize;
+            (start, start + sentence.len())
+        })
+        .collect();
+    // ponytail: O(n²) runs per quote; USER turns are a few dozen sentences at most.
+    (0..bounds.len())
+        .flat_map(|i| (i..bounds.len()).map(move |j| (i, j)))
+        .map(|(i, j)| &quote[bounds[i].0..bounds[j].1])
+        .collect()
+}
+
+/// The generic fact value is runtime-owned: the complete USER sentence (or run of consecutive
+/// whole sentences) the model pointed at.
 /// A text fragment selects the one sentence containing it; any other value kind is only
 /// unambiguous when the quote is a single sentence. Otherwise the value is left unchanged.
 pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryValue {
@@ -833,10 +850,11 @@ pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryV
                 None
             } else if text == whole {
                 Some(quote.trim().to_owned())
-            } else if let Some(sentence) =
-                user_sentences(quote).find(|s| squash(fact_terminal(s)) == text)
+            } else if let Some(sentence) = sentence_runs(quote)
+                .into_iter()
+                .find(|s| squash(fact_terminal(s)) == text)
             {
-                // Store the USER's exact sentence, not the model's copy with stray marks.
+                // Store the USER's exact sentence(s), not the model's copy with stray marks.
                 Some(sentence.trim().to_owned())
             } else {
                 pick(Some(&text))
@@ -845,4 +863,24 @@ pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryV
         _ => pick(None),
     };
     chosen.map_or(value, MemoryValue::Text)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{MemoryValue, complete_fact_sentence};
+
+    #[test]
+    fn generic_fact_accepts_consecutive_whole_sentences_only() {
+        let quote = "Books help. I stop emails by 7 pm. It helps me relax. Any tips?";
+        let fact = |text: &str| complete_fact_sentence(MemoryValue::Text(text.into()), quote);
+        assert_eq!(
+            fact("I stop emails by 7 pm. It helps me relax."),
+            MemoryValue::Text("I stop emails by 7 pm. It helps me relax.".into())
+        );
+        // Not consecutive: left unchanged, so the completeness check rejects it.
+        assert_eq!(
+            fact("Books help. It helps me relax."),
+            MemoryValue::Text("Books help. It helps me relax.".into())
+        );
+    }
 }

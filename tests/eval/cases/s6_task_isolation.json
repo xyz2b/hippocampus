@@ -24,6 +24,8 @@
       "id": "task_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -74,16 +76,30 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:f2fdc175be637a96",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3748,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 15520,
+            "output_tokens_details": {
+              "reasoning_tokens": 15259
+            },
+            "total_tokens": 19268
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:0b05f6769179a099",
+            "review_binding": "source-review-v3:ba87db7632001ea1",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -104,7 +120,19 @@
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:f125150cda4a1f55",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2398,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 9567,
+            "output_tokens_details": {
+              "reasoning_tokens": 9426
+            },
+            "total_tokens": 11965
+          }
         }
       ],
       "task_id": "s6-tide-exhibit",
@@ -123,6 +151,8 @@
       "id": "task_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -161,49 +191,35 @@
                 "subject": {
                   "entity_id": "device_zheye_terminal"
                 },
-                "tags": [],
+                "tags": [
+                  "高原路演任务",
+                  "设备配置",
+                  "开机显示语言"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                  "text": "该任务要求它的开机显示语言设为意大利语。你"
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:dc40ea13b0d1139e",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3749,
+            "input_tokens_details": {
+              "cached_tokens": 2048
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:65c736a21ee80438",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 7061,
+            "output_tokens_details": {
+              "reasoning_tokens": 6818
+            },
+            "total_tokens": 10810
+          }
         }
       ],
       "task_id": "s6-plateau-demo",
@@ -231,23 +247,52 @@
       "query": "折页导航终端开机应显示哪种语言？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "折页导航终端开机默认显示中文",
-              "折页导航终端启动后显示英文",
-              "折页导航终端语言配置为中文"
+              "折页导航终端 开机 默认语言",
+              "导航终端 启动 显示语言 设置",
+              "导览终端 首次开机 界面语言"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:3ffa3bef10b619ad",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 271,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 985,
+            "output_tokens_details": {
+              "reasoning_tokens": 948
+            },
+            "total_tokens": 1256
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "西班牙语",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:432b47ad860df422",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:c40de9a4b2cd5d7e",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 571,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 68,
+            "output_tokens_details": {
+              "reasoning_tokens": 40
+            },
+            "total_tokens": 639
+          }
         }
       ],
       "task_id": "s6-tide-exhibit"
@@ -271,23 +316,52 @@
       "query": "折页导航终端开机应显示哪种语言？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "折页导航终端 开机 显示 中文",
-              "导航终端 启动 默认 语言 英文",
-              "折页导航 终端 开机 语言 配置"
+              "折页导航终端 开机默认显示 语言",
+              "折页导航 终端 启动后 界面语言 设置",
+              "折叠导航终端 上电 初始语言"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:4ef248dc3d4456c3",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 272,
+            "input_tokens_details": {
+              "cached_tokens": 256
+            },
+            "output_tokens": 1041,
+            "output_tokens_details": {
+              "reasoning_tokens": 999
+            },
+            "total_tokens": 1313
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "意大利语",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:b08057f913b7ab41",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:3542c7f0d5caa494",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 571,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 110,
+            "output_tokens_details": {
+              "reasoning_tokens": 82
+            },
+            "total_tokens": 681
+          }
         }
       ],
       "task_id": "s6-plateau-demo"
@@ -311,23 +385,52 @@
       "query": "继续潮汐展陈任务的展台演示配置：折页导航终端应沿用意大利语作为开机显示语言吗？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "折页导航终端 开机 默认 意大利语",
-              "展台演示 导航终端 显示语言 配置",
-              "潮汐展陈 终端 语言 设置 意大利语"
+              "折页导航终端 启动显示语言 设为意大利语",
+              "展台演示 折页导航终端 默认语言 保持意大利语",
+              "潮汐展陈 导航终端 界面语言 意大利语 配置"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:094b39eab3d799a8",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 286,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 708,
+            "output_tokens_details": {
+              "reasoning_tokens": 656
+            },
+            "total_tokens": 994
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "西班牙语",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:a07d94347005f3e1",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:7d28206fbf30e0ab",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 586,
+            "input_tokens_details": {
+              "cached_tokens": 512
+            },
+            "output_tokens": 224,
+            "output_tokens_details": {
+              "reasoning_tokens": 196
+            },
+            "total_tokens": 810
+          }
         }
       ],
       "task_id": "s6-tide-exhibit"

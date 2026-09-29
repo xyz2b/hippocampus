@@ -11,6 +11,8 @@
       "observed_at": 1684826640,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -20,7 +22,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
+                  "expression": "just"
                 },
                 "intent": {
                   "kind": "assert",
@@ -36,7 +38,9 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [],
+                    "activities": [
+                      "concert"
+                    ],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -54,7 +58,7 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "music",
+                  "The 1975",
                   "concert"
                 ],
                 "value": {
@@ -62,14 +66,69 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I"
+                  "text": "I just got back from seeing The 1975 live"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d70e5117ad21682d",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:068fba527a7fa420",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3715,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 16705,
+            "output_tokens_details": {
+              "reasoning_tokens": 16457
+            },
+            "total_tokens": 20420
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:535f93340c4720cf",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:4d72aefdc626f8d0",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2360,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6550,
+            "output_tokens_details": {
+              "reasoning_tokens": 6410
+            },
+            "total_tokens": 8910
+          }
         }
       ],
       "text": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?"
@@ -83,13 +142,19 @@
       "observed_at": 1684826700,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "right now"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -121,7 +186,10 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "music",
+                  "genre"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -129,113 +197,37 @@
                   "kind": "text",
                   "text": "indie and alternative rock"
                 }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "Arctic Monkeys"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "preference",
-                "polarity": "positive",
-                "predicate": "likes",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "The Neighbourhood"
-                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:391b1a9a07648202",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:fa5eff2239baf56f",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3751,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 7448,
+            "output_tokens_details": {
+              "reasoning_tokens": 7217
+            },
+            "total_tokens": 11199
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
+                "Arctic Monkeys and The Neighbourhood sound great.",
                 "I've been listening to their songs a lot on Spotify lately."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:01aff16118ee0697",
+            "review_binding": "source-review-v3:e42b9c46c86d8502",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -253,45 +245,22 @@
                 "current_user_quote": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
-                "evidence": [],
-                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:0f26b72ce642f361",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:ed92b81728bb94d9",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2407,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 8474,
+            "output_tokens_details": {
+              "reasoning_tokens": 8299
+            },
+            "total_tokens": 10881
+          }
         }
       ],
       "text": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately."
@@ -305,17 +274,15 @@
       "observed_at": 1684826760,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
+                "extraction_confidence": "medium",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -327,7 +294,7 @@
                 "memory_type": "preference",
                 "polarity": "positive",
                 "predicate": "likes",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -340,14 +307,19 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "music"
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "live music",
+                  "concert",
+                  "energy",
+                  "crowd interaction"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -360,11 +332,7 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -389,31 +357,31 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "music"
                 },
                 "source": "user_statement",
                 "strength": null,
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "The 1975",
+                  "concert",
+                  "live music"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "That's what made The 1975's concert so amazing."
+                  "text": "That''s what made The 1975''s concert so amazing."
                 }
               },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -438,36 +406,55 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": null
+                  "domain": "music"
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "moderate",
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "live music",
+                  "setlist",
+                  "old and new material"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "when bands play a good mix of old and new material"
+                  "text": "bands playing a good mix of old and new material"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:43ac4826088b2efb",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:8c033db37434e92a",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3798,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 9647,
+            "output_tokens_details": {
+              "reasoning_tokens": 8498
+            },
+            "total_tokens": 13445
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "That's what made The 1975's concert so amazing."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:0693220376892722",
+            "review_binding": "source-review-v3:020de15e7c92abd4",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -502,28 +489,22 @@
                 "current_user_quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
-                "evidence": [],
-                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:9e0ab1a5bc8c9a47",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:bc199b3ec92979ec",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2812,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 10364,
+            "output_tokens_details": {
+              "reasoning_tokens": 10084
+            },
+            "total_tokens": 13176
+          }
         }
       ],
       "text": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material."
@@ -537,6 +518,8 @@
       "observed_at": 1684826820,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -571,7 +554,7 @@
                   "domain": null
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "moderate",
                 "subject": {
                   "entity_id": "self"
                 },
@@ -588,11 +571,7 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -601,7 +580,7 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "episode",
+                "memory_type": "fact",
                 "polarity": null,
                 "predicate": "visited",
                 "retention_tier": "long_term",
@@ -630,23 +609,87 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "local music venue downtown"
+                  "text": "the local music venue downtown"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "recently"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "concert"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've had some great times at the local music venue downtown, where I saw The 1975 recently."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:b92f13cb72466c71",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:ebdd057a680d787c",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3837,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 18847,
+            "output_tokens_details": {
+              "reasoning_tokens": 18150
+            },
+            "total_tokens": 22684
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:4e8c645ca248ac33",
+            "review_binding": "source-review-v3:c05aeeb2a8cbf818",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -681,11 +724,51 @@
                 "current_user_quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "insufficient",
+                  "value": "supported"
+                },
+                "current_user_quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "temporal",
+                    "evidence": [
+                      {
+                        "quote": "recently",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "temporal.valid_from",
+                    "reason": "USER only said 'recently'; the exact valid_from/valid_to interval 2023-04-23T15:27:00+08:00 to 2023-05-23T15:27:01+08:00 is an extractor proposal not asserted by USER."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:c3cb97e3750dd362",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:e0747aa5c468bb96",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 3231,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 13573,
+            "output_tokens_details": {
+              "reasoning_tokens": 13132
+            },
+            "total_tokens": 16804
+          }
         }
       ],
       "text": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently."
@@ -699,6 +782,8 @@
       "observed_at": 1684826880,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -739,80 +824,47 @@
                 },
                 "tags": [
                   "music",
-                  "live_shows",
+                  "live_music",
                   "venues"
                 ],
                 "value": {
-                  "boolean": null,
+                  "boolean": false,
                   "entity_id": null,
                   "integer": null,
-                  "kind": "text",
-                  "text": "local acts and music festivals with smaller stages"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "music",
-                  "guitar",
-                  "hobby"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've been getting back into playing guitar and I'm looking to upgrade my setup."
+                  "kind": "boolean",
+                  "text": null
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:0908a9d02074f758",
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:df419df051dd7591",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3907,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 6700,
+            "output_tokens_details": {
+              "reasoning_tokens": 6477
+            },
+            "total_tokens": 10607
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm open to exploring local acts and music festivals with smaller stages.",
+                "I've been getting back into playing guitar and I'm looking to upgrade my setup."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:219ba6f8fec19e7a",
+            "review_binding": "source-review-v3:9b07de53ca9e24f2",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -821,37 +873,58 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "supported",
+                  "scope": "insufficient",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "supported"
+                  "value": "contradicted"
                 },
                 "current_user_quote": "I'm open to exploring local acts and music festivals with smaller stages. That sounds like a great way to discover new music and experience something different.\n\nBy the way, do you have any recommendations for music gear, like turntables or guitar equipment? I've been getting back into playing guitar and I'm looking to upgrade my setup.",
                 "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm open to exploring local acts and music festivals with smaller stages. That sounds like a great way to discover new music and experience something different.\n\nBy the way, do you have any recommendations for music gear, like turntables or guitar equipment? I've been getting back into playing guitar and I'm looking to upgrade my setup.",
-                "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I'm open to exploring local acts and music festivals with smaller stages.",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "That sounds like a great way to discover new music and experience something different.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Boolean",
+                    "reason": "Candidate value Boolean(false) asserts likes=false/dislike, but user expresses openness and a positive attitude; no negation is present."
+                  },
+                  {
+                    "check": "scope",
+                    "evidence": [
+                      {
+                        "quote": "I'm open to exploring local acts and music festivals with smaller stages.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "scope",
+                    "reason": "User limits the preference to local acts and music festivals with smaller stages; candidate scope has empty conditions and null domain, omitting those restrictions."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:ee2b669c40466fe1",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:c19c6feb1f483565",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2574,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 11220,
+            "output_tokens_details": {
+              "reasoning_tokens": 10851
+            },
+            "total_tokens": 13794
+          }
         }
       ],
       "text": "I'm open to exploring local acts and music festivals with smaller stages. That sounds like a great way to discover new music and experience something different.\n\nBy the way, do you have any recommendations for music gear, like turntables or guitar equipment? I've been getting back into playing guitar and I'm looking to upgrade my setup."
@@ -873,24 +946,52 @@
       "query": "What is the name of the music streaming service have I been using lately?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "I've been using music streaming lately",
-              "listening to music streaming service recently",
-              "Spotify Apple Music subscription lately"
+              "I've been using lately",
+              "I've been using music streaming service",
+              "listening to music on streaming service"
             ]
           },
-          "request": "fnv1a64:a866d6be1e6b12e1",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:1aff678fe9a26ea9",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 271,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2070,
+            "output_tokens_details": {
+              "reasoning_tokens": 2041
+            },
+            "total_tokens": 2341
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "Spotify",
             "candidate_index": 1,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:a383279909055de5",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:11ec58c592de0b8e",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 865,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 120,
+            "output_tokens_details": {
+              "reasoning_tokens": 92
+            },
+            "total_tokens": 985
+          }
         }
       ]
     }

@@ -32,19 +32,26 @@
       "id": "person_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "expires_at": null,
-                "expiry_expression": null,
-                "explicit_memory_request": false,
                 "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": ":null"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -68,15 +75,13 @@
                 },
                 "source": "user_statement",
                 "strength": null,
-                "subject_id": "person_feng_yanchuan",
+                "subject": {
+                  "entity_id": "person_feng_yanchuan"
+                },
                 "tags": [
-                  "速写",
-                  "炭笔"
+                  "绘画工具",
+                  "个人习惯"
                 ],
-                "temporal_expression": null,
-                "unresolved_subject": null,
-                "valid_from": null,
-                "valid_to": null,
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -88,16 +93,30 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:ed6ef74eb91699d0",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3756,
+            "input_tokens_details": {
+              "cached_tokens": 3712
+            },
+            "output_tokens": 1754,
+            "output_tokens_details": {
+              "reasoning_tokens": 1513
+            },
+            "total_tokens": 5510
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:f78554211daee25c",
+            "review_binding": "source-review-v3:2713484a9d703bf4",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -118,7 +137,19 @@
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:58a0e3f0a17c53ad",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2369,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 5651,
+            "output_tokens_details": {
+              "reasoning_tokens": 5529
+            },
+            "total_tokens": 8020
+          }
         }
       ],
       "text": "冯砚川画速写时固定使用炭笔。"
@@ -136,19 +167,22 @@
       "id": "person_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
-                "expires_at": null,
-                "expiry_expression": null,
-                "explicit_memory_request": false,
                 "extraction_confidence": "high",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -172,14 +206,13 @@
                 },
                 "source": "user_statement",
                 "strength": null,
-                "subject_id": "person_feng_xuning",
+                "subject": {
+                  "entity_id": "person_feng_xuning"
+                },
                 "tags": [
-                  "sketching_tool"
+                  "速写",
+                  "钢笔"
                 ],
-                "temporal_expression": null,
-                "unresolved_subject": null,
-                "valid_from": null,
-                "valid_to": null,
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -191,16 +224,30 @@
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:cd74ca2281bc1dcd",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3767,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 1632,
+            "output_tokens_details": {
+              "reasoning_tokens": 1406
+            },
+            "total_tokens": 5399
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:dd212513bb765a46",
+            "review_binding": "source-review-v3:fbc43e2557b17dd7",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -221,7 +268,19 @@
               }
             ]
           },
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:88b16c58837737c6",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2376,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 3977,
+            "output_tokens_details": {
+              "reasoning_tokens": 3856
+            },
+            "total_tokens": 6353
+          }
         }
       ],
       "text": "冯序宁画速写时固定使用钢笔。"
@@ -273,14 +332,28 @@
       "query": "画速写时固定用哪种笔？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "冯砚川 速写 固定 用 笔",
-              "冯砚川 画速写 一直 用 铅笔",
-              "冯砚川 速写 习惯 用 炭笔"
+              "冯砚川 速写 固定使用 炭笔",
+              "冯砚川 画速写 用笔 习惯",
+              "冯砚川 速写 常用 绘画工具"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:75511163ecb70098",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 284,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 834,
+            "output_tokens_details": {
+              "reasoning_tokens": 789
+            },
+            "total_tokens": 1118
+          }
         }
       ]
     },
@@ -304,14 +377,28 @@
       "query": "冯序宁画速写时固定用哪种笔？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "冯序宁 速写 一直用 笔",
-              "冯序宁 写生 习惯用 铅笔",
-              "冯序宁 画画 固定使用 炭笔"
+              "冯序宁 速写 固定 用 钢笔",
+              "冯序宁 速写 习惯 使用 钢笔",
+              "冯序宁 速写 工具 钢笔"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:f52855556dd8e355",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 279,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1644,
+            "output_tokens_details": {
+              "reasoning_tokens": 1600
+            },
+            "total_tokens": 1923
+          }
         }
       ]
     },
@@ -335,14 +422,24 @@
       "query": "冯砚川画速写拿的是哪种笔？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "queries": [
-              "冯砚川 速写 用 铅笔",
-              "冯砚川 画速写 拿 钢笔",
-              "冯砚川 速写 使用 炭笔"
-            ]
+            "queries": []
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:61e7b853084e2ad1",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 279,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1090,
+            "output_tokens_details": {
+              "reasoning_tokens": 1083
+            },
+            "total_tokens": 1369
+          }
         }
       ]
     },
@@ -360,23 +457,52 @@
       "query": "冯序宁画速写通常花多长时间？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "冯序宁 画速写 通常 耗时",
-              "冯序宁 速写 一般 花 分钟",
-              "冯序宁 平时 速写 用时"
+              "冯序宁 画速写 用了 多久",
+              "冯序宁 速写 一般 花 多长时间",
+              "冯序宁 画速写 通常 耗时"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:74af4708a1ccff26",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 266,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 902,
+            "output_tokens_details": {
+              "reasoning_tokens": 858
+            },
+            "total_tokens": 1168
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:752dc142679c72f4",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:2b37e5556acf62d0",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 551,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 61,
+            "output_tokens_details": {
+              "reasoning_tokens": 33
+            },
+            "total_tokens": 612
+          }
         }
       ]
     }

@@ -24,6 +24,8 @@
       "id": "time_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -32,8 +34,8 @@
                 "extraction_confidence": "high",
                 "fact_time": {
                   "date": "2027-04-01",
-                  "end_date": "2027-04-15",
-                  "expression": "从"
+                  "end_date": "2027-04-14",
+                  "expression": "从2027年4月1日至2027年4月14日（含首尾两日）"
                 },
                 "intent": {
                   "kind": "assert",
@@ -72,15 +74,29 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。   "
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
+          "request": "fnv1a64:2d14ffcf6adf21a4",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3755,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 1715,
+            "output_tokens_details": {
+              "reasoning_tokens": 1423
+            },
+            "total_tokens": 5470
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -108,8 +124,19 @@
               }
             ]
           },
-          "request": "fnv1a64:a2d36a80a433f7fd",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:3d39cb6b7d4e6056",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2527,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 6454,
+            "output_tokens_details": {
+              "reasoning_tokens": 6304
+            },
+            "total_tokens": 8981
+          }
         }
       ],
       "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
@@ -127,6 +154,8 @@
       "id": "time_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -136,7 +165,7 @@
                 "fact_time": {
                   "date": "2027-04-15",
                   "end_date": "2027-05-01",
-                  "expression": "从"
+                  "expression": "从2027年4月15日至2027年4月30日（含首尾两日）"
                 },
                 "intent": {
                   "kind": "assert",
@@ -144,9 +173,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2027-04-30",
-                  "expression": "从",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -171,52 +198,31 @@
                 "subject": {
                   "entity_id": "organization_anzhi_gallery"
                 },
-                "tags": [
-                  "closing_schedule"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。."
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。\""
                 }
               }
             ],
             "omission_reason": null
           },
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+          "request": "fnv1a64:8dfc8f796491ca42",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3795,
+            "input_tokens_details": {
+              "cached_tokens": 3200
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:ef28b7374bdeaa3c",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:530a6ec175644256",
-          "schema": "personal_memory_source_support_v1"
+            "output_tokens": 10261,
+            "output_tokens_details": {
+              "reasoning_tokens": 9960
+            },
+            "total_tokens": 14056
+          }
         }
       ],
       "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
@@ -243,23 +249,52 @@
       "query": "2027年4月14日，岸芷艺术馆几点闭馆？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "岸芷艺术馆 2027年4月14日 闭馆时间",
+              "岸芷艺术馆 闭馆时间",
               "岸芷艺术馆 2027年4月14日 开放时间",
-              "岸芷艺术馆 2027年4月14日 闭馆公告"
+              "岸芷艺术馆 参观须知 最晚入场"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:732364b5038e9932",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 272,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 923,
+            "output_tokens_details": {
+              "reasoning_tokens": 879
+            },
+            "total_tokens": 1195
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "17:30",
             "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:d1d27788dcab8a62",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:a5884f097be385a9",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 652,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 152,
+            "output_tokens_details": {
+              "reasoning_tokens": 123
+            },
+            "total_tokens": 804
+          }
         }
       ]
     },
@@ -282,23 +317,52 @@
       "query": "2027年4月15日，岸芷艺术馆几点闭馆？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "岸芷艺术馆 闭馆时间",
-              "岸芷艺术馆 2027年4月15日 开放时间",
-              "岸芷艺术馆 营业时间 2027"
+              "岸芷艺术馆 闭馆时间 公告",
+              "岸芷艺术馆 开放时间 2027年4月",
+              "岸芷艺术馆 几点闭馆 安排"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:f4e09af0028b671d",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 272,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 770,
+            "output_tokens_details": {
+              "reasoning_tokens": 727
+            },
+            "total_tokens": 1042
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "19:00",
             "candidate_index": 1,
+            "event_date": null,
+            "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:b173039ca6feef15",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:84b83573a4254060",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 652,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 167,
+            "output_tokens_details": {
+              "reasoning_tokens": 138
+            },
+            "total_tokens": 819
+          }
         }
       ]
     },
@@ -316,23 +380,52 @@
       "query": "2027年5月1日，岸芷艺术馆几点闭馆？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "岸芷艺术馆 2027年5月1日 闭馆时间",
-              "岸芷艺术馆 2027年5月1日 开放时间 结束时间",
-              "岸芷艺术馆 2027年五一 闭馆安排 公告"
+              "岸芷艺术馆 2027年5月1日 开放公告 闭馆",
+              "岸芷艺术馆 2027-05-01 营业时间 通知",
+              "岸芷艺术馆 五一假期 开放时间 公告"
             ]
           },
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:22017c87e0f9411b",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 272,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 928,
+            "output_tokens_details": {
+              "reasoning_tokens": 872
+            },
+            "total_tokens": 1200
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
+            "event_date": null,
+            "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:ba9727032201fae7",
-          "schema": "personal_memory_answer_v1"
+          "request": "fnv1a64:7eecd69ab5cbc820",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 652,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 96,
+            "output_tokens_details": {
+              "reasoning_tokens": 68
+            },
+            "total_tokens": 748
+          }
         }
       ]
     }
