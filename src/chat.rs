@@ -73,6 +73,9 @@ pub struct ChatConfig {
     pub value_kinds: Vec<(Predicate, Vec<MemoryValueKind>)>,
     pub memory_types: Vec<(Predicate, Vec<MemoryType>)>,
     pub is_a: Vec<(MemoryValue, MemoryValue)>,
+    /// Overrides `DEEPSEEK_BASE_URL` for this service; the eval routes each case to its own queue.
+    #[serde(skip)]
+    pub model_base_url: Option<String>,
 }
 
 impl Default for ChatConfig {
@@ -120,6 +123,7 @@ impl Default for ChatConfig {
                 MemoryValue::Text("latte".into()),
                 MemoryValue::Text("coffee".into()),
             )],
+            model_base_url: None,
         }
     }
 }
@@ -2354,8 +2358,11 @@ impl ChatMemoryService {
 
     fn model_client(&self, operation_id: &str) -> PersistenceResult<OpenAiClient> {
         // MCP authorization belongs to this config, owner and operation, never ambient budget IDs.
-        let base_url =
-            std::env::var("DEEPSEEK_BASE_URL").map_err(|_| OpenAiAdapterError::MissingBaseUrl)?;
+        let base_url = match &self.config.model_base_url {
+            Some(url) => url.clone(),
+            None => std::env::var("DEEPSEEK_BASE_URL")
+                .map_err(|_| OpenAiAdapterError::MissingBaseUrl)?,
+        };
         let api_key =
             std::env::var("DEEPSEEK_API_KEY").map_err(|_| OpenAiAdapterError::MissingApiKey)?;
         let client = OpenAiClient::new(base_url, api_key)?;

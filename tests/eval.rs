@@ -10,7 +10,11 @@
 //!
 //! 录制模式：`EVAL_RECORD=<真实请求上限> cargo test --test eval -- --nocapture`。
 //! 未录制的请求转发到 DEEPSEEK_BASE_URL 的真实端点，成功的输出按顺序写回用例 JSON 的
-//! `recorded`；超出上限或真实请求失败的项仍记为 skipped。未设置时绝不发真实请求。
+//! `recorded`（附 usage 以校准并发）；429、5xx 与连接错误退避重试，超出上限或重试耗尽的项
+//! 仍记为 skipped。未设置时绝不发真实请求。
+//!
+//! EVAL_CASES=<文件名前缀,…> 只跑匹配的用例。用例并发执行（EVAL_JOBS，默认 8；限额 500 RPM、1,000,000 TPM），同一用例内部串行，
+//! 每个用例经自己的 base URL 取自己的录制队列，汇总顺序与串行一致。
 //!
 //! 新录制带 `request` 指纹（去掉时钟读数、review_binding 与 max_output_tokens 后的请求哈希；
 //! 时钟固定，所以当天日期保留在指纹里，按别的日期解析相对日期的录制会被判过期）。
@@ -22,8 +26,10 @@ use hippocampus::*;
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::io::{BufRead, BufReader, Read, Write};
-use std::net::TcpListener;
+use std::net::{TcpListener, TcpStream};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 const OWNER: &str = "eval";
 /// Fixed clock for cases without their own times: 2026-09-28 12:00 UTC+8, a minute per
@@ -33,20 +39,31 @@ const CLOCK: i64 = 1_790_568_000;
 
 #[derive(Default)]
 struct Replay {
+    /// Loopback address; each case calls `http://{address}/v1/case/{case_id}`.
+    address: String,
+    cases: HashMap<String, Queue>,
+    live: Option<Live>,
+}
+
+/// One case's recordings for its current operation; a case's operations run serially.
+#[derive(Default)]
+struct Queue {
     queue: VecDeque<Value>,
     missed: Option<String>,
     /// Every recording used by the current operation, replayed or newly captured, in order.
     served: Vec<Value>,
     captured: bool,
-    live: Option<Live>,
 }
 
-/// Recording mode only: the real endpoint and the remaining real-request allowance.
+/// Recording mode only: the real endpoint, the remaining real-request allowance and usage.
 struct Live {
     url: String,
     key: String,
     remaining: u64,
     sent: u64,
+    retries: u64,
+    input_tokens: u64,
+    output_tokens: u64,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -66,33 +83,70 @@ struct Row {
 #[test]
 fn resident_eval_suite() {
     let replay = serve_replay();
+    // EVAL_CASES=s6_,lme_0862 runs only case files whose names start with one of the prefixes.
+    let only = std::env::var("EVAL_CASES").unwrap_or_default();
     let mut paths: Vec<_> =
         std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval/cases"))
             .unwrap()
             .map(|entry| entry.unwrap().path())
             .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+            .filter(|path| {
+                let name = path.file_name().unwrap().to_string_lossy();
+                only.is_empty() || only.split(',').any(|prefix| name.starts_with(prefix.trim()))
+            })
             .collect();
     paths.sort();
     assert!(!paths.is_empty(), "no eval cases");
 
-    let mut rows = Vec::new();
-    for path in &paths {
-        let mut case: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap())
-            .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
-        let updates = run_case(&case, &replay, &mut rows);
-        if !updates.is_empty() {
-            for (list, index, recorded) in updates {
-                case[list][index]["recorded"] = Value::Array(recorded);
-            }
-            let text = serde_json::to_string_pretty(&case).unwrap() + "\n";
-            std::fs::write(path, text).unwrap();
-            println!("录制已写回 {}", path.display());
+    let jobs: usize = std::env::var("EVAL_JOBS").map_or(8, |jobs| {
+        jobs.parse()
+            .ok()
+            .filter(|&jobs| jobs > 0)
+            .expect("EVAL_JOBS must be a positive number")
+    });
+    let started = Instant::now();
+    let next = AtomicUsize::new(0);
+    let per_case: Vec<Mutex<Vec<Row>>> = paths.iter().map(|_| Mutex::default()).collect();
+    std::thread::scope(|scope| {
+        for _ in 0..jobs.min(paths.len()) {
+            scope.spawn(|| {
+                loop {
+                    let index = next.fetch_add(1, Ordering::Relaxed);
+                    let Some(path) = paths.get(index) else { break };
+                    let mut case: Value =
+                        serde_json::from_str(&std::fs::read_to_string(path).unwrap())
+                            .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+                    let mut rows = Vec::new();
+                    let updates = run_case(&case, &replay, &mut rows);
+                    *per_case[index].lock().unwrap() = rows;
+                    if !updates.is_empty() {
+                        for (list, index, recorded) in updates {
+                            case[list][index]["recorded"] = Value::Array(recorded);
+                        }
+                        let text = serde_json::to_string_pretty(&case).unwrap() + "\n";
+                        std::fs::write(path, text).unwrap();
+                        println!("录制已写回 {}", path.display());
+                    }
+                }
+            });
         }
-    }
+    });
+    let rows: Vec<Row> = per_case
+        .into_iter()
+        .flat_map(|rows| rows.into_inner().unwrap())
+        .collect();
     if let Some(live) = &replay.lock().unwrap().live {
+        let minutes = started.elapsed().as_secs_f64() / 60.0;
         println!(
-            "录制模式：真实请求 {} 次，剩余额度 {}",
-            live.sent, live.remaining
+            "录制模式：真实请求 {} 次（另有重试 {} 次），剩余额度 {}；usage 输入 {} / 输出 {} token，\
+             用时 {minutes:.1} 分钟，约 {:.0} RPM、{:.0} TPM",
+            live.sent,
+            live.retries,
+            live.remaining,
+            live.input_tokens,
+            live.output_tokens,
+            (live.sent + live.retries) as f64 / minutes,
+            (live.input_tokens + live.output_tokens) as f64 / minutes,
         );
     }
     let failed = report(paths.len(), &rows);
@@ -170,6 +224,37 @@ fn scoring_rules() {
     assert_eq!(compact_value(&json!({"Text": "128 GB"})), "128gb");
 }
 
+#[test]
+fn forward_retries_rate_limits_and_dropped_connections() {
+    // Upstream: drops the first connection, rate-limits the second, answers the third.
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}/responses", listener.local_addr().unwrap());
+    std::thread::spawn(move || {
+        for (attempt, stream) in listener.incoming().enumerate() {
+            let mut stream = stream.unwrap();
+            let mut buffer = [0; 4096];
+            let _ = stream.read(&mut buffer);
+            let (status, extra) = match attempt {
+                0 => continue,
+                1 => ("429 Too Many Requests", "Retry-After: 0\r\n"),
+                _ => ("200 OK", ""),
+            };
+            let _ = write!(
+                stream,
+                "HTTP/1.1 {status}\r\n{extra}Content-Length: 2\r\nConnection: close\r\n\r\nok"
+            );
+        }
+    });
+    // No proxy: a system proxy would answer the dropped connection with its own 502.
+    let http = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    let (result, retries) = forward(&http, &url, "k", &json!({}));
+    assert_eq!(result.unwrap(), (reqwest::StatusCode::OK, "ok".to_owned()));
+    assert_eq!(retries, 2);
+}
+
 /// Returns newly recorded outputs to write back: (list, index, recorded).
 fn run_case(
     case: &Value,
@@ -199,6 +284,7 @@ fn run_case(
                         &db,
                         Phase::Intake,
                         replay,
+                        case_id,
                         &json!([]),
                         "memory_entity_upsert",
                         entity.clone(),
@@ -226,6 +312,7 @@ fn run_case(
                 &db,
                 Phase::Intake,
                 replay,
+                case_id,
                 &recorded,
                 "memory_prepare",
                 json!({"user_turn":turn}),
@@ -280,6 +367,7 @@ fn run_case(
                 &db,
                 Phase::Recall,
                 replay,
+                case_id,
                 &recorded,
                 "memory_recall",
                 arguments,
@@ -514,6 +602,7 @@ fn call(
     db: &TempDb,
     phase: Phase,
     replay: &Arc<Mutex<Replay>>,
+    case_id: &str,
     recorded: &Value,
     tool: &str,
     arguments: Value,
@@ -554,15 +643,19 @@ fn call(
             review_output_tokens,
             query_output_tokens: 8_192,
         }),
+        model_base_url: Some(format!(
+            "http://{}/v1/case/{case_id}",
+            replay.lock().unwrap().address
+        )),
         ..ChatConfig::default()
     };
-    {
-        let mut replay = replay.lock().unwrap();
-        replay.queue = recorded.as_array().unwrap().iter().cloned().collect();
-        replay.missed = None;
-        replay.served.clear();
-        replay.captured = false;
-    }
+    replay.lock().unwrap().cases.insert(
+        case_id.to_owned(),
+        Queue {
+            queue: recorded.as_array().unwrap().iter().cloned().collect(),
+            ..Queue::default()
+        },
+    );
     let mut service = ChatMemoryService::new(db.open(), config).unwrap();
     service
         .call(
@@ -575,10 +668,10 @@ fn call(
     while matches!(&result, Ok(value) if value["status"] == "in_progress") {
         result = service.call(tool, arguments.clone(), || false);
     }
-    let mut replay = replay.lock().unwrap();
+    let queue = replay.lock().unwrap().cases.remove(case_id).unwrap();
     // Partial captures are kept: they are valid prefixes for the next replay.
-    let captured = replay.captured.then(|| std::mem::take(&mut replay.served));
-    if let Some(schema) = replay.missed.take() {
+    let captured = queue.captured.then_some(queue.served);
+    if let Some(schema) = queue.missed {
         return (Err(Missing(schema)), captured);
     }
     (
@@ -587,7 +680,7 @@ fn call(
     )
 }
 
-/// Loopback Responses endpoint serving the current operation's recordings in order.
+/// Loopback Responses endpoint serving each case's recordings in order, one thread per request.
 fn serve_replay() -> Arc<Mutex<Replay>> {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let address = listener.local_addr().unwrap();
@@ -605,143 +698,221 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
             .parse()
             .expect("EVAL_RECORD must be the real-request limit"),
         sent: 0,
+        retries: 0,
+        input_tokens: 0,
+        output_tokens: 0,
     });
-    // SAFETY: only resident_eval_suite touches the environment; the other test is pure scoring.
+    // SAFETY: only resident_eval_suite touches the environment, before any other thread starts;
+    // the other test is pure scoring.
     unsafe {
         std::env::set_var("PMR_MODEL_NETWORK", "offline");
         std::env::set_var("DEEPSEEK_BASE_URL", format!("http://{address}/v1"));
         std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
     }
     let replay = Arc::new(Mutex::new(Replay {
+        address: address.to_string(),
         live,
         ..Replay::default()
     }));
-    let http = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(180))
-        .build()
-        .unwrap();
+    let http = reqwest::blocking::Client::new();
     let shared = replay.clone();
     std::thread::spawn(move || {
         for stream in listener.incoming() {
-            let mut stream = stream.unwrap();
-            let mut reader = BufReader::new(stream.try_clone().unwrap());
-            let mut length = 0;
-            loop {
-                let mut line = String::new();
-                reader.read_line(&mut line).unwrap();
-                if line == "\r\n" || line.is_empty() {
-                    break;
-                }
-                if let Some((name, value)) = line.split_once(':')
-                    && name.eq_ignore_ascii_case("content-length")
-                {
-                    length = value.trim().parse().unwrap();
-                }
-            }
-            let mut body = vec![0; length];
-            reader.read_exact(&mut body).unwrap();
-            let request: Value = serde_json::from_slice(&body).unwrap_or_default();
-            let schema = request
-                .pointer("/text/format/name")
-                .cloned()
-                .unwrap_or_default();
-            let schema_name = schema.as_str().unwrap_or("?").to_owned();
-            let fingerprint = request_fingerprint(&request);
-            let mut replay = shared.lock().unwrap();
-            // A recording made for a different request is stale: never replay it.
-            let stale = replay.queue.front().is_some_and(|recording| {
-                recording["schema"] == schema
-                    && recording
-                        .get("request")
-                        .is_some_and(|recorded| *recorded != fingerprint)
-            });
-            if stale {
-                replay.queue.pop_front();
-            }
-            let (status, body) = match replay.queue.front() {
-                Some(recording) if recording["schema"] == schema => {
-                    let recording = replay.queue.pop_front().unwrap();
-                    let mut output = recording["output"].clone();
-                    // review_binding is a per-run request fingerprint the model is told to copy
-                    // verbatim; echo the current one, as the model would. Content is untouched.
-                    let input: Value = request["input"]
-                        .as_str()
-                        .and_then(|input| serde_json::from_str(input).ok())
-                        .unwrap_or_default();
-                    if output.get("review_binding").is_some()
-                        && let Some(binding) = input.get("review_binding")
-                    {
-                        output["review_binding"] = binding.clone();
-                    }
-                    let output = match output {
-                        Value::String(text) => text,
-                        other => other.to_string(),
-                    };
-                    replay.served.push(recording);
-                    let response = json!({"id":"eval-replay","status":"completed",
-                        "output":[{"type":"message","content":[{"type":"output_text","text":output}]}],
-                        "usage":{"input_tokens":0,"output_tokens":0}});
-                    ("200 OK".to_owned(), response.to_string())
-                }
-                _ if replay.live.as_ref().is_some_and(|live| live.remaining > 0) => {
-                    let live = replay.live.as_mut().unwrap();
-                    live.remaining -= 1;
-                    live.sent += 1;
-                    let (url, key) = (live.url.clone(), live.key.clone());
-                    drop(replay);
-                    let forwarded = http.post(url).bearer_auth(key).json(&request).send();
-                    let mut replay = shared.lock().unwrap();
-                    match forwarded.and_then(|response| Ok((response.status(), response.text()?))) {
-                        Ok((status, body)) => {
-                            let envelope = serde_json::from_str::<Value>(&body).unwrap_or_default();
-                            let output = status
-                                .is_success()
-                                .then(|| output_text(&envelope))
-                                .flatten();
-                            match output {
-                                Some(text) => {
-                                    let output =
-                                        serde_json::from_str(&text).unwrap_or(Value::String(text));
-                                    replay.served.push(
-                                        json!({"schema":schema,"request":fingerprint,"output":output}),
-                                    );
-                                    replay.captured = true;
-                                }
-                                None => {
-                                    replay.missed = Some(format!(
-                                        "{schema_name}（真实请求未完成 {status} status={} {}）",
-                                        envelope["status"], envelope["incomplete_details"]
-                                    ))
-                                }
-                            }
-                            (status.to_string(), body)
-                        }
-                        Err(error) => {
-                            replay.missed = Some(format!("{schema_name}（真实请求失败 {error}）"));
-                            let body = json!({"error":{"message":error.to_string()}});
-                            ("502 Bad Gateway".to_owned(), body.to_string())
-                        }
-                    }
-                }
-                _ => {
-                    replay.missed = Some(if stale {
-                        format!("{schema_name}（录制过期：请求已变化）")
-                    } else {
-                        schema_name
-                    });
-                    let body =
-                        json!({"error":{"message":format!("eval: no recording for {schema}")}});
-                    ("503 Service Unavailable".to_owned(), body.to_string())
-                }
-            };
-            let _ = write!(
-                stream,
-                "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
-                body.len()
-            );
+            let (shared, http) = (shared.clone(), http.clone());
+            std::thread::spawn(move || handle(stream.unwrap(), &shared, &http));
         }
     });
     replay
+}
+
+fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blocking::Client) {
+    let mut reader = BufReader::new(stream.try_clone().unwrap());
+    let mut request_line = String::new();
+    reader.read_line(&mut request_line).unwrap();
+    // "POST /v1/case/{case_id}/responses HTTP/1.1"
+    let case = request_line
+        .split(' ')
+        .nth(1)
+        .and_then(|path| path.split('/').nth(3))
+        .unwrap_or_default()
+        .to_owned();
+    let mut length = 0;
+    loop {
+        let mut line = String::new();
+        reader.read_line(&mut line).unwrap();
+        if line == "\r\n" || line.is_empty() {
+            break;
+        }
+        if let Some((name, value)) = line.split_once(':')
+            && name.eq_ignore_ascii_case("content-length")
+        {
+            length = value.trim().parse().unwrap();
+        }
+    }
+    let mut body = vec![0; length];
+    reader.read_exact(&mut body).unwrap();
+    let request: Value = serde_json::from_slice(&body).unwrap_or_default();
+    let schema = request
+        .pointer("/text/format/name")
+        .cloned()
+        .unwrap_or_default();
+    let schema_name = schema.as_str().unwrap_or("?").to_owned();
+    let fingerprint = request_fingerprint(&request);
+    let mut guard = shared.lock().unwrap();
+    let Replay { cases, live, .. } = &mut *guard;
+    let replay = cases.entry(case.clone()).or_default();
+    // A recording made for a different request is stale: never replay it.
+    let stale = replay.queue.front().is_some_and(|recording| {
+        recording["schema"] == schema
+            && recording
+                .get("request")
+                .is_some_and(|recorded| *recorded != fingerprint)
+    });
+    if stale {
+        replay.queue.pop_front();
+    }
+    let (status, body) = match replay.queue.front() {
+        Some(recording) if recording["schema"] == schema => {
+            let recording = replay.queue.pop_front().unwrap();
+            let mut output = recording["output"].clone();
+            // review_binding is a per-run request fingerprint the model is told to copy
+            // verbatim; echo the current one, as the model would. Content is untouched.
+            let input: Value = request["input"]
+                .as_str()
+                .and_then(|input| serde_json::from_str(input).ok())
+                .unwrap_or_default();
+            if output.get("review_binding").is_some()
+                && let Some(binding) = input.get("review_binding")
+            {
+                output["review_binding"] = binding.clone();
+            }
+            let output = match output {
+                Value::String(text) => text,
+                other => other.to_string(),
+            };
+            replay.served.push(recording);
+            let response = json!({"id":"eval-replay","status":"completed",
+                "output":[{"type":"message","content":[{"type":"output_text","text":output}]}],
+                "usage":{"input_tokens":0,"output_tokens":0}});
+            ("200 OK".to_owned(), response.to_string())
+        }
+        _ if live.as_ref().is_some_and(|live| live.remaining > 0) => {
+            let live = live.as_mut().unwrap();
+            live.remaining -= 1;
+            live.sent += 1;
+            let (url, key) = (live.url.clone(), live.key.clone());
+            drop(guard);
+            let (forwarded, retries) = forward(http, &url, &key, &request);
+            let mut guard = shared.lock().unwrap();
+            let Replay { cases, live, .. } = &mut *guard;
+            let live = live.as_mut().unwrap();
+            live.retries += retries;
+            let replay = cases.entry(case).or_default();
+            match forwarded {
+                Ok((status, body)) => {
+                    let envelope = serde_json::from_str::<Value>(&body).unwrap_or_default();
+                    let usage = &envelope["usage"];
+                    live.input_tokens += usage["input_tokens"].as_u64().unwrap_or(0);
+                    live.output_tokens += usage["output_tokens"].as_u64().unwrap_or(0);
+                    let output = status
+                        .is_success()
+                        .then(|| output_text(&envelope))
+                        .flatten();
+                    match output {
+                        Some(text) => {
+                            let output = serde_json::from_str(&text).unwrap_or(Value::String(text));
+                            replay
+                                .served
+                                .push(json!({"schema":schema,"request":fingerprint,
+                                "output":output,"usage":usage}));
+                            replay.captured = true;
+                        }
+                        None => {
+                            replay.missed = Some(format!(
+                                "{schema_name}（真实请求未完成 {status} status={} {}）",
+                                envelope["status"], envelope["incomplete_details"]
+                            ))
+                        }
+                    }
+                    (status.to_string(), body)
+                }
+                Err(error) => {
+                    replay.missed = Some(format!(
+                        "{schema_name}（真实请求失败，重试 {retries} 次后仍 {error}）"
+                    ));
+                    let body = json!({"error":{"message":error}});
+                    ("502 Bad Gateway".to_owned(), body.to_string())
+                }
+            }
+        }
+        _ => {
+            replay.missed = Some(if stale {
+                format!("{schema_name}（录制过期：请求已变化）")
+            } else {
+                schema_name
+            });
+            let body = json!({"error":{"message":format!("eval: no recording for {schema}")}});
+            ("503 Service Unavailable".to_owned(), body.to_string())
+        }
+    };
+    let _ = write!(
+        stream,
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+}
+
+/// Sends one recording request, backing off on 429, 5xx and connection errors. The production
+/// client gives the loopback reply PMR_MODEL_TIMEOUT_SECS (600 s), so retrying stops 10 s
+/// earlier. Returns the
+/// final status and body (or error) and the number of retries.
+fn forward(
+    http: &reqwest::blocking::Client,
+    url: &str,
+    key: &str,
+    request: &Value,
+) -> (Result<(reqwest::StatusCode, String), String>, u64) {
+    let timeout: u64 = std::env::var("PMR_MODEL_TIMEOUT_SECS")
+        .ok()
+        .and_then(|secs| secs.parse().ok())
+        .unwrap_or(600);
+    let deadline = Instant::now() + Duration::from_secs(timeout.saturating_sub(10));
+    let mut retries = 0;
+    loop {
+        let left = deadline.saturating_duration_since(Instant::now());
+        let attempt = http
+            .post(url)
+            .bearer_auth(key)
+            .timeout(left)
+            .json(request)
+            .send()
+            .and_then(|response| {
+                let status = response.status();
+                let retry_after = response
+                    .headers()
+                    .get("retry-after")
+                    .and_then(|value| value.to_str().ok()?.parse().ok());
+                Ok((status, response.text()?, retry_after))
+            });
+        let (result, retry_after) = match attempt {
+            Ok((status, body, retry_after)) => {
+                let retry = status.as_u16() == 429 || status.is_server_error();
+                (Ok((status, body)), retry.then_some(retry_after))
+            }
+            Err(error) if error.is_timeout() => (Err(format!("超时 {error}")), Some(None)),
+            Err(error) => (Err(error.to_string()), Some(None)),
+        };
+        let Some(retry_after) = retry_after else {
+            return (result, retries);
+        };
+        let wait = Duration::from_secs(retry_after.unwrap_or(2u64.pow(retries as u32 + 1).min(30)));
+        // Leave the next attempt time to answer; otherwise report the last failure.
+        if wait + Duration::from_secs(30) > deadline.saturating_duration_since(Instant::now()) {
+            return (result, retries);
+        }
+        std::thread::sleep(wait);
+        retries += 1;
+    }
 }
 
 /// Stable request identity for a recording. Per-run values (clock readings, review binding) are
