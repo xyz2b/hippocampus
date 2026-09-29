@@ -18,8 +18,12 @@
 //!
 //! 新录制带 `request` 指纹（去掉时钟读数、review_binding 与 max_output_tokens 后的请求哈希；
 //! 时钟固定，所以当天日期保留在指纹里，按别的日期解析相对日期的录制会被判过期）。
-//! 评测使用固定时钟（CLOCK，或用例自带的 observed_at / at），相对日期在任何一天回放都一致。运行时改变请求后，
-//! 指纹不符的录制视为过期：回放记为 skipped，录制模式下重录。无指纹的旧录制仍按 schema 顺序回放。
+//! 评测使用固定时钟（CLOCK，或用例自带的 observed_at / at），相对日期在任何一天回放都一致。
+//!
+//! 录制是冻结的测试集：默认宽松回放，代码改动让请求内容与录制时不同，也照样按用例、按 schema
+//! 顺序回放冻结的输出，只按用例统计“输入漂移”，所以分数变化只来自代码。漂移多说明模型看到的
+//! 内容已实质改变，冻结输出不再代表真实行为，届时按批重录。`EVAL_STRICT=1` 与录制模式按指纹
+//! 判过期：回放记为 skipped，录制模式下重录。提示词或 schema 改动必须重录。
 
 use hippocampus::chat::{ChatConfig, ChatMemoryService, EnrichmentMode, RetrievalMode};
 use hippocampus::*;
@@ -43,6 +47,10 @@ struct Replay {
     address: String,
     cases: HashMap<String, Queue>,
     live: Option<Live>,
+    /// EVAL_STRICT or recording: a recording made for a different request is stale.
+    strict: bool,
+    /// Loose replay: per case, how many frozen outputs answered a changed request.
+    drift: BTreeMap<String, usize>,
 }
 
 /// One case's recordings for its current operation; a case's operations run serially.
@@ -147,6 +155,15 @@ fn resident_eval_suite() {
             live.output_tokens,
             (live.sent + live.retries) as f64 / minutes,
             (live.input_tokens + live.output_tokens) as f64 / minutes,
+        );
+    }
+    let drift = std::mem::take(&mut replay.lock().unwrap().drift);
+    if !drift.is_empty() {
+        println!(
+            "输入漂移：{} 次冻结输出回答了已变化的请求，涉及 {} 个用例 {:?}",
+            drift.values().sum::<usize>(),
+            drift.len(),
+            drift
         );
     }
     let failed = report(paths.len(), &rows);
@@ -958,6 +975,8 @@ fn serve_replay() -> Arc<Mutex<Replay>> {
     }
     let replay = Arc::new(Mutex::new(Replay {
         address: address.to_string(),
+        // Recording must never keep an output made for another request.
+        strict: live.is_some() || std::env::var_os("EVAL_STRICT").is_some(),
         live,
         ..Replay::default()
     }));
@@ -1006,17 +1025,27 @@ fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blockin
     let schema_name = schema.as_str().unwrap_or("?").to_owned();
     let fingerprint = request_fingerprint(&request);
     let mut guard = shared.lock().unwrap();
-    let Replay { cases, live, .. } = &mut *guard;
+    let Replay {
+        cases,
+        live,
+        strict,
+        drift,
+        ..
+    } = &mut *guard;
     let replay = cases.entry(case.clone()).or_default();
-    // A recording made for a different request is stale: never replay it.
-    let stale = replay.queue.front().is_some_and(|recording| {
+    let changed = replay.queue.front().is_some_and(|recording| {
         recording["schema"] == schema
             && recording
                 .get("request")
                 .is_some_and(|recorded| *recorded != fingerprint)
     });
+    // Strict: a recording made for a different request is stale, never replayed. Loose (the
+    // default): the frozen output is replayed anyway and the drift is counted.
+    let stale = changed && *strict;
     if stale {
         replay.queue.pop_front();
+    } else if changed {
+        *drift.entry(case.clone()).or_default() += 1;
     }
     let (status, body) = match replay.queue.front() {
         Some(recording) if recording["schema"] == schema => {
