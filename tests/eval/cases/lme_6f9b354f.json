@@ -8,6 +8,7 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1684631460,
       "recorded": [
         {
           "output": {
@@ -19,86 +20,7 @@
                 "fact_time": {
                   "date": null,
                   "end_date": null,
-                  "expression": "I"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2026-09-29",
-                  "expression": "I",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": "positive",
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "vase",
-                      "leafy"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "personal"
-                },
-                "source": "user_statement",
-                "strength": "strong",
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "kitchen",
-                  "vase",
-                  "plant",
-                  "greenery"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "vase with fresh greenery on kitchen countertop"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:80660a825a834be3",
-          "schema": "personal_memory_candidates_v1"
-        }
-      ],
-      "text": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
-      "observed_at": 1684631460
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t2",
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "未"
+                  "expression": "再"
                 },
                 "intent": {
                   "kind": "assert",
@@ -114,9 +36,7 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "redecorating"
-                    ],
+                    "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
@@ -139,13 +59,13 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
+                  "text": "I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:1eeda111a0ee3ef7",
+          "request": "fnv1a64:d8bb131e061ea438",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -155,7 +75,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:8d818b2e3fc8055f",
+            "review_binding": "source-review-v3:35606417da58e8fb",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -170,18 +90,86 @@
                   "temporal": "supported",
                   "value": "supported"
                 },
-                "current_user_quote": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                "current_user_quote": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
                 "evidence": [],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:54f19fea6af33df4",
+          "request": "fnv1a64:ce915702e3662dc5",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
-      "observed_at": 1684631520
+      "text": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1684631520,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter! 実は 最近 寝室の壁を 明るい灰色に 塗り替えた んだ - it が 部屋を より 明るく 感じさせて くれる！"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:4d2d4961407d855a",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
     },
     {
       "expect": {
@@ -189,13 +177,14 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1684631580,
       "recorded": [
         {
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:dfcf392c2aa81c4d",
+          "request": "fnv1a64:b7eb51988b4c7b4e",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -205,15 +194,14 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:2ca03c6d6d391d4d",
+            "review_binding": "source-review-v3:8f33ef9e8b1e15bc",
             "reviews": []
           },
-          "request": "fnv1a64:ace64057f5b8bf6e",
+          "request": "fnv1a64:ece6458488a005df",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?",
-      "observed_at": 1684631580
+      "text": "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?"
     },
     {
       "expect": {
@@ -221,35 +209,31 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1684631640,
       "recorded": [
         {
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:17a4295da69d257b",
+          "request": "fnv1a64:b34b5ba9ee25e312",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage.",
-                "I'm considering a minimalist aesthetic with a lot of natural wood accents.",
-                "I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:256fbafc31092555",
+            "omission_supported": true,
+            "review_binding": "source-review-v3:6d548e88b370564e",
             "reviews": []
           },
-          "request": "fnv1a64:8cd9113c1d74ed9e",
+          "request": "fnv1a64:1572a6e6f569a26b",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?",
-      "observed_at": 1684631640
+      "text": "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?"
     },
     {
       "expect": {
@@ -257,41 +241,38 @@
         "store": []
       },
       "id": "s1_t5",
+      "observed_at": 1684631700,
       "recorded": [
         {
           "output": {
             "candidates": [],
-            "omission_reason": "low_value_episode"
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:81d8581fcdeda8c0",
+          "request": "fnv1a64:a8a04ae3e972d97b",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'm considering a pendant light above the desk and some table lamps for task lighting.",
-                "I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents.",
-                "For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:d096678e329f90d4",
+            "omission_supported": true,
+            "review_binding": "source-review-v3:8b9470c2bd389767",
             "reviews": []
           },
-          "request": "fnv1a64:403f3ba7d7866fa6",
+          "request": "fnv1a64:f14a078f30e4e2d7",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm considering a pendant light above the desk and some table lamps for task lighting. I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents. For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space. Do you have any suggestions on how to choose the right pendant light for my home office nook?",
-      "observed_at": 1684631700
+      "text": "I'm considering a pendant light above the desk and some table lamps for task lighting. I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents. For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space. Do you have any suggestions on how to choose the right pendant light for my home office nook?"
     }
   ],
   "origin": "LongMemEval oracle 6f9b354f (single-session-user); session dates ['2023/05/21 (Sun) 09:11'], asked 2023/05/21 (Sun) 13:44",
   "questions": [
     {
       "after": 5,
+      "at": 1684647840,
       "context": [],
       "expect": {
         "answer": [
@@ -315,15 +296,14 @@
         },
         {
           "output": {
-            "answer_text": "lighter shade of gray",
-            "candidate_index": 1,
-            "verdict": "answer"
+            "answer_text": null,
+            "candidate_index": null,
+            "verdict": "insufficient"
           },
-          "request": "fnv1a64:45a6df78d02b046f",
+          "request": "fnv1a64:3a0accf896d22f3b",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1684647840
+      ]
     }
   ]
 }

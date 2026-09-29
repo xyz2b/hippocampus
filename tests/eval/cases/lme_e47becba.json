@@ -8,170 +8,33 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1684641240,
       "recorded": [
         {
           "output": {
             "candidates": [
               {
                 "certainty": "high",
-                "cross_turn_useful": false,
+                "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": ":"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-21",
+                  "expression": "I",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "uses",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "planner"
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:bce20ae774276f2c",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "I'm trying to organize my life a bit better",
-                "I think I need something more digital"
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:97a09e0793124b1c",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm trying to organize my life a bit better, can you recommend some task management apps that can help me prioritize my work and personal tasks? I've been using a planner, but I think I need something more digital.",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:a7662d1d4d8e3932",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I'm trying to organize my life a bit better, can you recommend some task management apps that can help me prioritize my work and personal tasks? I've been using a planner, but I think I need something more digital.",
-      "observed_at": 1684641240
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t2",
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I'm still getting used to the 9-to-5 schedule"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
                 "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
@@ -193,7 +56,136 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "work"
+                  "productivity"
+                ],
+                "value": {
+                  "boolean": false,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "boolean",
+                  "text": null
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:ce524533e6170011",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [
+                "I've been using a planner, but I think I need something more digital."
+              ],
+              "status": "incomplete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:82234a3155dc921f",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "contradicted",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "contradicted"
+                },
+                "current_user_quote": "I'm trying to organize my life a bit better, can you recommend some task management apps that can help me prioritize my work and personal tasks? I've been using a planner, but I think I need something more digital.",
+                "evidence": [
+                  {
+                    "quote": "I've been using a planner, but I think I need something more digital.",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "I've been using a planner, but I think I need something more digital.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value",
+                    "reason": "Candidate types the value as Boolean(false) for predicate 'uses', asserting USER does not use a planner; USER actually says 'I've been using a planner'. The false boolean is contradicted by the stated ongoing usage, not justified by any USER words."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "I've been using a planner, but I think I need something more digital.",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The current USER turn asserts that the user HAS been using a planner, which is the opposite of the candidate's uses=false claim; the turn does not assert or update a non-usage fact."
+                  }
+                ]
+              }
+            ]
+          },
+          "request": "fnv1a64:8b218bd8948564e4",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I'm trying to organize my life a bit better, can you recommend some task management apps that can help me prioritize my work and personal tasks? I've been using a planner, but I think I need something more digital."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t2",
+      "observed_at": 1684641300,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "new job",
+                  "work routine"
                 ],
                 "value": {
                   "boolean": null,
@@ -202,11 +194,59 @@
                   "kind": "text",
                   "text": "By the way, do you have any tips on creating a routine for my new job?"
                 }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "9-to-5 schedule",
+                  "task management"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities."
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:ccb30432df733f3e",
+          "request": "fnv1a64:7372cb53d4f0595f",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -218,10 +258,72 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:1b14acc5760ebc3a",
+            "review_binding": "source-review-v3:2cf7768ee648914d",
             "reviews": [
               {
                 "candidate_index": 0,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "The typed value is an advice-seeking question about routines; it carries no asserted factual proposition about the user, so the generic 'fact' relation is not justified."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "intent is labeled Assert, but the quoted utterance is an interrogative request for tips, not an assertion."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The current USER turn asks for advice about a routine; it does not assert, update or clarify a stored memory, so the UserStatement source is not justified."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "memory_type Fact with High certainty labels a question as an asserted fact; the user asserted nothing here."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
                   "metadata": "supported",
@@ -236,88 +338,14 @@
                 "current_user_quote": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "contradicted",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "contradicted",
-                  "scope": "supported",
-                  "source": "contradicted",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "contradicted"
-                },
-                "current_user_quote": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "The candidate predicate is 'fact', but the USER sentence is a question/request for tips, not a factual assertion."
-                  },
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "The typed value is a question, not a factual proposition; it cannot justify a Fact memory."
-                  },
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "The USER asks a question; the candidate intent 'Assert' does not match."
-                  },
-                  {
-                    "check": "source",
-                    "evidence": [
-                      {
-                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "source",
-                    "reason": "The current USER turn asks for tips and does not assert this memory; a question is not a user assertion."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "memory_type",
-                    "reason": "memory_type 'Fact' does not match the USER's question/request; there is no factual assertion to support it."
-                  }
-                ]
               }
             ]
           },
-          "request": "fnv1a64:c753ccc41940a1f7",
+          "request": "fnv1a64:59d26c1974207b8f",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
-      "observed_at": 1684641300
+      "text": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities."
     },
     {
       "expect": {
@@ -325,6 +353,7 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1684641360,
       "recorded": [
         {
           "output": {
@@ -381,8 +410,7 @@
           "schema": "personal_memory_candidates_v1"
         }
       ],
-      "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?",
-      "observed_at": 1684641360
+      "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?"
     },
     {
       "expect": {
@@ -390,6 +418,7 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1684641420,
       "recorded": [
         {
           "output": {
@@ -415,8 +444,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm thinking of implementing a system to track my personal expenses as well, not just work-related ones. Do you have any recommendations for personal expense tracking apps or tools that can help me stay on top of my finances?",
-      "observed_at": 1684641420
+      "text": "I'm thinking of implementing a system to track my personal expenses as well, not just work-related ones. Do you have any recommendations for personal expense tracking apps or tools that can help me stay on top of my finances?"
     },
     {
       "expect": {
@@ -424,6 +452,7 @@
         "store": []
       },
       "id": "s1_t5",
+      "observed_at": 1684641480,
       "recorded": [
         {
           "output": {
@@ -513,8 +542,7 @@
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I think I'll try out Mint and Personal Capital to see which one I like better. I've heard great things about both of them. By the way, do you have any tips on how to save money on everyday expenses, like groceries and household items? I feel like I'm spending a lot on those things and I want to cut back.",
-      "observed_at": 1684641480
+      "text": "I think I'll try out Mint and Personal Capital to see which one I like better. I've heard great things about both of them. By the way, do you have any tips on how to save money on everyday expenses, like groceries and household items? I feel like I'm spending a lot on those things and I want to cut back."
     },
     {
       "expect": {
@@ -522,6 +550,7 @@
         "store": []
       },
       "id": "s1_t6",
+      "observed_at": 1684641540,
       "recorded": [
         {
           "output": {
@@ -578,14 +607,14 @@
           "schema": "personal_memory_candidates_v1"
         }
       ],
-      "text": "I think I'll try out some of those tips and see how they work for me. I'm especially interested in meal prep, as I've heard it can be a game-changer for saving time and money. Do you have any recommendations for meal prep containers or tools that can make the process easier?",
-      "observed_at": 1684641540
+      "text": "I think I'll try out some of those tips and see how they work for me. I'm especially interested in meal prep, as I've heard it can be a game-changer for saving time and money. Do you have any recommendations for meal prep containers or tools that can make the process easier?"
     }
   ],
   "origin": "LongMemEval oracle e47becba (single-session-user); session dates ['2023/05/21 (Sun) 11:54'], asked 2023/05/23 (Tue) 19:11",
   "questions": [
     {
       "after": 6,
+      "at": 1684840260,
       "context": [],
       "expect": {
         "answer": [
@@ -616,8 +645,7 @@
           "request": "fnv1a64:db4ba9bf589a9e90",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1684840260
+      ]
     }
   ]
 }

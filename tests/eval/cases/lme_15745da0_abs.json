@@ -49,22 +49,19 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "vintage_cameras",
-                  "collecting"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "a growing collection of vintage cameras"
+                  "text": "growing collection of vintage cameras"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:e5ebaddd57051f26",
+          "request": "fnv1a64:2b8860a4900f6569",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -74,7 +71,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:d2ec70a7e218987f",
+            "review_binding": "source-review-v3:9784cbc09b36d5e4",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -95,7 +92,7 @@
               }
             ]
           },
-          "request": "fnv1a64:8f3e80c27013be0c",
+          "request": "fnv1a64:22f7c611d0a2c6a9",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -116,138 +113,14 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "我"
-                },
+                "fact_time": null,
                 "intent": {
-                  "kind": "assert",
+                  "kind": "refine",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2026-10-27",
-                  "expression": "下",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "owns",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "breakfast"
-                    ],
-                    "city": "兰州",
-                    "companion_entity_ids": [
-                      "mom"
-                    ],
-                    "companion_roles": [
-                      "family"
-                    ],
-                    "country": "CN",
-                    "date": "2026-10-27",
-                    "geography": "domestic",
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "collection",
-                  "cameras",
-                  "display"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "a collection of 17 cameras"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "和"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2026-10-28",
-                  "expression": "M",
-                  "kind": "retain_until"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "owns",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "cooking"
-                    ],
-                    "city": "广州市",
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": "CN",
-                    "date": "2026-10-28",
-                    "geography": "domestic",
-                    "task_id": null,
-                    "time_of_day": "evening"
-                  },
-                  "domain": "food"
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "camera",
-                  "acquisition",
-                  "Brownie Hawkeye"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "a new Brownie Hawkeye camera"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "和"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "date": "2026-10-28",
-                  "expression": "M",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -255,19 +128,17 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "breakfast"
-                    ],
-                    "city": "兰州市",
+                    "activities": [],
+                    "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
-                    "country": "CN",
-                    "date": "2026-10-28",
-                    "geography": "domestic",
+                    "country": null,
+                    "date": null,
+                    "geography": null,
                     "task_id": null,
-                    "time_of_day": "morning"
+                    "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -275,35 +146,182 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "camera",
-                  "storage",
-                  "shelf",
-                  "display"
+                  "cameras",
+                  "collection",
+                  "count"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+                  "text": "I have 17 cameras now"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "refine",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cameras",
+                  "collection",
+                  "organization"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I recently organized my collection"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-05-15",
+                  "end_date": "2023-05-22",
+                  "expression": "I"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cameras",
+                  "Brownie Hawkeye"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": "Brownie Hawkeye",
+                  "integer": null,
+                  "kind": "entity",
+                  "text": null
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "uses",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "cameras",
+                  "display",
+                  "shelf"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "shelf"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:5ef46c57982f9b7d",
+          "request": "fnv1a64:7d15c0cefae60d44",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I recently organized my collection and have 17 cameras now"
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:b5f5b8f6f9833219",
+            "review_binding": "source-review-v3:bee5d02f890fe01d",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -312,38 +330,15 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "insufficient",
+                  "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "insufficient",
+                  "temporal": "supported",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "including the new Brownie Hawkeye I got last week",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope",
-                    "reason": "Scope asserts food-domain conditions (Activity=cooking, Time=2026-10-28 evening, Location=Domestic/CN/广州市) that the USER never states anywhere in the turn, which is only about a camera collection and its display; none of these conditions are justified."
-                  },
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "the new Brownie Hawkeye I got last week",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal",
-                    "reason": "Candidate asserts no validity or expiry (all bounds null) and the USER states no retention deadline; temporal_context's proposed expiry 2026-10-28 with expression \"M\" is untrusted extractor noise, and USER's \"last week\" marks only the acquisition event, not a validity boundary or retention date."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 1,
@@ -351,43 +346,32 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "insufficient",
+                  "relation": "insufficient",
+                  "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "insufficient",
+                  "temporal": "supported",
                   "value": "supported"
                 },
                 "current_user_quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
                 "evidence": [],
                 "issues": [
                   {
-                    "check": "scope",
+                    "check": "relation",
                     "evidence": [
                       {
                         "quote": "I've got them on a shelf",
                         "turn_index": 0
                       }
                     ],
-                    "field": "scope",
-                    "reason": "Scope asserts Activity=breakfast in the food domain, which appears nowhere in the USER's words; the USER only says the cameras are on a shelf, so the asserted scope condition is unjustified."
-                  },
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal",
-                    "reason": "No USER time qualifier supports any boundary or expiry; the proposed 2026-10-28 expiry and expression \"M\" are untrusted extractor output, and the USER's shelf statement carries no date, so no validity or retention time is justified."
+                    "field": "predicate",
+                    "reason": "The USER asserts a current placement of the cameras ('I've got them on a shelf'), not a 'uses' relation between self and a shelf; the asserted property/action differs from 'uses' even though the value 'shelf' matches."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:26e47f83171356e5",
+          "request": "fnv1a64:5254f5fe1a7d9de6",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -405,14 +389,10 @@
           "output": {
             "candidates": [
               {
-                "certainty": "high",
+                "certainty": "low",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "I"
-                },
+                "extraction_confidence": "low",
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -437,7 +417,7 @@
                     "task_id": null,
                     "time_of_day": null
                   },
-                  "domain": "food"
+                  "domain": null
                 },
                 "source": "user_statement",
                 "strength": null,
@@ -450,13 +430,13 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+                  "text": "I've been collecting vintage cameras for three months now."
                 }
               },
               {
-                "certainty": "high",
+                "certainty": "low",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
+                "extraction_confidence": "low",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -495,13 +475,58 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "vintage cameras"
+                  "text": "a pretty impressive collection of vintage cameras."
+                }
+              },
+              {
+                "certainty": "low",
+                "cross_turn_useful": true,
+                "extraction_confidence": "low",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "my cameras"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:e55c9fafc055aee6",
+          "request": "fnv1a64:f40a0f8e08013485",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -511,7 +536,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:56f9837c6332b895",
+            "review_binding": "source-review-v3:80f4fea6806a2f0a",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -520,7 +545,7 @@
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
-                  "scope": "contradicted",
+                  "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
@@ -528,23 +553,7 @@
                 },
                 "current_user_quote": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection.",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.domain",
-                    "reason": "USER discusses collecting vintage cameras and camera maintenance/cleaning; scope.domain 'food' is not asserted and contradicts the subject matter."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 1,
@@ -562,10 +571,39 @@
                 "current_user_quote": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "Typed value is the bare possessive fragment 'my cameras'. As the object of 'owns' it is self-referential and names no camera or collection, so it does not supply an exact owned object; the only current-turn occurrence sits inside an advice-seeking question."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:6c9035e106ab28a9",
+          "request": "fnv1a64:bc32c0d9866888b9",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -596,7 +634,7 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "fact",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "owns",
                 "retention_tier": "long_term",
                 "scope": {
@@ -618,32 +656,35 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "collection",
+                  "display",
+                  "funk_pops"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "a large collection of Funko POP! figures"
+                  "text": "I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:55900130491b41d8",
+          "request": "fnv1a64:949617eb4a7ca7cf",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "including the entire set of Marvel Cinematic Universe figures",
                 "I want to make sure they're displayed in a way that showcases them nicely."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:95ed17657f23c85a",
+            "review_binding": "source-review-v3:d6c457fef3e12fbb",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -664,7 +705,7 @@
               }
             ]
           },
-          "request": "fnv1a64:9382218c4587db0b",
+          "request": "fnv1a64:35e8e5fe17c28822",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -725,114 +766,6 @@
                   "kind": "text",
                   "text": "vinyl record collection"
                 }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:29d6f3a119193815",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "> {\"turn_index\": 0, \"quote\": \"I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours\"}",
-                "{\"turn_index\": 0, \"quote\": \"I want to make sure it's displayed prominently\"}"
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:49ba57eee0b63ba1",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:7bdb275206db0ce0",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t6",
-      "observed_at": 1684806120,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "e"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "owns",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "poster",
-                  "Mondo",
-                  "Hogwarts",
-                  "Harry Potter"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
-                }
               },
               {
                 "certainty": "high",
@@ -870,22 +803,19 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "posters",
-                  "art prints"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "posters and art prints"
+                  "text": "rare 1978 pressing of Fleetwood Mac's Rumours"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:1005035f9365b497",
+          "request": "fnv1a64:fd15fed7a2359b3e",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -895,7 +825,178 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:f9a26d4e0c0945c5",
+            "review_binding": "source-review-v3:dd4cb040b0a1e74e",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?",
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:f7167eb11b4fabff",
+          "schema": "personal_memory_source_support_v1"
+        }
+      ],
+      "text": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t6",
+      "observed_at": 1684806120,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "medium",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "personal_collection"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "posters",
+                  "art prints",
+                  "collection"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "posters and art prints"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "medium",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "a"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "owns",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "personal_collection"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "poster",
+                  "Mondo",
+                  "Harry Potter",
+                  "Hogwarts"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:48d4e44360ba1d2a",
+          "schema": "personal_memory_candidates_v1"
+        },
+        {
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:a7158fd3859dfb74",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -933,7 +1034,7 @@
               }
             ]
           },
-          "request": "fnv1a64:cb6f274b8eba1cb2",
+          "request": "fnv1a64:70c2803d0491c108",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -969,7 +1070,7 @@
             "candidate_index": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:f412b362124f5d3e",
+          "request": "fnv1a64:8411d06f2fe37332",
           "schema": "personal_memory_answer_v1"
         }
       ]

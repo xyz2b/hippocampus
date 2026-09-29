@@ -12,10 +12,68 @@
       "recorded": [
         {
           "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "."
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "date": "2023-05-27",
+                  "expression": "I",
+                  "kind": "retain_until"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "packing"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "packing",
+                  "travel",
+                  "business trip"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I'm trying to get better at packing for my trips."
+                }
+              }
+            ],
+            "omission_reason": null
           },
-          "request": "fnv1a64:61aad8737e067320",
+          "request": "fnv1a64:6fd2b2b574cb51c7",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -24,11 +82,29 @@
               "missing_user_spans": [],
               "status": "complete"
             },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:c70ebe000fef88a4",
-            "reviews": []
+            "omission_supported": false,
+            "review_binding": "source-review-v3:3012cf9cf67dccf1",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm trying to get better at packing for my trips. Can you help me come up with a list of essentials to pack for a 3-day business trip?",
+                "evidence": [],
+                "issues": []
+              }
+            ]
           },
-          "request": "fnv1a64:54d3f93f8fee8c8e",
+          "request": "fnv1a64:274d65d567261a2c",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -47,7 +123,7 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:662ee7e716f0e708",
+          "request": "fnv1a64:8bfe28a471043771",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -57,10 +133,10 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:da1bb9d6f7426223",
+            "review_binding": "source-review-v3:967173da6d73829e",
             "reviews": []
           },
-          "request": "fnv1a64:7e7868d958556cd1",
+          "request": "fnv1a64:adb33fe99ca73fd2",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -79,7 +155,7 @@
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:81c654f46c77f8dc",
+          "request": "fnv1a64:d0800de02bddae67",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -89,10 +165,10 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:ed0dad7ed375d613",
+            "review_binding": "source-review-v3:13b56dc4751ae69f",
             "reviews": []
           },
-          "request": "fnv1a64:81e1747093c72cd5",
+          "request": "fnv1a64:59f83cb96d62af8a",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -120,12 +196,84 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-27",
+                  "expression": "I",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "packing "
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "travel"
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "packing",
+                  "travel"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts."
+                }
+              }
+            ],
+            "omission_reason": null
+          },
+          "request": "fnv1a64:091d483c1b6747a1",
+          "schema": "personal_memory_candidates_v1"
+        }
+      ],
+      "text": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items."
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t5",
+      "observed_at": 1685203080,
+      "recorded": [
+        {
+          "output": {
+            "candidates": [
+              {
+                "certainty": "medium",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -151,18 +299,14 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been trying to get  better at packing, but I still tend to overpack."
+                  "text": "I think I'm starting to get the hang of this packing thing!"
                 }
               },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "О"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -171,70 +315,17 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "episode",
-                "polarity": null,
-                "predicate": "visited",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "trip"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": "CG",
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "Costa Rica"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "О"
-                },
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "episode",
+                "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "trip"
-                    ],
+                    "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
                     "companion_roles": [],
-                    "country": "CG",
+                    "country": null,
                     "date": null,
                     "geography": null,
                     "task_id": null,
@@ -253,111 +344,9 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Like, on my  last trip to Costa Rica, I brought 7 shirts and 5  pairs of shorts, but I only ended up wearing 3 of the  shirts and 2 of the shorts."
+                  "text": "I've also been trying to get better at packing my toiletries more efficiently."
                 }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:63829d81f5348728",
-          "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:4d51dcc94f435d30",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items.",
-                "evidence": [],
-                "issues": []
               },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "contradicted",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items.",
-                "evidence": [
-                  {
-                    "quote": "on my last trip to Costa Rica",
-                    "turn_index": 0
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "on my last trip to Costa Rica",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.conditions[0].Location.Country",
-                    "reason": "Scope encodes country code CG, but USER says Costa Rica (CR); the location qualifier is wrong."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 2,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items.",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:a3b5435c337d765a",
-          "schema": "personal_memory_source_support_v1"
-        }
-      ],
-      "text": "That's really helpful! I've been trying to get better at packing, but I still tend to overpack. Like, on my last trip to Costa Rica, I brought 7 shirts and 5 pairs of shorts, but I only ended up wearing 3 of the shirts and 2 of the shorts. I guess I need to work on packing more essentials and fewer \"just in case\" items."
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t5",
-      "observed_at": 1685203080,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
@@ -445,148 +434,13 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "a packing cube"
-                }
-              },
-              {
-                "certainty": "medium",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I think I'm starting to get the hang of this packing thing!"
-                }
-              },
-              {
-                "certainty": "medium",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've also been trying to get better at packing my toiletries more efficiently."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized."
+                  "text": "packing cube"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:e3287f326f43122f",
+          "request": "fnv1a64:0cebc6560293d866",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -596,7 +450,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:2316e2d31f98a1b2",
+            "review_binding": "source-review-v3:d7d41fb1306bd276",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -604,7 +458,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -613,19 +467,7 @@
                 },
                 "current_user_quote": "I think I'm starting to get the hang of this packing thing! Thanks for the advice. I've also been trying to get better at packing my toiletries more efficiently. I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "USER says they invested in the items, not that they own them; 'owns' is an inferred resulting state rather than the asserted action."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 1,
@@ -633,7 +475,7 @@
                   "intent": "supported",
                   "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
@@ -642,19 +484,7 @@
                 },
                 "current_user_quote": "I think I'm starting to get the hang of this packing thing! Thanks for the advice. I've also been trying to get better at packing my toiletries more efficiently. I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized.",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "USER says they invested in the items, not that they own them; 'owns' is an inferred resulting state rather than the asserted action."
-                  }
-                ]
+                "issues": []
               },
               {
                 "candidate_index": 2,
@@ -689,27 +519,10 @@
                 "current_user_quote": "I think I'm starting to get the hang of this packing thing! Thanks for the advice. I've also been trying to get better at packing my toiletries more efficiently. I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized.",
                 "evidence": [],
                 "issues": []
-              },
-              {
-                "candidate_index": 4,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I think I'm starting to get the hang of this packing thing! Thanks for the advice. I've also been trying to get better at packing my toiletries more efficiently. I invested in some travel-sized toiletry bottles and a packing cube, which has really helped me stay organized.",
-                "evidence": [],
-                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:d65c6891974cb457",
+          "request": "fnv1a64:b2bbc14f0b3d82cb",
           "schema": "personal_memory_source_support_v1"
         }
       ],
@@ -748,7 +561,7 @@
             "candidate_index": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:b868e528ba4b7de1",
+          "request": "fnv1a64:a3a8deed524c3bce",
           "schema": "personal_memory_answer_v1"
         }
       ]

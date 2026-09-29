@@ -8,13 +8,14 @@
         "store": []
       },
       "id": "s1_t1",
+      "observed_at": 1684749060,
       "recorded": [
         {
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:43fc041a407151b1",
+          "request": "fnv1a64:2c8e24e5f8691ba7",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -24,15 +25,14 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:00999cc374ae1df5",
+            "review_binding": "source-review-v3:ae157104e45ae7a5",
             "reviews": []
           },
-          "request": "fnv1a64:88f1bf81b76d4f5a",
+          "request": "fnv1a64:853696f038cbd7a8",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm looking to get some new athletic wear, can you recommend some good brands?",
-      "observed_at": 1684749060
+      "text": "I'm looking to get some new athletic wear, can you recommend some good brands?"
     },
     {
       "expect": {
@@ -40,13 +40,14 @@
         "store": []
       },
       "id": "s1_t2",
+      "observed_at": 1684749120,
       "recorded": [
         {
           "output": {
             "candidates": [],
-            "omission_reason": "ineligible_source"
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:7598aebeda766fd1",
+          "request": "fnv1a64:34c4c199d911ebc7",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -56,15 +57,14 @@
               "status": "complete"
             },
             "omission_supported": true,
-            "review_binding": "source-review-v3:8b902ee11cc531ac",
+            "review_binding": "source-review-v3:d7ea9fa66c00141b",
             "reviews": []
           },
-          "request": "fnv1a64:f498fae34e003d6e",
+          "request": "fnv1a64:a863ea07e4cc1e6c",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm actually looking for something specific, like a new pair of running shoes. Do you know if they have any good deals on running shoes right now?",
-      "observed_at": 1684749120
+      "text": "I'm actually looking for something specific, like a new pair of running shoes. Do you know if they have any good deals on running shoes right now?"
     },
     {
       "expect": {
@@ -72,6 +72,7 @@
         "store": []
       },
       "id": "s1_t3",
+      "observed_at": 1684749180,
       "recorded": [
         {
           "output": {
@@ -80,27 +81,37 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "."
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "kind": "not_requested"
+                  "date": "2023-05-22",
+                  "expression": ".",
+                  "kind": "retain_until"
                 },
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "uses",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "daily 5K runs"
+                      "daily 5K run"
                     ],
                     "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
+                    "companion_entity_ids": [
+                      "self"
+                    ],
+                    "companion_roles": [
+                      "family"
+                    ],
                     "country": null,
                     "date": null,
                     "geography": null,
@@ -120,111 +131,17 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Nike running shoes"
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "they've been holding up pretty well."
+                  "text": "Nike running shoes (used for daily 5K runs) "
                 }
               }
             ],
-            "omission_reason": null
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:6149574743d4d166",
+          "request": "fnv1a64:d7bd785907e23fb4",
           "schema": "personal_memory_candidates_v1"
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:b10995dad720927a",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm actually looking for a new pair of Nike running shoes, I've been using them for my daily 5K runs and they've been holding up pretty well. Do you know if they have any new models or sales on Nike shoes?",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm actually looking for a new pair of Nike running shoes, I've been using them for my daily 5K runs and they've been holding up pretty well. Do you know if they have any new models or sales on Nike shoes?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:51a92f9103ec89de",
-          "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "I'm actually looking for a new pair of Nike running shoes, I've been using them for my daily 5K runs and they've been holding up pretty well. Do you know if they have any new models or sales on Nike shoes?",
-      "observed_at": 1684749180
+      "text": "I'm actually looking for a new pair of Nike running shoes, I've been using them for my daily 5K runs and they've been holding up pretty well. Do you know if they have any new models or sales on Nike shoes?"
     },
     {
       "expect": {
@@ -232,6 +149,7 @@
         "store": []
       },
       "id": "s1_t4",
+      "observed_at": 1684749240,
       "recorded": [
         {
           "output": {
@@ -252,7 +170,7 @@
                 "memory_type": "preference",
                 "polarity": "positive",
                 "predicate": "likes",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -273,21 +191,22 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "Nike",
-                  "running shoes"
+                  "running_shoes",
+                  "nike",
+                  "sports_brand"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "Nike running shoes"
+                  "text": "Nike (running shoes) — favourite brand so far for running shoes"
                 }
               },
               {
-                "certainty": "high",
+                "certainty": "medium",
                 "cross_turn_useful": true,
-                "extraction_confidence": "high",
+                "extraction_confidence": "medium",
                 "fact_time": null,
                 "intent": {
                   "kind": "assert",
@@ -297,10 +216,10 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "constraint",
+                "memory_type": "fact",
                 "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
+                "predicate": "owns",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -321,31 +240,33 @@
                   "entity_id": "self"
                 },
                 "tags": [
-                  "running shoes",
-                  "same model"
+                  "running_shoes",
+                  "nike"
                 ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm looking for a new pair running shoes, specifically the same model as my current ones."
+                  "text": "current running shoes (Nike running shoes, model currently used for running)"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7f094127f2364d56",
+          "request": "fnv1a64:9e981051710f5db4",
           "schema": "personal_memory_candidates_v1"
         },
         {
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm looking for a new pair running shoes, specifically the same model as my current ones."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:37131731c068348a",
+            "review_binding": "source-review-v3:5af3cef9cacb1928",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -378,17 +299,21 @@
                   "value": "supported"
                 },
                 "current_user_quote": "Nike has been my favourite brand so far for running shoes. I'm looking for a new pair running shoes, specifically the same model as my current ones. Do you know where I can find them or if they have any similar models that might be a good fit?",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I'm actually looking for a new pair of Nike running shoes, I've been using them for my daily 5K runs and they've been holding up pretty well.",
+                    "turn_index": 3
+                  }
+                ],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:1a4bd918e7776ef8",
+          "request": "fnv1a64:4cad6dfd8d7bebd3",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "Nike has been my favourite brand so far for running shoes. I'm looking for a new pair running shoes, specifically the same model as my current ones. Do you know where I can find them or if they have any similar models that might be a good fit?",
-      "observed_at": 1684749240
+      "text": "Nike has been my favourite brand so far for running shoes. I'm looking for a new pair running shoes, specifically the same model as my current ones. Do you know where I can find them or if they have any similar models that might be a good fit?"
     },
     {
       "expect": {
@@ -396,6 +321,7 @@
         "store": []
       },
       "id": "s1_t5",
+      "observed_at": 1684749300,
       "recorded": [
         {
           "output": {
@@ -405,8 +331,8 @@
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
-                  "date": "2026-04-01",
-                  "end_date": "2026-05-01",
+                  "date": "2023-04-01",
+                  "end_date": "2023-05-01",
                   "expression": "I"
                 },
                 "intent": {
@@ -440,7 +366,12 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "running shoes",
+                  "outlet mall",
+                  "purchase",
+                  "sale"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -452,7 +383,7 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:663802f9e64258d6",
+          "request": "fnv1a64:2c10be98b9a3a63c",
           "schema": "personal_memory_candidates_v1"
         },
         {
@@ -462,7 +393,7 @@
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:6ed8402544cdba54",
+            "review_binding": "source-review-v3:6f198f17bb8bd55d",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -474,39 +405,27 @@
                   "scope": "supported",
                   "source": "supported",
                   "subject": "supported",
-                  "temporal": "insufficient",
+                  "temporal": "supported",
                   "value": "supported"
                 },
                 "current_user_quote": "Wait, I think I remember something. I bought my current shoes at the outlet mall in April, and they were on sale for 20% off. Maybe I can find a similar deal again. Do you think I can find the same model or a similar one at the outlet mall or online?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "I bought my current shoes at the outlet mall in April, and they were on sale for 20% off.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal.valid_from",
-                    "reason": "USER said 'in April' as a past event month; the proposed temporal expression 'I' is not a time, and the proposed 2026-04-01..2026-05-01 interval adds an unstated year."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:4391df15e47c1928",
+          "request": "fnv1a64:ec5cdbbceb915c13",
           "schema": "personal_memory_source_support_v1"
         }
       ],
-      "text": "Wait, I think I remember something. I bought my current shoes at the outlet mall in April, and they were on sale for 20% off. Maybe I can find a similar deal again. Do you think I can find the same model or a similar one at the outlet mall or online?",
-      "observed_at": 1684749300
+      "text": "Wait, I think I remember something. I bought my current shoes at the outlet mall in April, and they were on sale for 20% off. Maybe I can find a similar deal again. Do you think I can find the same model or a similar one at the outlet mall or online?"
     }
   ],
   "origin": "LongMemEval oracle c8c3f81d (single-session-user); session dates ['2023/05/22 (Mon) 17:51'], asked 2023/05/30 (Tue) 20:23",
   "questions": [
     {
       "after": 5,
+      "at": 1685449380,
       "context": [],
       "expect": {
         "answer": [
@@ -534,11 +453,10 @@
             "candidate_index": 3,
             "verdict": "answer"
           },
-          "request": "fnv1a64:fe5d0c59bbedca9c",
+          "request": "fnv1a64:800768da8540de10",
           "schema": "personal_memory_answer_v1"
         }
-      ],
-      "at": 1685449380
+      ]
     }
   ]
 }
