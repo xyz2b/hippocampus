@@ -260,6 +260,9 @@ struct Remember {
     /// Set true on the first call when this complete personal statement and necessary USER history are authorized for raw retention, including factual background in questions and corrections. Capture precedes fact selection; uncertainty about useful facts or model success is not a reason to set false. False/omitted requests legacy fact-only processing without independent raw retention.
     #[serde(default, skip_serializing_if = "is_false")]
     capture_source: bool,
+    /// Import/replay only: when the USER originally sent this message, in Unix seconds. Omit for live chat; never in the future.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    observed_at: Option<i64>,
 }
 
 fn is_false(value: &bool) -> bool {
@@ -280,7 +283,17 @@ impl Remember {
         for text in &self.history {
             bounded_text(text, "history item", 24_000)?;
         }
-        Ok(())
+        past_time(self.observed_at, "observed_at")
+    }
+}
+
+/// A caller-supplied historical time must be a real past instant, never a future one.
+fn past_time(at: Option<i64>, field: &str) -> PersistenceResult<()> {
+    match at {
+        Some(at) if at <= 0 || at > unix_seconds()? => {
+            Err(format!("{field} must be a past Unix time in seconds").into())
+        }
+        _ => Ok(()),
     }
 }
 
@@ -310,6 +323,9 @@ struct Recall {
     task_id: Option<String>,
     #[serde(default = "default_limit")]
     limit: usize,
+    /// Import/replay only: the time the question was asked, in Unix seconds, for local/assisted recall. Omit for live chat; never in the future.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    at: Option<i64>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -2071,12 +2087,15 @@ impl ChatMemoryService {
             )));
         }
         let read_revision = state.revision;
-        let context = self.config.context(
+        let mut context = self.config.context(
             owner.clone(),
             state.entities.list_by_owner(&owner),
             input.task_id.clone(),
             20,
         )?;
+        if let Some(at) = input.observed_at {
+            context.now = Timestamp(at);
+        }
         let enrichment_off = self.config.enrichment_mode == EnrichmentMode::Off;
         let enrichment_deferred = self.config.enrichment_mode == EnrichmentMode::Deferred;
         // T1 owns only raw reception. A later model or fact-transaction failure cannot undo it.
@@ -2447,6 +2466,7 @@ impl ChatMemoryService {
                 let task_id = input.user_turn.task_id.clone();
                 let context = input.user_turn.history.clone();
                 let capture_source = input.user_turn.capture_source;
+                let at = input.user_turn.observed_at;
                 // Keep the two outcomes explicit: a recall failure cannot undo a completed save.
                 let remembered = self.remember(input.user_turn, &cancelled, false, operation_id);
                 let enrichment_mode = match &remembered {
@@ -2467,6 +2487,7 @@ impl ChatMemoryService {
                         "memory_recall",
                         json!({
                             "query": query, "task_id": task_id, "limit": input.limit, "context":context,
+                            "at": at,
                         }),
                         cancelled,
                         operation_id,
@@ -2535,12 +2556,14 @@ impl ChatMemoryService {
                     RetrievalMode::Local | RetrievalMode::Assisted
                 ) && !input.bootstrap
                 {
-                    let now = Timestamp(
-                        SystemTime::now()
+                    past_time(input.at, "at")?;
+                    let now = Timestamp(match input.at {
+                        Some(at) => at,
+                        None => SystemTime::now()
                             .duration_since(UNIX_EPOCH)?
                             .as_secs()
                             .try_into()?,
-                    );
+                    });
                     let mut runtime = RuntimeContext::current(owner, now);
                     runtime.task_id = input.task_id.map(TaskId);
                     runtime.limit = input.limit;
@@ -3309,7 +3332,7 @@ pub fn memory_tools() -> Vec<Tool> {
 mod tests {
     use super::{
         ChatConfig, ChatMemoryService, RetrievalMode, ValidateAnswer, final_answer_gate,
-        validated_single_relation,
+        past_time, unix_seconds, validated_single_relation,
     };
     use crate::local_recall::SingleRelationEvidenceHint;
     use crate::openai::SingleRelationProposal;
@@ -3837,6 +3860,16 @@ mod tests {
             )
             .is_none()
         );
+    }
+
+    #[test]
+    fn caller_supplied_times_must_be_in_the_past() {
+        let now = unix_seconds().unwrap();
+        assert!(past_time(None, "at").is_ok());
+        assert!(past_time(Some(1_698_816_900), "at").is_ok());
+        for bad in [0, -1, now + 3600] {
+            assert!(past_time(Some(bad), "at").is_err(), "{bad}");
+        }
     }
 
     #[test]

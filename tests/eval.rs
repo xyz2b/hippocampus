@@ -13,7 +13,7 @@
 //! `recorded`；超出上限或真实请求失败的项仍记为 skipped。未设置时绝不发真实请求。
 //!
 //! 新录制带 `request` 指纹（去掉时钟与当天日期、review_binding 与 max_output_tokens 后的请求哈希）。
-//! 评测使用系统时钟：按录制当天解析相对日期（明天、昨天）的输出，换一天回放会被本地校验拒绝。运行时改变请求后，
+//! 评测使用固定时钟（CLOCK，或用例自带的 observed_at / at），相对日期在任何一天回放都一致。运行时改变请求后，
 //! 指纹不符的录制视为过期：回放记为 skipped，录制模式下重录。无指纹的旧录制仍按 schema 顺序回放。
 
 use hippocampus::chat::{ChatConfig, ChatMemoryService, EnrichmentMode, RetrievalMode};
@@ -25,6 +25,10 @@ use std::net::TcpListener;
 use std::sync::{Arc, Mutex};
 
 const OWNER: &str = "eval";
+/// Fixed clock for cases without their own times: 2026-09-28 12:00 UTC+8, a minute per
+/// message, so replays resolve relative dates the same way on any day. Cases may set
+/// `observed_at` per message and `at` per question (Unix seconds).
+const CLOCK: i64 = 1_790_568_000;
 
 #[derive(Default)]
 struct Replay {
@@ -208,8 +212,11 @@ fn run_case(
                 .filter(|earlier| earlier.get("task_id") == task)
                 .map(|earlier| earlier["text"].clone())
                 .collect();
+            let observed_at = message["observed_at"]
+                .as_i64()
+                .unwrap_or(CLOCK + 60 * index as i64);
             let mut turn = json!({"text":message["text"],"session_id":format!("eval-{case_id}"),
-                "turn_id":id,"capture_source":true,"history":history});
+                "turn_id":id,"capture_source":true,"history":history,"observed_at":observed_at});
             if let Some(task) = task {
                 turn["task_id"] = task.clone();
             }
@@ -259,7 +266,11 @@ fn run_case(
                 rows.push(row(dimension, case_id, id, Outcome::Skip, reason));
                 continue;
             }
-            let mut arguments = json!({"query":question["query"],"context":question["context"]});
+            let at = question["at"]
+                .as_i64()
+                .unwrap_or(CLOCK + 60 * index as i64 + 30);
+            let mut arguments =
+                json!({"query":question["query"],"context":question["context"],"at":at});
             if let Some(task) = question.get("task_id") {
                 arguments["task_id"] = task.clone();
             }
