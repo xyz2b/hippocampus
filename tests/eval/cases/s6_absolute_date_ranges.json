@@ -24,6 +24,8 @@
       "id": "time_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -32,7 +34,7 @@
                 "extraction_confidence": "high",
                 "fact_time": {
                   "date": "2027-04-01",
-                  "end_date": "2027-04-15",
+                  "end_date": "2027-04-14",
                   "expression": "从2027年4月1日至2027年4月14日（含首尾两日）"
                 },
                 "intent": {
@@ -78,60 +80,18 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:525dfd60ae277571",
+          "request": "fnv1a64:2d14ffcf6adf21a4",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3948,
+            "input_tokens": 3755,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 19202,
+            "output_tokens": 1715,
             "output_tokens_details": {
-              "reasoning_tokens": 18906
+              "reasoning_tokens": 1423
             },
-            "total_tokens": 23150
-          }
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:03164e231aa44163",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:a2d36a80a433f7fd",
-          "schema": "personal_memory_source_support_v1",
-          "usage": {
-            "input_tokens": 2527,
-            "input_tokens_details": {
-              "cached_tokens": 0
-            },
-            "output_tokens": 7133,
-            "output_tokens_details": {
-              "reasoning_tokens": 6983
-            },
-            "total_tokens": 9660
+            "total_tokens": 5470
           }
         }
       ],
@@ -150,6 +110,8 @@
       "id": "time_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -158,7 +120,7 @@
                 "extraction_confidence": "high",
                 "fact_time": {
                   "date": "2027-04-15",
-                  "end_date": "2027-04-30",
+                  "end_date": "2027-05-01",
                   "expression": "从2027年4月15日至2027年4月30日（含首尾两日）"
                 },
                 "intent": {
@@ -167,9 +129,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2027-04-30",
-                  "expression": "从2027年4月15日至2027年4月30日（含首尾两日）",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -200,24 +160,24 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。,"
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。\""
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:8d60c232bfc1cd27",
+          "request": "fnv1a64:8dfc8f796491ca42",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3988,
+            "input_tokens": 3795,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 8655,
+            "output_tokens": 10261,
             "output_tokens_details": {
-              "reasoning_tokens": 8311
+              "reasoning_tokens": 9960
             },
-            "total_tokens": 12643
+            "total_tokens": 14056
           }
         }
       ],
@@ -245,28 +205,32 @@
       "query": "2027年4月14日，岸芷艺术馆几点闭馆？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "岸芷艺术馆 开放时间",
               "岸芷艺术馆 闭馆时间",
-              "岸芷艺术馆 参观指南"
+              "岸芷艺术馆 2027年4月14日 开放时间",
+              "岸芷艺术馆 参观须知 最晚入场"
             ]
           },
-          "request": "fnv1a64:208a69e6225c0e5a",
+          "request": "fnv1a64:732364b5038e9932",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 272,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1997,
+            "output_tokens": 923,
             "output_tokens_details": {
-              "reasoning_tokens": 1965
+              "reasoning_tokens": 879
             },
-            "total_tokens": 2269
+            "total_tokens": 1195
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "17:30",
             "candidate_index": 0,
@@ -274,18 +238,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:2983e0bc15ffccbf",
+          "request": "fnv1a64:f372e7cfbee961e8",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 620,
+            "input_tokens": 652,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 384
             },
-            "output_tokens": 295,
+            "output_tokens": 336,
             "output_tokens_details": {
-              "reasoning_tokens": 266
+              "reasoning_tokens": 308
             },
-            "total_tokens": 915
+            "total_tokens": 988
           }
         }
       ]
@@ -309,47 +273,51 @@
       "query": "2027年4月15日，岸芷艺术馆几点闭馆？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "岸芷艺术馆 2027年4月15日 开放时间",
-              "岸芷艺术馆 2027年4月 闭馆公告",
-              "岸芷艺术馆 参观 停止入场 时间"
+              "岸芷艺术馆 闭馆时间 公告",
+              "岸芷艺术馆 开放时间 2027年4月",
+              "岸芷艺术馆 几点闭馆 安排"
             ]
           },
-          "request": "fnv1a64:41c1db071e1447f5",
+          "request": "fnv1a64:f4e09af0028b671d",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 272,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1404,
+            "output_tokens": 770,
             "output_tokens_details": {
-              "reasoning_tokens": 1354
+              "reasoning_tokens": 727
             },
-            "total_tokens": 1676
+            "total_tokens": 1042
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "answer_text": null,
-            "candidate_index": null,
+            "answer_text": "19:00",
+            "candidate_index": 1,
             "event_date": null,
             "unit": null,
-            "verdict": "insufficient"
+            "verdict": "answer"
           },
-          "request": "fnv1a64:e58da7d3e512adf4",
+          "request": "fnv1a64:4431a1fc61ccd351",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 620,
+            "input_tokens": 652,
             "input_tokens_details": {
-              "cached_tokens": 512
+              "cached_tokens": 0
             },
-            "output_tokens": 440,
+            "output_tokens": 247,
             "output_tokens_details": {
-              "reasoning_tokens": 412
+              "reasoning_tokens": 218
             },
-            "total_tokens": 1060
+            "total_tokens": 899
           }
         }
       ]
@@ -368,28 +336,32 @@
       "query": "2027年5月1日，岸芷艺术馆几点闭馆？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "岸芷艺术馆 闭馆时间",
-              "岸芷艺术馆 2027年5月1日 开放时间",
-              "岸芷艺术馆 五一 闭馆公告"
+              "岸芷艺术馆 2027年5月1日 开放公告 闭馆",
+              "岸芷艺术馆 2027-05-01 营业时间 通知",
+              "岸芷艺术馆 五一假期 开放时间 公告"
             ]
           },
-          "request": "fnv1a64:de08df3e04972927",
+          "request": "fnv1a64:22017c87e0f9411b",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 272,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1347,
+            "output_tokens": 928,
             "output_tokens_details": {
-              "reasoning_tokens": 1304
+              "reasoning_tokens": 872
             },
-            "total_tokens": 1619
+            "total_tokens": 1200
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -397,18 +369,18 @@
             "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:103f5fa2d785f5b4",
+          "request": "fnv1a64:9cb3bcc5e7ca6053",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 620,
+            "input_tokens": 652,
             "input_tokens_details": {
-              "cached_tokens": 512
+              "cached_tokens": 384
             },
-            "output_tokens": 210,
+            "output_tokens": 145,
             "output_tokens_details": {
-              "reasoning_tokens": 182
+              "reasoning_tokens": 117
             },
-            "total_tokens": 830
+            "total_tokens": 797
           }
         }
       ]

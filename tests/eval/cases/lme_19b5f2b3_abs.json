@@ -11,39 +11,51 @@
       "observed_at": 1684792860,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:61b9e3f9c1bce419",
+          "request": "fnv1a64:e90f9bf3090a569e",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3907,
+            "input_tokens": 3714,
             "input_tokens_details": {
               "cached_tokens": 2048
             },
-            "output_tokens": 157,
+            "output_tokens": 159,
             "output_tokens_details": {
-              "reasoning_tokens": 136
+              "reasoning_tokens": 137
             },
-            "total_tokens": 4064
+            "total_tokens": 3873
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I'm planning a trip to Asia",
-                "I'm considering visiting Japan"
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
-            "omission_supported": false,
+            "omission_supported": true,
             "review_binding": "source-review-v3:a7823c1ee9c8b8b6",
             "reviews": []
           },
-          "request": "fnv1a64:4b9c10917cf7cd90",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:33783701ef1bae1c",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2020,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 331,
+            "output_tokens_details": {
+              "reasoning_tokens": 280
+            },
+            "total_tokens": 2351
+          }
         }
       ],
       "text": "I'm planning a trip to Asia and I'm considering visiting Japan. Can you recommend some must-see attractions in Kyoto?"
@@ -57,6 +69,8 @@
       "observed_at": 1684792920,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -64,8 +78,8 @@
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
-                  "date": null,
-                  "end_date": null,
+                  "date": "2023-02-01",
+                  "end_date": "2023-03-01",
                   "expression": "a few months ago"
                 },
                 "intent": {
@@ -74,22 +88,20 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-24",
-                  "expression": "tomorrow",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
-                "memory_type": "fact",
+                "memory_type": "episode",
                 "polarity": null,
                 "predicate": "visited",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
-                    "city": null,
+                    "city": "Kyoto",
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": "JO",
-                    "date": null,
+                    "date": "2023-02-01",
                     "geography": null,
                     "task_id": null,
                     "time_of_day": null
@@ -97,21 +109,24 @@
                   "domain": "travel"
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
                 "tags": [
-                  "travel",
-                  "japan",
-                  "kyoto"
+                  "tokyo_trip",
+                  "solo_trip",
+                  "japan_trip",
+                  "sightseeing",
+                  "history",
+                  "culture"
                 ],
                 "value": {
-                  "boolean": null,
+                  "boolean": true,
                   "entity_id": null,
                   "integer": null,
-                  "kind": "text",
-                  "text": "Fushimi Inari Shrine"
+                  "kind": "boolean",
+                  "text": null
                 }
               },
               {
@@ -119,8 +134,63 @@
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
-                  "date": null,
-                  "end_date": null,
+                  "date": "2023-05-09",
+                  "end_date": "2023-05-10",
+                  "expression": "yesterday"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "episode",
+                "polarity": null,
+                "predicate": "visited",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": "Kyoto",
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": "JO",
+                    "date": "2023-05-09",
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": "travel"
+                },
+                "source": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "kyoto_trip",
+                  "solo_trip",
+                  "japan_trip",
+                  "sightseeing",
+                  "culture"
+                ],
+                "value": {
+                  "boolean": true,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "boolean",
+                  "text": null
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": "2023-02-01",
+                  "end_date": "2023-02-15",
                   "expression": "a few months ago"
                 },
                 "intent": {
@@ -129,14 +199,12 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-24",
-                  "expression": "tomorrow",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
-                "memory_type": "fact",
+                "memory_type": "episode",
                 "polarity": null,
-                "predicate": "visited",
-                "retention_tier": "long_term",
+                "predicate": "fact",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -144,7 +212,7 @@
                     "companion_entity_ids": [],
                     "companion_roles": [],
                     "country": "JO",
-                    "date": null,
+                    "date": "2023-02-01",
                     "geography": null,
                     "task_id": null,
                     "time_of_day": null
@@ -152,14 +220,14 @@
                   "domain": "travel"
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
                 "tags": [
-                  "travel",
-                  "japan",
-                  "kyoto"
+                  "japan_trip",
+                  "solo_trip",
+                  "backpacking"
                 ],
                 "value": {
                   "boolean": null,
@@ -172,170 +240,18 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7b9598bad54bc663",
+          "request": "fnv1a64:b58f98c61bb2dfb8",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3958,
+            "input_tokens": 3765,
             "input_tokens_details": {
-              "cached_tokens": 2048
+              "cached_tokens": 3200
             },
-            "output_tokens": 19822,
+            "output_tokens": 16161,
             "output_tokens_details": {
-              "reasoning_tokens": 19208
+              "reasoning_tokens": 15208
             },
-            "total_tokens": 23780
-          }
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [
-                "when I was in Japan a few months ago",
-                "I spent two weeks traveling solo around the country and it was an incredible experience."
-              ],
-              "status": "incomplete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:2abbe9f8dccf2e8a",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "contradicted",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "insufficient",
-                  "value": "supported"
-                },
-                "current_user_quote": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago. I spent two weeks traveling solo around the country and it was an incredible experience. Can you recommend some good places to stay in Kyoto that are budget-friendly?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "when I was in Japan a few months ago",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.conditions[0].Location.Country",
-                    "reason": "Candidate scope says Country JO, but USER states the visit was in Japan; JO is not Japan."
-                  },
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "a few months ago",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal.expires_at",
-                    "reason": "Candidate sets an expiry at 2023-05-25 00:00 +08 from an unsupported 'tomorrow' proposal, but USER only says the visit was a few months ago and gives no retention/expiry instruction."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Can you recommend some good places to stay in Kyoto that are budget-friendly?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "Candidate marks explicit_memory_request=true, but USER only reports a past visit and asks for recommendations; no remember/save/retain instruction is present."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "contradicted",
-                  "polarity": "supported",
-                  "relation": "contradicted",
-                  "scope": "contradicted",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "insufficient",
-                  "value": "contradicted"
-                },
-                "current_user_quote": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago. I spent two weeks traveling solo around the country and it was an incredible experience. Can you recommend some good places to stay in Kyoto that are budget-friendly?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "I spent two weeks traveling solo around the country and it was an incredible experience.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "Candidate predicate is 'visited', but the quoted USER sentence asserts spending two weeks traveling solo and having an incredible experience; it is not a visit relation."
-                  },
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "I spent two weeks traveling solo around the country and it was an incredible experience.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "Candidate value is a whole experience sentence, not the object of a visit; it does not match the 'visited' predicate."
-                  },
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "when I was in Japan a few months ago",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.conditions[0].Location.Country",
-                    "reason": "Candidate scope says Country JO, but USER states the travel was in Japan; JO is not Japan."
-                  },
-                  {
-                    "check": "temporal",
-                    "evidence": [
-                      {
-                        "quote": "a few months ago",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "temporal.expires_at",
-                    "reason": "Candidate sets an expiry at 2023-05-25 00:00 +08 from an unsupported 'tomorrow' proposal, but USER only gives a past 'a few months ago' reference and no retention/expiry instruction."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Can you recommend some good places to stay in Kyoto that are budget-friendly?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "Candidate marks explicit_memory_request=true, but USER only reports a past trip and asks for recommendations; no remember/save/retain instruction is present."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:1e81ef92c9395f57",
-          "schema": "personal_memory_source_support_v1",
-          "usage": {
-            "input_tokens": 2953,
-            "input_tokens_details": {
-              "cached_tokens": 0
-            },
-            "output_tokens": 19633,
-            "output_tokens_details": {
-              "reasoning_tokens": 18752
-            },
-            "total_tokens": 22586
+            "total_tokens": 19926
           }
         }
       ],
@@ -350,6 +266,8 @@
       "observed_at": 1684792980,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -369,14 +287,14 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "episode",
-                "polarity": "positive",
+                "memory_type": "fact",
+                "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "staying in small hostels and guesthouses"
+                      "staying in hostels and guesthouses"
                     ],
                     "city": null,
                     "companion_entity_ids": [],
@@ -394,12 +312,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "travel",
-                  "solo",
-                  "hostels",
-                  "guesthouses"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -425,10 +338,10 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "episode",
-                "polarity": "positive",
+                "memory_type": "fact",
+                "polarity": null,
                 "predicate": "visited",
-                "retention_tier": "long_term",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [
@@ -450,46 +363,93 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "travel",
-                  "solo",
-                  "onsen"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "an onsen in the mountains"
+                  "text": "one in the mountains"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "during my trip"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [
+                      "visiting an onsen"
+                    ],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": "JO",
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I visited one in the mountains during my trip and it was amazing."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7d224719054ed973",
+          "request": "fnv1a64:84682881a63d0d88",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4022,
+            "input_tokens": 3829,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 18322,
+            "output_tokens": 17872,
             "output_tokens_details": {
-              "reasoning_tokens": 17829
+              "reasoning_tokens": 17090
             },
-            "total_tokens": 22344
+            "total_tokens": 21701
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "it was amazing"
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:11a45fdeb6bb7769",
+            "review_binding": "source-review-v3:7cc660afb16b524b",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -522,39 +482,65 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I stayed in small hostels and guesthouses during my solo trip to Japan, and it was a great way to meet other travelers. Speaking of which, do you have any recommendations for good onsen (hot springs) in the Kyoto area? I visited one in the mountains during my trip and it was amazing.",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago.",
+                    "turn_index": 1
+                  },
+                  {
+                    "quote": "I visited one in the mountains during my trip and it was amazing.",
+                    "turn_index": 0
+                  }
+                ],
                 "issues": [
                   {
                     "check": "scope",
                     "evidence": [
                       {
-                        "quote": "during my solo trip to Japan",
+                        "quote": "I visited one in the mountains during my trip and it was amazing.",
                         "turn_index": 0
                       },
                       {
-                        "quote": "I visited one in the mountains during my trip and it was amazing.",
-                        "turn_index": 0
+                        "quote": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago.",
+                        "turn_index": 1
                       }
                     ],
                     "field": "scope",
-                    "reason": "Candidate scope asserts Location Country JO (Jordan), but the USER's onsen visit was during a solo trip to Japan; JO is not supported."
+                    "reason": "Candidate scopes the visit to Location Country JO (Jordan), but USER places the onsen in the mountains during a trip to Japan/area of Kyoto; no Jordan location is asserted."
                   }
                 ]
+              },
+              {
+                "candidate_index": 2,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I stayed in small hostels and guesthouses during my solo trip to Japan, and it was a great way to meet other travelers. Speaking of which, do you have any recommendations for good onsen (hot springs) in the Kyoto area? I visited one in the mountains during my trip and it was amazing.",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:bea1cc338c0d6673",
+          "request": "fnv1a64:092fd05b0e50d4bc",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2924,
+            "input_tokens": 3281,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 16466,
+            "output_tokens": 2481,
             "output_tokens_details": {
-              "reasoning_tokens": 16081
+              "reasoning_tokens": 1904
             },
-            "total_tokens": 19390
+            "total_tokens": 5762
           }
         }
       ],
@@ -569,36 +555,53 @@
       "observed_at": 1684793040,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:fc815ab3075f68aa",
+          "request": "fnv1a64:9e401028e16d6e99",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4048,
+            "input_tokens": 3855,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 700,
+            "output_tokens": 198,
             "output_tokens_details": {
-              "reasoning_tokens": 678
+              "reasoning_tokens": 177
             },
-            "total_tokens": 4748
+            "total_tokens": 4053
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm actually considering visiting other parts of Asia after Japan."
+              ],
+              "status": "incomplete"
             },
-            "omission_supported": true,
+            "omission_supported": false,
             "review_binding": "source-review-v3:01e26c834386964d",
             "reviews": []
           },
-          "request": "fnv1a64:835cb249e4ebd8b8",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:7a696c1708aba80c",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2157,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2095,
+            "output_tokens_details": {
+              "reasoning_tokens": 2035
+            },
+            "total_tokens": 4252
+          }
         }
       ],
       "text": "I'm actually considering visiting other parts of Asia after Japan. Do you have any recommendations for must-see destinations in Asia?"
@@ -612,71 +615,29 @@
       "observed_at": 1684793100,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "candidates": [
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I've heard great things about Seoul and the food there."
-                }
-              }
-            ],
-            "omission_reason": null
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:bcb99ae4101dfed3",
+          "request": "fnv1a64:13a8203502b248e8",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4085,
+            "input_tokens": 3892,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 15390,
+            "output_tokens": 3578,
             "output_tokens_details": {
-              "reasoning_tokens": 15109
+              "reasoning_tokens": 3556
             },
-            "total_tokens": 19475
+            "total_tokens": 7470
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -685,39 +646,21 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:39a997480fcd351c",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm actually thinking of visiting South Korea. I've heard great things about Seoul and the food there. Do you have any recommendations for must-try dishes or restaurants in Seoul?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
+            "review_binding": "source-review-v3:d7c86eab2f76c89e",
+            "reviews": []
           },
-          "request": "fnv1a64:79d3e3a58d6602ce",
+          "request": "fnv1a64:21d49b87cdb6f3d5",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2533,
+            "input_tokens": 2197,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 5384,
+            "output_tokens": 3459,
             "output_tokens_details": {
-              "reasoning_tokens": 5226
+              "reasoning_tokens": 3399
             },
-            "total_tokens": 7917
+            "total_tokens": 5656
           }
         }
       ],
@@ -732,25 +675,29 @@
       "observed_at": 1684793160,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
-            "omission_reason": "low_value_episode"
+            "omission_reason": "ineligible_source"
           },
-          "request": "fnv1a64:5dea44cabdd5c9ff",
+          "request": "fnv1a64:f3f976b1bd07291c",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4121,
+            "input_tokens": 3928,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3328
             },
-            "output_tokens": 251,
+            "output_tokens": 1151,
             "output_tokens_details": {
-              "reasoning_tokens": 232
+              "reasoning_tokens": 1131
             },
-            "total_tokens": 4372
+            "total_tokens": 5079
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -760,8 +707,19 @@
             "review_binding": "source-review-v3:719d3d4e22ec9feb",
             "reviews": []
           },
-          "request": "fnv1a64:447c14b70dfd1e58",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:bf2af90b42f61040",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2233,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 416,
+            "output_tokens_details": {
+              "reasoning_tokens": 366
+            },
+            "total_tokens": 2649
+          }
         }
       ],
       "text": "I'm thinking of visiting the Demilitarized Zone (DMZ) between North and South Korea. Do you have any recommendations for guided tours or attractions in the area?"
@@ -780,17 +738,32 @@
       "query": "How long was I in Korea for?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
               "I was in Korea for",
-              "I stayed in Korea for",
-              "my trip to Korea lasted"
+              "I lived in Korea for",
+              "I stayed in Korea for"
             ]
           },
-          "request": "fnv1a64:2399c57fa0f7903d",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:a4e20894f7ff9335",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 264,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 742,
+            "output_tokens_details": {
+              "reasoning_tokens": 717
+            },
+            "total_tokens": 1006
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -798,18 +771,18 @@
             "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:8a7848fed8d41688",
+          "request": "fnv1a64:57bfe1304dc588d4",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 866,
+            "input_tokens": 898,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 76,
+            "output_tokens": 78,
             "output_tokens_details": {
-              "reasoning_tokens": 48
+              "reasoning_tokens": 50
             },
-            "total_tokens": 942
+            "total_tokens": 976
           }
         }
       ]

@@ -33,6 +33,8 @@
       "note": "S6 已知失败：模型返回 kind=boolean, boolean=false，被作为 Fact 提交（未获原文支持）。",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -83,21 +85,23 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4e668bc410dcae8c",
+          "request": "fnv1a64:3932cb127e5ad1fb",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3946,
+            "input_tokens": 3753,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 0
             },
-            "output_tokens": 723,
+            "output_tokens": 855,
             "output_tokens_details": {
-              "reasoning_tokens": 497
+              "reasoning_tokens": 628
             },
-            "total_tokens": 4669
+            "total_tokens": 4608
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -125,18 +129,18 @@
               }
             ]
           },
-          "request": "fnv1a64:8d0fd4dcb45aaff6",
+          "request": "fnv1a64:cd2565975b7bc26e",
           "schema": "personal_memory_source_support_v1",
           "usage": {
             "input_tokens": 2358,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 5008,
+            "output_tokens": 537,
             "output_tokens_details": {
-              "reasoning_tokens": 4886
+              "reasoning_tokens": 387
             },
-            "total_tokens": 7366
+            "total_tokens": 2895
           }
         }
       ],
@@ -155,26 +159,22 @@
       "id": "device_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "null"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "0000-00-00",
-                  "expression": "null",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -211,21 +211,23 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:440d047975580b03",
+          "request": "fnv1a64:e4dfc1f8804f6780",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3957,
+            "input_tokens": 3764,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 857,
+            "output_tokens": 13387,
             "output_tokens_details": {
-              "reasoning_tokens": 590
+              "reasoning_tokens": 13157
             },
-            "total_tokens": 4814
+            "total_tokens": 17151
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -253,18 +255,18 @@
               }
             ]
           },
-          "request": "fnv1a64:aef5ced51558a4c1",
+          "request": "fnv1a64:675f7e97e45d57a5",
           "schema": "personal_memory_source_support_v1",
           "usage": {
             "input_tokens": 2368,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 5281,
+            "output_tokens": 5734,
             "output_tokens_details": {
-              "reasoning_tokens": 5133
+              "reasoning_tokens": 5615
             },
-            "total_tokens": 7649
+            "total_tokens": 8102
           }
         }
       ],
@@ -314,25 +316,27 @@
       "query": "默认纸张规格是什么？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "雾岚打印机 默认纸张规格 设置",
-              "雾岚打印机 出厂默认纸张尺寸",
-              "雾岚打印机 纸张默认配置 纸型"
+              "雾岚打印机 默认纸张规格 A4",
+              "雾岚打印机 纸张大小 默认设置 A4",
+              "雾岚打印机 默认用纸 A4"
             ]
           },
-          "request": "fnv1a64:d4b2951055fc36c6",
+          "request": "fnv1a64:a064b173bd2b781e",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 279,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1644,
+            "output_tokens": 1755,
             "output_tokens_details": {
-              "reasoning_tokens": 1607
+              "reasoning_tokens": 1716
             },
-            "total_tokens": 1923
+            "total_tokens": 2034
           }
         }
       ]
@@ -356,25 +360,23 @@
       "query": "青苔打印机的默认纸张规格是什么？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "queries": [
-              "青苔打印机 默认纸张规格 B5",
-              "青苔打印机 默认纸张 设置为 B5",
-              "青苔打印机 出厂默认纸张尺寸 B5"
-            ]
+            "queries": []
           },
-          "request": "fnv1a64:c572f58fa50ecc00",
+          "request": "fnv1a64:bba1b3c6a4370fec",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 276,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 2024,
+            "output_tokens": 1536,
             "output_tokens_details": {
-              "reasoning_tokens": 1985
+              "reasoning_tokens": 1529
             },
-            "total_tokens": 2300
+            "total_tokens": 1812
           }
         }
       ]
@@ -398,21 +400,27 @@
       "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "queries": []
+            "queries": [
+              "雾岚打印机 默认纸张规格 A4",
+              "雾岚打印机 出厂默认纸型 尺寸",
+              "雾岚打印机 纸张设置 默认值"
+            ]
           },
-          "request": "fnv1a64:8e8abf53f4d33108",
+          "request": "fnv1a64:d4926b1d662c9bc4",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 281,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 869,
+            "output_tokens": 1296,
             "output_tokens_details": {
-              "reasoning_tokens": 862
+              "reasoning_tokens": 1258
             },
-            "total_tokens": 1150
+            "total_tokens": 1577
           }
         }
       ]
@@ -431,28 +439,32 @@
       "query": "青苔打印机使用什么型号的墨盒？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "青苔打印机 墨盒型号",
-              "青苔打印机 更换 墨盒 型号",
-              "青苔打印机 墨盒 规格 兼容"
+              "青苔打印机 用的 墨盒 型号",
+              "青苔打印机 配备 墨盒 型号",
+              "青苔打印机 耗材 墨盒 规格"
             ]
           },
-          "request": "fnv1a64:db64a3a3fc0aff4b",
+          "request": "fnv1a64:82a89f785b61e24f",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 266,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1933,
+            "output_tokens": 1302,
             "output_tokens_details": {
-              "reasoning_tokens": 1896
+              "reasoning_tokens": 1261
             },
-            "total_tokens": 2199
+            "total_tokens": 1568
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -460,18 +472,18 @@
             "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:167017c5ce3bae17",
+          "request": "fnv1a64:19ad34d273e69521",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 519,
+            "input_tokens": 551,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 66,
+            "output_tokens": 64,
             "output_tokens_details": {
-              "reasoning_tokens": 38
+              "reasoning_tokens": 36
             },
-            "total_tokens": 585
+            "total_tokens": 615
           }
         }
       ]

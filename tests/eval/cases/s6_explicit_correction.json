@@ -24,6 +24,8 @@
       "id": "correction_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -66,43 +68,42 @@
                 "subject": {
                   "entity_id": "device_mowan_camera"
                 },
-                "tags": [
-                  "storage_card",
-                  "capacity"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。 "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:0be020423ab108f0",
+          "request": "fnv1a64:1da405c9d0ec8167",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3917,
+            "input_tokens": 3724,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 6942,
+            "output_tokens": 4986,
             "output_tokens_details": {
-              "reasoning_tokens": 3411
+              "reasoning_tokens": 4732
             },
-            "total_tokens": 10859
+            "total_tokens": 8710
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:531745bc99db7283",
+            "review_binding": "source-review-v3:ef15aa85d959fad5",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -123,18 +124,18 @@
               }
             ]
           },
-          "request": "fnv1a64:dfdfe9bb5b1f82aa",
+          "request": "fnv1a64:5847ebebee1ec0c4",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2413,
+            "input_tokens": 2333,
             "input_tokens_details": {
-              "cached_tokens": 1408
+              "cached_tokens": 0
             },
-            "output_tokens": 5731,
+            "output_tokens": 6292,
             "output_tokens_details": {
-              "reasoning_tokens": 5611
+              "reasoning_tokens": 6141
             },
-            "total_tokens": 8144
+            "total_tokens": 8625
           }
         }
       ],
@@ -153,20 +154,18 @@
       "id": "correction_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "null"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "supersede",
-                  "reason": "user_retracted",
+                  "reason": "correction",
                   "target_memory_id": null
                 },
                 "memory_request": {
@@ -201,34 +200,36 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
+                  "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。  "
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:11d1a934dc600444",
+          "request": "fnv1a64:8c9dc107d3784043",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3945,
+            "input_tokens": 3752,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 983,
+            "output_tokens": 5996,
             "output_tokens_details": {
-              "reasoning_tokens": 710
+              "reasoning_tokens": 5732
             },
-            "total_tokens": 4928
+            "total_tokens": 9748
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:80abf9184ce4ae38",
+            "review_binding": "source-review-v3:ff794e9feac3038f",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -254,18 +255,18 @@
               }
             ]
           },
-          "request": "fnv1a64:a092e4820da3b820",
+          "request": "fnv1a64:889dca8a53146fff",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2406,
+            "input_tokens": 2405,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 7613,
+            "output_tokens": 5475,
             "output_tokens_details": {
-              "reasoning_tokens": 7454
+              "reasoning_tokens": 5283
             },
-            "total_tokens": 10019
+            "total_tokens": 7880
           }
         }
       ],
@@ -293,28 +294,32 @@
       "query": "墨湾相机使用多大容量的存储卡？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "墨湾相机 存储卡 容量",
-              "墨湾相机 使用 内存卡 规格",
-              "墨湾相机 支持 SD卡 容量"
+              "墨湾相机 存储卡 容量 规格",
+              "墨湾相机 支持 内存卡 大小",
+              "墨湾相机 插入 TF卡 容量"
             ]
           },
-          "request": "fnv1a64:3b96dc8e96f20f50",
+          "request": "fnv1a64:e688d2142e8e5c3c",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 266,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 743,
+            "output_tokens": 703,
             "output_tokens_details": {
-              "reasoning_tokens": 706
+              "reasoning_tokens": 665
             },
-            "total_tokens": 1009
+            "total_tokens": 969
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "64GB",
             "candidate_index": 0,
@@ -322,18 +327,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:7930c5b49de3bfdb",
+          "request": "fnv1a64:fa3f5ffb4d2c6b35",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 520,
+            "input_tokens": 552,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 97,
+            "output_tokens": 43,
             "output_tokens_details": {
-              "reasoning_tokens": 69
+              "reasoning_tokens": 15
             },
-            "total_tokens": 617
+            "total_tokens": 595
           }
         }
       ]
@@ -357,28 +362,32 @@
       "query": "墨湾相机使用多大容量的存储卡？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "墨湾相机 存储卡 容量 配置",
-              "墨湾相机 使用 存储卡 大小",
-              "墨湾相机 支持 存储卡 规格"
+              "墨湾相机 存储卡 容量 规格",
+              "墨湾相机 配置 内存卡 容量",
+              "墨湾相机 支持 存储卡 最大容量"
             ]
           },
-          "request": "fnv1a64:3b96dc8e96f20f50",
+          "request": "fnv1a64:e688d2142e8e5c3c",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 266,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 451,
+            "output_tokens": 806,
             "output_tokens_details": {
-              "reasoning_tokens": 411
+              "reasoning_tokens": 765
             },
-            "total_tokens": 717
+            "total_tokens": 1072
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "128GB",
             "candidate_index": 0,
@@ -386,18 +395,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:ef1754518d263047",
+          "request": "fnv1a64:de7a4a3ef57e6151",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 536,
+            "input_tokens": 568,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 149,
+            "output_tokens": 159,
             "output_tokens_details": {
-              "reasoning_tokens": 121
+              "reasoning_tokens": 131
             },
-            "total_tokens": 685
+            "total_tokens": 727
           }
         }
       ]
@@ -421,28 +430,32 @@
       "query": "现在确认墨湾相机的存储卡是64GB还是128GB？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "墨湾相机 配了 64GB 存储卡",
-              "墨湾相机 用 128GB 内存卡",
-              "墨湾相机 存储卡 容量大小"
+              "墨湾相机 存储卡 64G",
+              "墨湾相机 存储卡 128G",
+              "墨湾相机 内存卡 容量"
             ]
           },
-          "request": "fnv1a64:f59122c3c314de79",
+          "request": "fnv1a64:e2efbfb9d3eb2f31",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 271,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 680,
+            "output_tokens": 1405,
             "output_tokens_details": {
-              "reasoning_tokens": 638
+              "reasoning_tokens": 1369
             },
-            "total_tokens": 951
+            "total_tokens": 1676
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "128GB",
             "candidate_index": 0,
@@ -450,18 +463,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:b6ad149f56190cc2",
+          "request": "fnv1a64:e661cfbcdaaf3e82",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 541,
+            "input_tokens": 573,
             "input_tokens_details": {
               "cached_tokens": 512
             },
-            "output_tokens": 127,
+            "output_tokens": 164,
             "output_tokens_details": {
-              "reasoning_tokens": 99
+              "reasoning_tokens": 136
             },
-            "total_tokens": 668
+            "total_tokens": 737
           }
         }
       ]

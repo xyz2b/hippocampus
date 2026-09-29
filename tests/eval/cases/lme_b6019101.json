@@ -11,36 +11,148 @@
       "observed_at": 1684544760,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "candidates": [],
-            "omission_reason": "no_personal_assertion"
+            "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "preference",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "short_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [
+                  "movies",
+                  "nostalgia"
+                ],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "classic films from my childhood"
+                }
+              }
+            ],
+            "omission_reason": null
           },
-          "request": "fnv1a64:31dd7c362ba70a3f",
+          "request": "fnv1a64:b654ae5536cdd8dc",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3927,
+            "input_tokens": 3734,
             "input_tokens_details": {
-              "cached_tokens": 2048
+              "cached_tokens": 3200
             },
-            "output_tokens": 2607,
+            "output_tokens": 3170,
             "output_tokens_details": {
-              "reasoning_tokens": 2585
+              "reasoning_tokens": 2952
             },
-            "total_tokens": 6534
+            "total_tokens": 6904
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I'm planning a movie marathon with my family over the long weekend",
+                "I want to re-watch some classic films from my childhood"
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:39b18d7b4cdaea8d",
-            "reviews": []
+            "review_binding": "source-review-v3:6b81e04eb0d9ffdb",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning a movie marathon with my family over the long weekend and I want to re-watch some classic films from my childhood. Can you recommend some popular movies from the 80s and 90s that are suitable for a family movie night?",
+                "evidence": [],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "I want to re-watch some classic films from my childhood",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "USER expresses 'want to re-watch' classic films, not a general 'likes' preference; the asserted action/desire is not the candidate predicate."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I'm planning a movie marathon with my family over the long weekend",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I want to re-watch some classic films from my childhood",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "retention_tier",
+                    "reason": "USER does not state short-term retention for this preference; the long-weekend phrase modifies the movie-marathon plan, not the retention of the preference."
+                  }
+                ]
+              }
+            ]
           },
-          "request": "fnv1a64:32d57be19b29d02e",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:54d19c5138c948e7",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2384,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 14623,
+            "output_tokens_details": {
+              "reasoning_tokens": 14216
+            },
+            "total_tokens": 17007
+          }
         }
       ],
       "text": "I'm planning a movie marathon with my family over the long weekend and I want to re-watch some classic films from my childhood. Can you recommend some popular movies from the 80s and 90s that are suitable for a family movie night?"
@@ -54,6 +166,8 @@
       "observed_at": 1684544820,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -73,7 +187,7 @@
                 "memory_request": {
                   "kind": "not_requested"
                 },
-                "memory_type": "episode",
+                "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
                 "retention_tier": "short_term",
@@ -82,9 +196,7 @@
                     "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
-                    "companion_roles": [
-                      "family"
-                    ],
+                    "companion_roles": [],
                     "country": null,
                     "date": null,
                     "geography": null,
@@ -98,11 +210,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "family",
-                  "movie",
-                  "marvel"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -114,28 +222,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:fc8ff311774d62ae",
+          "request": "fnv1a64:2b4573eb65d04b75",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3964,
+            "input_tokens": 3771,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 8587,
+            "output_tokens": 8310,
             "output_tokens_details": {
-              "reasoning_tokens": 8219
+              "reasoning_tokens": 8012
             },
-            "total_tokens": 12551
+            "total_tokens": 12081
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:abcd7b82ec05132d",
+            "review_binding": "source-review-v3:61663834b64f8be3",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -151,12 +261,7 @@
                   "value": "supported"
                 },
                 "current_user_quote": "Can you suggest some MCU films that are suitable for my family movie night as well? I've been on a Marvel binge recently and I'd love to share that with my family.",
-                "evidence": [
-                  {
-                    "quote": "I'm planning a movie marathon with my family over the long weekend",
-                    "turn_index": 1
-                  }
-                ],
+                "evidence": [],
                 "issues": [
                   {
                     "check": "temporal",
@@ -166,25 +271,25 @@
                         "turn_index": 0
                       }
                     ],
-                    "field": "temporal",
-                    "reason": "The only USER time word is 'recently', a vague open-ended qualifier. The frozen valid_from 2023-04-20 and valid_to 2023-05-20 (one month up to observed_at) are inferred from the system clock, not from any USER-asserted calendar date, so no such precise boundary is justified."
+                    "field": "temporal.valid_from",
+                    "reason": "USER only said 'recently'; the exact inferred start 2023-04-20 and end 2023-05-20T09:07:01 are not asserted by USER words."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:c001937d38e30f8d",
+          "request": "fnv1a64:1cbf489be387b547",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2511,
+            "input_tokens": 2496,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 5226,
+            "output_tokens": 8010,
             "output_tokens_details": {
-              "reasoning_tokens": 4951
+              "reasoning_tokens": 7784
             },
-            "total_tokens": 7737
+            "total_tokens": 10506
           }
         }
       ],
@@ -199,6 +304,8 @@
       "observed_at": 1684544880,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -221,7 +328,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -253,28 +360,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:42fd86433c8982b2",
+          "request": "fnv1a64:d16f772fa0dcf621",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4016,
+            "input_tokens": 3823,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 12339,
+            "output_tokens": 10133,
             "output_tokens_details": {
-              "reasoning_tokens": 12099
+              "reasoning_tokens": 9861
             },
-            "total_tokens": 16355
+            "total_tokens": 13956
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ed2ce24d9de8bf47",
+            "review_binding": "source-review-v3:90b2af15646e0b75",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -295,18 +404,18 @@
               }
             ]
           },
-          "request": "fnv1a64:f7dd5c44f5d06bf2",
+          "request": "fnv1a64:44ba6a3b0218c9c6",
           "schema": "personal_memory_source_support_v1",
           "usage": {
             "input_tokens": 2527,
             "input_tokens_details": {
               "cached_tokens": 1408
             },
-            "output_tokens": 4444,
+            "output_tokens": 11994,
             "output_tokens_details": {
-              "reasoning_tokens": 4282
+              "reasoning_tokens": 11832
             },
-            "total_tokens": 6971
+            "total_tokens": 14521
           }
         }
       ],
@@ -321,36 +430,53 @@
       "observed_at": 1684544940,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:23bef6ea6f69ae07",
+          "request": "fnv1a64:934a1d580e438e84",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4049,
+            "input_tokens": 3856,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 2393,
+            "output_tokens": 290,
             "output_tokens_details": {
-              "reasoning_tokens": 2371
+              "reasoning_tokens": 269
             },
-            "total_tokens": 6442
+            "total_tokens": 4146
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I was thinking of creating a Marvel-themed photo booth with props like Spider-Man masks and capes."
+              ],
+              "status": "incomplete"
             },
-            "omission_supported": true,
+            "omission_supported": false,
             "review_binding": "source-review-v3:3886928497742524",
             "reviews": []
           },
-          "request": "fnv1a64:3f8133ca6aae179b",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:b4697368430d5b5f",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2156,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2934,
+            "output_tokens_details": {
+              "reasoning_tokens": 2868
+            },
+            "total_tokens": 5090
+          }
         }
       ],
       "text": "I was thinking of creating a Marvel-themed photo booth with props like Spider-Man masks and capes. Do you have any suggestions for other props I could include?"
@@ -364,36 +490,53 @@
       "observed_at": 1684545000,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:a10da7d18947d0bc",
+          "request": "fnv1a64:d32286a4b59be3ab",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4106,
+            "input_tokens": 3913,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 2371,
+            "output_tokens": 2112,
             "output_tokens_details": {
-              "reasoning_tokens": 2349
+              "reasoning_tokens": 2090
             },
-            "total_tokens": 6477
+            "total_tokens": 6025
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I think I'll also include some DIY signs that say \"Spider-Man's Neighborhood\" or \"Queens, NY\" to give it a more authentic feel."
+              ],
+              "status": "incomplete"
             },
-            "omission_supported": true,
+            "omission_supported": false,
             "review_binding": "source-review-v3:ea97f06699b03c22",
             "reviews": []
           },
-          "request": "fnv1a64:4b49a1de41df1684",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:c8616a8983596828",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2216,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1924,
+            "output_tokens_details": {
+              "reasoning_tokens": 1842
+            },
+            "total_tokens": 4140
+          }
         }
       ],
       "text": "That's a great list of props! I think I'll also include some DIY signs that say \"Spider-Man's Neighborhood\" or \"Queens, NY\" to give it a more authentic feel. Do you have any suggestions for how to create a DIY cityscape backdrop?"
@@ -407,25 +550,29 @@
       "observed_at": 1684545060,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:c8897158689b40f4",
+          "request": "fnv1a64:c3ac3fabf0764143",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4173,
+            "input_tokens": 3980,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 380,
+            "output_tokens": 1016,
             "output_tokens_details": {
-              "reasoning_tokens": 359
+              "reasoning_tokens": 995
             },
-            "total_tokens": 4553
+            "total_tokens": 4996
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -435,8 +582,19 @@
             "review_binding": "source-review-v3:78a2db9efec61b1b",
             "reviews": []
           },
-          "request": "fnv1a64:a8bf1a924d11d2a5",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:9f7ca2bcf2310091",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2285,
+            "input_tokens_details": {
+              "cached_tokens": 1536
+            },
+            "output_tokens": 3715,
+            "output_tokens_details": {
+              "reasoning_tokens": 3665
+            },
+            "total_tokens": 6000
+          }
         }
       ],
       "text": "I think I'll go with the cardboard box cityscape option. It's easy to set up and can be customized to fit my Spider-Man theme. I'll also add some DIY signs that say \"Spider-Man's Neighborhood\" or \"Queens, NY\" to give it a more authentic feel. Thanks for the ideas!"
@@ -450,8 +608,59 @@
       "observed_at": 1685005740,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "lately"
+                },
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've been on a roll with movies lately"
+                }
+              },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
@@ -498,36 +707,39 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!"
+                  "text": "I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:b76687968089e1cb",
+          "request": "fnv1a64:ce4946b42e450840",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4252,
+            "input_tokens": 4059,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3968
             },
-            "output_tokens": 7858,
+            "output_tokens": 15728,
             "output_tokens_details": {
-              "reasoning_tokens": 7571
+              "reasoning_tokens": 15281
             },
-            "total_tokens": 12110
+            "total_tokens": 19787
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood."
+                "I'm planning a movie marathon with my family over the upcoming long weekend",
+                "I want to include some classic movies from my childhood"
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:70c35275ee6e6c6e",
+            "review_binding": "source-review-v3:7c07566349dd0702",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -543,28 +755,40 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood. Can you give me some suggestions on what to watch? By the way, I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!",
-                "evidence": [
-                  {
-                    "quote": "I've actually watched 4 MCU films in the last 3 months",
-                    "turn_index": 3
-                  }
-                ],
+                "evidence": [],
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood. Can you give me some suggestions on what to watch? By the way, I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!",
+                "evidence": [],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:c3df27eacb2aef69",
+          "request": "fnv1a64:8d98666104ee5b96",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2797,
+            "input_tokens": 3195,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 11766,
+            "output_tokens": 9657,
             "output_tokens_details": {
-              "reasoning_tokens": 11525
+              "reasoning_tokens": 9303
             },
-            "total_tokens": 14563
+            "total_tokens": 12852
           }
         }
       ],
@@ -579,25 +803,29 @@
       "observed_at": 1685005800,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:2d6fd457f43a3cea",
+          "request": "fnv1a64:f9ad4b01b732be59",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4302,
+            "input_tokens": 4109,
             "input_tokens_details": {
-              "cached_tokens": 3584
+              "cached_tokens": 3200
             },
-            "output_tokens": 3471,
+            "output_tokens": 1940,
             "output_tokens_details": {
-              "reasoning_tokens": 3450
+              "reasoning_tokens": 1919
             },
-            "total_tokens": 7773
+            "total_tokens": 6049
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -607,8 +835,19 @@
             "review_binding": "source-review-v3:61820408270eebf6",
             "reviews": []
           },
-          "request": "fnv1a64:20fc4b5c32bf948e",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:82af15a0d77c9016",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2411,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1825,
+            "output_tokens_details": {
+              "reasoning_tokens": 1778
+            },
+            "total_tokens": 4236
+          }
         }
       ],
       "text": "I was thinking of including The Lion King and Back to the Future in the marathon, but I'm not sure about the others. Can you give me more info on The Goonies and The NeverEnding Story? Are they suitable for kids?"
@@ -622,6 +861,8 @@
       "observed_at": 1685005860,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -643,14 +884,10 @@
                 "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
-                    "activities": [
-                      "movie marathon"
-                    ],
+                    "activities": [],
                     "city": null,
                     "companion_entity_ids": [],
-                    "companion_roles": [
-                      "family"
-                    ],
+                    "companion_roles": [],
                     "country": null,
                     "date": null,
                     "geography": null,
@@ -664,64 +901,7 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "movie",
-                  "marathon",
-                  "family"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list."
-                }
-              },
-              {
-                "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [
-                      "movie marathon"
-                    ],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [
-                      "family"
-                    ],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": null
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "unresolved_reference": "The NeverEnding Story"
-                },
-                "tags": [
-                  "movie",
-                  "family",
-                  "suitability"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -733,53 +913,35 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:c19739326c62badf",
+          "request": "fnv1a64:615c88b5c33fa6fc",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4361,
+            "input_tokens": 4168,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 24597,
+            "output_tokens": 13628,
             "output_tokens_details": {
-              "reasoning_tokens": 24012
+              "reasoning_tokens": 13297
             },
-            "total_tokens": 28958
+            "total_tokens": 17796
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
+              "missing_user_spans": [
+                "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list."
+              ],
+              "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:53427a546f7d4729",
+            "review_binding": "source-review-v3:22323f856573adba",
             "reviews": [
               {
                 "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list. The NeverEnding Story might be a bit too intense for some of the younger kids in my family, so I might save that for a later time. Thanks for the suggestions!",
-                "evidence": [
-                  {
-                    "quote": "I'm planning a movie marathon with my family over the upcoming long weekend",
-                    "turn_index": 7
-                  }
-                ],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
                   "metadata": "contradicted",
@@ -792,12 +954,7 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I think The Goonies sounds like a great addition to the marathon. I'll add it to the list. The NeverEnding Story might be a bit too intense for some of the younger kids in my family, so I might save that for a later time. Thanks for the suggestions!",
-                "evidence": [
-                  {
-                    "quote": "I'm planning a movie marathon with my family over the upcoming long weekend",
-                    "turn_index": 7
-                  }
-                ],
+                "evidence": [],
                 "issues": [
                   {
                     "check": "metadata",
@@ -808,24 +965,24 @@
                       }
                     ],
                     "field": "certainty",
-                    "reason": "User hedges with 'might be' and 'might save', so High certainty overstates the assertion."
+                    "reason": "User hedged twice ('might be a bit too intense', 'might save that for a later time'), so the statement is tentative/uncertain; labeling certainty as High does not match the user's stated modality."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:705a9ecc96f7cf91",
+          "request": "fnv1a64:b6a1e916e33c7042",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 3251,
+            "input_tokens": 2837,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 15333,
+            "output_tokens": 5959,
             "output_tokens_details": {
-              "reasoning_tokens": 14923
+              "reasoning_tokens": 5670
             },
-            "total_tokens": 18584
+            "total_tokens": 8796
           }
         }
       ],
@@ -840,25 +997,29 @@
       "observed_at": 1685005920,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:7b24a0c0c56a2230",
+          "request": "fnv1a64:be1bb91983cccc87",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4417,
+            "input_tokens": 4224,
             "input_tokens_details": {
               "cached_tokens": 3584
             },
-            "output_tokens": 1705,
+            "output_tokens": 410,
             "output_tokens_details": {
-              "reasoning_tokens": 1684
+              "reasoning_tokens": 388
             },
-            "total_tokens": 6122
+            "total_tokens": 4634
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -870,8 +1031,19 @@
             "review_binding": "source-review-v3:1492945c4cd8e569",
             "reviews": []
           },
-          "request": "fnv1a64:24b3b2194ea6d022",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:c400898e77789cae",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2527,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 2675,
+            "output_tokens_details": {
+              "reasoning_tokens": 2600
+            },
+            "total_tokens": 5202
+          }
         }
       ],
       "text": "That's a great idea about the snacks and activities! I think I'll plan a treasure hunt with clues inspired by The Goonies, and serve some popcorn and snacks during the movies. What about some movie-themed games or quizzes during the breaks? Do you have any suggestions?"
@@ -885,29 +1057,33 @@
       "observed_at": 1685005980,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:35d1042347d8dfd2",
+          "request": "fnv1a64:e8918b348bd308c1",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4488,
+            "input_tokens": 4295,
             "input_tokens_details": {
-              "cached_tokens": 3840
+              "cached_tokens": 3456
             },
-            "output_tokens": 3021,
+            "output_tokens": 6327,
             "output_tokens_details": {
-              "reasoning_tokens": 2999
+              "reasoning_tokens": 6307
             },
-            "total_tokens": 7509
+            "total_tokens": 10622
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
-                ":I think I'll go with the movie trivia and quote-along competition."
+                "I think I'll go with the movie trivia and quote-along competition. They seem like a lot of fun and easy to set up."
               ],
               "status": "incomplete"
             },
@@ -915,8 +1091,19 @@
             "review_binding": "source-review-v3:bb1cac80006f6b36",
             "reviews": []
           },
-          "request": "fnv1a64:76496d3005ce0e1f",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:e4ed692c0c0b16f7",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2599,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1971,
+            "output_tokens_details": {
+              "reasoning_tokens": 1893
+            },
+            "total_tokens": 4570
+          }
         }
       ],
       "text": "That's a great list of ideas! I think I'll go with the movie trivia and quote-along competition. They seem like a lot of fun and easy to set up. Do you think I could also have a \"guess the movie poster\" game, where I print out posters of different movies and they have to guess which one it is?"
@@ -938,36 +1125,51 @@
       "query": "How many MCU films did I watch in the last 3 months?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "watched MCU movie",
-              "saw Marvel film",
-              "streamed Marvel Studios movie"
+              "watched Marvel movie",
+              "finished MCU film",
+              "logged Marvel film"
             ]
           },
-          "request": "fnv1a64:af8c1cf3a91ba999",
-          "schema": "personal_memory_assistance_queries_v1"
-        },
-        {
-          "output": {
-            "answer_text": null,
-            "candidate_index": null,
-            "event_date": null,
-            "unit": null,
-            "verdict": "insufficient"
-          },
-          "request": "fnv1a64:5f6a0ec78affed02",
-          "schema": "personal_memory_answer_v1",
+          "request": "fnv1a64:6dae7f5f74624d51",
+          "schema": "personal_memory_assistance_queries_v1",
           "usage": {
-            "input_tokens": 923,
+            "input_tokens": 271,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 419,
+            "output_tokens": 413,
             "output_tokens_details": {
-              "reasoning_tokens": 391
+              "reasoning_tokens": 392
             },
-            "total_tokens": 1342
+            "total_tokens": 684
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "answer_text": "5 MCU films",
+            "candidate_index": 6,
+            "event_date": null,
+            "unit": null,
+            "verdict": "answer"
+          },
+          "request": "fnv1a64:b9ef29693a15631f",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 1398,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 492,
+            "output_tokens_details": {
+              "reasoning_tokens": 462
+            },
+            "total_tokens": 1890
           }
         }
       ]

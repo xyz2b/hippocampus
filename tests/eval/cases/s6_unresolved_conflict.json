@@ -24,13 +24,19 @@
       "id": "conflict_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "无"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -74,21 +80,23 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:3290e1c680596de0",
+          "request": "fnv1a64:387dd28bc1ce454d",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3919,
+            "input_tokens": 3726,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 1029,
+            "output_tokens": 968,
             "output_tokens_details": {
-              "reasoning_tokens": 803
+              "reasoning_tokens": 731
             },
-            "total_tokens": 4948
+            "total_tokens": 4694
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -116,18 +124,18 @@
               }
             ]
           },
-          "request": "fnv1a64:49a4797c6de5075c",
+          "request": "fnv1a64:01fa3cd01b79dcd8",
           "schema": "personal_memory_source_support_v1",
           "usage": {
             "input_tokens": 2337,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1073,
+            "output_tokens": 6131,
             "output_tokens_details": {
-              "reasoning_tokens": 947
+              "reasoning_tokens": 6007
             },
-            "total_tokens": 3410
+            "total_tokens": 8468
           }
         }
       ],
@@ -150,6 +158,8 @@
       "id": "conflict_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -203,6 +213,51 @@
                 "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "unresolved_reference": "两份记录"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
                   "kind": "retract",
                   "reason": null,
                   "target_memory_id": null
@@ -239,56 +294,41 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:49e75f6a2b41b1b7",
+          "request": "fnv1a64:1b98e537c49160de",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3969,
+            "input_tokens": 3776,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 23279,
+            "output_tokens": 21750,
             "output_tokens_details": {
-              "reasoning_tokens": 22776
+              "reasoning_tokens": 21011
             },
-            "total_tokens": 27248
+            "total_tokens": 25526
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ba91d56858059cb2",
+            "review_binding": "source-review-v3:b13ca4410b68a91c",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
-                "evidence": [],
-                "issues": []
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "insufficient",
                   "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
@@ -305,38 +345,39 @@
                     "turn_index": 1
                   }
                 ],
-                "issues": [
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "我已确认栖风读书机的屏幕尺寸是7英寸。",
-                        "turn_index": 1
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "USER reports an unresolved conflict and says neither the 7-inch nor the 8-inch record is a final conclusion; she never retracts or rescinds a stored memory, and the Retract target \"1\" is unidentified by her words. Unresolved conflict is mislabeled as a retraction action."
-                  }
-                ]
+                "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:275744724fb9a767",
+          "request": "fnv1a64:7d15198b3d744511",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2803,
+            "input_tokens": 2795,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 3680,
+            "output_tokens": 14598,
             "output_tokens_details": {
-              "reasoning_tokens": 3260
+              "reasoning_tokens": 14306
             },
-            "total_tokens": 6483
+            "total_tokens": 17393
           }
         }
       ],
@@ -364,28 +405,32 @@
       "query": "栖风读书机的屏幕是几英寸？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "栖风读书机 屏幕尺寸为 英寸",
-              "栖风读书机 配备 英寸 墨水屏",
-              "栖风读书机 采用 英寸 显示屏"
+              "栖风读书机 屏幕 尺寸 英寸",
+              "栖风读书机 显示屏 规格 几寸",
+              "栖风读书机 墨水屏 尺寸"
             ]
           },
-          "request": "fnv1a64:4cc3e93eca3ce1e1",
+          "request": "fnv1a64:75908cea304ffda9",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 265,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 845,
+            "output_tokens": 522,
             "output_tokens_details": {
-              "reasoning_tokens": 804
+              "reasoning_tokens": 482
             },
-            "total_tokens": 1110
+            "total_tokens": 787
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "7英寸",
             "candidate_index": 0,
@@ -393,18 +438,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:0e4f8d928e29c1b4",
+          "request": "fnv1a64:1e069d0a2ebcac20",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 519,
+            "input_tokens": 551,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 164,
+            "output_tokens": 46,
             "output_tokens_details": {
-              "reasoning_tokens": 136
+              "reasoning_tokens": 18
             },
-            "total_tokens": 683
+            "total_tokens": 597
           }
         }
       ]
@@ -419,28 +464,32 @@
       "query": "栖风读书机的屏幕到底是几英寸？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "栖风读书机 屏幕尺寸 参数",
-              "栖风读书机 显示屏 规格",
-              "栖风读书机 阅读器 屏幕 大小"
+              "栖风读书机 采用 英寸 屏幕",
+              "栖风读书机 配备 英寸 墨水屏",
+              "栖风读书机 屏幕 规格 参数"
             ]
           },
-          "request": "fnv1a64:43e1e485fadc86b4",
+          "request": "fnv1a64:9fe56209aefa5430",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 265,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 597,
+            "output_tokens": 370,
             "output_tokens_details": {
-              "reasoning_tokens": 559
+              "reasoning_tokens": 329
             },
-            "total_tokens": 862
+            "total_tokens": 635
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -448,18 +497,18 @@
             "unit": null,
             "verdict": "conflict"
           },
-          "request": "fnv1a64:6bfba45563d5dd8c",
+          "request": "fnv1a64:ddc42411d0421cd5",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 594,
+            "input_tokens": 626,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 512
             },
-            "output_tokens": 118,
+            "output_tokens": 80,
             "output_tokens_details": {
-              "reasoning_tokens": 90
+              "reasoning_tokens": 52
             },
-            "total_tokens": 712
+            "total_tokens": 706
           }
         }
       ]
@@ -474,28 +523,32 @@
       "query": "能确定栖风读书机是7英寸屏幕吗？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "栖风读书机 屏幕 7英寸 参数",
-              "栖风读书机 7寸 显示屏 尺寸",
-              "栖风 阅读器 7英寸 屏幕 规格"
+              "栖风读书机配备7英寸屏幕",
+              "栖风读书机屏幕尺寸7英寸",
+              "栖风读书机7寸显示屏规格"
             ]
           },
-          "request": "fnv1a64:b7f94ffd89012bac",
+          "request": "fnv1a64:5a6569594fdb3cf8",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 268,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 414,
+            "output_tokens": 1088,
             "output_tokens_details": {
-              "reasoning_tokens": 370
+              "reasoning_tokens": 1054
             },
-            "total_tokens": 682
+            "total_tokens": 1356
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -503,18 +556,18 @@
             "unit": null,
             "verdict": "conflict"
           },
-          "request": "fnv1a64:5eeae4539a618984",
+          "request": "fnv1a64:e8b0f33efd425313",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 597,
+            "input_tokens": 629,
             "input_tokens_details": {
               "cached_tokens": 512
             },
-            "output_tokens": 124,
+            "output_tokens": 100,
             "output_tokens_details": {
-              "reasoning_tokens": 96
+              "reasoning_tokens": 72
             },
-            "total_tokens": 721
+            "total_tokens": 729
           }
         }
       ]

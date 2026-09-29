@@ -11,11 +11,13 @@
       "observed_at": 1684641240,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
-                "certainty": "high",
-                "cross_turn_useful": true,
+                "certainty": "low",
+                "cross_turn_useful": false,
                 "extraction_confidence": "high",
                 "fact_time": null,
                 "intent": {
@@ -29,7 +31,7 @@
                 "memory_type": "fact",
                 "polarity": null,
                 "predicate": "uses",
-                "retention_tier": "durable",
+                "retention_tier": "short_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -49,51 +51,51 @@
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [
-                  "productivity"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "planner"
+                  "text": "a planner"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:8a7a5b2756e0f93f",
+          "request": "fnv1a64:703b9b0e9d92e7dc",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3921,
+            "input_tokens": 3728,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 1385,
+            "output_tokens": 51395,
             "output_tokens_details": {
-              "reasoning_tokens": 1172
+              "reasoning_tokens": 18290
             },
-            "total_tokens": 5306
+            "total_tokens": 55123
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
                 "I'm trying to organize my life a bit better",
-                "I think I need something more digital."
+                "I think I need something more digital"
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:a5db279cff297376",
+            "review_binding": "source-review-v3:b6caa1300338b33b",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "supported",
+                  "metadata": "contradicted",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -104,22 +106,34 @@
                 },
                 "current_user_quote": "I'm trying to organize my life a bit better, can you recommend some task management apps that can help me prioritize my work and personal tasks? I've been using a planner, but I think I need something more digital.",
                 "evidence": [],
-                "issues": []
+                "issues": [
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "I've been using a planner",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "certainty",
+                    "reason": "User asserts confidently that they have been using a planner; candidate metadata certainty Low is not justified by the user's wording."
+                  }
+                ]
               }
             ]
           },
-          "request": "fnv1a64:74e272aca63a4da9",
+          "request": "fnv1a64:3d55ae2b3b0ea540",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2359,
+            "input_tokens": 2358,
             "input_tokens_details": {
-              "cached_tokens": 2304
+              "cached_tokens": 0
             },
-            "output_tokens": 8266,
+            "output_tokens": 7108,
             "output_tokens_details": {
-              "reasoning_tokens": 8092
+              "reasoning_tokens": 6877
             },
-            "total_tokens": 10625
+            "total_tokens": 9466
           }
         }
       ],
@@ -134,8 +148,55 @@
       "observed_at": 1684641300,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "By the way, do you have any tips on creating a routine for my new job?"
+                }
+              },
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
@@ -184,21 +245,23 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:30edb152fdc41e61",
+          "request": "fnv1a64:834bc275b1978d66",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3992,
+            "input_tokens": 3799,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 2450,
+            "output_tokens": 8814,
             "output_tokens_details": {
-              "reasoning_tokens": 2227
+              "reasoning_tokens": 8390
             },
-            "total_tokens": 6442
+            "total_tokens": 12613
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
@@ -208,10 +271,88 @@
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ad0fd5b9d33a5700",
+            "review_binding": "source-review-v3:7e06bc22e22feb3d",
             "reviews": [
               {
                 "candidate_index": 0,
+                "checks": {
+                  "intent": "contradicted",
+                  "metadata": "insufficient",
+                  "polarity": "supported",
+                  "relation": "insufficient",
+                  "scope": "supported",
+                  "source": "insufficient",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "insufficient"
+                },
+                "current_user_quote": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
+                "evidence": [
+                  {
+                    "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                    "turn_index": 0
+                  }
+                ],
+                "issues": [
+                  {
+                    "check": "relation",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "predicate",
+                    "reason": "The quoted text is a question asking for tips, not a statement of the generic 'fact' relation."
+                  },
+                  {
+                    "check": "value",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "value.Text",
+                    "reason": "The value is a question, not a complete USER sentence carrying a factual proposition; it requests advice."
+                  },
+                  {
+                    "check": "intent",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "intent",
+                    "reason": "The USER asks a question; this is not an Assert/assertion."
+                  },
+                  {
+                    "check": "source",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "source",
+                    "reason": "The current USER turn does not assert, update, or clarify this memory; the quoted span is a question."
+                  },
+                  {
+                    "check": "metadata",
+                    "evidence": [
+                      {
+                        "quote": "By the way, do you have any tips on creating a routine for my new job?",
+                        "turn_index": 0
+                      }
+                    ],
+                    "field": "memory_type",
+                    "reason": "The text is a question, not a factual assertion; memory_type Fact is unsupported."
+                  }
+                ]
+              },
+              {
+                "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
                   "metadata": "supported",
@@ -224,23 +365,28 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
-                "evidence": [],
+                "evidence": [
+                  {
+                    "quote": "I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities.",
+                    "turn_index": 0
+                  }
+                ],
                 "issues": []
               }
             ]
           },
-          "request": "fnv1a64:522d011cff5cff04",
+          "request": "fnv1a64:e67706fead2a27c9",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2484,
+            "input_tokens": 2855,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 8946,
+            "output_tokens": 19780,
             "output_tokens_details": {
-              "reasoning_tokens": 8717
+              "reasoning_tokens": 19069
             },
-            "total_tokens": 11430
+            "total_tokens": 22635
           }
         }
       ],
@@ -255,130 +401,12 @@
       "observed_at": 1684641360,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
-                "cross_turn_useful": true,
-                "extraction_confidence": "high",
-                "fact_time": null,
-                "intent": {
-                  "kind": "assert",
-                  "reason": null,
-                  "target_memory_id": null
-                },
-                "memory_request": {
-                  "kind": "not_requested"
-                },
-                "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "long_term",
-                "scope": {
-                  "conditions": {
-                    "activities": [],
-                    "city": null,
-                    "companion_entity_ids": [],
-                    "companion_roles": [],
-                    "country": null,
-                    "date": null,
-                    "geography": null,
-                    "task_id": null,
-                    "time_of_day": null
-                  },
-                  "domain": "education"
-                },
-                "source": "user_statement",
-                "strength": null,
-                "subject": {
-                  "entity_id": "self"
-                },
-                "tags": [
-                  "education"
-                ],
-                "value": {
-                  "boolean": null,
-                  "entity_id": null,
-                  "integer": null,
-                  "kind": "text",
-                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
-                }
-              }
-            ],
-            "omission_reason": null
-          },
-          "request": "fnv1a64:b891e742b192d7f3",
-          "schema": "personal_memory_candidates_v1",
-          "usage": {
-            "input_tokens": 4041,
-            "input_tokens_details": {
-              "cached_tokens": 3456
-            },
-            "output_tokens": 6773,
-            "output_tokens_details": {
-              "reasoning_tokens": 6501
-            },
-            "total_tokens": 10814
-          }
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:cf784b1851b29c03",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:64c361d112aeb824",
-          "schema": "personal_memory_source_support_v1",
-          "usage": {
-            "input_tokens": 2499,
-            "input_tokens_details": {
-              "cached_tokens": 0
-            },
-            "output_tokens": 4649,
-            "output_tokens_details": {
-              "reasoning_tokens": 4491
-            },
-            "total_tokens": 7148
-          }
-        }
-      ],
-      "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?"
-    },
-    {
-      "expect": {
-        "forbid": [],
-        "store": []
-      },
-      "id": "s1_t4",
-      "observed_at": 1684641420,
-      "recorded": [
-        {
-          "output": {
-            "candidates": [
-              {
-                "certainty": "medium",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": null,
@@ -419,66 +447,82 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I'm thinking of implementing a system to track my personal expenses as well, not just work-related ones."
+                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role.xxxxxxxxxxxxxxxxxxxxxxxx"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:8bdc8791403ad991",
+          "request": "fnv1a64:76013d8e7c9dc808",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4086,
+            "input_tokens": 3848,
             "input_tokens_details": {
-              "cached_tokens": 2048
+              "cached_tokens": 3200
             },
-            "output_tokens": 2642,
+            "output_tokens": 10707,
             "output_tokens_details": {
-              "reasoning_tokens": 2405
+              "reasoning_tokens": 10471
             },
-            "total_tokens": 6728
+            "total_tokens": 14555
+          }
+        }
+      ],
+      "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role. Do you have any advice on how to stay organized when it comes to paperwork and documentation, especially when it comes to tracking expenses and reimbursements?"
+    },
+    {
+      "expect": {
+        "forbid": [],
+        "store": []
+      },
+      "id": "s1_t4",
+      "observed_at": 1684641420,
+      "recorded": [
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "candidates": [],
+            "omission_reason": "no_personal_assertion"
+          },
+          "request": "fnv1a64:1ef2dbff3c677456",
+          "schema": "personal_memory_candidates_v1",
+          "usage": {
+            "input_tokens": 3893,
+            "input_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "output_tokens": 4536,
+            "output_tokens_details": {
+              "reasoning_tokens": 4514
+            },
+            "total_tokens": 8429
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:dd6068dc93231e2e",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I'm thinking of implementing a system to track my personal expenses as well, not just work-related ones. Do you have any recommendations for personal expense tracking apps or tools that can help me stay on top of my finances?",
-                "evidence": [],
-                "issues": []
-              }
-            ]
+            "omission_supported": true,
+            "review_binding": "source-review-v3:4fa5c370843d4eb8",
+            "reviews": []
           },
-          "request": "fnv1a64:71779d40a45eaf52",
+          "request": "fnv1a64:93994fc1dcaf91fc",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2540,
+            "input_tokens": 2197,
             "input_tokens_details": {
-              "cached_tokens": 1408
+              "cached_tokens": 0
             },
-            "output_tokens": 1407,
+            "output_tokens": 1196,
             "output_tokens_details": {
-              "reasoning_tokens": 1253
+              "reasoning_tokens": 1147
             },
-            "total_tokens": 3947
+            "total_tokens": 3393
           }
         }
       ],
@@ -493,6 +537,8 @@
       "observed_at": 1684641480,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -537,93 +583,24 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I feel like I'm spending a lot on those things and I want to cut back. "
+                  "text": "I feel like I'm spending a lot on those things and I want to cut back. I feel like I'm spending a lot on those things and I want to cut back."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:f04a98fdc3d0953a",
+          "request": "fnv1a64:7878ea215b703729",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4157,
+            "input_tokens": 3964,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 2048
             },
-            "output_tokens": 11646,
+            "output_tokens": 10123,
             "output_tokens_details": {
-              "reasoning_tokens": 11411
+              "reasoning_tokens": 9876
             },
-            "total_tokens": 15803
-          }
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": true,
-            "review_binding": "source-review-v3:91dc836927674faf",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "insufficient",
-                  "metadata": "insufficient",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "I think I'll try out Mint and Personal Capital to see which one I like better. I've heard great things about both of them. By the way, do you have any tips on how to save money on everyday expenses, like groceries and household items? I feel like I'm spending a lot on those things and I want to cut back.",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "I think I'll try out Mint and Personal Capital to see which one I like better.",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "I feel like I'm spending a lot on those things and I want to cut back.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "The candidate asserts only the final sentence as a generic Fact, but the current turn also contains a separate personal plan to try Mint and Personal Capital, which the single candidate does not represent; intent for the whole turn is therefore not fully captured."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I feel like I'm spending a lot on those things and I want to cut back.",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "memory_type",
-                    "reason": "The quoted sentence mixes a subjective spending perception with a stated desire to cut back; labeling it only as generic Fact omits the preference/goal component present in the USER wording."
-                  }
-                ]
-              }
-            ]
-          },
-          "request": "fnv1a64:82e9b495aca02071",
-          "schema": "personal_memory_source_support_v1",
-          "usage": {
-            "input_tokens": 2632,
-            "input_tokens_details": {
-              "cached_tokens": 1536
-            },
-            "output_tokens": 11134,
-            "output_tokens_details": {
-              "reasoning_tokens": 10755
-            },
-            "total_tokens": 13766
+            "total_tokens": 14087
           }
         }
       ],
@@ -638,6 +615,8 @@
       "observed_at": 1684641540,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -672,11 +651,13 @@
                   "domain": null
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "strong",
                 "subject": {
                   "entity_id": "self"
                 },
-                "tags": [],
+                "tags": [
+                  "meal_prep"
+                ],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -688,28 +669,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:2feb9d9d06ce9fdf",
+          "request": "fnv1a64:5d53d1064d31ebfc",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4218,
+            "input_tokens": 4025,
             "input_tokens_details": {
-              "cached_tokens": 4096
+              "cached_tokens": 3200
             },
-            "output_tokens": 7002,
+            "output_tokens": 5876,
             "output_tokens_details": {
-              "reasoning_tokens": 6794
+              "reasoning_tokens": 5643
             },
-            "total_tokens": 11220
+            "total_tokens": 9901
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:93a1271dd57ca1aa",
+            "review_binding": "source-review-v3:ef7cdbe36777aeb5",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -730,18 +713,18 @@
               }
             ]
           },
-          "request": "fnv1a64:5a05639cd132cc6b",
+          "request": "fnv1a64:c0cc0c07c965b30a",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2672,
+            "input_tokens": 2676,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 6690,
+            "output_tokens": 8141,
             "output_tokens_details": {
-              "reasoning_tokens": 6519
+              "reasoning_tokens": 7968
             },
-            "total_tokens": 9362
+            "total_tokens": 10817
           }
         }
       ],
@@ -764,17 +747,32 @@
       "query": "What degree did I graduate with?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "graduated with degree in",
-              "earned a degree from university",
-              "completed degree program"
+              "graduated with a degree in",
+              "earned my degree in",
+              "completed my degree in"
             ]
           },
-          "request": "fnv1a64:a43cfbce8d52ded0",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:a8d4c1c256170bbc",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 263,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1384,
+            "output_tokens_details": {
+              "reasoning_tokens": 1359
+            },
+            "total_tokens": 1647
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": "Business Administration",
             "candidate_index": 2,
@@ -782,18 +780,18 @@
             "unit": null,
             "verdict": "answer"
           },
-          "request": "fnv1a64:4e84bb0c922eb9c2",
+          "request": "fnv1a64:e0ce5f9ad645d88d",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 968,
+            "input_tokens": 1000,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 146,
+            "output_tokens": 109,
             "output_tokens_details": {
-              "reasoning_tokens": 118
+              "reasoning_tokens": 81
             },
-            "total_tokens": 1114
+            "total_tokens": 1109
           }
         }
       ]

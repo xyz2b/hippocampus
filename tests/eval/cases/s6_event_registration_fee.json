@@ -32,6 +32,8 @@
       "id": "event_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -70,11 +72,7 @@
                 "subject": {
                   "entity_id": "event_haiyan_origami"
                 },
-                "tags": [
-                  "报名费",
-                  "折纸工作坊",
-                  "event_registration_fee"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
@@ -86,28 +84,30 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:4033eb089e69e7ed",
+          "request": "fnv1a64:125d4be9733be750",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3959,
+            "input_tokens": 3766,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 770,
+            "output_tokens": 731,
             "output_tokens_details": {
-              "reasoning_tokens": 521
+              "reasoning_tokens": 486
             },
-            "total_tokens": 4729
+            "total_tokens": 4497
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:2d5dc3d15b19610c",
+            "review_binding": "source-review-v3:8932f01187983bfc",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -128,18 +128,18 @@
               }
             ]
           },
-          "request": "fnv1a64:745936d2239e93a9",
+          "request": "fnv1a64:6f60b49c822412d5",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2393,
+            "input_tokens": 2376,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 2304
             },
-            "output_tokens": 9836,
+            "output_tokens": 4569,
             "output_tokens_details": {
-              "reasoning_tokens": 9682
+              "reasoning_tokens": 4447
             },
-            "total_tokens": 12229
+            "total_tokens": 6945
           }
         }
       ],
@@ -158,6 +158,8 @@
       "id": "event_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -171,9 +173,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2026-09-28",
-                  "expression": "保留到明天",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -198,34 +198,74 @@
                 "subject": {
                   "entity_id": "event_yinxing_origami"
                 },
-                "tags": [
-                  "ptxging",
-                  "fxx",
-                  "fxx_ymzm_ymhy"
-                ],
+                "tags": [],
                 "value": {
                   "boolean": null,
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "银杏折纸工作坊的报名费为58元。 AI-assisted re-ttrned eoor: the memory_request rettention deadline is not s:upportted and the fidlds have seveml spelloig e:rors. The revertet JSON is belit."
+                  "text": "银杏折纸工作坊的报名费为58元。"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:0fc5041931d81d45",
+          "request": "fnv1a64:e4f64c52e1a1eb48",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3971,
+            "input_tokens": 3778,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 661,
+            "output_tokens": 779,
             "output_tokens_details": {
-              "reasoning_tokens": 337
+              "reasoning_tokens": 558
             },
-            "total_tokens": 4632
+            "total_tokens": 4557
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "coverage": {
+              "missing_user_spans": [],
+              "status": "complete"
+            },
+            "omission_supported": false,
+            "review_binding": "source-review-v3:fefa91629aa7107d",
+            "reviews": [
+              {
+                "candidate_index": 0,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "银杏折纸工作坊的报名费为58元。",
+                "evidence": [],
+                "issues": []
+              }
+            ]
+          },
+          "request": "fnv1a64:0128ae587263858f",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2385,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 3723,
+            "output_tokens_details": {
+              "reasoning_tokens": 3603
+            },
+            "total_tokens": 6108
           }
         }
       ],
@@ -275,21 +315,23 @@
       "query": "报名费是多少？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": []
           },
-          "request": "fnv1a64:3af1e61dc641aa91",
+          "request": "fnv1a64:ef7170bbff6a9b19",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 283,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 291,
+            "output_tokens": 587,
             "output_tokens_details": {
-              "reasoning_tokens": 284
+              "reasoning_tokens": 580
             },
-            "total_tokens": 574
+            "total_tokens": 870
           }
         }
       ]
@@ -313,25 +355,23 @@
       "query": "银杏折纸工作坊的报名费是多少？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "queries": [
-              "银杏折纸工作坊 报名 费用",
-              "银杏折纸工作坊 参加 收费",
-              "折纸工作坊 银杏 报名费"
-            ]
+            "queries": []
           },
-          "request": "fnv1a64:f41511fa15821396",
+          "request": "fnv1a64:afb60f6ec144fbf3",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
-            "input_tokens": 266,
+            "input_tokens": 278,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 256
             },
-            "output_tokens": 1085,
+            "output_tokens": 331,
             "output_tokens_details": {
-              "reasoning_tokens": 1048
+              "reasoning_tokens": 324
             },
-            "total_tokens": 1351
+            "total_tokens": 609
           }
         }
       ]
@@ -355,21 +395,23 @@
       "query": "参加海盐折纸工作坊，报名要交多少钱？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": []
           },
-          "request": "fnv1a64:6bd175c9a0f533c7",
+          "request": "fnv1a64:378e03c7ef1b4a3b",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 282,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 633,
+            "output_tokens": 696,
             "output_tokens_details": {
-              "reasoning_tokens": 626
+              "reasoning_tokens": 689
             },
-            "total_tokens": 915
+            "total_tokens": 978
           }
         }
       ]
@@ -388,25 +430,51 @@
       "query": "银杏折纸工作坊最多招收多少人？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "银杏折纸工作坊 报名 人数 上限",
-              "银杏折纸工作坊 学员 名额 限制",
-              "银杏折纸工作坊 招收 规模 容量"
+              "银杏折纸工作坊 招生 人数 上限",
+              "银杏折纸工作坊 报名 名额 限制",
+              "银杏折纸工作坊 参与人数 最多"
             ]
           },
-          "request": "fnv1a64:45c8111cc5bab57b",
+          "request": "fnv1a64:ff10b575a002937f",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 265,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 591,
+            "output_tokens": 689,
             "output_tokens_details": {
-              "reasoning_tokens": 548
+              "reasoning_tokens": 647
             },
-            "total_tokens": 856
+            "total_tokens": 954
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "answer_text": null,
+            "candidate_index": null,
+            "event_date": null,
+            "unit": null,
+            "verdict": "insufficient"
+          },
+          "request": "fnv1a64:c637ac4885882754",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 551,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 53,
+            "output_tokens_details": {
+              "reasoning_tokens": 25
+            },
+            "total_tokens": 604
           }
         }
       ]

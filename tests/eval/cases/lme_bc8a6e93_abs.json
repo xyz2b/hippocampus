@@ -11,25 +11,29 @@
       "observed_at": 1684975740,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:dfff69414ed5ffb5",
+          "request": "fnv1a64:645a2bc5b08bb542",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3923,
+            "input_tokens": 3730,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 210,
+            "output_tokens": 266,
             "output_tokens_details": {
-              "reasoning_tokens": 188
+              "reasoning_tokens": 245
             },
-            "total_tokens": 4133
+            "total_tokens": 3996
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -39,8 +43,19 @@
             "review_binding": "source-review-v3:85d9b6f4d2c5bfed",
             "reviews": []
           },
-          "request": "fnv1a64:39c48fcb2f3324cb",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:547bb3d6b24dd493",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2037,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 195,
+            "output_tokens_details": {
+              "reasoning_tokens": 143
+            },
+            "total_tokens": 2232
+          }
         }
       ],
       "text": "I'm thinking of making some lemon-based desserts for an upcoming dinner party. Do you have any recommendations for a good lemon curd recipe or any tips on using it as a filling for cakes and tarts?"
@@ -54,17 +69,15 @@
       "observed_at": 1684975800,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
-                "certainty": "medium",
+                "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": {
-                  "date": null,
-                  "end_date": null,
-                  "expression": "in the past"
-                },
+                "fact_time": null,
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -74,9 +87,9 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "fact",
-                "polarity": null,
-                "predicate": "fact",
-                "retention_tier": "short_term",
+                "polarity": "positive",
+                "predicate": "likes",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [],
@@ -92,7 +105,7 @@
                   "domain": null
                 },
                 "source": "user_statement",
-                "strength": null,
+                "strength": "moderate",
                 "subject": {
                   "entity_id": "self"
                 },
@@ -106,7 +119,7 @@
                 }
               },
               {
-                "certainty": "medium",
+                "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
                 "fact_time": {
@@ -123,17 +136,19 @@
                   "kind": "not_requested"
                 },
                 "memory_type": "episode",
-                "polarity": null,
+                "polarity": "positive",
                 "predicate": "fact",
-                "retention_tier": "short_term",
+                "retention_tier": "long_term",
                 "scope": {
                   "conditions": {
                     "activities": [
-                      "baking"
+                      "birthday party"
                     ],
                     "city": null,
                     "companion_entity_ids": [],
-                    "companion_roles": [],
+                    "companion_roles": [
+                      "family"
+                    ],
                     "country": null,
                     "date": null,
                     "geography": null,
@@ -155,84 +170,85 @@
                   "kind": "text",
                   "text": "I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit"
                 }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": "positive",
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "unresolved_reference": "the combination of the tangy lemon and sweet blueberries"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "the combination of the tangy lemon and sweet blueberries was perfect"
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:7fddc3555d2c20ba",
+          "request": "fnv1a64:dd7fada93be8e0a9",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4012,
+            "input_tokens": 3819,
             "input_tokens_details": {
-              "cached_tokens": 3968
+              "cached_tokens": 3712
             },
-            "output_tokens": 11587,
+            "output_tokens": 19641,
             "output_tokens_details": {
-              "reasoning_tokens": 10834
+              "reasoning_tokens": 18855
             },
-            "total_tokens": 15599
+            "total_tokens": 23460
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
-              "missing_user_spans": [
-                "I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect."
-              ],
-              "status": "incomplete"
+              "missing_user_spans": [],
+              "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:8f6ef36ed55a7f83",
+            "review_binding": "source-review-v3:abcf9233bd9bfb7c",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "insufficient",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "insufficient",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
-                "evidence": [],
-                "issues": [
-                  {
-                    "check": "scope",
-                    "evidence": [
-                      {
-                        "quote": "lemon-based desserts",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "scope.domain",
-                    "reason": "User limits the assertion to lemon-based desserts, but scope.domain is null."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I've actually had a lot of success",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "it was a huge hit",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "certainty",
-                    "reason": "USER expresses a confident personal assertion ('I've actually had a lot of success', 'it was a huge hit'), not medium certainty."
-                  }
-                ]
-              },
-              {
-                "candidate_index": 1,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "insufficient",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -248,44 +264,50 @@
                     "check": "temporal",
                     "evidence": [
                       {
-                        "quote": "recently",
+                        "quote": "I've actually had a lot of success with lemon-based desserts in the past",
+                        "turn_index": 0
+                      },
+                      {
+                        "quote": "I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit.",
                         "turn_index": 0
                       }
                     ],
                     "field": "temporal.valid_from",
-                    "reason": "USER said 'recently' without exact dates; inferred interval 2023-04-25 to 2023-05-25 is not justified."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "I've actually had a lot of success",
-                        "turn_index": 0
-                      },
-                      {
-                        "quote": "it was a huge hit",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "certainty",
-                    "reason": "USER expresses a confident personal assertion ('I've actually had a lot of success', 'it was a huge hit'), not medium certainty."
+                    "reason": "USER says only 'recently' and 'in the past'; no exact calendar dates or validity interval are asserted, so the inferred 2023-04-25 to 2023-05-25 boundaries are unsupported."
                   }
                 ]
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "That's really helpful, thanks! I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit. I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect. Do you have any tips on how to get the perfect balance of flavors in a lemon dessert?",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:a63a6d6d92c1554e",
+          "request": "fnv1a64:ed4d2c1a91760460",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 3075,
+            "input_tokens": 3059,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 23386,
+            "output_tokens": 10894,
             "output_tokens_details": {
-              "reasoning_tokens": 22753
+              "reasoning_tokens": 10423
             },
-            "total_tokens": 26461
+            "total_tokens": 13953
           }
         }
       ],
@@ -300,25 +322,29 @@
       "observed_at": 1684975860,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [],
             "omission_reason": "no_personal_assertion"
           },
-          "request": "fnv1a64:8813001cdc9dc47b",
+          "request": "fnv1a64:d6605ef0d73ed430",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4050,
+            "input_tokens": 3857,
             "input_tokens_details": {
-              "cached_tokens": 2048
+              "cached_tokens": 3200
             },
-            "output_tokens": 262,
+            "output_tokens": 3564,
             "output_tokens_details": {
-              "reasoning_tokens": 243
+              "reasoning_tokens": 3545
             },
-            "total_tokens": 4312
+            "total_tokens": 7421
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -328,8 +354,19 @@
             "review_binding": "source-review-v3:d4709f3ea584457a",
             "reviews": []
           },
-          "request": "fnv1a64:1c247a39c15f09fd",
-          "schema": "personal_memory_source_support_v1"
+          "request": "fnv1a64:bb519c9fa43c6609",
+          "schema": "personal_memory_source_support_v1",
+          "usage": {
+            "input_tokens": 2159,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 581,
+            "output_tokens_details": {
+              "reasoning_tokens": 534
+            },
+            "total_tokens": 2740
+          }
         }
       ],
       "text": "What are some good ways to incorporate lemon zest into my baking? I've heard it can add a lot of depth to desserts, but I'm not sure how to use it effectively."
@@ -343,6 +380,8 @@
       "observed_at": 1684975920,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -360,9 +399,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-26",
-                  "expression": "Lately",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -393,122 +430,68 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I've been experimenting with different types of flour lately, and I've been wondering if there's a particular type of flour that's best suited for lemon-based desserts. Would bread flour or all-purpose flour work better for a lemon cake or tart crust?"
+                  "text": "I've been experimenting with different types of flour lately."
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:8bd2ebfab0f8f1db",
+          "request": "fnv1a64:cd1207290642df10",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4108,
+            "input_tokens": 3915,
             "input_tokens_details": {
-              "cached_tokens": 3584
+              "cached_tokens": 3200
             },
-            "output_tokens": 6922,
+            "output_tokens": 9094,
             "output_tokens_details": {
-              "reasoning_tokens": 6592
+              "reasoning_tokens": 8854
             },
-            "total_tokens": 11030
+            "total_tokens": 13009
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:a8002c5417f5818a",
+            "review_binding": "source-review-v3:12f4bc46c47720d0",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
-                  "intent": "insufficient",
-                  "metadata": "insufficient",
+                  "intent": "supported",
+                  "metadata": "supported",
                   "polarity": "supported",
-                  "relation": "insufficient",
+                  "relation": "supported",
                   "scope": "supported",
-                  "source": "insufficient",
+                  "source": "supported",
                   "subject": "supported",
                   "temporal": "supported",
-                  "value": "insufficient"
+                  "value": "supported"
                 },
                 "current_user_quote": "That's really helpful, thanks! I've been experimenting with different types of flour lately, and I've been wondering if there's a particular type of flour that's best suited for lemon-based desserts. Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
                 "evidence": [],
-                "issues": [
-                  {
-                    "check": "relation",
-                    "evidence": [
-                      {
-                        "quote": "Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "predicate",
-                    "reason": "Predicate 'fact' is not fully justified because the candidate value also contains a question, which is not a true/false fact."
-                  },
-                  {
-                    "check": "value",
-                    "evidence": [
-                      {
-                        "quote": "I've been experimenting with different types of flour lately, and I've been wondering if there's a particular type of flour that's best suited for lemon-based desserts. Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "value.Text",
-                    "reason": "Value is not a single verbatim USER sentence carrying the proposition; it bundles an assertion, a wondering, and a question, so it lacks a single true/false fact meaning."
-                  },
-                  {
-                    "check": "intent",
-                    "evidence": [
-                      {
-                        "quote": "Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "intent",
-                    "reason": "Intent 'Assert' is not fully justified because the candidate value includes a question and a wondering, not only an assertion."
-                  },
-                  {
-                    "check": "source",
-                    "evidence": [
-                      {
-                        "quote": "Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "source",
-                    "reason": "The current USER turn does not assert the question as a fact; only the first clause is a user assertion."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Would bread flour or all-purpose flour work better for a lemon cake or tart crust?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "memory_type",
-                    "reason": "Memory type 'Fact' is not fully supported because the candidate value includes a question and a wondering, not only a factual assertion."
-                  }
-                ]
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:8bab66ad95b9705f",
+          "request": "fnv1a64:a2cffd6832ecf699",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2614,
+            "input_tokens": 2598,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 16705,
+            "output_tokens": 8595,
             "output_tokens_details": {
-              "reasoning_tokens": 16159
+              "reasoning_tokens": 8426
             },
-            "total_tokens": 19319
+            "total_tokens": 11193
           }
         }
       ],
@@ -523,6 +506,8 @@
       "observed_at": 1684975980,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -540,9 +525,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-25",
-                  "expression": "now",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -580,16 +563,18 @@
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": "lately"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-25",
-                  "expression": "now",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "fact",
                 "polarity": null,
@@ -638,9 +623,7 @@
                   "target_memory_id": null
                 },
                 "memory_request": {
-                  "date": "2023-05-25",
-                  "expression": "now",
-                  "kind": "retain_until"
+                  "kind": "not_requested"
                 },
                 "memory_type": "episode",
                 "polarity": null,
@@ -671,40 +654,42 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well."
+                  "text": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:f151a2ee7d5d603f",
+          "request": "fnv1a64:e5a7a77e12936edc",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4170,
+            "input_tokens": 3977,
             "input_tokens_details": {
-              "cached_tokens": 4096
+              "cached_tokens": 3200
             },
-            "output_tokens": 17587,
+            "output_tokens": 11506,
             "output_tokens_details": {
-              "reasoning_tokens": 16865
+              "reasoning_tokens": 10841
             },
-            "total_tokens": 21757
+            "total_tokens": 15483
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
               "status": "complete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:00a44702553c4f24",
+            "review_binding": "source-review-v3:fa10072114148e6c",
             "reviews": [
               {
                 "candidate_index": 0,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "contradicted",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -714,31 +699,14 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar. I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well. Do you have any thoughts on using honey in lemon desserts?",
-                "evidence": [
-                  {
-                    "quote": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar.",
-                    "turn_index": 0
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Do you have any thoughts on using honey in lemon desserts?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "User states an ongoing activity and then asks a question; the turn contains no instruction to remember, save or retain this memory, so explicit_memory_request=true is not supported by the USER words."
-                  }
-                ]
+                "evidence": [],
+                "issues": []
               },
               {
                 "candidate_index": 1,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "contradicted",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -748,31 +716,14 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar. I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well. Do you have any thoughts on using honey in lemon desserts?",
-                "evidence": [
-                  {
-                    "quote": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar.",
-                    "turn_index": 0
-                  }
-                ],
-                "issues": [
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Do you have any thoughts on using honey in lemon desserts?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "The USER turn states an ongoing activity and asks for advice; no remember/save/retain instruction is present, so explicit_memory_request=true is unsupported (duplicate of candidate 0, judged on its own value)."
-                  }
-                ]
+                "evidence": [],
+                "issues": []
               },
               {
                 "candidate_index": 2,
                 "checks": {
                   "intent": "supported",
-                  "metadata": "contradicted",
+                  "metadata": "supported",
                   "polarity": "supported",
                   "relation": "supported",
                   "scope": "supported",
@@ -782,12 +733,7 @@
                   "value": "supported"
                 },
                 "current_user_quote": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar. I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well. Do you have any thoughts on using honey in lemon desserts?",
-                "evidence": [
-                  {
-                    "quote": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well.",
-                    "turn_index": 0
-                  }
-                ],
+                "evidence": [],
                 "issues": [
                   {
                     "check": "temporal",
@@ -797,36 +743,25 @@
                         "turn_index": 0
                       }
                     ],
-                    "field": "valid_from",
-                    "reason": "USER said only 'recently' for the lemon-curd batch; the candidate's valid_from 2023-04-25 (exactly one month before observed_at) is an inferred boundary the USER never stated, so the exact validity start is unsupported."
-                  },
-                  {
-                    "check": "metadata",
-                    "evidence": [
-                      {
-                        "quote": "Do you have any thoughts on using honey in lemon desserts?",
-                        "turn_index": 0
-                      }
-                    ],
-                    "field": "explicit_memory_request",
-                    "reason": "The turn reports a past baking experience and asks a question; there is no USER instruction to remember/save/retain this memory, so explicit_memory_request=true is unsupported."
+                    "field": "temporal.valid_from",
+                    "reason": "USER says only 'recently'; the exact one-month valid_from and observed_at+1s valid_to are inferred from the clock, not asserted by USER."
                   }
                 ]
               }
             ]
           },
-          "request": "fnv1a64:f037721f2827b4c9",
+          "request": "fnv1a64:b923576503b8e82d",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 3519,
+            "input_tokens": 3494,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 6086,
+            "output_tokens": 7697,
             "output_tokens_details": {
-              "reasoning_tokens": 5095
+              "reasoning_tokens": 7193
             },
-            "total_tokens": 9605
+            "total_tokens": 11191
           }
         }
       ],
@@ -841,6 +776,8 @@
       "observed_at": 1684976040,
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -887,35 +824,81 @@
                   "kind": "text",
                   "text": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other."
                 }
+              },
+              {
+                "certainty": "high",
+                "cross_turn_useful": true,
+                "extraction_confidence": "high",
+                "fact_time": null,
+                "intent": {
+                  "kind": "assert",
+                  "reason": null,
+                  "target_memory_id": null
+                },
+                "memory_request": {
+                  "kind": "not_requested"
+                },
+                "memory_type": "fact",
+                "polarity": null,
+                "predicate": "fact",
+                "retention_tier": "long_term",
+                "scope": {
+                  "conditions": {
+                    "activities": [],
+                    "city": null,
+                    "companion_entity_ids": [],
+                    "companion_roles": [],
+                    "country": null,
+                    "date": null,
+                    "geography": null,
+                    "task_id": null,
+                    "time_of_day": null
+                  },
+                  "domain": null
+                },
+                "source": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "tags": [],
+                "value": {
+                  "boolean": null,
+                  "entity_id": null,
+                  "integer": null,
+                  "kind": "text",
+                  "text": "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+                }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:975b847aa61ecc9c",
+          "request": "fnv1a64:b17ee7ce78a24a8b",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 4249,
+            "input_tokens": 4056,
             "input_tokens_details": {
-              "cached_tokens": 4224
+              "cached_tokens": 3200
             },
-            "output_tokens": 10445,
+            "output_tokens": 13641,
             "output_tokens_details": {
-              "reasoning_tokens": 10211
+              "reasoning_tokens": 13110
             },
-            "total_tokens": 14694
+            "total_tokens": 17697
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [
-                "The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon.",
-                "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+                "The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon."
               ],
               "status": "incomplete"
             },
             "omission_supported": false,
-            "review_binding": "source-review-v3:ce78c04dae2547e8",
+            "review_binding": "source-review-v3:4f7022a2ae7b5fa6",
             "reviews": [
               {
                 "candidate_index": 0,
@@ -933,21 +916,38 @@
                 "current_user_quote": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other. The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon. I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert.",
                 "evidence": [],
                 "issues": []
+              },
+              {
+                "candidate_index": 1,
+                "checks": {
+                  "intent": "supported",
+                  "metadata": "supported",
+                  "polarity": "supported",
+                  "relation": "supported",
+                  "scope": "supported",
+                  "source": "supported",
+                  "subject": "supported",
+                  "temporal": "supported",
+                  "value": "supported"
+                },
+                "current_user_quote": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other. The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon. I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert.",
+                "evidence": [],
+                "issues": []
               }
             ]
           },
-          "request": "fnv1a64:2547280eeeba699c",
+          "request": "fnv1a64:c41b33ba0d4334d8",
           "schema": "personal_memory_source_support_v1",
           "usage": {
-            "input_tokens": 2755,
+            "input_tokens": 3158,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 7268,
+            "output_tokens": 5264,
             "output_tokens_details": {
-              "reasoning_tokens": 7027
+              "reasoning_tokens": 4913
             },
-            "total_tokens": 10023
+            "total_tokens": 8422
           }
         }
       ],
@@ -967,17 +967,32 @@
       "query": "What did I bake for my uncle's birthday party?",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "baked a cake for my uncle's birthday party",
+              "baked for uncle's birthday party",
               "made dessert for uncle's birthday",
-              "uncle's birthday cake I baked"
+              "birthday cake for uncle's party"
             ]
           },
-          "request": "fnv1a64:2d7ba15a32bac047",
-          "schema": "personal_memory_assistance_queries_v1"
+          "request": "fnv1a64:236283c97deff6bb",
+          "schema": "personal_memory_assistance_queries_v1",
+          "usage": {
+            "input_tokens": 267,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1036,
+            "output_tokens_details": {
+              "reasoning_tokens": 1006
+            },
+            "total_tokens": 1303
+          }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -985,18 +1000,18 @@
             "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:ebc74f97fcb95535",
+          "request": "fnv1a64:03af254990807973",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 931,
+            "input_tokens": 1030,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 113,
+            "output_tokens": 102,
             "output_tokens_details": {
-              "reasoning_tokens": 85
+              "reasoning_tokens": 74
             },
-            "total_tokens": 1044
+            "total_tokens": 1132
           }
         }
       ]

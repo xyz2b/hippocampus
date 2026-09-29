@@ -32,13 +32,19 @@
       "id": "organization_s1",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
                 "certainty": "high",
                 "cross_turn_useful": true,
                 "extraction_confidence": "high",
-                "fact_time": null,
+                "fact_time": {
+                  "date": null,
+                  "end_date": null,
+                  "expression": ">每名会员同时最多可借3册书</assistant>"
+                },
                 "intent": {
                   "kind": "assert",
                   "reason": null,
@@ -76,66 +82,24 @@
                   "entity_id": null,
                   "integer": null,
                   "kind": "text",
-                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。约"
                 }
               }
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:9b92299ed1bf2273",
+          "request": "fnv1a64:a879630445f41b20",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3958,
+            "input_tokens": 3765,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 3145,
+            "output_tokens": 1112,
             "output_tokens_details": {
-              "reasoning_tokens": 2829
+              "reasoning_tokens": 855
             },
-            "total_tokens": 7103
-          }
-        },
-        {
-          "output": {
-            "coverage": {
-              "missing_user_spans": [],
-              "status": "complete"
-            },
-            "omission_supported": false,
-            "review_binding": "source-review-v3:46775402722859d5",
-            "reviews": [
-              {
-                "candidate_index": 0,
-                "checks": {
-                  "intent": "supported",
-                  "metadata": "supported",
-                  "polarity": "supported",
-                  "relation": "supported",
-                  "scope": "supported",
-                  "source": "supported",
-                  "subject": "supported",
-                  "temporal": "supported",
-                  "value": "supported"
-                },
-                "current_user_quote": "白鹭读书会规定，每名会员同时最多可借3册书。",
-                "evidence": [],
-                "issues": []
-              }
-            ]
-          },
-          "request": "fnv1a64:e15860def5bb20e8",
-          "schema": "personal_memory_source_support_v1",
-          "usage": {
-            "input_tokens": 2383,
-            "input_tokens_details": {
-              "cached_tokens": 1408
-            },
-            "output_tokens": 9811,
-            "output_tokens_details": {
-              "reasoning_tokens": 9685
-            },
-            "total_tokens": 12194
+            "total_tokens": 4877
           }
         }
       ],
@@ -154,6 +118,8 @@
       "id": "organization_s2",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "candidates": [
               {
@@ -204,21 +170,23 @@
             ],
             "omission_reason": null
           },
-          "request": "fnv1a64:d67bd5855962cd32",
+          "request": "fnv1a64:26ba5be728495ec1",
           "schema": "personal_memory_candidates_v1",
           "usage": {
-            "input_tokens": 3975,
+            "input_tokens": 3782,
             "input_tokens_details": {
-              "cached_tokens": 3456
+              "cached_tokens": 3200
             },
-            "output_tokens": 1041,
+            "output_tokens": 8733,
             "output_tokens_details": {
-              "reasoning_tokens": 712
+              "reasoning_tokens": 8484
             },
-            "total_tokens": 5016
+            "total_tokens": 12515
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "coverage": {
               "missing_user_spans": [],
@@ -246,18 +214,18 @@
               }
             ]
           },
-          "request": "fnv1a64:ed35e1661c4ddd74",
+          "request": "fnv1a64:ef435d7505d56be8",
           "schema": "personal_memory_source_support_v1",
           "usage": {
             "input_tokens": 2400,
             "input_tokens_details": {
-              "cached_tokens": 0
+              "cached_tokens": 1408
             },
-            "output_tokens": 4784,
+            "output_tokens": 5342,
             "output_tokens_details": {
-              "reasoning_tokens": 4659
+              "reasoning_tokens": 5216
             },
-            "total_tokens": 7184
+            "total_tokens": 7742
           }
         }
       ],
@@ -307,21 +275,51 @@
       "query": "每人同时最多能借几本书？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "queries": []
+            "queries": [
+              "白鹭读书会 借阅规则 每人 可借 册数",
+              "白鹭读书会 同时借阅 上限 本",
+              "白鹭读书会 会员 外借 数量 限制"
+            ]
           },
-          "request": "fnv1a64:cbf39bb762a0966f",
+          "request": "fnv1a64:7ed1427aed66b89f",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
-            "input_tokens": 289,
+            "input_tokens": 272,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 357,
+            "output_tokens": 428,
             "output_tokens_details": {
-              "reasoning_tokens": 350
+              "reasoning_tokens": 377
             },
-            "total_tokens": 646
+            "total_tokens": 700
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "answer_text": "3册",
+            "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
+            "verdict": "answer"
+          },
+          "request": "fnv1a64:63cab2c82d27f220",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 563,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 78,
+            "output_tokens_details": {
+              "reasoning_tokens": 50
+            },
+            "total_tokens": 641
           }
         }
       ]
@@ -345,21 +343,23 @@
       "query": "赤枫读书会每名会员同时最多能借几册书？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": []
           },
-          "request": "fnv1a64:81b25b36ce320d46",
+          "request": "fnv1a64:cba58bd36772ee9e",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 288,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 901,
+            "output_tokens": 673,
             "output_tokens_details": {
-              "reasoning_tokens": 894
+              "reasoning_tokens": 666
             },
-            "total_tokens": 1189
+            "total_tokens": 961
           }
         }
       ]
@@ -383,21 +383,51 @@
       "query": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
-            "queries": []
+            "queries": [
+              "白鹭读书会 会员 最多 借阅 图书",
+              "白鹭读书会 未归还 图书 不得 再借",
+              "白鹭读书会 借书 持有 上限"
+            ]
           },
-          "request": "fnv1a64:4e19b25a692ae2bc",
+          "request": "fnv1a64:74053124a5e06104",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
-            "input_tokens": 289,
+            "input_tokens": 272,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 1914,
+            "output_tokens": 1003,
             "output_tokens_details": {
-              "reasoning_tokens": 1907
+              "reasoning_tokens": 955
             },
-            "total_tokens": 2203
+            "total_tokens": 1275
+          }
+        },
+        {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
+          "output": {
+            "answer_text": "3册",
+            "candidate_index": 0,
+            "event_date": null,
+            "unit": null,
+            "verdict": "answer"
+          },
+          "request": "fnv1a64:3f30e121017f5e89",
+          "schema": "personal_memory_answer_v1",
+          "usage": {
+            "input_tokens": 563,
+            "input_tokens_details": {
+              "cached_tokens": 512
+            },
+            "output_tokens": 123,
+            "output_tokens_details": {
+              "reasoning_tokens": 95
+            },
+            "total_tokens": 686
           }
         }
       ]
@@ -416,28 +446,32 @@
       "query": "赤枫读书会每本书可以借几天？",
       "recorded": [
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "queries": [
-              "赤枫读书会 借阅期限 规则",
-              "赤枫读书会 图书 借出 归还 期限",
-              "赤枫读书会 借书 天数 通知"
+              "赤枫读书会 借阅规则 借期",
+              "赤枫读书会 图书借阅 可借天数",
+              "赤枫读书会 书籍归还 期限"
             ]
           },
-          "request": "fnv1a64:48027163bdf46745",
+          "request": "fnv1a64:a358fc2cfd159c2d",
           "schema": "personal_memory_assistance_queries_v1",
           "usage": {
             "input_tokens": 266,
             "input_tokens_details": {
               "cached_tokens": 0
             },
-            "output_tokens": 598,
+            "output_tokens": 531,
             "output_tokens_details": {
-              "reasoning_tokens": 554
+              "reasoning_tokens": 489
             },
-            "total_tokens": 864
+            "total_tokens": 797
           }
         },
         {
+          "endpoint": "ep-20260923215039-vxgxg",
+          "model": "DeepSeek-V4.1-Flash",
           "output": {
             "answer_text": null,
             "candidate_index": null,
@@ -445,18 +479,18 @@
             "unit": null,
             "verdict": "insufficient"
           },
-          "request": "fnv1a64:a3355bfde5e5de7f",
+          "request": "fnv1a64:68bd48d858dce669",
           "schema": "personal_memory_answer_v1",
           "usage": {
-            "input_tokens": 525,
+            "input_tokens": 557,
             "input_tokens_details": {
-              "cached_tokens": 384
+              "cached_tokens": 0
             },
-            "output_tokens": 57,
+            "output_tokens": 66,
             "output_tokens_details": {
-              "reasoning_tokens": 29
+              "reasoning_tokens": 38
             },
-            "total_tokens": 582
+            "total_tokens": 623
           }
         }
       ]
