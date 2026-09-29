@@ -2442,6 +2442,14 @@ impl RawCandidate {
                 .push(ScopeCondition::Time(TimeScope::TimeOfDay(time_of_day)));
             scope = Scope::new(scope.domain, scope.conditions);
         }
+        // The generic fact keeps the USER sentence with its qualifiers; model-coded places
+        // and dates (country codes, resolved weekdays) cannot be checked against it and only
+        // make a sound fact fail. Dedicated predicates keep their structured scope.
+        if self.predicate == "fact" {
+            scope.conditions.retain(|condition| {
+                !matches!(condition, ScopeCondition::Location(_) | ScopeCondition::Time(_))
+            });
+        }
         let expiry_expression = optional_non_empty(self.expiry_expression, "expiry_expression")?;
         if expiry_expression.is_some() && self.expires_at.is_some() {
             return Err(invalid(
