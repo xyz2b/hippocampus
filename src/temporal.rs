@@ -197,9 +197,14 @@ pub(crate) fn normalized_calendar(
     if let [span] = absolute_spans(expression)[..]
         && span.text == expression
     {
-        // The USER wrote the calendar dates; a model proposal may only restate them.
+        // The USER wrote the calendar dates; a model proposal may only restate them. Its end may
+        // name the last day (inclusive) or the day after it; the USER's span is what is kept.
+        let restates_end = |end: &str| {
+            parse_iso_date(end)
+                .is_some_and(|end| end == span.end || end.next_day() == Some(span.end))
+        };
         if proposed_start.is_some_and(|start| parse_iso_date(start) != Some(span.start))
-            || proposed_end_exclusive.is_some_and(|end| parse_iso_date(end) != Some(span.end))
+            || proposed_end_exclusive.is_some_and(|end| !restates_end(end))
         {
             return Err(TemporalResolveError(
                 "model dates do not match the USER calendar dates".into(),
@@ -636,6 +641,19 @@ mod tests {
         let range = |text| normalized_calendar(text, Some("2027-04-15"), Some("2027-05-01"), now, 28800);
         assert!(matches!(range("2027年4月15日至2027年4月30日"), Ok(Some(_))));
         assert!(range("2027年4月15日至2027年4月29日").is_err());
+        // An end naming the last day restates the same USER span; the kept end stays exclusive.
+        let inclusive = |end| {
+            normalized_calendar("2027年4月15日至2027年4月30日", Some("2027-04-15"), Some(end), now, 28800)
+        };
+        let Ok(Some(TemporalResolution::Range(kept))) = inclusive("2027-04-30") else {
+            panic!("inclusive end must restate the USER span");
+        };
+        let Ok(Some(TemporalResolution::Range(exclusive))) = range("2027年4月15日至2027年4月30日")
+        else {
+            unreachable!()
+        };
+        assert_eq!((kept.start, kept.end), (exclusive.start, exclusive.end));
+        assert!(inclusive("2027-04-29").is_err());
     }
 
     #[test]
