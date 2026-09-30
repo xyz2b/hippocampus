@@ -185,23 +185,16 @@ class ReplacementBinding(unittest.TestCase):
         recs["130"] = recs.pop("new")
         return s
 
-    def w14_merged(self):
-        # contracts 2.5 exception: re-judged as reinforce of another record ->
-        # evidence merged into 55, committed 70 leaves the projection.
-        s = copy.deepcopy({x["id"]: x for x in check_samples.load_samples()}["w4_14_rejudge_committed"])
-        s["expect"]["decisions"][0]["action"] = "reinforce"
-        recs = s["expect"]["after"]["records"]
-        recs["55"] = {"stored_status": "active", "reinforcement_count": "+1"}
-        recs["70"] = {"from_candidate": 0, "merged_into": 55, "projected": False}
-        s["expect"]["after"]["candidate_update"] = {"status": "pending", "reasons": ["update_scope_incomplete"]}
-        return s
+    def merged(self):
+        # Semantically valid merge positive: w4_23 (same value and qualifiers, different source).
+        return copy.deepcopy({x["id"]: x for x in check_samples.load_samples()}["w4_23_rejudge_merge"])
 
     def test_correct_variants_pass(self):
         for name, s in [("首次提交", copy.deepcopy(self.base)), ("重判复用 120", self.rejudged()),
                         ("同批无关新事实不受影响", self.with_unrelated_new_fact()),
                         ("重判复用的 120 也在输入中", self.rejudged_member_in_input()),
                         ("21 号新记录用数字编号", self.w21_numbered()),
-                        ("重判为强化另一记录（归并例外）", self.w14_merged())]:
+                        ("重判为强化另一记录（归并例外，w4_23）", self.merged())]:
             with self.subTest(case=name):
                 self.assertEqual(check_samples.check(s), [])
 
@@ -224,8 +217,10 @@ class ReplacementBinding(unittest.TestCase):
             "21 号数字编号：清掉待判定": (self.w21_numbered, lambda s: rec(s, "130").update(
                 update={"status": "judged", "reasons": []})),
             "21 号数字编号：删掉更新状态": (self.w21_numbered, lambda s: rec(s, "130").pop("update")),
-            "归并例外：没写归并目标": (self.w14_merged, lambda s: rec(s, "70").pop("merged_into")),
-            "归并例外：仍在投影中": (self.w14_merged, lambda s: rec(s, "70").update(projected=True)),
+            "归并例外：没写归并目标": (self.merged, lambda s: rec(s, "70").pop("merged_into")),
+            "归并例外：仍在投影中": (self.merged, lambda s: rec(s, "70").update(projected=True)),
+            "归并例外：归并到自身": (self.merged, lambda s: (
+                s["expect"]["decisions"][0].update(targets=[70]), rec(s, "70").update(merged_into=70))),
             "非归并动作借 merged_into 跳过：judged": (self.w21_numbered, lambda s: rec(s, "130").update(
                 merged_into=None, update={"status": "judged", "reasons": []})),
             "非归并动作借 merged_into 跳过：删更新状态": (self.w21_numbered, lambda s: (

@@ -503,4 +503,24 @@ sample("w4_22_replace_conflict_members", "冲突双方被同一新版本替代�
   relations=[link], coverage=COMPLETE, batch=2, boundary_with="w4_21_confirm_conflict_side",
   rejected=[{"action": "state_change + resolves_relations", "why": "“搬到深圳”不说明此前北京、上海哪条对，不能解决 rel-2"}],
   note="lives_in 为目录内关系，范围完整。替代记录的 update_relation_unclear 表示与前身所在冲突的关系待后续 W4 依据新原文判定，不是检索范围问题。")
+# ---------------- W23 重判为强化另一记录：等效断言归并（contracts 2.5 归并例外）
+t55, t70 = "我每天喝一杯咖啡。", "我每天喝一杯咖啡。"
+MARKS["w4_23_rejudge_merge"] = {"candidate:0": {"times": ["每天"]}, "record:55": {"times": ["每天"]}}
+sample("w4_23_rejudge_merge", "重判已提交断言为 reinforce：值与限定语相同、来源不同，证据并入旧记录，已提交记录退出投影",
+  {"s-112": S(t55, "2026-05-06"), "s-362": S(t70, "2026-09-26")},
+  [incand(cand("self", "fact", t70, times=[recurring("每天")]), "s-362", "2026-09-26", committed_id=70)],
+  [rec(55, cand("self", "fact", t55, times=[recurring("每天")]), "s-112", "2026-05-06")],
+  {"decisions": [{"candidate": 0, "status": "decided", "action": "reinforce", "targets": [55], "resolves_relations": [],
+                  "basis_sources": ["s-112", "s-362"], "effective": None, "pending_reason": None}],
+   "after": {"records": {"55": {"stored_status": "active", "reinforcement_count": "+1", "evidence_added": ["s-362"]},
+                         "70": {"from_candidate": 0, "merged_into": 55, "projected": False}},
+             "new_records": 0, "candidate_update": SCOPE_PENDING,
+             "receipt": {"replacement_map": {"70": 55}},
+             "recall": {"current": ["55（每天一杯，两条原文依据）"]}},
+   "must_not": ["不得同时返回 55 与 70 两份等效记录", "s-362 的证据只计一次，同一来源重放不再增加计数",
+                "不得把 70 归并到自身", "不得把值或限定语不同的断言按此方式归并（见 w4_14、w4_10）"]},
+  coverage=PARTIAL, batch=2, boundary_with="w4_14_rejudge_committed",
+  rejected=[{"action": "state_change", "why": "值与限定语都没有变化"}, {"action": "new", "why": "与 55 是同一断言"}],
+  note="70 首次提交时范围不完整、带 update.pending；后台检索到 55 后重判。二者值与限定语相同、来源不同，按 contracts 2.5 归并：证据按来源幂等并入 55，回执保存 70→55 的替代映射。")
 print("batch2 ok")
+

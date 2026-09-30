@@ -211,6 +211,8 @@ def _check_products(inp, decs, by_cand, errs):
                 errs.append(f"决定 {d['candidate']}：{d['action']} 须有绑定的替代记录")
             elif not set(d["targets"]) <= set(got[1].get("history") or []):
                 errs.append(f"决定 {d['candidate']}：替代记录 {got[0]} 的 history 须包含全部目标 {d['targets']}")
+        if d["action"] == "reinforce" and cands[d["candidate"]].get("committed_id") in d["targets"]:
+            errs.append(f"决定 {d['candidate']}：重判不能强化或归并到自身（{cands[d['candidate']]['committed_id']}）")
         if d["action"] == "reinforce" and cands[d["candidate"]].get("committed_id") is not None:
             if not got or got[1].get("merged_into") != d["targets"][0] or got[1].get("projected") is not False:
                 errs.append(f"决定 {d['candidate']}：重判为强化另一记录时，已提交记录须归并到 {d['targets']} 并退出投影")

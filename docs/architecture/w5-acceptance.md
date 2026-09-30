@@ -1,0 +1,65 @@
+# W5 提交验收清单（草案）
+
+本文列出 W5（contracts.md 2.5）的验收项，供实现前审阅。W5 目前尚未实现：`src/` 里还没有 RelationLink、UpdateState、needs_rejudge、committed_id、resolves_relations。做法是先按本清单写验收测试（此时应失败），再实现 W5，直到测试通过。
+
+W4 样本的静态检查（`tests/eval/w4/check_samples.py`）只能证明预期状态自洽，证明不了事务正确。本清单的每一项都走真实执行路径：真实 SQLite 文件、真实写事务，提交后关闭并重新打开数据库再核对。
+
+## 1. 测试装置
+
+- **位置**：`tests/w5_acceptance.rs`，与 `tests/persistence.rs` 同样使用临时目录下的真实 `SqliteMemoryStore`。
+- **输入**：读取已复核的 W4 样本 JSON（`tests/eval/w4/samples/`），据此构造初始状态：原文、记录、关系、任务认领。W4 决定直接取样本里的 `expect.decisions`，不调用模型。
+- **W5 入口**：名称随最小实现确定，下文记作 `commit_group(store, claim, group)`。复用现有 `SqliteMemoryStore::transaction`、任务认领（`EnrichmentTask` 的 attempt_id、claim_revision、lease_until）和回执，不新增存储或任务框架。
+- **提交分组**：一次调用处理一个依赖组，对应一个 T2。依赖组的划分：同一原文的决定，若共享目标，或一个决定解决的关系包含另一决定的目标，或一个决定的产物是另一决定的目标，则同属一组（取传递闭包）；其余决定各自成组。一组需要重判或失败，不影响同一原文里其他组的提交。
+- **回执**：至少保留每个候选的产物（新记录或复用的 committed_id）、完整 targets 与 basis、更新状态、归并映射。
+- **重载核对**：每项提交后丢弃 store，用同一路径重新 `open` 并 `read`，把记录、关系、回执投影成样本 `after` 的形状逐项比对，包括 stored_status、termination_reason、ended、history、update、relations、evidence 数、reinforcement_count、`from_candidate` 对应的记录 ID。
+- **故障注入**：测试专用钩子，让 W5 在指定步骤返回错误。现有 `transaction` 在闭包返回错误时回滚。注入点至少包括：第一个决定执行后、关系更新后、保存前。
+- **过期注入**：在构造 W4 输入与调用 W5 之间，用另一个事务改动目标（结束它、删除它的来源、或推进 revision），模拟并发。
+
+## 2. 基础项
+
+| 编号 | 验收项 | 样本 | 步骤 | 重载后应观察到 |
+| --- | --- | --- | --- | --- |
+| A1 | 成功提交后重载 | 全部调用 W4 且有 decided 的样本；pending 样本 16–20 | 提交 → 关闭 → 重开 | 与样本 `after` 一致；revision 只增加一次 |
+| A2 | 故障回滚 | 01、12、21、22、14 | 在每个注入点返回错误 → 重开 | 业务快照（记录、实体、暂存、关系）与提交前逐字节相同，revision 不变；原文（T1）仍在；任务状态见 A7 |
+| A3 | 重复重试（幂等） | 01、10、14、21 | 同一回执连续提交两次；另测“回滚后重试一次” | 第二次无变化：不新增记录、不重复追加证据、reinforcement_count 不变、revision 不变；回滚后重试恰好生效一次 |
+| A4 | 并发过期 | 01、12、21、14 | 过期注入后提交 | 该决定（或整组）为 needs_rejudge，零业务变更；不复用旧决定 |
+| A5 | 来源删除 | 15、22 | 提交前删除某成员或依据的来源 | 相关决定 needs_rejudge；以该来源为依据的关系 invalidated，不连带删除另一端仍获准的记录 |
+| A6 | 租约过期后旧执行者迟到提交 | 01、21 | 执行者甲认领后租约过期；乙重新认领（新 attempt_id、claim_revision）；甲随后提交 | 甲被拒绝（claim_lost），零业务写入，也不改写乙的任务状态（attempt_id、claim_revision、lease_until、enrichment 保持乙的值）；乙随后正常提交 |
+| A7 | 失败与过期的任务状态 | 01、12 | 分别注入普通故障与快照过期 | 普通故障：沿用现有 `failed`，释放认领，可重新认领后重试；快照过期：`needs_rejudge`，不能直接重试旧决定，须重新走 W4 |
+
+## 3. 三条执行路径
+
+| 编号 | 路径 | 样本 | 应观察到 |
+| --- | --- | --- | --- |
+| B1 | 首次提交 | 01、09、11、13 | 插入一条新记录，ID 与回执中该候选的产物一致；state_change 的 history 含全部目标 |
+| B2 | 重判复用 committed_id | 14；另加 committed_id 同时是关系成员的变体（见 `test_samples.py` 的 `rejudged_member_in_input`） | 不插入新记录；70 被复用，history 含 55；范围不完整时 update.pending 保留；提交前检查 70 仍对应同一来源、候选和有效版本，不符则 needs_rejudge |
+| B3 | 强化归并（重判为 reinforce 另一记录） | 23（值与限定语相同、来源不同） | 证据按来源幂等并入 55，只计一次；55 的 reinforcement_count 只加一次；70 退出投影，不同时返回两份等效记录；回执保存 70→55 的替代映射；重放不再加计数 |
+| B3a | 归并目标不能是自身 | 23，把目标改成 70 | 拒绝提交，零变更 |
+| B3b | 值或限定语不同不得归并 | 14 与 10 的对照 | 14（一杯→两杯）只能按 state_change 执行；执行器不得因为决定写了 reinforce 就把不同值的证据并入旧记录（执行前核对归并双方等效） |
+
+## 4. 组合与关系
+
+| 编号 | 验收项 | 样本 | 应观察到 |
+| --- | --- | --- | --- |
+| C1 | 多目标原子提交 | 12 | 两条都结束、只插入一次新版本；任一目标过期则整组 needs_rejudge、零变更；不能循环单目标入口产生多个新版本 |
+| D1 | 同一原文相关决定的原子性（同一组） | 21 | 两个决定在同一 T2：成功时 50 为 UserRetracted、51 为 Refinement、新记录 history 含 51、rel-1 resolved 且 resolution 指向 s-371；在两个决定之间注入故障则两者都回滚；51 过期则两者都 needs_rejudge |
+| D2 | 同一原文、不同组互不牵连 | 22 加一条无关新事实（`test_samples.py` 的 `with_unrelated_new_fact`） | 让 110 过期：候选 0 所在组 needs_rejudge、零变更；无关候选的新记录照常提交且只提交一次 |
+| E1 | 替代冲突成员、不解决关系 | 22 | rel-2 仍为 open，成员 [110, 111]、依据不变，不迁移成员、不去重；新记录 history 为 [110, 111]，update 为 pending 且含 update_relation_unclear |
+| E2 | 冲突前身链在召回中可见 | 22 | 当前查询返回新记录并经 history 带出 rel-2；历史查询中北京、上海仍互相冲突，不单独给出确定旧住址 |
+| E3 | 未解决关系的普通替代（首次与重判两条路径） | 22 与其 committed_id 变体 | 与 E1 相同，重判路径复用编号 |
+
+## 5. 须适配的现有行为
+
+以下是现有引擎（`src/engine.rs`）与契约 2.5 不一致之处，验收应能暴露：
+
+| 编号 | 现状 | 契约要求 | 验收样本 |
+| --- | --- | --- | --- |
+| F1 | StateChanged 未给日期时，把新版本 valid_from 与旧版本结束边界设为观察时刻 | effective 未知时结束时间存为未知（end_unknown），不回填接收时间 | 13、11、12 |
+| F2 | Refine 与 Supersede 同一分支，默认结束旧版本 | 只有确认修订整个断言才结束旧版本；局部补充用 coexist，不结束 | 03（结束）、04（不结束） |
+| F3 | 一次只处理一个 target | 多目标在同一 T2 重查并一起成功或失败 | 12、22 |
+| F4 | 旧策略可能对候选重新判定 | 执行已核验的 W4 决定，不交给旧确定性策略重判 | 全部 |
+
+## 6. 待定
+
+- W5 入口名称、回执格式细节，以及 `projected`、`merged_into` 在存储中的表示，随最小实现确定，满足第 1 节回执要求即可。
+- 编译与运行：在 Mac 上用 cargo 运行（旧格式解码测试与持久化测试已在 Mac 离线通过）。本会话的云端与本机工作环境不能编译 Rust，改动需由 Mac 上的运行结果确认。
