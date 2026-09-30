@@ -166,9 +166,42 @@ class ReplacementBinding(unittest.TestCase):
                                                        "update": {"status": "judged", "reasons": []}}
         return s
 
+    def rejudged_member_in_input(self):
+        # 120 was committed earlier and is itself a member of rel-2, so code
+        # passes it in the input records; the re-judge still reuses 120.
+        s = self.rejudged()
+        c = s["input"]["candidates"][0]
+        rec = copy.deepcopy(s["input"]["records"][0])
+        rec.update(id=120, candidate=copy.deepcopy(c["candidate"]), said_on=c["said_on"],
+                   evidence=[{"source": c["source"], "quote": {"text": c["candidate"]["sentence"]["text"]}}])
+        s["input"]["records"].append(rec)
+        s["input"]["relations"][0]["members"].append(120)
+        s["expect"]["after"]["relations"][0]["members"].append(120)
+        return s
+
+    def w21_numbered(self):
+        s = copy.deepcopy({x["id"]: x for x in check_samples.load_samples()}["w4_21_confirm_conflict_side"])
+        recs = s["expect"]["after"]["records"]
+        recs["130"] = recs.pop("new")
+        return s
+
+    def w14_merged(self):
+        # contracts 2.5 exception: re-judged as reinforce of another record ->
+        # evidence merged into 55, committed 70 leaves the projection.
+        s = copy.deepcopy({x["id"]: x for x in check_samples.load_samples()}["w4_14_rejudge_committed"])
+        s["expect"]["decisions"][0]["action"] = "reinforce"
+        recs = s["expect"]["after"]["records"]
+        recs["55"] = {"stored_status": "active", "reinforcement_count": "+1"}
+        recs["70"] = {"from_candidate": 0, "merged_into": 55, "projected": False}
+        s["expect"]["after"]["candidate_update"] = {"status": "pending", "reasons": ["update_scope_incomplete"]}
+        return s
+
     def test_correct_variants_pass(self):
         for name, s in [("首次提交", copy.deepcopy(self.base)), ("重判复用 120", self.rejudged()),
-                        ("同批无关新事实不受影响", self.with_unrelated_new_fact())]:
+                        ("同批无关新事实不受影响", self.with_unrelated_new_fact()),
+                        ("重判复用的 120 也在输入中", self.rejudged_member_in_input()),
+                        ("21 号新记录用数字编号", self.w21_numbered()),
+                        ("重判为强化另一记录（归并例外）", self.w14_merged())]:
             with self.subTest(case=name):
                 self.assertEqual(check_samples.check(s), [])
 
@@ -185,6 +218,14 @@ class ReplacementBinding(unittest.TestCase):
             "首次：judged 只留原因字符串": (lambda: copy.deepcopy(self.base), lambda s: rec(s, "new").update(
                 update={"status": "judged", "reasons": ["update_relation_unclear"]})),
             "首次：未绑定候选": (lambda: copy.deepcopy(self.base), lambda s: rec(s, "new").pop("from_candidate")),
+            "输入中的 120：删前身链": (self.rejudged_member_in_input, lambda s: rec(s, "120").pop("history")),
+            "输入中的旧记录被绑定为产物": (lambda: copy.deepcopy(self.base),
+                                   lambda s: rec(s, "110").update(from_candidate=0)),
+            "21 号数字编号：清掉待判定": (self.w21_numbered, lambda s: rec(s, "130").update(
+                update={"status": "judged", "reasons": []})),
+            "21 号数字编号：删掉更新状态": (self.w21_numbered, lambda s: rec(s, "130").pop("update")),
+            "归并例外：没写归并目标": (self.w14_merged, lambda s: rec(s, "70").pop("merged_into")),
+            "归并例外：仍在投影中": (self.w14_merged, lambda s: rec(s, "70").update(projected=True)),
         }
         for name, (make, mutate) in cases.items():
             s = make()

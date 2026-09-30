@@ -150,38 +150,54 @@ def _check_resolutions(inp, decs, after, errs):
                 errs.append(f"关系 {rid} 的成员 {m} 不是保留方，须由本次的终止动作结束（强化等不算）")
 
 
-def _produced(inp, decs, after, errs):
+def _bind(inp, after, errs):
     """Bind each committed or reused record in `after` to the candidate that produced it.
 
-    Any after.records key that is not an input record is a produced record and
-    must name `from_candidate`; a re-judged candidate (committed_id) produces
-    exactly its committed id. Replacements from state_change/correction/refine
-    must keep the complete predecessor chain (history ⊇ targets).
+    An after.records entry naming `from_candidate` is that candidate's product.
+    A re-judged candidate (committed_id) may only reuse its committed id, which
+    can also appear among the input records (e.g. as a member of an open
+    relation). Any other key that is not an input record must be bound; other
+    input records are old records and are not products.
     """
     input_ids = {str(r["id"]) for r in inp["records"]}
     cands = {c["index"]: c for c in inp["candidates"]}
     by_cand = {}
     for k, v in after.get("records", {}).items():
-        if k in input_ids:
-            continue
         fc = v.get("from_candidate") if isinstance(v, dict) else None
+        if fc is None:
+            if k not in input_ids:
+                errs.append(f"执行后记录 {k} 须用 from_candidate 绑定到产生它的候选")
+            continue
         if fc not in cands:
-            errs.append(f"执行后记录 {k} 须用 from_candidate 绑定到产生它的候选")
+            errs.append(f"执行后记录 {k} 绑定的候选 {fc} 不存在")
             continue
         cid = cands[fc].get("committed_id")
         if cid is not None and k != str(cid):
             errs.append(f"候选 {fc} 是重判（committed_id={cid}），只能复用记录 {cid}，不能产生 {k}")
+        if cid is None and k in input_ids:
+            errs.append(f"输入中的旧记录 {k} 不能绑定为候选 {fc} 的产物")
         if fc in by_cand:
             errs.append(f"候选 {fc} 绑定了多条执行后记录")
         by_cand[fc] = (k, v)
+    return by_cand
+
+
+def _check_products(inp, decs, by_cand, errs):
+    """Replacements keep the full predecessor chain; a re-judge that becomes a
+    reinforce of another record merges into it (contracts 2.5 exception)."""
+    cands = {c["index"]: c for c in inp["candidates"]}
     for d in decs:
-        if d["status"] == "decided" and d["action"] in ("state_change", "correction", "refine"):
-            got = by_cand.get(d["candidate"])
+        if d["status"] != "decided":
+            continue
+        got = by_cand.get(d["candidate"])
+        if d["action"] in ("state_change", "correction", "refine"):
             if not got:
                 errs.append(f"决定 {d['candidate']}：{d['action']} 须有绑定的替代记录")
             elif not set(d["targets"]) <= set(got[1].get("history") or []):
                 errs.append(f"决定 {d['candidate']}：替代记录 {got[0]} 的 history 须包含全部目标 {d['targets']}")
-    return by_cand
+        if d["action"] == "reinforce" and cands[d["candidate"]].get("committed_id") is not None:
+            if not got or got[1].get("merged_into") != d["targets"][0] or got[1].get("projected") is not False:
+                errs.append(f"决定 {d['candidate']}：重判为强化另一记录时，已提交记录须归并到 {d['targets']} 并退出投影")
 
 
 def _check_unresolved_replacement(inp, decs, after, by_cand, errs):
@@ -309,6 +325,7 @@ def check(s) -> list:
         if cd["relation"] == "fact" and cd["value"] and cd["value"]["quote"]["text"] != cd["sentence"]["text"]:
             errs.append(f"候选 {c['index']}：通用 fact 的 value.quote 须与 sentence 相同")
     exp = s["expect"]
+    by_cand = _bind(inp, exp.get("after", {}), errs)
     if s["call_w4"]:
         decs = exp.get("decisions", [])
         if sorted(d["candidate"] for d in decs) != sorted(c["index"] for c in inp["candidates"]):
@@ -355,7 +372,7 @@ def check(s) -> list:
                 # end_unknown; only a date-precise resolution fixes the end.
         _check_resolutions(inp, decs, exp.get("after", {}), errs)
         _check_target_states(decs, exp.get("after", {}), errs)
-        by_cand = _produced(inp, decs, exp.get("after", {}), errs)
+        _check_products(inp, decs, by_cand, errs)
         _check_unresolved_replacement(inp, decs, exp.get("after", {}), by_cand, errs)
     else:
         cp = exp.get("code_path")
@@ -371,11 +388,17 @@ def check(s) -> list:
         # Only what this run commits or re-judges carries the scope gap: the
         # new record(s), the candidate's receipt, and re-judged committed ids.
         # Existing records left untouched keep their own update state.
+        # Bound by candidate, not by key name: every record this run commits or
+        # re-judges (except one merged away by a re-judged reinforce) and the
+        # candidate receipt carry the scope gap.
         after = exp.get("after", {})
-        rejudged = {str(c["committed_id"]) for c in inp["candidates"] if c.get("committed_id") is not None}
-        states = [after.get("candidate_update")] + [v.get("update") for k, v in after.get("records", {}).items()
-                                                   if (k == "new" or k.startswith("new") or k in rejudged)
-                                                   and isinstance(v, dict) and "update" in v]
+        states = [after.get("candidate_update")]
+        for k, v in by_cand.values():
+            if "merged_into" in v:
+                continue
+            if not v.get("update"):
+                errs.append(f"范围不完整时，本次提交或重判的记录 {k} 须写明更新状态")
+            states.append(v.get("update"))
         states += [exp.get("code_path", {}).get("update")]
         states = [x for x in states if x]
         if not states:
