@@ -1,0 +1,40 @@
+--- tests/eval.rs.orig	2026-09-30 15:27:09
++++ tests/eval.rs	2026-09-30 15:27:09
+@@ -533,6 +533,8 @@
+     rows: &mut Vec<Row>,
+ ) -> Vec<(&'static str, usize, Vec<Value>)> {
+     let mut updates = Vec::new();
++    // Baseline export (write-only): every step's full result and the store after intake.
++    let mut export: Vec<Value> = Vec::new();
+     let case_id = case["id"].as_str().unwrap();
+     let db = TempDb(std::env::temp_dir().join(format!(
+         "pmr-eval-{case_id}-{}.sqlite3",
+@@ -604,6 +606,8 @@
+                     if let Some(source_id) = receipt(&result).pointer("/source/source_id") {
+                         source_ids.insert(id.to_owned(), source_id.clone());
+                     }
++                    let memories = serde_json::to_value(db.open().read().unwrap()).unwrap()["repository"]["memories"].clone();
++                    export.push(json!({"step":"intake","message":id,"result":result,"memories_after":memories}));
+                     let (outcome, detail) = score_intake(message, &result, &db);
+                     rows.push(row("intake", case_id, id, outcome, &detail));
+                 }
+@@ -647,12 +651,19 @@
+             let (outcome, detail) = match result {
+                 Err(Missing(schema)) => (Outcome::Skip, format!("缺录制 {schema}")),
+                 Ok(result) => {
++                    export.push(json!({"step":"question","question":id,"result":result}));
+                     score_question(&question["expect"], &result["answer_contract"], &source_ids)
+                 }
+             };
+             rows.push(row(dimension, case_id, id, outcome, &detail));
+         }
+     }
++    if let Ok(dir) = std::env::var("EVAL_EXPORT") {
++        let skipped: Vec<_> = rows.iter().filter(|r| r.outcome == Outcome::Skip && r.id.starts_with(&format!("{case_id}/"))).map(|r| r.id.clone()).collect();
++        assert!(skipped.is_empty(), "baseline export must be complete: {skipped:?}");
++        let text = serde_json::to_string_pretty(&json!({"case":case_id,"source_ids":source_ids,"steps":export})).unwrap() + "\n";
++        std::fs::write(format!("{dir}/{case_id}.json"), text).unwrap();
++    }
+     updates
+ }
+ 

@@ -1,0 +1,2470 @@
+{
+  "case": "event_registration_fee",
+  "source_ids": {
+    "event_s1": "83715-1790753233880753000-1262",
+    "event_s2": "83715-1790753233928145000-1281"
+  },
+  "steps": [
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-event_registration_fee:event_s1:0",
+              "quote": "海盐折纸工作坊的报名费为36元。",
+              "session_id": "eval-event_registration_fee",
+              "turn_id": "event_s1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "event_haiyan_origami",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "海盐折纸工作坊的报名费为36元。"
+          }
+        }
+      },
+      "message": "event_s1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "海盐折纸工作坊的报名费为36元。",
+              "read_revision": 4,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 2184,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1790568000,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "海盐折纸工作坊的报名费为36元。",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 8,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 536,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2125
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 2946,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "event_haiyan_origami"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-event_registration_fee:event_s1:0",
+                      "quote": "海盐折纸工作坊的报名费为36元。",
+                      "session_id": "eval-event_registration_fee",
+                      "turn_id": "event_s1"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "event_haiyan_origami",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1790568000,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "海盐折纸工作坊的报名费为36元。"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 44,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-event_registration_fee:event_s1:0",
+                    "matched_query_phrases": [
+                      "c4f5c c574a",
+                      "c540d c8d39",
+                      "c574a c7684",
+                      "c5de5 c4f5c",
+                      "c6298 c7eb8",
+                      "c62a5 c540d",
+                      "c6d77 c76d0",
+                      "c6d77 c76d0 c5de5 c4f5c c574a",
+                      "c6d77 c76d0 c6298 c7eb8 c5de5 c4f5c c574a",
+                      "c7684 c62a5",
+                      "c76d0 c6298",
+                      "c7eb8 c5de5",
+                      "c8d39 c4e3a",
+                      "w000033000036"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1790568000,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-event_registration_fee",
+                "source_id": "83715-1790753233880753000-1262",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "海盐折纸工作坊的报名费为36元。",
+                "turn_id": "event_s1"
+              }
+            ],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233887426000-1265",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233880625000-1261",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233896544000-1267",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233880625000-1261",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753233880753000-1262",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-event_registration_fee:event_s1:0",
+              "quote": "海盐折纸工作坊的报名费为36元。",
+              "session_id": "eval-event_registration_fee",
+              "turn_id": "event_s1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "event_haiyan_origami",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "海盐折纸工作坊的报名费为36元。"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-event_registration_fee:event_s2:0",
+              "quote": "银杏折纸工作坊的报名费为58元。",
+              "session_id": "eval-event_registration_fee",
+              "turn_id": "event_s2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "event_yinxing_origami",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568060,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "银杏折纸工作坊的报名费为58元。"
+          }
+        }
+      },
+      "message": "event_s2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "海盐折纸工作坊的报名费为36元。"
+              ],
+              "query": "银杏折纸工作坊的报名费为58元。",
+              "read_revision": 5,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 2204,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1790568060,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "海盐折纸工作坊的报名费为36元。"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "银杏折纸工作坊的报名费为58元。",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 15,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 2,
+                "hint_bytes": 1074,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 2,
+                "repository_memory_count": 2,
+                "segment_association_count": 2,
+                "skipped": {},
+                "token_bytes": 4262
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 5905,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 5,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 5,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 5,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "event_haiyan_origami"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "event_yinxing_origami"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-event_registration_fee:event_s2:0",
+                      "quote": "银杏折纸工作坊的报名费为58元。",
+                      "session_id": "eval-event_registration_fee",
+                      "turn_id": "event_s2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "event_yinxing_origami",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1790568060,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "银杏折纸工作坊的报名费为58元。"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 44,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-event_registration_fee:event_s2:0",
+                    "matched_query_phrases": [
+                      "c4f5c c574a",
+                      "c540d c8d39",
+                      "c574a c7684",
+                      "c5de5 c4f5c",
+                      "c6298 c7eb8",
+                      "c62a5 c540d",
+                      "c674f c6298",
+                      "c7684 c62a5",
+                      "c7eb8 c5de5",
+                      "c8d39 c4e3a",
+                      "c94f6 c674f",
+                      "c94f6 c674f c5de5 c4f5c c574a",
+                      "c94f6 c674f c6298 c7eb8 c5de5 c4f5c c574a",
+                      "w000035000038"
+                    ],
+                    "memory_id": 2,
+                    "projection_revision": 5,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1790568060,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-event_registration_fee",
+                "source_id": "83715-1790753233928145000-1281",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 2,
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "银杏折纸工作坊的报名费为58元。",
+                "turn_id": "event_s2"
+              }
+            ],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233936565000-1283",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233927786000-1280",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233946144000-1285",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233927786000-1280",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 2,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753233928145000-1281",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "event_q1",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "报名费是多少？",
+          "read_revision": 5,
+          "safe_answer": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "clarification_required",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "reason": "clarification_required",
+          "status": "not_requested"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "报名费是多少？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "clarification_required"
+        ],
+        "duration_ms": 10,
+        "evidence_status": "clarification_required",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1074,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4262
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5905,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "context_entity_ids": [],
+          "needs_clarification": true,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "needs_clarification",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "event_q2",
+      "result": {
+        "answer_contract": {
+          "context": [
+            "我说的是折纸工作坊。"
+          ],
+          "query": "报名费是多少？",
+          "read_revision": 5,
+          "safe_answer": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "clarification_required",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "reason": "clarification_required",
+          "status": "not_requested"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [
+              "我说的是折纸工作坊。"
+            ],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "报名费是多少？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "clarification_required"
+        ],
+        "duration_ms": 13,
+        "evidence_status": "clarification_required",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1074,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4262
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5905,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "context_entity_ids": [],
+          "needs_clarification": true,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "needs_clarification",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "event_q3",
+      "result": {
+        "answer_contract": {
+          "context": [
+            "我说的是海盐折纸工作坊。"
+          ],
+          "query": "报名费是多少？",
+          "read_revision": 5,
+          "safe_answer": "36元。",
+          "safe_source_ids": [
+            "83715-1790753233880753000-1262"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "海盐折纸工作坊的报名费为36元。",
+              "source_id": "83715-1790753233880753000-1262"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [],
+          "status": "completed_empty"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "filtered_other_named_entity": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2135,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [
+              "我说的是海盐折纸工作坊。"
+            ],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "报名费是多少？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 16,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1074,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4262
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5905,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234039604000-1325",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234023116000-1316",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [
+            "event_haiyan_origami"
+          ],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-event_registration_fee:event_s1:0",
+                  "quote": "海盐折纸工作坊的报名费为36元。",
+                  "session_id": "eval-event_registration_fee",
+                  "turn_id": "event_s1"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 1,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "event_haiyan_origami",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568000,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "海盐折纸工作坊的报名费为36元。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 44,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "explicit_context",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-event_registration_fee:event_s1:0",
+                "matched_query_phrases": [
+                  "c4f5c c574a",
+                  "c540d c8d39",
+                  "c5de5 c4f5c",
+                  "c6298 c7eb8",
+                  "c62a5 c540d",
+                  "c6d77 c76d0",
+                  "c6d77 c76d0 c5de5 c4f5c c574a",
+                  "c6d77 c76d0 c6298 c7eb8 c5de5 c4f5c c574a",
+                  "c76d0 c6298",
+                  "c7eb8 c5de5"
+                ],
+                "memory_id": 1,
+                "projection_revision": 5,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  44
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568000,
+            "received_sequence": 1,
+            "role": "user",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-event_registration_fee",
+            "source_id": "83715-1790753233880753000-1262",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 1,
+                "quote_byte_range": [
+                  0,
+                  44
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "海盐折纸工作坊的报名费为36元。",
+            "turn_id": "event_s1",
+            "verified_fact": {
+              "memory_id": 1,
+              "relation": "报名费",
+              "subject": "海盐折纸工作坊",
+              "unique_in_snapshot": true,
+              "value": "36元"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "event_q4",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "银杏折纸工作坊的报名费是多少？",
+          "read_revision": 5,
+          "safe_answer": "58元。",
+          "safe_source_ids": [
+            "83715-1790753233928145000-1281"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "银杏折纸工作坊的报名费为58元。",
+              "source_id": "83715-1790753233928145000-1281"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [],
+          "status": "completed_empty"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "filtered_other_named_entity": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2145,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "银杏折纸工作坊的报名费是多少？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 15,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1074,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4262
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5905,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234085117000-1344",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234068763000-1335",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "event_yinxing_origami"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-event_registration_fee:event_s2:0",
+                  "quote": "银杏折纸工作坊的报名费为58元。",
+                  "session_id": "eval-event_registration_fee",
+                  "turn_id": "event_s2"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 2,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "event_yinxing_origami",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568060,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "银杏折纸工作坊的报名费为58元。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 44,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-event_registration_fee:event_s2:0",
+                "matched_query_phrases": [
+                  "c4f5c c574a",
+                  "c540d c8d39",
+                  "c574a c7684",
+                  "c5de5 c4f5c",
+                  "c6298 c7eb8",
+                  "c62a5 c540d",
+                  "c674f c6298",
+                  "c7684 c62a5",
+                  "c7eb8 c5de5",
+                  "c94f6 c674f",
+                  "c94f6 c674f c5de5 c4f5c c574a",
+                  "c94f6 c674f c6298 c7eb8 c5de5 c4f5c c574a"
+                ],
+                "memory_id": 2,
+                "projection_revision": 5,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  44
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568060,
+            "received_sequence": 2,
+            "role": "user",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-event_registration_fee",
+            "source_id": "83715-1790753233928145000-1281",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 2,
+                "quote_byte_range": [
+                  0,
+                  44
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "银杏折纸工作坊的报名费为58元。",
+            "turn_id": "event_s2",
+            "verified_fact": {
+              "memory_id": 2,
+              "relation": "报名费",
+              "subject": "银杏折纸工作坊",
+              "unique_in_snapshot": true,
+              "value": "58元"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "event_q5",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "参加海盐折纸工作坊，报名要交多少钱？",
+          "read_revision": 5,
+          "safe_answer": "36元。",
+          "safe_source_ids": [
+            "83715-1790753233880753000-1262"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "海盐折纸工作坊的报名费为36元。",
+              "source_id": "83715-1790753233880753000-1262"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [],
+          "status": "completed_empty"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "filtered_other_named_entity": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2102,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "参加海盐折纸工作坊，报名要交多少钱？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 15,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1074,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4262
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5905,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234129885000-1360",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234112536000-1353",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "event_haiyan_origami"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-event_registration_fee:event_s1:0",
+                  "quote": "海盐折纸工作坊的报名费为36元。",
+                  "session_id": "eval-event_registration_fee",
+                  "turn_id": "event_s1"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 1,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "event_haiyan_origami",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568000,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "海盐折纸工作坊的报名费为36元。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 44,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-event_registration_fee:event_s1:0",
+                "matched_query_phrases": [
+                  "c4f5c c574a",
+                  "c5de5 c4f5c",
+                  "c6298 c7eb8",
+                  "c62a5 c540d",
+                  "c6d77 c76d0",
+                  "c6d77 c76d0 c5de5 c4f5c c574a",
+                  "c6d77 c76d0 c6298 c7eb8 c5de5 c4f5c c574a",
+                  "c76d0 c6298",
+                  "c7eb8 c5de5"
+                ],
+                "memory_id": 1,
+                "projection_revision": 5,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  44
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568000,
+            "received_sequence": 1,
+            "role": "user",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-event_registration_fee",
+            "source_id": "83715-1790753233880753000-1262",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 1,
+                "quote_byte_range": [
+                  0,
+                  44
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "海盐折纸工作坊的报名费为36元。",
+            "turn_id": "event_s1",
+            "verified_fact": {
+              "memory_id": 1,
+              "relation": "报名费",
+              "subject": "海盐折纸工作坊",
+              "unique_in_snapshot": true,
+              "value": "36元"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "event_q6",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "银杏折纸工作坊最多招收多少人？",
+          "read_revision": 5,
+          "safe_answer": "现有记录证据不足，无法回答这个问题。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "insufficient_evidence",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "银杏折纸工作坊 招生 人数 上限",
+            "银杏折纸工作坊 报名 名额 限制",
+            "银杏折纸工作坊 参与人数 最多"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "银杏折纸工作坊最多招收多少人？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 51,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1074,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4262
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5905,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "status": "insufficient"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234176242000-1372",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234157347000-1364",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753234235494000-1393",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234157347000-1364",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "event_yinxing_origami"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233880753000-1262:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233928145000-1281:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    }
+  ]
+}
