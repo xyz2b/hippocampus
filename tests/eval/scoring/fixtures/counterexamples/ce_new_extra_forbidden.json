@@ -232,7 +232,7 @@
     "status": "answered",
     "version": "recall.v3"
   },
-  "probe": "正确事实旁附带错误事实（引用 person_s1）",
+  "probe": "正确事实旁附带错误事实（引用 person_s1；禁止来源只约束答案，额外结论进复核）",
   "question": {
     "case": "person_sketch_pen",
     "id": "person_q4"
@@ -246,7 +246,7 @@
     {
       "item": "forbidden[0]",
       "results": [
-        "auto_fail"
+        "auto_pass"
       ]
     },
     {

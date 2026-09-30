@@ -56,10 +56,10 @@
 字段约定：
 
 - **省略 = 不检查；`null` / `[]` = 明确要求没有。** 只有出现该项本身就是错误时才写 `null`/`[]`，否则省略。例：原文有 "usually"，R4 可能输出频率限定，此时不能把相关限定写成 `[]`。
-- `relation_note` 只给人看，不参与自动判分。
+- `relation_note` 与 `annotator_note`（标注理由、原文出处、需抽查的疑点）只给人看，不参与自动判分，但作为标注内容进入复核缓存键。
 - 限定语（conditions / uncertainty / 时间 / 强度）只在原文确有表达时标注；`bound_by_query` 标该条件是否已被问题限定。
 - 来源用稳定引用（`s2_t3`），不用运行时 source_id。
-- `forbidden` 列出的才自动判错（kind 示例：`value_as_current`、`wrong_subject_source`、`condition_broadened`、`value_in_negation`）。未标注的额外结论不自动判错，进入复核。禁止项不以引用位置代替值：引用了旧来源只说明来源错误，不能据此认定"旧值被当作当前结论"。
+- `forbidden` 列出的才自动判错（kind：`value_as_current` 旧值或他值作为当前结论；`wrong_value` 把干扰值作为本题答案；`wrong_subject_source` / `wrong_source` 答案以另一主体或无关来源为依据；`source_out_of_scope` 任何结论引用了其他任务的来源，属阻断项；`condition_broadened`；`value_in_negation`）。除 `source_out_of_scope` 全局检查外，禁止项只约束本题答案（与期望事实匹配的断言；无期望事实时为全部断言）；引用同一来源或提到该值的正确历史、补充上下文作为额外结论进复核，不自动判错。多数“不得引用某来源”由期望事实的来源检查覆盖，`wrong_source` 只用于答案不得依据的来源（如提问时尚不存在的来源）。未标注的额外结论不自动判错，进入复核。禁止项不以引用位置代替值：引用了旧来源只说明来源错误，不能据此认定"旧值被当作当前结论"。
 - `conflicts`：冲突成员各自出现，均不得作为确定结论；旧值可作为冲突成员或历史出现。
 - `computed`：核对依据来源、端点和精度（例：工作坊题须核对 2023-11-01 → 2024-02-01 的整日历月数，不能只匹配数字 3）。elapsed 的标注写明 `unit`、`value`、`rounding`、`exact_days`、`approximate`，与 r4.v3 的规则一致（天 `calendar_days`、周 `nearest_week`、月 `complete_calendar_months`）；评分器分三项判分：`computed.value`（op、数值、单位、bound，新旧同义）、`computed.basis`（取整口径、精确天数、近似标记，旧格式记 `missing / format_cannot_express`）、`computed.endpoints`（端点、依据，并按同一规则从端点重算）；旧版的人工复核只确认数值与语义。评分器尚未实现的检查不得标为“不可测”（该分类只用于标注不足），应先实现或进入复核。
 

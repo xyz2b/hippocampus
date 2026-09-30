@@ -733,8 +733,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": {
+          "approximate": false,
+          "bound": "exact",
+          "end": {
+            "date": "2023-04-01",
+            "source": "request.at"
+          },
+          "exact_days": 28,
+          "op": "elapsed",
+          "rounding": "nearest_week",
+          "start": {
+            "date": "2023-03-04",
+            "role": "event",
+            "source": "s1_t1"
+          },
+          "unit": "week",
+          "value": "4"
+        },
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "见姑姑/阿姨并收到水晶吊灯（s1_t1 原文 today）",
+            "sources": {
+              "all_of": [
+                "s1_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self"
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many weeks ago did I meet up with my aunt and receive the crystal chandelier?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

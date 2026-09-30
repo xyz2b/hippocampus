@@ -986,8 +986,40 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "晚上停止查看工作邮件和消息的时间",
+            "sources": {
+              "all_of": [
+                "s1_t3"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "7 pm",
+              "7pm",
+              "7:00 pm"
+            ]
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "What time do I stop checking work emails and messages?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

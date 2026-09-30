@@ -280,8 +280,20 @@
       "expect": {
         "kind": "clarify"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "clarify"
+      },
       "id": "event_q1",
-      "query": "报名费是多少？"
+      "query": "报名费是多少？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      }
     },
     {
       "after": 2,
@@ -291,8 +303,20 @@
       "expect": {
         "kind": "clarify"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "clarify"
+      },
       "id": "event_q2",
-      "query": "报名费是多少？"
+      "query": "报名费是多少？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      }
     },
     {
       "after": 2,
@@ -311,8 +335,54 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "报名费",
+            "sources": {
+              "all_of": [
+                "event_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "event_haiyan_origami",
+            "value_any": [
+              "36",
+              "36元",
+              "36 元"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "event_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "58",
+              "58元"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "event_q3",
       "query": "报名费是多少？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -351,8 +421,54 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "报名费",
+            "sources": {
+              "all_of": [
+                "event_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "event_yinxing_origami",
+            "value_any": [
+              "58",
+              "58元",
+              "58 元"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "event_s1"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "36",
+              "36元"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "event_q4",
       "query": "银杏折纸工作坊的报名费是多少？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -391,8 +507,54 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "报名费",
+            "sources": {
+              "all_of": [
+                "event_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "event_haiyan_origami",
+            "value_any": [
+              "36",
+              "36元",
+              "36 元"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "event_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "58",
+              "58元"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "event_q5",
       "query": "参加海盐折纸工作坊，报名要交多少钱？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -426,8 +588,30 @@
         ],
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "36",
+              "58",
+              "36元",
+              "58元"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "event_q6",
       "query": "银杏折纸工作坊最多招收多少人？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

@@ -1741,8 +1741,49 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "知识更新：10（s1_t1）→ 第 12 个（s1_t5）→ 15（s2_t1）。原文直接给出数量，按取值题处理。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "过去几周看过的 Crash Course 视频数（最新）",
+            "sources": {
+              "all_of": [
+                "s2_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "15",
+              "15 videos",
+              "15 Crash Course videos"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "10",
+              "12"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many Crash Course videos have I watched in the past few weeks?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

@@ -370,6 +370,10 @@ def _computed_items(exp, oc, source_texts):
 def _forbidden_items(ctx, forbidden, fact_match, facts):
     items = []
     view = ctx.view
+    # Assertions that answer this question: those matched to an expected
+    # fact; with no expected facts (insufficient / clarify / conflict),
+    # every assertion is a candidate answer.
+    answers = [fact_match[i] for i in sorted(fact_match)] if facts else list(view["assertions"])
     for k, fb in enumerate(forbidden):
         p, kind = f"forbidden[{k}]", fb.get("kind")
         hits, undetermined = [], []
@@ -386,7 +390,34 @@ def _forbidden_items(ctx, forbidden, fact_match, facts):
                         hits.append(a["id"])
                 elif cur in ("yes", None, CANNOT):
                     undetermined.append(a["id"])
-        elif kind in ("wrong_subject_source", "source_out_of_scope"):
+        elif kind == "wrong_value":
+            # The value must not be given AS THE ANSWER to this question
+            # (distractors, another subject's value). Correct supplementary
+            # context mentioning it is not an error: only answer assertions
+            # are assessed, and only a plain old answer is decided
+            # automatically; free text goes to review.
+            vals = fb.get("value_any")
+            for a in answers:
+                if ctx.plain_exact(a):
+                    if ctx.plain_exact(a, vals):
+                        hits.append(a["id"])
+                else:
+                    undetermined.append(a["id"])
+        elif kind in ("wrong_subject_source", "wrong_source"):
+            # The answer must not rest on this source. Other conclusions that
+            # cite it (correct history, extra context) are reviewed as extras.
+            bad = _srcset(fb.get("sources", []))
+            for a in answers:
+                if _srcset(a["sources"]) & bad:
+                    hits.append(a["id"])
+            for c in view["conflicts"]:
+                for m in c["members"] or []:
+                    if _srcset(m["sources"]) & bad:
+                        hits.append(m["id"])
+            if view["computed"] and _srcset(view["computed"].get("sources", [])) & bad:
+                hits.append("computed")
+        elif kind == "source_out_of_scope":
+            # Another task's source may not appear anywhere (acceptance blocker).
             bad = _srcset(fb.get("sources", []))
             for a in view["assertions"]:
                 if _srcset(a["sources"]) & bad:

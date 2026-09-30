@@ -1334,8 +1334,52 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "起点取 s1_t1 “today” 看 Coda 的日期，这是明确参与电影节的日期，不是电影节开始日期（原文另说参加了一周）。",
+        "computed": {
+          "approximate": false,
+          "bound": "exact",
+          "end": {
+            "date": "2021-10-02",
+            "source": "request.at"
+          },
+          "exact_days": 123,
+          "op": "elapsed",
+          "rounding": "complete_calendar_months",
+          "start": {
+            "date": "2021-06-01",
+            "role": "event",
+            "source": "s1_t1"
+          },
+          "unit": "month",
+          "value": "4"
+        },
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "参加西雅图国际电影节（s1_t1 原文 today 看了 Coda）",
+            "sources": {
+              "all_of": [
+                "s1_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self"
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many months ago did I attend the Seattle International Film Festival?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

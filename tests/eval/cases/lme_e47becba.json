@@ -743,8 +743,38 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "毕业所获学位",
+            "sources": {
+              "all_of": [
+                "s1_t3"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "Business Administration",
+              "a degree in Business Administration"
+            ]
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "What degree did I graduate with?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

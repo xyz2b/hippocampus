@@ -290,8 +290,47 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "提问时 correction_s2 尚未出现，64GB 当时正确。 wrong_source 保留：该来源在提问时尚不存在，答案不能以它为依据。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "存储卡容量（此时只有 correction_s1）",
+            "sources": {
+              "all_of": [
+                "correction_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "device_mowan_camera",
+            "value_any": [
+              "64GB",
+              "64 GB"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_source",
+            "sources": [
+              "correction_s2"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "correction_q1",
       "query": "墨湾相机使用多大容量的存储卡？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -358,8 +397,48 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "correction_s2 为纠错：64GB 不是曾经成立的历史值，不应作为当前结论或历史事实出现（contracts 不变量 7）。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "存储卡容量（更正后的最终值）",
+            "sources": {
+              "all_of": [
+                "correction_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "device_mowan_camera",
+            "value_any": [
+              "128GB",
+              "128 GB"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "64GB",
+              "64 GB"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "correction_q2",
       "query": "墨湾相机使用多大容量的存储卡？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -426,8 +505,48 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "correction_s2 为纠错：64GB 不是曾经成立的历史值，不应作为当前结论或历史事实出现（contracts 不变量 7）。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "存储卡容量（更正后的最终值）",
+            "sources": {
+              "all_of": [
+                "correction_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "device_mowan_camera",
+            "value_any": [
+              "128GB",
+              "128 GB"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "64GB",
+              "64 GB"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "correction_q3",
       "query": "现在确认墨湾相机的存储卡是64GB还是128GB？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

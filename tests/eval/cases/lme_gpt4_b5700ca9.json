@@ -915,8 +915,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": {
+          "approximate": false,
+          "bound": "exact",
+          "end": {
+            "date": "2023-04-10",
+            "source": "request.at"
+          },
+          "exact_days": 4,
+          "op": "elapsed",
+          "rounding": "calendar_days",
+          "start": {
+            "date": "2023-04-06",
+            "role": "event",
+            "source": "s1_t4"
+          },
+          "unit": "day",
+          "value": "4"
+        },
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "参加圣公会教堂濯足节礼拜（s1_t4 原文 today）",
+            "sources": {
+              "all_of": [
+                "s1_t4"
+              ],
+              "any_of": []
+            },
+            "subject": "self"
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

@@ -1157,8 +1157,47 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "知识更新：1250（s1_t2）→ “I think I'm close to 1300”（s2_t1）。value_any 只放裸值 1300；带“close to/about”等限定的答案不作整串等值，送复核判断是否保留了原文的估计语气。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "Instagram 粉丝数（最新，用户自述约数）",
+            "sources": {
+              "all_of": [
+                "s2_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "uncertainty": "I think",
+            "value_any": [
+              "1300"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "1250"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many followers do I have on Instagram now?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

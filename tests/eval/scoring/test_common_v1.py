@@ -443,6 +443,94 @@ class ElapsedRule(unittest.TestCase):
         self.assertIsNone(elapsed_rule(d(2023, 2, 1), d(2023, 1, 1), "day"))
 
 
+def _na(aid, text, sources, current="yes", polarity="affirm"):
+    """A recall.v3-style adapted assertion (free-text statement)."""
+    return {"id": aid, "text": text, "value": None, "sources": sorted(sources), "unmapped_sources": [],
+            "quotes": [], "polarity": polarity, "current": current, "conditions": [], "uncertainty": None,
+            "plain": False}
+
+
+def _nview(assertions, status="answer", history=()):
+    return {"adapter": "test", "status": status, "status_raw": status, "binding": [], "assertions": assertions,
+            "conflicts": [], "computed": None, "history": list(history)}
+
+
+def _items(expect, meta, view, texts=None):
+    res = score(expect, meta, view, texts)
+    return {i["id"]: i for i in res["items"]}, res["extras"]
+
+
+class ForbiddenKinds(unittest.TestCase):
+    """wrong_value / wrong_source forbid a value or source AS THE ANSWER;
+    correct extra context is reviewed, not failed. source_out_of_scope is
+    global."""
+
+    def test_extra_context_from_other_source_is_not_an_error(self):
+        # time_q2: "4月15日19:00；此前4月1日至14日为17:30" must not be auto-failed.
+        _, _, meta, exp = trial.resolve_question("absolute_date_ranges", "time_q2")
+        view = _nview([_na("facts[0]", "4月15日每天19:00闭馆", ["time_s2"]),
+                       _na("facts[1]", "此前4月1日至14日为17:30闭馆", ["time_s1"], current="no")])
+        items, extras = _items(exp, meta, view)
+        self.assertFalse([i for i in items.values() if i["result"] == FAIL], items)
+        self.assertEqual([e["result"] for e in extras], [REVIEW])
+
+    def test_wrong_source_as_answer_fails(self):
+        _, _, meta, exp = trial.resolve_question("explicit_correction", "correction_q1")
+        view = _nview([_na("facts[0]", "存储卡是64GB", ["correction_s2"])])
+        items, _ = _items(exp, meta, view)
+        ws = next(i for i in items.values() if i.get("kind") == "wrong_source")
+        self.assertEqual(ws["result"], FAIL)
+        self.assertEqual(items["facts[0].sources"]["result"], FAIL)
+
+    def test_wrong_value_only_as_the_answer(self):
+        case_id, qid = "lme_af8d2e46", "q"
+        _, _, meta, exp = trial.resolve_question(case_id, qid)
+        k = next(i for i, f in enumerate(exp["forbidden"]) if f["kind"] == "wrong_value")
+        base, real = trial.old_raw(case_id, qid)
+
+        def old(answer):
+            raw = copy.deepcopy(real)
+            raw["answer_contract"]["safe_answer"] = answer
+            return _result("old", case_id, qid, raw=raw)
+
+        def fb(res):
+            return next(i for i in res["items"] if i["id"] == f"forbidden[{k}]")["result"]
+
+        self.assertEqual(fb(old("3 shirts。")), FAIL)       # distractor given as the answer
+        self.assertEqual(fb(old("7 shirts。")), PASS)
+        self.assertEqual(fb(old("7 shirts, but I only wore 3。")), REVIEW)  # correct supplement: review, not fail
+        view = _nview([_na("facts[0]", "带了 7 件衬衫", ["s1_t4"]),
+                       _na("facts[1]", "实际只穿了 3 件", ["s1_t4"], current="no")])
+        items, _ = _items(exp, meta, view)
+        self.assertNotEqual(items[f"forbidden[{k}]"]["result"], FAIL)
+
+    def test_wrong_value_on_insufficient_question(self):
+        case_id, qid = "lme_0862e8bf_abs", "q"
+        real_res = _result("old", case_id, qid)  # real old output: insufficient
+        self.assertEqual(next(i for i in real_res["items"] if i.get("kind") == "wrong_value")["result"], PASS)
+        base, real = trial.old_raw(case_id, qid)
+        raw = copy.deepcopy(real)
+        ac = raw["answer_contract"]
+        ac.update(status="source_linked_model_answer", safe_answer="Luna。",
+                  safe_source_ids=[base["source_ids"]["s1_t6"]])
+        case, q, _, _ = trial.resolve_question(case_id, qid)
+        ac["sources"] = [{"grade": "uncommitted", "source_id": base["source_ids"]["s1_t6"],
+                          "quote": trial.source_texts(case, q)["s1_t6"]}]
+        res = _result("old", case_id, qid, raw=raw)
+        by = {i["id"]: i for i in res["items"]}
+        self.assertEqual(by["status"]["result"], FAIL)
+        self.assertEqual(next(i for i in res["items"] if i.get("kind") == "wrong_value")["result"], FAIL)
+
+    def test_out_of_scope_source_is_global(self):
+        _, _, meta, exp = trial.resolve_question("task_isolation", "task_q1")
+        view = _nview([_na("facts[0]", "开机显示西班牙语", ["task_s1"])],
+                      history=[{"id": "history[0]", "text": "高原路演任务设为意大利语", "until": None,
+                                "sources": ["task_s2"], "unmapped_sources": [], "quotes": []}])
+        items, _ = _items(exp, meta, view)
+        oos = next(i for i in items.values() if i.get("kind") == "source_out_of_scope")
+        self.assertEqual(oos["result"], FAIL)
+
+
 class TrialResults(unittest.TestCase):
     def test_ledger_covers_every_pending_item(self):
         led = ledger_mod.load_ledger(trial.LEDGER)

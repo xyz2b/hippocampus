@@ -1803,8 +1803,48 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "知识更新：3 周（s1_t1、s1_t5，2023-06-11）→ 4 周（s2_t1，2023-09-30）。原文直接给出时长，不做日期换算。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "坚持每日整理习惯的时长（最新）",
+            "sources": {
+              "all_of": [
+                "s2_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "4 weeks",
+              "four weeks"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "3 weeks",
+              "three weeks"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How long have I been sticking to my daily tidying routine?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

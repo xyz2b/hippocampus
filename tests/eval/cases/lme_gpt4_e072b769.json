@@ -1066,8 +1066,21 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "原文只说 2023-04-16 “I've just downloaded Ibotta … I want to make sure I get the most out of it”，下载不等于开始使用，开始使用的日期证据不足。原始 LongMemEval 期望“3 weeks ago”保留在 expect 中，报告需说明两种口径的差异；20 天约 3 周的算术本身正确。 状态为 insufficient 时仍可返回可信的补充事实（如“4月16日的消息里提到刚下载 Ibotta，首次使用日期没有记录”），作为额外结论进复核；若提到 20 天，须说明是距该条消息的时间，不能说成距下载或首次使用的精确时间。computed 保持 null。",
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "q",
       "query": "How many weeks ago did I start using the cashback app 'Ibotta'?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

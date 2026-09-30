@@ -1007,8 +1007,47 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "较早一次为 7/10（s1_t2，7 条）；7/22 那次为 9 条（s2_t2、s2_t5），不能答 9。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "7/10 与 Alex 在 Lake Michigan 那次钓到的大口黑鲈数量",
+            "sources": {
+              "all_of": [
+                "s1_t2"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "7",
+              "7 largemouth bass"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "9",
+              "9 largemouth bass"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many largemouth bass did I catch with Alex on the earlier fishing trip to Lake Michigan before the 7/22 trip?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

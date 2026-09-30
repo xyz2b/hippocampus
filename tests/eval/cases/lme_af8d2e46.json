@@ -892,8 +892,47 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "原文只说“last trip to Costa Rica”带了 7 件、穿了 3 件；可答 7 件，但不能据此确认旅行为 5 天。wrong_value 只禁止把 3 作为本题答案，“带了 7 件、实际穿了 3 件”这类正确补充不算错。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "上次去哥斯达黎加带的衬衫数",
+            "sources": {
+              "all_of": [
+                "s1_t4"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "7",
+              "7 shirts"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "3",
+              "3 shirts"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many shirts did I pack for my 5-day trip to Costa Rica?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

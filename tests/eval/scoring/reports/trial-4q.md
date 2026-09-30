@@ -120,7 +120,7 @@ query_meta：`{"operation": "lookup", "time_focus": "current"}`
 | ce_new_elapsed_no_evidence | new | lme_5e1b23de/q | 计算起点删除原文依据 | `computed.endpoints` 自动判错 | 否 | — |
 | ce_new_elapsed_source | new | lme_5e1b23de/q | 计算值与日期都对，但起点来源错成 s1_t1 | `computed.endpoints` 自动判错 | 否 | — |
 | ce_new_elapsed_validity | new | lme_5e1b23de/q | 计算起点把事件时间改成有效期角色 | `computed.endpoints` 自动判错 | 否 | — |
-| ce_new_extra_forbidden | new | person_sketch_pen/person_q4 | 正确事实旁附带错误事实（引用 person_s1） | `forbidden[0]` 自动判错；`extra:facts[1]` 待复核 | 否 | —；待复核：错误替换 |
+| ce_new_extra_forbidden | new | person_sketch_pen/person_q4 | 正确事实旁附带错误事实（引用 person_s1；禁止来源只约束答案，额外结论进复核） | `forbidden[0]` 自动通过；`extra:facts[1]` 待复核 | 否 | —；待复核：错误替换 |
 | ce_new_extra_member | new | unresolved_conflict/conflict_q2 | 冲突组追加错误的 99 英寸成员 | `conflicts[0].members[0].value` 自动通过；`extra:conflict[0].member:rec[conflict_s1]99` 待复核 | 否 | — |
 | ce_new_extra_unlabeled | new | lme_59524333/q | 正确事实旁附带错误事实（结构上无禁止项命中） | `extra:facts[1]` 待复核 | 否 | —；待复核：错误替换 |
 | ce_new_fake_quote | new | person_sketch_pen/person_q4 | recall.v3 事实引用片段不在原文中 | `facts[0].sources` 自动判错 | 否 | —；待复核：错误替换 |
