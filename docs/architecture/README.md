@@ -10,6 +10,8 @@
 | [capabilities.md](capabilities.md) | 能力现状：信息抽取、多会话推理、知识更新、时间推理、弃答的实现方式、短板与改进优先级 |
 | [retention.md](retention.md) | 记忆留存：短期、长期层级的设定与升级，五种失效机制，留存检查的触发时机、问题与建议 |
 | [model-usage.md](model-usage.md) | 模型参与：哪些环节用了模型、实际效果（基于留存 trace）、应去除和应加入模型的环节 |
+| [target-design.md](target-design.md) | 目标架构（修订方案，待实现）：数据与召回契约、模型职责、更新规则、失败路径、测试与录制策略、实施顺序和设计决策 |
+| [retain-until-audit.md](retain-until-audit.md) | 附录：旧提取 schema 中 `retain_until` 误填的统计方法与逐条明细 |
 
 建议阅读顺序：先读 overview 的“分层”和“数据模型”，再按需读两条链路；想了解系统能做到什么、还缺什么，读 capabilities。
 
