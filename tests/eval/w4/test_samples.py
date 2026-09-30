@@ -226,6 +226,10 @@ class ReplacementBinding(unittest.TestCase):
             "21 号数字编号：删掉更新状态": (self.w21_numbered, lambda s: rec(s, "130").pop("update")),
             "归并例外：没写归并目标": (self.w14_merged, lambda s: rec(s, "70").pop("merged_into")),
             "归并例外：仍在投影中": (self.w14_merged, lambda s: rec(s, "70").update(projected=True)),
+            "非归并动作借 merged_into 跳过：judged": (self.w21_numbered, lambda s: rec(s, "130").update(
+                merged_into=None, update={"status": "judged", "reasons": []})),
+            "非归并动作借 merged_into 跳过：删更新状态": (self.w21_numbered, lambda s: (
+                rec(s, "130").update(merged_into=None), rec(s, "130").pop("update"))),
         }
         for name, (make, mutate) in cases.items():
             s = make()

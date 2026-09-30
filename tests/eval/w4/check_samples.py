@@ -182,6 +182,22 @@ def _bind(inp, after, errs):
     return by_cand
 
 
+def _legal_merges(inp, decs, by_cand):
+    """Candidates whose product is a verified re-judge-as-reinforce merge (contracts 2.5):
+    decided reinforce, candidate has committed_id, the bound record is that id,
+    merged into the reinforce target and out of projection."""
+    cands = {c["index"]: c for c in inp["candidates"]}
+    ok = set()
+    for d in decs:
+        cid = cands.get(d["candidate"], {}).get("committed_id")
+        got = by_cand.get(d["candidate"])
+        if d["status"] == "decided" and d["action"] == "reinforce" and cid is not None and got \
+                and got[0] == str(cid) and got[1].get("merged_into") == d["targets"][0] \
+                and got[1].get("projected") is False:
+            ok.add(d["candidate"])
+    return ok
+
+
 def _check_products(inp, decs, by_cand, errs):
     """Replacements keep the full predecessor chain; a re-judge that becomes a
     reinforce of another record merges into it (contracts 2.5 exception)."""
@@ -326,6 +342,10 @@ def check(s) -> list:
             errs.append(f"候选 {c['index']}：通用 fact 的 value.quote 须与 sentence 相同")
     exp = s["expect"]
     by_cand = _bind(inp, exp.get("after", {}), errs)
+    merged_ok = _legal_merges(inp, exp.get("decisions", []) if s["call_w4"] else [], by_cand)
+    for fc, (k, v) in by_cand.items():
+        if "merged_into" in v and fc not in merged_ok:
+            errs.append(f"记录 {k} 写了 merged_into，但它不是经核验的重判强化归并")
     if s["call_w4"]:
         decs = exp.get("decisions", [])
         if sorted(d["candidate"] for d in decs) != sorted(c["index"] for c in inp["candidates"]):
@@ -393,8 +413,8 @@ def check(s) -> list:
         # candidate receipt carry the scope gap.
         after = exp.get("after", {})
         states = [after.get("candidate_update")]
-        for k, v in by_cand.values():
-            if "merged_into" in v:
+        for fc, (k, v) in by_cand.items():
+            if fc in merged_ok:
                 continue
             if not v.get("update"):
                 errs.append(f"范围不完整时，本次提交或重判的记录 {k} 须写明更新状态")
