@@ -1,0 +1,244 @@
+{
+  "id": "ce_new_extra_unlabeled",
+  "note": "由该题正确 recall.v2 夹具改写。",
+  "output": {
+    "clarification": null,
+    "completeness": {
+      "enrichment_gaps": 0,
+      "pending_related_sources": 0,
+      "pending_updates": 0,
+      "plan_complete": true,
+      "retrieval_truncated": false
+    },
+    "computed": null,
+    "conflicts": [],
+    "current_message": {
+      "enrichment": "not_stored",
+      "memory_requests": [],
+      "said_on": "2023-06-08",
+      "sequence": null,
+      "source_id": null,
+      "text": "What time do I usually go to the gym?"
+    },
+    "degraded_reasons": [],
+    "facts": [
+      {
+        "applies": "yes",
+        "conditions": [],
+        "current": "yes",
+        "evidence": [
+          {
+            "quote": {
+              "text": "which is usually at 6:00 pm"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-a12"
+            }
+          }
+        ],
+        "grade": "committed",
+        "polarity": "affirm",
+        "record_ids": [
+          21
+        ],
+        "statement": "通常晚上 6:00 去健身房",
+        "strength": null,
+        "supersedes_record_ids": [
+          17
+        ],
+        "times": [],
+        "uncertainty": null,
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      },
+      {
+        "applies": "yes",
+        "conditions": [],
+        "current": "yes",
+        "evidence": [
+          {
+            "quote": {
+              "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-a07"
+            }
+          }
+        ],
+        "grade": "committed",
+        "polarity": "affirm",
+        "record_ids": [],
+        "statement": "每周一、三、五晚上 7:00 去健身房",
+        "strength": null,
+        "supersedes_record_ids": [],
+        "times": [],
+        "uncertainty": null,
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "history": [
+      {
+        "evidence": [
+          {
+            "quote": {
+              "text": "which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-9f1"
+            }
+          }
+        ],
+        "statement": "以前通常在周一、三、五晚上 7:00 去健身房",
+        "until": null
+      }
+    ],
+    "raw": [],
+    "records": [
+      {
+        "candidate": {
+          "conditions": [],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?"
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "self"
+          },
+          "times": [],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?"
+            },
+            "text": "Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?"
+          }
+        },
+        "ended": "end_unknown",
+        "evidence": [
+          {
+            "quote": {
+              "text": "which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-9f1"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [],
+        "id": 17,
+        "open_relations": [],
+        "said_on": "2023-02-11",
+        "stored_status": "superseded",
+        "termination_reason": "StateChanged",
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      },
+      {
+        "candidate": {
+          "conditions": [],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "self"
+          },
+          "times": [],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
+            },
+            "text": "I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
+          }
+        },
+        "ended": "not_ended",
+        "evidence": [
+          {
+            "quote": {
+              "text": "before I head to the gym, which is usually at 6:00 pm"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-a12"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [
+          17
+        ],
+        "id": 21,
+        "open_relations": [],
+        "said_on": "2023-05-30",
+        "stored_status": "active",
+        "termination_reason": null,
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "request": {
+      "at": 1686156840,
+      "context": [],
+      "query": "What time do I usually go to the gym?",
+      "request_id": "op-5901",
+      "task_id": null
+    },
+    "semantic_judgment": "model",
+    "snapshot": {
+      "read_revision": 42,
+      "source_revision": 57
+    },
+    "status": "answered",
+    "version": "recall.v2"
+  },
+  "probe": "正确事实旁附带错误事实（结构上无禁止项命中）",
+  "question": {
+    "case": "lme_59524333",
+    "id": "q"
+  },
+  "side": "new",
+  "source_ids": {
+    "s1_t3": "src-9f1",
+    "s2_t2": "src-a07",
+    "s2_t3": "src-a12"
+  },
+  "targets": [
+    {
+      "item": "extra:facts[1]",
+      "results": [
+        "review"
+      ]
+    }
+  ]
+}

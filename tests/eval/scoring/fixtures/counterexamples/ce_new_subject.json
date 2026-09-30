@@ -1,0 +1,216 @@
+{
+  "id": "ce_new_subject",
+  "note": "由该题正确 recall.v2 夹具改写。",
+  "output": {
+    "clarification": null,
+    "completeness": {
+      "enrichment_gaps": 0,
+      "pending_related_sources": 0,
+      "pending_updates": 0,
+      "plan_complete": true,
+      "retrieval_truncated": false
+    },
+    "computed": null,
+    "conflicts": [],
+    "current_message": {
+      "enrichment": "not_stored",
+      "memory_requests": [],
+      "said_on": "2026-09-28",
+      "sequence": null,
+      "source_id": null,
+      "text": "冯序宁画速写时固定用哪种笔？"
+    },
+    "degraded_reasons": [],
+    "facts": [
+      {
+        "applies": "yes",
+        "conditions": [
+          {
+            "quote": {
+              "text": "画速写时"
+            },
+            "resolved": true
+          }
+        ],
+        "current": "yes",
+        "evidence": [
+          {
+            "quote": {
+              "text": "冯序宁画速写时固定使用钢笔。"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1422"
+            }
+          }
+        ],
+        "grade": "committed",
+        "polarity": "affirm",
+        "record_ids": [
+          2
+        ],
+        "statement": "冯砚川画速写时固定使用钢笔",
+        "strength": null,
+        "supersedes_record_ids": [],
+        "times": [],
+        "uncertainty": null,
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "history": [],
+    "raw": [],
+    "records": [
+      {
+        "candidate": {
+          "conditions": [
+            {
+              "quote": {
+                "text": "画速写时"
+              },
+              "resolved": true
+            }
+          ],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "冯砚川画速写时固定使用炭笔。"
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "person_feng_yanchuan"
+          },
+          "times": [],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "冯砚川画速写时固定使用炭笔。"
+            },
+            "text": "冯砚川画速写时固定使用炭笔。"
+          }
+        },
+        "ended": "not_ended",
+        "evidence": [
+          {
+            "quote": {
+              "text": "冯砚川画速写时固定使用炭笔。"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1396"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [],
+        "id": 1,
+        "open_relations": [],
+        "said_on": "2026-09-28",
+        "stored_status": "active",
+        "termination_reason": null,
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      },
+      {
+        "candidate": {
+          "conditions": [
+            {
+              "quote": {
+                "text": "画速写时"
+              },
+              "resolved": true
+            }
+          ],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "冯序宁画速写时固定使用钢笔。"
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "person_feng_xuning"
+          },
+          "times": [],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "冯序宁画速写时固定使用钢笔。"
+            },
+            "text": "冯序宁画速写时固定使用钢笔。"
+          }
+        },
+        "ended": "not_ended",
+        "evidence": [
+          {
+            "quote": {
+              "text": "冯序宁画速写时固定使用钢笔。"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1422"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [],
+        "id": 2,
+        "open_relations": [],
+        "said_on": "2026-09-28",
+        "stored_status": "active",
+        "termination_reason": null,
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "request": {
+      "at": null,
+      "context": [],
+      "query": "冯序宁画速写时固定用哪种笔？",
+      "request_id": "op-pq4",
+      "task_id": null
+    },
+    "semantic_judgment": "model",
+    "snapshot": {
+      "read_revision": 42,
+      "source_revision": 57
+    },
+    "status": "answered",
+    "version": "recall.v2"
+  },
+  "probe": "错误主体（来源正确但断言冯砚川用钢笔）",
+  "question": {
+    "case": "person_sketch_pen",
+    "id": "person_q4"
+  },
+  "side": "new",
+  "source_ids": {
+    "person_s1": "src-1396",
+    "person_s2": "src-1422"
+  },
+  "targets": [
+    {
+      "item": "facts[0].semantic",
+      "results": [
+        "review"
+      ]
+    }
+  ]
+}

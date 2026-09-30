@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "scoring_version": "common.v1",
+  "note": "人工复核台账。只有 status=confirmed 的条目计入最终通过；proposed 为草拟。键由 ledger.review_key 计算，任一评分依据（含标注及其 label_status）变化即失效，需重新复核。",
+  "entries": {
+    "sha256:1cc590ed61494a62e85e4489b322384dc5bce6f37f1f921bea454bda1cc70700": {
+      "question": "lme_5e1b23de/q",
+      "side": "new",
+      "item": "facts[0].semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "statement 与 s1_t4 原文一致：用户在 2023-11-01（today）参加了附近城市 3 天的摄影工作坊。"
+    },
+    "sha256:53793c5c14344183158266ccb7e59d94e96e2d377b0164fe157161c7b5c4b518": {
+      "question": "lme_5e1b23de/q",
+      "side": "old",
+      "item": "facts[0].polarity",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "旧答案肯定用户参加过该工作坊，无否定表达。"
+    },
+    "sha256:64cc7f85cad49dbd8524732fe018aa772252ee9fc88d97f841e609db8714a893": {
+      "question": "lme_5e1b23de/q",
+      "side": "old",
+      "item": "facts[0].semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "旧答案回答的是用户参加摄影工作坊距今的月数，来源 s1_t4 为该事件原文；主体、事件正确。"
+    },
+    "sha256:66fd3042b1b0d68ea0e9d4177b81241fbddb7997f1ccf82daf0d34127029daf9": {
+      "question": "lme_59524333/q",
+      "side": "new",
+      "item": "facts[0].value",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "statement 的值为 6:00 pm，与 s2_t3 原文 “usually at 6:00 pm” 一致。"
+    },
+    "sha256:7ceba3c797c5e82b869e651463cd40e15ce900921ca21fdbff00a8fa689612b5": {
+      "question": "person_sketch_pen/person_q4",
+      "side": "new",
+      "item": "facts[0].semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "主体为冯序宁（不是冯砚川），关系为画速写时固定使用的笔，条件“画速写时”保留。"
+    },
+    "sha256:7f03057ebbdb0a30943d0944d5de103b63301083c54d339235bb2f3f5aae315f": {
+      "question": "person_sketch_pen/person_q4",
+      "side": "new",
+      "item": "facts[0].value",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "statement 的值为钢笔，与 person_s2 一致。"
+    },
+    "sha256:a58cbfbc8c7b4cde4b8b2b661d5daf7358c70192c3b0d574caae25149f5b5c07": {
+      "question": "lme_5e1b23de/q",
+      "side": "old",
+      "item": "computed.value",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "“3 months ago” 即 3 个整日历月，与 2023-11-01 → 2024-02-01 一致。"
+    },
+    "sha256:b1568221476891320452589877ec7866b69b6fe955bd547942d1679f2347401a": {
+      "question": "person_sketch_pen/person_q4",
+      "side": "new",
+      "item": "forbidden[1]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "唯一 current=yes 的事实 statement 为钢笔，没有把炭笔作为当前结论。"
+    },
+    "sha256:c7c431f85e006ba32552775b82846824455b805002ce8547f06df53731cf2704": {
+      "question": "unresolved_conflict/conflict_q2",
+      "side": "new",
+      "item": "conflicts[0].members[0].value",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "成员记录来自 conflict_s1，值为 7 英寸。"
+    },
+    "sha256:cd40b521a5c8d63b9e1c1a1f399a90153731733f9219050a53d509e1f1e5d592": {
+      "question": "lme_59524333/q",
+      "side": "new",
+      "item": "facts[0].semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "主体为用户本人，关系为通常去健身房的时间；7 pm 只出现在 history，未作为当前结论。"
+    },
+    "sha256:ded9629511c02242ee923316201886b815e0c30cb86099456d3fb165be390cb4": {
+      "question": "lme_59524333/q",
+      "side": "new",
+      "item": "forbidden[0]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "唯一 current=yes 的事实 statement 为 6:00，没有把 7 pm 作为当前结论。"
+    },
+    "sha256:e5b29d57d75457597982971376d87fc9fdeaea8e882f9bfcdc4068eaa9c77572": {
+      "question": "unresolved_conflict/conflict_q2",
+      "side": "new",
+      "item": "conflicts[0].members[1].value",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "成员记录来自 conflict_s2，引用片段 “另一份资料写8英寸”，值为 8 英寸。"
+    },
+    "sha256:e8235a976519bdf0e71c3fbd8caf1588b3887c8b047fc2af58282ac0e5950a48": {
+      "question": "lme_59524333/q",
+      "side": "new",
+      "item": "extra:history[0]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-09-30",
+      "drafted_by": "claude",
+      "also_reviewed_by": "gpt6.1-sol",
+      "note": "历史断言“以前周一三五晚上 7:00”与 s1_t3 原文一致，已作为历史而非当前。"
+    }
+  }
+}

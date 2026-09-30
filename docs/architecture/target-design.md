@@ -4,7 +4,7 @@
 
 本文描述目标行为，不代表当前代码已经实现。现状见本目录的 [overview.md](overview.md)、[write-path.md](write-path.md) 和 [recall-path.md](recall-path.md)。修订日期：2026-09-30。
 
-第一阶段的具体字段、核验和迁移退出条件见 [contracts.md](contracts.md)；契约已于 2026-09-30 冻结，统一编号为 v1（`w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v1` 与宿主 `recall.v1`）。
+第一阶段的具体字段、核验和迁移退出条件见 [contracts.md](contracts.md)；契约已于 2026-09-30 冻结，编号为 `w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v2` 与宿主 `recall.v2`（r4、recall 同日因提问时刻端点升版，见 contracts.md 第 8 节）。
 
 原则沿用 [../roadmap.md](../roadmap.md) 第 3 节，并明确以下约束：
 

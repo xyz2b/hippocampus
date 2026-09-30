@@ -460,8 +460,66 @@
       "expect": {
         "kind": "conflict"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [
+          {
+            "members": [
+              {
+                "sources": {
+                  "all_of": [],
+                  "any_of": [
+                    "conflict_s1",
+                    "conflict_s2"
+                  ]
+                },
+                "value_any": [
+                  "7英寸",
+                  "7"
+                ]
+              },
+              {
+                "sources": {
+                  "all_of": [
+                    "conflict_s2"
+                  ],
+                  "any_of": []
+                },
+                "value_any": [
+                  "8英寸",
+                  "8"
+                ]
+              }
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "7英寸",
+              "7"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "8英寸",
+              "8"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "conflict"
+      },
       "id": "conflict_q2",
       "query": "栖风读书机的屏幕到底是几英寸？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
