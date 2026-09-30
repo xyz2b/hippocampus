@@ -1,6 +1,6 @@
 {
   "id": "ce_new_elapsed_source",
-  "note": "由该题正确 recall.v2 夹具改写。",
+  "note": "由该题正确 recall.v3 夹具改写。",
   "output": {
     "clarification": null,
     "completeness": {
@@ -11,7 +11,9 @@
       "retrieval_truncated": false
     },
     "computed": {
+      "approximate": false,
       "bound": "exact",
+      "exact_days": 92,
       "items": [
         {
           "date": {
@@ -57,6 +59,7 @@
         "precision": "day",
         "tz_offset_seconds": 28800
       },
+      "rounding": "complete_calendar_months",
       "unit": "month",
       "value": "3"
     },
@@ -196,7 +199,7 @@
       "source_revision": 57
     },
     "status": "answered",
-    "version": "recall.v2"
+    "version": "recall.v3"
   },
   "probe": "计算值与日期都对，但起点来源错成 s1_t1",
   "question": {

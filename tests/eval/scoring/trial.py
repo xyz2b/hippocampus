@@ -1,7 +1,7 @@
 """Four-question common.v1 trial (common-scoring-view.md 8, steps 1-2).
 
 Offline: reads case annotations, the archived 0517000 baseline, hand-written
-recall.v2 fixtures, counterexamples and the review ledger; writes
+recall.v3 fixtures, counterexamples and the review ledger; writes
 reports/trial-4q.json and reports/trial-4q.md. No model calls.
 
     python3 tests/eval/scoring/trial.py
@@ -47,7 +47,7 @@ def load_case(case_id):
 def resolve_question(case_id, qid):
     """Returns (case, question, query_meta, expect_common). qid may name a probe."""
     if "~" in qid:
-        probe = _load(FIXTURES / "probes.json")[qid]
+        probe = _load(FIXTURES / "probes.json")[f"{case_id}/{qid}"]
         case = load_case(probe["base"]["case"])
         base = next(q for q in case["questions"] if q["id"] == probe["base"]["question"])
         q = dict(base, id=qid, query=probe["query"])
@@ -101,7 +101,7 @@ def evaluate(side, case, q, meta, expect, view, ledger):
 
 
 def new_fixture(case_id, qid):
-    return _load(FIXTURES / "recall_v2" / f"{case_id}.{qid}.json")
+    return _load(FIXTURES / "recall_v3" / f"{case_id}.{qid}.json")
 
 
 def run_counterexample(ce, ledger):
@@ -262,12 +262,13 @@ def render_md(report):
     L = ["# 共同判分视图 common.v1 四题试跑报告", "",
          "自动部分只覆盖结构项；语义正确性（主体、关系、值的表述）依赖人工复核。"
          "“最终通过”只计自动通过项和台账中 **confirmed** 的复核通过项；proposed（草拟）不计。", "",
-         "新版一侧为手写 recall.v2 夹具（按 contracts.md 3.4 表达的正确输出），不是新实现的运行结果。"
-         "lme_5e1b23de 的计算按已冻结的 r4.v2 / recall.v2 使用保留操作数 `@request.at`：提问时刻由代码按可信 request.at 与用户时区提供（computed.request_time）。", "",
+         "新版一侧为手写 recall.v3 夹具（按 contracts.md 3.4 表达的正确输出），不是新实现的运行结果。"
+         "lme_5e1b23de 的计算按已冻结的 r4.v3 / recall.v3：提问时刻用保留操作数 `@request.at`，由代码按可信 request.at 与用户时区提供（computed.request_time）；"
+         "取整口径、精确天数和是否近似由代码按契约规则给出（天为自然日差，周为最近整数周，月为完整日历月）。", "",
          "## 汇总", "",
          "| 版本 | 判分项（分母） | 仅自动通过 | 含复核通过 | 题目仅自动通过 | 题目最终通过 | 待复核 | 阻断项（已定 / 待复核） |",
          "|---|---|---|---|---|---|---|---|"]
-    for side, name in (("old", "旧基线 0517000"), ("new", "recall.v2 夹具")):
+    for side, name in (("old", "旧基线 0517000"), ("new", "recall.v3 夹具")):
         t = s["totals"][side]
         L.append(f"| {name} | {t['denominator']} | {t['auto_pass']} | {t['final_pass']} | {t['questions_auto_only_pass']}/4 | "
                  f"{t['questions_final_pass']}/4 | {t['pending_review']} | {t['blockers']} / {t['blockers_pending']} |")

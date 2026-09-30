@@ -5,7 +5,7 @@ the raw output, and the run's id mapping (runtime source/memory ids -> stable
 message ids). They never see `expect` or `expect_common`: `QuestionInput`
 has no field for them, and callers build it with `question_input()`.
 
-No natural-language parsing. Free text (old safe_answer, recall.v2 statement)
+No natural-language parsing. Free text (old safe_answer, recall.v3 statement)
 is carried as text for review; only whole-string comparison happens later, in
 the scorer.
 """
@@ -15,9 +15,9 @@ import datetime as _dt
 import unicodedata
 
 OLD_ADAPTER = "old_answer_contract@1"
-NEW_ADAPTER = "recall_v2@1"
+NEW_ADAPTER = "recall_v3@1"
 TZ = _dt.timezone(_dt.timedelta(seconds=28800))  # eval time zone, UTC+8
-RECALL_VERSION = "recall.v2"
+RECALL_VERSION = "recall.v3"
 
 # Old answer_contract status -> common status. Unknown statuses map to "unknown".
 OLD_STATUS = {
@@ -261,7 +261,7 @@ def _map_ids(obj, rev):
 
 
 # --------------------------------------------------------------------------
-# recall.v2 (contracts.md 3.4)
+# recall.v3 (contracts.md 3.4)
 # --------------------------------------------------------------------------
 
 def _date(s: str) -> _dt.date:
@@ -285,7 +285,7 @@ def _shift(d: _dt.date, unit: str, offset: int):
 
 def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                  source_texts: dict, source_state: dict | None = None) -> dict:
-    """raw = recall.v2 JSON (contracts.md 3.4). source_ids: stable message id
+    """raw = recall.v3 JSON (contracts.md 3.4). source_ids: stable message id
     -> runtime source id. source_texts: stable message id -> original text,
     used only to verify that quotes occur verbatim.
 
@@ -381,7 +381,7 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
         assertions.append({
             "id": f"facts[{i}]",
             "text": f.get("statement", ""),
-            "value": None,  # recall.v2 has no value field; statement goes to review
+            "value": None,  # recall.v3 has no value field; statement goes to review
             "sources": _sorted_unique(srcs),
             "unmapped_sources": invalid(srcs, f.get("evidence", []) + [
                 e for rid in f.get("record_ids", []) for e in (records.get(rid) or {}).get("evidence", [])]),
@@ -450,8 +450,16 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
             date = it.get("date") or {}
             interp = date.get("interp") or {}
             resolved, basis = None, "no_date"
+            kind = interp.get("kind")
+            # Day precision only for a calendar date or a day/week offset from
+            # the day it was said; month/year offsets, ranges and unknowns are
+            # coarser and must not be turned into a day.
+            precision = "day" if kind == "date" or (kind == "relative" and interp.get("unit") in ("day", "week")) \
+                else f"coarse:{kind}" + (f"/{interp.get('unit')}" if interp.get("unit") else "")
             if interp.get("kind") == "date":
                 resolved, basis = interp.get("date"), "date"
+            elif precision != "day":
+                basis = "coarse_precision"
             elif interp.get("kind") == "relative" and src and said_on.get(src):
                 d = _shift(_date(said_on[src]), interp.get("unit"), int(interp.get("offset", 0)))
                 resolved, basis = (d.isoformat() if d else None), "relative_to_said_on"
@@ -471,8 +479,9 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                 "event_group": it.get("event_group"),
                 "date": resolved,
                 "date_basis": basis,
+                "precision": precision if interp else None,
             }
-        # r4.v2 / recall.v2: the reserved operand "@request.at" is the trusted
+        # r4.v2+ / recall.v2+: the reserved operand "@request.at" is the trusted
         # question time; code supplies it as computed.request_time.
         if "@request.at" in c.get("operands", []):
             rt = c.get("request_time") or {}
@@ -485,6 +494,7 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                 "invalid": [], "evidence": [], "evidence_sources": [], "sources": [], "date_source": "request.at",
                 "role": "request_time", "quote": None, "interp": None, "quantity": None, "event_group": None,
                 "request_time": rt,
+                "precision": "day",
                 "date": rt.get("local_date") if ok else None,
                 "date_basis": "trusted_request_at" if ok else "request_time_invalid",
             }
@@ -496,6 +506,9 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                                   for it in c.get("items", [])],
                     # raw_items: every item, in order, with stable ids only
                     "op": c.get("op"), "value": c.get("value"), "unit": c.get("unit"),
+                    # recall.v3: code-computed rounding basis for elapsed
+                    "rounding": c.get("rounding"), "exact_days": c.get("exact_days"),
+                    "approximate": c.get("approximate"),
                     "bound": c.get("bound"), "items": items, "operands": list(c.get("operands", [])),
                     "sources": _sorted_unique(s for it in items.values() for s in it["sources"])}
 

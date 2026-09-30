@@ -1,7 +1,7 @@
 # 共同判分视图（common.v1）定稿说明
 
 状态：定稿（2026-09-30，Claude 与 gpt6.1-sol 讨论后收敛；同日按四题试跑的两轮复核修订第 2–6、8 节）
-适用：第一阶段第 2 步。旧 answer_contract v1 基线（0517000）与新 recall.v2 在同一套判分项上比较，结论用于"不退步"判断。
+适用：第一阶段第 2 步。旧 answer_contract v1 基线（0517000）与新 recall.v3 在同一套判分项上比较，结论用于"不退步"判断。
 约束：全部离线进行，不调用模型；被测系统不读取本文定义的任何标注。
 
 ## 1. 目标与边界
@@ -61,7 +61,7 @@
 - 来源用稳定引用（`s2_t3`），不用运行时 source_id。
 - `forbidden` 列出的才自动判错（kind 示例：`value_as_current`、`wrong_subject_source`、`condition_broadened`、`value_in_negation`）。未标注的额外结论不自动判错，进入复核。禁止项不以引用位置代替值：引用了旧来源只说明来源错误，不能据此认定"旧值被当作当前结论"。
 - `conflicts`：冲突成员各自出现，均不得作为确定结论；旧值可作为冲突成员或历史出现。
-- `computed`：核对依据来源、端点和精度（例：工作坊题须核对 2023-11-01 → 2024-02-01 的整日历月数，不能只匹配数字 3）。
+- `computed`：核对依据来源、端点和精度（例：工作坊题须核对 2023-11-01 → 2024-02-01 的整日历月数，不能只匹配数字 3）。elapsed 的标注写明 `unit`、`value`、`rounding`、`exact_days`、`approximate`，与 r4.v3 的规则一致（天 `calendar_days`、周 `nearest_week`、月 `complete_calendar_months`）；评分器分三项判分：`computed.value`（op、数值、单位、bound，新旧同义）、`computed.basis`（取整口径、精确天数、近似标记，旧格式记 `missing / format_cannot_express`）、`computed.endpoints`（端点、依据，并按同一规则从端点重算）；旧版的人工复核只确认数值与语义。评分器尚未实现的检查不得标为“不可测”（该分类只用于标注不足），应先实现或进入复核。
 
 ## 3. 可自动判定的范围
 
@@ -69,9 +69,9 @@
 
 1. 结构字段：输出与问题的绑定（`binding`：契约版本，问题、上下文、任务、提问时间逐项一致）、status、来源 / record_ids、polarity、current、conditions、conflicts 成员、`computed.value` 与端点。来源须可映射、未删除，引用片段须逐字存在于该来源原文；否则来源项自动判错。计算端点还核对时间角色、依据来源和时间原文。
 2. 旧 `safe_answer` 只去掉首尾空白和**一个**句末句号（`。` `.` `．`）后，**整串**等于 `value_any` 中某项。问号、省略号、引号等有语义的符号保留（"钢笔？""钢笔..."都不等于"钢笔"）。只有绑定正确、引用全部有效的答案才据此推定肯定、当前（time_focus=current）和无不确定表达。
-3. `forbidden` 中可由结构字段或整串等值确定的项；自由文本（recall.v2 的 `statement`、非整串的旧答案）作出的当前结论，其禁止项进入复核。
+3. `forbidden` 中可由结构字段或整串等值确定的项；自由文本（recall.v3 的 `statement`、非整串的旧答案）作出的当前结论，其禁止项进入复核。
 
-其余（包括 recall.v2 的 `statement`，以及 `"3 months ago（2023-11-01）。"` 这类不能整串等值的旧答案）进入人工复核。来源正确不能推出主体或关系正确：引用冯序宁的正确来源却断言"冯砚川用钢笔"，仍是错误，由复核判定。
+其余（包括 recall.v3 的 `statement`，以及 `"3 months ago（2023-11-01）。"` 这类不能整串等值的旧答案）进入人工复核。来源正确不能推出主体或关系正确：引用冯序宁的正确来源却断言"冯砚川用钢笔"，仍是错误，由复核判定。
 
 ## 4. 判分结果分类
 
@@ -120,7 +120,7 @@
 | 题 | 旧基线输出（0517000） | 期望要点 |
 |---|---|---|
 | lme_59524333 "What time do I usually go to the gym?" | `source_linked_model_answer`，"6:00 pm。"，来源 s2_t3 | current + lookup；6 pm 为当前（s2_t3），7 pm（s1_t3）可作历史，不得作当前结论 |
-| lme_5e1b23de "How many months ago did I attend the photography workshop?" | `source_linked_computed_elapsed`，"3 months ago（2023-11-01）。"，来源 s1_t4 | elapsed；事件日 2023-11-01（s1_t4 原文 "today"），提问日 2024-02-01（由代码按可信 request.at 提供，r4.v2 的 `@request.at`），3 个整日历月；旧答案不能整串等值，数值进复核，结构化端点记为旧格式无法表达 |
+| lme_5e1b23de "How many months ago did I attend the photography workshop?" | `source_linked_computed_elapsed`，"3 months ago（2023-11-01）。"，来源 s1_t4 | elapsed；事件日 2023-11-01（s1_t4 原文 "today"），提问日 2024-02-01（由代码按可信 request.at 提供，`@request.at`），3 个整日历月（`complete_calendar_months`，92 天）；旧答案不能整串等值，数值进复核，结构化端点记为旧格式无法表达 |
 | unresolved_conflict conflict_q2 "栖风读书机的屏幕到底是几英寸？" | `conflicting_records`，无来源 | status=conflict；7 英寸与 8 英寸均为冲突成员，都不得作确定结论。（conflict_q3 留到后续批次；conflict_q1 在 conflict_s2 之前提问，旧答 "7英寸。"（来源 conflict_s1）属于当时正确，须按其时点单独标注） |
 | person_sketch_pen person_q4 "冯序宁画速写时固定用哪种笔？" | `source_linked_fact`，"钢笔。"，来源 person_s2 | 钢笔；条件"画速写时"已被问题限定；禁止答成冯砚川的"炭笔"、禁止引用 person_s1。（person_q1/q2 未指明人物，旧版返回需澄清） |
 
@@ -128,7 +128,7 @@
 
 ## 8. 实施顺序
 
-1. 为四道代表题起草 `query_meta` + `expect_common`，并用**真实原始输出格式**（旧 answer_contract JSON / recall.v2 JSON）构造反例，经真实适配器判分。反例至少覆盖：错误主体、错误来源、条件扩大、错误当前结论、正确值出现在否定句中、正确事实旁附带错误事实、旧版弃答而新版给错。
+1. 为四道代表题起草 `query_meta` + `expect_common`，并用**真实原始输出格式**（旧 answer_contract JSON / recall.v3 JSON）构造反例，经真实适配器判分。反例至少覆盖：错误主体、错误来源、条件扩大、错误当前结论、正确值出现在否定句中、正确事实旁附带错误事实、旧版弃答而新版给错。
 2. 跑通"标注 → 适配 → 判分 → 反例 → 复核台账"全链路，用户抽查。
 3. 抽查通过后铺开其余 59 道题的标注（4 + 59 = 63）。
 4. 用旧输出适配器离线重算 0517000 基线，产出按第 4、5 节格式的报告。
@@ -137,7 +137,7 @@
 
 交付物：
 - 四题的 `query_meta` + `expect_common` 标注；
-- 旧基线（0517000 归档）与新契约（recall.v2 夹具）两侧的适配结果；
+- 旧基线（0517000 归档）与新契约（recall.v3 夹具）两侧的适配结果；
 - 反例运行结果（真实输出格式 → 适配器 → 判分）；
 - 复核台账，以及缓存失效检查的测试结果。
 

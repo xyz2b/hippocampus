@@ -799,12 +799,15 @@
       },
       "expect_common": {
         "computed": {
+          "approximate": false,
           "bound": "exact",
           "end": {
             "date": "2024-02-01",
             "source": "request.at"
           },
+          "exact_days": 92,
           "op": "elapsed",
+          "rounding": "complete_calendar_months",
           "start": {
             "date": "2023-11-01",
             "role": "event",

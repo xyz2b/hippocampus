@@ -260,26 +260,63 @@ def _months_between(a: _dt.date, b: _dt.date) -> int:
     return m
 
 
+ROUNDING = {"day": "calendar_days", "week": "nearest_week",
+            "month": "complete_calendar_months", "year": "complete_calendar_years"}
+
+
+def elapsed_rule(a: _dt.date, b: _dt.date, unit: str):
+    """r4.v3 elapsed rule (contracts.md 3.3): (value, rounding, exact_days,
+    approximate) from two day-precision local dates, or None when b < a or
+    the unit is unknown. Weeks are the nearest whole week (same as the old
+    implementation's (d + 3) // 7); months/years are complete calendar ones."""
+    d = (b - a).days
+    if d < 0 or unit not in ROUNDING:
+        return None
+    if unit == "day":
+        v, approx = d, False
+    elif unit == "week":
+        v, approx = (d + 3) // 7, d % 7 != 0
+    elif unit == "month":
+        v, approx = _months_between(a, b), False
+    else:
+        v, approx = _months_between(a, b) // 12, False
+    return str(v), ROUNDING[unit], d, approx
+
+
+BASIS_KEYS = ("rounding", "exact_days", "approximate")
+
+
 def _computed_items(exp, oc, source_texts):
+    has_basis = isinstance(exp, dict) and any(k in exp for k in BASIS_KEYS)
     if exp is None:
         return [_item("computed", PASS if oc is None else FAIL,
                       "标注要求无计算" + ("" if oc is None else "，输出了计算结果"), oc)]
     if oc is None:
-        return [_item("computed.value", MISSING, "输出没有计算结果"),
-                _item("computed.endpoints", MISSING, "输出没有计算结果")]
+        return [_item("computed.value", MISSING, "输出没有计算结果")] + \
+            ([_item("computed.basis", MISSING, "输出没有计算结果")] if has_basis else []) + \
+            [_item("computed.endpoints", MISSING, "输出没有计算结果")]
     if not oc["parsed"]:
-        return [_item("computed.value", REVIEW, "旧答案含计算结果但不能整串等值", oc, oc["sources"]),
-                _item("computed.endpoints", MISSING, "旧格式不给结构化端点（角色、依据、终点）", oc, oc["sources"],
+        return [_item("computed.value", REVIEW, "旧答案含计算结果但不能整串等值（只复核数值与单位）", oc, oc["sources"])] + \
+            ([_item("computed.basis", MISSING, "旧格式不给取整口径、精确天数与近似标记", oc, oc["sources"], flag=CANNOT)]
+             if has_basis else []) + \
+            [_item("computed.endpoints", MISSING, "旧格式不给结构化端点（角色、依据、终点）", oc, oc["sources"],
                       flag=CANNOT)]
     if oc.get("structure_errors"):
         why = "；".join(oc["structure_errors"])
-        return [_item("computed.value", FAIL, f"计算结构非法：{why}", oc, oc["sources"]),
+        return [_item("computed.value", FAIL, f"计算结构非法：{why}", oc, oc["sources"])] + \
+            ([_item("computed.basis", FAIL, f"计算结构非法：{why}", oc, oc["sources"])] if has_basis else []) + [
                 _item("computed.endpoints", FAIL, f"计算结构非法：{why}", oc, oc["sources"])]
     out = []
-    same = all(oc.get(k) == exp.get(k) for k in ("op", "value", "unit", "bound"))
-    out.append(_item("computed.value", PASS if same else FAIL,
-                     f"输出 {[oc.get(k) for k in ('op','value','unit','bound')]}，要求 {[exp.get(k) for k in ('op','value','unit','bound')]}",
-                     oc, oc["sources"]))
+    # computed.value: the answer (same meaning for old and new);
+    # computed.basis: the r4.v3 rounding basis, a separate item that the old
+    # format cannot express.
+    for iid, keys in (("computed.value", ("op", "value", "unit", "bound")),
+                      ("computed.basis", BASIS_KEYS if has_basis else ())):
+        if not keys:
+            continue
+        same = all(oc.get(k) == exp.get(k) for k in keys)
+        out.append(_item(iid, PASS if same else FAIL,
+                         f"输出 {[oc.get(k) for k in keys]}，要求 {[exp.get(k) for k in keys]}", oc, oc["sources"]))
     ops = oc["operands"]
     if len(ops) != 2 or any(o not in oc["items"] for o in ops):
         out.append(_item("computed.endpoints", FAIL, "elapsed 需要两个有效操作数", oc, oc["sources"]))
@@ -308,14 +345,23 @@ def _computed_items(exp, oc, source_texts):
                 t = (source_texts or {}).get(evd["source"])
                 if t is None or evd["quote"] not in t:
                     problems.append(f"{name} 依据片段 {evd['quote']!r} 不在来源 {evd['source']} 中")
-        if it["date"] is None:
+        if it.get("precision") not in (None, "day"):
+            problems.append(f"{name} 端点精度 {it['precision']} 粗于日，r4.v3 要求返回不足而不是计算")
+        elif it["date"] is None:
             unknown.append(f"{name} 日期未能结构化解析（{it['date_basis']}）")
         elif it["date"] != e["date"]:
             problems.append(f"{name} 日期 {it['date']} ≠ {e['date']}")
-    if not problems and not unknown and exp.get("unit") == "month":
-        m = _months_between(_dt.date.fromisoformat(start["date"]), _dt.date.fromisoformat(end["date"]))
-        if str(m) != str(oc.get("value")):
-            problems.append(f"输出值 {oc.get('value')} 与端点整日历月数 {m} 不符")
+    if not problems and not unknown and oc.get("op") == "elapsed":
+        # Recompute from the endpoints under the contract rule; value, basis,
+        # exact days and the approximate flag must all agree.
+        rule = elapsed_rule(_dt.date.fromisoformat(start["date"]), _dt.date.fromisoformat(end["date"]),
+                            oc.get("unit"))
+        if rule is None:
+            problems.append(f"端点顺序或单位 {oc.get('unit')!r} 无法按 r4.v3 规则计算")
+        else:
+            got = (str(oc.get("value")), oc.get("rounding"), oc.get("exact_days"), oc.get("approximate"))
+            if got != rule:
+                problems.append(f"输出 (值, 口径, 天数, 近似)={got} 与端点按 r4.v3 规则算得 {rule} 不符")
     res = FAIL if problems else REVIEW if unknown else PASS
     out.append(_item("computed.endpoints", res, "；".join(problems + unknown) or "端点、角色、依据与精度一致", oc, oc["sources"]))
     return out
@@ -329,7 +375,7 @@ def _forbidden_items(ctx, forbidden, fact_match, facts):
         hits, undetermined = [], []
         if kind == "value_as_current":
             # Decided only by whole-string equality of a plain answer. Where
-            # the value is free text (recall.v2 statement, non-plain old
+            # the value is free text (recall.v3 statement, non-plain old
             # answer), a current or unknown-currency conclusion goes to review;
             # citing an old source does not by itself prove a replacement.
             vals = fb.get("value_any")

@@ -79,6 +79,8 @@ class Checklist1_ErrorsAreFound(unittest.TestCase):
         "省略号": ["ce_old_ellipsis"],
         "可信提问时刻": ["ce_new_request_time_bad", "ce_new_fake_request_quote", "ce_new_request_operand_position"],
         "计算条目 ID": ["ce_new_duplicate_item_id", "ce_new_forged_request_item"],
+        "取整口径（r4.v3）": ["ce_new_weeks_claims_exact", "ce_new_weeks_wrong_basis", "ce_new_days_off_by_one",
+                             "ce_new_month_no_basis", "ce_new_month_precision"],
     }
 
     @classmethod
@@ -93,7 +95,7 @@ class Checklist1_ErrorsAreFound(unittest.TestCase):
                 self.assertIn(cid, self.ces, cat)
 
     def test_targets_and_no_pass(self):
-        self.assertEqual(len(self.ces), 41)
+        self.assertEqual(len(self.ces), 48)
         for cid, ce in self.ces.items():
             res = trial.run_counterexample(ce, self.ledger)
             by_id = {i["id"]: i for i in res["items"] + res["extras"]}
@@ -407,6 +409,38 @@ class Checklist3_CacheInvalidation(unittest.TestCase):
             return self.new_key()
         finally:
             adapters.NEW_ADAPTER = old
+
+
+class ElapsedRule(unittest.TestCase):
+    """r4.v3 rounding rule, checked against the seven dated questions of the
+    63 (endpoints and LongMemEval answers) and edge cases."""
+
+    def test_baseline_questions(self):
+        from scoring import elapsed_rule
+        d = __import__("datetime").date
+        cases = [  # (case, start, end, unit, expected value, approximate)
+            ("lme_5e1b23de", d(2023, 11, 1), d(2024, 2, 1), "month", "3", False),
+            ("lme_gpt4_6dc9b45b", d(2021, 6, 1), d(2021, 10, 2), "month", "4", False),
+            ("lme_71017276", d(2023, 3, 4), d(2023, 4, 1), "week", "4", False),
+            ("lme_af082822", d(2022, 11, 17), d(2022, 12, 1), "week", "2", False),
+            ("lme_bcbe585f", d(2023, 4, 1), d(2023, 5, 1), "week", "4", True),
+            ("lme_gpt4_e072b769", d(2023, 4, 16), d(2023, 5, 6), "week", "3", True),  # Ibotta: 20 天约 3 周
+            ("lme_gpt4_b5700ca9", d(2023, 4, 6), d(2023, 4, 10), "day", "4", False),
+        ]
+        for case, a, b, unit, value, approx in cases:
+            with self.subTest(case=case):
+                v, rounding, days, ap = elapsed_rule(a, b, unit)
+                self.assertEqual((v, ap), (value, approx))
+                self.assertEqual(days, (b - a).days)
+
+    def test_edges(self):
+        from scoring import elapsed_rule
+        d = __import__("datetime").date
+        self.assertEqual(elapsed_rule(d(2023, 1, 1), d(2023, 1, 18), "week")[0], "2")   # 17 天
+        self.assertEqual(elapsed_rule(d(2023, 1, 1), d(2023, 1, 19), "week")[0], "3")   # 18 天
+        self.assertEqual(elapsed_rule(d(2023, 1, 31), d(2023, 2, 28), "month")[0], "0")  # 未满一个月
+        self.assertEqual(elapsed_rule(d(2020, 2, 29), d(2021, 2, 28), "year")[0], "0")
+        self.assertIsNone(elapsed_rule(d(2023, 2, 1), d(2023, 1, 1), "day"))
 
 
 class TrialResults(unittest.TestCase):

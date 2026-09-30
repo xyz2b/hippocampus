@@ -1,6 +1,6 @@
 {
   "case": "lme_5e1b23de",
-  "note": "手写 recall.v2 夹具：按 contracts.md 3.4 表达本题的正确输出，用于演练适配与判分；不是任何实现的运行结果。source_ids 为假设的运行时 ID。",
+  "note": "手写 recall.v3 夹具：按 contracts.md 3.4 表达本题的正确输出，用于演练适配与判分；不是任何实现的运行结果。source_ids 为假设的运行时 ID。",
   "question": "q",
   "recall": {
     "clarification": null,
@@ -12,7 +12,9 @@
       "retrieval_truncated": false
     },
     "computed": {
+      "approximate": false,
       "bound": "exact",
+      "exact_days": 92,
       "items": [
         {
           "date": {
@@ -58,6 +60,7 @@
         "precision": "day",
         "tz_offset_seconds": 28800
       },
+      "rounding": "complete_calendar_months",
       "unit": "month",
       "value": "3"
     },
@@ -197,7 +200,7 @@
       "source_revision": 57
     },
     "status": "answered",
-    "version": "recall.v2"
+    "version": "recall.v3"
   },
   "source_ids": {
     "s1_t1": "src-311",

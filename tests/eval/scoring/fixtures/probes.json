@@ -1,22 +1,160 @@
 {
-  "person_q4~unbound": {
-    "base": {"case": "person_sketch_pen", "question": "person_q4"},
+  "person_sketch_pen/person_q4~unbound": {
+    "base": {
+      "case": "person_sketch_pen",
+      "question": "person_q4"
+    },
     "purpose": "条件扩大探针：问题不再限定“画速写时”，只用于验证 condition_broadened 判定；不属于 63 道题，不进入基线报告。",
     "query": "冯序宁固定用哪种笔？",
-    "query_meta": {"operation": "lookup", "time_focus": "current"},
+    "query_meta": {
+      "operation": "lookup",
+      "time_focus": "current"
+    },
     "expect_common": {
       "label_status": "draft",
       "scoring_version": "common.v1",
       "status": "answer",
-      "facts": [{"subject": "person_feng_xuning", "relation_note": "冯序宁画速写时固定使用的笔",
-                 "value_any": ["钢笔"], "polarity": "affirm", "current": "yes",
-                 "conditions": [{"text": "画速写时", "bound_by_query": false}], "uncertainty": null,
-                 "sources": {"all_of": ["person_s2"], "any_of": []}}],
+      "facts": [
+        {
+          "subject": "person_feng_xuning",
+          "relation_note": "冯序宁画速写时固定使用的笔",
+          "value_any": [
+            "钢笔"
+          ],
+          "polarity": "affirm",
+          "current": "yes",
+          "conditions": [
+            {
+              "text": "画速写时",
+              "bound_by_query": false
+            }
+          ],
+          "uncertainty": null,
+          "sources": {
+            "all_of": [
+              "person_s2"
+            ],
+            "any_of": []
+          }
+        }
+      ],
       "conflicts": [],
       "computed": null,
-      "forbidden": [{"kind": "condition_broadened", "condition": "画速写时"},
-                    {"kind": "wrong_subject_source", "sources": ["person_s1"]}],
+      "forbidden": [
+        {
+          "kind": "condition_broadened",
+          "condition": "画速写时"
+        },
+        {
+          "kind": "wrong_subject_source",
+          "sources": [
+            "person_s1"
+          ]
+        }
+      ],
       "not_measurable": []
+    }
+  },
+  "lme_5e1b23de/q~weeks": {
+    "base": {
+      "case": "lme_5e1b23de",
+      "question": "q"
+    },
+    "purpose": "周/天计算探针：同一事件与提问时刻换成按周、按天提问，只用于验证 r4.v3 取整口径的判分；不属于 63 道题，不进入基线报告。",
+    "query": "How many weeks ago did I attend the photography workshop?",
+    "query_meta": {
+      "operation": "elapsed",
+      "time_focus": "past"
+    },
+    "expect_common": {
+      "computed": {
+        "bound": "exact",
+        "end": {
+          "date": "2024-02-01",
+          "source": "request.at"
+        },
+        "op": "elapsed",
+        "start": {
+          "date": "2023-11-01",
+          "role": "event",
+          "source": "s1_t4"
+        },
+        "unit": "week",
+        "value": "13",
+        "rounding": "nearest_week",
+        "exact_days": 92,
+        "approximate": true
+      },
+      "conflicts": [],
+      "facts": [
+        {
+          "polarity": "affirm",
+          "relation_note": "去附近城市参加了一个 3 天的摄影工作坊（s1_t4 原文 today）",
+          "sources": {
+            "all_of": [
+              "s1_t4"
+            ],
+            "any_of": []
+          },
+          "subject": "self"
+        }
+      ],
+      "forbidden": [],
+      "label_status": "draft",
+      "not_measurable": [],
+      "scoring_version": "common.v1",
+      "status": "answer"
+    }
+  },
+  "lme_5e1b23de/q~days": {
+    "base": {
+      "case": "lme_5e1b23de",
+      "question": "q"
+    },
+    "purpose": "周/天计算探针：同一事件与提问时刻换成按周、按天提问，只用于验证 r4.v3 取整口径的判分；不属于 63 道题，不进入基线报告。",
+    "query": "How many days ago did I attend the photography workshop?",
+    "query_meta": {
+      "operation": "elapsed",
+      "time_focus": "past"
+    },
+    "expect_common": {
+      "computed": {
+        "bound": "exact",
+        "end": {
+          "date": "2024-02-01",
+          "source": "request.at"
+        },
+        "op": "elapsed",
+        "start": {
+          "date": "2023-11-01",
+          "role": "event",
+          "source": "s1_t4"
+        },
+        "unit": "day",
+        "value": "92",
+        "rounding": "calendar_days",
+        "exact_days": 92,
+        "approximate": false
+      },
+      "conflicts": [],
+      "facts": [
+        {
+          "polarity": "affirm",
+          "relation_note": "去附近城市参加了一个 3 天的摄影工作坊（s1_t4 原文 today）",
+          "sources": {
+            "all_of": [
+              "s1_t4"
+            ],
+            "any_of": []
+          },
+          "subject": "self"
+        }
+      ],
+      "forbidden": [],
+      "label_status": "draft",
+      "not_measurable": [],
+      "scoring_version": "common.v1",
+      "status": "answer"
     }
   }
 }

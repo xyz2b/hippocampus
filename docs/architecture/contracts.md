@@ -1,6 +1,6 @@
-# 第一阶段契约（已冻结，待实现；r4、recall 为 v2，其余 v1）
+# 第一阶段契约（已冻结，待实现；r4、recall 为 v3，其余 v1）
 
-本文是 [target-design.md](target-design.md) 第 5 节第 1 步“冻结契约和不变量”的产出：各模型环节的输入输出格式、代码核验规则、状态与失败码、预算，以及可测试的不变量。实现各环节时按本文生成对应的 Rust 类型和 strict JSON Schema；本文于 2026-09-30 冻结，各契约统一编号为 v1：`w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v1` 及宿主输出 `recall.v1`。冻结前的多轮草稿版本号不再使用。冻结后任何改动须升受影响契约的版本号；这些均为目标契约，不表示当前代码已经实现。同日按此规则将 `r4.v1`、`recall.v1` 升为 `r4.v2`、`recall.v2`（elapsed 的提问时刻端点改由代码提供，见第 8 节），其余契约仍为 v1。
+本文是 [target-design.md](target-design.md) 第 5 节第 1 步“冻结契约和不变量”的产出：各模型环节的输入输出格式、代码核验规则、状态与失败码、预算，以及可测试的不变量。实现各环节时按本文生成对应的 Rust 类型和 strict JSON Schema；本文于 2026-09-30 冻结，各契约统一编号为 v1：`w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v1` 及宿主输出 `recall.v1`。冻结前的多轮草稿版本号不再使用。冻结后任何改动须升受影响契约的版本号；这些均为目标契约，不表示当前代码已经实现。同日按此规则将 `r4`、`recall` 依次升为 v2（elapsed 的提问时刻端点改由代码提供）和 v3（elapsed 的取整口径与精确天数由代码给出），见第 8 节；其余契约仍为 v1。
 
 形式约定：
 
@@ -335,7 +335,7 @@ stored_status 与旧 data.status 均不是本轮确认的 current。CurrentRecor
 - 该证据包在 R4 跳过/失败时也返回宿主；pending_related_sources 统计 raw 中相关未完成来源，不能用计数代替原文。来源删除、快照和输出预算检查在返回前再次执行；正文被预算截断时必须标为不完整。
 - pending_updates 统计检索到的相关 update.pending 记录，即使它们已提交；预算裁剪的已知相关记录仍计入，并标为不完整。计数不替代逐记录状态，不能用 0 宣称未检索到的范围没有缺口。legacy 的缺字段/未知更新状态通过 gaps 与 enrichment_gaps 呈现。
 
-### 3.3 R4 证据判断 `r4.v2`
+### 3.3 R4 证据判断 `r4.v3`
 
 **何时调用**：need = judge 且有可判断证据时，在网络/预算允许的普通在线请求调用一次；records/raw 可作证据，current_message 在 current_evidence 为 assertion_present/unknown 时送审。仅有 query_only 的问题文本不算 no_evidence 检查中的事实证据。bootstrap、离线、预算不足或 context_only 时跳过并标明原因；R1 失败按 judge/unknown 降级，不擅自默认单事实。
 
@@ -369,7 +369,18 @@ R4 必须读取逐记录 update 与 legacy.gaps。可以判断原文支持的新
 
 计算 compute 可空，非空为 `ComputePlan = { "op": "count | sum | elapsed | compare", "items": [ComputeItem], "operands": [string], "unit": string?, "coverage": "complete | incomplete | unknown" }`；op 必须与 R1 获准计划相符。`ComputeItem = { "id": string, "evidence": [EvidenceRef], "quantity": Quantity?, "date": TimeInterp?, "date_source": SourceRef?, "event_group": string? }`。条目 ID 唯一，同一消息可以包含多个条目；operands 引用条目 ID，elapsed/compare 固定两个且顺序表示结束减起点／左与右，count/sum 则为空。sum/数值 compare 需要 quantity，elapsed/日期 compare 需要 date，比较双方须为同种可比量；未知时不填猜测值。date 非空时 date_source 必须指向条目依据中的一个来源，代码按该来源接收日解释相对时间；无 date 时为 null，不能改用本轮或后台执行日。
 
-**提问时刻端点（r4.v2）**：“距今多久”的结束端点不是用户原话，R4 不为它编造 ComputeItem、Quote 或 TimeInterp。operands 可使用保留标识 `@request.at` 指代本请求的可信提问时刻，只能作为 elapsed 的第一个操作数（结束端点）；ComputeItem 的 id 不得以 `@` 开头。代码以运行时绑定的 request.at（UTC 秒）按用户时区换算为本地自然日，精度为日；模型不提供该值，也不能用本轮消息的 said_on、后台执行日或 `current` 来源加“相对 0 天”代替。起点精度粗于日时按上文规则返回不足。
+**提问时刻端点（r4.v2 起）**：“距今多久”的结束端点不是用户原话，R4 不为它编造 ComputeItem、Quote 或 TimeInterp。operands 可使用保留标识 `@request.at` 指代本请求的可信提问时刻，只能作为 elapsed 的第一个操作数（结束端点）；ComputeItem 的 id 不得以 `@` 开头。代码以运行时绑定的 request.at（UTC 秒）按用户时区换算为本地自然日，精度为日；模型不提供该值，也不能用本轮消息的 said_on、后台执行日或 `current` 来源加“相对 0 天”代替。起点精度粗于日时按上文规则返回不足。
+
+**elapsed 的取整口径（r4.v3）**：数值、取整口径、精确天数和是否近似全部由代码从两个端点计算，模型只提供端点依据，不填写这些字段。两个端点都必须有日精度（起点为已换算到具体日期的 TimeInterp，终点为 `@request.at` 或同样到日的条目）；任一端点只有月、年或更粗的精度时返回不足（compute_insufficient），不把月份或年份补成具体日期。设起点、终点为用户本地自然日 a、b，天数 d = b − a；d < 0 时返回不足。
+
+| unit | value | rounding | approximate |
+| --- | --- | --- | --- |
+| `day` | d | `calendar_days` | false |
+| `week` | ⌊(d + 3) / 7⌋，即最近整数周；d 为整数，不存在恰好半周 | `nearest_week` | d 不是 7 的倍数时为 true |
+| `month` | 完整日历月数：年差 × 12 + 月差，b 的日小于 a 的日时再减 1 | `complete_calendar_months` | false |
+| `year` | 完整日历月数 ÷ 12 向下取整 | `complete_calendar_years` | false |
+
+周的规则与第一阶段前的旧实现一致（如 20 天为 3 周）。approximate 为 true 时宿主须表述为“约 N 周（d 天）”，不能说成恰好 N 周；月、年表述为已满的整月、整年数。
 
 count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组表示已确认不同事件，null 表示身份未知。代码按组去重，不能按消息 source_id 去重或把所有 null 当作不同事件；标签及片段存在仅是机械检查，事件同一性仍须模型质量评测。sum 对同一计量对象的重复提及也去重；同组量或单位矛盾时不能选择其中一条后宣称精确。
 
@@ -380,18 +391,18 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 - exact 只在查询范围完整枚举、相关来源已覆盖、成员身份及所需输入明确时成立；代码综合 R2/R3 完整性与 R4 判断，模型自报 coverage=complete 不能覆盖代码已知的截断或遗漏，grade 不决定 exact。否则按操作分别处理：count 只计已确认不同的事件组，可以给有依据的下限；sum 只有已知未计部分非负等条件得到支持时才能给下限；未知符号或重复对象不能给下限；elapsed/compare 缺少端点、必要量或足够精度时返回不足，不输出猜测的数值。
 - count/sum 的非精确结果明确限定为已确认范围及 at_least；没有有效下限、负数求和截断（如已见 +10 而遗漏 -20）、无法去重等情况 computed 为 null，说明不足原因。不能把“部分和”统一标作下限。
 
-### 3.4 召回输出（给宿主） `recall.v2`
+### 3.4 召回输出（给宿主） `recall.v3`
 
 ```json
 {
-  "version": "recall.v2",
+  "version": "recall.v3",
   "request": { "request_id": "op-17", "query": "……", "context": [], "task_id": null, "at": 1790740800 },
   "status": "answered | context_only | insufficient | conflict | needs_clarification | degraded",
   "current_message": "CurrentMessage?",
   "records": [ "RecordView" ],
   "raw": [ "RawEvidence" ],
   "facts": [ "RecallFact" ],
-  "computed": { "op": "count", "value": "3", "unit": null, "bound": "exact | at_least", "items": ["ComputeItem"], "operands": [] },
+  "computed": { "op": "count", "value": "3", "unit": null, "bound": "exact | at_least", "items": ["ComputeItem"], "operands": [], "rounding": null, "exact_days": null, "approximate": null, "request_time": null },
   "history": [ { "statement": "……", "until": "2023-05-30", "evidence": [ ] } ],
   "conflicts": [ "RelationLink" ],
   "clarification": null,
@@ -408,8 +419,9 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 - `grade` 只做标注，代码不据此改变 `status`。
 - semantic_judgment = skipped/failed 时 facts=[]、computed=null，不新增本轮事实判断；已整理及已核验记录通过 records 原样返回，当前及相关待整理原文仍通过 current_message/raw 返回。stored_status=active 不能包装成 current=yes；有未覆盖新证据时不给无条件旧当前值。模型判断为 unknown 的当前资格或适用性不改为肯定默认值。
 - history 区分曾经成立与被纠正/撤回的记录；纠错旧值仅作为审计记录保留，不作为历史事实输出。until 可空，日期未知不回填接收日；clarification 可空，非空为 `{ "question": string, "evidence": [EvidenceRef] }`。
+- op 为 elapsed 时，computed 另带代码按 3.3 计算的 `rounding`、`exact_days`（整数天数 d）与 `approximate`；其他 op 这三个字段为 null。模型输出不含这些字段，也不能覆盖它们。
 - computed 的任一操作数为 `@request.at` 时，computed 另带代码生成的 `request_time = { "at": Timestamp, "local_date": LocalDate, "tz_offset_seconds": integer, "precision": "day" }`：at 等于 request.at，local_date 为按 tz_offset_seconds 换算的本地日期；否则 request_time 为 null。它不属于 items，也没有 evidence。
-- 旧 `answer_contract`（其版本字段为 1，与 recall.v2 无关）仅在明确迁移窗口兼容，详见第 7 节；客户端指定契约版本，一次请求只有一个权威输出。附带的兼容输出不能覆盖所选版本的判断。
+- 旧 `answer_contract`（其版本字段为 1，与 recall.v3 无关）仅在明确迁移窗口兼容，详见第 7 节；客户端指定契约版本，一次请求只有一个权威输出。附带的兼容输出不能覆盖所选版本的判断。
 
 ### 3.5 `memory_prepare` 返回结构
 
@@ -417,7 +429,7 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 {
   "source": { "status": "stored | rejected | failed | deleted", "source_id": null },
   "enrichment": { "status": "queued | running | committed | completed_no_facts | no_candidates_unreviewed | coverage_gaps | pending | awaiting_confirmation | failed | needs_rejudge | budget_exhausted | not_requested | deleted", "candidates": [], "memory_requests": [], "retention_pending": false },
-  "recall": { "…": "recall.v2" }
+  "recall": { "…": "recall.v3" }
 }
 ```
 
@@ -500,7 +512,7 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 | 未解决关系的存储 | 沿用 owner 快照，新增 RelationLink 集合 | 保存成员、范围、依据和解决状态；与 Memory 生命周期分开，按 2.4 迁移旧快照及处理删除 |
 | `memory_type` | 由 W1 给出，W3 核验，代码检查目录 | 保留排序与准入；Episode 的跨轮价值按 2.3 判断，不盲目设置旧字段默认值 |
 | 现有记忆迁移 | 可重建部分从授权原文重新整理，其余保留 legacy | 按 2.6 盘点、核验和映射后切换；缺字段走兼容分支，不无损适配或丢弃无来源记录 |
-| 旧 `answer_contract` | 仅在一次明确的客户端迁移窗口提供兼容输出 | 客户端选择旧 answer_contract 或 recall.v2，默认值随发布配置明确，不静默改变；单次请求只有一个权威版本 |
+| 旧 `answer_contract` | 仅在一次明确的客户端迁移窗口提供兼容输出 | 客户端选择旧 answer_contract 或 recall.v3，默认值随发布配置明确，不静默改变；单次请求只有一个权威版本 |
 
 旧 answer_contract 适配从同一次召回及同一快照机械产生，不重跑 legacy/assisted 模型链路，不新增调用。无法安全表达为旧 safe_answer/safe_source_ids 的复杂、未知或未提交结果，旧版保守返回不足；新版保留事实及证据，附带旧版不能否决新版。memory_validate_answer 同样按所选契约版本核对完整原问题、上下文、任务与来源。
 
@@ -512,5 +524,7 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 | --- | --- | --- | --- |
 | 2026-09-30 | `r4.v1` → `r4.v2` | elapsed 的结束端点可用保留操作数 `@request.at`，由代码按可信 request.at 与用户时区提供；不再接受以 `current` 来源加“相对 0 天”伪装提问时刻 | 共同判分视图四题试跑发现 v1 无法合规表达“距今”端点（common-scoring-view.md 第 8 节） |
 | 2026-09-30 | `recall.v1` → `recall.v2` | computed 增加 `request_time`；version 字段为 `recall.v2` | 随 r4.v2 同步 |
+| 2026-09-30 | `r4.v2` → `r4.v3` | elapsed 的取整口径固定并由代码执行：天为自然日差，周为最近整数周（与旧实现一致），月、年为完整日历月、年；两端点须有日精度，不把月份补成日期 | 取整规则影响计算语义；此前契约未规定，评分器不能自行决定（四题试跑复核） |
+| 2026-09-30 | `recall.v2` → `recall.v3` | elapsed 的 computed 增加代码生成的 `rounding`、`exact_days`、`approximate`；version 字段为 `recall.v3` | 宿主据此表述“约 N 周（d 天）”；随 r4.v3 同步 |
 
-w1.v1、w3.v1、w4.v1、r1.v1 未变。v1 的 r4/recall 输出不作为 v2 的合规输出；评测夹具与适配器已同步到 v2。
+w1.v1、w3.v1、w4.v1、r1.v1 未变。旧版本的 r4/recall 输出不作为新版本的合规输出；评测夹具与适配器已同步到 v3。
