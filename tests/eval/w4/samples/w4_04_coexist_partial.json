@@ -12,12 +12,7 @@
     },
     "s-241": {
       "text": "周末的时候我更喜欢喝手冲咖啡。",
-      "said_on": "2026-09-15",
-      "qualifiers": {
-        "conditions": [
-          "周末的时候"
-        ]
-      }
+      "said_on": "2026-09-15"
     }
   },
   "input": {
@@ -182,5 +177,12 @@
       "why": "两者不互斥"
     }
   ],
-  "note": "通用 fact 范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。"
+  "note": "通用 fact 范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "conditions": [
+        "周末的时候"
+      ]
+    }
+  }
 }

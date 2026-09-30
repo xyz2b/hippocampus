@@ -1,0 +1,289 @@
+{
+  "id": "w4_22_replace_conflict_members",
+  "contract": "w4.v1",
+  "batch": 2,
+  "label_status": "reviewed",
+  "focus": "冲突双方被同一新版本替代：state_change 结束两条，不解决关系，不迁移成员",
+  "boundary_with": "w4_21_confirm_conflict_side",
+  "sources": {
+    "s-501": {
+      "text": "我住在北京。",
+      "said_on": "2026-05-01"
+    },
+    "s-502": {
+      "text": "我住在上海。",
+      "said_on": "2026-05-03"
+    },
+    "s-510": {
+      "text": "我已经搬到深圳了。",
+      "said_on": "2026-09-28"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "深圳",
+            "quote": {
+              "text": "深圳"
+            }
+          },
+          "sentence": {
+            "text": "我已经搬到深圳了。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-510"
+        },
+        "said_on": "2026-09-28",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 110,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "北京",
+            "quote": {
+              "text": "北京"
+            }
+          },
+          "sentence": {
+            "text": "我住在北京。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-501"
+            },
+            "quote": {
+              "text": "我住在北京。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [
+          "rel-2"
+        ],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      },
+      {
+        "format": "current",
+        "id": 111,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "上海",
+            "quote": {
+              "text": "上海"
+            }
+          },
+          "sentence": {
+            "text": "我住在上海。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-502"
+            },
+            "quote": {
+              "text": "我住在上海。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-03",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [
+          "rel-2"
+        ],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel-2",
+        "kind": "conflict",
+        "members": [
+          110,
+          111
+        ],
+        "conditions": [],
+        "times": [],
+        "basis": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-501"
+            },
+            "quote": {
+              "text": "我住在北京。"
+            }
+          },
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-502"
+            },
+            "quote": {
+              "text": "我住在上海。"
+            }
+          }
+        ],
+        "status": "open",
+        "resolution": null
+      }
+    ],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          110,
+          111
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-501",
+          "s-502",
+          "s-510"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "110": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "111": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "new": {
+          "stored_status": "active",
+          "history": [
+            110,
+            111
+          ],
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_relation_unclear"
+            ]
+          }
+        }
+      },
+      "relations": [
+        {
+          "id": "rel-2",
+          "status": "open",
+          "members": [
+            110,
+            111
+          ],
+          "basis_unchanged": true
+        }
+      ],
+      "new_records": 1,
+      "recall": {
+        "current": [
+          "new（深圳，前身所在冲突 rel-2 未解决）"
+        ],
+        "history": [
+          "110（北京）与 111（上海）互相冲突，rel-2 open"
+        ]
+      }
+    },
+    "must_not": [
+      "不得把成员换成 [new, new] 或去重成单个成员",
+      "不得由代码因成员都已结束而自动解决 rel-2",
+      "不得把 rel-2 的旧依据当作新版本仍在冲突的依据",
+      "不得在历史查询中把北京或上海单独当作确定的旧住址"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "state_change + resolves_relations",
+      "why": "“搬到深圳”不说明此前北京、上海哪条对，不能解决 rel-2"
+    }
+  ],
+  "note": "lives_in 为目录内关系，范围完整。替代记录的 update_relation_unclear 表示与前身所在冲突的关系待后续 W4 依据新原文判定，不是检索范围问题。",
+  "qualifier_marks": {}
+}

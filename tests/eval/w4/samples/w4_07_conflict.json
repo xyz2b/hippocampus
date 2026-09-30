@@ -12,12 +12,7 @@
     },
     "s-260": {
       "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。",
-      "said_on": "2026-09-20",
-      "qualifiers": {
-        "uncertainty": [
-          "还没核实哪个对"
-        ]
-      }
+      "said_on": "2026-09-20"
     }
   },
   "input": {
@@ -193,5 +188,12 @@
       "why": "用户未确认 7 英寸是错的"
     }
   ],
-  "note": "冲突由原文对 50 的明确指向和双方依据成立，不依赖“没有其他相关记录”；范围不完整，新记录更新状态保留 pending/update_scope_incomplete。contracts 2.4 列举的可在范围不完整时执行的动作只有 state_change/correction/refine/retract，未提 conflict；已确认：针对已明确定位的目标、新旧双方依据齐全的冲突，不依赖检索覆盖全部记录，可以保存（关系 open，旧记录不结束）。"
+  "note": "冲突由原文对 50 的明确指向和双方依据成立，不依赖“没有其他相关记录”；范围不完整，新记录更新状态保留 pending/update_scope_incomplete。contracts 2.4 列举的可在范围不完整时执行的动作只有 state_change/correction/refine/retract，未提 conflict；已确认：针对已明确定位的目标、新旧双方依据齐全的冲突，不依赖检索覆盖全部记录，可以保存（关系 open，旧记录不结束）。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "uncertainty": [
+        "还没核实哪个对"
+      ]
+    }
+  }
 }

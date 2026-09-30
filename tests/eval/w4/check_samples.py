@@ -30,7 +30,6 @@ LEGACY_EVIDENCE_FIELDS = {"id", "session_id", "turn_id", "quote"}
 # Actions that end their targets, with the allowed termination reasons (contracts 2.4 table).
 ENDING = {"state_change": {"StateChanged", "PreferenceChanged", "ConstraintChanged"},
           "correction": {"Correction"}, "refine": {"Refinement", "ScopeRefined"}, "retract": {"UserRetracted"}}
-SENTENCE_END = "。！？!?"
 
 
 def load_samples():
@@ -84,37 +83,42 @@ def _uses_generic_fact(inp):
         any(r["candidate"]["relation"] == "fact" for r in inp["records"] if r.get("format") == "current")
 
 
-def _whole_sentences(sentence, text):
-    """True if `sentence` is a run of whole sentences of `text` (contracts 1.4: complete sentence)."""
-    i = text.find(sentence)
-    while i >= 0:
-        j = i + len(sentence)
-        if (i == 0 or text[i - 1] in SENTENCE_END) and (j == len(text) or text[j - 1] in SENTENCE_END):
-            return True
-        i = text.find(sentence, i + 1)
-    return False
+def _whole_sentences(sentence, source):
+    """True if `sentence` is a run of consecutive reviewer-marked sentences of the source.
+
+    `sources.<id>.sentences` lists the source's complete sentences in order;
+    without it the whole text is one sentence. The span runs from the start of
+    the first to the end of the last, so whitespace or newlines between
+    sentences are kept as written and no punctuation rule is guessed.
+    """
+    text = source["text"]
+    spans, pos = [], 0
+    for sent in source.get("sentences", [text]):
+        i = text.find(sent, pos)
+        if i < 0:
+            return False
+        spans.append((i, i + len(sent)))
+        pos = i + len(sent)
+    return any(text[spans[a][0]:spans[b][1]] == sentence for a in range(len(spans)) for b in range(a, len(spans)))
 
 
-def _check_qualifiers(tag, c, source, errs):
-    """Kept qualifiers must match the reviewer marks on the source, both ways."""
-    marks = source.get("qualifiers", {})
-    text = c["sentence"]["text"]
+def _check_qualifiers(tag, c, marks, source_text, errs):
+    """The assertion keeps exactly the qualifiers marked for it (qualifier_marks[key])."""
     for kind in marks:
         for q in marks[kind]:
-            if q not in source["text"]:
+            if q not in source_text:
                 errs.append(f"{tag}：标注的 {kind} {q!r} 不在原文中")
     kept = {"times": [t["quote"]["text"] for t in c.get("times", [])],
             "conditions": [q["quote"]["text"] for q in c.get("conditions", [])],
             "uncertainty": [c["uncertainty"]["quote"]["text"]] if c.get("uncertainty") else []}
     for kind, got in kept.items():
-        want = [q for q in marks.get(kind, []) if q in text]
+        want = marks.get(kind, [])
         if sorted(got) != sorted(want):
-            errs.append(f"{tag}：{kind} 保留为 {got}，原文标注为 {want}（无法换算的时间也须以 unknown 保留）")
-    has_strength_expr = any(q in text for q in marks.get("strength", []))
-    if has_strength_expr and c.get("strength") is None:
-        errs.append(f"{tag}：原文标注有强度表达，strength 不能为 null")
-    if not has_strength_expr and c.get("strength") is not None:
-        errs.append(f"{tag}：原文没有标注强度表达，strength 应为 null")
+            errs.append(f"{tag}：{kind} 保留为 {got}，本断言标注为 {want}（无法换算的时间也须以 unknown 保留）")
+    if marks.get("strength") and c.get("strength") is None:
+        errs.append(f"{tag}：本断言标注有强度表达，strength 不能为 null")
+    if not marks.get("strength") and c.get("strength") is not None:
+        errs.append(f"{tag}：本断言没有标注强度表达，strength 应为 null")
 
 
 def _check_resolutions(inp, decs, after, errs):
@@ -146,13 +150,34 @@ def _check_resolutions(inp, decs, after, errs):
                 errs.append(f"关系 {rid} 的成员 {m} 不是保留方，须由本次的终止动作结束（强化等不算）")
 
 
+def _check_unresolved_replacement(inp, decs, after, errs):
+    """contracts 2.5: ending a member of an open relation without resolving it keeps
+    the relation and its members as they were; the replacement is marked
+    update_relation_unclear instead of taking over the membership."""
+    claimed = {x for d in decs for x in d["resolves_relations"]}
+    ended = {t for d in decs if d["status"] == "decided" and d["action"] in ENDING for t in d["targets"]}
+    listed = {r.get("id"): r for r in after.get("relations", [])}
+    for rel in inp["relations"]:
+        if rel["status"] != "open" or rel["id"] in claimed or not set(rel["members"]) & ended:
+            continue
+        out = listed.get(rel["id"])
+        if not out or out.get("status") != "open" or sorted(out.get("members", [])) != sorted(rel["members"]):
+            errs.append(f"关系 {rel['id']} 未被解决：执行后须仍为 open，成员保持 {sorted(rel['members'])}")
+        for k, v in after.get("records", {}).items():
+            if k.startswith("new") and "update_relation_unclear" not in (v.get("update") or {}).get("reasons", []):
+                errs.append(f"替代 {rel['id']} 成员的新记录 {k} 须标 update_relation_unclear")
+
+
 def _check_target_states(decs, after, errs):
     """Ending actions end their targets with a matching reason; other outcomes leave them current."""
     recs = after.get("records", {})
     for d in decs:
         for t in d["targets"]:
             st = recs.get(str(t))
+            if st and "stored_status" not in st and st.get("format") == "legacy" and "status" in st:
+                st = {**st, "stored_status": st["status"].lower()}
             if not st or "stored_status" not in st:
+                errs.append(f"决定 {d['candidate']}：目标 {t} 缺执行后的状态（after.records 须写明 stored_status）")
                 continue
             if d["status"] == "decided" and d["action"] in ENDING:
                 if st["stored_status"] != "superseded" or st.get("termination_reason") not in ENDING[d["action"]]:
@@ -165,6 +190,11 @@ def check(s) -> list:
     errs = []
     src = s["sources"]
     inp = s["input"]
+    marks = s.get("qualifier_marks", {})
+    item_keys = {f"candidate:{c['index']}" for c in inp["candidates"]} | \
+        {f"record:{r['id']}" for r in inp["records"] if r.get("format") == "current"}
+    for k in set(marks) - item_keys:
+        errs.append(f"限定语标注 {k} 不对应任何候选或完整记录")
     rec_ids = [r["id"] for r in inp["records"]]
     if len(set(rec_ids)) != len(rec_ids):
         errs.append("记录 ID 重复")
@@ -208,8 +238,9 @@ def check(s) -> list:
                          r["said_on"], errs)
             rsid = r["evidence"][0]["source"]["source_id"] if r["evidence"] else None
             if rsid in src:
-                _check_qualifiers(f"记录 {r['id']}", r["candidate"], src[rsid], errs)
-                if not _whole_sentences(r["candidate"]["sentence"]["text"], src[rsid]["text"]):
+                _check_qualifiers(f"记录 {r['id']}", r["candidate"], marks.get(f"record:{r['id']}", {}),
+                                  src[rsid]["text"], errs)
+                if not _whole_sentences(r["candidate"]["sentence"]["text"], src[rsid]):
                     errs.append(f"记录 {r['id']}：sentence 须为完整原句")
         for rel in r.get("open_relations", []):
             if rel not in rel_ids:
@@ -230,8 +261,8 @@ def check(s) -> list:
         if cd["kind"] == "retraction" and cd["value"] is not None:
             errs.append("retraction 不应有值")
         _check_times(f"候选 {c['index']}", cd.get("times", []), c.get("time_resolutions", []), c["said_on"], errs)
-        _check_qualifiers(f"候选 {c['index']}", cd, src[sid], errs)
-        if not _whole_sentences(cd["sentence"]["text"], src[sid]["text"]):
+        _check_qualifiers(f"候选 {c['index']}", cd, marks.get(f"candidate:{c['index']}", {}), src[sid]["text"], errs)
+        if not _whole_sentences(cd["sentence"]["text"], src[sid]):
             errs.append(f"候选 {c['index']}：sentence 须为完整原句，不能截取片段")
         if cd["relation"] == "fact" and cd["value"] and cd["value"]["quote"]["text"] != cd["sentence"]["text"]:
             errs.append(f"候选 {c['index']}：通用 fact 的 value.quote 须与 sentence 相同")
@@ -282,6 +313,7 @@ def check(s) -> list:
                 # end_unknown; only a date-precise resolution fixes the end.
         _check_resolutions(inp, decs, exp.get("after", {}), errs)
         _check_target_states(decs, exp.get("after", {}), errs)
+        _check_unresolved_replacement(inp, decs, exp.get("after", {}), errs)
     else:
         cp = exp.get("code_path")
         if not cp or cp.get("w4_called") is not False:

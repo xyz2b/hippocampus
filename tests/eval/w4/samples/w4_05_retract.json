@@ -8,21 +8,11 @@
   "sources": {
     "s-120": {
       "text": "我每周三晚上去游泳。",
-      "said_on": "2026-06-01",
-      "qualifiers": {
-        "times": [
-          "每周三晚上"
-        ]
-      }
+      "said_on": "2026-06-01"
     },
     "s-250": {
       "text": "我之前说每周三晚上去游泳，那句不对，收回。",
-      "said_on": "2026-09-18",
-      "qualifiers": {
-        "times": [
-          "每周三晚上"
-        ]
-      }
+      "said_on": "2026-09-18"
     }
   },
   "input": {
@@ -209,5 +199,17 @@
       "why": "correction 需要新值；没有新值的收回用 retract"
     }
   ],
-  "note": "目标 40 已在输入中逐条比对且有双方依据，撤回可执行；范围不完整，回执中的更新状态保留 pending/update_scope_incomplete。“每周三晚上”为周期时间，换算状态 unknown。"
+  "note": "目标 40 已在输入中逐条比对且有双方依据，撤回可执行；范围不完整，回执中的更新状态保留 pending/update_scope_incomplete。“每周三晚上”为周期时间，换算状态 unknown。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "每周三晚上"
+      ]
+    },
+    "record:40": {
+      "times": [
+        "每周三晚上"
+      ]
+    }
+  }
 }

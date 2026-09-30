@@ -8,24 +8,11 @@
   "sources": {
     "s-121": {
       "text": "我有点喜欢爵士乐。",
-      "said_on": "2026-04-10",
-      "qualifiers": {
-        "strength": [
-          "有点喜欢"
-        ]
-      }
+      "said_on": "2026-04-10"
     },
     "s-330": {
       "text": "我现在特别喜欢爵士乐。",
-      "said_on": "2026-09-24",
-      "qualifiers": {
-        "times": [
-          "现在"
-        ],
-        "strength": [
-          "特别喜欢"
-        ]
-      }
+      "said_on": "2026-09-24"
     }
   },
   "input": {
@@ -198,5 +185,20 @@
       "action": "reinforce",
       "why": "强度由 weak 变为 strong，不是同一断言"
     }
-  ]
+  ],
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "现在"
+      ],
+      "strength": [
+        "特别喜欢"
+      ]
+    },
+    "record:41": {
+      "strength": [
+        "有点喜欢"
+      ]
+    }
+  }
 }

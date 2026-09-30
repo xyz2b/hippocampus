@@ -8,22 +8,11 @@
   "sources": {
     "s-112": {
       "text": "我每天喝一杯咖啡。",
-      "said_on": "2026-05-06",
-      "qualifiers": {
-        "times": [
-          "每天"
-        ]
-      }
+      "said_on": "2026-05-06"
     },
     "s-360": {
       "text": "我现在每天喝两杯咖啡。",
-      "said_on": "2026-09-20",
-      "qualifiers": {
-        "times": [
-          "现在",
-          "每天"
-        ]
-      }
+      "said_on": "2026-09-20"
     }
   },
   "input": {
@@ -227,5 +216,18 @@
     ]
   },
   "rejected_alternatives": [],
-  "note": "70 此前已提交且 update.pending；本次后台检索到旧记录 55 后显式重判。代码不把 70 放进 records（候选不与自身比较）。"
+  "note": "70 此前已提交且 update.pending；本次后台检索到旧记录 55 后显式重判。代码不把 70 放进 records（候选不与自身比较）。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "现在",
+        "每天"
+      ]
+    },
+    "record:55": {
+      "times": [
+        "每天"
+      ]
+    }
+  }
 }

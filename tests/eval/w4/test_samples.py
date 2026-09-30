@@ -120,6 +120,12 @@ class Samples(unittest.TestCase):
                                     lambda s: s["expect"]["decisions"][1].update(resolves_relations=[])),
             "败方改成强化": ("w4_21_confirm_conflict_side",
                          lambda s: s["expect"]["decisions"][1].update(action="reinforce")),
+            "终止动作缺执行后状态": ("w4_01_state_change", lambda s: s["expect"]["after"]["records"].pop("17")),
+            "替代后成员被迁移": ("w4_22_replace_conflict_members",
+                           lambda s: rel(s).update(members=["new", "new"])),
+            "替代后关系被当作已解决": ("w4_22_replace_conflict_members", lambda s: rel(s).update(status="resolved")),
+            "替代记录缺 relation_unclear": ("w4_22_replace_conflict_members",
+                                      lambda s: s["expect"]["after"]["records"]["new"].update(update={"status": "judged", "reasons": []})),
             "终止原因与动作不符": ("w4_21_confirm_conflict_side",
                             lambda s: s["expect"]["after"]["records"]["50"].update(termination_reason="Refinement")),
         }
@@ -152,7 +158,7 @@ class CorrectOutputsPass(unittest.TestCase):
         s = copy.deepcopy(self.samples["w4_01_state_change"])
         text = "我那阵子从北京搬到上海了。"
         s["sources"]["s-205"]["text"] = text
-        s["sources"]["s-205"]["qualifiers"] = {"times": ["那阵子"]}
+        s["qualifier_marks"]["candidate:0"] = {"times": ["那阵子"]}
         c = s["input"]["candidates"][0]
         t = {"role": "event", "quote": {"text": "那阵子"}, "interp": {"kind": "unknown"}, "anchor": "said_on"}
         c["candidate"]["sentence"]["text"] = text
@@ -171,6 +177,54 @@ class CorrectOutputsPass(unittest.TestCase):
         c = s["input"]["candidates"][0]["candidate"]
         c.update(sentence={"text": text}, value={"kind": "text", "text": text, "quote": {"text": text}})
         self.assertEqual(check_samples.check(s), [])
+
+    def _two_assertions_one_sentence(self):
+        # "我上个月…，妹妹去年…": one complete sentence, two assertions, each
+        # with its own time. Marks are per assertion, so neither borrows the other's.
+        s = copy.deepcopy(self.samples["w4_01_state_change"])
+        text = "我上个月从北京搬到上海了，妹妹去年搬到杭州。"
+        s["sources"]["s-205"]["text"] = text
+        c0 = s["input"]["candidates"][0]
+        c0["candidate"]["sentence"] = {"text": text}
+        c1 = copy.deepcopy(c0)
+        c1["index"] = 1
+        last_year = {"role": "event", "quote": {"text": "去年"}, "interp": {"kind": "relative", "unit": "year", "offset": -1},
+                     "anchor": "said_on"}
+        c1["candidate"].update(subject={"entity_id": "sister"}, times=[last_year],
+                               value={"kind": "text", "text": "杭州", "quote": {"text": "杭州"}})
+        c1["time_resolutions"] = [{"status": "resolved", "start": 1735660800, "end_exclusive": 1767196800,
+                                   "precision": "year"}]
+        s["input"]["candidates"].append(c1)
+        s["expect"]["decisions"].append({"candidate": 1, "status": "decided", "action": "new", "targets": [],
+                                         "resolves_relations": [], "basis_sources": ["s-205"], "effective": None,
+                                         "pending_reason": None})
+        s["qualifier_marks"]["candidate:1"] = {"times": ["去年"]}
+        return s
+
+    def test_qualifiers_bound_to_each_assertion(self):
+        self.assertEqual(check_samples.check(self._two_assertions_one_sentence()), [])
+
+    def test_borrowed_qualifier_is_rejected(self):
+        s = self._two_assertions_one_sentence()
+        s["qualifier_marks"]["candidate:0"] = {"times": ["上个月", "去年"]}
+        self.assertTrue(check_samples.check(s))
+
+    def test_marked_sentences_allow_any_punctuation_and_spacing(self):
+        for text, sents, first in [
+            ("I work at ByteDance. I hike on weekends.", ["I work at ByteDance.", "I hike on weekends."],
+             "I work at ByteDance."),
+            ("我在ByteDance工作\n周末会去爬山", ["我在ByteDance工作", "周末会去爬山"], "我在ByteDance工作"),
+        ]:
+            s = copy.deepcopy(self.samples["w4_09_new"])
+            s["sources"]["s-310"].update(text=text, sentences=sents)
+            c = s["input"]["candidates"][0]["candidate"]
+            c["sentence"] = {"text": first}
+            c["value"] = {"kind": "text", "text": "ByteDance", "quote": {"text": "ByteDance"}}
+            with self.subTest(text=text):
+                self.assertEqual(check_samples.check(s), [])
+            c["sentence"] = {"text": first[:-3]}
+            with self.subTest(text=text, fragment=True):
+                self.assertTrue(check_samples.check(s))
 
     def test_untouched_old_record_keeps_its_state(self):
         # Coexist leaves record 31 as it was, including a judged update state.

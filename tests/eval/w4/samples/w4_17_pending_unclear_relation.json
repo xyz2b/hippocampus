@@ -12,12 +12,7 @@
     },
     "s-390": {
       "text": "我最近在学韩语。",
-      "said_on": "2026-09-27",
-      "qualifiers": {
-        "times": [
-          "最近"
-        ]
-      }
+      "said_on": "2026-09-27"
     }
   },
   "input": {
@@ -193,5 +188,12 @@
       "action": "coexist",
       "why": "也没说两门同时在学，关系不能确定"
     }
-  ]
+  ],
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "最近"
+      ]
+    }
+  }
 }
