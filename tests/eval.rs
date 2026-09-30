@@ -13,7 +13,8 @@
 //! `recorded`（附 usage 以校准并发）；429、5xx 与连接错误退避重试，超出上限或重试耗尽的项
 //! 仍记为 skipped。未设置时绝不发真实请求。
 //!
-//! EVAL_CASES=<文件名前缀,…> 只跑匹配的用例。用例并发执行（EVAL_JOBS，默认 8；限额 500 RPM、1,000,000 TPM），同一用例内部串行，
+//! EVAL_CASES=<文件名前缀,…> 只跑匹配的用例；EVAL_CASES=quick 跑快速档（QUICK，约 95 次调用、
+//! 几分钟），开发功能时用它确认整条链路，完整档留到里程碑。用例并发执行（EVAL_JOBS，默认 8；限额 500 RPM、1,000,000 TPM），同一用例内部串行，
 //! 每个用例经自己的 base URL 取自己的录制队列，汇总顺序与串行一致。
 //!
 //! 新录制带 `request` 指纹（去掉时钟读数、review_binding 与 max_output_tokens 后的请求哈希；
@@ -43,6 +44,20 @@ const OWNER: &str = "eval";
 /// The model behind the DEEPSEEK_MODEL endpoint; recordings are labelled with it, so change it
 /// together with the endpoint. An endpoint ID alone does not say which model answered.
 const MODEL: &str = "DeepSeek-V4.1-Flash";
+/// `EVAL_CASES=quick`: short cases covering correction, conflict, task isolation, clarification
+/// and refusal, a date range, elapsed time, single-session facts and abstention — about 95 live
+/// calls, done in minutes. Long knowledge-update cases are left to stage tests and the full set.
+const QUICK: &[&str] = &[
+    "s6_explicit_correction",
+    "s6_unresolved_conflict",
+    "s6_task_isolation",
+    "s6_device_default_paper",
+    "s6_absolute_date_ranges",
+    "lme_5e1b23de",
+    "lme_577d4d32",
+    "lme_c8c3f81d",
+    "lme_0862e8bf_abs",
+];
 /// Fixed clock for cases without their own times: 2026-09-28 12:00 UTC+8, a minute per
 /// message, so replays resolve relative dates the same way on any day. Cases may set
 /// `observed_at` per message and `at` per question (Unix seconds).
@@ -98,8 +113,10 @@ struct Row {
 #[test]
 fn resident_eval_suite() {
     let replay = serve_replay();
-    // EVAL_CASES=s6_,lme_0862 runs only case files whose names start with one of the prefixes.
+    // EVAL_CASES=s6_,lme_0862 runs only case files whose names start with one of the prefixes;
+    // EVAL_CASES=quick runs the QUICK tier.
     let only = std::env::var("EVAL_CASES").unwrap_or_default();
+    let only = if only == "quick" { QUICK.join(",") } else { only };
     let mut paths: Vec<_> =
         std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval/cases"))
             .unwrap()
