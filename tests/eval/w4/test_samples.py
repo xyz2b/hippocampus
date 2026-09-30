@@ -136,6 +136,11 @@ class Samples(unittest.TestCase):
                 self.assertTrue(check_samples.check(s))
 
 
+# W5 D2: with 110 stale, candidate 0's group needs re-judge and writes nothing;
+# only candidate 1's new record is inserted.
+D2_EXPECTED_NEW_RECORDS = 1
+
+
 class ReplacementBinding(unittest.TestCase):
     """Replacement records are bound to the candidate that produced them (w4_22)."""
 
@@ -164,6 +169,7 @@ class ReplacementBinding(unittest.TestCase):
                                          "pending_reason": None})
         s["expect"]["after"]["records"]["new_work"] = {"from_candidate": 1, "stored_status": "active",
                                                        "update": {"status": "judged", "reasons": []}}
+        s["expect"]["after"]["new_records"] = 2  # both candidates are first commits
         return s
 
     def same_source_two_groups(self):
@@ -188,6 +194,7 @@ class ReplacementBinding(unittest.TestCase):
                                          "pending_reason": None})
         s["expect"]["after"]["records"]["new_work"] = {"from_candidate": 1, "stored_status": "active",
                                                        "update": {"status": "judged", "reasons": []}}
+        s["expect"]["after"]["new_records"] = 2  # both candidates are first commits
         return s
 
     def rejudged_member_in_input(self):
@@ -255,6 +262,15 @@ class ReplacementBinding(unittest.TestCase):
             with self.subTest(case=name):
                 self.assertTrue(check_samples.check(s))
 
+
+    def test_two_first_commits_expect_two_new_records(self):
+        # D3 (both groups succeed) inserts 2; D2 (candidate 0's group needs
+        # re-judge) inserts only candidate 1's record.
+        for name, s in [("同批无关新事实", self.with_unrelated_new_fact()),
+                        ("同一原文两组 D3", self.same_source_two_groups())]:
+            with self.subTest(case=name):
+                self.assertEqual(s["expect"]["after"]["new_records"], 2)
+        self.assertEqual(D2_EXPECTED_NEW_RECORDS, 1)
 
     def test_merge_into_self_hits_its_own_guard(self):
         # Target 70 is also outside the input, so other rules fire too; assert
