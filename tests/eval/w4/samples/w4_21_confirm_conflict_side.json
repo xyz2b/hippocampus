@@ -1,0 +1,344 @@
+{
+  "id": "w4_21_confirm_conflict_side",
+  "contract": "w4.v1",
+  "batch": 2,
+  "label_status": "reviewed",
+  "focus": "确认冲突一方并重述其值：败方 retract 并解决关系，胜方由“未核实”细化为已核实",
+  "boundary_with": "w4_15_resolve_conflict",
+  "sources": {
+    "s-130": {
+      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+      "said_on": "2026-07-01"
+    },
+    "s-261": {
+      "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。",
+      "said_on": "2026-09-20"
+    },
+    "s-371": {
+      "text": "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。",
+      "said_on": "2026-09-27"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "栖风读书机的屏幕是8英寸",
+            "quote": {
+              "text": "栖风读书机的屏幕是8英寸"
+            }
+          },
+          "sentence": {
+            "text": "栖风读书机的屏幕是8英寸"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-371"
+        },
+        "said_on": "2026-09-27",
+        "time_resolutions": []
+      },
+      {
+        "index": 1,
+        "committed_id": null,
+        "candidate": {
+          "kind": "retraction",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": null,
+          "sentence": {
+            "text": "7英寸那份是记错的"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-371"
+        },
+        "said_on": "2026-09-27",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 50,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            }
+          },
+          "sentence": {
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-130"
+            },
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-07-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [
+          "rel-1"
+        ],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      },
+      {
+        "format": "current",
+        "id": 51,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。",
+            "quote": {
+              "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+            }
+          },
+          "sentence": {
+            "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": {
+            "quote": {
+              "text": "我还没核实哪份对"
+            },
+            "resolved": true
+          },
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-261"
+            },
+            "quote": {
+              "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-09-20",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [
+          "rel-1"
+        ],
+        "update": {
+          "status": "pending",
+          "reasons": [
+            "update_scope_incomplete"
+          ]
+        }
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel-1",
+        "kind": "conflict",
+        "members": [
+          50,
+          51
+        ],
+        "conditions": [],
+        "times": [],
+        "basis": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-130"
+            },
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            }
+          },
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-261"
+            },
+            "quote": {
+              "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+            }
+          }
+        ],
+        "status": "open",
+        "resolution": null
+      }
+    ],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "refine",
+        "targets": [
+          51
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-261",
+          "s-371"
+        ],
+        "effective": null,
+        "pending_reason": null
+      },
+      {
+        "candidate": 1,
+        "status": "decided",
+        "action": "retract",
+        "targets": [
+          50
+        ],
+        "resolves_relations": [
+          "rel-1"
+        ],
+        "basis_sources": [
+          "s-130",
+          "s-371"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "50": {
+          "stored_status": "superseded",
+          "termination_reason": "UserRetracted",
+          "ended": "end_unknown"
+        },
+        "51": {
+          "stored_status": "superseded",
+          "termination_reason": "Refinement",
+          "ended": "end_unknown",
+          "note": "原话“还没核实哪份对”留在历史中"
+        },
+        "new": {
+          "stored_status": "active",
+          "uncertainty": null,
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          }
+        }
+      },
+      "relations": [
+        {
+          "id": "rel-1",
+          "status": "resolved",
+          "resolution_source": "s-371",
+          "survivors": []
+        }
+      ],
+      "new_records": 1,
+      "candidate_update": {
+        "status": "pending",
+        "reasons": [
+          "update_scope_incomplete"
+        ]
+      },
+      "recall": {
+        "current": [
+          "new（8 英寸，已核实）"
+        ],
+        "history": [
+          "51（8 英寸，当时未核实）"
+        ],
+        "conflicts": []
+      }
+    },
+    "must_not": [
+      "不得把候选 0 判为 reinforce 51：51 带“还没核实”的不确定表达，新断言没有，限定语不同，不满足强化前提",
+      "不得只关闭 rel-1 而让 50 与 51 或新记录同时作为当前结论",
+      "不得由代码看到 refine 就推断 rel-1 已解决；解决只来自 W4 在撤回决定上给出的 resolves_relations",
+      "不得删除 s-130、s-261 原文"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "reinforce",
+      "why": "不确定变确定属于限定语变化，不是同一断言；强化会把“还没核实”吞掉"
+    },
+    {
+      "action": "correction",
+      "why": "51 没有说错，它如实记录了当时未核实；新断言是在其基础上确认"
+    }
+  ],
+  "note": "一条原文拆成两个候选（W1）：有值断言与撤回。关系由撤回决定解决：败方 50 结束，胜方 51 被新记录细化后进入历史，新记录不是关系成员。待定：两个决定分属不同候选，按现行契约分别提交；若只有 refine 提交成功，51 进入历史而新记录不在 rel-1 中，50 可能被当作无冲突的当前值。契约未规定关系成员随 refine 迁移，也未要求这两个决定同批提交，留给 W5 验收一并定。"
+}

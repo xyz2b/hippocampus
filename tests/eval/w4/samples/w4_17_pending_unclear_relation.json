@@ -42,14 +42,32 @@
           "strength": null,
           "uncertainty": null,
           "conditions": [],
-          "times": []
+          "times": [
+            {
+              "role": "validity",
+              "quote": {
+                "text": "最近"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            }
+          ]
         },
         "source": {
           "kind": "stored",
           "source_id": "s-390"
         },
         "said_on": "2026-09-27",
-        "time_resolutions": []
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
       }
     ],
     "records": [

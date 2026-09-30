@@ -53,24 +53,48 @@
         "format": "legacy",
         "id": 95,
         "data": {
+          "id": 95,
+          "owner_id": "user-1",
+          "evidence": [
+            {
+              "id": "ev-legacy-95",
+              "session_id": "legacy-session-7",
+              "turn_id": "legacy-turn-3",
+              "quote": "广州"
+            }
+          ],
           "subject_id": "self",
+          "memory_type": "Fact",
           "predicate": "lives_in",
           "value": {
             "Text": "广州"
           },
-          "status": "Active",
-          "scope": {
-            "conditions": [],
-            "domain": null
-          },
           "polarity": null,
           "strength": null,
-          "evidence": [
-            {
-              "quote": "广州",
-              "turn_id": null
-            }
-          ]
+          "scope": {
+            "domain": null,
+            "conditions": []
+          },
+          "retention_tier": "LongTerm",
+          "status": "Active",
+          "temporal": {
+            "observed_at": 1762099200,
+            "valid_from": null,
+            "valid_to": null,
+            "expires_at": null,
+            "reference": null
+          },
+          "extraction_confidence": "High",
+          "certainty": "High",
+          "supersedes": null,
+          "superseded_by": null,
+          "supersede_reason": null,
+          "explicit_memory_request": false,
+          "reinforcement_count": 0,
+          "retrieval_count": 0,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "tags": []
         },
         "evidence": [],
         "grade": "committed",

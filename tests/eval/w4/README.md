@@ -14,7 +14,11 @@
 
 样本由 `gen_samples.py` 生成；已复核的 JSON 是权威版本。生成器不会写出 `reviewed`：只有内容（除 `label_status` 外）与磁盘上已复核 JSON 完全一致的样本才保持 `reviewed`，新增或改动的样本一律写成 `draft`，须通过检查并经人工复核后才能改为 `reviewed`（规则见 `review_status.py`）。
 
-当前共 20 个样本：第 1 批 w4_01–w4_08，第 2 批 w4_09–w4_20。已知契约缺口：w4.v1 没有“确认冲突一方并重述其值”的单一动作，见 w4_15 的 note。
+当前共 21 个样本：第 1 批 w4_01–w4_08，第 2 批 w4_09–w4_21。确认冲突一方并重述其值不需要新动作：败方 retract 并解决关系，胜方按限定语变化判断（w4_21 中“未核实”变“已核实”为 refine，不满足强化前提）。关系解决后须写明保留方（survivors），非保留成员必须由本次决定结束，不能只关闭关系而让双方都作为当前结论。
+
+legacy 记录的 `data` 是第一阶段前 `src/model.rs` 的完整 Memory 序列化；`cargo test --test w4_legacy_fixture` 检查它能解码且原样回写。
+
+待定：同一原文拆出的两个决定按现行契约分别提交，若只有 refine 成功，关系成员不随之迁移（见 w4_21 note），留给 W5 验收。
 
 ```
 python3 tests/eval/w4/gen_samples.py            # 重新生成样本

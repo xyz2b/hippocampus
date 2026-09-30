@@ -19,6 +19,19 @@ TZ = dt.timezone(dt.timedelta(hours=8))
 ACTIONS = {"new", "reinforce", "state_change", "correction", "refine", "retract", "coexist", "conflict"}
 PENDING = {"target_unknown", "scope_incomplete", "unclear_relation"}
 NEED_TARGETS = {"state_change", "correction", "refine", "retract", "conflict"}
+# Field set of the serialized pre-phase-1 src/model.rs Memory (LegacyMemory,
+# contracts 3.2). tests/w4_legacy_fixture.rs additionally decodes it in Rust.
+LEGACY_MEMORY_FIELDS = {
+    "id", "owner_id", "evidence", "subject_id", "memory_type", "predicate", "value", "polarity", "strength",
+    "scope", "retention_tier", "status", "temporal", "extraction_confidence", "certainty", "supersedes",
+    "superseded_by", "supersede_reason", "explicit_memory_request", "reinforcement_count", "retrieval_count",
+    "last_reinforced_at", "last_retrieved_at", "tags"}
+LEGACY_EVIDENCE_FIELDS = {"id", "session_id", "turn_id", "quote"}
+# Lexical guard: a time word in the sentence must be kept as a time (or condition)
+# quote, even when it cannot be resolved (contracts 1.2/1.3: never dropped).
+TIME_WORDS = ("现在", "最近", "以前", "那阵子", "上个月", "去年", "昨天", "每天", "每周", "周末")
+# A preference sentence with a degree word has a strength expression (not null).
+STRENGTH_WORDS = ("很喜欢", "特别", "非常", "有点", "最喜欢", "不太")
 
 
 def load_samples():
@@ -72,6 +85,44 @@ def _uses_generic_fact(inp):
         any(r["candidate"]["relation"] == "fact" for r in inp["records"] if r.get("format") == "current")
 
 
+def _check_lexical(tag, c, errs):
+    text = c["sentence"]["text"]
+    kept = [t["quote"]["text"] for t in c.get("times", [])] + [q["quote"]["text"] for q in c.get("conditions", [])]
+    for w in TIME_WORDS:
+        if w in text and not any(w in k for k in kept):
+            errs.append(f"{tag}：原句中的时间表达 {w!r} 未保留（无法换算时应为 unknown，不能省略）")
+    if c.get("memory_type") == "preference" and c.get("strength") is None and any(w in text for w in STRENGTH_WORDS):
+        errs.append(f"{tag}：原句有强度表达，strength 不能为 null")
+
+
+def _check_resolutions(inp, decs, after, errs):
+    """A resolved conflict must leave at most the named survivors current.
+
+    Closing the relation while every member stays active would present both
+    sides as current conclusions; each non-survivor must be ended by a
+    decision in the same sample (contracts 2.4: members fully covered).
+    """
+    rels = {r["id"]: r for r in inp["relations"]}
+    claimed = {x for d in decs for x in d["resolves_relations"]}
+    targeted = {t for d in decs if d["status"] == "decided" for t in d["targets"]}
+    listed = {r["id"]: r for r in after.get("relations", []) if r.get("status") == "resolved" and "id" in r}
+    for rid in claimed - set(listed):
+        errs.append(f"关系 {rid} 被决定解决，但执行后状态未写明 resolved")
+    for rid, r in listed.items():
+        if rid not in claimed:
+            errs.append(f"关系 {rid} 标为 resolved，但没有决定给出 resolves_relations")
+            continue
+        members = set(rels[rid]["members"])
+        surv = r.get("survivors")
+        if surv is None or not set(surv) <= members or len(set(surv)) >= len(members):
+            errs.append(f"关系 {rid} 解决后须写明 survivors，且只能是部分成员")
+            continue
+        for m in members - set(surv):
+            st = after.get("records", {}).get(str(m), {})
+            if m not in targeted or st.get("stored_status") != "superseded":
+                errs.append(f"关系 {rid} 的成员 {m} 不是保留方，须由本次决定结束")
+
+
 def check(s) -> list:
     errs = []
     src = s["sources"]
@@ -81,8 +132,9 @@ def check(s) -> list:
         errs.append("记录 ID 重复")
     rel_ids = {r["id"] for r in inp["relations"]}
     for rel in inp["relations"]:
-        if not set(rel["members"]) <= set(rec_ids) or len(rel["members"]) < 2:
-            errs.append(f"关系 {rel['id']} 的成员须至少两个且都在输入记录中")
+        if not set(rel["members"]) <= set(rec_ids) or len(set(rel["members"])) < 2 or \
+                len(set(rel["members"])) != len(rel["members"]):
+            errs.append(f"关系 {rel['id']} 的成员须至少两个、不重复且都在输入记录中")
         for e in rel.get("basis", []):
             sid = e["source"]["source_id"]
             if sid not in src or e["quote"]["text"] not in src[sid]["text"]:
@@ -99,6 +151,16 @@ def check(s) -> list:
                 errs.append(f"legacy 记录 {r['id']} 须列出 gaps")
             if r.get("update") is not None:
                 errs.append(f"legacy 记录 {r['id']} 的 update 应为 null（未知）")
+            data = r.get("data") or {}
+            if set(data) != LEGACY_MEMORY_FIELDS:
+                errs.append(f"legacy 记录 {r['id']} 的 data 不是完整的旧 Memory："
+                            f"缺 {sorted(LEGACY_MEMORY_FIELDS - set(data))}，多 {sorted(set(data) - LEGACY_MEMORY_FIELDS)}")
+            elif data["id"] != r["id"]:
+                errs.append(f"legacy 记录 {r['id']} 的 data.id 与记录 ID 不符")
+            elif not data["evidence"] or any(set(e) != LEGACY_EVIDENCE_FIELDS for e in data["evidence"]):
+                errs.append(f"legacy 记录 {r['id']} 的旧 Evidence 须为 id/session_id/turn_id/quote")
+            if not r["evidence"] and "source_missing" not in r.get("gaps", []):
+                errs.append(f"legacy 记录 {r['id']} 没有可链接依据，gaps 须含 source_missing")
         else:
             for where, q in _quotes(r["candidate"]):
                 sids = [e["source"]["source_id"] for e in r["evidence"]]
@@ -106,6 +168,7 @@ def check(s) -> list:
                     errs.append(f"记录 {r['id']} 的 {where} 原文 {q!r} 不在其来源中")
             _check_times(f"记录 {r['id']}", r["candidate"].get("times", []), r.get("time_resolutions", []),
                          r["said_on"], errs)
+            _check_lexical(f"记录 {r['id']}", r["candidate"], errs)
         for rel in r.get("open_relations", []):
             if rel not in rel_ids:
                 errs.append(f"记录 {r['id']} 引用了不存在的关系 {rel}")
@@ -125,6 +188,7 @@ def check(s) -> list:
         if cd["kind"] == "retraction" and cd["value"] is not None:
             errs.append("retraction 不应有值")
         _check_times(f"候选 {c['index']}", cd.get("times", []), c.get("time_resolutions", []), c["said_on"], errs)
+        _check_lexical(f"候选 {c['index']}", cd, errs)
     exp = s["expect"]
     if s["call_w4"]:
         decs = exp.get("decisions", [])
@@ -170,6 +234,7 @@ def check(s) -> list:
                 # A verified time may still be unresolvable ("那阵子"): the
                 # resolution is then `unknown` and the old record ends with
                 # end_unknown; only a date-precise resolution fixes the end.
+        _check_resolutions(inp, decs, exp.get("after", {}), errs)
     else:
         cp = exp.get("code_path")
         if not cp or cp.get("w4_called") is not False:

@@ -65,6 +65,49 @@ class Samples(unittest.TestCase):
             "关系成员不在输入中": ("w4_15_resolve_conflict", lambda s: s["input"]["relations"][0].update(members=[50, 99])),
             "关系依据不是原文": ("w4_15_resolve_conflict",
                            lambda s: s["input"]["relations"][0]["basis"][0]["quote"].update(text="屏幕是7英寸")),
+            "关系成员重复": ("w4_15_resolve_conflict", lambda s: s["input"]["relations"][0].update(members=[50, 50])),
+            "旧 Memory 缺必填字段": ("w4_18_legacy_gaps", lambda s: legacy(s)["data"].pop("owner_id")),
+            "旧 Evidence 格式不符": ("w4_18_legacy_gaps",
+                                  lambda s: legacy(s)["data"].update(evidence=[{"quote": "广州", "turn_id": None}])),
+            "旧记录无依据却不标 source_missing": ("w4_18_legacy_gaps", lambda s: legacy(s).update(gaps=["sentence_missing"])),
+        }
+        for name, (sid, mutate) in cases.items():
+            s = copy.deepcopy(self.samples[sid])
+            mutate(s)
+            with self.subTest(case=name):
+                self.assertTrue(check_samples.check(s))
+
+
+    def test_checker_rejects_dropped_qualifiers(self):
+        def drop_times(i):
+            def f(s):
+                s["input"]["candidates"][i]["candidate"]["times"] = []
+                s["input"]["candidates"][i]["time_resolutions"] = []
+            return f
+        cases = {
+            "省略“最近”": ("w4_17_pending_unclear_relation", drop_times(0)),
+            "省略“现在”": ("w4_13_state_change_date_unknown", drop_times(0)),
+            "强度表达置空": ("w4_11_preference_strength",
+                           lambda s: s["input"]["candidates"][0]["candidate"].update(strength=None)),
+        }
+        for name, (sid, mutate) in cases.items():
+            s = copy.deepcopy(self.samples[sid])
+            mutate(s)
+            with self.subTest(case=name):
+                self.assertTrue(check_samples.check(s))
+
+    def test_checker_rejects_resolution_leaving_both_sides_current(self):
+        def rel(s):
+            return s["expect"]["after"]["relations"][0]
+        cases = {
+            "败方未结束": ("w4_21_confirm_conflict_side",
+                        lambda s: s["expect"]["after"]["records"]["50"].update(stored_status="active")),
+            "双方都列为保留方": ("w4_15_resolve_conflict", lambda s: rel(s).update(survivors=[50, 51])),
+            "未写保留方": ("w4_15_resolve_conflict", lambda s: rel(s).pop("survivors")),
+            "决定解决了关系但执行后未标 resolved": ("w4_15_resolve_conflict",
+                                         lambda s: s["expect"]["after"].update(relations=[])),
+            "标 resolved 却没有决定解决": ("w4_21_confirm_conflict_side",
+                                    lambda s: s["expect"]["decisions"][1].update(resolves_relations=[])),
         }
         for name, (sid, mutate) in cases.items():
             s = copy.deepcopy(self.samples[sid])

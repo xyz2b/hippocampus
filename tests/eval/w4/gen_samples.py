@@ -23,14 +23,18 @@ def cand(subject, relation, sentence, value=None, value_quote=None, kind="assert
 def ev(sid, quote): return {"source": {"kind": "stored", "source_id": sid}, "quote": Q(quote)}
 UNKNOWN_RES = {"status": "unknown", "start": None, "end_exclusive": None, "precision": "unknown"}
 def recurring(q): return {"role": "event", "quote": Q(q), "interp": {"kind": "recurring"}, "anchor": "said_on"}
+# A time expression that is present but has no computable interval ("现在", "最近"):
+# the quote is kept with interp unknown, never dropped (contracts 1.2/1.3).
+def vague(q, role="validity"): return {"role": role, "quote": Q(q), "interp": {"kind": "unknown"}, "anchor": "said_on"}
+UNRESOLVABLE = ("recurring", "unknown")
 def rec(id, c, sid, said_on, status="active", reason=None, ended="not_ended", history=(), rel=(), update=JUDGED,
         time_resolutions=None):
-    tr = time_resolutions if time_resolutions is not None else [UNKNOWN_RES for t in c["times"] if t["interp"]["kind"] == "recurring"]
+    tr = time_resolutions if time_resolutions is not None else [UNKNOWN_RES for t in c["times"] if t["interp"]["kind"] in UNRESOLVABLE]
     return {"format": "current", "id": id, "stored_status": status, "termination_reason": reason, "ended": ended,
             "candidate": c, "evidence": [ev(sid, c["sentence"]["text"])], "grade": "committed", "said_on": said_on,
             "time_resolutions": tr, "history": list(history), "open_relations": list(rel), "update": update}
 def incand(c, sid, said_on, index=0, committed_id=None, time_resolutions=None):
-    tr = list(time_resolutions) if time_resolutions is not None else [UNKNOWN_RES for t in c["times"] if t["interp"]["kind"] == "recurring"]
+    tr = list(time_resolutions) if time_resolutions is not None else [UNKNOWN_RES for t in c["times"] if t["interp"]["kind"] in UNRESOLVABLE]
     return {"index": index, "committed_id": committed_id, "candidate": c,
             "source": {"kind": "stored", "source_id": sid}, "said_on": said_on, "time_resolutions": tr}
 SCOPE_PENDING = {"status": "pending", "reasons": ["update_scope_incomplete"]}
@@ -209,7 +213,7 @@ sample("w4_09_new", "新增 new：检索到同主体的其他记录，但与新�
   note="works_at 为目录内专用关系，同关系当前记录已全部取得（本例没有），范围完整。")
 
 # ---------------- W10 强化
-t = "我还是很喜欢喝咖啡。"
+t = "我还是喜欢喝咖啡。"
 sample("w4_10_reinforce", "强化 reinforce：独立的新原文重复同一断言",
   {"s-111": S("我喜欢喝咖啡。", "2026-05-06"), "s-320": S(t, "2026-09-24")},
   [incand(cand("self", "fact", t, memory_type="preference"), "s-320", "2026-09-24")],
@@ -220,7 +224,7 @@ sample("w4_10_reinforce", "强化 reinforce：独立的新原文重复同一断�
              "new_records": 0, "candidate_update": SCOPE_PENDING,
              "recall": {"current": ["31（喜欢喝咖啡，两条原文依据）"]}},
    "must_not": ["不得新增一条重复记录", "同一来源重放不得再次增加计数",
-                "“很喜欢”只是语气，本例不视为偏好强度变化；若旧记录有明确强度且新句强度不同，应按 w4_11 处理"]},
+                "新旧任一方带强度表达（如“很喜欢”“有点喜欢”）而另一方不同或没有时，不得按同一断言强化（contracts 1.3），应按 w4_11 判断"]},
   coverage=PARTIAL, batch=2, boundary_with="w4_11_preference_strength",
   rejected=[{"action": "new", "why": "与 31 是同一偏好"}, {"action": "state_change", "why": "偏好没有变化"}])
 
@@ -229,7 +233,7 @@ t = "我现在特别喜欢爵士乐。"
 old_t = "我有点喜欢爵士乐。"
 sample("w4_11_preference_strength", "偏好强度变化 state_change（PreferenceChanged）：弱→强",
   {"s-121": S(old_t, "2026-04-10"), "s-330": S(t, "2026-09-24")},
-  [incand(cand("self", "fact", t, memory_type="preference", strength="strong"), "s-330", "2026-09-24")],
+  [incand(cand("self", "fact", t, memory_type="preference", strength="strong", times=[vague("现在")]), "s-330", "2026-09-24")],
   [rec(41, cand("self", "fact", old_t, memory_type="preference", strength="weak"), "s-121", "2026-04-10")],
   {"decisions": [{"candidate": 0, "status": "decided", "action": "state_change", "targets": [41], "resolves_relations": [],
                   "basis_sources": ["s-121", "s-330"], "effective": None, "pending_reason": None}],
@@ -265,7 +269,7 @@ sample("w4_12_multi_target", "多目标 state_change：两条旧的住址记录�
 t = "我换工作了，现在在腾讯。"
 sample("w4_13_state_change_date_unknown", "现实变化、没有生效时间：旧记录结束时间未知",
   {"s-304": S("我在字节跳动工作。", "2026-01-15"), "s-350": S(t, "2026-09-25")},
-  [incand(cand("self", "works_at", t, "腾讯"), "s-350", "2026-09-25")],
+  [incand(cand("self", "works_at", t, "腾讯", times=[vague("现在")]), "s-350", "2026-09-25")],
   [rec(64, cand("self", "works_at", "我在字节跳动工作。", "字节跳动"), "s-304", "2026-01-15")],
   {"decisions": [{"candidate": 0, "status": "decided", "action": "state_change", "targets": [64], "resolves_relations": [],
                   "basis_sources": ["s-304", "s-350"], "effective": None, "pending_reason": None}],
@@ -281,7 +285,7 @@ sample("w4_13_state_change_date_unknown", "现实变化、没有生效时间：�
 t = "我现在每天喝两杯咖啡。"
 sample("w4_14_rejudge_committed", "重判已提交的断言：committed_id 非空，不重复插入",
   {"s-112": S("我每天喝一杯咖啡。", "2026-05-06"), "s-360": S(t, "2026-09-20")},
-  [incand(cand("self", "fact", t, times=[recurring("每天")]), "s-360", "2026-09-20", committed_id=70)],
+  [incand(cand("self", "fact", t, times=[vague("现在"), recurring("每天")]), "s-360", "2026-09-20", committed_id=70)],
   [rec(55, cand("self", "fact", "我每天喝一杯咖啡。", times=[recurring("每天")]), "s-112", "2026-05-06")],
   {"decisions": [{"candidate": 0, "status": "decided", "action": "state_change", "targets": [55], "resolves_relations": [],
                   "basis_sources": ["s-112", "s-360"], "effective": None, "pending_reason": None}],
@@ -310,20 +314,20 @@ sample("w4_15_resolve_conflict", "解决已有冲突：用户确认 7 英寸记�
                   "basis_sources": ["s-130", "s-370"], "effective": None, "pending_reason": None}],
    "after": {"records": {"50": {"stored_status": "superseded", "termination_reason": "UserRetracted", "ended": "end_unknown"},
                          "51": {"stored_status": "active", "note": "不改动；其“还没核实”的原话照样保留"}},
-             "relations": [{"id": "rel-1", "status": "resolved", "resolution_source": "s-370"}],
+             "relations": [{"id": "rel-1", "status": "resolved", "resolution_source": "s-370", "survivors": [51]}],
              "new_records": 0, "candidate_update": SCOPE_PENDING,
              "recall": {"current": ["51（8 英寸，带原话中的“还没核实”）"], "conflicts": []}},
    "must_not": ["不得由代码在看到一次撤回后自动推断关系已解决——必须是 W4 明确给出 resolves_relations",
                 "不得把 51 改写成“已确认 8 英寸”：用户只确认了 7 英寸是错的",
                 "不得删除 s-130 原文"]},
   relations=[link], coverage=PARTIAL, batch=2,
-  note="用户确认的是“7 英寸记错了”，没有给出新值，按撤回处理（与 w4_05 一致）。若用户同时重述“是 8 英寸”，w4.v1 没有“确认一方、撤回另一方”的单一动作，可能产生与 51 重复的新版本；这一情形留作契约问题，不在本样本中。")
+  note="用户确认的是“7 英寸记错了”，没有给出新值，按撤回处理（与 w4_05 一致）。关系解决后只有 51 保留当前资格，50 由撤回结束；不能只关闭关系而让双方都作为当前结论。51 自带的“还没核实”不因此变成已确认。用户同时确认“是 8 英寸”的情形见 w4_21。")
 
 # ---------------- W16 W4 返回 pending：结论依赖“没有其他记录”
 t = "我现在只用这一台笔记本电脑了。"
 sample("w4_16_pending_scope_incomplete", "W4 返回 pending/scope_incomplete：结论依赖检索未覆盖的记录",
   {"s-305": S("我用的是一台 MacBook Air。", "2026-06-01"), "s-380": S(t, "2026-09-26")},
-  [incand(cand("self", "fact", t), "s-380", "2026-09-26")],
+  [incand(cand("self", "fact", t, times=[vague("现在")]), "s-380", "2026-09-26")],
   [rec(81, cand("self", "fact", "我用的是一台 MacBook Air。"), "s-305", "2026-06-01")],
   {"decisions": [{"candidate": 0, "status": "pending", "action": None, "targets": [], "resolves_relations": [],
                   "basis_sources": ["s-380"], "effective": None, "pending_reason": "scope_incomplete"}],
@@ -339,7 +343,7 @@ sample("w4_16_pending_scope_incomplete", "W4 返回 pending/scope_incomplete：�
 t = "我最近在学韩语。"
 sample("w4_17_pending_unclear_relation", "W4 返回 pending/unclear_relation：可能改学、也可能同时在学",
   {"s-306": S("我在学日语。", "2026-03-20"), "s-390": S(t, "2026-09-27")},
-  [incand(cand("self", "fact", t), "s-390", "2026-09-27")],
+  [incand(cand("self", "fact", t, times=[vague("最近")]), "s-390", "2026-09-27")],
   [rec(90, cand("self", "fact", "我在学日语。"), "s-306", "2026-03-20")],
   {"decisions": [{"candidate": 0, "status": "pending", "action": None, "targets": [90], "resolves_relations": [],
                   "basis_sources": ["s-306", "s-390"], "effective": None, "pending_reason": "unclear_relation"}],
@@ -353,10 +357,23 @@ sample("w4_17_pending_unclear_relation", "W4 返回 pending/unclear_relation：�
 
 # ---------------- W18 legacy 旧记录缺字段
 t = "我搬到成都了。"
+# LegacyMemory = the serialized src/model.rs Memory from before phase 1, complete and
+# decodable (checked by tests/w4_legacy_fixture.rs). Its only evidence is a value
+# fragment whose session/turn no longer link to a stored source, so the outer
+# evidence is [] and the gaps say why.
 legacy = {"format": "legacy", "id": 95,
-          "data": {"subject_id": "self", "predicate": "lives_in", "value": {"Text": "广州"}, "status": "Active",
-                   "scope": {"conditions": [], "domain": None}, "polarity": None, "strength": None,
-                   "evidence": [{"quote": "广州", "turn_id": None}]},
+          "data": {"id": 95, "owner_id": "user-1",
+                   "evidence": [{"id": "ev-legacy-95", "session_id": "legacy-session-7", "turn_id": "legacy-turn-3",
+                                 "quote": "广州"}],
+                   "subject_id": "self", "memory_type": "Fact", "predicate": "lives_in", "value": {"Text": "广州"},
+                   "polarity": None, "strength": None, "scope": {"domain": None, "conditions": []},
+                   "retention_tier": "LongTerm", "status": "Active",
+                   "temporal": {"observed_at": 1762099200, "valid_from": None, "valid_to": None, "expires_at": None,
+                                "reference": None},
+                   "extraction_confidence": "High", "certainty": "High",
+                   "supersedes": None, "superseded_by": None, "supersede_reason": None,
+                   "explicit_memory_request": False, "reinforcement_count": 0, "retrieval_count": 0,
+                   "last_reinforced_at": None, "last_retrieved_at": None, "tags": []},
           "evidence": [], "grade": "committed", "update": None, "gaps": ["source_missing", "sentence_missing", "qualifiers_unmapped"]}
 sample("w4_18_legacy_gaps", "legacy 旧记录缺来源和限定语：不能据此结束旧记录，保持 pending",
   {"s-400": S(t, "2026-09-27")},
@@ -404,4 +421,38 @@ sample("w4_20_pending_target_unknown", "W4 返回 pending/target_unknown：撤�
    "must_not": ["不得任选一条撤回", "不得同时撤回两条", "撤回不得作为有值断言提交"]},
   coverage=COMPLETE, batch=2, boundary_with="w4_06_retract_target_unknown",
   note="与 w4_06 不同：这里检索到了两条候选目标，W4 被调用，但无法确定指的是哪一条。可在后续交互中请用户澄清。")
+# ---------------- W21 确认冲突一方：胜方被细化为已核实，败方撤回，关系解决
+t = "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。"
+t2 = "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+t50 = "我已确认栖风读书机的屏幕尺寸是7英寸。"
+link = {"id": "rel-1", "kind": "conflict", "members": [50, 51], "conditions": [], "times": [],
+        "basis": [ev("s-130", t50), ev("s-261", t2)], "status": "open", "resolution": None}
+sample("w4_21_confirm_conflict_side", "确认冲突一方并重述其值：败方 retract 并解决关系，胜方由“未核实”细化为已核实",
+  {"s-130": S(t50, "2026-07-01"), "s-261": S(t2, "2026-09-20"), "s-371": S(t, "2026-09-27")},
+  [incand(cand("device_qifeng_reader", "fact", "栖风读书机的屏幕是8英寸"), "s-371", "2026-09-27", index=0),
+   incand(cand("device_qifeng_reader", "fact", "7英寸那份是记错的", kind="retraction"), "s-371", "2026-09-27", index=1)],
+  [rec(50, cand("device_qifeng_reader", "fact", t50), "s-130", "2026-07-01", rel=["rel-1"]),
+   rec(51, cand("device_qifeng_reader", "fact", t2, uncertainty={"quote": Q("我还没核实哪份对"), "resolved": True}),
+       "s-261", "2026-09-20", rel=["rel-1"], update=SCOPE_PENDING)],
+  {"decisions": [{"candidate": 0, "status": "decided", "action": "refine", "targets": [51], "resolves_relations": [],
+                  "basis_sources": ["s-261", "s-371"], "effective": None, "pending_reason": None},
+                 {"candidate": 1, "status": "decided", "action": "retract", "targets": [50], "resolves_relations": ["rel-1"],
+                  "basis_sources": ["s-130", "s-371"], "effective": None, "pending_reason": None}],
+   "after": {"records": {"50": {"stored_status": "superseded", "termination_reason": "UserRetracted", "ended": "end_unknown"},
+                         "51": {"stored_status": "superseded", "termination_reason": "Refinement", "ended": "end_unknown",
+                                "note": "原话“还没核实哪份对”留在历史中"},
+                         "new": {"stored_status": "active", "uncertainty": None, "update": SCOPE_PENDING}},
+             "relations": [{"id": "rel-1", "status": "resolved", "resolution_source": "s-371", "survivors": []}],
+             "new_records": 1, "candidate_update": SCOPE_PENDING,
+             "recall": {"current": ["new（8 英寸，已核实）"], "history": ["51（8 英寸，当时未核实）"], "conflicts": []}},
+   "must_not": ["不得把候选 0 判为 reinforce 51：51 带“还没核实”的不确定表达，新断言没有，限定语不同，不满足强化前提",
+                "不得只关闭 rel-1 而让 50 与 51 或新记录同时作为当前结论",
+                "不得由代码看到 refine 就推断 rel-1 已解决；解决只来自 W4 在撤回决定上给出的 resolves_relations",
+                "不得删除 s-130、s-261 原文"]},
+  relations=[link], coverage=PARTIAL, batch=2, boundary_with="w4_15_resolve_conflict",
+  rejected=[{"action": "reinforce", "why": "不确定变确定属于限定语变化，不是同一断言；强化会把“还没核实”吞掉"},
+            {"action": "correction", "why": "51 没有说错，它如实记录了当时未核实；新断言是在其基础上确认"}],
+  note="一条原文拆成两个候选（W1）：有值断言与撤回。关系由撤回决定解决：败方 50 结束，胜方 51 被新记录细化后进入历史，新记录不是关系成员。"
+       "待定：两个决定分属不同候选，按现行契约分别提交；若只有 refine 提交成功，51 进入历史而新记录不在 rel-1 中，50 可能被当作无冲突的当前值。"
+       "契约未规定关系成员随 refine 迁移，也未要求这两个决定同批提交，留给 W5 验收一并定。")
 print("batch2 ok")
