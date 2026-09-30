@@ -1,0 +1,163 @@
+{
+  "id": "w4_09_new",
+  "contract": "w4.v1",
+  "batch": 2,
+  "label_status": "reviewed",
+  "focus": "新增 new：检索到同主体的其他记录，但与新断言无关",
+  "boundary_with": "w4_10_reinforce",
+  "sources": {
+    "s-301": {
+      "text": "我住在北京。",
+      "said_on": "2026-03-02"
+    },
+    "s-310": {
+      "text": "我在字节跳动工作。",
+      "said_on": "2026-09-23"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "字节跳动",
+            "quote": {
+              "text": "字节跳动"
+            }
+          },
+          "sentence": {
+            "text": "我在字节跳动工作。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-310"
+        },
+        "said_on": "2026-09-23",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 60,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "北京",
+            "quote": {
+              "text": "北京"
+            }
+          },
+          "sentence": {
+            "text": "我住在北京。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-301"
+            },
+            "quote": {
+              "text": "我住在北京。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-03-02",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "new",
+        "targets": [],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-310"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "60": {
+          "stored_status": "active",
+          "ended": "not_ended"
+        },
+        "new": {
+          "stored_status": "active",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "60（北京）",
+          "new（字节跳动）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得改动 60",
+      "不得因同一主体就判为 refine 或 state_change"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "coexist",
+      "why": "coexist 用于同一关系在不同条件下并列；这里关系不同，直接新增"
+    }
+  ],
+  "note": "works_at 为目录内专用关系，同关系当前记录已全部取得（本例没有），范围完整。"
+}

@@ -188,5 +188,5 @@
       "why": "用户未确认 7 英寸是错的"
     }
   ],
-  "note": "冲突由原文对 50 的明确指向和双方依据成立，不依赖“没有其他相关记录”；范围不完整，新记录更新状态保留 pending/update_scope_incomplete。contracts 2.4 列举的可在范围不完整时执行的动作只有 state_change/correction/refine/retract，未提 conflict；此处按“针对已明确定位目标、双方依据齐全”理解为可执行，待确认。"
+  "note": "冲突由原文对 50 的明确指向和双方依据成立，不依赖“没有其他相关记录”；范围不完整，新记录更新状态保留 pending/update_scope_incomplete。contracts 2.4 列举的可在范围不完整时执行的动作只有 state_change/correction/refine/retract，未提 conflict；已确认：针对已明确定位的目标、新旧双方依据齐全的冲突，不依赖检索覆盖全部记录，可以保存（关系 open，旧记录不结束）。"
 }

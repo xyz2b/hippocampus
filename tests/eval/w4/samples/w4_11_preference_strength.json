@@ -1,0 +1,171 @@
+{
+  "id": "w4_11_preference_strength",
+  "contract": "w4.v1",
+  "batch": 2,
+  "label_status": "reviewed",
+  "focus": "偏好强度变化 state_change（PreferenceChanged）：弱→强",
+  "boundary_with": "w4_10_reinforce",
+  "sources": {
+    "s-121": {
+      "text": "我有点喜欢爵士乐。",
+      "said_on": "2026-04-10"
+    },
+    "s-330": {
+      "text": "我现在特别喜欢爵士乐。",
+      "said_on": "2026-09-24"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "preference",
+          "value": {
+            "kind": "text",
+            "text": "我现在特别喜欢爵士乐。",
+            "quote": {
+              "text": "我现在特别喜欢爵士乐。"
+            }
+          },
+          "sentence": {
+            "text": "我现在特别喜欢爵士乐。"
+          },
+          "polarity": "affirm",
+          "strength": "strong",
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-330"
+        },
+        "said_on": "2026-09-24",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 41,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "preference",
+          "value": {
+            "kind": "text",
+            "text": "我有点喜欢爵士乐。",
+            "quote": {
+              "text": "我有点喜欢爵士乐。"
+            }
+          },
+          "sentence": {
+            "text": "我有点喜欢爵士乐。"
+          },
+          "polarity": "affirm",
+          "strength": "weak",
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-121"
+            },
+            "quote": {
+              "text": "我有点喜欢爵士乐。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-04-10",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          41
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-121",
+          "s-330"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "41": {
+          "stored_status": "superseded",
+          "termination_reason": "PreferenceChanged",
+          "ended": "end_unknown"
+        },
+        "new": {
+          "stored_status": "active",
+          "strength": "strong",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "new（特别喜欢，strong）"
+        ],
+        "history": [
+          "41（有点喜欢，weak）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得判为 reinforce 而把强度差异吞掉（contracts 7：旧强度原样保留，不能按同一断言强化）",
+      "结束时间不得回填为接收日"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "reinforce",
+      "why": "强度由 weak 变为 strong，不是同一断言"
+    }
+  ]
+}

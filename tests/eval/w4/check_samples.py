@@ -80,16 +80,32 @@ def check(s) -> list:
     if len(set(rec_ids)) != len(rec_ids):
         errs.append("记录 ID 重复")
     rel_ids = {r["id"] for r in inp["relations"]}
+    for rel in inp["relations"]:
+        if not set(rel["members"]) <= set(rec_ids) or len(rel["members"]) < 2:
+            errs.append(f"关系 {rel['id']} 的成员须至少两个且都在输入记录中")
+        for e in rel.get("basis", []):
+            sid = e["source"]["source_id"]
+            if sid not in src or e["quote"]["text"] not in src[sid]["text"]:
+                errs.append(f"关系 {rel['id']} 的依据不在来源 {sid} 中")
     for r in inp["records"]:
         for e in r["evidence"]:
             sid = e["source"]["source_id"]
             if sid not in src or e["quote"]["text"] not in src[sid]["text"]:
                 errs.append(f"记录 {r['id']} 的依据不在来源 {sid} 中")
-        for where, q in _quotes(r["candidate"]):
-            sids = [e["source"]["source_id"] for e in r["evidence"]]
-            if not any(q in src[x]["text"] for x in sids if x in src):
-                errs.append(f"记录 {r['id']} 的 {where} 原文 {q!r} 不在其来源中")
-        _check_times(f"记录 {r['id']}", r["candidate"].get("times", []), r.get("time_resolutions", []), r["said_on"], errs)
+        if r.get("format") == "legacy":
+            # contracts 3.2: legacy records carry no Candidate; gaps are listed
+            # and the update state is unknown (null), never assumed judged.
+            if not r.get("gaps"):
+                errs.append(f"legacy 记录 {r['id']} 须列出 gaps")
+            if r.get("update") is not None:
+                errs.append(f"legacy 记录 {r['id']} 的 update 应为 null（未知）")
+        else:
+            for where, q in _quotes(r["candidate"]):
+                sids = [e["source"]["source_id"] for e in r["evidence"]]
+                if not any(q in src[x]["text"] for x in sids if x in src):
+                    errs.append(f"记录 {r['id']} 的 {where} 原文 {q!r} 不在其来源中")
+            _check_times(f"记录 {r['id']}", r["candidate"].get("times", []), r.get("time_resolutions", []),
+                         r["said_on"], errs)
         for rel in r.get("open_relations", []):
             if rel not in rel_ids:
                 errs.append(f"记录 {r['id']} 引用了不存在的关系 {rel}")

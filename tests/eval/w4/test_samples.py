@@ -55,6 +55,35 @@ class Samples(unittest.TestCase):
                 self.assertTrue(check_samples.check(s))
 
 
+    def test_checker_rejects_legacy_and_relation_errors(self):
+        def legacy(s):
+            return next(r for r in s["input"]["records"] if r["format"] == "legacy")
+        cases = {
+            "旧格式记录缺 gaps": ("w4_18_legacy_gaps", lambda s: legacy(s).update(gaps=[])),
+            "旧格式记录带 update": ("w4_18_legacy_gaps", lambda s: legacy(s).update(update={"status": "judged", "reasons": []})),
+            "关系只有一个成员": ("w4_15_resolve_conflict", lambda s: s["input"]["relations"][0].update(members=[50])),
+            "关系成员不在输入中": ("w4_15_resolve_conflict", lambda s: s["input"]["relations"][0].update(members=[50, 99])),
+            "关系依据不是原文": ("w4_15_resolve_conflict",
+                           lambda s: s["input"]["relations"][0]["basis"][0]["quote"].update(text="屏幕是7英寸")),
+        }
+        for name, (sid, mutate) in cases.items():
+            s = copy.deepcopy(self.samples[sid])
+            mutate(s)
+            with self.subTest(case=name):
+                self.assertTrue(check_samples.check(s))
+
+
+class ReviewStatusRule(unittest.TestCase):
+    def test_status_rule(self):
+        from review_status import status_for
+        d = {"id": "x", "label_status": "draft", "note": "a"}
+        self.assertEqual(status_for(d, None), "draft")
+        self.assertEqual(status_for(d, {"id": "x", "label_status": "reviewed", "note": "a"}), "reviewed")
+        self.assertEqual(status_for(d, {"id": "x", "label_status": "reviewed", "note": "b"}), "draft")
+        self.assertEqual(status_for(d, {"id": "x", "label_status": "draft", "note": "a"}), "draft")
+        self.assertEqual(status_for(d, {"id": "x", "note": "a"}), "draft")
+
+
 class CorrectOutputsPass(unittest.TestCase):
     """Correct variants the checker must accept (review round 2)."""
 

@@ -12,7 +12,9 @@
 | `expect.must_not` | 禁止的副作用 |
 | `rejected_alternatives` | 容易混淆的动作及排除理由；`boundary_with` 指向对照样本 |
 
-样本由 `gen_samples.py` 生成；已复核的 JSON 是权威版本，改动须重新生成、通过检查并重新复核。
+样本由 `gen_samples.py` 生成；已复核的 JSON 是权威版本。生成器不会写出 `reviewed`：只有内容（除 `label_status` 外）与磁盘上已复核 JSON 完全一致的样本才保持 `reviewed`，新增或改动的样本一律写成 `draft`，须通过检查并经人工复核后才能改为 `reviewed`（规则见 `review_status.py`）。
+
+当前共 20 个样本：第 1 批 w4_01–w4_08，第 2 批 w4_09–w4_20。已知契约缺口：w4.v1 没有“确认冲突一方并重述其值”的单一动作，见 w4_15 的 note。
 
 ```
 python3 tests/eval/w4/gen_samples.py            # 重新生成样本

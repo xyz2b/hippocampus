@@ -1,0 +1,143 @@
+{
+  "id": "w4_18_legacy_gaps",
+  "contract": "w4.v1",
+  "batch": 2,
+  "label_status": "reviewed",
+  "focus": "legacy 旧记录缺来源和限定语：不能据此结束旧记录，保持 pending",
+  "boundary_with": null,
+  "sources": {
+    "s-400": {
+      "text": "我搬到成都了。",
+      "said_on": "2026-09-27"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "成都",
+            "quote": {
+              "text": "成都"
+            }
+          },
+          "sentence": {
+            "text": "我搬到成都了。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-400"
+        },
+        "said_on": "2026-09-27",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "legacy",
+        "id": 95,
+        "data": {
+          "subject_id": "self",
+          "predicate": "lives_in",
+          "value": {
+            "Text": "广州"
+          },
+          "status": "Active",
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "polarity": null,
+          "strength": null,
+          "evidence": [
+            {
+              "quote": "广州",
+              "turn_id": null
+            }
+          ]
+        },
+        "evidence": [],
+        "grade": "committed",
+        "update": null,
+        "gaps": [
+          "source_missing",
+          "sentence_missing",
+          "qualifiers_unmapped"
+        ]
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "pending",
+        "action": null,
+        "targets": [
+          95
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-400"
+        ],
+        "effective": null,
+        "pending_reason": "unclear_relation"
+      }
+    ],
+    "after": {
+      "records": {
+        "95": {
+          "format": "legacy",
+          "status": "Active",
+          "note": "原样保留，不补造 Candidate、Quote 或来源"
+        },
+        "new": {
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_relation_unclear"
+            ]
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "new（成都，带 update.pending）"
+        ],
+        "legacy": [
+          "95（广州，带 gaps）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得以“缺字段等于无限定”结束 95（contracts 3.2）",
+      "不得为 95 伪造 source_id 或完整原句",
+      "不得把 95 从召回中去掉"
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "95 只有旧数据中的片段，没有可链接原文，也缺限定语，无法核准完整断言；新断言可提交，但与 95 的关系待判定。"
+}
