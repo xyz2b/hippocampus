@@ -50,15 +50,23 @@ def sample(id, focus, sources, candidates, records, expect, relations=(), covera
     # Review status is never generated: a sample stays `reviewed` only if its
     # content (everything except label_status) is identical to the reviewed
     # JSON already on disk; anything new or changed is written as `draft`.
+    for sid, m in MARKS.pop(id, {}).items():
+        d["sources"][sid] = {**d["sources"][sid], "qualifiers": m}
     path = OUT / f"{id}.json"
     d["label_status"] = status_for(d, json.loads(path.read_text(encoding="utf-8")) if path.exists() else None)
     path.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 def S(text, said_on): return {"text": text, "said_on": said_on}
+# Reviewer marks: qualifier expressions present in each source text (times,
+# conditions, uncertainty, strength words). check_samples.py requires every
+# candidate/record taken from that source to keep exactly these, so the check
+# follows the labels rather than a word list. Set just before each sample().
+MARKS = {}
 
 # ---------------- W01 现实变化（有生效时间）
 t = "我上个月从北京搬到上海了。"
 last_month = {"role": "event", "quote": Q("上个月"), "interp": {"kind": "relative", "unit": "month", "offset": -1}, "anchor": "said_on"}
+MARKS["w4_01_state_change"] = {'s-205': {'times': ['上个月']}}
 sample("w4_01_state_change", "现实变化 state_change：旧值曾经成立，现在变了",
   {"s-101": S("我住在北京。", "2026-03-02"), "s-205": S(t, "2026-09-10")},
   [incand(cand("self", "lives_in", t, "上海", times=[last_month]), "s-205", "2026-09-10",
@@ -94,6 +102,7 @@ sample("w4_02_correction", "纠错 correction：旧值从来不对",
 
 # ---------------- W03 整体细化
 t = "更准确地说，我每天早上跑步五公里。"
+MARKS["w4_03_refine_whole"] = {'s-110': {'times': ['每天早上']}, 's-240': {'times': ['每天早上']}}
 sample("w4_03_refine_whole", "细化 refine：新断言覆盖并修订整个旧断言",
   {"s-110": S("我每天早上都跑步。", "2026-05-06"), "s-240": S(t, "2026-09-15")},
   [incand(cand("self", "fact", t, times=[recurring("每天早上")]), "s-240", "2026-09-15")],
@@ -111,6 +120,7 @@ sample("w4_03_refine_whole", "细化 refine：新断言覆盖并修订整个旧�
 
 # ---------------- W04 局部补充（并存）
 t = "周末的时候我更喜欢喝手冲咖啡。"
+MARKS["w4_04_coexist_partial"] = {'s-241': {'conditions': ['周末的时候']}}
 sample("w4_04_coexist_partial", "局部补充 coexist：只在新条件下成立，不结束较一般的旧事实",
   {"s-111": S("我喜欢喝咖啡。", "2026-05-06"), "s-241": S(t, "2026-09-15")},
   [incand(cand("self", "fact", t, memory_type="preference", conditions=["周末的时候"]), "s-241", "2026-09-15")],
@@ -128,6 +138,7 @@ sample("w4_04_coexist_partial", "局部补充 coexist：只在新条件下成立
 
 # ---------------- W05 撤回（无新值）
 t = "我之前说每周三晚上去游泳，那句不对，收回。"
+MARKS["w4_05_retract"] = {'s-120': {'times': ['每周三晚上']}, 's-250': {'times': ['每周三晚上']}}
 sample("w4_05_retract", "撤回 retract：用户收回旧断言，没有给出新值",
   {"s-120": S("我每周三晚上去游泳。", "2026-06-01"), "s-250": S(t, "2026-09-18")},
   [incand(cand("self", "fact", t, kind="retraction", times=[recurring("每周三晚上")]), "s-250", "2026-09-18")],
@@ -160,6 +171,7 @@ sample("w4_06_retract_target_unknown", "撤回目标不明：代码保留 pendin
 
 # ---------------- W07 真实冲突
 t = "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。"
+MARKS["w4_07_conflict"] = {'s-260': {'uncertainty': ['还没核实哪个对']}}
 sample("w4_07_conflict", "真实冲突 conflict：双方都有依据，均不能作为唯一当前值",
   {"s-130": S("我已确认栖风读书机的屏幕尺寸是7英寸。", "2026-07-01"), "s-260": S(t, "2026-09-20")},
   [incand(cand("device_qifeng_reader", "fact", t, uncertainty={"quote": Q("还没核实哪个对"), "resolved": True}),
@@ -231,6 +243,7 @@ sample("w4_10_reinforce", "强化 reinforce：独立的新原文重复同一断�
 # ---------------- W11 偏好强度变化
 t = "我现在特别喜欢爵士乐。"
 old_t = "我有点喜欢爵士乐。"
+MARKS["w4_11_preference_strength"] = {'s-121': {'strength': ['有点喜欢']}, 's-330': {'times': ['现在'], 'strength': ['特别喜欢']}}
 sample("w4_11_preference_strength", "偏好强度变化 state_change（PreferenceChanged）：弱→强",
   {"s-121": S(old_t, "2026-04-10"), "s-330": S(t, "2026-09-24")},
   [incand(cand("self", "fact", t, memory_type="preference", strength="strong", times=[vague("现在")]), "s-330", "2026-09-24")],
@@ -267,6 +280,7 @@ sample("w4_12_multi_target", "多目标 state_change：两条旧的住址记录�
 
 # ---------------- W13 现实变化，日期未知
 t = "我换工作了，现在在腾讯。"
+MARKS["w4_13_state_change_date_unknown"] = {'s-350': {'times': ['现在']}}
 sample("w4_13_state_change_date_unknown", "现实变化、没有生效时间：旧记录结束时间未知",
   {"s-304": S("我在字节跳动工作。", "2026-01-15"), "s-350": S(t, "2026-09-25")},
   [incand(cand("self", "works_at", t, "腾讯", times=[vague("现在")]), "s-350", "2026-09-25")],
@@ -283,6 +297,7 @@ sample("w4_13_state_change_date_unknown", "现实变化、没有生效时间：�
 
 # ---------------- W14 已提交断言的重判
 t = "我现在每天喝两杯咖啡。"
+MARKS["w4_14_rejudge_committed"] = {'s-112': {'times': ['每天']}, 's-360': {'times': ['现在', '每天']}}
 sample("w4_14_rejudge_committed", "重判已提交的断言：committed_id 非空，不重复插入",
   {"s-112": S("我每天喝一杯咖啡。", "2026-05-06"), "s-360": S(t, "2026-09-20")},
   [incand(cand("self", "fact", t, times=[vague("现在"), recurring("每天")]), "s-360", "2026-09-20", committed_id=70)],
@@ -303,6 +318,7 @@ t = "我核实过了，栖风读书机屏幕7英寸那份是记错的。"
 t2 = "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
 link = {"id": "rel-1", "kind": "conflict", "members": [50, 51], "conditions": [], "times": [],
         "basis": [ev("s-130", "我已确认栖风读书机的屏幕尺寸是7英寸。"), ev("s-261", t2)], "status": "open", "resolution": None}
+MARKS["w4_15_resolve_conflict"] = {'s-261': {'uncertainty': ['我还没核实哪份对']}}
 sample("w4_15_resolve_conflict", "解决已有冲突：用户确认 7 英寸记错，撤回该成员并解决关系",
   {"s-130": S("我已确认栖风读书机的屏幕尺寸是7英寸。", "2026-07-01"), "s-261": S(t2, "2026-09-20"),
    "s-370": S(t, "2026-09-26")},
@@ -325,6 +341,7 @@ sample("w4_15_resolve_conflict", "解决已有冲突：用户确认 7 英寸记�
 
 # ---------------- W16 W4 返回 pending：结论依赖“没有其他记录”
 t = "我现在只用这一台笔记本电脑了。"
+MARKS["w4_16_pending_scope_incomplete"] = {'s-380': {'times': ['现在']}}
 sample("w4_16_pending_scope_incomplete", "W4 返回 pending/scope_incomplete：结论依赖检索未覆盖的记录",
   {"s-305": S("我用的是一台 MacBook Air。", "2026-06-01"), "s-380": S(t, "2026-09-26")},
   [incand(cand("self", "fact", t, times=[vague("现在")]), "s-380", "2026-09-26")],
@@ -341,6 +358,7 @@ sample("w4_16_pending_scope_incomplete", "W4 返回 pending/scope_incomplete：�
 
 # ---------------- W17 W4 返回 pending：新旧关系不明
 t = "我最近在学韩语。"
+MARKS["w4_17_pending_unclear_relation"] = {'s-390': {'times': ['最近']}}
 sample("w4_17_pending_unclear_relation", "W4 返回 pending/unclear_relation：可能改学、也可能同时在学",
   {"s-306": S("我在学日语。", "2026-03-20"), "s-390": S(t, "2026-09-27")},
   [incand(cand("self", "fact", t, times=[vague("最近")]), "s-390", "2026-09-27")],
@@ -407,6 +425,7 @@ sample("w4_19_task_scope", "任务范围：只在可信任务内判定，其他�
 
 # ---------------- W20 W4 返回 pending：撤回目标不唯一
 t = "我之前说的那个住处不对，收回。"
+MARKS["w4_20_pending_target_unknown"] = {'s-308': {'conditions': ['周末']}}
 sample("w4_20_pending_target_unknown", "W4 返回 pending/target_unknown：撤回的目标在多条记录中不确定",
   {"s-307": S("我住在北京。", "2026-02-01"), "s-308": S("我周末住在天津的房子里。", "2026-04-01"),
    "s-410": S(t, "2026-09-28")},
@@ -427,10 +446,11 @@ t2 = "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪�
 t50 = "我已确认栖风读书机的屏幕尺寸是7英寸。"
 link = {"id": "rel-1", "kind": "conflict", "members": [50, 51], "conditions": [], "times": [],
         "basis": [ev("s-130", t50), ev("s-261", t2)], "status": "open", "resolution": None}
+MARKS["w4_21_confirm_conflict_side"] = {'s-261': {'uncertainty': ['我还没核实哪份对']}}
 sample("w4_21_confirm_conflict_side", "确认冲突一方并重述其值：败方 retract 并解决关系，胜方由“未核实”细化为已核实",
   {"s-130": S(t50, "2026-07-01"), "s-261": S(t2, "2026-09-20"), "s-371": S(t, "2026-09-27")},
-  [incand(cand("device_qifeng_reader", "fact", "栖风读书机的屏幕是8英寸"), "s-371", "2026-09-27", index=0),
-   incand(cand("device_qifeng_reader", "fact", "7英寸那份是记错的", kind="retraction"), "s-371", "2026-09-27", index=1)],
+  [incand(cand("device_qifeng_reader", "fact", t), "s-371", "2026-09-27", index=0),
+   incand(cand("device_qifeng_reader", "fact", t, kind="retraction"), "s-371", "2026-09-27", index=1)],
   [rec(50, cand("device_qifeng_reader", "fact", t50), "s-130", "2026-07-01", rel=["rel-1"]),
    rec(51, cand("device_qifeng_reader", "fact", t2, uncertainty={"quote": Q("我还没核实哪份对"), "resolved": True}),
        "s-261", "2026-09-20", rel=["rel-1"], update=SCOPE_PENDING)],
@@ -448,11 +468,12 @@ sample("w4_21_confirm_conflict_side", "确认冲突一方并重述其值：败�
    "must_not": ["不得把候选 0 判为 reinforce 51：51 带“还没核实”的不确定表达，新断言没有，限定语不同，不满足强化前提",
                 "不得只关闭 rel-1 而让 50 与 51 或新记录同时作为当前结论",
                 "不得由代码看到 refine 就推断 rel-1 已解决；解决只来自 W4 在撤回决定上给出的 resolves_relations",
-                "不得删除 s-130、s-261 原文"]},
+                "不得删除 s-130、s-261 原文",
+                "两个决定不得部分提交（W5 验收项）"]},
   relations=[link], coverage=PARTIAL, batch=2, boundary_with="w4_15_resolve_conflict",
   rejected=[{"action": "reinforce", "why": "不确定变确定属于限定语变化，不是同一断言；强化会把“还没核实”吞掉"},
             {"action": "correction", "why": "51 没有说错，它如实记录了当时未核实；新断言是在其基础上确认"}],
-  note="一条原文拆成两个候选（W1）：有值断言与撤回。关系由撤回决定解决：败方 50 结束，胜方 51 被新记录细化后进入历史，新记录不是关系成员。"
-       "待定：两个决定分属不同候选，按现行契约分别提交；若只有 refine 提交成功，51 进入历史而新记录不在 rel-1 中，50 可能被当作无冲突的当前值。"
-       "契约未规定关系成员随 refine 迁移，也未要求这两个决定同批提交，留给 W5 验收一并定。")
+  note="一条原文拆成两个候选（W1）：有值断言与撤回，两者都引用同一完整原句（通用 fact 的 value.quote 与 sentence 相同）。关系由撤回决定解决：败方 50 结束，胜方 51 被新记录细化后进入历史，新记录不是关系成员。"
+       "W5（contracts 2.5）：两个决定相互依赖，同一 T2 原子提交，任一 needs_rejudge 则整组重判，失败整组回滚；"
+       "若只有细化而未解决关系，替代记录须继承 51 的 open 关系，冲突保持可见。")
 print("batch2 ok")

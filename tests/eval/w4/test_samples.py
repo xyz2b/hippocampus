@@ -89,6 +89,16 @@ class Samples(unittest.TestCase):
             "省略“现在”": ("w4_13_state_change_date_unknown", drop_times(0)),
             "强度表达置空": ("w4_11_preference_strength",
                            lambda s: s["input"]["candidates"][0]["candidate"].update(strength=None)),
+            "多出未标注的时间": ("w4_09_new", lambda s: (
+                s["input"]["candidates"][0]["candidate"].update(times=[{"role": "validity", "quote": {"text": "字节"},
+                                                                        "interp": {"kind": "unknown"}, "anchor": "said_on"}]),
+                s["input"]["candidates"][0].update(time_resolutions=[{"status": "unknown", "start": None,
+                                                                      "end_exclusive": None, "precision": "unknown"}]))),
+            "候选截取片段": ("w4_21_confirm_conflict_side",
+                         lambda s: s["input"]["candidates"][1]["candidate"].update(sentence={"text": "7英寸那份是记错的"})),
+            "fact 值与原句不同": ("w4_21_confirm_conflict_side",
+                              lambda s: s["input"]["candidates"][0]["candidate"]["value"].update(
+                                  quote={"text": "栖风读书机的屏幕是8英寸"})),
         }
         for name, (sid, mutate) in cases.items():
             s = copy.deepcopy(self.samples[sid])
@@ -108,6 +118,10 @@ class Samples(unittest.TestCase):
                                          lambda s: s["expect"]["after"].update(relations=[])),
             "标 resolved 却没有决定解决": ("w4_21_confirm_conflict_side",
                                     lambda s: s["expect"]["decisions"][1].update(resolves_relations=[])),
+            "败方改成强化": ("w4_21_confirm_conflict_side",
+                         lambda s: s["expect"]["decisions"][1].update(action="reinforce")),
+            "终止原因与动作不符": ("w4_21_confirm_conflict_side",
+                            lambda s: s["expect"]["after"]["records"]["50"].update(termination_reason="Refinement")),
         }
         for name, (sid, mutate) in cases.items():
             s = copy.deepcopy(self.samples[sid])
@@ -138,6 +152,7 @@ class CorrectOutputsPass(unittest.TestCase):
         s = copy.deepcopy(self.samples["w4_01_state_change"])
         text = "我那阵子从北京搬到上海了。"
         s["sources"]["s-205"]["text"] = text
+        s["sources"]["s-205"]["qualifiers"] = {"times": ["那阵子"]}
         c = s["input"]["candidates"][0]
         t = {"role": "event", "quote": {"text": "那阵子"}, "interp": {"kind": "unknown"}, "anchor": "said_on"}
         c["candidate"]["sentence"]["text"] = text
@@ -145,6 +160,16 @@ class CorrectOutputsPass(unittest.TestCase):
         c["time_resolutions"] = [{"status": "unknown", "start": None, "end_exclusive": None, "precision": "unknown"}]
         s["expect"]["decisions"][0]["effective"] = t
         s["expect"]["after"]["records"]["17"]["ended"] = "end_unknown"
+        self.assertEqual(check_samples.check(s), [])
+
+    def test_unmarked_lookalike_words_are_not_qualifiers(self):
+        # "特别版" is not a strength and a title containing "以前" is not a time:
+        # with no reviewer mark on the source, nothing has to be kept.
+        s = copy.deepcopy(self.samples["w4_10_reinforce"])
+        text = "我还是喜欢《以前的我们》里提到的特别版咖啡。"
+        s["sources"]["s-320"]["text"] = text
+        c = s["input"]["candidates"][0]["candidate"]
+        c.update(sentence={"text": text}, value={"kind": "text", "text": text, "quote": {"text": text}})
         self.assertEqual(check_samples.check(s), [])
 
     def test_untouched_old_record_keeps_its_state(self):

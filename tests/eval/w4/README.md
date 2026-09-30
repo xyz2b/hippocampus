@@ -18,7 +18,9 @@
 
 legacy 记录的 `data` 是第一阶段前 `src/model.rs` 的完整 Memory 序列化；`cargo test --test w4_legacy_fixture` 检查它能解码且原样回写。
 
-待定：同一原文拆出的两个决定按现行契约分别提交，若只有 refine 成功，关系成员不随之迁移（见 w4_21 note），留给 W5 验收。
+限定语保留按人工标注检查：`sources.<id>.qualifiers` 列出原文中的时间、条件、不确定表达和强度表达，取自该来源的候选和记录必须恰好保留这些（无法换算的时间以 unknown 保留），不用词表猜测。候选与记录的 sentence 须为完整原句；终止动作（state_change、correction、refine、retract）须以对应原因结束目标，其他结果不结束目标。
+
+W5 验收（contracts 2.5）另列：同一原文相关决定的原子提交与整组重判/回滚（w4_21）；替代 open 关系成员而未解决关系时的成员迁移；幂等、并发过期、多目标原子提交。
 
 ```
 python3 tests/eval/w4/gen_samples.py            # 重新生成样本

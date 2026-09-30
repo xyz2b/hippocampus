@@ -27,11 +27,10 @@ LEGACY_MEMORY_FIELDS = {
     "superseded_by", "supersede_reason", "explicit_memory_request", "reinforcement_count", "retrieval_count",
     "last_reinforced_at", "last_retrieved_at", "tags"}
 LEGACY_EVIDENCE_FIELDS = {"id", "session_id", "turn_id", "quote"}
-# Lexical guard: a time word in the sentence must be kept as a time (or condition)
-# quote, even when it cannot be resolved (contracts 1.2/1.3: never dropped).
-TIME_WORDS = ("现在", "最近", "以前", "那阵子", "上个月", "去年", "昨天", "每天", "每周", "周末")
-# A preference sentence with a degree word has a strength expression (not null).
-STRENGTH_WORDS = ("很喜欢", "特别", "非常", "有点", "最喜欢", "不太")
+# Actions that end their targets, with the allowed termination reasons (contracts 2.4 table).
+ENDING = {"state_change": {"StateChanged", "PreferenceChanged", "ConstraintChanged"},
+          "correction": {"Correction"}, "refine": {"Refinement", "ScopeRefined"}, "retract": {"UserRetracted"}}
+SENTENCE_END = "。！？!?"
 
 
 def load_samples():
@@ -85,14 +84,37 @@ def _uses_generic_fact(inp):
         any(r["candidate"]["relation"] == "fact" for r in inp["records"] if r.get("format") == "current")
 
 
-def _check_lexical(tag, c, errs):
+def _whole_sentences(sentence, text):
+    """True if `sentence` is a run of whole sentences of `text` (contracts 1.4: complete sentence)."""
+    i = text.find(sentence)
+    while i >= 0:
+        j = i + len(sentence)
+        if (i == 0 or text[i - 1] in SENTENCE_END) and (j == len(text) or text[j - 1] in SENTENCE_END):
+            return True
+        i = text.find(sentence, i + 1)
+    return False
+
+
+def _check_qualifiers(tag, c, source, errs):
+    """Kept qualifiers must match the reviewer marks on the source, both ways."""
+    marks = source.get("qualifiers", {})
     text = c["sentence"]["text"]
-    kept = [t["quote"]["text"] for t in c.get("times", [])] + [q["quote"]["text"] for q in c.get("conditions", [])]
-    for w in TIME_WORDS:
-        if w in text and not any(w in k for k in kept):
-            errs.append(f"{tag}：原句中的时间表达 {w!r} 未保留（无法换算时应为 unknown，不能省略）")
-    if c.get("memory_type") == "preference" and c.get("strength") is None and any(w in text for w in STRENGTH_WORDS):
-        errs.append(f"{tag}：原句有强度表达，strength 不能为 null")
+    for kind in marks:
+        for q in marks[kind]:
+            if q not in source["text"]:
+                errs.append(f"{tag}：标注的 {kind} {q!r} 不在原文中")
+    kept = {"times": [t["quote"]["text"] for t in c.get("times", [])],
+            "conditions": [q["quote"]["text"] for q in c.get("conditions", [])],
+            "uncertainty": [c["uncertainty"]["quote"]["text"]] if c.get("uncertainty") else []}
+    for kind, got in kept.items():
+        want = [q for q in marks.get(kind, []) if q in text]
+        if sorted(got) != sorted(want):
+            errs.append(f"{tag}：{kind} 保留为 {got}，原文标注为 {want}（无法换算的时间也须以 unknown 保留）")
+    has_strength_expr = any(q in text for q in marks.get("strength", []))
+    if has_strength_expr and c.get("strength") is None:
+        errs.append(f"{tag}：原文标注有强度表达，strength 不能为 null")
+    if not has_strength_expr and c.get("strength") is not None:
+        errs.append(f"{tag}：原文没有标注强度表达，strength 应为 null")
 
 
 def _check_resolutions(inp, decs, after, errs):
@@ -104,7 +126,7 @@ def _check_resolutions(inp, decs, after, errs):
     """
     rels = {r["id"]: r for r in inp["relations"]}
     claimed = {x for d in decs for x in d["resolves_relations"]}
-    targeted = {t for d in decs if d["status"] == "decided" for t in d["targets"]}
+    ended_by = {t: d["action"] for d in decs if d["status"] == "decided" and d["action"] in ENDING for t in d["targets"]}
     listed = {r["id"]: r for r in after.get("relations", []) if r.get("status") == "resolved" and "id" in r}
     for rid in claimed - set(listed):
         errs.append(f"关系 {rid} 被决定解决，但执行后状态未写明 resolved")
@@ -119,8 +141,24 @@ def _check_resolutions(inp, decs, after, errs):
             continue
         for m in members - set(surv):
             st = after.get("records", {}).get(str(m), {})
-            if m not in targeted or st.get("stored_status") != "superseded":
-                errs.append(f"关系 {rid} 的成员 {m} 不是保留方，须由本次决定结束")
+            if m not in ended_by or st.get("stored_status") != "superseded" or \
+                    st.get("termination_reason") not in ENDING[ended_by[m]]:
+                errs.append(f"关系 {rid} 的成员 {m} 不是保留方，须由本次的终止动作结束（强化等不算）")
+
+
+def _check_target_states(decs, after, errs):
+    """Ending actions end their targets with a matching reason; other outcomes leave them current."""
+    recs = after.get("records", {})
+    for d in decs:
+        for t in d["targets"]:
+            st = recs.get(str(t))
+            if not st or "stored_status" not in st:
+                continue
+            if d["status"] == "decided" and d["action"] in ENDING:
+                if st["stored_status"] != "superseded" or st.get("termination_reason") not in ENDING[d["action"]]:
+                    errs.append(f"决定 {d['candidate']}：{d['action']} 的目标 {t} 须结束，原因为 {sorted(ENDING[d['action']])}")
+            elif st["stored_status"] == "superseded":
+                errs.append(f"决定 {d['candidate']}：{d['action'] or d['status']} 不结束目标 {t}")
 
 
 def check(s) -> list:
@@ -168,7 +206,11 @@ def check(s) -> list:
                     errs.append(f"记录 {r['id']} 的 {where} 原文 {q!r} 不在其来源中")
             _check_times(f"记录 {r['id']}", r["candidate"].get("times", []), r.get("time_resolutions", []),
                          r["said_on"], errs)
-            _check_lexical(f"记录 {r['id']}", r["candidate"], errs)
+            rsid = r["evidence"][0]["source"]["source_id"] if r["evidence"] else None
+            if rsid in src:
+                _check_qualifiers(f"记录 {r['id']}", r["candidate"], src[rsid], errs)
+                if not _whole_sentences(r["candidate"]["sentence"]["text"], src[rsid]["text"]):
+                    errs.append(f"记录 {r['id']}：sentence 须为完整原句")
         for rel in r.get("open_relations", []):
             if rel not in rel_ids:
                 errs.append(f"记录 {r['id']} 引用了不存在的关系 {rel}")
@@ -188,7 +230,11 @@ def check(s) -> list:
         if cd["kind"] == "retraction" and cd["value"] is not None:
             errs.append("retraction 不应有值")
         _check_times(f"候选 {c['index']}", cd.get("times", []), c.get("time_resolutions", []), c["said_on"], errs)
-        _check_lexical(f"候选 {c['index']}", cd, errs)
+        _check_qualifiers(f"候选 {c['index']}", cd, src[sid], errs)
+        if not _whole_sentences(cd["sentence"]["text"], src[sid]["text"]):
+            errs.append(f"候选 {c['index']}：sentence 须为完整原句，不能截取片段")
+        if cd["relation"] == "fact" and cd["value"] and cd["value"]["quote"]["text"] != cd["sentence"]["text"]:
+            errs.append(f"候选 {c['index']}：通用 fact 的 value.quote 须与 sentence 相同")
     exp = s["expect"]
     if s["call_w4"]:
         decs = exp.get("decisions", [])
@@ -235,6 +281,7 @@ def check(s) -> list:
                 # resolution is then `unknown` and the old record ends with
                 # end_unknown; only a date-precise resolution fixes the end.
         _check_resolutions(inp, decs, exp.get("after", {}), errs)
+        _check_target_states(decs, exp.get("after", {}), errs)
     else:
         cp = exp.get("code_path")
         if not cp or cp.get("w4_called") is not False:
