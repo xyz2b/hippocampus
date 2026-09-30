@@ -166,6 +166,30 @@ class ReplacementBinding(unittest.TestCase):
                                                        "update": {"status": "judged", "reasons": []}}
         return s
 
+    def same_source_two_groups(self):
+        # One source, one claim, two independent dependency groups (W5 D2/D3):
+        # candidate 0 replaces the conflicting 110/111, candidate 1 is an
+        # unrelated new fact from the same sentence.
+        s = copy.deepcopy(self.base)
+        text = "我已经搬到深圳了，现在在腾讯工作。"
+        s["sources"]["s-510"]["text"] = text
+        c0 = s["input"]["candidates"][0]
+        c0["candidate"]["sentence"] = {"text": text}
+        c1 = copy.deepcopy(c0)
+        c1["index"] = 1
+        c1["candidate"].update(relation="works_at", value={"kind": "text", "text": "腾讯", "quote": {"text": "腾讯"}},
+                               times=[{"role": "validity", "quote": {"text": "现在"}, "interp": {"kind": "unknown"},
+                                       "anchor": "said_on"}])
+        c1["time_resolutions"] = [{"status": "unknown", "start": None, "end_exclusive": None, "precision": "unknown"}]
+        s["input"]["candidates"].append(c1)
+        s["qualifier_marks"]["candidate:1"] = {"times": ["现在"]}
+        s["expect"]["decisions"].append({"candidate": 1, "status": "decided", "action": "new", "targets": [],
+                                         "resolves_relations": [], "basis_sources": ["s-510"], "effective": None,
+                                         "pending_reason": None})
+        s["expect"]["after"]["records"]["new_work"] = {"from_candidate": 1, "stored_status": "active",
+                                                       "update": {"status": "judged", "reasons": []}}
+        return s
+
     def rejudged_member_in_input(self):
         # 120 was committed earlier and is itself a member of rel-2, so code
         # passes it in the input records; the re-judge still reuses 120.
@@ -192,6 +216,7 @@ class ReplacementBinding(unittest.TestCase):
     def test_correct_variants_pass(self):
         for name, s in [("首次提交", copy.deepcopy(self.base)), ("重判复用 120", self.rejudged()),
                         ("同批无关新事实不受影响", self.with_unrelated_new_fact()),
+                        ("同一原文两组（W5 D2/D3 夹具）", self.same_source_two_groups()),
                         ("重判复用的 120 也在输入中", self.rejudged_member_in_input()),
                         ("21 号新记录用数字编号", self.w21_numbered()),
                         ("重判为强化另一记录（归并例外，w4_23）", self.merged())]:
@@ -219,8 +244,6 @@ class ReplacementBinding(unittest.TestCase):
             "21 号数字编号：删掉更新状态": (self.w21_numbered, lambda s: rec(s, "130").pop("update")),
             "归并例外：没写归并目标": (self.merged, lambda s: rec(s, "70").pop("merged_into")),
             "归并例外：仍在投影中": (self.merged, lambda s: rec(s, "70").update(projected=True)),
-            "归并例外：归并到自身": (self.merged, lambda s: (
-                s["expect"]["decisions"][0].update(targets=[70]), rec(s, "70").update(merged_into=70))),
             "非归并动作借 merged_into 跳过：judged": (self.w21_numbered, lambda s: rec(s, "130").update(
                 merged_into=None, update={"status": "judged", "reasons": []})),
             "非归并动作借 merged_into 跳过：删更新状态": (self.w21_numbered, lambda s: (
@@ -231,6 +254,16 @@ class ReplacementBinding(unittest.TestCase):
             mutate(s)
             with self.subTest(case=name):
                 self.assertTrue(check_samples.check(s))
+
+
+    def test_merge_into_self_hits_its_own_guard(self):
+        # Target 70 is also outside the input, so other rules fire too; assert
+        # the dedicated guard itself reports the self-merge.
+        s = self.merged()
+        s["expect"]["decisions"][0].update(targets=[70])
+        s["expect"]["after"]["records"]["70"].update(merged_into=70)
+        errs = check_samples.check(s)
+        self.assertTrue(any("重判不能强化或归并到自身" in e for e in errs), errs)
 
 
 class ReviewStatusRule(unittest.TestCase):
