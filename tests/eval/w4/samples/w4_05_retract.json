@@ -1,0 +1,203 @@
+{
+  "id": "w4_05_retract",
+  "contract": "w4.v1",
+  "batch": 1,
+  "label_status": "reviewed",
+  "focus": "撤回 retract：用户收回旧断言，没有给出新值",
+  "boundary_with": "w4_06_retract_target_unknown",
+  "sources": {
+    "s-120": {
+      "text": "我每周三晚上去游泳。",
+      "said_on": "2026-06-01"
+    },
+    "s-250": {
+      "text": "我之前说每周三晚上去游泳，那句不对，收回。",
+      "said_on": "2026-09-18"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "retraction",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": null,
+          "sentence": {
+            "text": "我之前说每周三晚上去游泳，那句不对，收回。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每周三晚上"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-250"
+        },
+        "said_on": "2026-09-18",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 40,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我每周三晚上去游泳。",
+            "quote": {
+              "text": "我每周三晚上去游泳。"
+            }
+          },
+          "sentence": {
+            "text": "我每周三晚上去游泳。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每周三晚上"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-120"
+            },
+            "quote": {
+              "text": "我每周三晚上去游泳。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-06-01",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "retract",
+        "targets": [
+          40
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-120",
+          "s-250"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "40": {
+          "stored_status": "superseded",
+          "termination_reason": "UserRetracted",
+          "ended": "end_unknown"
+        }
+      },
+      "new_records": 0,
+      "candidate_update": {
+        "status": "pending",
+        "reasons": [
+          "update_scope_incomplete"
+        ]
+      },
+      "recall": {
+        "current": [],
+        "history": [],
+        "audit_only": [
+          "40（已撤回）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得新增一条断言记录（撤回没有值）",
+      "不得删除 s-120 原文或索引（撤回不是 memory_forget）",
+      "不得把“周三游泳”作为历史事实返回"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "state_change",
+      "why": "用户说“那句不对”，不是现实从游泳变成不游泳"
+    },
+    {
+      "action": "correction",
+      "why": "correction 需要新值；没有新值的收回用 retract"
+    }
+  ],
+  "note": "目标 40 已在输入中逐条比对且有双方依据，撤回可执行；范围不完整，回执中的更新状态保留 pending/update_scope_incomplete。“每周三晚上”为周期时间，换算状态 unknown。"
+}

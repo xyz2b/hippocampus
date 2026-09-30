@@ -1,0 +1,211 @@
+{
+  "id": "w4_03_refine_whole",
+  "contract": "w4.v1",
+  "batch": 1,
+  "label_status": "reviewed",
+  "focus": "细化 refine：新断言覆盖并修订整个旧断言",
+  "boundary_with": "w4_04_coexist_partial",
+  "sources": {
+    "s-110": {
+      "text": "我每天早上都跑步。",
+      "said_on": "2026-05-06"
+    },
+    "s-240": {
+      "text": "更准确地说，我每天早上跑步五公里。",
+      "said_on": "2026-09-15"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "更准确地说，我每天早上跑步五公里。",
+            "quote": {
+              "text": "更准确地说，我每天早上跑步五公里。"
+            }
+          },
+          "sentence": {
+            "text": "更准确地说，我每天早上跑步五公里。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每天早上"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-240"
+        },
+        "said_on": "2026-09-15",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 30,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我每天早上都跑步。",
+            "quote": {
+              "text": "我每天早上都跑步。"
+            }
+          },
+          "sentence": {
+            "text": "我每天早上都跑步。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每天早上"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-110"
+            },
+            "quote": {
+              "text": "我每天早上都跑步。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-06",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "refine",
+        "targets": [
+          30
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-110",
+          "s-240"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "30": {
+          "stored_status": "superseded",
+          "termination_reason": "Refinement",
+          "ended": "end_unknown"
+        },
+        "new": {
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "new（每天早上跑五公里，带 update.pending）"
+        ],
+        "history": [
+          "30 作为被细化的旧版本"
+        ]
+      }
+    },
+    "must_not": [
+      "不得判为 reinforce（新句增加了距离，不只是重复）",
+      "不得保留 30 为并列的当前记录，造成同一习惯两条当前断言"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "reinforce",
+      "why": "新断言更具体，不是同一断言的重复"
+    },
+    {
+      "action": "coexist",
+      "why": "新句以“更准确地说”修订同一个整体习惯，没有新的限定条件"
+    }
+  ],
+  "note": "通用 fact 只按本次全文检索取候选，范围不完整；对已明确定位的目标 30，细化仍可执行，但新记录的更新状态保留 pending/update_scope_incomplete。“每天早上”为周期时间，保留原文，换算状态 unknown，不生成连续日期区间。"
+}

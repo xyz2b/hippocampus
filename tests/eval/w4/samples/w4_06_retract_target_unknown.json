@@ -1,0 +1,79 @@
+{
+  "id": "w4_06_retract_target_unknown",
+  "contract": "w4.v1",
+  "batch": 1,
+  "label_status": "reviewed",
+  "focus": "撤回目标不明：代码保留 pending，不调用 W4",
+  "boundary_with": "w4_05_retract",
+  "sources": {
+    "s-251": {
+      "text": "那个说法不算数了。",
+      "said_on": "2026-09-18"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "retraction",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": null,
+          "sentence": {
+            "text": "那个说法不算数了。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-251"
+        },
+        "said_on": "2026-09-18",
+        "time_resolutions": []
+      }
+    ],
+    "records": [],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": false,
+  "expect": {
+    "code_path": {
+      "w4_called": false,
+      "candidate_status": "pending",
+      "memory_id": null,
+      "update": {
+        "status": "pending",
+        "reasons": [
+          "update_target_unknown",
+          "update_scope_incomplete"
+        ]
+      }
+    },
+    "after": {
+      "records": {},
+      "new_records": 0
+    },
+    "must_not": [
+      "不得调用 W4",
+      "不得结束或修改任何现有记录",
+      "不得作为有值断言提交",
+      "不得把“没检索到”当作“没有旧记录”而丢弃该撤回"
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "contracts 2.4：retraction 找不到目标时由代码保留 pending/target_unknown，不调用 W4；通用 fact 范围不完整，原因中同时含 update_scope_incomplete（contracts 1.6：范围不完整必含该原因）。"
+}

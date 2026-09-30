@@ -1,0 +1,192 @@
+{
+  "id": "w4_07_conflict",
+  "contract": "w4.v1",
+  "batch": 1,
+  "label_status": "reviewed",
+  "focus": "真实冲突 conflict：双方都有依据，均不能作为唯一当前值",
+  "boundary_with": "w4_08_scope_incomplete_no_records",
+  "sources": {
+    "s-130": {
+      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+      "said_on": "2026-07-01"
+    },
+    "s-260": {
+      "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。",
+      "said_on": "2026-09-20"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。",
+            "quote": {
+              "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。"
+            }
+          },
+          "sentence": {
+            "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": {
+            "quote": {
+              "text": "还没核实哪个对"
+            },
+            "resolved": true
+          },
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-260"
+        },
+        "said_on": "2026-09-20",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 50,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            }
+          },
+          "sentence": {
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-130"
+            },
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-07-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "conflict",
+        "targets": [
+          50
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-130",
+          "s-260"
+        ],
+        "effective": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "50": {
+          "stored_status": "active",
+          "termination_reason": null,
+          "ended": "not_ended",
+          "open_relations": 1
+        },
+        "new": {
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          },
+          "open_relations": 1
+        }
+      },
+      "relations": [
+        {
+          "kind": "conflict",
+          "members": [
+            50,
+            "new"
+          ],
+          "status": "open"
+        }
+      ],
+      "recall": {
+        "current": [],
+        "conflicts": [
+          "50（7 英寸）与 new（8 英寸），关系 open"
+        ]
+      }
+    },
+    "must_not": [
+      "不得结束或取代 50",
+      "不得丢弃 8 英寸或只保存为原文",
+      "召回不得给出唯一当前值",
+      "新记录不得丢掉“还没核实哪个对”的不确定表达"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "state_change",
+      "why": "原文没有说屏幕变了"
+    },
+    {
+      "action": "correction",
+      "why": "用户未确认 7 英寸是错的"
+    }
+  ],
+  "note": "冲突由原文对 50 的明确指向和双方依据成立，不依赖“没有其他相关记录”；范围不完整，新记录更新状态保留 pending/update_scope_incomplete。contracts 2.4 列举的可在范围不完整时执行的动作只有 state_change/correction/refine/retract，未提 conflict；此处按“针对已明确定位目标、双方依据齐全”理解为可执行，待确认。"
+}
