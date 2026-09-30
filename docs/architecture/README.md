@@ -13,6 +13,7 @@
 | [target-design.md](target-design.md) | 目标架构（已冻结，待实现）：数据与召回契约、模型职责、更新规则、失败路径、测试与录制策略、实施顺序和设计决策 |
 | [retain-until-audit.md](retain-until-audit.md) | 附录：旧提取 schema 中 `retain_until` 误填的统计方法与逐条明细 |
 | [contracts.md](contracts.md) | 第一阶段契约（v1，已冻结，待实现）：各模型环节的输入输出、代码核验、状态与失败码、预算、不变量及迁移退出条件 |
+| [phase1-baseline.md](phase1-baseline.md) | 第一阶段现状基线清单：基线版本 `0517000`、用例与录制、模型配置、严格回放结果、已知限制 |
 
 建议阅读顺序：先读 overview 的“分层”和“数据模型”，再按需读两条链路；想了解系统能做到什么、还缺什么，读 capabilities。
 
