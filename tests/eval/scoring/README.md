@@ -4,7 +4,8 @@
 
 ```
 python3 -m unittest discover -s tests/eval/scoring -v   # 审阅清单 1–3 的测试
-python3 tests/eval/scoring/trial.py                      # 生成 reports/trial-4q.{md,json}
+python3 tests/eval/scoring/trial.py                      # 四题新旧对照：reports/trial-4q.{md,json}
+python3 tests/eval/scoring/baseline.py                   # 全部 63 题的 0517000 基线：reports/baseline-0517000.{md,json}
 ```
 
 | 文件 | 作用 |
@@ -13,6 +14,7 @@ python3 tests/eval/scoring/trial.py                      # 生成 reports/trial-
 | `scoring.py` | 按 `expect_common` 生成判分项：自动通过 / 自动判错 / 待复核 / 缺失 / 不可测，另列额外结论 |
 | `ledger.py` | 复核台账键（第 6 节各组成部分的哈希）与最终结果；只有 `confirmed` 条目计入通过 |
 | `trial.py` | 四题试跑、反例、新旧转移与退步、报告 |
+| `baseline.py` | 全部 63 题只跑旧版：原始评分（eval.rs 口径的移植）、共同评分与覆盖缺口并列 |
 | `review_ledger.json` | 复核台账。`proposed` 为草拟，改为 `confirmed`（填 reviewer）或改判后才生效 |
 | `fixtures/recall_v3/` | 四题的手写 recall.v3 正确输出夹具（不是实现的运行结果） |
 | `fixtures/counterexamples/` | 反例（真实原始格式）；`pairs.json` 为旧版弃答 / 新版给错的成对反例 |

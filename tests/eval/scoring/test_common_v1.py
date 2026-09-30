@@ -531,6 +531,23 @@ class ForbiddenKinds(unittest.TestCase):
         self.assertEqual(oos["result"], FAIL)
 
 
+class FullBaseline(unittest.TestCase):
+    """All 63 questions: every one annotated and reviewed; the ported
+    original scoring reproduces the strict replay (recall 42/42, refusal
+    21/21, phase1-baseline.md section 4); the old side has no blockers."""
+
+    def test_full_baseline(self):
+        import baseline
+        rows = baseline.run(EMPTY)
+        self.assertEqual(len(rows), 63)
+        self.assertTrue(all(r["label_status"] == "reviewed" for r in rows))
+        s = baseline.summarize(rows)
+        self.assertEqual(s["original_recall"], {"pass": 42, "total": 42})
+        self.assertEqual(s["original_refusal"], {"pass": 21, "total": 21})
+        self.assertEqual(s["common"]["blockers"], 0)
+        self.assertEqual(s["common"]["final_pass"], s["common"]["auto_pass"])  # empty ledger: reviews don't count
+
+
 class TrialResults(unittest.TestCase):
     def test_ledger_covers_every_pending_item(self):
         led = ledger_mod.load_ledger(trial.LEDGER)
