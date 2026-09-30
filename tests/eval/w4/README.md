@@ -18,7 +18,7 @@
 
 legacy 记录的 `data` 是第一阶段前 `src/model.rs` 的完整 Memory 序列化；`cargo test --test w4_legacy_fixture` 检查它能解码且原样回写。
 
-限定语按断言绑定的人工标注检查：`qualifier_marks` 以 `candidate:<index>` / `record:<id>` 为键，列出该断言自己的时间、条件、不确定表达和强度表达，候选或记录必须恰好保留这些（无法换算的时间以 unknown 保留）；一句话里有多个断言时各自标注，不按原句含词分配。完整原句按 `sources.<id>.sentences` 的人工分句核对（未标注时整段原文为一句），不猜标点。终止动作（state_change、correction、refine、retract）的每个目标都须在 `after.records` 写明执行后状态并以对应原因结束，其他结果不结束目标。
+限定语按断言绑定的人工标注检查：`qualifier_marks` 以 `candidate:<index>` / `record:<id>` 为键，列出该断言自己的时间、条件、不确定表达和强度表达，候选或记录必须恰好保留这些（无法换算的时间以 unknown 保留）；一句话里有多个断言时各自标注，不按原句含词分配。完整原句按 `sources.<id>.sentences` 的人工分句核对（未标注时整段原文为一句），不猜标点。终止动作（state_change、correction、refine、retract）的每个目标都须在 `after.records` 写明执行后状态并以对应原因结束，其他结果不结束目标。执行后新产生或复用的记录用 `from_candidate` 绑定到产生它的候选（重判时只能复用 committed_id），不按键名识别；state_change、correction、refine 的替代记录须保留完整前身链（history 包含全部目标）。替代未解决冲突成员的记录须为 pending 且含 update_relation_unclear，同批无关候选的记录不受影响。
 
 W5 验收（contracts 2.5）另列，须检查真实提交、回滚和重载后的状态，静态 `after` 不能证明事务正确：同一原文相关决定的原子提交与整组重判/回滚（w4_21）；替代 open 关系成员而未解决关系时关系保持不变、替代记录标 update_relation_unclear（w4_22）；幂等、并发过期、多目标原子提交。
 

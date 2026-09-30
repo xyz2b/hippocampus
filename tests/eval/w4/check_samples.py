@@ -150,22 +150,64 @@ def _check_resolutions(inp, decs, after, errs):
                 errs.append(f"关系 {rid} 的成员 {m} 不是保留方，须由本次的终止动作结束（强化等不算）")
 
 
-def _check_unresolved_replacement(inp, decs, after, errs):
+def _produced(inp, decs, after, errs):
+    """Bind each committed or reused record in `after` to the candidate that produced it.
+
+    Any after.records key that is not an input record is a produced record and
+    must name `from_candidate`; a re-judged candidate (committed_id) produces
+    exactly its committed id. Replacements from state_change/correction/refine
+    must keep the complete predecessor chain (history ⊇ targets).
+    """
+    input_ids = {str(r["id"]) for r in inp["records"]}
+    cands = {c["index"]: c for c in inp["candidates"]}
+    by_cand = {}
+    for k, v in after.get("records", {}).items():
+        if k in input_ids:
+            continue
+        fc = v.get("from_candidate") if isinstance(v, dict) else None
+        if fc not in cands:
+            errs.append(f"执行后记录 {k} 须用 from_candidate 绑定到产生它的候选")
+            continue
+        cid = cands[fc].get("committed_id")
+        if cid is not None and k != str(cid):
+            errs.append(f"候选 {fc} 是重判（committed_id={cid}），只能复用记录 {cid}，不能产生 {k}")
+        if fc in by_cand:
+            errs.append(f"候选 {fc} 绑定了多条执行后记录")
+        by_cand[fc] = (k, v)
+    for d in decs:
+        if d["status"] == "decided" and d["action"] in ("state_change", "correction", "refine"):
+            got = by_cand.get(d["candidate"])
+            if not got:
+                errs.append(f"决定 {d['candidate']}：{d['action']} 须有绑定的替代记录")
+            elif not set(d["targets"]) <= set(got[1].get("history") or []):
+                errs.append(f"决定 {d['candidate']}：替代记录 {got[0]} 的 history 须包含全部目标 {d['targets']}")
+    return by_cand
+
+
+def _check_unresolved_replacement(inp, decs, after, by_cand, errs):
     """contracts 2.5: ending a member of an open relation without resolving it keeps
-    the relation and its members as they were; the replacement is marked
-    update_relation_unclear instead of taking over the membership."""
+    the relation and its members as they were; the record that replaces it
+    (bound by candidate, new or re-judged) is update pending with
+    update_relation_unclear. Records of unrelated candidates are unaffected."""
     claimed = {x for d in decs for x in d["resolves_relations"]}
-    ended = {t for d in decs if d["status"] == "decided" and d["action"] in ENDING for t in d["targets"]}
     listed = {r.get("id"): r for r in after.get("relations", [])}
     for rel in inp["relations"]:
-        if rel["status"] != "open" or rel["id"] in claimed or not set(rel["members"]) & ended:
+        if rel["status"] != "open" or rel["id"] in claimed:
+            continue
+        hits = [d for d in decs if d["status"] == "decided" and d["action"] in ENDING
+                and set(d["targets"]) & set(rel["members"])]
+        if not hits:
             continue
         out = listed.get(rel["id"])
         if not out or out.get("status") != "open" or sorted(out.get("members", [])) != sorted(rel["members"]):
             errs.append(f"关系 {rel['id']} 未被解决：执行后须仍为 open，成员保持 {sorted(rel['members'])}")
-        for k, v in after.get("records", {}).items():
-            if k.startswith("new") and "update_relation_unclear" not in (v.get("update") or {}).get("reasons", []):
-                errs.append(f"替代 {rel['id']} 成员的新记录 {k} 须标 update_relation_unclear")
+        for d in hits:
+            if d["action"] == "retract":
+                continue
+            k, v = by_cand.get(d["candidate"], (None, {}))
+            u = v.get("update") or {}
+            if u.get("status") != "pending" or "update_relation_unclear" not in u.get("reasons", []):
+                errs.append(f"替代 {rel['id']} 成员的记录 {k} 须为 pending 且原因含 update_relation_unclear")
 
 
 def _check_target_states(decs, after, errs):
@@ -313,7 +355,8 @@ def check(s) -> list:
                 # end_unknown; only a date-precise resolution fixes the end.
         _check_resolutions(inp, decs, exp.get("after", {}), errs)
         _check_target_states(decs, exp.get("after", {}), errs)
-        _check_unresolved_replacement(inp, decs, exp.get("after", {}), errs)
+        by_cand = _produced(inp, decs, exp.get("after", {}), errs)
+        _check_unresolved_replacement(inp, decs, exp.get("after", {}), by_cand, errs)
     else:
         cp = exp.get("code_path")
         if not cp or cp.get("w4_called") is not False:

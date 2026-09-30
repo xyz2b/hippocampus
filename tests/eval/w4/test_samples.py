@@ -136,6 +136,63 @@ class Samples(unittest.TestCase):
                 self.assertTrue(check_samples.check(s))
 
 
+class ReplacementBinding(unittest.TestCase):
+    """Replacement records are bound to the candidate that produced them (w4_22)."""
+
+    def setUp(self):
+        self.base = {s["id"]: s for s in check_samples.load_samples()}["w4_22_replace_conflict_members"]
+
+    def rejudged(self):
+        # Same decision, re-judge path: candidate already committed as 120, reused.
+        s = copy.deepcopy(self.base)
+        s["input"]["candidates"][0]["committed_id"] = 120
+        recs = s["expect"]["after"]["records"]
+        recs["120"] = recs.pop("new")
+        return s
+
+    def with_unrelated_new_fact(self):
+        s = copy.deepcopy(self.base)
+        s["sources"]["s-511"] = {"text": "我在腾讯工作。", "said_on": "2026-09-28"}
+        c = copy.deepcopy(s["input"]["candidates"][0])
+        c["index"] = 1
+        c["source"] = {"kind": "stored", "source_id": "s-511"}
+        c["candidate"].update(relation="works_at", sentence={"text": "我在腾讯工作。"},
+                              value={"kind": "text", "text": "腾讯", "quote": {"text": "腾讯"}})
+        s["input"]["candidates"].append(c)
+        s["expect"]["decisions"].append({"candidate": 1, "status": "decided", "action": "new", "targets": [],
+                                         "resolves_relations": [], "basis_sources": ["s-511"], "effective": None,
+                                         "pending_reason": None})
+        s["expect"]["after"]["records"]["new_work"] = {"from_candidate": 1, "stored_status": "active",
+                                                       "update": {"status": "judged", "reasons": []}}
+        return s
+
+    def test_correct_variants_pass(self):
+        for name, s in [("首次提交", copy.deepcopy(self.base)), ("重判复用 120", self.rejudged()),
+                        ("同批无关新事实不受影响", self.with_unrelated_new_fact())]:
+            with self.subTest(case=name):
+                self.assertEqual(check_samples.check(s), [])
+
+    def test_broken_variants_fail(self):
+        def rec(s, k):
+            return s["expect"]["after"]["records"][k]
+        cases = {
+            "重判：删前身链": (self.rejudged, lambda s: rec(s, "120").pop("history")),
+            "重判：清掉待判定": (self.rejudged, lambda s: rec(s, "120").update(update={"status": "judged", "reasons": []})),
+            "重判：另插一条新记录": (self.rejudged, lambda s: s["expect"]["after"]["records"].update(
+                new=dict(rec(s, "120")))),
+            "首次：删 history": (lambda: copy.deepcopy(self.base), lambda s: rec(s, "new").pop("history")),
+            "首次：history 不全": (lambda: copy.deepcopy(self.base), lambda s: rec(s, "new").update(history=[110])),
+            "首次：judged 只留原因字符串": (lambda: copy.deepcopy(self.base), lambda s: rec(s, "new").update(
+                update={"status": "judged", "reasons": ["update_relation_unclear"]})),
+            "首次：未绑定候选": (lambda: copy.deepcopy(self.base), lambda s: rec(s, "new").pop("from_candidate")),
+        }
+        for name, (make, mutate) in cases.items():
+            s = make()
+            mutate(s)
+            with self.subTest(case=name):
+                self.assertTrue(check_samples.check(s))
+
+
 class ReviewStatusRule(unittest.TestCase):
     def test_status_rule(self):
         from review_status import status_for
