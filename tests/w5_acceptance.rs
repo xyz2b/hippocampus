@@ -1596,7 +1596,8 @@ fn s1_v5_database_migrates_and_new_receipts_are_v8() {
     );
     let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
     assert_eq!(receipt.form, ReceiptForm::V8);
-    assert!(receipt.updates.is_empty() && receipt.merged.is_empty());
+    assert!(receipt.merged.is_empty());
+    assert_eq!(receipt.updates.len(), 1);
     assert_eq!(raw_state(&db)["w5_receipts"]["s-205#0"]["form"], "v8");
     // v8 回执只认当前形态：带新字段的组是另一组内容。
     let mut widened = g.clone();
@@ -1677,18 +1678,15 @@ fn s1_groups_using_later_segment_fields_are_rejected_without_writes() {
     resolving.decisions[0]
         .resolves_relations
         .push("rel-0".into());
-    let mut pending = g.clone();
-    pending.decisions[0].pending_reason = Some(W4PendingReason::TargetUnknown);
     let mut reused = g.clone();
     reused.candidates[0].committed_id = Some(MemoryId(1));
-    let mut complete = g.clone();
-    complete.scope_complete = true;
+    let mut related = g.clone();
+    related.seen[0].relations.push("rel-0".into());
     for (label, group) in [
         ("conflict", conflict),
         ("resolves_relations", resolving),
-        ("pending_reason", pending),
         ("committed_id", reused),
-        ("scope_complete", complete),
+        ("seen relations", related),
     ] {
         let error = commit_group(&mut db.open(), &claim(&group), &group).unwrap_err();
         assert!(
@@ -1778,4 +1776,396 @@ fn s1_unknown_fields_fail_closed_instead_of_being_dropped() {
         )
         .unwrap();
     drop(db.open());
+}
+
+// ---------------- 存储第 2 段：更新状态（w5-storage.md 第 3 节）
+
+fn scope_incomplete() -> UpdateState {
+    UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: vec![UpdateReason::UpdateScopeIncomplete],
+    }
+}
+
+fn judged() -> UpdateState {
+    UpdateState {
+        status: UpdateStatus::Judged,
+        reasons: vec![],
+    }
+}
+
+fn pending(reasons: &[UpdateReason]) -> UpdateState {
+    UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: reasons.to_vec(),
+    }
+}
+
+fn retraction(source: &str, quote: &str) -> CandidateMemory {
+    let mut c = cand(source, "lives_in", "北京", quote, 200);
+    c.intent = CandidateIntent::Retract { target: None };
+    c
+}
+
+fn record_update(db: &TestDb, id: MemoryId) -> Option<UpdateState> {
+    db.open().read().unwrap().record_updates.get(&id).cloned()
+}
+
+#[test]
+fn u1_incomplete_scope_marks_products_pending_even_when_the_target_action_runs() {
+    let db = TestDb::new();
+    let (old, g, _) = w4_01(&db);
+    assert!(!g.scope_complete);
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    // 对明确目标的动作照常执行。
+    assert_eq!(memory(&db, old).status, MemoryStatus::Superseded);
+    let product = receipt.products[&0];
+    assert_eq!(receipt.updates[&0], scope_incomplete());
+    // 重新打开后仍在，回执里的状态与记录上的一致。
+    assert_eq!(record_update(&db, product), Some(scope_incomplete()));
+    assert_eq!(
+        db.open().read().unwrap().w5_receipts["s-205#0"].updates[&0],
+        scope_incomplete()
+    );
+    // 旧目标没有状态条目（未知），不因被结束而得到 judged。
+    assert_eq!(record_update(&db, old), None);
+}
+
+#[test]
+fn u1_complete_scope_and_decided_is_judged() {
+    let db = TestDb::new();
+    let (_, mut g, _) = w4_01(&db);
+    g.scope_complete = true;
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(receipt.updates[&0], judged());
+    assert_eq!(record_update(&db, receipt.products[&0]), Some(judged()));
+}
+
+#[test]
+fn u1_reinforce_records_the_judgment_but_leaves_the_target_state_alone() {
+    let db = TestDb::new();
+    let old = seed(
+        &db,
+        &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+    )[0];
+    let g = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "北京", "我还住北京。", 200))],
+        vec![decision(0, W5Action::Reinforce, &[old], &["s-205"], None)],
+    );
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(receipt.products.is_empty());
+    assert_eq!(receipt.updates[&0], scope_incomplete());
+    assert_eq!(record_update(&db, old), None);
+}
+
+#[test]
+fn u2_pending_assertion_commits_without_touching_located_targets() {
+    for (scope_complete, reason, expected) in [
+        (
+            true,
+            W4PendingReason::UnclearRelation,
+            pending(&[UpdateReason::UpdateRelationUnclear]),
+        ),
+        (
+            false,
+            W4PendingReason::UnclearRelation,
+            pending(&[
+                UpdateReason::UpdateScopeIncomplete,
+                UpdateReason::UpdateRelationUnclear,
+            ]),
+        ),
+        (
+            true,
+            W4PendingReason::TargetUnknown,
+            pending(&[UpdateReason::UpdateTargetUnknown]),
+        ),
+        // 范围不完整与 W4 的 scope_incomplete 只记一次。
+        (false, W4PendingReason::ScopeIncomplete, scope_incomplete()),
+    ] {
+        let db = TestDb::new();
+        let old = seed(
+            &db,
+            &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+        )[0];
+        let mut g = group(
+            &db,
+            "s-205#0",
+            vec![(
+                0,
+                cand("s-205", "lives_in", "上海", "我在上海也有个住处。", 200),
+            )],
+            vec![decision(
+                0,
+                W5Action::New,
+                &[old],
+                &["s-101", "s-205"],
+                None,
+            )],
+        );
+        g.scope_complete = scope_complete;
+        g.decisions[0].pending_reason = Some(reason);
+        let target_before = w5_fingerprint(&memory(&db, old)).unwrap();
+        let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+        let product = receipt.products[&0];
+        assert_eq!(
+            memory(&db, product).status,
+            MemoryStatus::Active,
+            "{reason:?}"
+        );
+        assert_eq!(memory(&db, product).supersedes, None, "{reason:?}");
+        // 列出的目标一个字节都没变。
+        assert_eq!(
+            w5_fingerprint(&memory(&db, old)).unwrap(),
+            target_before,
+            "{reason:?}"
+        );
+        assert_eq!(receipt.updates[&0], expected, "{reason:?}");
+        assert_eq!(record_update(&db, product), Some(expected), "{reason:?}");
+    }
+}
+
+#[test]
+fn u2_pending_retraction_writes_nothing_but_keeps_its_state_in_the_receipt() {
+    for located in [false, true] {
+        let db = TestDb::new();
+        let old = seed(
+            &db,
+            &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+        )[0];
+        let targets: Vec<MemoryId> = if located { vec![old] } else { vec![] };
+        let mut g = group(
+            &db,
+            "s-205#0",
+            vec![(0, retraction("s-205", "之前说的住址不对。"))],
+            vec![decision(0, W5Action::Retract, &targets, &["s-205"], None)],
+        );
+        g.scope_complete = true;
+        g.decisions[0].pending_reason = Some(W4PendingReason::TargetUnknown);
+        let before = snapshot(&db);
+        let staged_before = db.open().read().unwrap().staging.len();
+        let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+        assert!(receipt.products.is_empty(), "located={located}");
+        assert_eq!(
+            receipt.updates[&0],
+            pending(&[UpdateReason::UpdateTargetUnknown]),
+            "located={located}"
+        );
+        let after = snapshot(&db);
+        // 记录与 revision 都不变，只多了一份回执；也不进入旧的暂存队列（那是主体待澄清用的）。
+        assert_eq!(
+            (&after.0, after.1),
+            (&before.0, before.1),
+            "located={located}"
+        );
+        assert_eq!(after.2, before.2 + 1, "located={located}");
+        assert_eq!(db.open().read().unwrap().staging.len(), staged_before);
+        assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+        assert!(db.open().read().unwrap().record_updates.is_empty());
+    }
+}
+
+#[test]
+fn u2_pending_decisions_cannot_end_targets() {
+    let db = TestDb::new();
+    let (_, g, effective) = w4_01(&db);
+    let before = snapshot(&db);
+    let mut state_change = g.clone();
+    state_change.decisions[0].pending_reason = Some(W4PendingReason::UnclearRelation);
+    let mut with_effective = g.clone();
+    with_effective.decisions[0].action = W5Action::New;
+    with_effective.decisions[0].pending_reason = Some(W4PendingReason::UnclearRelation);
+    with_effective.decisions[0].effective = Some(effective);
+    let mut with_reason = with_effective.clone();
+    with_reason.decisions[0].effective = None;
+    with_reason.decisions[0].reason = Some(SupersedeReason::StateChanged);
+    for (label, bad) in [
+        ("state_change", state_change),
+        ("effective", with_effective),
+        ("reason", with_reason),
+    ] {
+        assert!(
+            commit_group(&mut db.open(), &claim(&bad), &bad).is_err(),
+            "{label}"
+        );
+        assert_eq!(snapshot(&db), before, "{label}");
+    }
+}
+
+#[test]
+fn u3_replay_and_reads_do_not_change_update_states() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    let quote = "我上个月从北京搬到上海了。";
+    edit_source(&db, "s-205", |s| {
+        s.request = Some(serde_json::json!({"text":quote,"capture_source":true,
+            "session_id":"chat","turn_id":"s-205"}));
+    });
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let product = receipt.products[&0];
+    let raw_before = raw_state(&db);
+    // 重放：返回原回执，状态不变。
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    // 旧格式输出：有条目的记录带出 update，没有条目的（旧记录）不带，表示未知。
+    let mut service = hippocampus::chat::ChatMemoryService::new(
+        db.open(),
+        hippocampus::chat::ChatConfig::default(),
+    )
+    .unwrap();
+    let listed = service
+        .call(
+            "memory_list",
+            serde_json::json!({"include_history":true}),
+            || false,
+        )
+        .unwrap();
+    let items = listed["memories"].as_array().unwrap();
+    let item = |id: MemoryId| {
+        items
+            .iter()
+            .find(|m| m["id"] == serde_json::json!(id))
+            .unwrap()
+    };
+    assert_eq!(
+        item(product)["update"],
+        serde_json::json!({"status":"pending","reasons":["update_scope_incomplete"]})
+    );
+    assert!(item(MemoryId(1)).get("update").is_none());
+    drop(service);
+    let result = db.open().search_sources("上海", None, 20).unwrap();
+    let links: Vec<_> = result["candidates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|c| c["known_memories"].as_array().unwrap().clone())
+        .collect();
+    let link = links
+        .iter()
+        .find(|l| l["memory_id"] == serde_json::json!(product))
+        .expect("the committed record is linked to its source");
+    assert_eq!(link["update"]["status"], "pending");
+    // 读取与重放之后，状态与回执原样不变（memory_list 会跑留存整理，只可能动记录本身）。
+    let raw_after = raw_state(&db);
+    assert_eq!(raw_after["record_updates"], raw_before["record_updates"]);
+    assert_eq!(raw_after["w5_receipts"], raw_before["w5_receipts"]);
+    assert_eq!(record_update(&db, product), Some(scope_incomplete()));
+}
+
+#[test]
+fn u4_rejudge_clears_each_reason_only_when_that_gap_is_covered() {
+    use UpdateReason::*;
+    let all = UpdateState::from_reasons(vec![
+        UpdateRelationUnclear,
+        UpdateScopeIncomplete,
+        UpdateTargetUnknown,
+        UpdateScopeIncomplete,
+    ]);
+    assert_eq!(
+        all,
+        pending(&[
+            UpdateScopeIncomplete,
+            UpdateTargetUnknown,
+            UpdateRelationUnclear
+        ])
+    );
+    let cover = |scope_complete, decided, relation_inputs| RejudgeCoverage {
+        scope_complete,
+        decided,
+        relation_inputs,
+    };
+    // 范围完整只清除范围缺口；仍是待定决定，目标与关系缺口都留着。
+    assert_eq!(
+        UpdateState::after_rejudge(&all, &judged(), cover(true, false, true)),
+        pending(&[UpdateTargetUnknown, UpdateRelationUnclear])
+    );
+    // 已定决定清除目标缺口；没送入关系输入，关系缺口留着；范围仍不完整。
+    assert_eq!(
+        UpdateState::after_rejudge(&all, &scope_incomplete(), cover(false, true, false)),
+        pending(&[UpdateScopeIncomplete, UpdateRelationUnclear])
+    );
+    // 送入了关系输入并给出已定决定，才清除关系缺口；不要求旧关系已关闭。
+    assert_eq!(
+        UpdateState::after_rejudge(&all, &scope_incomplete(), cover(false, true, true)),
+        scope_incomplete()
+    );
+    // 全部覆盖才变为 judged。
+    assert_eq!(
+        UpdateState::after_rejudge(&all, &judged(), cover(true, true, true)),
+        judged()
+    );
+    // 本次新出现的缺口照样记上。
+    assert_eq!(
+        UpdateState::after_rejudge(
+            &judged(),
+            &pending(&[UpdateTargetUnknown]),
+            cover(true, false, false)
+        ),
+        pending(&[UpdateTargetUnknown])
+    );
+}
+
+#[test]
+fn u2_candidate_kind_must_match_the_action() {
+    // 撤回候选不能被写成事实（待定或已定的 new 都不行）；断言也不能当撤回去结束目标。
+    let db = TestDb::new();
+    let old = seed(
+        &db,
+        &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+    )[0];
+    let retract_as_new = group(
+        &db,
+        "s-205#0",
+        vec![(0, retraction("s-205", "之前说的住址不对。"))],
+        vec![decision(0, W5Action::New, &[], &["s-205"], None)],
+    );
+    let mut retract_as_pending_new = retract_as_new.clone();
+    retract_as_pending_new.decisions[0].pending_reason = Some(W4PendingReason::TargetUnknown);
+    let mut retract_as_state_change = group(
+        &db,
+        "s-205#0",
+        vec![(0, retraction("s-205", "之前说的住址不对。"))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    retract_as_state_change.scope_complete = true;
+    let assertion_as_retract = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "上海", "我搬到上海了。", 200))],
+        vec![decision(
+            0,
+            W5Action::Retract,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    let before = snapshot(&db);
+    for (label, g) in [
+        ("retraction as new", retract_as_new),
+        ("retraction as pending new", retract_as_pending_new),
+        ("retraction as state_change", retract_as_state_change),
+        ("assertion as retract", assertion_as_retract),
+    ] {
+        let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+        assert!(
+            error.to_string().contains("does not match"),
+            "{label}: {error}"
+        );
+        assert_eq!(snapshot(&db), before, "{label}");
+        assert!(
+            db.open().read().unwrap().record_updates.is_empty(),
+            "{label}"
+        );
+    }
+    assert_eq!(memory(&db, old).status, MemoryStatus::Active);
 }

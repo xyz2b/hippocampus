@@ -7,8 +7,12 @@
 //! 且同一组以后只返回 needs_rejudge，不能重试旧决定（docs/architecture/w5-acceptance.md
 //! A1–A7）。候选的证据必须来自所认领的原文；租约按取得写锁后的时间判断。
 //! 存储形状（docs/architecture/w5-storage.md，版本 8）已一次定好：关系、更新状态、归并映射、
-//! 回执格式标记，以及组与决定上后续各段要用的字段。尚未执行：冲突关系、待定决定、
-//! 重判复用与归并、UpdateState 的生成；携带这些字段的组目前一律拒绝，不静默忽略。
+//! 回执格式标记，以及组与决定上后续各段要用的字段。
+//!
+//! 更新状态（w5-storage.md 第 3 节）：每个决定的 UpdateState 由代码按检索范围与 W4 待定原因
+//! 生成，随回执保存；产生的记录同时写入 `record_updates`。待定决定不对旧目标执行动作：
+//! 断言作为新记录提交并标 pending，撤回零写入（候选与原文由上游保留）。
+//! 尚未执行：冲突关系、重判复用与归并；携带这些字段的组目前一律拒绝，不静默忽略。
 
 use std::collections::BTreeMap;
 
@@ -47,6 +51,80 @@ pub enum UpdateReason {
 pub struct UpdateState {
     pub status: UpdateStatus,
     pub reasons: Vec<UpdateReason>,
+}
+
+/// 一次显式重判覆盖了哪些缺口（w5-storage.md 第 3 节）。只有覆盖了的旧原因才清除。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct RejudgeCoverage {
+    /// 本次组的检索范围完整。
+    pub scope_complete: bool,
+    /// 本次对该记录给出了已定决定（不是待定）。
+    pub decided: bool,
+    /// 本次 W4 输入包含该记录的前身或相关旧成员及其最新关系状态。
+    pub relation_inputs: bool,
+}
+
+impl UpdateState {
+    /// 由原因生成：去重、排序；有原因即 pending，否则 judged。
+    pub fn from_reasons(mut reasons: Vec<UpdateReason>) -> Self {
+        reasons.sort();
+        reasons.dedup();
+        let status = if reasons.is_empty() {
+            UpdateStatus::Judged
+        } else {
+            UpdateStatus::Pending
+        };
+        Self { status, reasons }
+    }
+
+    /// 显式重判后的状态：本次新缺口与旧缺口合并，旧缺口逐项判断是否被本次覆盖——
+    /// 一项被覆盖不代表其他项也解决。普通召回、整理完成、重放都不调用它。
+    pub fn after_rejudge(
+        previous: &UpdateState,
+        fresh: &UpdateState,
+        coverage: RejudgeCoverage,
+    ) -> Self {
+        let kept = previous
+            .reasons
+            .iter()
+            .copied()
+            .filter(|reason| match reason {
+                UpdateReason::UpdateScopeIncomplete => !coverage.scope_complete,
+                UpdateReason::UpdateTargetUnknown => !coverage.decided,
+                UpdateReason::UpdateRelationUnclear => {
+                    !(coverage.decided && coverage.relation_inputs)
+                }
+            });
+        Self::from_reasons(fresh.reasons.iter().copied().chain(kept).collect())
+    }
+}
+
+/// 旧格式输出（memory_list、召回的记录标注）里附上记录的更新状态。只在有条目时附加：
+/// 没有条目表示未知（与 null 同义），这样旧记录的输出保持原样。
+pub(crate) fn attach_update(
+    value: &mut serde_json::Value,
+    updates: &BTreeMap<MemoryId, UpdateState>,
+    id: MemoryId,
+) {
+    if let (Some(update), Some(object)) = (updates.get(&id), value.as_object_mut()) {
+        object.insert("update".into(), serde_json::json!(update));
+    }
+}
+
+/// 一个决定的更新状态：检索范围不完整必含 update_scope_incomplete（即使对明确目标的动作已
+/// 执行）；W4 待定原因映射为对应的更新原因。
+fn decision_update(group: &W5Group, decision: &W5Decision) -> UpdateState {
+    let mut reasons = Vec::new();
+    if !group.scope_complete {
+        reasons.push(UpdateReason::UpdateScopeIncomplete);
+    }
+    match decision.pending_reason {
+        Some(W4PendingReason::ScopeIncomplete) => reasons.push(UpdateReason::UpdateScopeIncomplete),
+        Some(W4PendingReason::TargetUnknown) => reasons.push(UpdateReason::UpdateTargetUnknown),
+        Some(W4PendingReason::UnclearRelation) => reasons.push(UpdateReason::UpdateRelationUnclear),
+        None => {}
+    }
+    UpdateState::from_reasons(reasons)
 }
 
 /// W4 待定决定的原因（contracts 2.4 `pending_reason`）。
@@ -462,6 +540,7 @@ pub fn commit_group_with_hook(
             return Ok(W5Outcome::NeedsRejudge(receipt));
         }
         let mut products = BTreeMap::new();
+        let mut updates = BTreeMap::new();
         for (step, decision) in group.decisions.iter().enumerate() {
             let candidate = &group
                 .candidates
@@ -469,9 +548,12 @@ pub fn commit_group_with_hook(
                 .find(|c| c.index == decision.candidate)
                 .ok_or("W5 decision refers to a missing candidate")?
                 .candidate;
+            let update = decision_update(group, decision);
             if let Some(id) = apply(&mut state.repository, candidate, decision)? {
                 products.insert(decision.candidate, id);
+                state.record_updates.insert(id, update.clone());
             }
+            updates.insert(decision.candidate, update);
             hook(W5Step::AfterDecision(step))?;
         }
         let receipt = W5Receipt {
@@ -481,7 +563,7 @@ pub fn commit_group_with_hook(
             legacy_fingerprint: false,
             products,
             decisions: group.decisions.clone(),
-            updates: BTreeMap::new(),
+            updates,
             merged: BTreeMap::new(),
             form: ReceiptForm::V8,
         };
@@ -583,8 +665,8 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
         return Err("W5 candidate indexes must be unique".into());
     }
     // 存储已为后续各段备好的字段，执行尚未实现：拒绝，而不是静默忽略。
-    if group.scope_complete || !group.seen_relations.is_empty() {
-        return Err("W5 scope_complete / seen_relations are not supported yet".into());
+    if !group.seen_relations.is_empty() {
+        return Err("W5 seen_relations are not supported yet".into());
     }
     if group.seen.iter().any(|seen| !seen.relations.is_empty())
         || group.candidates.iter().any(|c| c.committed_id.is_some())
@@ -596,18 +678,33 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
             || !d.resolves_relations.is_empty()
             || d.resolution.is_some()
             || d.relation.is_some()
-            || d.pending_reason.is_some()
         {
             return Err(format!(
-                "W5 decision {}: conflict, relation resolution and pending decisions are not supported yet",
+                "W5 decision {}: conflict and relation resolution are not supported yet",
                 d.candidate
             )
             .into());
         }
     }
     for d in &group.decisions {
-        if !group.candidates.iter().any(|c| c.index == d.candidate) {
+        let Some(c) = group.candidates.iter().find(|c| c.index == d.candidate) else {
             return Err(format!("W5 decision refers to missing candidate {}", d.candidate).into());
+        };
+        // 候选类别与动作必须一致：撤回候选没有可写入的值，只能走 retract（待定时零写入）；
+        // retract 也只接受撤回候选，不能把一条断言当撤回去结束目标。
+        let retraction = matches!(c.candidate.intent, CandidateIntent::Retract { .. });
+        if retraction != (d.action == W5Action::Retract) {
+            return Err(format!(
+                "W5 decision {}: {:?} does not match {} candidate",
+                d.candidate,
+                d.action,
+                if retraction {
+                    "a retraction"
+                } else {
+                    "an assertion"
+                }
+            )
+            .into());
         }
     }
     for c in &group.candidates {
@@ -633,6 +730,30 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
         targets.dedup();
         if targets.len() != d.targets.len() {
             return Err(format!("W5 decision {} has duplicate targets", d.candidate).into());
+        }
+        // 待定决定不对旧目标执行动作：断言作为新记录追加，撤回零写入；targets 可为空或只列
+        // 已定位的目标（仍须有快照），不修改它们。
+        if d.pending_reason.is_some() {
+            if !matches!(d.action, W5Action::New | W5Action::Retract) {
+                return Err(format!(
+                    "W5 decision {}: a pending decision only appends an assertion or keeps a retraction",
+                    d.candidate
+                )
+                .into());
+            }
+            if d.effective.is_some() || d.reason.is_some() {
+                return Err(format!(
+                    "W5 decision {}: a pending decision does not end a target",
+                    d.candidate
+                )
+                .into());
+            }
+            for target in &d.targets {
+                if !group.seen.iter().any(|seen| seen.id == *target) {
+                    return Err(format!("W5 target {} has no W4 snapshot", target.0).into());
+                }
+            }
+            continue;
         }
         let ok = match d.action {
             W5Action::New => d.targets.is_empty(),
@@ -677,6 +798,18 @@ fn apply(
     candidate: &CandidateMemory,
     decision: &W5Decision,
 ) -> PersistenceResult<Option<MemoryId>> {
+    if decision.pending_reason.is_some() {
+        return match decision.action {
+            // 合格断言追加为新记录，不与列出的目标做任何新旧处理。
+            W5Action::New => {
+                let id = repository.allocate_id()?;
+                repository.insert(Memory::from_candidate(id, candidate, None))?;
+                Ok(Some(id))
+            }
+            // 撤回没有可执行的目标：不写入（validate 已限定动作）。
+            _ => Ok(None),
+        };
+    }
     match decision.action {
         W5Action::New => {
             let id = repository.allocate_id()?;

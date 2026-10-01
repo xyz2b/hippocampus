@@ -840,6 +840,21 @@ fn require_subject_clarification(result: &mut Value) {
     result["evidence_status"] = json!("clarification_required");
 }
 
+/// 来源上有更新判定待定的记录标注（可限定到某条记录）：这样的记录不能被核准为唯一的当前
+/// 结论（contracts 1.6）。没有 `update` 字段表示未知，沿用原有判断。
+fn pending_update_on(recall: &Value, source_id: &str, memory_id: Option<u64>) -> bool {
+    recall["source_evidence"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|source| source["source_id"] == source_id)
+        .flat_map(|source| source["state_annotations"].as_array().into_iter().flatten())
+        .any(|annotation| {
+            annotation["update"]["status"] == "pending"
+                && memory_id.is_none_or(|id| annotation["memory_id"].as_u64() == Some(id))
+        })
+}
+
 fn answer_policy(recall: &Value) -> (&'static str, String, Vec<String>) {
     let identity = verified_proposed_identity_value(recall);
     let missing: Vec<_> = recall["comparison_evidence"]["missing_relations"]
@@ -887,6 +902,23 @@ fn answer_policy(recall: &Value) -> (&'static str, String, Vec<String>) {
             "source_linked_exact_identity",
             format!("{value}。"),
             vec![source_id.to_owned()],
+        )
+    } else if (computed_elapsed(recall).is_some() || model_answer_value(recall).is_some())
+        && (recall["model_answer"]["update"]["status"] == "pending"
+            || recall["model_answer"]["memory_id"]
+                .as_u64()
+                .zip(recall["model_answer"]["source_id"].as_str())
+                .is_some_and(|(memory_id, source_id)| {
+                    pending_update_on(recall, source_id, Some(memory_id))
+                }))
+    {
+        // 模型答案或计算答案所引用的记录更新判定待定：不核准。补答候选在构造时从同一快照
+        // 按记录带上待定标记（记录可能不在本地证据包里），证据包里该记录的标注也一并检查；
+        // 同一原文里的其他独立断言不受影响。
+        (
+            "answer_not_verified",
+            "已查到相关记录，但尚不能核准这条回答。".to_owned(),
+            Vec::new(),
         )
     } else if let Some((value, event_date, source_id)) = computed_elapsed(recall) {
         (
@@ -943,6 +975,7 @@ fn verified_fact_value(recall: &Value) -> Option<(&str, &str)> {
         let start = source["byte_start"].as_u64()?;
         let end = source["byte_end"].as_u64()?;
         if fact["unique_in_snapshot"] != true
+            || pending_update_on(recall, source_id, Some(memory_id))
             || source["enrichment"] != "committed"
             || source["mapping_uncertain"] != false
             || source["evidence_kind"] != "source_linked_quote"
@@ -1119,7 +1152,8 @@ fn verified_proposed_identity_value(recall: &Value) -> Option<(&str, &str, &str,
     let quote = source["text"].as_str()?;
     let start = source["byte_start"].as_u64()?;
     let end = source["byte_end"].as_u64()?;
-    if source["enrichment"] != "committed"
+    if pending_update_on(recall, source_id, Some(memory_id))
+        || source["enrichment"] != "committed"
         || source["mapping_uncertain"] != false
         || source["evidence_kind"] != "source_linked_quote"
         || source["semantic_status"] != "model_proposed_relation_checked_against_committed_fact"
@@ -2310,6 +2344,47 @@ impl ChatMemoryService {
             let skip = list.len().saturating_sub(limit);
             list.into_iter().skip(skip).collect::<Vec<_>>()
         };
+        // The update state of the record a committed candidate quotes (contracts 1.6): a pending
+        // record cannot be approved as the unique current value. Read from the same snapshot the
+        // candidates come from, not from the local evidence package, which may not include it,
+        // and per record: an independent assertion of the same source keeps its own state. Not
+        // sent to the model.
+        //
+        // A raw candidate (its source task not yet finished, e.g. a W5 group committed while
+        // the task is still running) carries no record ID, yet records of that source may
+        // already be committed with a pending state. The answer span is then bound to every
+        // active record of that source whose quote contains it; any pending one blocks.
+        let is_pending = |id: MemoryId| {
+            state
+                .record_updates
+                .get(&id)
+                .is_some_and(|update| update.status == crate::UpdateStatus::Pending)
+        };
+        let active_records = state.repository.list_by_owner(self.store.owner())?;
+        let mark_pending = |answer: &mut Value, candidate: &Value, span: &str| {
+            let pending = match serde_json::from_value::<MemoryId>(candidate["memory_id"].clone()) {
+                Ok(id) => is_pending(id),
+                Err(_) => state
+                    .sources
+                    .values()
+                    .find(|source| candidate["source_id"] == source.id.as_str())
+                    .is_some_and(|source| {
+                        active_records.iter().any(|memory| {
+                            memory.status == MemoryStatus::Active
+                                && is_pending(memory.id)
+                                && memory.evidence.iter().any(|evidence| {
+                                    evidence.session_id.0 == source.session_id
+                                        && evidence.turn_id.0 == source.turn_id
+                                        && !span.is_empty()
+                                        && evidence.quote.contains(span)
+                                })
+                        })
+                    }),
+            };
+            if pending {
+                answer["update"] = json!({"status":"pending"});
+            }
+        };
         // The USER quote behind each of the subject's active memories (evidence grade committed).
         let mut seen = BTreeSet::new();
         let committed: Vec<(u64, Value)> = state
@@ -2381,10 +2456,12 @@ impl ChatMemoryService {
             Ok(proposal) => match proposal.verdict {
                 crate::openai::AnswerVerdict::Answer => {
                     let candidate = &candidates[proposal.candidate_index.unwrap_or_default()];
-                    json!({"status":"verified_span","semantic_judgment":"model_proposed",
+                    let mut answer = json!({"status":"verified_span","semantic_judgment":"model_proposed",
                         "value":proposal.answer_text,"source_id":candidate["source_id"],
                         "memory_id":candidate["memory_id"],"quote":candidate["quote"],
-                        "evidence_grade":grade(candidate)})
+                        "evidence_grade":grade(candidate)});
+                    mark_pending(&mut answer, candidate, proposal.answer_text.as_deref().unwrap_or(""));
+                    answer
                 }
                 crate::openai::AnswerVerdict::Elapsed => {
                     let candidate = &candidates[proposal.candidate_index.unwrap_or_default()];
@@ -2396,13 +2473,17 @@ impl ChatMemoryService {
                         .zip(local_date(at.0))
                         .and_then(|(event, asked)| crate::openai::elapsed_count(event, asked, unit));
                     match count {
-                        Some(count) => json!({"status":"computed_elapsed",
+                        Some(count) => {
+                            let mut answer = json!({"status":"computed_elapsed",
                             "semantic_judgment":"model_proposed",
                             "value":elapsed_text(count, unit, query),
                             "event_date":proposal.event_date,"time_text":proposal.answer_text,
                             "source_id":candidate["source_id"],
                             "memory_id":candidate["memory_id"],"quote":candidate["quote"],
-                            "evidence_grade":grade(candidate)}),
+                            "evidence_grade":grade(candidate)});
+                            mark_pending(&mut answer, candidate, proposal.answer_text.as_deref().unwrap_or(""));
+                            answer
+                        }
                         None => json!({"status":"elapsed_after_question"}),
                     }
                 }
@@ -3168,7 +3249,8 @@ impl ChatMemoryService {
                         memory.status != MemoryStatus::Deleted && (input.include_history || memory.status == MemoryStatus::Active)).collect();
                     let pending = state.staging.list_by_owner(&owner);
                     Ok(json!({"total":memories.len(), "memories":memories.iter().skip(input.offset).take(input.limit)
-                            .map(|memory| json!({"id":memory.id,"status":memory.status})).collect::<Vec<_>>(),
+                            .map(|memory| { let mut item = json!({"id":memory.id,"status":memory.status});
+                                crate::commit::attach_update(&mut item, &state.record_updates, memory.id); item }).collect::<Vec<_>>(),
                         "pending_total":pending.len(),"pending":pending.into_iter().skip(input.offset).take(input.limit)
                             .map(|staged| json!({"id":staged.id,"status":"Pending"})).collect::<Vec<_>>(),
                         "entities":state.entities.list_by_owner(&owner)}))

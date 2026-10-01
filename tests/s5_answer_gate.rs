@@ -799,3 +799,417 @@ fn generic_fact_gate_checks_full_snapshot_revisions_drafts_and_task_scope() {
     assert_eq!(hypothetical["approved"], false, "{hypothetical}");
     assert_eq!(hypothetical["safe_source_ids"], json!([]));
 }
+
+#[test]
+fn pending_update_state_blocks_a_unique_current_answer() {
+    // W5 标为更新待定的记录不能被核准为唯一的当前结论；judged 或没有条目时照旧。
+    let query = "云杉会议的签到编号是什么？";
+    let pending = |reason| UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: vec![reason],
+    };
+    for (label, update, expect_answer) in [
+        ("none", None, true),
+        (
+            "judged",
+            Some(UpdateState {
+                status: UpdateStatus::Judged,
+                reasons: vec![],
+            }),
+            true,
+        ),
+        (
+            "scope",
+            Some(pending(UpdateReason::UpdateScopeIncomplete)),
+            false,
+        ),
+        (
+            "target",
+            Some(pending(UpdateReason::UpdateTargetUnknown)),
+            false,
+        ),
+        (
+            "relation",
+            Some(pending(UpdateReason::UpdateRelationUnclear)),
+            false,
+        ),
+    ] {
+        let (db, mut service) = generic_fact_fixture(&[("F1", "Q71")]);
+        if let Some(update) = update {
+            db.open()
+                .transaction(|state| {
+                    let id = state.repository.list_by_owner(&UserId::from("alice"))?[0].id;
+                    state.record_updates.insert(id, update);
+                    Ok(())
+                })
+                .unwrap();
+            service = ChatMemoryService::new(
+                db.open(),
+                ChatConfig {
+                    retrieval_mode: Some(RetrievalMode::Local),
+                    local_recall_budget: LocalRecallBudget {
+                        candidate_k: 1,
+                        source_limit: 1,
+                        ..LocalRecallBudget::default()
+                    },
+                    ..ChatConfig::default()
+                },
+            )
+            .unwrap();
+        }
+        let recall = service
+            .call(
+                "memory_recall",
+                json!({"query":query,"task_id":"task-a","limit":1}),
+                || false,
+            )
+            .unwrap();
+        let validated = service
+            .call(
+                "memory_validate_answer",
+                json!({"query":query,"task_id":"task-a","draft_answer":"Q71。","source_ids":["F1"]}),
+                || false,
+            )
+            .unwrap();
+        if expect_answer {
+            assert_eq!(
+                recall["answer_contract"]["status"], "source_linked_fact",
+                "{label}"
+            );
+            assert_eq!(validated["approved"], true, "{label}");
+        } else {
+            assert_eq!(
+                recall["answer_contract"]["status"], "answer_not_verified",
+                "{label}: {recall}"
+            );
+            assert_eq!(
+                recall["answer_contract"]["safe_source_ids"],
+                json!([]),
+                "{label}"
+            );
+            assert_eq!(validated["approved"], false, "{label}: {validated}");
+            assert_eq!(validated["approved_source_ids"], json!([]), "{label}");
+        }
+        assert_eq!(recall["model_calls"], json!([]), "{label}");
+    }
+}
+
+/// 本机假模型：对补答请求（personal_memory_answer_v1）返回 `answer`，其他请求一律 500。
+fn fake_answer_model(answer: Value) -> String {
+    use std::io::{BufRead, BufReader, Read, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = listener.local_addr().unwrap();
+    std::thread::spawn(move || {
+        for stream in listener.incoming() {
+            let Ok(mut stream) = stream else { continue };
+            let mut reader = BufReader::new(stream.try_clone().unwrap());
+            let mut length = 0;
+            loop {
+                let mut line = String::new();
+                if reader.read_line(&mut line).unwrap_or(0) == 0 || line == "\r\n" {
+                    break;
+                }
+                if let Some(value) = line.to_ascii_lowercase().strip_prefix("content-length:") {
+                    length = value.trim().parse().unwrap_or(0);
+                }
+            }
+            let mut body = vec![0; length];
+            let _ = reader.read_exact(&mut body);
+            let request: Value = serde_json::from_slice(&body).unwrap_or(Value::Null);
+            let response = if request["text"]["format"]["name"] == "personal_memory_answer_v1" {
+                json!({"id":"fake","status":"completed","model":"fake",
+                    "usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20},
+                    "output":[{"type":"message","content":[
+                        {"type":"output_text","text":answer.to_string()}]}]})
+                .to_string()
+            } else {
+                String::new()
+            };
+            let status = if response.is_empty() {
+                "500 Internal Server Error"
+            } else {
+                "200 OK"
+            };
+            let _ = write!(
+                stream,
+                "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{response}",
+                response.len()
+            );
+        }
+    });
+    format!("http://{address}/v1")
+}
+
+/// 主体以别名“YS会”提问；问题不与原文字面重合，原文不进入本地证据包，只能由补答候选取得。
+/// 同一原文 F1 可拆出多条独立断言（`quotes`），各自成为一条记录，按顺序编号。
+fn assisted_fixture(text: &str, quotes: &[&str]) -> Db {
+    let db = Db::new();
+    db.open()
+        .transaction(|state| {
+            state.entities.upsert(Entity {
+                id: EntityId::from("云杉会议"),
+                owner_id: UserId::from("alice"),
+                entity_type: EntityType::Other("event".into()),
+                canonical_name: "云杉会议".into(),
+                aliases: vec!["YS会".into()],
+            });
+            state.sources.insert("F1".into(), source("F1", text, 1));
+            state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
+                for (index, quote) in quotes.iter().enumerate() {
+                    engine.ingest(common::grounded(CandidateMemory::new(
+                        UserId::from("alice"),
+                        EntityId::from("云杉会议"),
+                        MemoryType::Fact,
+                        Predicate::from("fact"),
+                        MemoryValue::Text((*quote).into()),
+                        Timestamp(100),
+                        Evidence::new(
+                            EvidenceId(format!("F1-{index}")),
+                            SessionId::from("session"),
+                            TurnId::from("F1"),
+                            *quote,
+                        ),
+                    )))?;
+                }
+                Ok(())
+            })
+        })
+        .unwrap();
+    db
+}
+
+fn assisted_service(db: &Db, base_url: String) -> ChatMemoryService {
+    ChatMemoryService::new(
+        db.open(),
+        ChatConfig {
+            retrieval_mode: Some(RetrievalMode::Assisted),
+            model_budget: Some(ModelBudgetConfig {
+                group_id: format!("s5-pending-{}", diagnostics::new_id()),
+                max_calls: 100,
+                max_operation_calls: 4,
+                allow_coverage_repair: false,
+                allow_extraction_repair: false,
+                max_input_bytes: 65_536,
+                extraction_output_tokens: 1_024,
+                review_output_tokens: 1_024,
+                query_output_tokens: 1_024,
+            }),
+            model_base_url: Some(base_url),
+            ..ChatConfig::default()
+        },
+    )
+    .unwrap()
+}
+
+/// 把记录（按 `assisted_fixture` 的顺序）标为更新待定。
+fn mark_pending(db: &Db, index: usize) {
+    db.open()
+        .transaction(|state| {
+            let id = state.repository.list_by_owner(&UserId::from("alice"))?[index].id;
+            state.record_updates.insert(
+                id,
+                UpdateState {
+                    status: UpdateStatus::Pending,
+                    reasons: vec![UpdateReason::UpdateScopeIncomplete],
+                },
+            );
+            Ok(())
+        })
+        .unwrap();
+}
+
+struct AssistedCase {
+    label: &'static str,
+    text: &'static str,
+    quotes: &'static [&'static str],
+    pending: Option<usize>,
+    query: &'static str,
+    proposal: Value,
+    /// 核准时的状态；None 表示应被拦下。
+    approved_status: Option<&'static str>,
+    /// 空串表示按模型提出的数值与日期组成计算答案的文本。
+    draft: &'static str,
+}
+
+/// `enrichment` 为原文任务状态：committed 时补答候选带记录 ID；running / queued 时同一原文
+/// 以未整理原文的形式提供（W5 组已提交、任务尚未收尾的窗口），仍须绑定到已提交的记录。
+fn run_assisted_case(case: &AssistedCase, enrichment: &str) {
+    let label = format!("{} [{enrichment}]", case.label);
+    let db = assisted_fixture(case.text, case.quotes);
+    if let Some(index) = case.pending {
+        mark_pending(&db, index);
+    }
+    db.open()
+        .transaction(|state| {
+            state.sources.get_mut("F1").unwrap().enrichment = enrichment.into();
+            Ok(())
+        })
+        .unwrap();
+    let mut service = assisted_service(&db, fake_answer_model(case.proposal.clone()));
+    let recall = service
+        .call(
+            "memory_recall",
+            json!({"query":case.query,"limit":1}),
+            || false,
+        )
+        .unwrap();
+    let contract = &recall["answer_contract"];
+    // 原文不在本地证据包里：拦截只能来自补答候选携带的状态。
+    assert_eq!(recall["source_evidence"], json!([]), "{label}: {recall}");
+    assert_eq!(
+        recall["model_answer"]["source_id"], "F1",
+        "{label}: {recall}"
+    );
+    // 待定时用核准时同样的文本试图通过验证。
+    let draft = if case.draft.is_empty() {
+        let proposed = &recall["model_answer"];
+        format!(
+            "{}（{}）。",
+            proposed["value"].as_str().unwrap(),
+            proposed["event_date"].as_str().unwrap()
+        )
+    } else {
+        case.draft.to_owned()
+    };
+    let validated = service
+        .call(
+            "memory_validate_answer",
+            json!({"query":case.query,"draft_answer":draft,"source_ids":["F1"]}),
+            || false,
+        )
+        .unwrap();
+    match case.approved_status {
+        Some(status) => {
+            assert_eq!(contract["status"], status, "{label}: {recall}");
+            assert!(recall["model_answer"].get("update").is_none(), "{label}");
+            assert_eq!(validated["approved"], true, "{label}: {validated}");
+        }
+        None => {
+            assert_eq!(
+                contract["status"], "answer_not_verified",
+                "{label}: {recall}"
+            );
+            assert_eq!(contract["safe_source_ids"], json!([]), "{label}");
+            assert_eq!(
+                recall["model_answer"]["update"]["status"], "pending",
+                "{label}"
+            );
+            assert_eq!(validated["approved"], false, "{label}: {validated}");
+        }
+    }
+}
+
+/// 模型客户端从进程环境读取密钥。测试线程里改环境不安全（`set_var` 要求无其他线程并发读写
+/// 环境），所以补答用例在子进程里跑：父测试用 `Command::env` 注入密钥，再以 `--exact
+/// --ignored` 只运行下面这个子测试。
+const ASSISTED_CHILD: &str = "PMR_S5_ASSISTED_CHILD";
+
+#[test]
+fn pending_update_state_blocks_model_assisted_answers() {
+    let output = std::process::Command::new(std::env::current_exe().unwrap())
+        .args([
+            "assisted_answer_cases_in_child_process",
+            "--exact",
+            "--ignored",
+            "--test-threads=1",
+        ])
+        .env(ASSISTED_CHILD, "1")
+        .env("DEEPSEEK_API_KEY", "local-fixture-key")
+        .env("PMR_MODEL_NETWORK", "offline")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stdout}\n{stderr}");
+    assert!(
+        stdout.contains("1 passed"),
+        "the child must actually run the cases: {stdout}"
+    );
+}
+
+#[test]
+#[ignore = "run by pending_update_state_blocks_model_assisted_answers in a child process"]
+fn assisted_answer_cases_in_child_process() {
+    // 直接用 --ignored 运行时没有父进程注入的环境：明确失败，而不是悄悄跳过。
+    assert_eq!(
+        std::env::var(ASSISTED_CHILD).as_deref(),
+        Ok("1"),
+        "run through pending_update_state_blocks_model_assisted_answers"
+    );
+    let answer = json!({"verdict":"answer","candidate_index":0,"answer_text":"Q71",
+        "event_date":null,"unit":null});
+    let elapsed = json!({"verdict":"elapsed","candidate_index":0,"answer_text":"昨天",
+        "event_date":"1969-12-31","unit":"day"});
+    let q71: &[&str] = &["云杉会议的签到编号是Q71。"];
+    let yesterday: &[&str] = &["我昨天参加了云杉会议。"];
+    // 同一原文拆出的两条独立断言：编号（第 0 条，补答候选引用它）与入口（第 1 条）。
+    let both_text = "云杉会议的签到编号是Q71，入口在东门。";
+    let both: &[&str] = &["云杉会议的签到编号是Q71", "入口在东门"];
+    for case in [
+        AssistedCase {
+            label: "model answer, judged or unknown",
+            text: q71[0],
+            quotes: q71,
+            pending: None,
+            query: "YS会的号码？",
+            proposal: answer.clone(),
+            approved_status: Some("source_linked_model_answer"),
+            draft: "Q71。",
+        },
+        AssistedCase {
+            label: "model answer, pending",
+            text: q71[0],
+            quotes: q71,
+            pending: Some(0),
+            query: "YS会的号码？",
+            proposal: answer.clone(),
+            approved_status: None,
+            draft: "Q71。",
+        },
+        AssistedCase {
+            label: "computed elapsed, judged or unknown",
+            text: yesterday[0],
+            quotes: yesterday,
+            pending: None,
+            query: "YS会过去多久了？",
+            proposal: elapsed.clone(),
+            approved_status: Some("source_linked_computed_elapsed"),
+            draft: "",
+        },
+        AssistedCase {
+            label: "computed elapsed, pending",
+            text: yesterday[0],
+            quotes: yesterday,
+            pending: Some(0),
+            query: "YS会过去多久了？",
+            proposal: elapsed,
+            approved_status: None,
+            draft: "",
+        },
+        // 同源的另一条独立断言待定，不影响被引用记录的答案。
+        AssistedCase {
+            label: "same source, other assertion pending",
+            text: both_text,
+            quotes: both,
+            pending: Some(1),
+            query: "YS会的号码？",
+            proposal: answer.clone(),
+            approved_status: Some("source_linked_model_answer"),
+            draft: "Q71。",
+        },
+        AssistedCase {
+            label: "same source, quoted assertion pending",
+            text: both_text,
+            quotes: both,
+            pending: Some(0),
+            query: "YS会的号码？",
+            proposal: answer,
+            approved_status: None,
+            draft: "Q71。",
+        },
+    ] {
+        for enrichment in ["committed", "running", "queued"] {
+            run_assisted_case(&case, enrichment);
+        }
+    }
+}

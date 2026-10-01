@@ -1096,3 +1096,57 @@ fn person_context_does_not_bind_a_thing_or_event_reference() {
         assert_eq!(result["source_evidence"], json!([]), "{query}");
     }
 }
+
+#[test]
+fn state_annotations_carry_a_recorded_update_state_and_omit_unknown_ones() {
+    // W5 写入的更新状态经召回的记录标注带出；没有条目（旧记录）不加字段，表示未知。
+    let db = Db::new();
+    let mut store = db.open("alice");
+    let (old, new) = store
+        .transaction(|s| {
+            s.sources
+                .insert("old".into(), source("old", "我住在上海，使用Rust。", None));
+            s.sources
+                .insert("new".into(), source("new", "纠正：我住在苏州。", None));
+            s.with_engine(registry(), |e, _| {
+                let old = id(e.ingest(common::grounded(candidate(
+                    "old",
+                    "self",
+                    "lives_in",
+                    "上海",
+                    "我住在上海",
+                )))?);
+                let mut c = candidate("new", "self", "lives_in", "苏州", "我住在苏州");
+                c.intent = CandidateIntent::Supersede {
+                    target: Some(old),
+                    reason: SupersedeReason::Correction,
+                };
+                let new = id(e.ingest(common::grounded(c))?);
+                Ok((old, new))
+            })
+        })
+        .unwrap();
+    let r = recall(&store, "上海", &ctx(), &LocalRecallBudget::default());
+    let annotation = &r["historical_or_conflicting"][0]["source"]["state_annotations"][0];
+    assert_eq!(annotation["memory_id"], json!(old));
+    assert!(annotation.get("update").is_none(), "{annotation}");
+    store
+        .transaction(|s| {
+            s.record_updates.insert(
+                old,
+                UpdateState {
+                    status: UpdateStatus::Pending,
+                    reasons: vec![UpdateReason::UpdateRelationUnclear],
+                },
+            );
+            Ok(())
+        })
+        .unwrap();
+    let r = recall(&store, "上海", &ctx(), &LocalRecallBudget::default());
+    let annotation = &r["historical_or_conflicting"][0]["source"]["state_annotations"][0];
+    assert_eq!(
+        annotation["update"],
+        json!({"status":"pending","reasons":["update_relation_unclear"]})
+    );
+    assert_ne!(old, new);
+}

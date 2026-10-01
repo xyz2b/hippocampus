@@ -492,14 +492,14 @@ fn memory_links(
             uncertain = true;
             break;
         }
-        links.push(
-            json!({"memory_id":memory.id,"status":memory.status,"temporal":memory.temporal,
+        let mut link = json!({"memory_id":memory.id,"status":memory.status,"temporal":memory.temporal,
             "supersede_reason":memory.supersede_reason,
             "supersedes":memory.supersedes.filter(|id|visible_ids.contains(id)),
             "superseded_by":memory.superseded_by.filter(|id|visible_ids.contains(id)),
             "association":if exact.is_some(){"exact_quote"}else{"same_turn_uncertain"},
-            "quote_byte_range":exact}),
-        );
+            "quote_byte_range":exact});
+        crate::commit::attach_update(&mut link, &state.record_updates, memory.id);
+        links.push(link);
     }
     uncertain |= links.is_empty();
     Ok((links, uncertain))
