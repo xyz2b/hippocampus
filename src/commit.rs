@@ -12,7 +12,12 @@
 //! 更新状态（w5-storage.md 第 3 节）：每个决定的 UpdateState 由代码按检索范围与 W4 待定原因
 //! 生成，随回执保存；产生的记录同时写入 `record_updates`。待定决定不对旧目标执行动作：
 //! 断言作为新记录提交并标 pending，撤回零写入（候选与原文由上游保留）。
-//! 尚未执行：冲突关系、重判复用与归并；携带这些字段的组目前一律拒绝，不静默忽略。
+//! 冲突关系（w5-storage.md 第 4 节）：conflict 决定插入新记录并与全部目标组成 open 关系，旧版本
+//! 不结束；resolves_relations 在同一事务内把关系置为 resolved 并保存解决依据；替代 open 关系成员
+//! 而本组未解决该关系时，关系与成员不变，替代记录标 update_relation_unclear。关系快照（目标所在
+//! open 关系编号集合与涉及关系的指纹）在写锁内重查，变化即整组 needs_rejudge。依据片段须逐字
+//! 出现在获准保存的原文中。
+//! 尚未执行：原文删除时关系失效与删除范围重写（第 3 段后半）、重判复用与归并（第 4 段）。
 
 use std::collections::BTreeMap;
 
@@ -99,22 +104,130 @@ impl UpdateState {
     }
 }
 
-/// 旧格式输出（memory_list、召回的记录标注）里附上记录的更新状态。只在有条目时附加：
-/// 没有条目表示未知（与 null 同义），这样旧记录的输出保持原样。
-pub(crate) fn attach_update(
-    value: &mut serde_json::Value,
-    updates: &BTreeMap<MemoryId, UpdateState>,
-    id: MemoryId,
-) {
-    if let (Some(update), Some(object)) = (updates.get(&id), value.as_object_mut()) {
-        object.insert("update".into(), serde_json::json!(update));
+/// 读取侧看到的 W5 状态：每条记录的更新状态，以及它所在的 open 关系。从同一快照取出，
+/// 供旧格式输出附加字段、答复门判断“能否作为唯一当前值”。
+#[derive(Clone, Debug, Default)]
+pub(crate) struct W5View {
+    updates: BTreeMap<MemoryId, UpdateState>,
+    open: BTreeMap<MemoryId, Vec<String>>,
+}
+
+impl W5View {
+    pub(crate) fn of(state: &PersistedMemoryState) -> Self {
+        let mut open: BTreeMap<MemoryId, Vec<String>> = BTreeMap::new();
+        for relation in state
+            .relations
+            .values()
+            .filter(|relation| relation.status == RelationStatus::Open)
+        {
+            for member in &relation.members {
+                open.entry(*member).or_default().push(relation.id.clone());
+            }
+        }
+        Self {
+            updates: state.record_updates.clone(),
+            open,
+        }
     }
+
+    /// 旧格式输出（memory_list、召回的记录标注）里附上记录的更新状态与所在 open 关系。只在有
+    /// 条目时附加：没有条目表示未知（与 null 同义），这样旧记录的输出保持原样。
+    pub(crate) fn attach(&self, value: &mut serde_json::Value, id: MemoryId) {
+        let Some(object) = value.as_object_mut() else {
+            return;
+        };
+        if let Some(update) = self.updates.get(&id) {
+            object.insert("update".into(), serde_json::json!(update));
+        }
+        if let Some(relations) = self.open.get(&id) {
+            object.insert("open_relations".into(), serde_json::json!(relations));
+        }
+    }
+
+    /// 更新判定待定，或处在未解决的冲突里：不能被核准为唯一的当前值（contracts 1.6、2.4）。
+    pub(crate) fn unsettled(&self, id: MemoryId) -> bool {
+        self.updates
+            .get(&id)
+            .is_some_and(|update| update.status == UpdateStatus::Pending)
+            || self.open.contains_key(&id)
+    }
+}
+
+/// 记录所在的 open 关系编号（排序、去重）。
+pub fn w5_open_relations_of(state: &PersistedMemoryState, id: MemoryId) -> Vec<String> {
+    let mut ids: Vec<String> = state
+        .relations
+        .values()
+        .filter(|relation| {
+            relation.status == RelationStatus::Open && relation.members.contains(&id)
+        })
+        .map(|relation| relation.id.clone())
+        .collect();
+    ids.sort();
+    ids.dedup();
+    ids
+}
+
+/// 关系的快照指纹。
+pub fn w5_relation_fingerprint(relation: &StoredRelation) -> PersistenceResult<String> {
+    Ok(serde_json::to_string(relation)?)
+}
+
+/// 为 W4 输入记下快照：每个目标的记录指纹及其所在 open 关系编号；涉及关系（要解决的关系与
+/// 目标所在的 open 关系）各自的指纹。
+pub fn w5_snapshot(
+    state: &PersistedMemoryState,
+    targets: &[MemoryId],
+    resolves: &[String],
+) -> PersistenceResult<(Vec<W5Seen>, Vec<W5SeenRelation>)> {
+    // 要解决的关系须重查全部成员的快照（contracts 2.5），不只是本组的目标。
+    let mut ids: Vec<MemoryId> = targets.to_vec();
+    for id in resolves {
+        let relation = state
+            .relations
+            .get(id)
+            .ok_or_else(|| format!("W5 relation {id} does not exist"))?;
+        ids.extend(relation.members.iter().copied());
+    }
+    ids.sort();
+    ids.dedup();
+    let mut seen = w5_seen(&state.repository, &ids)?;
+    let mut involved: Vec<String> = resolves.to_vec();
+    for entry in &mut seen {
+        entry.relations = w5_open_relations_of(state, entry.id);
+        involved.extend(entry.relations.iter().cloned());
+    }
+    involved.sort();
+    involved.dedup();
+    let relations = involved
+        .into_iter()
+        .map(|id| {
+            let relation = state
+                .relations
+                .get(&id)
+                .ok_or_else(|| format!("W5 relation {id} does not exist"))?;
+            Ok(W5SeenRelation {
+                fingerprint: w5_relation_fingerprint(relation)?,
+                id,
+            })
+        })
+        .collect::<PersistenceResult<Vec<_>>>()?;
+    Ok((seen, relations))
 }
 
 /// 一个决定的更新状态：检索范围不完整必含 update_scope_incomplete（即使对明确目标的动作已
 /// 执行）；W4 待定原因映射为对应的更新原因。
-fn decision_update(group: &W5Group, decision: &W5Decision) -> UpdateState {
+/// `replaces_unresolved`：本决定结束的目标是某个 open 关系的成员，而本组没有解决该关系
+/// （contracts 2.5）——替代记录与旧成员之间的关系待后续 W4 判定，标 update_relation_unclear。
+fn decision_update(
+    group: &W5Group,
+    decision: &W5Decision,
+    replaces_unresolved: bool,
+) -> UpdateState {
     let mut reasons = Vec::new();
+    if replaces_unresolved {
+        reasons.push(UpdateReason::UpdateRelationUnclear);
+    }
     if !group.scope_complete {
         reasons.push(UpdateReason::UpdateScopeIncomplete);
     }
@@ -539,6 +652,25 @@ pub fn commit_group_with_hook(
             state.w5_receipts.insert(group.id.clone(), receipt.clone());
             return Ok(W5Outcome::NeedsRejudge(receipt));
         }
+        check_relation_evidence(state, group, &source_id)?;
+        // 本组解决的关系；替代 open 关系成员而本组未解决该关系时，产物标 relation_unclear。
+        // 依据组开始前的状态判断（快照已核对一致）。
+        let resolved_here: Vec<&String> = group
+            .decisions
+            .iter()
+            .flat_map(|d| d.resolves_relations.iter())
+            .collect();
+        let mut replaces_unresolved = BTreeMap::new();
+        for decision in &group.decisions {
+            let unresolved = decision.pending_reason.is_none()
+                && decision.action == W5Action::StateChange
+                && decision.targets.iter().any(|target| {
+                    w5_open_relations_of(state, *target)
+                        .iter()
+                        .any(|relation| !resolved_here.contains(&relation))
+                });
+            replaces_unresolved.insert(decision.candidate, unresolved);
+        }
         let mut products = BTreeMap::new();
         let mut updates = BTreeMap::new();
         for (step, decision) in group.decisions.iter().enumerate() {
@@ -548,8 +680,8 @@ pub fn commit_group_with_hook(
                 .find(|c| c.index == decision.candidate)
                 .ok_or("W5 decision refers to a missing candidate")?
                 .candidate;
-            let update = decision_update(group, decision);
-            if let Some(id) = apply(&mut state.repository, candidate, decision)? {
+            let update = decision_update(group, decision, replaces_unresolved[&decision.candidate]);
+            if let Some(id) = apply(state, &group.id, candidate, decision)? {
                 products.insert(decision.candidate, id);
                 state.record_updates.insert(id, update.clone());
             }
@@ -598,7 +730,13 @@ fn stale_reason(
         return Ok(Some("source_less_authority_changed".into()));
     }
     for d in &group.decisions {
-        for basis in &d.basis_sources {
+        let relation_sources = d
+            .relation
+            .iter()
+            .flat_map(|spec| spec.basis.iter())
+            .chain(d.resolution.iter())
+            .map(|evidence| &evidence.source_id);
+        for basis in d.basis_sources.iter().chain(relation_sources) {
             if basis == source_id {
                 continue;
             }
@@ -619,8 +757,111 @@ fn stale_reason(
         if current != seen.fingerprint {
             return Ok(Some(format!("target {} changed since W4 input", seen.id.0)));
         }
+        // 目标加入或离开了 open 关系（新建、解决、失效），逐条比对已见关系发现不了。
+        if w5_open_relations_of(state, seen.id) != seen.relations {
+            return Ok(Some(format!(
+                "open relations of target {} changed since W4 input",
+                seen.id.0
+            )));
+        }
+    }
+    for seen in &group.seen_relations {
+        let current = match state.relations.get(&seen.id) {
+            Some(relation) => w5_relation_fingerprint(relation)?,
+            None => return Ok(Some(format!("relation {} no longer exists", seen.id))),
+        };
+        if current != seen.fingerprint {
+            return Ok(Some(format!("relation {} changed since W4 input", seen.id)));
+        }
     }
     Ok(None)
+}
+
+/// 关系依据与解决依据的机械核对：来源存在且未删除，片段逐字出现在原文中。冲突的依据须同时
+/// 引用本原文与至少一个目标的来源；解决依据须来自本原文（W4 依据新原文判定已解决）。
+fn check_relation_evidence(
+    state: &PersistedMemoryState,
+    group: &W5Group,
+    source_id: &str,
+) -> PersistenceResult<()> {
+    let verbatim = |evidence: &RelationEvidence| -> PersistenceResult<&SourceRecord> {
+        let source = state
+            .sources
+            .values()
+            .find(|source| source.id == evidence.source_id)
+            .ok_or_else(|| {
+                format!(
+                    "W5 relation evidence cites unknown source {}",
+                    evidence.source_id
+                )
+            })?;
+        let text = crate::lexical::body(source).unwrap_or("");
+        if evidence.quote.trim().is_empty() || !text.contains(&evidence.quote) {
+            return Err(format!(
+                "W5 relation evidence quote is not verbatim in source {}",
+                evidence.source_id
+            )
+            .into());
+        }
+        Ok(source)
+    };
+    for d in &group.decisions {
+        if let Some(spec) = &d.relation {
+            let mut own = false;
+            let mut old_side = false;
+            for evidence in &spec.basis {
+                let source = verbatim(evidence)?;
+                own |= source.id == source_id;
+                old_side |= d.targets.iter().any(|target| {
+                    state
+                        .repository
+                        .get(*target)
+                        .ok()
+                        .flatten()
+                        .is_some_and(|memory| {
+                            memory.evidence.iter().any(|e| {
+                                e.session_id.0 == source.session_id && e.turn_id.0 == source.turn_id
+                            })
+                        })
+                });
+            }
+            if !own || !old_side {
+                return Err(format!(
+                    "W5 decision {}: a conflict needs basis from both the new source and a target's source",
+                    d.candidate
+                )
+                .into());
+            }
+        }
+        for id in &d.resolves_relations {
+            let relation = state
+                .relations
+                .get(id)
+                .ok_or_else(|| format!("W5 relation {id} does not exist"))?;
+            if let Some(member) = relation
+                .members
+                .iter()
+                .find(|member| !group.seen.iter().any(|seen| seen.id == **member))
+            {
+                return Err(format!(
+                    "W5 decision {}: member {} of relation {id} has no W4 snapshot",
+                    d.candidate, member.0
+                )
+                .into());
+            }
+        }
+        if let Some(resolution) = &d.resolution {
+            let source = verbatim(resolution)?;
+            if source.id != source_id {
+                return Err(format!(
+                    "W5 decision {}: the resolution must come from the claimed source",
+                    d.candidate
+                )
+                .into());
+            }
+        }
+    }
+    Ok(())
 }
 
 /// 结束原文任务：写回任务状态并释放认领；认领已不属于本执行者时零写入并报 claim_lost。
@@ -665,25 +906,79 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
         return Err("W5 candidate indexes must be unique".into());
     }
     // 存储已为后续各段备好的字段，执行尚未实现：拒绝，而不是静默忽略。
-    if !group.seen_relations.is_empty() {
-        return Err("W5 seen_relations are not supported yet".into());
+    if group.candidates.iter().any(|c| c.committed_id.is_some()) {
+        return Err("W5 committed_id is not supported yet".into());
     }
-    if group.seen.iter().any(|seen| !seen.relations.is_empty())
-        || group.candidates.iter().any(|c| c.committed_id.is_some())
-    {
-        return Err("W5 relation snapshots / committed_id are not supported yet".into());
+    // 关系快照：每个涉及的关系只记一次；目标所在的 open 关系与要解决的关系都必须有快照。
+    let mut seen_relation_ids: Vec<&String> = group.seen_relations.iter().map(|s| &s.id).collect();
+    seen_relation_ids.sort();
+    seen_relation_ids.dedup();
+    if seen_relation_ids.len() != group.seen_relations.len() {
+        return Err("W5 relation snapshots must be unique".into());
     }
-    for d in &group.decisions {
-        if d.action == W5Action::Conflict
-            || !d.resolves_relations.is_empty()
-            || d.resolution.is_some()
-            || d.relation.is_some()
-        {
+    for seen in &group.seen {
+        let mut sorted = seen.relations.clone();
+        sorted.sort();
+        sorted.dedup();
+        if sorted != seen.relations {
             return Err(format!(
-                "W5 decision {}: conflict and relation resolution are not supported yet",
+                "W5 target {} lists its relations unsorted or twice",
+                seen.id.0
+            )
+            .into());
+        }
+        if let Some(missing) = seen
+            .relations
+            .iter()
+            .find(|id| !seen_relation_ids.contains(id))
+        {
+            return Err(format!("W5 relation {missing} has no W4 snapshot").into());
+        }
+    }
+    let mut resolved: Vec<&String> = Vec::new();
+    for d in &group.decisions {
+        if (d.action == W5Action::Conflict) != d.relation.is_some() {
+            return Err(format!(
+                "W5 decision {}: exactly a conflict carries the relation to create",
                 d.candidate
             )
             .into());
+        }
+        if d.relation
+            .as_ref()
+            .is_some_and(|spec| spec.basis.is_empty())
+        {
+            return Err(format!("W5 decision {}: a conflict needs basis", d.candidate).into());
+        }
+        if d.resolves_relations.is_empty() != d.resolution.is_none() {
+            return Err(format!(
+                "W5 decision {}: resolved relations and a resolution go together",
+                d.candidate
+            )
+            .into());
+        }
+        if !d.resolves_relations.is_empty()
+            && (d.pending_reason.is_some()
+                || !matches!(
+                    d.action,
+                    W5Action::StateChange | W5Action::Retract | W5Action::Reinforce
+                ))
+        {
+            // contracts 2.4：pending/new/coexist/conflict 时 resolves_relations 为空。
+            return Err(format!(
+                "W5 decision {}: {:?} cannot resolve a relation",
+                d.candidate, d.action
+            )
+            .into());
+        }
+        for id in &d.resolves_relations {
+            if !seen_relation_ids.contains(&id) {
+                return Err(format!("W5 relation {id} has no W4 snapshot").into());
+            }
+            if resolved.contains(&id) {
+                return Err(format!("W5 relation {id} is resolved twice").into());
+            }
+            resolved.push(id);
         }
     }
     for d in &group.decisions {
@@ -734,7 +1029,7 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
         // 待定决定不对旧目标执行动作：断言作为新记录追加，撤回零写入；targets 可为空或只列
         // 已定位的目标（仍须有快照），不修改它们。
         if d.pending_reason.is_some() {
-            if !matches!(d.action, W5Action::New | W5Action::Retract) {
+            if !matches!(d.action, W5Action::New | W5Action::Retract) || d.relation.is_some() {
                 return Err(format!(
                     "W5 decision {}: a pending decision only appends an assertion or keeps a retraction",
                     d.candidate
@@ -772,9 +1067,9 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
                 return Err(format!("W5 target {} has no W4 snapshot", target.0).into());
             }
         }
-        if d.effective.is_some() && d.action != W5Action::StateChange {
+        if (d.effective.is_some() || d.reason.is_some()) && d.action != W5Action::StateChange {
             return Err(format!(
-                "W5 decision {}: only state_change carries an effective time",
+                "W5 decision {}: only state_change carries an effective time or an end reason",
                 d.candidate
             )
             .into());
@@ -793,7 +1088,58 @@ fn active(repository: &InMemoryMemoryRepository, id: MemoryId) -> PersistenceRes
     Ok(memory)
 }
 
+/// 执行一个决定，再解决它判定已解决的关系（同一事务；任一步失败整组回滚）。
 fn apply(
+    state: &mut PersistedMemoryState,
+    group_id: &str,
+    candidate: &CandidateMemory,
+    decision: &W5Decision,
+) -> PersistenceResult<Option<MemoryId>> {
+    let product = apply_action(&mut state.repository, candidate, decision)?;
+    if let (Some(spec), Some(id)) = (&decision.relation, product) {
+        // 冲突：新记录与全部目标组成一个 open 关系；旧版本不结束。
+        let mut members = decision.targets.clone();
+        members.push(id);
+        let relation_id = format!("rel-{}", state.next_relation);
+        state.next_relation = state
+            .next_relation
+            .checked_add(1)
+            .ok_or("W5 relation id overflow")?;
+        if state.relations.contains_key(&relation_id) {
+            return Err(format!("W5 relation {relation_id} already exists").into());
+        }
+        state.relations.insert(
+            relation_id.clone(),
+            StoredRelation {
+                id: relation_id,
+                kind: RelationKind::Conflict,
+                members,
+                conditions: spec.conditions.clone(),
+                times: spec.times.clone(),
+                basis: spec.basis.clone(),
+                status: RelationStatus::Open,
+                resolution: None,
+                created_by: group_id.to_owned(),
+                closed_by: None,
+            },
+        );
+    }
+    for id in &decision.resolves_relations {
+        let relation = state
+            .relations
+            .get_mut(id)
+            .ok_or_else(|| format!("W5 relation {id} does not exist"))?;
+        if relation.status != RelationStatus::Open {
+            return Err(format!("W5 relation {id} is not open").into());
+        }
+        relation.status = RelationStatus::Resolved;
+        relation.resolution = decision.resolution.clone();
+        relation.closed_by = Some(group_id.to_owned());
+    }
+    Ok(product)
+}
+
+fn apply_action(
     repository: &mut InMemoryMemoryRepository,
     candidate: &CandidateMemory,
     decision: &W5Decision,
@@ -840,11 +1186,16 @@ fn apply(
         }
         W5Action::StateChange => {
             let reason = decision.reason.unwrap_or(SupersedeReason::StateChanged);
+            // W4 的 state_change / correction / refine 都走这里，以对应原因结束目标
+            // （contracts 2.4 动作对应表）；撤回走 retract。
             if !matches!(
                 reason,
                 SupersedeReason::StateChanged
                     | SupersedeReason::PreferenceChanged
                     | SupersedeReason::ConstraintChanged
+                    | SupersedeReason::Correction
+                    | SupersedeReason::Refinement
+                    | SupersedeReason::ScopeRefined
             ) {
                 return Err(format!("W5 state_change cannot end with {reason:?}").into());
             }
@@ -871,7 +1222,15 @@ fn apply(
             repository.insert(new)?;
             Ok(Some(id))
         }
-        W5Action::Conflict => Err("W5 conflict is not supported yet".into()),
+        W5Action::Conflict => {
+            // 目标保持不变（不结束、不取代），只核对它们仍然有效。
+            for target in &decision.targets {
+                active(repository, *target)?;
+            }
+            let id = repository.allocate_id()?;
+            repository.insert(Memory::from_candidate(id, candidate, None))?;
+            Ok(Some(id))
+        }
         W5Action::Retract => {
             for target in &decision.targets {
                 let mut old = active(repository, *target)?;

@@ -1213,3 +1213,80 @@ fn assisted_answer_cases_in_child_process() {
         }
     }
 }
+
+#[test]
+fn open_conflict_blocks_a_unique_current_answer() {
+    // 处在未解决冲突里的记录，即使更新判定已完成（judged），也不能被核准为唯一当前值。
+    let query = "云杉会议的签到编号是什么？";
+    for status in [RelationStatus::Open, RelationStatus::Resolved] {
+        let (db, _) = generic_fact_fixture(&[("F1", "Q71")]);
+        db.open()
+            .transaction(|state| {
+                let id = state.repository.list_by_owner(&UserId::from("alice"))?[0].id;
+                state.record_updates.insert(
+                    id,
+                    UpdateState {
+                        status: UpdateStatus::Judged,
+                        reasons: vec![],
+                    },
+                );
+                state.relations.insert(
+                    "rel-0".into(),
+                    StoredRelation {
+                        id: "rel-0".into(),
+                        kind: RelationKind::Conflict,
+                        members: vec![id, MemoryId(999)],
+                        conditions: json!([]),
+                        times: json!([]),
+                        basis: vec![],
+                        status,
+                        resolution: None,
+                        created_by: "test".into(),
+                        closed_by: None,
+                    },
+                );
+                Ok(())
+            })
+            .unwrap();
+        let mut service = ChatMemoryService::new(
+            db.open(),
+            ChatConfig {
+                retrieval_mode: Some(RetrievalMode::Local),
+                local_recall_budget: LocalRecallBudget {
+                    candidate_k: 1,
+                    source_limit: 1,
+                    ..LocalRecallBudget::default()
+                },
+                ..ChatConfig::default()
+            },
+        )
+        .unwrap();
+        let recall = service
+            .call(
+                "memory_recall",
+                json!({"query":query,"task_id":"task-a","limit":1}),
+                || false,
+            )
+            .unwrap();
+        let validated = service
+            .call(
+                "memory_validate_answer",
+                json!({"query":query,"task_id":"task-a","draft_answer":"Q71。","source_ids":["F1"]}),
+                || false,
+            )
+            .unwrap();
+        if status == RelationStatus::Open {
+            assert_eq!(
+                recall["answer_contract"]["status"], "answer_not_verified",
+                "{recall}"
+            );
+            assert_eq!(validated["approved"], false, "{validated}");
+        } else {
+            assert_eq!(
+                recall["answer_contract"]["status"], "source_linked_fact",
+                "{recall}"
+            );
+            assert_eq!(validated["approved"], true, "{validated}");
+        }
+    }
+}

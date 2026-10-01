@@ -454,6 +454,7 @@ fn memory_links(
         .map(|m| m.id)
         .collect();
     let text = body(source).unwrap_or("");
+    let w5 = crate::commit::W5View::of(state);
     let mut links = Vec::new();
     let mut uncertain = false;
     for memory in memories.iter().filter(|m| allowed(m)) {
@@ -498,7 +499,7 @@ fn memory_links(
             "superseded_by":memory.superseded_by.filter(|id|visible_ids.contains(id)),
             "association":if exact.is_some(){"exact_quote"}else{"same_turn_uncertain"},
             "quote_byte_range":exact});
-        crate::commit::attach_update(&mut link, &state.record_updates, memory.id);
+        w5.attach(&mut link, memory.id);
         links.push(link);
     }
     uncertain |= links.is_empty();

@@ -840,8 +840,8 @@ fn require_subject_clarification(result: &mut Value) {
     result["evidence_status"] = json!("clarification_required");
 }
 
-/// 来源上有更新判定待定的记录标注（可限定到某条记录）：这样的记录不能被核准为唯一的当前
-/// 结论（contracts 1.6）。没有 `update` 字段表示未知，沿用原有判断。
+/// 来源上有更新判定待定、或处在未解决冲突里的记录标注（可限定到某条记录）：这样的记录不能
+/// 被核准为唯一的当前结论（contracts 1.6、2.4）。没有这两个字段表示未知，沿用原有判断。
 fn pending_update_on(recall: &Value, source_id: &str, memory_id: Option<u64>) -> bool {
     recall["source_evidence"]
         .as_array()
@@ -850,7 +850,10 @@ fn pending_update_on(recall: &Value, source_id: &str, memory_id: Option<u64>) ->
         .filter(|source| source["source_id"] == source_id)
         .flat_map(|source| source["state_annotations"].as_array().into_iter().flatten())
         .any(|annotation| {
-            annotation["update"]["status"] == "pending"
+            (annotation["update"]["status"] == "pending"
+                || annotation["open_relations"]
+                    .as_array()
+                    .is_some_and(|relations| !relations.is_empty()))
                 && memory_id.is_none_or(|id| annotation["memory_id"].as_u64() == Some(id))
         })
 }
@@ -2354,12 +2357,9 @@ impl ChatMemoryService {
         // the task is still running) carries no record ID, yet records of that source may
         // already be committed with a pending state. The answer span is then bound to every
         // active record of that source whose quote contains it; any pending one blocks.
-        let is_pending = |id: MemoryId| {
-            state
-                .record_updates
-                .get(&id)
-                .is_some_and(|update| update.status == crate::UpdateStatus::Pending)
-        };
+        // 待定或处在未解决冲突里的记录都不能作为唯一当前值。
+        let w5 = crate::commit::W5View::of(&state);
+        let is_pending = |id: MemoryId| w5.unsettled(id);
         let active_records = state.repository.list_by_owner(self.store.owner())?;
         let mark_pending = |answer: &mut Value, candidate: &Value, span: &str| {
             let pending = match serde_json::from_value::<MemoryId>(candidate["memory_id"].clone()) {
@@ -3248,9 +3248,10 @@ impl ChatMemoryService {
                     let memories: Vec<_> = state.repository.list_by_owner(&owner)?.into_iter().filter(|memory|
                         memory.status != MemoryStatus::Deleted && (input.include_history || memory.status == MemoryStatus::Active)).collect();
                     let pending = state.staging.list_by_owner(&owner);
+                    let w5 = crate::commit::W5View::of(state);
                     Ok(json!({"total":memories.len(), "memories":memories.iter().skip(input.offset).take(input.limit)
                             .map(|memory| { let mut item = json!({"id":memory.id,"status":memory.status});
-                                crate::commit::attach_update(&mut item, &state.record_updates, memory.id); item }).collect::<Vec<_>>(),
+                                w5.attach(&mut item, memory.id); item }).collect::<Vec<_>>(),
                         "pending_total":pending.len(),"pending":pending.into_iter().skip(input.offset).take(input.limit)
                             .map(|staged| json!({"id":staged.id,"status":"Pending"})).collect::<Vec<_>>(),
                         "entities":state.entities.list_by_owner(&owner)}))

@@ -171,8 +171,15 @@ fn group(
 ) -> W5Group {
     let source_key = id.split('#').next().unwrap().to_string();
     ensure_claimed_source(db, &source_key);
-    let targets: Vec<MemoryId> = decisions.iter().flat_map(|d| d.targets.clone()).collect();
-    let seen = w5_seen(&db.open().read().unwrap().repository, &targets).unwrap();
+    let mut targets: Vec<MemoryId> = decisions.iter().flat_map(|d| d.targets.clone()).collect();
+    targets.sort();
+    targets.dedup();
+    let resolves: Vec<String> = decisions
+        .iter()
+        .flat_map(|d| d.resolves_relations.clone())
+        .collect();
+    let (seen, seen_relations) =
+        w5_snapshot(&db.open().read().unwrap(), &targets, &resolves).unwrap();
     W5Group {
         id: id.into(),
         source_key,
@@ -187,7 +194,7 @@ fn group(
         decisions,
         seen,
         scope_complete: false,
-        seen_relations: vec![],
+        seen_relations,
     }
 }
 
@@ -1682,17 +1689,23 @@ fn s1_groups_using_later_segment_fields_are_rejected_without_writes() {
     reused.candidates[0].committed_id = Some(MemoryId(1));
     let mut related = g.clone();
     related.seen[0].relations.push("rel-0".into());
-    for (label, group) in [
-        ("conflict", conflict),
-        ("resolves_relations", resolving),
-        ("committed_id", reused),
-        ("seen relations", related),
+    // committed_id 留到第 4 段；其余字段第 3 段已执行，但缺少配套内容时同样拒绝、零写入。
+    for (label, group, expected) in [
+        (
+            "conflict without relation",
+            conflict,
+            "exactly a conflict carries",
+        ),
+        ("resolves without resolution", resolving, "go together"),
+        ("committed_id", reused, "not supported yet"),
+        (
+            "seen relations without snapshot",
+            related,
+            "has no W4 snapshot",
+        ),
     ] {
         let error = commit_group(&mut db.open(), &claim(&group), &group).unwrap_err();
-        assert!(
-            error.to_string().contains("not supported yet"),
-            "{label}: {error}"
-        );
+        assert!(error.to_string().contains(expected), "{label}: {error}");
         assert_eq!(snapshot(&db), before, "{label}");
     }
 }
@@ -2168,4 +2181,508 @@ fn u2_candidate_kind_must_match_the_action() {
         );
     }
     assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+}
+
+// ---------------- 第 3 段：冲突关系（w5-storage.md 第 4 节；w5-acceptance.md D1、E1）
+
+/// 已整理完成的旧原文（不是本次认领的任务），带原文正文，供关系依据逐字核对。
+fn stored_source(db: &TestDb, key: &str, text: &str) {
+    ensure_claimed_source(db, key);
+    edit_source(db, key, |s| {
+        s.request = Some(serde_json::json!({"text": text, "capture_source": true}));
+        s.enrichment = "committed".into();
+        s.task = EnrichmentTask::default();
+    });
+}
+
+/// 本次认领的原文：设置正文。
+fn claimed_source(db: &TestDb, key: &str, text: &str) {
+    ensure_claimed_source(db, key);
+    edit_source(db, key, |s| {
+        s.request = Some(serde_json::json!({"text": text, "capture_source": true}))
+    });
+}
+
+fn evidence(source: &str, quote: &str) -> RelationEvidence {
+    RelationEvidence {
+        source_id: source.into(),
+        quote: quote.into(),
+    }
+}
+
+fn retraction_of(source: &str, quote: &str) -> CandidateMemory {
+    let mut c = cand(source, "fact", "", quote, 300);
+    c.intent = CandidateIntent::Retract { target: None };
+    c
+}
+
+fn relation(db: &TestDb, id: &str) -> StoredRelation {
+    db.open().read().unwrap().relations[id].clone()
+}
+
+/// 直接放入一条 open 冲突关系（模拟此前一组 W5 建立的关系）。
+fn seed_relation(db: &TestDb, members: &[MemoryId], basis: Vec<RelationEvidence>) -> String {
+    db.open()
+        .transaction(|state| {
+            let id = format!("rel-{}", state.next_relation);
+            state.next_relation += 1;
+            state.relations.insert(
+                id.clone(),
+                StoredRelation {
+                    id: id.clone(),
+                    kind: RelationKind::Conflict,
+                    members: members.to_vec(),
+                    conditions: serde_json::json!([]),
+                    times: serde_json::json!([]),
+                    basis,
+                    status: RelationStatus::Open,
+                    resolution: None,
+                    created_by: "seed".into(),
+                    closed_by: None,
+                },
+            );
+            Ok(id)
+        })
+        .unwrap()
+}
+
+const SEVEN: &str = "我已确认栖风读书机的屏幕尺寸是7英寸。";
+const EIGHT_UNSURE: &str = "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。";
+
+/// w4_07：50（7 英寸）已存在；s-260 说 8 英寸、对不上、未核实。
+fn w4_07(db: &TestDb) -> (MemoryId, W5Group) {
+    let text = "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。";
+    stored_source(db, "s-130", SEVEN);
+    let old = seed(db, &[cand("s-130", "fact", SEVEN, SEVEN, 100)])[0];
+    claimed_source(db, "s-260", text);
+    let mut d = decision(0, W5Action::Conflict, &[old], &["s-130", "s-260"], None);
+    d.relation = Some(W5RelationSpec {
+        conditions: serde_json::json!([]),
+        times: serde_json::json!([]),
+        basis: vec![evidence("s-130", SEVEN), evidence("s-260", text)],
+    });
+    let g = group(
+        db,
+        "s-260#0",
+        vec![(0, cand("s-260", "fact", text, text, 260))],
+        vec![d],
+    );
+    (old, g)
+}
+
+#[test]
+fn r1_conflict_keeps_the_old_record_and_opens_a_relation() {
+    let db = TestDb::new();
+    let (old, g) = w4_07(&db);
+    let before_old = w5_fingerprint(&memory(&db, old)).unwrap();
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let new = receipt.products[&0];
+    // 旧版本不结束、不取代。
+    assert_eq!(w5_fingerprint(&memory(&db, old)).unwrap(), before_old);
+    assert_eq!(memory(&db, new).status, MemoryStatus::Active);
+    assert_eq!(memory(&db, new).supersedes, None);
+    let rel = relation(&db, "rel-0");
+    assert_eq!(rel.members, vec![old, new]);
+    assert_eq!(rel.status, RelationStatus::Open);
+    assert_eq!(rel.created_by, "s-260#0");
+    assert_eq!(rel.basis.len(), 2);
+    assert_eq!(db.open().read().unwrap().next_relation, 1);
+    // 通用 fact 范围不完整：新记录 pending/scope_incomplete；回执记下同样的状态。
+    assert_eq!(receipt.updates[&0], scope_incomplete());
+    assert_eq!(record_update(&db, new), Some(scope_incomplete()));
+    // 旧格式输出带出两端所在的 open 关系。
+    let mut service = hippocampus::chat::ChatMemoryService::new(
+        db.open(),
+        hippocampus::chat::ChatConfig::default(),
+    )
+    .unwrap();
+    let listed = service
+        .call("memory_list", serde_json::json!({}), || false)
+        .unwrap();
+    for id in [old, new] {
+        let item = listed["memories"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|m| m["id"] == serde_json::json!(id))
+            .unwrap();
+        assert_eq!(
+            item["open_relations"],
+            serde_json::json!(["rel-0"]),
+            "{id:?}"
+        );
+    }
+    drop(service);
+    // 重放：不再建关系。
+    let before = snapshot(&db);
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(db.open().read().unwrap().relations.len(), 1);
+}
+
+#[test]
+fn r1_conflict_basis_must_be_verbatim_and_cover_both_sides() {
+    let db = TestDb::new();
+    let (_, g) = w4_07(&db);
+    let before = snapshot(&db);
+    let spec = |g: &W5Group| g.decisions[0].relation.clone().unwrap();
+    let mut only_new = g.clone();
+    only_new.decisions[0].relation = Some(W5RelationSpec {
+        basis: vec![spec(&g).basis[1].clone()],
+        ..spec(&g)
+    });
+    let mut paraphrased = g.clone();
+    paraphrased.decisions[0].relation = Some(W5RelationSpec {
+        basis: vec![
+            evidence("s-130", "屏幕尺寸是7寸"),
+            spec(&g).basis[1].clone(),
+        ],
+        ..spec(&g)
+    });
+    let mut unknown_source = g.clone();
+    unknown_source.decisions[0].relation = Some(W5RelationSpec {
+        basis: vec![evidence("s-999", SEVEN), spec(&g).basis[1].clone()],
+        ..spec(&g)
+    });
+    let mut no_spec = g.clone();
+    no_spec.decisions[0].relation = None;
+    let mut spec_on_new = g.clone();
+    spec_on_new.decisions[0].action = W5Action::New;
+    spec_on_new.decisions[0].targets.clear();
+    for (label, bad, expected) in [
+        (
+            "only the new side",
+            only_new,
+            "both the new source and a target",
+        ),
+        ("paraphrased quote", paraphrased, "not verbatim"),
+        ("unknown source", unknown_source, "unknown source"),
+        (
+            "conflict without relation",
+            no_spec,
+            "exactly a conflict carries",
+        ),
+        ("relation on new", spec_on_new, "exactly a conflict carries"),
+    ] {
+        let error = commit_group(&mut db.open(), &claim(&bad), &bad).unwrap_err();
+        assert!(error.to_string().contains(expected), "{label}: {error}");
+        assert_eq!(snapshot(&db), before, "{label}");
+        assert!(db.open().read().unwrap().relations.is_empty(), "{label}");
+    }
+}
+
+/// w4_15 / w4_21 的初始状态：50（7 英寸）、51（8 英寸未核实），rel-0 open。
+fn conflict_pair(db: &TestDb) -> (MemoryId, MemoryId, String) {
+    stored_source(db, "s-130", SEVEN);
+    stored_source(db, "s-261", EIGHT_UNSURE);
+    let ids = seed(
+        db,
+        &[
+            cand("s-130", "fact", SEVEN, SEVEN, 100),
+            cand("s-261", "fact", EIGHT_UNSURE, EIGHT_UNSURE, 200),
+        ],
+    );
+    let rel = seed_relation(
+        db,
+        &ids,
+        vec![evidence("s-130", SEVEN), evidence("s-261", EIGHT_UNSURE)],
+    );
+    (ids[0], ids[1], rel)
+}
+
+/// w4_15：用户确认 7 英寸是记错的——撤回 50 并解决关系，51 不动。
+fn w4_15(db: &TestDb) -> (MemoryId, MemoryId, String, W5Group) {
+    let (seven, eight, rel) = conflict_pair(db);
+    let g = w4_15_group(db, seven, &rel);
+    (seven, eight, rel, g)
+}
+
+fn w4_15_group(db: &TestDb, seven: MemoryId, rel: &str) -> W5Group {
+    let text = "7英寸那个是我记错了。";
+    claimed_source(db, "s-370", text);
+    let mut d = decision(0, W5Action::Retract, &[seven], &["s-130", "s-370"], None);
+    d.resolves_relations = vec![rel.to_owned()];
+    d.resolution = Some(evidence("s-370", text));
+    group(
+        db,
+        "s-370#0",
+        vec![(0, retraction_of("s-370", text))],
+        vec![d],
+    )
+}
+
+#[test]
+fn r2_resolving_retract_closes_the_relation_with_its_resolution() {
+    let db = TestDb::new();
+    let (seven, eight, rel, g) = w4_15(&db);
+    assert_eq!(g.seen[0].relations, vec![rel.clone()]);
+    assert_eq!(g.seen_relations.len(), 1);
+    let before_eight = w5_fingerprint(&memory(&db, eight)).unwrap();
+    committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(memory(&db, seven).status, MemoryStatus::Superseded);
+    assert_eq!(
+        memory(&db, seven).supersede_reason,
+        Some(SupersedeReason::UserRetracted)
+    );
+    assert_eq!(w5_fingerprint(&memory(&db, eight)).unwrap(), before_eight);
+    let closed = relation(&db, &rel);
+    assert_eq!(closed.status, RelationStatus::Resolved);
+    assert_eq!(
+        closed.resolution,
+        Some(evidence("s-370", "7英寸那个是我记错了。"))
+    );
+    assert_eq!(closed.closed_by.as_deref(), Some("s-370#0"));
+    assert_eq!(closed.members, vec![seven, eight]);
+}
+
+#[test]
+fn r2_relation_changes_after_w4_input_need_rejudge() {
+    // 关系在 W4 之后被解决或失效，或目标新加入一条关系：整组 needs_rejudge，零业务写入。
+    for change in ["invalidated", "joined_new_relation"] {
+        let db = TestDb::new();
+        let (seven, eight, rel, g) = w4_15(&db);
+        // 只验证关系快照这一项：变更后把无来源变更触发的顺序屏障复原，否则任务先被标为过期。
+        let barrier = db.open().read().unwrap().source_less_barrier_sequence;
+        match change {
+            "invalidated" => {
+                db.open()
+                    .transaction(|state| {
+                        let r = state.relations.get_mut(&rel).unwrap();
+                        r.status = RelationStatus::Invalidated;
+                        Ok(())
+                    })
+                    .unwrap();
+            }
+            _ => {
+                seed_relation(&db, &[seven, eight], vec![evidence("s-130", SEVEN)]);
+            }
+        }
+        db.open()
+            .transaction(|state| {
+                state.source_less_barrier_sequence = barrier;
+                let task = state.sources.get_mut("s-370").unwrap();
+                task.enrichment = "running".into();
+                task.error = None;
+                Ok(())
+            })
+            .unwrap();
+        let before = snapshot(&db);
+        let relations_before = db.open().read().unwrap().relations.clone();
+        let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+        assert!(reason.contains("relation"), "{change}: {reason}");
+        let after = snapshot(&db);
+        assert_eq!((&after.0, after.1), (&before.0, before.1), "{change}");
+        assert_eq!(
+            db.open().read().unwrap().relations,
+            relations_before,
+            "{change}"
+        );
+        assert_eq!(memory(&db, seven).status, MemoryStatus::Active, "{change}");
+    }
+}
+
+#[test]
+fn r2_resolution_rules_are_checked_mechanically() {
+    let db = TestDb::new();
+    let (_, _, rel, g) = w4_15(&db);
+    let before = snapshot(&db);
+    let mut old_source = g.clone();
+    old_source.decisions[0].resolution = Some(evidence("s-130", SEVEN));
+    let mut no_resolution = g.clone();
+    no_resolution.decisions[0].resolution = None;
+    let mut twice = g.clone();
+    twice.decisions[0].resolves_relations = vec![rel.clone(), rel.clone()];
+    let mut unsnapshotted = g.clone();
+    unsnapshotted.seen_relations.clear();
+    for (label, bad, expected) in [
+        (
+            "resolution from an old source",
+            old_source,
+            "claimed source",
+        ),
+        ("no resolution", no_resolution, "go together"),
+        ("resolved twice", twice, "resolved twice"),
+        ("no relation snapshot", unsnapshotted, "has no W4 snapshot"),
+    ] {
+        let error = commit_group(&mut db.open(), &claim(&bad), &bad).unwrap_err();
+        assert!(error.to_string().contains(expected), "{label}: {error}");
+        assert_eq!(snapshot(&db), before, "{label}");
+        assert_eq!(relation(&db, &rel).status, RelationStatus::Open, "{label}");
+    }
+}
+
+/// w4_21：一句话拆成细化 51 与撤回 50（并解决关系），两决定同一组。
+fn w4_21(db: &TestDb) -> (MemoryId, MemoryId, String, W5Group) {
+    let (seven, eight, rel) = conflict_pair(db);
+    let text = "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。";
+    claimed_source(db, "s-371", text);
+    let mut refine = decision(
+        0,
+        W5Action::StateChange,
+        &[eight],
+        &["s-261", "s-371"],
+        None,
+    );
+    refine.reason = Some(SupersedeReason::Refinement);
+    let mut retract = decision(1, W5Action::Retract, &[seven], &["s-130", "s-371"], None);
+    retract.resolves_relations = vec![rel.clone()];
+    retract.resolution = Some(evidence("s-371", text));
+    let mut second = retraction_of("s-371", text);
+    second.evidence[0].id = EvidenceId::from("s-371-b");
+    let g = group(
+        db,
+        "s-371#0",
+        vec![(0, cand("s-371", "fact", text, text, 371)), (1, second)],
+        vec![refine, retract],
+    );
+    (seven, eight, rel, g)
+}
+
+#[test]
+fn d1_refine_and_resolving_retract_commit_together() {
+    let db = TestDb::new();
+    let (seven, eight, rel, g) = w4_21(&db);
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let new = receipt.products[&0];
+    assert_eq!(
+        memory(&db, seven).supersede_reason,
+        Some(SupersedeReason::UserRetracted)
+    );
+    assert_eq!(
+        memory(&db, eight).supersede_reason,
+        Some(SupersedeReason::Refinement)
+    );
+    assert_eq!(memory(&db, eight).superseded_by, Some(new));
+    assert_eq!(memory(&db, new).supersedes, Some(eight));
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Resolved);
+    // 关系在本组内解决：替代记录不标 relation_unclear，只有范围不完整。
+    assert_eq!(record_update(&db, new), Some(scope_incomplete()));
+}
+
+#[test]
+fn d1_fault_between_the_two_decisions_rolls_back_both_and_the_relation() {
+    let db = TestDb::new();
+    let (seven, eight, rel, g) = w4_21(&db);
+    let before = snapshot(&db);
+    let relations_before = db.open().read().unwrap().relations.clone();
+    for step in [
+        W5Step::AfterDecision(0),
+        W5Step::AfterDecision(1),
+        W5Step::BeforeSave,
+    ] {
+        assert!(
+            commit_group_with_hook(&mut db.open(), &claim(&g), &g, &mut fail_at(step)).is_err()
+        );
+        assert_eq!(snapshot(&db), before, "{step:?}");
+        assert_eq!(
+            db.open().read().unwrap().relations,
+            relations_before,
+            "{step:?}"
+        );
+    }
+    assert_eq!(memory(&db, seven).status, MemoryStatus::Active);
+    assert_eq!(memory(&db, eight).status, MemoryStatus::Active);
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Open);
+    // 回滚后重试恰好生效一次。
+    committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Resolved);
+}
+
+#[test]
+fn d1_one_stale_target_sends_the_whole_group_to_rejudge() {
+    let db = TestDb::new();
+    let (seven, eight, rel, g) = w4_21(&db);
+    let earlier = older_source_reinforces(&db, eight);
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    let before = snapshot(&db);
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let after = snapshot(&db);
+    assert_eq!((&after.0, after.1), (&before.0, before.1));
+    assert_eq!(memory(&db, seven).status, MemoryStatus::Active);
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Open);
+}
+
+#[test]
+fn e1_replacing_unresolved_members_keeps_the_relation_and_marks_relation_unclear() {
+    let db = TestDb::new();
+    stored_source(&db, "s-501", "我住在北京。");
+    stored_source(&db, "s-502", "我住在上海。");
+    let ids = seed(
+        &db,
+        &[
+            cand("s-501", "lives_in", "北京", "我住在北京。", 100),
+            cand("s-502", "lives_in", "上海", "我住在上海。", 110),
+        ],
+    );
+    let rel = seed_relation(
+        &db,
+        &ids,
+        vec![
+            evidence("s-501", "我住在北京。"),
+            evidence("s-502", "我住在上海。"),
+        ],
+    );
+    let before_relation = relation(&db, &rel);
+    claimed_source(&db, "s-510", "我已经搬到深圳了。");
+    let mut g = group(
+        &db,
+        "s-510#0",
+        vec![(
+            0,
+            cand("s-510", "lives_in", "深圳", "我已经搬到深圳了。", 510),
+        )],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &ids,
+            &["s-501", "s-502", "s-510"],
+            None,
+        )],
+    );
+    g.scope_complete = true;
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let new = receipt.products[&0];
+    for id in &ids {
+        assert_eq!(memory(&db, *id).status, MemoryStatus::Superseded);
+        assert_eq!(memory(&db, *id).superseded_by, Some(new));
+    }
+    // 关系与成员、依据原样；不把成员换成新记录，不去重，不自动解决。
+    assert_eq!(relation(&db, &rel), before_relation);
+    // 范围完整：只有 relation_unclear。
+    let unclear = UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: vec![UpdateReason::UpdateRelationUnclear],
+    };
+    assert_eq!(receipt.updates[&0], unclear);
+    assert_eq!(record_update(&db, new), Some(unclear));
+}
+
+#[test]
+fn r2_resolving_rechecks_every_member_not_only_the_targets() {
+    // 8 英寸那条不是撤回的目标，但它是要解决的关系的成员：W4 之后它被较早的原文强化，
+    // 关系据以解决的前提已变，整组 needs_rejudge。
+    let db = TestDb::new();
+    let (seven, eight, rel) = conflict_pair(&db);
+    let earlier = older_source_reinforces(&db, eight);
+    let g = w4_15_group(&db, seven, &rel);
+    assert!(g.seen.iter().any(|seen| seen.id == eight));
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    let before = snapshot(&db);
+    let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(reason.contains(&format!("target {}", eight.0)), "{reason}");
+    let after = snapshot(&db);
+    assert_eq!((&after.0, after.1), (&before.0, before.1));
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Open);
+    // 少了某个成员的快照：直接拒绝。
+    let db = TestDb::new();
+    let (seven, eight, rel, mut g) = w4_15(&db);
+    g.seen.retain(|seen| seen.id != eight);
+    let before = snapshot(&db);
+    let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+    assert!(error.to_string().contains("has no W4 snapshot"), "{error}");
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(memory(&db, seven).status, MemoryStatus::Active);
 }

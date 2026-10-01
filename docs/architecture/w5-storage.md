@@ -122,6 +122,10 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
    - 候选类别与动作必须一致：撤回候选只能走 retract，retract 只接受撤回候选，不一致整组拒绝、零写入。
    - 现有答复门读取待定状态：召回不为待定记录生成 `unique_in_snapshot`；`answer_policy` 对“唯一事实”“精确身份”两条路径按记录、对模型答案与计算答案按其引用的记录检查（补答候选在构造时从同一快照按记录带上待定标记，记录不在本地证据包里也能拦下；同一原文里的其他独立断言待定不影响；原文任务尚未完成、候选以未整理原文提供时，按答案片段绑定到该原文已提交的记录），有 pending 即返回 `answer_not_verified`（沿用现有状态与安全文本，不新增状态值）。没有 `update` 的旧记录照旧。
 3. **冲突关系**：建立、解决、替代未解决成员、删除失效；w4_21（D1）、w4_22（E1–E3）。
+   - 分两步提交：前半为建立、解决、替代未解决成员与关系快照核对；后半为删除失效与 `memory_forget` 删除范围重写。
+   - 依据的机械核对：conflict 的 basis 与 resolution 的片段须逐字出现在获准保存（capture_source）的原文里；conflict 须同时有本原文与至少一个目标来源的依据；resolution 须来自本次认领的原文。
+   - W4 的 correction / refine 走 state_change 并带对应结束原因（Correction、Refinement、ScopeRefined）。
+   - 处在 open 关系里的记录与待定记录同样不能被核准为唯一当前值；旧格式输出附 `open_relations`。E2（召回经 history 带出前身所在关系）随 recall.v3 实现。
 4. **重判复用与归并**：B2、B3、B3a，以及第 3 节的状态改写规则。
 
 ## 8. 已定（原待定项）

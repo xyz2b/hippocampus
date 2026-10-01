@@ -1602,7 +1602,7 @@ impl SqliteMemoryStore {
         });
         let mut runtime = trusted.clone();
         let stored_memories = state.repository.list_by_owner(&self.owner)?;
-        let record_updates = state.record_updates.clone();
+        let w5 = crate::commit::W5View::of(state);
         let mut query_conditions = fact_question
             .as_ref()
             .map(|question| {
@@ -2248,7 +2248,7 @@ impl SqliteMemoryStore {
                 let mut annotation = json!({"memory_id":m.id,"status":m.status,"supersede_reason":m.supersede_reason,
                     "association":link["association"],"quote_byte_range":link["quote_byte_range"],"decision":decision,
                     "replacement":replacement,"interpretation":"applies only to linked assertion; other text remains unverified"});
-                crate::commit::attach_update(&mut annotation, &record_updates, m.id);
+                w5.attach(&mut annotation, m.id);
                 annotations.push(annotation);
             }
             let restricted = !trusted.entities.is_empty()
@@ -2436,10 +2436,9 @@ impl SqliteMemoryStore {
                             "subject":subject.canonical_name,"value":value,
                             "query_relation":hint.query_relation,"evidence_relation":hint.evidence_relation});
                     }
-                    // 更新判定待定的记录不能被核准为快照中唯一的当前值（contracts 1.6）。
-                    let update_pending = record_updates
-                        .get(&m.id)
-                        .is_some_and(|update| update.status == crate::UpdateStatus::Pending);
+                    // 更新判定待定或处在未解决冲突里的记录，不能被核准为快照中唯一的当前值
+                    // （contracts 1.6、2.4）。
+                    let update_pending = w5.unsettled(m.id);
                     if let Some(answer) = verified_fact
                         && fact_values.len() == 1
                         && fact_values.contains(&answer.value)
@@ -2457,7 +2456,7 @@ impl SqliteMemoryStore {
                     }
                     let mut annotation = json!({"memory_id":m.id,"decision":decisions.get(&m.id),
                         "association":"exact_quote","quote_byte_range":[start,end]});
-                    crate::commit::attach_update(&mut annotation, &record_updates, m.id);
+                    w5.attach(&mut annotation, m.id);
                     verified["state_annotations"] = json!([annotation]);
                     verified["instruction_authority"] = json!("none");
                     verified.as_object_mut().unwrap().remove("known_memories");
