@@ -33,6 +33,11 @@ pub struct PersistedMemoryState {
     /// W5 提交回执，按依赖组 ID 保存；重放同一组不产生变更。
     #[serde(default)]
     pub w5_receipts: BTreeMap<String, W5Receipt>,
+    /// Set by an operation whose business change belongs to the source that is already the
+    /// last applied one (a later W5 group of the same source). Not persisted; without it the
+    /// change would count as source-less and invalidate that source's own running task.
+    #[serde(skip)]
+    pub(crate) source_attributed_change: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -343,7 +348,9 @@ impl SqliteMemoryStore {
             read_revision
         };
         if business_changed {
-            if state.last_applied_source_sequence == applied_before {
+            if state.last_applied_source_sequence == applied_before
+                && !state.source_attributed_change
+            {
                 // ponytail: owner-wide barrier; split by semantic slot only if unrelated jobs are measurably blocked.
                 state.source_less_barrier_sequence = state.source_less_barrier_sequence.max(
                     state

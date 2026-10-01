@@ -111,18 +111,80 @@ fn decision(
     }
 }
 
+const ATTEMPT: &str = "attempt-1";
+
+/// 写入（若尚无）一条原文任务，并模拟现有认领：running、attempt_id、租约未过期。
+fn ensure_claimed_source(db: &TestDb, key: &str) {
+    db.open()
+        .transaction(|state| {
+            if state.sources.contains_key(key) {
+                return Ok(());
+            }
+            let sequence = state.sources.len() as u64 + 1;
+            let task = EnrichmentTask {
+                processing_version: Some("w5-acceptance".into()),
+                attempt_count: 1,
+                attempt_id: Some(ATTEMPT.into()),
+                lease_until: Some(now() + 900),
+                claim_revision: Some(state.revision),
+                accepted_mode: Some("inline".into()),
+            };
+            state.sources.insert(
+                key.into(),
+                SourceRecord {
+                    id: key.into(),
+                    session_id: "chat".into(),
+                    turn_id: key.into(),
+                    observed_at: 200,
+                    received_sequence: sequence,
+                    request: Some(serde_json::json!({"text": key})),
+                    enrichment: "running".into(),
+                    error: None,
+                    result: None,
+                    base_revision: state.revision,
+                    index: serde_json::Value::Null,
+                    task,
+                },
+            );
+            Ok(())
+        })
+        .unwrap()
+}
+
+fn now() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64
+}
+
+/// 构造依赖组：所属原文为组 ID 中 `#` 之前的部分；在此刻（W4 输入时）记下全部目标的快照。
 fn group(
+    db: &TestDb,
     id: &str,
     candidates: Vec<(usize, CandidateMemory)>,
     decisions: Vec<W5Decision>,
 ) -> W5Group {
+    let source_key = id.split('#').next().unwrap().to_string();
+    ensure_claimed_source(db, &source_key);
+    let targets: Vec<MemoryId> = decisions.iter().flat_map(|d| d.targets.clone()).collect();
+    let seen = w5_seen(&db.open().read().unwrap().repository, &targets).unwrap();
     W5Group {
         id: id.into(),
+        source_key,
         candidates: candidates
             .into_iter()
             .map(|(index, candidate)| W5Candidate { index, candidate })
             .collect(),
         decisions,
+        seen,
+    }
+}
+
+fn claim(g: &W5Group) -> W5Claim {
+    W5Claim {
+        source_key: g.source_key.clone(),
+        attempt_id: ATTEMPT.into(),
     }
 }
 
@@ -174,6 +236,7 @@ fn w4_01(db: &TestDb) -> (MemoryId, W5Group, DatedValue) {
         source: TemporalSource::Inferred,
     };
     let g = group(
+        db,
         "s-205#0",
         vec![(
             0,
@@ -206,6 +269,7 @@ fn w4_12(db: &TestDb) -> (Vec<MemoryId>, W5Group) {
         ],
     );
     let g = group(
+        db,
         "s-340#0",
         vec![(
             0,
@@ -229,7 +293,7 @@ fn a1_state_change_with_effective_survives_reload() {
     let db = TestDb::new();
     let (old, g, effective) = w4_01(&db);
     let (_, revision_before, _) = snapshot(&db);
-    let receipt = committed(commit_group(&mut db.open(), &g).unwrap());
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
     let new = receipt.products[&0usize];
 
     let old_m = memory(&db, old);
@@ -264,6 +328,7 @@ fn a1_state_change_without_effective_keeps_end_unknown() {
         )],
     )[0];
     let g = group(
+        &db,
         "s-350#0",
         vec![(
             0,
@@ -277,7 +342,7 @@ fn a1_state_change_without_effective_keeps_end_unknown() {
             None,
         )],
     );
-    let new = committed(commit_group(&mut db.open(), &g).unwrap()).products[&0usize];
+    let new = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0usize];
     let old_m = memory(&db, old);
     assert_eq!(old_m.status, MemoryStatus::Superseded);
     assert_eq!(old_m.temporal.valid_to, None);
@@ -289,7 +354,7 @@ fn a1_multi_target_ends_all_and_inserts_once() {
     let db = TestDb::new();
     let (olds, g) = w4_12(&db);
     let before = count(&db);
-    let new = committed(commit_group(&mut db.open(), &g).unwrap()).products[&0usize];
+    let new = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0usize];
     assert_eq!(count(&db), before + 1);
     for old in olds {
         let m = memory(&db, old);
@@ -309,6 +374,7 @@ fn a1_new_leaves_unrelated_record_untouched() {
     )[0];
     let before = memory(&db, other);
     let g = group(
+        &db,
         "s-310#0",
         vec![(
             0,
@@ -316,7 +382,7 @@ fn a1_new_leaves_unrelated_record_untouched() {
         )],
         vec![decision(0, W5Action::New, &[], &["s-310"], None)],
     );
-    let new = committed(commit_group(&mut db.open(), &g).unwrap()).products[&0usize];
+    let new = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0usize];
     assert_eq!(memory(&db, other), before);
     assert_eq!(memory(&db, new).status, MemoryStatus::Active);
 }
@@ -336,6 +402,7 @@ fn a1_reinforce_adds_evidence_and_counts_once() {
         )],
     )[0];
     let g = group(
+        &db,
         "s-320#0",
         vec![(
             0,
@@ -356,7 +423,7 @@ fn a1_reinforce_adds_evidence_and_counts_once() {
         )],
     );
     let before = count(&db);
-    let receipt = committed(commit_group(&mut db.open(), &g).unwrap());
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
     assert!(receipt.products.is_empty());
     assert_eq!(count(&db), before);
     let m = memory(&db, target);
@@ -390,6 +457,7 @@ fn a1_retract_ends_with_unknown_end() {
         target: Some(target),
     };
     let g = group(
+        &db,
         "s-250#0",
         vec![(0, retraction)],
         vec![decision(
@@ -401,7 +469,7 @@ fn a1_retract_ends_with_unknown_end() {
         )],
     );
     let before = count(&db);
-    committed(commit_group(&mut db.open(), &g).unwrap());
+    committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
     assert_eq!(count(&db), before);
     let m = memory(&db, target);
     assert_eq!(m.status, MemoryStatus::Superseded);
@@ -429,7 +497,7 @@ fn a2_fault_rolls_back_everything() {
         let db = TestDb::new();
         let (_, g) = w4_12(&db);
         let before = snapshot(&db);
-        let result = commit_group_with_hook(&mut db.open(), &g, &mut fail_at(step));
+        let result = commit_group_with_hook(&mut db.open(), &claim(&g), &g, &mut fail_at(step));
         assert!(result.is_err(), "{step:?}");
         assert_eq!(snapshot(&db), before, "{step:?}");
     }
@@ -457,6 +525,7 @@ fn a2_fault_between_two_decisions_rolls_back_both() {
         target: Some(ids[0]),
     };
     let g = group(
+        &db,
         "s-400#0",
         vec![
             (0, retraction),
@@ -484,11 +553,23 @@ fn a2_fault_between_two_decisions_rolls_back_both() {
     );
     let before = snapshot(&db);
     assert!(
-        commit_group_with_hook(&mut db.open(), &g, &mut fail_at(W5Step::AfterDecision(0))).is_err()
+        commit_group_with_hook(
+            &mut db.open(),
+            &claim(&g),
+            &g,
+            &mut fail_at(W5Step::AfterDecision(0))
+        )
+        .is_err()
     );
     assert_eq!(snapshot(&db), before);
     assert!(
-        commit_group_with_hook(&mut db.open(), &g, &mut fail_at(W5Step::AfterDecision(1))).is_err()
+        commit_group_with_hook(
+            &mut db.open(),
+            &claim(&g),
+            &g,
+            &mut fail_at(W5Step::AfterDecision(1))
+        )
+        .is_err()
     );
     assert_eq!(snapshot(&db), before);
 }
@@ -501,6 +582,7 @@ fn a2_invalid_group_changes_nothing() {
         &[cand("s-301", "lives_in", "北京", "我住在北京。", 100)],
     )[0];
     let g = group(
+        &db,
         "s-310#0",
         vec![(
             0,
@@ -509,7 +591,7 @@ fn a2_invalid_group_changes_nothing() {
         vec![decision(0, W5Action::New, &[other], &["s-310"], None)],
     );
     let before = snapshot(&db);
-    assert!(commit_group(&mut db.open(), &g).is_err());
+    assert!(commit_group(&mut db.open(), &claim(&g), &g).is_err());
     assert_eq!(snapshot(&db), before);
 }
 
@@ -522,6 +604,7 @@ fn a2_duplicate_candidate_index_is_rejected() {
         &[cand("s-301", "lives_in", "北京", "我住在北京。", 100)],
     );
     let g = group(
+        &db,
         "s-310#0",
         vec![
             (
@@ -533,7 +616,7 @@ fn a2_duplicate_candidate_index_is_rejected() {
         vec![decision(0, W5Action::New, &[], &["s-310"], None)],
     );
     let before = snapshot(&db);
-    assert!(commit_group(&mut db.open(), &g).is_err());
+    assert!(commit_group(&mut db.open(), &claim(&g), &g).is_err());
     assert_eq!(snapshot(&db), before);
 }
 
@@ -543,9 +626,9 @@ fn a2_duplicate_candidate_index_is_rejected() {
 fn a3_replaying_a_committed_group_changes_nothing() {
     let db = TestDb::new();
     let (_, g, _) = w4_01(&db);
-    let receipt = committed(commit_group(&mut db.open(), &g).unwrap());
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
     let after_first = snapshot(&db);
-    match commit_group(&mut db.open(), &g).unwrap() {
+    match commit_group(&mut db.open(), &claim(&g), &g).unwrap() {
         W5Outcome::AlreadyApplied(r) => assert_eq!(r, receipt),
         other => panic!("expected AlreadyApplied, got {other:?}"),
     }
@@ -566,6 +649,7 @@ fn a3_replaying_reinforce_does_not_count_twice() {
         )],
     )[0];
     let g = group(
+        &db,
         "s-320#0",
         vec![(
             0,
@@ -585,12 +669,12 @@ fn a3_replaying_reinforce_does_not_count_twice() {
             None,
         )],
     );
-    commit_group(&mut db.open(), &g).unwrap();
-    commit_group(&mut db.open(), &g).unwrap();
+    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
+    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
     // 同一来源放进另一个组 ID 也不再计数（证据只计一次）。
     let mut again = g.clone();
     again.id = "s-320#retry".into();
-    commit_group(&mut db.open(), &again).unwrap();
+    commit_group(&mut db.open(), &claim(&again), &again).unwrap();
     let m = memory(&db, target);
     assert_eq!(m.reinforcement_count, 1);
     assert_eq!(m.evidence.len(), 2);
@@ -601,10 +685,18 @@ fn a3_retry_after_fault_applies_exactly_once() {
     let db = TestDb::new();
     let (olds, g) = w4_12(&db);
     let before = count(&db);
-    assert!(commit_group_with_hook(&mut db.open(), &g, &mut fail_at(W5Step::BeforeSave)).is_err());
-    let new = committed(commit_group(&mut db.open(), &g).unwrap()).products[&0usize];
+    assert!(
+        commit_group_with_hook(
+            &mut db.open(),
+            &claim(&g),
+            &g,
+            &mut fail_at(W5Step::BeforeSave)
+        )
+        .is_err()
+    );
+    let new = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0usize];
     assert!(matches!(
-        commit_group(&mut db.open(), &g).unwrap(),
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
         W5Outcome::AlreadyApplied(_)
     ));
     assert_eq!(count(&db), before + 1);
@@ -617,11 +709,11 @@ fn a3_retry_after_fault_applies_exactly_once() {
 fn a3_same_group_id_with_different_content_is_rejected() {
     let db = TestDb::new();
     let (_, g, _) = w4_01(&db);
-    commit_group(&mut db.open(), &g).unwrap();
+    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
     let after_first = snapshot(&db);
     let mut changed = g.clone();
     changed.decisions[0].basis_sources.push("s-999".into());
-    assert!(commit_group(&mut db.open(), &changed).is_err());
+    assert!(commit_group(&mut db.open(), &claim(&changed), &changed).is_err());
     assert_eq!(snapshot(&db), after_first);
 }
 
@@ -631,7 +723,7 @@ fn a3_receipts_live_in_a_version_older_binaries_reject() {
     // 随后重放已提交的组会再插入一次；数据库因此升到 6，让旧程序拒绝打开。
     let db = TestDb::new();
     let (_, g, _) = w4_01(&db);
-    commit_group(&mut db.open(), &g).unwrap();
+    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
     let connection = rusqlite::Connection::open(&db.0).unwrap();
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
@@ -643,4 +735,392 @@ fn a3_receipts_live_in_a_version_older_binaries_reject() {
         })
         .unwrap();
     assert!(raw.contains("\"w5_receipts\":{\"s-205#0\""), "{raw}");
+}
+
+// ---------------- 第二段：A4–A7（快照过期、来源删除、任务认领），以及 D2/D3（同一原文分组）
+
+fn source(db: &TestDb, key: &str) -> SourceRecord {
+    db.open().read().unwrap().sources[key].clone()
+}
+
+/// 只改原文任务字段（非业务数据，不推进 revision）。
+fn edit_source(db: &TestDb, key: &str, f: impl FnOnce(&mut SourceRecord)) {
+    db.open()
+        .transaction(|state| {
+            f(state.sources.get_mut(key).unwrap());
+            Ok(())
+        })
+        .unwrap()
+}
+
+fn needs_rejudge(outcome: W5Outcome) -> String {
+    match outcome {
+        W5Outcome::NeedsRejudge(W5Receipt {
+            status: W5Status::NeedsRejudge { reason },
+            products,
+            ..
+        }) => {
+            assert!(products.is_empty());
+            reason
+        }
+        other => panic!("expected NeedsRejudge, got {other:?}"),
+    }
+}
+
+/// 一条较早接收的原文（先建任务、序号更小）先提交，强化目标 `target`：
+/// 这是不触发全局顺序闸门、只能靠目标快照发现的并发变更。
+fn older_source_reinforces(db: &TestDb, target: MemoryId) -> W5Group {
+    group(
+        db,
+        "s-050#0",
+        vec![(0, cand("s-050", "lives_in", "北京", "我还住在北京。", 150))],
+        vec![decision(
+            0,
+            W5Action::Reinforce,
+            &[target],
+            &["s-050"],
+            None,
+        )],
+    )
+}
+
+#[test]
+fn a4_target_changed_by_an_older_source_needs_rejudge() {
+    let db = TestDb::new();
+    let old = seed(
+        &db,
+        &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+    )[0];
+    let earlier = older_source_reinforces(&db, old);
+    let g = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "上海", "我搬到上海了。", 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    let before = snapshot(&db);
+
+    let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(reason.contains("changed since W4 input"), "{reason}");
+    let after = snapshot(&db);
+    assert_eq!((&after.0, after.1), (&before.0, before.1), "零业务写入");
+    assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+
+    // 不能重试旧决定：同一组再提交只返回 needs_rejudge。
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(snapshot(&db), after);
+}
+
+#[test]
+fn a4_one_stale_target_blocks_the_whole_multi_target_group() {
+    let db = TestDb::new();
+    let olds = seed(
+        &db,
+        &[
+            cand("s-302", "lives_in", "北京", "我住在北京。", 100),
+            cand("s-303", "lives_in", "北京朝阳区", "我家在北京朝阳区。", 110),
+        ],
+    );
+    let earlier = older_source_reinforces(&db, olds[1]);
+    let g = group(
+        &db,
+        "s-340#0",
+        vec![(
+            0,
+            cand("s-340", "lives_in", "深圳", "我已经搬到深圳了。", 200),
+        )],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &olds,
+            &["s-302", "s-303", "s-340"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    let records = count(&db);
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(count(&db), records);
+    for old in olds {
+        assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+    }
+}
+
+#[test]
+fn a4_source_less_change_marks_the_task_stale() {
+    // 不经任何原文的直接改动推进全局屏障，现有事务把运行中的任务标为 stale_requires_review；
+    // W5 随后得到 needs_rejudge，零业务写入。
+    let db = TestDb::new();
+    let (old, g, _) = w4_01(&db);
+    db.open()
+        .transaction(|state| {
+            let mut m = state.repository.get(old)?.unwrap();
+            m.tags.push("edited".into());
+            state.repository.update(m)?;
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(source(&db, "s-205").enrichment, "stale_requires_review");
+    let before = snapshot(&db);
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let after = snapshot(&db);
+    assert_eq!((&after.0, after.1), (&before.0, before.1));
+}
+
+#[test]
+fn a5_deleted_basis_source_needs_rejudge() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    // s-101（旧记录的依据）作为已删除的原文存在。
+    ensure_claimed_source(&db, "s-101");
+    edit_source(&db, "s-101", |s| {
+        s.request = None;
+        s.enrichment = "deleted".into();
+        s.task = EnrichmentTask::default();
+    });
+    let before = snapshot(&db);
+    let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(reason.contains("s-101"), "{reason}");
+    let after = snapshot(&db);
+    assert_eq!((&after.0, after.1), (&before.0, before.1));
+}
+
+#[test]
+fn a5_deleted_own_source_loses_the_claim() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    edit_source(&db, "s-205", |s| {
+        s.request = None;
+        s.enrichment = "deleted".into();
+    });
+    let before = snapshot(&db);
+    let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+    assert!(error.to_string().contains("claim_lost"), "{error}");
+    assert_eq!(snapshot(&db), before);
+}
+
+#[test]
+fn a6_late_commit_after_reclaim_is_rejected_and_keeps_the_new_claim() {
+    let db = TestDb::new();
+    let (old, g, _) = w4_01(&db);
+    // 甲（attempt-1）的租约过期，乙重新认领。
+    edit_source(&db, "s-205", |s| {
+        s.task.attempt_id = Some("attempt-2".into());
+        s.task.attempt_count = 2;
+        s.task.lease_until = Some(now() + 900);
+    });
+    let task_before = source(&db, "s-205").task;
+    let before = snapshot(&db);
+    let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+    assert!(error.to_string().contains("claim_lost"), "{error}");
+    assert_eq!(snapshot(&db), before, "甲零写入");
+    assert_eq!(source(&db, "s-205").task, task_before, "不改写乙的认领");
+    assert!(w5_finish_task(&mut db.open(), &claim(&g), &W5TaskEnd::Committed).is_err());
+    assert_eq!(source(&db, "s-205").enrichment, "running");
+
+    // 乙正常提交。
+    let second = W5Claim {
+        source_key: "s-205".into(),
+        attempt_id: "attempt-2".into(),
+    };
+    committed(commit_group(&mut db.open(), &second, &g).unwrap());
+    assert_eq!(memory(&db, old).status, MemoryStatus::Superseded);
+}
+
+#[test]
+fn a6_expired_lease_is_rejected_even_without_reclaim() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    edit_source(&db, "s-205", |s| s.task.lease_until = Some(now() - 1));
+    let before = snapshot(&db);
+    let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+    assert!(error.to_string().contains("claim_lost"), "{error}");
+    assert_eq!(snapshot(&db), before);
+}
+
+#[test]
+fn a7_ordinary_failure_marks_failed_and_releases_the_claim() {
+    let db = TestDb::new();
+    let (olds, g) = w4_12(&db);
+    assert!(
+        commit_group_with_hook(
+            &mut db.open(),
+            &claim(&g),
+            &g,
+            &mut fail_at(W5Step::BeforeSave)
+        )
+        .is_err()
+    );
+    w5_finish_task(
+        &mut db.open(),
+        &claim(&g),
+        &W5TaskEnd::Failed("injected fault".into()),
+    )
+    .unwrap();
+    let s = source(&db, "s-340");
+    assert_eq!(s.enrichment, "failed");
+    assert_eq!(s.error.as_deref(), Some("injected fault"));
+    assert_eq!((s.task.attempt_id, s.task.lease_until), (None, None));
+    // 认领已释放：旧执行者不能再提交。
+    assert!(commit_group(&mut db.open(), &claim(&g), &g).is_err());
+    // 重新认领后重试，恰好生效一次。
+    edit_source(&db, "s-340", |s| {
+        s.enrichment = "running".into();
+        s.task.attempt_id = Some("attempt-2".into());
+        s.task.lease_until = Some(now() + 900);
+    });
+    let retry = W5Claim {
+        source_key: "s-340".into(),
+        attempt_id: "attempt-2".into(),
+    };
+    let records = count(&db);
+    let new = committed(commit_group(&mut db.open(), &retry, &g).unwrap()).products[&0usize];
+    assert_eq!(count(&db), records + 1);
+    for old in olds {
+        assert_eq!(memory(&db, old).superseded_by, Some(new));
+    }
+}
+
+#[test]
+fn a7_needs_rejudge_ends_the_task_and_the_old_decision_stays_unusable() {
+    let db = TestDb::new();
+    let old = seed(
+        &db,
+        &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+    )[0];
+    let earlier = older_source_reinforces(&db, old);
+    let g = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "上海", "我搬到上海了。", 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    w5_finish_task(&mut db.open(), &claim(&g), &W5TaskEnd::NeedsRejudge(reason)).unwrap();
+    let s = source(&db, "s-205");
+    assert_eq!(s.enrichment, "stale_requires_review");
+    assert!(s.error.unwrap().starts_with("w5_needs_rejudge"));
+    assert_eq!(s.task.attempt_id, None);
+    // 即使重新认领，同一组旧决定也只返回 needs_rejudge，不会执行。
+    edit_source(&db, "s-205", |s| {
+        s.enrichment = "running".into();
+        s.task.attempt_id = Some("attempt-2".into());
+        s.task.lease_until = Some(now() + 900);
+    });
+    let again = W5Claim {
+        source_key: "s-205".into(),
+        attempt_id: "attempt-2".into(),
+    };
+    let before = snapshot(&db);
+    needs_rejudge(commit_group(&mut db.open(), &again, &g).unwrap());
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+}
+
+/// D2/D3：同一句“我已经搬到深圳了，现在在腾讯工作。”拆成两组，共用一个认领。
+fn same_source_two_groups(db: &TestDb) -> (Vec<MemoryId>, W5Group, W5Group) {
+    let text = "我已经搬到深圳了，现在在腾讯工作。";
+    let olds = seed(
+        db,
+        &[
+            cand("s-501", "lives_in", "北京", "我住在北京。", 100),
+            cand("s-502", "lives_in", "上海", "我住在上海。", 110),
+        ],
+    );
+    let g0 = group(
+        db,
+        "s-510#0",
+        vec![(0, cand("s-510", "lives_in", "深圳", text, 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &olds,
+            &["s-501", "s-502", "s-510"],
+            None,
+        )],
+    );
+    let g1 = group(
+        db,
+        "s-510#1",
+        vec![(1, cand("s-510", "works_at", "腾讯", text, 200))],
+        vec![decision(1, W5Action::New, &[], &["s-510"], None)],
+    );
+    (olds, g0, g1)
+}
+
+#[test]
+fn d3_two_groups_of_one_source_commit_in_turn_under_one_claim() {
+    let db = TestDb::new();
+    let (olds, g0, g1) = same_source_two_groups(&db);
+    let records = count(&db);
+    committed(commit_group(&mut db.open(), &claim(&g0), &g0).unwrap());
+    // 第一组推进了 revision；第二组仍在同一认领下正确提交，任务未被自己标为过期。
+    assert_eq!(source(&db, "s-510").enrichment, "running");
+    committed(commit_group(&mut db.open(), &claim(&g1), &g1).unwrap());
+    assert_eq!(count(&db), records + 2);
+    assert_eq!(source(&db, "s-510").enrichment, "running");
+    for old in olds {
+        assert_eq!(memory(&db, old).status, MemoryStatus::Superseded);
+    }
+    w5_finish_task(&mut db.open(), &claim(&g0), &W5TaskEnd::Committed).unwrap();
+    assert_eq!(source(&db, "s-510").enrichment, "committed");
+}
+
+#[test]
+fn d2_one_group_needs_rejudge_while_the_other_commits_once() {
+    let db = TestDb::new();
+    // 较早的原文先建任务，之后它会改动 g0 的一个目标。
+    let olds_pre = seed(
+        &db,
+        &[
+            cand("s-501", "lives_in", "北京", "我住在北京。", 100),
+            cand("s-502", "lives_in", "上海", "我住在上海。", 110),
+        ],
+    );
+    let earlier = older_source_reinforces(&db, olds_pre[0]);
+    let text = "我已经搬到深圳了，现在在腾讯工作。";
+    let g0 = group(
+        &db,
+        "s-510#0",
+        vec![(0, cand("s-510", "lives_in", "深圳", text, 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &olds_pre,
+            &["s-501", "s-502", "s-510"],
+            None,
+        )],
+    );
+    let g1 = group(
+        &db,
+        "s-510#1",
+        vec![(1, cand("s-510", "works_at", "腾讯", text, 200))],
+        vec![decision(1, W5Action::New, &[], &["s-510"], None)],
+    );
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    let records = count(&db);
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g0), &g0).unwrap());
+    committed(commit_group(&mut db.open(), &claim(&g1), &g1).unwrap());
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g1), &g1).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    assert_eq!(count(&db), records + 1, "D2：只新增候选 1 的一条");
+    for old in olds_pre {
+        assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+    }
 }
