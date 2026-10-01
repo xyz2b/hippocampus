@@ -18,7 +18,7 @@ from mcp_smoke import Client, Responses
 
 def state(db, owner="smoke-user"):
     with sqlite3.connect(db) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 7
         row = connection.execute(
             "SELECT state_json FROM memory_profiles WHERE owner_id=?", (owner,)
         ).fetchone()

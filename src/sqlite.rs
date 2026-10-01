@@ -161,7 +161,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=6 => (),
+            1..=7 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -208,6 +208,28 @@ impl SqliteMemoryStore {
             // rewriting it and then re-apply committed groups, so they must reject version 6.
             tx.pragma_update(None, "user_version", 6)?;
         }
+        if version < 7 {
+            // v6 receipts (W5 A1–A3) carry no status and were all committed; decoding fills in
+            // Committed. Rewrite every profile that has receipts so the stored form is explicit,
+            // then raise the version: a v6 binary would drop the status (and turn a
+            // needs_rejudge group into a committed one) when rewriting the snapshot.
+            let profiles = {
+                let mut statement =
+                    tx.prepare("SELECT owner_id, state_json FROM memory_profiles")?;
+                statement
+                    .query_map([], |row| {
+                        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                    })?
+                    .collect::<Result<Vec<_>, _>>()?
+            };
+            for (owner_id, json) in profiles {
+                let profile = Self::decode_trusted_state(&json)?;
+                if !profile.w5_receipts.is_empty() {
+                    Self::save(&tx, &UserId(owner_id), &profile)?;
+                }
+            }
+            tx.pragma_update(None, "user_version", 7)?;
+        }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
         if crate::lexical::initialize(&tx, &owner, &mut state)? && !state.sources.is_empty() {
@@ -246,9 +268,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=6).contains(&version) {
+        if !(3..=7).contains(&version) {
             return Err(format!(
-                "source search requires database version 3, 4, 5 or 6; found {version}; migrate explicitly"
+                "source search requires database version 3 to 7; found {version}; migrate explicitly"
             )
             .into());
         }

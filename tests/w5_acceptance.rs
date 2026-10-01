@@ -529,16 +529,18 @@ fn a2_fault_between_two_decisions_rolls_back_both() {
         "s-400#0",
         vec![
             (0, retraction),
-            (
-                1,
-                cand(
-                    "s-400b",
+            (1, {
+                // 同一原文拆出的第二个候选：同一轮，证据 ID 不同。
+                let mut c = cand(
+                    "s-400",
                     "works_at",
                     "腾讯",
                     "游泳那句收回，我现在在腾讯。",
                     200,
-                ),
-            ),
+                );
+                c.evidence[0].id = EvidenceId::from("s-400-b");
+                c
+            }),
         ],
         vec![
             decision(0, W5Action::Retract, &[ids[0]], &["s-120", "s-400"], None),
@@ -720,7 +722,7 @@ fn a3_same_group_id_with_different_content_is_rejected() {
 #[test]
 fn a3_receipts_live_in_a_version_older_binaries_reject() {
     // 引入 W5 回执前的程序只接受版本 1..=5，重写快照时会丢掉 w5_receipts，
-    // 随后重放已提交的组会再插入一次；数据库因此升到 6，让旧程序拒绝打开。
+    // 随后重放已提交的组会再插入一次；回执加入 status 后再升到 7，让 v6 程序也拒绝打开。
     let db = TestDb::new();
     let (_, g, _) = w4_01(&db);
     commit_group(&mut db.open(), &claim(&g), &g).unwrap();
@@ -728,7 +730,7 @@ fn a3_receipts_live_in_a_version_older_binaries_reject() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 6);
+    assert_eq!(version, 7);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1123,4 +1125,126 @@ fn d2_one_group_needs_rejudge_while_the_other_commits_once() {
     for old in olds_pre {
         assert_eq!(memory(&db, old).status, MemoryStatus::Active);
     }
+}
+
+// ---------------- 第二段复审修正
+
+#[test]
+fn a3_v6_receipts_without_status_still_open_and_replay() {
+    // bf83fd9（版本 6）保存的回执没有 status 字段；全部都是已提交的组。
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
+    let connection = rusqlite::Connection::open(&db.0).unwrap();
+    let raw: String = connection
+        .query_row("SELECT state_json FROM memory_profiles", [], |row| {
+            row.get(0)
+        })
+        .unwrap();
+    let mut old: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    old["w5_receipts"]["s-205#0"]
+        .as_object_mut()
+        .unwrap()
+        .remove("status");
+    connection
+        .execute(
+            "UPDATE memory_profiles SET state_json=?1",
+            [old.to_string()],
+        )
+        .unwrap();
+    connection.pragma_update(None, "user_version", 6).unwrap();
+    let before = snapshot(&db);
+
+    let receipt = &db.open().read().unwrap().w5_receipts["s-205#0"];
+    assert_eq!(receipt.status, W5Status::Committed);
+    let version: i64 = connection
+        .pragma_query_value(None, "user_version", |row| row.get(0))
+        .unwrap();
+    assert_eq!(version, 7);
+    let raw: String = connection
+        .query_row("SELECT state_json FROM memory_profiles", [], |row| {
+            row.get(0)
+        })
+        .unwrap();
+    assert!(
+        raw.contains("\"status\":\"Committed\""),
+        "迁移后显式写出 status"
+    );
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    assert_eq!(snapshot(&db), before);
+}
+
+/// 另一个连接持有写锁 `hold`，期间在主线程执行 `f`。
+fn while_write_locked<T>(db: &TestDb, hold: std::time::Duration, f: impl FnOnce() -> T) -> T {
+    let path = db.0.clone();
+    let (locked, wait) = std::sync::mpsc::channel();
+    let holder = std::thread::spawn(move || {
+        let mut connection = rusqlite::Connection::open(path).unwrap();
+        let tx = connection
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        locked.send(()).unwrap();
+        std::thread::sleep(hold);
+        tx.rollback().unwrap();
+    });
+    wait.recv().unwrap();
+    let result = f();
+    holder.join().unwrap();
+    result
+}
+
+#[test]
+fn a6_lease_expiring_while_waiting_for_the_write_lock_is_rejected() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    edit_source(&db, "s-205", |s| s.task.lease_until = Some(now() + 1));
+    let before = snapshot(&db);
+    let mut store = db.open();
+    let result = while_write_locked(&db, std::time::Duration::from_millis(2500), || {
+        commit_group(&mut store, &claim(&g), &g)
+    });
+    let error = result.unwrap_err();
+    assert!(error.to_string().contains("claim_lost"), "{error}");
+    assert_eq!(snapshot(&db), before);
+
+    // 收尾入口同样在写锁内取时间。
+    edit_source(&db, "s-205", |s| s.task.lease_until = Some(now() + 1));
+    let task = source(&db, "s-205").task;
+    let mut store = db.open();
+    let result = while_write_locked(&db, std::time::Duration::from_millis(2500), || {
+        w5_finish_task(&mut store, &claim(&g), &W5TaskEnd::Committed)
+    });
+    assert!(result.unwrap_err().to_string().contains("claim_lost"));
+    assert_eq!(source(&db, "s-205").enrichment, "running");
+    assert_eq!(source(&db, "s-205").task, task);
+}
+
+#[test]
+fn a6_candidate_from_another_source_is_rejected() {
+    // 用原文 A（s-205）的有效认领，携带已删除原文 B（s-300）的候选，依据只填 A。
+    let db = TestDb::new();
+    ensure_claimed_source(&db, "s-300");
+    edit_source(&db, "s-300", |s| {
+        s.request = None;
+        s.enrichment = "deleted".into();
+        s.task = EnrichmentTask::default();
+    });
+    let g = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-300", "works_at", "腾讯", "我在腾讯工作。", 200))],
+        vec![decision(0, W5Action::New, &[], &["s-205"], None)],
+    );
+    let before = snapshot(&db);
+    let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("does not come from the claimed source"),
+        "{error}"
+    );
+    assert_eq!(snapshot(&db), before);
 }

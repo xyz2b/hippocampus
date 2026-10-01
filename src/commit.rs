@@ -5,7 +5,8 @@
 //! 否则 claim_lost 且零写入。W4 输入时记下每个目标的快照指纹；提交时目标已变、更新的原文
 //! 已先应用、所在任务已被标为过期或依据来源已删除，该组记为 needs_rejudge，零业务写入，
 //! 且同一组以后只返回 needs_rejudge，不能重试旧决定（docs/architecture/w5-acceptance.md
-//! A1–A7）。尚未覆盖：关系、重判复用与归并、UpdateState。
+//! A1–A7）。候选的证据必须来自所认领的原文；租约按取得写锁后的时间判断。
+//! 尚未覆盖：关系、重判复用与归并、UpdateState。
 
 use std::collections::BTreeMap;
 
@@ -83,6 +84,8 @@ pub struct W5Receipt {
     pub group_id: String,
     /// 组内容的规范 JSON；同一组 ID 只接受完全相同的内容重放。
     pub fingerprint: String,
+    /// v6 receipts (W5 A1–A3) had no status; all of them were committed.
+    #[serde(default = "committed_status")]
     pub status: W5Status,
     /// 候选 → 本次产生的记录（new、state_change）。
     pub products: BTreeMap<usize, MemoryId>,
@@ -145,6 +148,10 @@ pub fn w5_seen(
         .collect()
 }
 
+fn committed_status() -> W5Status {
+    W5Status::Committed
+}
+
 fn now() -> PersistenceResult<i64> {
     Ok(std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)?
@@ -199,8 +206,9 @@ pub fn commit_group_with_hook(
 ) -> PersistenceResult<W5Outcome> {
     let fingerprint = serde_json::to_string(group)?;
     let owner = store.owner().clone();
-    let now = now()?;
     store.transaction(|state| {
+        // Read the clock only after the write lock is held: a lease may expire while waiting.
+        let now = now()?;
         if claim.source_key != group.source_key {
             return Err("W5 claim and group belong to different sources".into());
         }
@@ -210,6 +218,7 @@ pub fn commit_group_with_hook(
             source.received_sequence,
             source.enrichment == "stale_requires_review",
         );
+        let source_turn = (source.session_id.clone(), source.turn_id.clone());
         if let Some(receipt) = state.w5_receipts.get(&group.id) {
             if receipt.fingerprint != fingerprint {
                 return Err(format!(
@@ -224,6 +233,22 @@ pub fn commit_group_with_hook(
             });
         }
         validate(group, &owner)?;
+        // Every candidate must come from the claimed source: a valid claim on one source cannot
+        // carry candidates of another (possibly deleted) source.
+        for c in &group.candidates {
+            if c.candidate.evidence.is_empty()
+                || c.candidate.evidence.iter().any(|e| {
+                    (e.session_id.0.as_str(), e.turn_id.0.as_str())
+                        != (source_turn.0.as_str(), source_turn.1.as_str())
+                })
+            {
+                return Err(format!(
+                    "W5 candidate {} does not come from the claimed source {}",
+                    c.index, claim.source_key
+                )
+                .into());
+            }
+        }
         if let Some(reason) =
             stale_reason(state, group, &source_id, received_sequence, marked_stale)?
         {
@@ -319,8 +344,8 @@ pub fn w5_finish_task(
     claim: &W5Claim,
     end: &W5TaskEnd,
 ) -> PersistenceResult<()> {
-    let now = now()?;
     store.transaction(|state| {
+        let now = now()?;
         owned(state, claim, now)?;
         let source = state
             .sources
