@@ -30,6 +30,9 @@ pub struct PersistedMemoryState {
     pub last_applied_source_sequence: u64,
     #[serde(default)]
     pub source_less_barrier_sequence: u64,
+    /// W5 提交回执，按依赖组 ID 保存；重放同一组不产生变更。
+    #[serde(default)]
+    pub w5_receipts: BTreeMap<String, W5Receipt>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -153,7 +156,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=5 => (),
+            1..=6 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -195,6 +198,11 @@ impl SqliteMemoryStore {
             }
             tx.pragma_update(None, "user_version", 5)?;
         }
+        if version < 6 {
+            // W5 receipts live in the owner snapshot. Older binaries would drop them when
+            // rewriting it and then re-apply committed groups, so they must reject version 6.
+            tx.pragma_update(None, "user_version", 6)?;
+        }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
         if crate::lexical::initialize(&tx, &owner, &mut state)? && !state.sources.is_empty() {
@@ -233,9 +241,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=5).contains(&version) {
+        if !(3..=6).contains(&version) {
             return Err(format!(
-                "source search requires database version 3, 4 or 5; found {version}; migrate explicitly"
+                "source search requires database version 3, 4, 5 or 6; found {version}; migrate explicitly"
             )
             .into());
         }

@@ -1,4 +1,5 @@
 pub mod chat;
+mod commit;
 pub mod diagnostics;
 mod engine;
 mod fact_answer;
@@ -18,6 +19,7 @@ mod store;
 mod temporal;
 mod temporal_grounding;
 
+pub use commit::*;
 pub use engine::*;
 pub use local_recall::*;
 pub use model::*;
