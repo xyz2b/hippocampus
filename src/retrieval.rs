@@ -41,6 +41,9 @@ pub enum RetrievalFilterReason {
     Limit,
     /// Local relevance, ambiguity, or context budget; detailed reason is in local recall diagnostics.
     LocalSelection,
+    /// 完整候选带有现有 Memory 表达不了的限定语，或限定语已无从得知（完整候选随删除清洗）：
+    /// 不能当作无限定事实参与旧路径的选取与 scope 判断，只作为原文上下文（contract-types.md §3）。
+    QualifiersUnmapped,
 }
 
 #[derive(serde::Serialize, Clone, Copy, Debug, Eq, PartialEq)]
@@ -110,6 +113,19 @@ pub struct DefaultMemoryRetriever<'a, R, P> {
     pub predicates: &'a P,
     /// 可选的最小 IS-A registry；未提供时只做 target 精确匹配。
     pub semantic_relations: Option<&'a dyn SemanticRelationRegistry>,
+    /// 限定语无法用现有 Memory 表达的记录及其处理方式（见 `UnmappedQualifiers`）。
+    pub unmapped_qualifiers: Option<(&'a std::collections::BTreeSet<MemoryId>, UnmappedQualifiers)>,
+}
+
+/// 限定语无法用现有 Memory 表达（或已无从得知）的记录在旧路径里怎么处理。投影出的 Memory 没有
+/// 这些限定语，不能当作无限定事实参与 scope 裁决（contract-types.md §3）。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum UnmappedQualifiers {
+    /// 结果不带限定语标注的入口（全局要求、旧召回）：直接排除。
+    Exclude,
+    /// 结果会附限定语原文的入口（本地召回）：仍按状态、时间、主体、谓词等过滤，但不进入
+    /// 全局要求，不参与同槽竞争与覆盖，只作为上下文附在所属分区末尾。
+    ContextOnly,
 }
 
 impl<'a, R, P> DefaultMemoryRetriever<'a, R, P> {
@@ -118,7 +134,18 @@ impl<'a, R, P> DefaultMemoryRetriever<'a, R, P> {
             repository,
             predicates,
             semantic_relations: None,
+            unmapped_qualifiers: None,
         }
+    }
+
+    /// 指定限定语无法用现有 Memory 表达的记录及处理方式。
+    pub fn with_unmapped_qualifiers(
+        mut self,
+        ids: &'a std::collections::BTreeSet<MemoryId>,
+        mode: UnmappedQualifiers,
+    ) -> Self {
+        self.unmapped_qualifiers = Some((ids, mode));
+        self
     }
 
     /// 为本次查询启用父子类别匹配。
@@ -144,10 +171,25 @@ where
         let mut trace = Vec::with_capacity(all.len());
         let mut mandatory = Vec::new();
         let mut candidates = Vec::new();
+        let mut context_only = Vec::new();
+        let unmapped = |id: MemoryId, wanted: UnmappedQualifiers| {
+            self.unmapped_qualifiers
+                .is_some_and(|(ids, mode)| mode == wanted && ids.contains(&id))
+        };
 
         // 顺序判断并记录首个过滤原因；每条 owner memory 最终恰有一条 trace。
         for memory in all {
-            if is_mandatory(&memory, context) {
+            if unmapped(memory.id, UnmappedQualifiers::Exclude) {
+                trace.push(RetrievalTraceEntry {
+                    memory_id: memory.id,
+                    decision: RetrievalDecision::Filtered(
+                        RetrievalFilterReason::QualifiersUnmapped,
+                    ),
+                });
+                continue;
+            }
+            let only_context = unmapped(memory.id, UnmappedQualifiers::ContextOnly);
+            if !only_context && is_mandatory(&memory, context) {
                 trace.push(RetrievalTraceEntry {
                     memory_id: memory.id,
                     decision: RetrievalDecision::Mandatory,
@@ -180,6 +222,12 @@ where
                     memory_id: memory.id,
                     decision: RetrievalDecision::Filtered(reason),
                 });
+            } else if only_context {
+                trace.push(RetrievalTraceEntry {
+                    memory_id: memory.id,
+                    decision: RetrievalDecision::Selected,
+                });
+                context_only.push(memory);
             } else {
                 candidates.push(memory);
             }
@@ -322,6 +370,8 @@ where
             selected.push(candidate);
             limit_reached = selected.len() >= context.limit;
         }
+        // 只作上下文的记录不参与竞争与覆盖，附在所属分区末尾。
+        selected.extend(context_only);
 
         // Retrieval 信号独立记账，绝不能变成用户 reinforcement。
         for memory in mandatory.iter_mut().chain(selected.iter_mut()) {

@@ -21,7 +21,7 @@
 //! 第 3 节逐项清除。重判为强化另一记录时按来源幂等并入证据，已提交记录退出投影（status=Deleted），
 //! 回执 `merged` 记下已提交 ID → 保留目标。删除范围与关系失效见 `src/forget.rs`。
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
@@ -112,6 +112,8 @@ impl UpdateState {
 pub(crate) struct W5View {
     updates: BTreeMap<MemoryId, UpdateState>,
     open: BTreeMap<MemoryId, Vec<String>>,
+    /// 完整候选里有现有 Memory 表达不了的限定语的记录，附上这些限定语原文。
+    qualified: BTreeMap<MemoryId, serde_json::Value>,
 }
 
 impl W5View {
@@ -126,9 +128,47 @@ impl W5View {
                 open.entry(*member).or_default().push(relation.id.clone());
             }
         }
+        let mut qualified = BTreeMap::new();
+        let committed: Vec<&W5Receipt> = state
+            .w5_receipts
+            .values()
+            .filter(|receipt| receipt.status == W5Status::Committed)
+            .collect();
+        let mut with_contract = BTreeSet::new();
+        for receipt in &committed {
+            for (id, contract) in receipt_contracts(receipt) {
+                with_contract.insert(id);
+                if qualified.contains_key(&id) {
+                    continue;
+                }
+                if !contract.lossless() {
+                    let c = &contract.candidate;
+                    qualified.insert(
+                        id,
+                        serde_json::json!({
+                            "conditions": c.conditions,
+                            "uncertainty": c.uncertainty,
+                            "times": c.times,
+                        }),
+                    );
+                }
+            }
+        }
+        // W5 产生的记录找不到完整候选（创建回执已随删除清洗墓碑化，或没有完整形式）：限定语
+        // 无从得知，不能默认为无限定，也不能恢复被删除的候选（复审 0016）。
+        for receipt in &committed {
+            for id in receipt.products.values() {
+                if !with_contract.contains(id) {
+                    qualified
+                        .entry(*id)
+                        .or_insert_with(|| serde_json::json!({"status": "unknown"}));
+                }
+            }
+        }
         Self {
             updates: state.record_updates.clone(),
             open,
+            qualified,
         }
     }
 
@@ -144,15 +184,62 @@ impl W5View {
         if let Some(relations) = self.open.get(&id) {
             object.insert("open_relations".into(), serde_json::json!(relations));
         }
+        if let Some(qualifiers) = self.qualified.get(&id) {
+            object.insert("qualifiers_unmapped".into(), qualifiers.clone());
+        }
     }
 
-    /// 更新判定待定，或处在未解决的冲突里：不能被核准为唯一的当前值（contracts 1.6、2.4）。
+    /// 限定语无法用现有 Memory 表达（或已无从得知）的记录：旧路径不能把它们当作无限定事实选取。
+    pub(crate) fn unmapped_qualifiers(&self) -> BTreeSet<MemoryId> {
+        self.qualified.keys().copied().collect()
+    }
+
+    /// 更新判定待定、处在未解决的冲突里，或带有现有 Memory 表达不了的限定语：不能被核准为
+    /// 唯一的当前值，也不能当作无限定事实答复（contracts 1.3、1.6、2.4）。
     pub(crate) fn unsettled(&self, id: MemoryId) -> bool {
         self.updates
             .get(&id)
             .is_some_and(|update| update.status == UpdateStatus::Pending)
             || self.open.contains_key(&id)
+            || self.qualified.contains_key(&id)
     }
+}
+
+/// 记录的完整候选：取产生它的已提交回执里对应候选的 `contract`（重判复用时各回执里的完整候选
+/// 必须相同）。删除清洗会把创建回执整体墓碑化，此时没有完整候选，读取侧回退为旧记录视图。
+pub fn w5_record_contract(
+    state: &PersistedMemoryState,
+    id: MemoryId,
+) -> Option<crate::contract::ContractCandidate> {
+    state
+        .w5_receipts
+        .values()
+        .filter(|receipt| receipt.status == W5Status::Committed)
+        .find_map(|receipt| {
+            receipt_contracts(receipt)
+                .into_iter()
+                .find(|(product, _)| *product == id)
+                .map(|(_, contract)| contract)
+        })
+}
+
+/// 一份回执里各产物的完整候选（指纹已墓碑化或候选没有完整形式时没有）。
+fn receipt_contracts(receipt: &W5Receipt) -> Vec<(MemoryId, crate::contract::ContractCandidate)> {
+    let Ok(group) = serde_json::from_str::<serde_json::Value>(&receipt.fingerprint) else {
+        return Vec::new();
+    };
+    let entries = group["candidates"].as_array().cloned().unwrap_or_default();
+    receipt
+        .products
+        .iter()
+        .filter_map(|(index, id)| {
+            let entry = entries
+                .iter()
+                .find(|c| c["index"].as_u64() == Some(*index as u64))?;
+            let contract = serde_json::from_value(entry.get("contract")?.clone()).ok()?;
+            Some((*id, contract))
+        })
+        .collect()
 }
 
 /// 记录所在的 open 关系编号（排序、去重）。
@@ -348,6 +435,10 @@ pub struct W5Candidate {
     /// 重判已提交断言时为原记录 ID（第 4 段）。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub committed_id: Option<MemoryId>,
+    /// 完整的 w1.v1 候选（A 段）。为空时不序列化，旧组的指纹不变。记录的完整候选取产生它的
+    /// 那次提交，之后不可变：重判必须带完全相同的完整候选。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contract: Option<crate::contract::ContractCandidate>,
 }
 
 /// W4 输入时某个目标的快照指纹（不含检索计数，读取不算变更）。
@@ -922,7 +1013,8 @@ fn committed_mismatch(
             expected.temporal.expires_at,
             expected.retention_tier,
         );
-        if !(produced_here && same_evidence && same_assertion) {
+        let same_contract = entry.contract == w5_record_contract(state, committed);
+        if !(produced_here && same_evidence && same_assertion && same_contract) {
             return Ok(Some(format!(
                 "candidate {}: committed_id {} does not belong to this source and candidate",
                 entry.index, committed.0

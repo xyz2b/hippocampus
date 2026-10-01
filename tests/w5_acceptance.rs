@@ -190,6 +190,7 @@ fn group(
                 index,
                 candidate,
                 committed_id: None,
+                contract: None,
             })
             .collect(),
         decisions,
@@ -3562,14 +3563,6 @@ fn b3a_and_committed_id_checks_reject_without_writes() {
         seventy,
         decision(0, W5Action::New, &[], &["s-362"], None),
     );
-    // 已提交记录不是本组原文产生的：55 来自 s-112。
-    let foreign = rejudge_group(
-        &db,
-        "s-362#1",
-        c.clone(),
-        old,
-        decision(0, W5Action::New, &[], &["s-362"], None),
-    );
     // 撤回不能重判已提交断言。
     let mut retraction = retraction_of("s-362", ONE_CUP);
     retraction.evidence = c.evidence.clone();
@@ -3658,7 +3651,7 @@ fn b3_merge_passes_the_merged_records_support_to_the_kept_record() {
         let db = TestDb::new();
         let kept = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
         let (from, c) = first_commit(&db, "s-362", ONE_CUP);
-        let text = "我仍然每天喝一杯咖啡。";
+        let text = "对，我每天喝一杯咖啡。";
         claimed_source(&db, "s-363", text);
         let reinforced = group(
             &db,
@@ -4200,5 +4193,345 @@ fn b2_relation_unclear_is_cleared_only_when_the_old_members_were_in_the_input() 
             Some(expected),
             "with member: {with_member}"
         );
+    }
+}
+
+// ---------------- A 段：完整候选随回执保存（复审 0015 方案 a）
+
+fn contract_of(
+    key: &str,
+    text: &str,
+    conditions: serde_json::Value,
+) -> hippocampus::contract::ContractCandidate {
+    serde_json::from_value(serde_json::json!({
+        "candidate": {
+            "kind": "assertion", "speech": "user_statement",
+            "subject": {"entity_id": "self"}, "relation": "fact", "memory_type": "fact",
+            "value": {"kind": "text", "text": text, "quote": {"text": text}},
+            "sentence": {"text": text}, "polarity": "affirm", "strength": null,
+            "uncertainty": null, "conditions": conditions, "times": []
+        },
+        "source": {"kind": "stored", "source_id": key},
+        "said_on": "2026-09-28", "time_resolutions": []
+    }))
+    .unwrap()
+}
+
+fn record_contract(db: &TestDb, id: MemoryId) -> Option<hippocampus::contract::ContractCandidate> {
+    w5_record_contract(&db.open().read().unwrap(), id)
+}
+
+#[test]
+fn a_the_full_candidate_is_kept_with_the_record_and_survives_reopening() {
+    let db = TestDb::new();
+    claimed_source(&db, "s-1", ONE_CUP);
+    let full = contract_of(
+        "s-1",
+        ONE_CUP,
+        serde_json::json!([{"quote": {"text": "每天"}, "resolved": true}]),
+    );
+    let mut g = group(
+        &db,
+        "s-1#0",
+        vec![(0, cand("s-1", "fact", ONE_CUP, ONE_CUP, 300))],
+        vec![decision(0, W5Action::New, &[], &["s-1"], None)],
+    );
+    g.candidates[0].contract = Some(full.clone());
+    let receipt = w5_commit(&db, &g);
+    assert!(receipt.fingerprint.contains("\"contract\""));
+    let id = receipt.products[&0];
+    // 重新打开数据库后仍能取回。
+    assert_eq!(record_contract(&db, id), Some(full));
+    // 没有完整候选的组：指纹里没有这个字段，旧组的重放不受影响。
+    let old = w5_new(&db, "s-2", "fact", "我每天喝茶。", "我每天喝茶。");
+    let state = db.open().read().unwrap();
+    assert!(!state.w5_receipts["s-2#0"].fingerprint.contains("contract"));
+    assert_eq!(w5_record_contract(&state, old), None);
+}
+
+#[test]
+fn a_a_rejudge_must_carry_the_same_full_candidate() {
+    let db = TestDb::new();
+    claimed_source(&db, "s-10", ONE_CUP);
+    let full = contract_of("s-10", ONE_CUP, serde_json::json!([]));
+    let cand10 = cand("s-10", "fact", ONE_CUP, ONE_CUP, 360);
+    let mut g = group(
+        &db,
+        "s-10#0",
+        vec![(0, cand10.clone())],
+        vec![decision(0, W5Action::New, &[], &["s-10"], None)],
+    );
+    g.candidates[0].contract = Some(full.clone());
+    let record = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0];
+    let mut altered = full.clone();
+    altered.candidate.conditions = vec![hippocampus::contract::TextQualifier {
+        quote: hippocampus::contract::Quote {
+            text: "每天".into(),
+        },
+        resolved: true,
+    }];
+    for (n, (label, contract)) in [("altered", Some(altered)), ("missing", None)]
+        .into_iter()
+        .enumerate()
+    {
+        let mut r = rejudge_group(
+            &db,
+            &format!("s-10#{}", n + 1),
+            cand10.clone(),
+            record,
+            decision(0, W5Action::New, &[], &["s-10"], None),
+        );
+        r.candidates[0].contract = contract;
+        let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&r), &r).unwrap());
+        assert!(reason.contains("does not belong"), "{label}: {reason}");
+    }
+    let mut same = rejudge_group(
+        &db,
+        "s-10#3",
+        cand10,
+        record,
+        decision(0, W5Action::New, &[], &["s-10"], None),
+    );
+    same.candidates[0].contract = Some(full.clone());
+    same.scope_complete = true;
+    let receipt = committed(commit_group(&mut db.open(), &claim(&same), &same).unwrap());
+    assert_eq!(receipt.products[&0], record);
+    assert_eq!(record_contract(&db, record), Some(full));
+}
+
+#[test]
+fn a_a_surviving_record_whose_creating_receipt_was_scrubbed_has_no_full_candidate() {
+    // 创建来源被删、记录因独立强化存活：完整候选随创建回执一起墓碑化，读取侧回退为旧记录视图，
+    // 不能恢复被删除的候选。
+    let db = TestDb::new();
+    claimed_source(&db, "s-1", ONE_CUP);
+    let mut g = group(
+        &db,
+        "s-1#0",
+        vec![(0, cand("s-1", "fact", ONE_CUP, ONE_CUP, 300))],
+        vec![decision(0, W5Action::New, &[], &["s-1"], None)],
+    );
+    g.candidates[0].contract = Some(contract_of("s-1", ONE_CUP, serde_json::json!([])));
+    let id = w5_commit(&db, &g).products[&0];
+    let text = "是的，我每天喝一杯咖啡。";
+    claimed_source(&db, "s-2", text);
+    let r = group(
+        &db,
+        "s-2#0",
+        vec![(0, cand("s-2", "fact", ONE_CUP, text, 400))],
+        vec![decision(
+            0,
+            W5Action::Reinforce,
+            &[id],
+            &["s-1", "s-2"],
+            None,
+        )],
+    );
+    w5_commit(&db, &r);
+    assert!(record_contract(&db, id).is_some());
+    forget(&db, serde_json::json!({"source_id":"s-1"}));
+    assert_eq!(status(&db, id), MemoryStatus::Active);
+    assert_eq!(record_contract(&db, id), None);
+    // 限定语已无从得知：不能默认为无限定，输出标为未知。
+    let listed = call(&db, "memory_list", serde_json::json!({}));
+    let item = listed["memories"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|m| m["id"] == serde_json::json!(id))
+        .unwrap_or_else(|| panic!("{listed}"));
+    assert_eq!(
+        item["qualifiers_unmapped"],
+        serde_json::json!({"status": "unknown"}),
+        "{item}"
+    );
+}
+
+fn call(db: &TestDb, tool: &str, arguments: serde_json::Value) -> serde_json::Value {
+    let mut service = hippocampus::chat::ChatMemoryService::new(
+        db.open(),
+        hippocampus::chat::ChatConfig::default(),
+    )
+    .unwrap();
+    service.call(tool, arguments, || false).unwrap()
+}
+
+#[test]
+fn a_a_lossy_constraint_never_enters_the_global_requirements() {
+    // “写代码时，请用中文回复。”：投影后 Memory 没有条件，不能作为无条件的全局要求返回。
+    for (conditions, global) in [
+        (
+            serde_json::json!([{"quote": {"text": "写代码时"}, "resolved": true}]),
+            false,
+        ),
+        (serde_json::json!([]), true),
+    ] {
+        let db = TestDb::new();
+        let text = "写代码时，请用中文回复。";
+        claimed_source(&db, "s-1", text);
+        let mut c = cand("s-1", "response_language", "中文", text, 300);
+        c.memory_type = MemoryType::Constraint;
+        c.retention_tier = RetentionTier::Durable;
+        let mut g = group(
+            &db,
+            "s-1#0",
+            vec![(0, c)],
+            vec![decision(0, W5Action::New, &[], &["s-1"], None)],
+        );
+        let mut full = contract_of("s-1", text, conditions);
+        full.candidate.memory_type = "constraint".into();
+        g.candidates[0].contract = Some(full);
+        g.scope_complete = true;
+        w5_commit(&db, &g);
+        let recalled = call(
+            &db,
+            "memory_recall",
+            serde_json::json!({"query":"全局回答要求","bootstrap":true}),
+        );
+        let lanes = &recalled["result"];
+        let returned = ["mandatory", "constraints", "preferences", "facts"]
+            .iter()
+            .any(|lane| lanes[*lane].to_string().contains("中文"));
+        assert_eq!(returned, global, "{recalled}");
+        // 本地召回附带的全局要求同样不能含有它。
+        let mut service = local_service(&db, Vec::new());
+        let body = service
+            .call_with_global_context(
+                "memory_recall",
+                serde_json::json!({"query":"我喜欢什么水果？"}),
+                || false,
+            )
+            .structured_content
+            .unwrap();
+        let global_lanes = &body["global_context"]["result"];
+        let returned = ["mandatory", "constraints", "preferences", "facts"]
+            .iter()
+            .any(|lane| global_lanes[*lane].to_string().contains("中文"));
+        assert_eq!(returned, global, "{body}");
+    }
+}
+
+fn local_service(
+    db: &TestDb,
+    predicates: Vec<PredicateDefinition>,
+) -> hippocampus::chat::ChatMemoryService {
+    let mut config = hippocampus::chat::ChatConfig {
+        retrieval_mode: Some(hippocampus::chat::RetrievalMode::Local),
+        ..hippocampus::chat::ChatConfig::default()
+    };
+    config.predicates.extend(predicates);
+    hippocampus::chat::ChatMemoryService::new(db.open(), config).unwrap()
+}
+
+#[test]
+fn a_a_lossy_record_does_not_compete_for_a_single_slot() {
+    // 专用 Single 槽：无损的 Q71 与“换会场时”的 Q72。有损记录不能以“无条件”身份与 Q71 竞争，
+    // 只作上下文并附限定语原文。
+    let db = TestDb::new();
+    // Q71 带无损的完整候选：它是真正的无条件对照，不是“限定语未知”。
+    let plain_text = "我的签到编号是Q71。";
+    claimed_source(&db, "s-1", plain_text);
+    let mut p = group(
+        &db,
+        "s-1#0",
+        vec![(0, cand("s-1", "check_in_code", "Q71", plain_text, 300))],
+        vec![decision(0, W5Action::New, &[], &["s-1"], None)],
+    );
+    let mut lossless = contract_of("s-1", plain_text, serde_json::json!([]));
+    lossless.candidate.relation = "check_in_code".into();
+    p.candidates[0].contract = Some(lossless);
+    let plain = w5_commit(&db, &p).products[&0];
+    let text = "换会场时，我的签到编号是Q72。";
+    claimed_source(&db, "s-2", text);
+    let mut g = group(
+        &db,
+        "s-2#0",
+        vec![(0, cand("s-2", "check_in_code", "Q72", text, 400))],
+        vec![decision(0, W5Action::New, &[], &["s-2"], None)],
+    );
+    let mut full = contract_of(
+        "s-2",
+        text,
+        serde_json::json!([{"quote": {"text": "换会场时"}, "resolved": true}]),
+    );
+    full.candidate.relation = "check_in_code".into();
+    g.candidates[0].contract = Some(full);
+    let lossy = w5_commit(&db, &g).products[&0];
+    let mut service = local_service(
+        &db,
+        vec![PredicateDefinition {
+            predicate: Predicate::from("check_in_code"),
+            cardinality: Cardinality::Single,
+        }],
+    );
+    let recalled = service
+        .call(
+            "memory_recall",
+            serde_json::json!({"query":"我的签到编号是什么？"}),
+            || false,
+        )
+        .unwrap();
+    let result = &recalled["result"];
+    assert_eq!(result["conflicts"], serde_json::json!([]), "{recalled}");
+    let facts = result["facts"].to_string();
+    assert!(facts.contains("Q71") && facts.contains("Q72"), "{recalled}");
+    // 有损记录不能被核准为唯一当前值。
+    assert_ne!(
+        recalled["answer_contract"]["status"], "source_linked_fact",
+        "{recalled}"
+    );
+    // 管理视图里只有 Q72 带限定语原文，Q71 不带。
+    let listed = call(&db, "memory_list", serde_json::json!({}));
+    let annotation = |id: MemoryId| {
+        listed["memories"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|m| m["id"] == serde_json::json!(id))
+            .unwrap()["qualifiers_unmapped"]
+            .clone()
+    };
+    assert_eq!(annotation(plain), serde_json::Value::Null, "{listed}");
+    assert_eq!(
+        annotation(lossy)["conditions"][0]["quote"]["text"],
+        "换会场时",
+        "{listed}"
+    );
+}
+
+#[test]
+fn f18_a_kept_record_cannot_carry_a_value_only_the_deleted_source_said() {
+    // 通用 fact 的值就是创建它的那句原话。删除那句原话后，剩余证据换了说法、不含这段文字：
+    // 记录没有可保留的内容，一并删除；剩余证据含这段文字时照常保留。
+    for (text, kept) in [
+        ("我还是每天喝一杯咖啡。", false),
+        ("是的，我每天喝一杯咖啡。", true),
+    ] {
+        let db = TestDb::new();
+        let id = w5_new(&db, "s-1", "fact", ONE_CUP, ONE_CUP);
+        claimed_source(&db, "s-2", text);
+        let r = group(
+            &db,
+            "s-2#0",
+            vec![(0, cand("s-2", "fact", ONE_CUP, text, 400))],
+            vec![decision(
+                0,
+                W5Action::Reinforce,
+                &[id],
+                &["s-1", "s-2"],
+                None,
+            )],
+        );
+        w5_commit(&db, &r);
+        let result = forget(&db, serde_json::json!({"source_id":"s-1"}));
+        let expected = if kept {
+            MemoryStatus::Active
+        } else {
+            MemoryStatus::Deleted
+        };
+        assert_eq!(status(&db, id), expected, "{text}: {result}");
+        if !kept {
+            assert_text_gone(&db, ONE_CUP);
+        }
     }
 }

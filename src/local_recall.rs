@@ -1625,10 +1625,18 @@ impl SqliteMemoryStore {
             .iter()
             .map(|m| (m.id, (m.retrieval_count, m.last_retrieved_at)))
             .collect();
+        // 限定语无法用现有 Memory 表达的记录不排除（排除会连原文上下文一起丢掉）：只作上下文，
+        // 不进全局要求、不参与同槽竞争，连同 `qualifiers_unmapped` 原文返回；答复门按
+        // `unsettled` 不核准。
+        let unmapped = w5.unmapped_qualifiers();
         let (mut result, mut memories) = state.with_engine(predicates, |engine, _| {
             engine.run_retention_for_owner(&self.owner, trusted.at)?;
             let result = DefaultMemoryRetriever::new(&mut engine.repository, &engine.predicates)
                 .with_semantic_relations(relations)
+                .with_unmapped_qualifiers(
+                    &unmapped,
+                    crate::retrieval::UnmappedQualifiers::ContextOnly,
+                )
                 .retrieve(&runtime)?;
             Ok((result, engine.repository.list_by_owner(&self.owner)?))
         })?;
@@ -1907,7 +1915,8 @@ impl SqliteMemoryStore {
                 })
         };
         let global = |m: &Memory| {
-            m.subject_id == EntityId::from("self")
+            !unmapped.contains(&m.id)
+                && m.subject_id == EntityId::from("self")
                 && m.scope.domain.is_none()
                 && m.scope.conditions.is_empty()
                 && ((m.memory_type == MemoryType::Constraint

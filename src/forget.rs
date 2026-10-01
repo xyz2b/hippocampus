@@ -603,6 +603,34 @@ pub(crate) fn forget(
         bodies: &removed_bodies,
         fragments: &fragments,
     };
+    // 保留的记录不能带着被删原文的文字：文本值出自被删原文（例如通用 fact 的值就是那句原话），
+    // 而剩余证据里没有这段文字时，这条记录没有可保留的内容，一并删除（剩余原文照常可检索）。
+    let unsupported_text: Vec<MemoryId> = memories
+        .iter()
+        .filter(|m| retained.contains(&m.id))
+        .filter(|memory| {
+            let MemoryValue::Text(value) = &memory.value else {
+                return false;
+            };
+            let from_deleted = removed_bodies
+                .iter()
+                .any(|body| body.contains(value.as_str()))
+                || fragments
+                    .iter()
+                    .any(|fragment| value.contains(fragment.as_str()));
+            let still_said = memory
+                .evidence
+                .iter()
+                .filter(|e| !turns.contains(&turn_of(e)))
+                .any(|e| e.quote.contains(value.as_str()));
+            from_deleted && !still_said
+        })
+        .map(|memory| memory.id)
+        .collect();
+    for id in unsupported_text {
+        retained.remove(&id);
+        deleted.insert(id);
+    }
 
     if !deleted_sources.is_empty() {
         state.receipts.retain(|_, receipt| {

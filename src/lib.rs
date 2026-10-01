@@ -1,5 +1,6 @@
 pub mod chat;
 mod commit;
+pub mod contract;
 pub mod diagnostics;
 mod engine;
 mod fact_answer;

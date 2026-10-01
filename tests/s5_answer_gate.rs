@@ -942,7 +942,8 @@ fn fake_answer_model(answer: Value) -> String {
 
 /// 主体以别名“YS会”提问；问题不与原文字面重合，原文不进入本地证据包，只能由补答候选取得。
 /// 同一原文 F1 可拆出多条独立断言（`quotes`），各自成为一条记录，按顺序编号。
-fn assisted_fixture(text: &str, quotes: &[&str]) -> Db {
+/// `whole_sentence` 为真时，每条记录的证据都是整句原文（值仍按 `quotes` 区分）。
+fn assisted_fixture(text: &str, quotes: &[&str], whole_sentence: bool) -> Db {
     let db = Db::new();
     db.open()
         .transaction(|state| {
@@ -967,7 +968,7 @@ fn assisted_fixture(text: &str, quotes: &[&str]) -> Db {
                             EvidenceId(format!("F1-{index}")),
                             SessionId::from("session"),
                             TurnId::from("F1"),
-                            *quote,
+                            if whole_sentence { text } else { *quote },
                         ),
                     )))?;
                 }
@@ -1001,6 +1002,45 @@ fn assisted_service(db: &Db, base_url: String) -> ChatMemoryService {
     .unwrap()
 }
 
+/// 把记录（按 `assisted_fixture` 的顺序）标为限定语无法用现有 Memory 表达：产生它的回执里
+/// 完整候选带条件“换会场时”。
+fn mark_qualified(db: &Db, index: usize) {
+    db.open()
+        .transaction(|state| {
+            let id = state.repository.list_by_owner(&UserId::from("alice"))?[index].id;
+            let contract = json!({
+                "candidate": {
+                    "kind": "assertion", "speech": "user_statement",
+                    "subject": {"entity_id": "云杉会议"}, "relation": "fact", "memory_type": "fact",
+                    "value": {"kind": "text", "text": "Q72", "quote": {"text": "Q72"}},
+                    "sentence": {"text": "Q72"}, "polarity": "affirm", "strength": null,
+                    "uncertainty": null,
+                    "conditions": [{"quote": {"text": "换会场时"}, "resolved": true}],
+                    "times": []
+                },
+                "source": {"kind": "stored", "source_id": "F1"},
+                "said_on": "2026-09-28", "time_resolutions": []
+            });
+            state.w5_receipts.insert(
+                "F1#q".into(),
+                W5Receipt {
+                    group_id: "F1#q".into(),
+                    fingerprint: json!({"candidates": [{"index": 0, "contract": contract}]})
+                        .to_string(),
+                    status: W5Status::Committed,
+                    legacy_fingerprint: false,
+                    products: [(0, id)].into(),
+                    decisions: vec![],
+                    updates: Default::default(),
+                    merged: Default::default(),
+                    form: ReceiptForm::V8,
+                },
+            );
+            Ok(())
+        })
+        .unwrap();
+}
+
 /// 把记录（按 `assisted_fixture` 的顺序）标为更新待定。
 fn mark_pending(db: &Db, index: usize) {
     db.open()
@@ -1023,6 +1063,10 @@ struct AssistedCase {
     text: &'static str,
     quotes: &'static [&'static str],
     pending: Option<usize>,
+    /// 把该记录标为限定语无法用现有 Memory 表达（回执里的完整候选带条件）。
+    qualified: Option<usize>,
+    /// 每条记录的证据都是整句原文。
+    whole_sentence: bool,
     query: &'static str,
     proposal: Value,
     /// 核准时的状态；None 表示应被拦下。
@@ -1035,9 +1079,12 @@ struct AssistedCase {
 /// 以未整理原文的形式提供（W5 组已提交、任务尚未收尾的窗口），仍须绑定到已提交的记录。
 fn run_assisted_case(case: &AssistedCase, enrichment: &str) {
     let label = format!("{} [{enrichment}]", case.label);
-    let db = assisted_fixture(case.text, case.quotes);
+    let db = assisted_fixture(case.text, case.quotes, case.whole_sentence);
     if let Some(index) = case.pending {
         mark_pending(&db, index);
+    }
+    if let Some(index) = case.qualified {
+        mark_qualified(&db, index);
     }
     db.open()
         .transaction(|state| {
@@ -1145,12 +1192,19 @@ fn assisted_answer_cases_in_child_process() {
     // 同一原文拆出的两条独立断言：编号（第 0 条，补答候选引用它）与入口（第 1 条）。
     let both_text = "云杉会议的签到编号是Q71，入口在东门。";
     let both: &[&str] = &["云杉会议的签到编号是Q71", "入口在东门"];
+    const SHARED: &str = "云杉会议的入口在东门；换会场时，签到编号是Q72。";
+    let shared = SHARED;
+    let shared_quotes: &[&str] = &["云杉会议的入口在东门", "换会场时，签到编号是Q72"];
+    let answer_q72 = json!({"verdict":"answer","candidate_index":0,"answer_text":"Q72",
+        "event_date":null,"unit":null});
     for case in [
         AssistedCase {
             label: "model answer, judged or unknown",
             text: q71[0],
             quotes: q71,
             pending: None,
+            qualified: None,
+            whole_sentence: false,
             query: "YS会的号码？",
             proposal: answer.clone(),
             approved_status: Some("source_linked_model_answer"),
@@ -1161,6 +1215,8 @@ fn assisted_answer_cases_in_child_process() {
             text: q71[0],
             quotes: q71,
             pending: Some(0),
+            qualified: None,
+            whole_sentence: false,
             query: "YS会的号码？",
             proposal: answer.clone(),
             approved_status: None,
@@ -1171,6 +1227,8 @@ fn assisted_answer_cases_in_child_process() {
             text: yesterday[0],
             quotes: yesterday,
             pending: None,
+            qualified: None,
+            whole_sentence: false,
             query: "YS会过去多久了？",
             proposal: elapsed.clone(),
             approved_status: Some("source_linked_computed_elapsed"),
@@ -1181,6 +1239,8 @@ fn assisted_answer_cases_in_child_process() {
             text: yesterday[0],
             quotes: yesterday,
             pending: Some(0),
+            qualified: None,
+            whole_sentence: false,
             query: "YS会过去多久了？",
             proposal: elapsed,
             approved_status: None,
@@ -1192,6 +1252,8 @@ fn assisted_answer_cases_in_child_process() {
             text: both_text,
             quotes: both,
             pending: Some(1),
+            qualified: None,
+            whole_sentence: false,
             query: "YS会的号码？",
             proposal: answer.clone(),
             approved_status: Some("source_linked_model_answer"),
@@ -1202,10 +1264,38 @@ fn assisted_answer_cases_in_child_process() {
             text: both_text,
             quotes: both,
             pending: Some(0),
+            qualified: None,
+            whole_sentence: false,
             query: "YS会的号码？",
             proposal: answer,
             approved_status: None,
             draft: "Q71。",
+        },
+        // 同一完整原句拆出两条断言、证据都是整句：补答候选带入口记录（第 0 条）的 ID，模型却
+        // 回答了带条件的编号（第 1 条）。答案按片段绑定到编号记录，限定语无法表达，不核准。
+        AssistedCase {
+            label: "shared sentence, answered assertion qualified",
+            text: shared,
+            quotes: shared_quotes,
+            pending: None,
+            qualified: Some(1),
+            whole_sentence: true,
+            query: "YS会的号码？",
+            proposal: answer_q72.clone(),
+            approved_status: None,
+            draft: "Q72。",
+        },
+        AssistedCase {
+            label: "shared sentence, nothing qualified",
+            text: shared,
+            quotes: shared_quotes,
+            pending: None,
+            qualified: None,
+            whole_sentence: true,
+            query: "YS会的号码？",
+            proposal: answer_q72,
+            approved_status: Some("source_linked_model_answer"),
+            draft: "Q72。",
         },
     ] {
         for enrichment in ["committed", "running", "queued"] {
@@ -1288,5 +1378,95 @@ fn open_conflict_blocks_a_unique_current_answer() {
             );
             assert_eq!(validated["approved"], true, "{validated}");
         }
+    }
+}
+
+#[test]
+fn qualifiers_the_memory_cannot_express_block_a_plain_answer() {
+    // 完整候选带条件（现有 Memory 只能存成无条件事实）：不能当作无限定事实核准；
+    // 没有这类限定语时照常核准。
+    let query = "云杉会议的签到编号是什么？";
+    for conditions in [
+        json!([{"quote": {"text": "去年"}, "resolved": true}]),
+        json!([]),
+    ] {
+        let (db, _) = generic_fact_fixture(&[("F1", "Q71")]);
+        db.open()
+            .transaction(|state| {
+                let id = state.repository.list_by_owner(&UserId::from("alice"))?[0].id;
+                let contract = json!({
+                    "candidate": {
+                        "kind": "assertion", "speech": "user_statement",
+                        "subject": {"entity_id": "云杉会议"}, "relation": "fact",
+                        "memory_type": "fact",
+                        "value": {"kind": "text", "text": "Q71", "quote": {"text": "Q71"}},
+                        "sentence": {"text": "Q71"}, "polarity": "affirm", "strength": null,
+                        "uncertainty": null, "conditions": conditions, "times": []
+                    },
+                    "source": {"kind": "stored", "source_id": "F1"},
+                    "said_on": "2026-09-28", "time_resolutions": []
+                });
+                state.w5_receipts.insert(
+                    "F1#0".into(),
+                    W5Receipt {
+                        group_id: "F1#0".into(),
+                        fingerprint: json!({"candidates": [{"index": 0, "contract": contract}]})
+                            .to_string(),
+                        status: W5Status::Committed,
+                        legacy_fingerprint: false,
+                        products: [(0, id)].into(),
+                        decisions: vec![],
+                        updates: Default::default(),
+                        merged: Default::default(),
+                        form: ReceiptForm::V8,
+                    },
+                );
+                Ok(())
+            })
+            .unwrap();
+        let mut service = ChatMemoryService::new(
+            db.open(),
+            ChatConfig {
+                retrieval_mode: Some(RetrievalMode::Local),
+                local_recall_budget: LocalRecallBudget {
+                    candidate_k: 1,
+                    source_limit: 1,
+                    ..LocalRecallBudget::default()
+                },
+                ..ChatConfig::default()
+            },
+        )
+        .unwrap();
+        let recall = service
+            .call(
+                "memory_recall",
+                json!({"query":query,"task_id":"task-a","limit":1}),
+                || false,
+            )
+            .unwrap();
+        let validated = service
+            .call(
+                "memory_validate_answer",
+                json!({"query":query,"task_id":"task-a","draft_answer":"Q71。","source_ids":["F1"]}),
+                || false,
+            )
+            .unwrap();
+        let qualified = !conditions.as_array().unwrap().is_empty();
+        let expected = if qualified {
+            "answer_not_verified"
+        } else {
+            "source_linked_fact"
+        };
+        assert_eq!(recall["answer_contract"]["status"], expected, "{recall}");
+        // 本地召回仍把记录作为上下文返回，并附上限定语原文。
+        assert_eq!(
+            recall.to_string().contains("qualifiers_unmapped"),
+            qualified,
+            "{recall}"
+        );
+        assert_eq!(validated["approved"], !qualified, "{validated}");
+        let listed = service.call("memory_list", json!({}), || false).unwrap();
+        let text = listed.to_string();
+        assert_eq!(text.contains("qualifiers_unmapped"), qualified, "{listed}");
     }
 }

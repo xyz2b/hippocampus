@@ -840,8 +840,9 @@ fn require_subject_clarification(result: &mut Value) {
     result["evidence_status"] = json!("clarification_required");
 }
 
-/// 来源上有更新判定待定、或处在未解决冲突里的记录标注（可限定到某条记录）：这样的记录不能
-/// 被核准为唯一的当前结论（contracts 1.6、2.4）。没有这两个字段表示未知，沿用原有判断。
+/// 来源上有更新判定待定、处在未解决冲突里，或限定语无法用现有 Memory 表达（含无从得知）的
+/// 记录标注（可限定到某条记录）：这样的记录不能被核准为唯一的当前结论（contracts 1.3、1.6、
+/// 2.4）。没有这些字段表示未知，沿用原有判断。
 fn pending_update_on(recall: &Value, source_id: &str, memory_id: Option<u64>) -> bool {
     recall["source_evidence"]
         .as_array()
@@ -853,7 +854,8 @@ fn pending_update_on(recall: &Value, source_id: &str, memory_id: Option<u64>) ->
             (annotation["update"]["status"] == "pending"
                 || annotation["open_relations"]
                     .as_array()
-                    .is_some_and(|relations| !relations.is_empty()))
+                    .is_some_and(|relations| !relations.is_empty())
+                || annotation.get("qualifiers_unmapped").is_some())
                 && memory_id.is_none_or(|id| annotation["memory_id"].as_u64() == Some(id))
         })
 }
@@ -1521,9 +1523,13 @@ impl ChatMemoryService {
                 repository.insert(memory)?;
             }
         }
+        // 全局要求无条件适用：限定语无法用现有 Memory 表达的记录不能进入（它们在相关召回里带
+        // 限定语原文作为上下文出现）。
+        let unmapped = crate::commit::W5View::of(&state).unmapped_qualifiers();
         let mut engine = MemoryEngine::new(repository, self.config.registry());
         engine.run_retention_for_owner(&owner, now)?;
         let mut result = DefaultMemoryRetriever::new(&mut engine.repository, &engine.predicates)
+            .with_unmapped_qualifiers(&unmapped, crate::retrieval::UnmappedQualifiers::Exclude)
             .retrieve(&bootstrap_runtime(owner, now, usize::MAX))?;
         result.trace.clear();
         // Retention and retrieval affect only the disposable snapshot. Report persisted counters, not simulated increments.
@@ -2361,26 +2367,30 @@ impl ChatMemoryService {
         let w5 = crate::commit::W5View::of(&state);
         let is_pending = |id: MemoryId| w5.unsettled(id);
         let active_records = state.repository.list_by_owner(self.store.owner())?;
+        // 答案绑定到实际支持它的断言：同一原文里证据片段含有答案片段的全部有效记录（候选只按
+        // 来源去重、带首条记录的 ID，模型可能回答同一原句里的另一条断言）。其中任一条待定、处在
+        // 未解决冲突里或限定语无法表达，就不核准。
         let mark_pending = |answer: &mut Value, candidate: &Value, span: &str| {
-            let pending = match serde_json::from_value::<MemoryId>(candidate["memory_id"].clone()) {
-                Ok(id) => is_pending(id),
-                Err(_) => state
-                    .sources
-                    .values()
-                    .find(|source| candidate["source_id"] == source.id.as_str())
-                    .is_some_and(|source| {
-                        active_records.iter().any(|memory| {
-                            memory.status == MemoryStatus::Active
-                                && is_pending(memory.id)
-                                && memory.evidence.iter().any(|evidence| {
-                                    evidence.session_id.0 == source.session_id
-                                        && evidence.turn_id.0 == source.turn_id
-                                        && !span.is_empty()
-                                        && evidence.quote.contains(span)
-                                })
-                        })
-                    }),
-            };
+            let listed = serde_json::from_value::<MemoryId>(candidate["memory_id"].clone())
+                .ok()
+                .is_some_and(is_pending);
+            let bound = state
+                .sources
+                .values()
+                .find(|source| candidate["source_id"] == source.id.as_str())
+                .is_some_and(|source| {
+                    active_records.iter().any(|memory| {
+                        memory.status == MemoryStatus::Active
+                            && is_pending(memory.id)
+                            && memory.evidence.iter().any(|evidence| {
+                                evidence.session_id.0 == source.session_id
+                                    && evidence.turn_id.0 == source.turn_id
+                                    && !span.is_empty()
+                                    && evidence.quote.contains(span)
+                            })
+                    })
+                });
+            let pending = listed || bound;
             if pending {
                 answer["update"] = json!({"status":"pending"});
             }
@@ -3215,12 +3225,19 @@ impl ChatMemoryService {
                 }
                 let recalled = self.store.transaction(|state| {
                     check_cancelled(&cancelled)?;
+                    // 旧召回与 bootstrap 的结果不带限定语标注：限定语无法用现有 Memory 表达的记录
+                    // 不作为事实返回。
+                    let unmapped = crate::commit::W5View::of(state).unmapped_qualifiers();
                     state.with_engine(self.config.registry(), |engine, _| {
                         engine.run_retention_for_owner(&owner, runtime.at)?;
                         let retrieval_started = std::time::Instant::now();
                         let mut result =
                             DefaultMemoryRetriever::new(&mut engine.repository, &engine.predicates)
                                 .with_semantic_relations(&relations)
+                                .with_unmapped_qualifiers(
+                                    &unmapped,
+                                    crate::retrieval::UnmappedQualifiers::Exclude,
+                                )
                                 .retrieve(&runtime)?;
                         crate::diagnostics::record(
                             "retrieval",
@@ -3843,6 +3860,151 @@ mod tests {
         assert_eq!(final_answer_gate(&input, &short_recall)["approved"], true);
         drop(store);
         std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn final_gate_refuses_an_identity_whose_qualifiers_the_memory_cannot_express() {
+        // “写代码时，项目松石47选用 SQLite，Redis 暂时不引入。”：完整候选带条件“写代码时”，投影出的
+        // Memory 没有它。身份答案不能把 Redis 核准为无限定的唯一值；没有条件时照常核准。
+        for qualified in [true, false] {
+            let dir = std::env::temp_dir()
+                .join(format!("pmr-answer-gate-{}", crate::diagnostics::new_id()));
+            std::fs::create_dir(&dir).unwrap();
+            let mut store =
+                SqliteMemoryStore::open(dir.join("memory.sqlite3"), UserId::from("alice")).unwrap();
+            let quote = "写代码时，项目松石47选用 SQLite，Redis 暂时不引入。";
+            let source: SourceRecord = serde_json::from_value(json!({
+                "id":"E1","session_id":"s","turn_id":"t","observed_at":100,
+                "received_sequence":1,"request":{"text":quote,"capture_source":true},
+                "enrichment":"committed","error":null,"result":null,"base_revision":0
+            }))
+            .unwrap();
+            store
+                .transaction(|state| {
+                    state.entities.upsert(Entity {
+                        id: EntityId::from("松石47"),
+                        owner_id: UserId::from("alice"),
+                        entity_type: EntityType::Other("project".into()),
+                        canonical_name: "松石47".into(),
+                        aliases: Vec::new(),
+                    });
+                    state.sources.insert("E1".into(), source);
+                    state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
+                        let mut candidate = CandidateMemory::new(
+                            UserId::from("alice"),
+                            EntityId::from("松石47"),
+                            MemoryType::Episode,
+                            Predicate::from("暂缓技术"),
+                            MemoryValue::Text("Redis".into()),
+                            Timestamp(100),
+                            Evidence::new(
+                                EvidenceId("E1".into()),
+                                SessionId::from("s"),
+                                TurnId::from("t"),
+                                quote,
+                            ),
+                        );
+                        candidate.bind_source_support();
+                        engine.ingest(candidate)?;
+                        Ok(())
+                    })?;
+                    let id = state.repository.list_by_owner(&UserId::from("alice"))?[0].id;
+                    let conditions = if qualified {
+                        json!([{"quote": {"text": "写代码时"}, "resolved": true}])
+                    } else {
+                        json!([])
+                    };
+                    let contract = json!({
+                        "candidate": {
+                            "kind": "assertion", "speech": "user_statement",
+                            "subject": {"entity_id": "松石47"}, "relation": "暂缓技术",
+                            "memory_type": "episode",
+                            "value": {"kind": "text", "text": "Redis", "quote": {"text": "Redis"}},
+                            "sentence": {"text": quote}, "polarity": "affirm", "strength": null,
+                            "uncertainty": null, "conditions": conditions, "times": []
+                        },
+                        "source": {"kind": "stored", "source_id": "E1"},
+                        "said_on": "2026-09-28", "time_resolutions": []
+                    });
+                    state.w5_receipts.insert(
+                        "E1#0".into(),
+                        crate::W5Receipt {
+                            group_id: "E1#0".into(),
+                            fingerprint:
+                                json!({"candidates": [{"index": 0, "contract": contract}]})
+                                    .to_string(),
+                            status: crate::W5Status::Committed,
+                            legacy_fingerprint: false,
+                            products: [(0, id)].into(),
+                            decisions: vec![],
+                            updates: Default::default(),
+                            merged: Default::default(),
+                            form: crate::ReceiptForm::V8,
+                        },
+                    );
+                    Ok(())
+                })
+                .unwrap();
+            let memory_id = store
+                .read()
+                .unwrap()
+                .repository
+                .list_by_owner(store.owner())
+                .unwrap()[0]
+                .id;
+            let query = "先搁置的那种内存缓存服务叫什么？";
+            let context = vec!["松石47。".to_owned()];
+            let runtime = RuntimeContext::current(UserId::from("alice"), Timestamp(200));
+            let budget = LocalRecallBudget::default();
+            let relations = InMemorySemanticRelationRegistry::default();
+            let (_, signature) = store
+                .recall_local_with_signature(
+                    query,
+                    &context,
+                    &runtime,
+                    InMemoryPredicateRegistry::default(),
+                    &relations,
+                    &budget,
+                )
+                .unwrap();
+            let hint = SingleRelationEvidenceHint {
+                query_relation: "先搁置的".into(),
+                source_id: "E1".into(),
+                memory_id,
+                evidence_relation: "暂时不引入".into(),
+            };
+            let (mut recall, _) = store
+                .recall_assisted_single_relation(
+                    query,
+                    &context,
+                    &runtime,
+                    InMemoryPredicateRegistry::default(),
+                    &relations,
+                    &budget,
+                    &hint,
+                    &signature,
+                )
+                .unwrap();
+            recall["assistance"] = json!({"resolution":"single_relation_source_link_verified"});
+            let input = ValidateAnswer {
+                query: query.into(),
+                context,
+                draft_answer: "Redis。".into(),
+                source_ids: vec!["E1".into()],
+                task_id: None,
+            };
+            let (status, _, _) = super::answer_policy(&recall);
+            let approved = final_answer_gate(&input, &recall)["approved"].clone();
+            if qualified {
+                assert_ne!(status, "source_linked_exact_identity", "{recall}");
+                assert_eq!(approved, false, "{recall}");
+            } else {
+                assert_eq!(status, "source_linked_exact_identity", "{recall}");
+                assert_eq!(approved, true, "{recall}");
+            }
+            drop(store);
+            std::fs::remove_dir_all(dir).unwrap();
+        }
     }
 
     #[test]
