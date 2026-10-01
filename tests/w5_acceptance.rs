@@ -2,6 +2,7 @@
 //! 每项提交后关闭并重新打开数据库再核对。场景对应 W4 样本 01、05、09、10、12、13。
 
 use std::{
+    collections::BTreeMap,
     path::PathBuf,
     sync::atomic::{AtomicU64, Ordering},
     time::{SystemTime, UNIX_EPOCH},
@@ -1689,7 +1690,7 @@ fn s1_groups_using_later_segment_fields_are_rejected_without_writes() {
     reused.candidates[0].committed_id = Some(MemoryId(1));
     let mut related = g.clone();
     related.seen[0].relations.push("rel-0".into());
-    // committed_id 留到第 4 段；其余字段第 3 段已执行，但缺少配套内容时同样拒绝、零写入。
+    // 后续各段的字段都已执行，但缺少配套内容或自相矛盾时同样拒绝、零写入。
     for (label, group, expected) in [
         (
             "conflict without relation",
@@ -1697,7 +1698,7 @@ fn s1_groups_using_later_segment_fields_are_rejected_without_writes() {
             "exactly a conflict carries",
         ),
         ("resolves without resolution", resolving, "go together"),
-        ("committed_id", reused, "not supported yet"),
+        ("committed_id equal to its own target", reused, "itself"),
         (
             "seen relations without snapshot",
             related,
@@ -3364,4 +3365,840 @@ fn f17_a_surviving_legacy_reinforcement_keeps_its_receipt_time() {
     assert_eq!(kept.status, MemoryStatus::Active);
     assert_eq!(kept.reinforcement_count, 1);
     assert_eq!(kept.last_reinforced_at, Some(Timestamp(1_700_000_100)));
+}
+
+// ---------------- 第 4 段：重判复用与归并（w5-acceptance.md B2、B3、B3a、E3）
+
+const ONE_CUP: &str = "我每天喝一杯咖啡。";
+
+/// 某原文的候选首次提交为一条 New（范围不完整，pending）；返回记录与候选（同一证据）。
+fn first_commit(db: &TestDb, key: &str, text: &str) -> (MemoryId, CandidateMemory) {
+    claimed_source(db, key, text);
+    let c = cand(key, "fact", text, text, 360);
+    let g = group(
+        db,
+        &format!("{key}#0"),
+        vec![(0, c.clone())],
+        vec![decision(0, W5Action::New, &[], &[key], None)],
+    );
+    let id = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0];
+    (id, c)
+}
+
+/// 重判组：候选带 committed_id，W4 输入快照同时包含它自己。
+fn rejudge_group(
+    db: &TestDb,
+    id: &str,
+    candidate: CandidateMemory,
+    committed: MemoryId,
+    d: W5Decision,
+) -> W5Group {
+    let mut g = group(db, id, vec![(0, candidate)], vec![d]);
+    g.candidates[0].committed_id = Some(committed);
+    let mut targets: Vec<MemoryId> = g.decisions[0].targets.clone();
+    targets.push(committed);
+    targets.sort();
+    let resolves = g.decisions[0].resolves_relations.clone();
+    let (seen, seen_relations) =
+        w5_snapshot(&db.open().read().unwrap(), &targets, &resolves).unwrap();
+    g.seen = seen;
+    g.seen_relations = seen_relations;
+    g
+}
+
+#[test]
+fn b2_rejudge_reuses_the_committed_record_and_keeps_the_scope_gap() {
+    let db = TestDb::new();
+    let old = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+    let text = "我现在每天喝两杯咖啡。";
+    let (seventy, c) = first_commit(&db, "s-360", text);
+    assert_eq!(record_update(&db, seventy), Some(scope_incomplete()));
+    let records_before = count(&db);
+    let g = rejudge_group(
+        &db,
+        "s-360#1",
+        c,
+        seventy,
+        decision(0, W5Action::StateChange, &[old], &["s-112", "s-360"], None),
+    );
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    // 不再插入，复用 70；55 由 70 接替。
+    assert_eq!(count(&db), records_before);
+    assert_eq!(receipt.products[&0], seventy);
+    assert_eq!(memory(&db, old).superseded_by, Some(seventy));
+    assert_eq!(memory(&db, seventy).supersedes, Some(old));
+    let reused = memory(&db, seventy);
+    assert_eq!(
+        reused.reinforcement_count, 0,
+        "not counted as reinforcing itself"
+    );
+    assert_eq!(reused.evidence.len(), 1);
+    // 范围仍不完整：pending/scope_incomplete 不因本次重判清除。
+    assert_eq!(record_update(&db, seventy), Some(scope_incomplete()));
+}
+
+#[test]
+fn b2_rejudge_clears_only_the_gaps_it_covers() {
+    // 70 首次提交时与 55 冲突（open 关系、范围不完整）；重判为并存且范围完整：
+    // 范围缺口清除，关系不受影响（判定完成不等于冲突解决）。
+    let db = TestDb::new();
+    let old = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+    let text = "我每天喝一杯咖啡，周末两杯。";
+    claimed_source(&db, "s-361", text);
+    let c = cand("s-361", "fact", text, text, 361);
+    let mut d = decision(0, W5Action::Conflict, &[old], &["s-112", "s-361"], None);
+    d.relation = Some(W5RelationSpec {
+        conditions: serde_json::json!([]),
+        times: serde_json::json!([]),
+        basis: vec![evidence("s-112", ONE_CUP), evidence("s-361", text)],
+    });
+    let g = group(&db, "s-361#0", vec![(0, c.clone())], vec![d]);
+    let seventy = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0];
+    assert_eq!(record_update(&db, seventy), Some(scope_incomplete()));
+    let mut g = rejudge_group(
+        &db,
+        "s-361#1",
+        c,
+        seventy,
+        decision(0, W5Action::New, &[], &["s-361"], None),
+    );
+    g.scope_complete = true;
+    assert_eq!(
+        g.seen.iter().find(|s| s.id == seventy).unwrap().relations,
+        vec!["rel-0".to_owned()]
+    );
+    committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(record_update(&db, seventy), Some(judged()));
+    assert_eq!(relation(&db, "rel-0").status, RelationStatus::Open);
+    assert_eq!(relation(&db, "rel-0").members, vec![old, seventy]);
+}
+
+#[test]
+fn b3_rejudged_reinforce_merges_into_the_kept_record() {
+    let db = TestDb::new();
+    let old = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+    let (seventy, c) = first_commit(&db, "s-362", ONE_CUP);
+    let g = rejudge_group(
+        &db,
+        "s-362#1",
+        c,
+        seventy,
+        decision(0, W5Action::Reinforce, &[old], &["s-112", "s-362"], None),
+    );
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let kept = memory(&db, old);
+    assert_eq!(kept.reinforcement_count, 1);
+    assert!(kept.evidence.iter().any(|e| e.turn_id.0 == "s-362"));
+    // 70 退出投影，回执记下 70→55；它的更新状态条目随之删除。
+    assert_eq!(status(&db, seventy), MemoryStatus::Deleted);
+    assert_eq!(receipt.merged, BTreeMap::from([(seventy, old)]));
+    assert!(receipt.products.is_empty());
+    assert_eq!(receipt.updates[&0], scope_incomplete());
+    assert_eq!(record_update(&db, seventy), None);
+    let listed = forget_free_list(&db);
+    assert!(!listed.contains(&seventy) && listed.contains(&old));
+    // 重放不再加计数。
+    let before = snapshot(&db);
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(memory(&db, old).reinforcement_count, 1);
+}
+
+/// memory_list 当前可见的记录 ID。
+fn forget_free_list(db: &TestDb) -> Vec<MemoryId> {
+    let mut service = hippocampus::chat::ChatMemoryService::new(
+        db.open(),
+        hippocampus::chat::ChatConfig::default(),
+    )
+    .unwrap();
+    let listed = service
+        .call(
+            "memory_list",
+            serde_json::json!({"include_history":true}),
+            || false,
+        )
+        .unwrap();
+    listed["memories"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|m| serde_json::from_value(m["id"].clone()).unwrap())
+        .collect()
+}
+
+#[test]
+fn b3a_and_committed_id_checks_reject_without_writes() {
+    let db = TestDb::new();
+    let old = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+    let (seventy, c) = first_commit(&db, "s-362", ONE_CUP);
+    let before = snapshot(&db);
+    // B3a：并入自身。
+    let into_itself = rejudge_group(
+        &db,
+        "s-362#1",
+        c.clone(),
+        seventy,
+        decision(0, W5Action::Reinforce, &[seventy], &["s-362"], None),
+    );
+    // 没有 committed_id 的快照。
+    let mut unsnapshotted = rejudge_group(
+        &db,
+        "s-362#1",
+        c.clone(),
+        seventy,
+        decision(0, W5Action::New, &[], &["s-362"], None),
+    );
+    unsnapshotted.seen.retain(|s| s.id != seventy);
+    // 候选内容与已提交记录不一致。
+    let mut other_value = c.clone();
+    other_value.value = MemoryValue::Text("我每天喝三杯咖啡。".into());
+    let different = rejudge_group(
+        &db,
+        "s-362#1",
+        other_value,
+        seventy,
+        decision(0, W5Action::New, &[], &["s-362"], None),
+    );
+    // 已提交记录不是本组原文产生的：55 来自 s-112。
+    let foreign = rejudge_group(
+        &db,
+        "s-362#1",
+        c.clone(),
+        old,
+        decision(0, W5Action::New, &[], &["s-362"], None),
+    );
+    // 撤回不能重判已提交断言。
+    let mut retraction = retraction_of("s-362", ONE_CUP);
+    retraction.evidence = c.evidence.clone();
+    let retract = rejudge_group(
+        &db,
+        "s-362#1",
+        retraction,
+        seventy,
+        decision(0, W5Action::Retract, &[old], &["s-362"], None),
+    );
+    // 结构错误：拒绝，零变更。
+    for (label, bad, expected) in [
+        ("merge into itself", into_itself, "itself"),
+        ("no snapshot", unsnapshotted, "has no W4 snapshot"),
+        ("retract", retract, "retraction"),
+    ] {
+        let error = commit_group(&mut db.open(), &claim(&bad), &bad).unwrap_err();
+        assert!(error.to_string().contains(expected), "{label}: {error}");
+        assert_eq!(snapshot(&db), before, "{label}");
+    }
+    // 不再对应同一来源、候选（contracts 2.5）：needs_rejudge，零业务写入。
+    let repository = || serde_json::to_value(&db.open().read().unwrap().repository).unwrap();
+    let business = repository();
+    let mut altered_quote = c.clone();
+    altered_quote.evidence[0].quote = "不存在于原文的引文".into();
+    let mut lower_certainty = c.clone();
+    lower_certainty.certainty = Confidence::Low;
+    let mut new_expiry = c.clone();
+    new_expiry.temporal.expires_at = Some(Timestamp(9_999));
+    for (n, (label, candidate, committed)) in [
+        (
+            "different assertion",
+            different.candidates[0].candidate.clone(),
+            seventy,
+        ),
+        ("record of another source", c.clone(), old),
+        ("same evidence id, altered quote", altered_quote, seventy),
+        ("altered certainty", lower_certainty, seventy),
+        ("altered expiry", new_expiry, seventy),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let g = rejudge_group(
+            &db,
+            &format!("s-362#{}", n + 2),
+            candidate,
+            committed,
+            decision(0, W5Action::New, &[], &["s-362"], None),
+        );
+        let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+        assert!(reason.contains("does not belong"), "{label}: {reason}");
+        assert_eq!(repository(), business, "{label}");
+        assert!(record_update(&db, seventy).is_some(), "{label}");
+    }
+}
+
+#[test]
+fn b2_a_spoofed_evidence_id_cannot_reuse_another_sources_record() {
+    // 证据编号借用另一来源的编号，不能借此复用、清除那条记录的待定状态。
+    let db = TestDb::new();
+    let (old, _) = first_commit(&db, "s-origin", ONE_CUP);
+    claimed_source(&db, "s-new", ONE_CUP);
+    let mut c = cand("s-new", "fact", ONE_CUP, ONE_CUP, 360);
+    c.evidence[0].id = memory(&db, old).evidence[0].id.clone();
+    let mut g = rejudge_group(
+        &db,
+        "s-new#rejudge",
+        c,
+        old,
+        decision(0, W5Action::New, &[], &["s-new"], None),
+    );
+    g.scope_complete = true;
+    let before = record_update(&db, old);
+    let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(reason.contains("does not belong"), "{reason}");
+    assert_eq!(record_update(&db, old), before);
+    assert_eq!(memory(&db, old).evidence.len(), 1);
+}
+
+#[test]
+fn b3_merge_passes_the_merged_records_support_to_the_kept_record() {
+    // 55 来自 s-112；70 来自 s-362（待定），s-363 强化 70；s-362 重判后把 70 归并进 55。
+    // 删 s-112 后再删另一来源：55 仍有剩下那个来源的支持（s-363 的支持经归并转来），保留。
+    for (second, reinforcements) in [("s-363", 1), ("s-362", 0)] {
+        let db = TestDb::new();
+        let kept = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+        let (from, c) = first_commit(&db, "s-362", ONE_CUP);
+        let text = "我仍然每天喝一杯咖啡。";
+        claimed_source(&db, "s-363", text);
+        let reinforced = group(
+            &db,
+            "s-363#0",
+            vec![(0, cand("s-363", "fact", ONE_CUP, text, 400))],
+            vec![decision(
+                0,
+                W5Action::Reinforce,
+                &[from],
+                &["s-362", "s-363"],
+                None,
+            )],
+        );
+        committed(commit_group(&mut db.open(), &claim(&reinforced), &reinforced).unwrap());
+        assert_eq!(memory(&db, from).evidence.len(), 2);
+        // 别的原文不能拿 70 当作自己的已提交断言。
+        let foreign = rejudge_group(
+            &db,
+            "s-363#1",
+            cand("s-363", "fact", ONE_CUP, text, 400),
+            from,
+            decision(0, W5Action::Reinforce, &[kept], &["s-112", "s-363"], None),
+        );
+        needs_rejudge(commit_group(&mut db.open(), &claim(&foreign), &foreign).unwrap());
+        // s-363 晚于 s-362 生效，s-362 的任务因此过期，重新排入整理。
+        requeue(&db, "s-362");
+        let merge = rejudge_group(
+            &db,
+            "s-362#1",
+            c,
+            from,
+            decision(0, W5Action::Reinforce, &[kept], &["s-112", "s-362"], None),
+        );
+        let receipt = committed(commit_group(&mut db.open(), &claim(&merge), &merge).unwrap());
+        assert_eq!(receipt.merged[&from], kept);
+        assert_eq!(memory(&db, kept).evidence.len(), 3);
+        assert_eq!(memory(&db, kept).reinforcement_count, 1);
+        forget(&db, serde_json::json!({"source_id":"s-112"}));
+        assert_eq!(status(&db, kept), MemoryStatus::Active);
+        forget(&db, serde_json::json!({"source_id": second}));
+        let survivor = memory(&db, kept);
+        assert_eq!(survivor.status, MemoryStatus::Active, "{second}");
+        assert_eq!(survivor.reinforcement_count, reinforcements, "{second}");
+        assert_eq!(status(&db, from), MemoryStatus::Deleted);
+    }
+}
+
+/// 已提交组的原文任务因后来的原文生效而过期；模拟它被重新排入整理（新的接收顺序）。
+fn requeue(db: &TestDb, source: &str) {
+    db.open()
+        .transaction(|state| {
+            let next = state.last_applied_source_sequence + 1;
+            let task = state.sources.get_mut(source).unwrap();
+            task.received_sequence = next;
+            task.enrichment = "running".into();
+            task.error = None;
+            Ok(())
+        })
+        .unwrap();
+}
+
+#[test]
+fn b3_merge_counts_a_reinforcement_only_for_a_source_that_had_none() {
+    // s-from 既创建了 70，又已强化过 55；s-extra 强化 70。归并 70→55 只转入 s-extra 的证据，
+    // 不再计强化（s-from 已贡献过）；删除 55 的创建来源后重算结果一致。
+    let db = TestDb::new();
+    let kept = w5_new(&db, "s-kept", "fact", ONE_CUP, ONE_CUP);
+    let (from, c) = first_commit(&db, "s-from", ONE_CUP);
+    let already = group(
+        &db,
+        "s-from#1",
+        vec![(0, c.clone())],
+        vec![decision(
+            0,
+            W5Action::Reinforce,
+            &[kept],
+            &["s-kept", "s-from"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&already), &already).unwrap());
+    claimed_source(&db, "s-extra", ONE_CUP);
+    let add = group(
+        &db,
+        "s-extra#0",
+        vec![(0, cand("s-extra", "fact", ONE_CUP, ONE_CUP, 400))],
+        vec![decision(
+            0,
+            W5Action::Reinforce,
+            &[from],
+            &["s-from", "s-extra"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&add), &add).unwrap());
+    requeue(&db, "s-from");
+    let merge = rejudge_group(
+        &db,
+        "s-from#2",
+        c,
+        from,
+        decision(0, W5Action::Reinforce, &[kept], &["s-kept", "s-from"], None),
+    );
+    committed(commit_group(&mut db.open(), &claim(&merge), &merge).unwrap());
+    let after_merge = memory(&db, kept);
+    assert_eq!(after_merge.reinforcement_count, 1);
+    assert!(
+        after_merge
+            .evidence
+            .iter()
+            .any(|e| e.turn_id.0 == "s-extra")
+    );
+    forget(&db, serde_json::json!({"source_id":"s-kept"}));
+    let kept_now = memory(&db, kept);
+    assert_eq!(kept_now.status, MemoryStatus::Active);
+    assert_eq!(kept_now.reinforcement_count, 1);
+}
+
+#[test]
+fn b3_a_merge_chain_keeps_the_last_independent_support() {
+    // a→b→c 两次归并；s-extra 只强化过 a。依次删除 c、b、a 的来源，c 一直由剩下的来源支持。
+    let db = TestDb::new();
+    let kept = w5_new(&db, "s-c", "fact", ONE_CUP, ONE_CUP);
+    let (b, cb) = first_commit(&db, "s-b", ONE_CUP);
+    let (a, ca) = first_commit(&db, "s-a", ONE_CUP);
+    claimed_source(&db, "s-extra", ONE_CUP);
+    let add = group(
+        &db,
+        "s-extra#0",
+        vec![(0, cand("s-extra", "fact", ONE_CUP, ONE_CUP, 400))],
+        vec![decision(
+            0,
+            W5Action::Reinforce,
+            &[a],
+            &["s-a", "s-extra"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&add), &add).unwrap());
+    requeue(&db, "s-a");
+    let a_to_b = rejudge_group(
+        &db,
+        "s-a#1",
+        ca,
+        a,
+        decision(0, W5Action::Reinforce, &[b], &["s-b", "s-a"], None),
+    );
+    committed(commit_group(&mut db.open(), &claim(&a_to_b), &a_to_b).unwrap());
+    requeue(&db, "s-b");
+    let b_to_c = rejudge_group(
+        &db,
+        "s-b#1",
+        cb,
+        b,
+        decision(0, W5Action::Reinforce, &[kept], &["s-c", "s-b"], None),
+    );
+    committed(commit_group(&mut db.open(), &claim(&b_to_c), &b_to_c).unwrap());
+    assert_eq!(memory(&db, kept).reinforcement_count, 1);
+    for source in ["s-c", "s-b", "s-a"] {
+        forget(&db, serde_json::json!({"source_id": source}));
+        assert_eq!(status(&db, kept), MemoryStatus::Active, "{source}");
+    }
+    let survivor = memory(&db, kept);
+    assert_eq!(survivor.reinforcement_count, 0);
+    assert!(
+        survivor
+            .evidence
+            .iter()
+            .any(|e| e.turn_id.0 == "s-extra" && e.quote == ONE_CUP)
+    );
+}
+
+#[test]
+fn b3_a_reinforcement_that_did_not_count_is_not_recounted_after_forget() {
+    // A 来自 s-a；B 来自 s-b，被 s-c 强化；B→A 只计 s-b。之后 s-c 再强化 A（普通强化，或把 s-c
+    // 自己的记录归并进 A）：s-c 的证据已经随归并转入，提交时不计数；删 s-a 后重算也不能补算。
+    for second_merge in [false, true] {
+        let db = TestDb::new();
+        let kept = w5_new(&db, "s-a", "fact", ONE_CUP, ONE_CUP);
+        let (from, cb) = first_commit(&db, "s-b", ONE_CUP);
+        let (other, cc) = if second_merge {
+            let (other, cc) = first_commit(&db, "s-c", ONE_CUP);
+            (Some(other), cc)
+        } else {
+            claimed_source(&db, "s-c", ONE_CUP);
+            (None, cand("s-c", "fact", ONE_CUP, ONE_CUP, 400))
+        };
+        let support = group(
+            &db,
+            "s-c#1",
+            vec![(0, cc.clone())],
+            vec![decision(
+                0,
+                W5Action::Reinforce,
+                &[from],
+                &["s-b", "s-c"],
+                None,
+            )],
+        );
+        committed(commit_group(&mut db.open(), &claim(&support), &support).unwrap());
+        requeue(&db, "s-b");
+        let merge = rejudge_group(
+            &db,
+            "s-b#1",
+            cb,
+            from,
+            decision(0, W5Action::Reinforce, &[kept], &["s-a", "s-b"], None),
+        );
+        committed(commit_group(&mut db.open(), &claim(&merge), &merge).unwrap());
+        assert_eq!(memory(&db, kept).reinforcement_count, 1);
+        requeue(&db, "s-c");
+        let d = decision(0, W5Action::Reinforce, &[kept], &["s-a", "s-c"], None);
+        let again = match other {
+            Some(other) => rejudge_group(&db, "s-c#2", cc, other, d),
+            None => group(&db, "s-c#2", vec![(0, cc)], vec![d]),
+        };
+        committed(commit_group(&mut db.open(), &claim(&again), &again).unwrap());
+        assert_eq!(memory(&db, kept).reinforcement_count, 1, "{second_merge}");
+        forget(&db, serde_json::json!({"source_id":"s-a"}));
+        let after = memory(&db, kept);
+        assert_eq!(after.status, MemoryStatus::Active, "{second_merge}");
+        assert_eq!(after.reinforcement_count, 1, "{second_merge}");
+    }
+}
+
+#[test]
+fn b3_recount_uses_the_same_presence_rule_as_the_commit() {
+    // s-c 的第一条证据与 55 已有证据同 ID（运行时 session:turn:index 拼接可能碰撞）：执行时视为
+    // 已有，不计强化也不追加。s-c 另一条证据强化 70，70 归并进 55 只计 s-b。删 55 的创建来源后
+    // 重算按同一规则（同 ID 或同一轮），计数不变。
+    let db = TestDb::new();
+    let kept = w5_new(&db, "s-a", "fact", ONE_CUP, ONE_CUP);
+    let (from, cb) = first_commit(&db, "s-b", ONE_CUP);
+    claimed_source(&db, "s-c", ONE_CUP);
+    let mut cc = cand("s-c", "fact", ONE_CUP, ONE_CUP, 400);
+    cc.evidence[0].id = memory(&db, kept).evidence[0].id.clone();
+    let collided = group(
+        &db,
+        "s-c#0",
+        vec![(0, cc.clone())],
+        vec![decision(
+            0,
+            W5Action::Reinforce,
+            &[kept],
+            &["s-a", "s-c"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&collided), &collided).unwrap());
+    assert_eq!(memory(&db, kept).reinforcement_count, 0);
+    assert_eq!(memory(&db, kept).evidence.len(), 1);
+    cc.evidence[0].id = EvidenceId::from("s-c-second");
+    let other = group(
+        &db,
+        "s-c#1",
+        vec![(1, cc)],
+        vec![decision(
+            1,
+            W5Action::Reinforce,
+            &[from],
+            &["s-b", "s-c"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&other), &other).unwrap());
+    requeue(&db, "s-b");
+    let merge = rejudge_group(
+        &db,
+        "s-b#1",
+        cb,
+        from,
+        decision(0, W5Action::Reinforce, &[kept], &["s-a", "s-b"], None),
+    );
+    committed(commit_group(&mut db.open(), &claim(&merge), &merge).unwrap());
+    let before = memory(&db, kept);
+    assert_eq!(before.reinforcement_count, 1);
+    assert_eq!(before.evidence.len(), 3);
+    forget(&db, serde_json::json!({"source_id":"s-a"}));
+    let after = memory(&db, kept);
+    assert_eq!(after.status, MemoryStatus::Active);
+    assert_eq!(after.reinforcement_count, 1);
+}
+
+#[test]
+fn b3_merging_and_resolving_in_one_group_does_not_depend_on_order() {
+    // 70 与 55、茶记录处在同一 open 关系；同组归并 70→55 并撤回茶记录、解决关系，两种顺序都提交。
+    for merge_first in [true, false] {
+        let db = TestDb::new();
+        let kept = w5_new(&db, "s-kept", "fact", ONE_CUP, ONE_CUP);
+        let loser = w5_new(&db, "s-loser", "fact", "我每天喝茶。", "我每天喝茶。");
+        let text = "我每天喝一杯咖啡。此前喝茶的说法收回。";
+        claimed_source(&db, "s-new", text);
+        let c = cand("s-new", "fact", ONE_CUP, ONE_CUP, 360);
+        let mut conflict = decision(
+            0,
+            W5Action::Conflict,
+            &[kept, loser],
+            &["s-kept", "s-loser", "s-new"],
+            None,
+        );
+        conflict.relation = Some(W5RelationSpec {
+            conditions: serde_json::json!([]),
+            times: serde_json::json!([]),
+            basis: vec![
+                evidence("s-kept", ONE_CUP),
+                evidence("s-loser", "我每天喝茶。"),
+                evidence("s-new", ONE_CUP),
+            ],
+        });
+        let first = group(&db, "s-new#0", vec![(0, c.clone())], vec![conflict]);
+        let reused =
+            committed(commit_group(&mut db.open(), &claim(&first), &first).unwrap()).products[&0];
+        let merge = decision(0, W5Action::Reinforce, &[kept], &["s-kept", "s-new"], None);
+        let mut retract = decision(1, W5Action::Retract, &[loser], &["s-loser", "s-new"], None);
+        retract.resolves_relations = vec!["rel-0".into()];
+        retract.resolution = Some(evidence("s-new", "此前喝茶的说法收回。"));
+        let decisions = if merge_first {
+            vec![merge, retract]
+        } else {
+            vec![retract, merge]
+        };
+        let mut g = group(
+            &db,
+            "s-new#1",
+            vec![(0, c), (1, retraction_of("s-new", "此前喝茶的说法收回。"))],
+            decisions,
+        );
+        g.candidates[0].committed_id = Some(reused);
+        let out = commit_group(&mut db.open(), &claim(&g), &g).unwrap();
+        assert!(matches!(out, W5Outcome::Committed(_)), "{merge_first}");
+        assert_eq!(relation(&db, "rel-0").status, RelationStatus::Resolved);
+        assert_eq!(status(&db, reused), MemoryStatus::Deleted);
+        assert_eq!(status(&db, loser), MemoryStatus::Superseded);
+    }
+}
+
+#[test]
+fn b2_committed_record_changed_after_w4_needs_rejudge() {
+    let db = TestDb::new();
+    let old = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+    let (seventy, c) = first_commit(&db, "s-360", "我现在每天喝两杯咖啡。");
+    let g = rejudge_group(
+        &db,
+        "s-360#1",
+        c,
+        seventy,
+        decision(0, W5Action::StateChange, &[old], &["s-112", "s-360"], None),
+    );
+    // W4 之后 70 被删除（原文以外的另一条路径改了它）：版本已不是 W4 输入时的版本。
+    let barrier = db.open().read().unwrap().source_less_barrier_sequence;
+    db.open()
+        .transaction(|state| {
+            let mut m = state.repository.get(seventy)?.unwrap();
+            m.tags.push("touched".into());
+            state.repository.update(m)?;
+            Ok(())
+        })
+        .unwrap();
+    db.open()
+        .transaction(|state| {
+            state.source_less_barrier_sequence = barrier;
+            let task = state.sources.get_mut("s-360").unwrap();
+            task.enrichment = "running".into();
+            task.error = None;
+            Ok(())
+        })
+        .unwrap();
+    let reason = needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(
+        reason.contains(&format!("target {}", seventy.0)),
+        "{reason}"
+    );
+    assert_eq!(status(&db, old), MemoryStatus::Active);
+}
+
+#[test]
+fn b3_merging_a_member_of_an_unresolved_relation_is_rejected() {
+    let db = TestDb::new();
+    let old = w5_new(&db, "s-112", "fact", ONE_CUP, ONE_CUP);
+    let other = w5_new(&db, "s-113", "fact", "我每天喝茶。", "我每天喝茶。");
+    let (seventy, c) = first_commit(&db, "s-362", ONE_CUP);
+    // 关系由此前别的组建立；复原无来源变更触发的顺序屏障，只验证归并这一项。
+    let barrier = db.open().read().unwrap().source_less_barrier_sequence;
+    seed_relation(
+        &db,
+        &[other, seventy],
+        vec![evidence("s-113", "我每天喝茶。")],
+    );
+    db.open()
+        .transaction(|state| {
+            state.source_less_barrier_sequence = barrier;
+            let task = state.sources.get_mut("s-362").unwrap();
+            task.enrichment = "running".into();
+            task.error = None;
+            Ok(())
+        })
+        .unwrap();
+    let g = rejudge_group(
+        &db,
+        "s-362#1",
+        c,
+        seventy,
+        decision(0, W5Action::Reinforce, &[old], &["s-112", "s-362"], None),
+    );
+    let before = snapshot(&db);
+    let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
+    assert!(error.to_string().contains("unresolved"), "{error}");
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(status(&db, seventy), MemoryStatus::Active);
+}
+
+#[test]
+fn e3_rejudged_replacement_of_unresolved_members_reuses_the_record() {
+    // w4_22 的重判路径：N 首次提交为待定（目标未知），重判为同时替代 110、111。
+    let db = TestDb::new();
+    stored_source(&db, "s-501", "我住在北京。");
+    stored_source(&db, "s-502", "我住在上海。");
+    let ids = seed(
+        &db,
+        &[
+            cand("s-501", "lives_in", "北京", "我住在北京。", 100),
+            cand("s-502", "lives_in", "上海", "我住在上海。", 110),
+        ],
+    );
+    let rel = seed_relation(
+        &db,
+        &ids,
+        vec![
+            evidence("s-501", "我住在北京。"),
+            evidence("s-502", "我住在上海。"),
+        ],
+    );
+    let text = "我已经搬到深圳了。";
+    claimed_source(&db, "s-510", text);
+    let c = cand("s-510", "lives_in", "深圳", text, 510);
+    let mut first = group(
+        &db,
+        "s-510#0",
+        vec![(0, c.clone())],
+        vec![decision(0, W5Action::New, &[], &["s-510"], None)],
+    );
+    first.scope_complete = true;
+    first.decisions[0].pending_reason = Some(W4PendingReason::TargetUnknown);
+    let new = committed(commit_group(&mut db.open(), &claim(&first), &first).unwrap()).products[&0];
+    assert_eq!(
+        record_update(&db, new),
+        Some(pending(&[UpdateReason::UpdateTargetUnknown]))
+    );
+    let records_before = count(&db);
+    let mut g = rejudge_group(
+        &db,
+        "s-510#1",
+        c,
+        new,
+        decision(
+            0,
+            W5Action::StateChange,
+            &ids,
+            &["s-501", "s-502", "s-510"],
+            None,
+        ),
+    );
+    g.scope_complete = true;
+    committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(count(&db), records_before);
+    for id in &ids {
+        assert_eq!(memory(&db, *id).superseded_by, Some(new));
+    }
+    // 目标已定位：target_unknown 清除；替代了未解决关系的成员：relation_unclear。
+    assert_eq!(
+        record_update(&db, new),
+        Some(pending(&[UpdateReason::UpdateRelationUnclear]))
+    );
+    assert_eq!(relation(&db, &rel).members, ids);
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Open);
+}
+
+#[test]
+fn b2_relation_unclear_is_cleared_only_when_the_old_members_were_in_the_input() {
+    // N 替代了未解决关系的成员 110（relation_unclear）。重判为已定决定：W4 输入里没有 110 时
+    // 保留该原因；带上 110 及其最新关系状态时才清除。
+    for with_member in [false, true] {
+        let db = TestDb::new();
+        stored_source(&db, "s-501", "我住在北京。");
+        stored_source(&db, "s-502", "我住在上海。");
+        let ids = seed(
+            &db,
+            &[
+                cand("s-501", "lives_in", "北京", "我住在北京。", 100),
+                cand("s-502", "lives_in", "上海", "我住在上海。", 110),
+            ],
+        );
+        seed_relation(
+            &db,
+            &ids,
+            vec![
+                evidence("s-501", "我住在北京。"),
+                evidence("s-502", "我住在上海。"),
+            ],
+        );
+        let text = "我已经搬到深圳了。";
+        claimed_source(&db, "s-510", text);
+        let c = cand("s-510", "lives_in", "深圳", text, 510);
+        let mut first = group(
+            &db,
+            "s-510#0",
+            vec![(0, c.clone())],
+            vec![decision(
+                0,
+                W5Action::StateChange,
+                &[ids[0]],
+                &["s-501", "s-510"],
+                None,
+            )],
+        );
+        first.scope_complete = true;
+        let new =
+            committed(commit_group(&mut db.open(), &claim(&first), &first).unwrap()).products[&0];
+        let unclear = pending(&[UpdateReason::UpdateRelationUnclear]);
+        assert_eq!(record_update(&db, new), Some(unclear.clone()));
+        let mut g = rejudge_group(
+            &db,
+            "s-510#1",
+            c,
+            new,
+            decision(0, W5Action::New, &[], &["s-510"], None),
+        );
+        g.scope_complete = true;
+        if with_member {
+            let (seen, seen_relations) =
+                w5_snapshot(&db.open().read().unwrap(), &[ids[0], new], &[]).unwrap();
+            g.seen = seen;
+            g.seen_relations = seen_relations;
+        }
+        committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+        let expected = if with_member { judged() } else { unclear };
+        assert_eq!(
+            record_update(&db, new),
+            Some(expected),
+            "with member: {with_member}"
+        );
+    }
 }

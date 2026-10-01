@@ -17,7 +17,9 @@
 //! 而本组未解决该关系时，关系与成员不变，替代记录标 update_relation_unclear。关系快照（目标所在
 //! open 关系编号集合与涉及关系的指纹）在写锁内重查，变化即整组 needs_rejudge。依据片段须逐字
 //! 出现在获准保存的原文中。
-//! 尚未执行：原文删除时关系失效与删除范围重写（第 3 段后半）、重判复用与归并（第 4 段）。
+//! 重判已提交断言（committed_id，第 4 段）：复用原记录，不再插入、不当作对自身的强化；状态按
+//! 第 3 节逐项清除。重判为强化另一记录时按来源幂等并入证据，已提交记录退出投影（status=Deleted），
+//! 回执 `merged` 记下已提交 ID → 保留目标。删除范围与关系失效见 `src/forget.rs`。
 
 use std::collections::BTreeMap;
 
@@ -635,9 +637,14 @@ pub fn commit_group_with_hook(
                 .into());
             }
         }
-        if let Some(reason) =
-            stale_reason(state, group, &source_id, received_sequence, marked_stale)?
+        // 快照失效，或 committed_id 不再对应同一来源、候选和有效版本（contracts 2.5）：
+        // 整组 needs_rejudge，零业务写入。
+        let reason = match stale_reason(state, group, &source_id, received_sequence, marked_stale)?
         {
+            Some(reason) => Some(reason),
+            None => committed_mismatch(state, group, &source_turn)?,
+        };
+        if let Some(reason) = reason {
             let receipt = W5Receipt {
                 group_id: group.id.clone(),
                 fingerprint,
@@ -673,20 +680,62 @@ pub fn commit_group_with_hook(
         }
         let mut products = BTreeMap::new();
         let mut updates = BTreeMap::new();
+        let mut merged = BTreeMap::new();
         for (step, decision) in group.decisions.iter().enumerate() {
-            let candidate = &group
+            let entry = group
                 .candidates
                 .iter()
                 .find(|c| c.index == decision.candidate)
-                .ok_or("W5 decision refers to a missing candidate")?
-                .candidate;
-            let update = decision_update(group, decision, replaces_unresolved[&decision.candidate]);
-            if let Some(id) = apply(state, &group.id, candidate, decision)? {
-                products.insert(decision.candidate, id);
-                state.record_updates.insert(id, update.clone());
+                .ok_or("W5 decision refers to a missing candidate")?;
+            let fresh = decision_update(group, decision, replaces_unresolved[&decision.candidate]);
+            // 重判复用时按 w5-storage.md 第 3 节逐项清除：本次覆盖了的旧缺口才去掉。
+            let coverage = entry.committed_id.map(|committed| RejudgeCoverage {
+                scope_complete: group.scope_complete,
+                decided: decision.pending_reason.is_none(),
+                relation_inputs: related_records(state, committed)
+                    .iter()
+                    .all(|id| group.seen.iter().any(|seen| seen.id == *id)),
+            });
+            match apply(
+                state,
+                &group.id,
+                &entry.candidate,
+                decision,
+                entry.committed_id,
+            )? {
+                Applied::Product(id) => {
+                    let update = match (coverage, state.record_updates.get(&id)) {
+                        (Some(coverage), Some(previous)) => {
+                            UpdateState::after_rejudge(previous, &fresh, coverage)
+                        }
+                        _ => fresh,
+                    };
+                    products.insert(decision.candidate, id);
+                    state.record_updates.insert(id, update.clone());
+                    updates.insert(decision.candidate, update);
+                }
+                Applied::Merged { from, into } => {
+                    state.record_updates.remove(&from);
+                    merged.insert(from, into);
+                    updates.insert(decision.candidate, fresh);
+                }
+                Applied::Nothing => {
+                    updates.insert(decision.candidate, fresh);
+                }
             }
-            updates.insert(decision.candidate, update);
             hook(W5Step::AfterDecision(step))?;
+        }
+        // 归并的记录退出投影：按整个依赖组判断（contracts 2.5），组内全部决定执行后它不能再处在
+        // open 关系里，与决定顺序无关；不能留下指向已退出记录的未解决冲突，也不能机械地把成员
+        // 换成保留目标。
+        for from in merged.keys() {
+            if let Some(relation) = w5_open_relations_of(state, *from).first() {
+                return Err(format!(
+                    "W5 group {}: merging record {} leaves relation {relation} unresolved",
+                    group.id, from.0
+                )
+                .into());
+            }
         }
         let receipt = W5Receipt {
             group_id: group.id.clone(),
@@ -696,7 +745,7 @@ pub fn commit_group_with_hook(
             products,
             decisions: group.decisions.clone(),
             updates,
-            merged: BTreeMap::new(),
+            merged,
             form: ReceiptForm::V8,
         };
         hook(W5Step::BeforeSave)?;
@@ -772,6 +821,112 @@ fn stale_reason(
         };
         if current != seen.fingerprint {
             return Ok(Some(format!("relation {} changed since W4 input", seen.id)));
+        }
+    }
+    Ok(None)
+}
+
+/// 与已提交断言相关的旧记录：产生它的那次决定替代或列出过的目标。重判覆盖
+/// update_relation_unclear 的前提是这些记录都在本次 W4 输入里（及其最新关系状态）。
+fn related_records(state: &PersistedMemoryState, committed: MemoryId) -> Vec<MemoryId> {
+    let mut ids: Vec<MemoryId> = state
+        .w5_receipts
+        .values()
+        .filter(|receipt| receipt.status == W5Status::Committed)
+        .flat_map(|receipt| {
+            receipt
+                .decisions
+                .iter()
+                .filter(|d| receipt.products.get(&d.candidate) == Some(&committed))
+                .flat_map(|d| d.targets.iter().copied())
+                .collect::<Vec<_>>()
+        })
+        .collect();
+    ids.sort();
+    ids.dedup();
+    ids
+}
+
+/// committed_id 仍对应同一来源、候选和有效版本（contracts 2.5）：记录存在且有效、是本原文某个
+/// 已提交 W5 组里候选的产物、候选的证据（完整证据，不只是编号）都已在它上面、由候选得来且之后
+/// 不会被 W5 改动的字段与候选一致（有效期、证据、强化与替代链会被后续动作改动，不比较）。
+/// 是否仍是 W4 输入时的版本由 seen 指纹核对。不符时返回原因，整组 needs_rejudge。
+fn committed_mismatch(
+    state: &PersistedMemoryState,
+    group: &W5Group,
+    source_turn: &(String, String),
+) -> PersistenceResult<Option<String>> {
+    for entry in &group.candidates {
+        let Some(committed) = entry.committed_id else {
+            continue;
+        };
+        let Some(record) = state
+            .repository
+            .get(committed)?
+            .filter(|m| m.status == MemoryStatus::Active)
+        else {
+            return Ok(Some(format!(
+                "candidate {}: committed_id {} is no longer active",
+                entry.index, committed.0
+            )));
+        };
+        let produced_here = state.w5_receipts.values().any(|receipt| {
+            receipt.status == W5Status::Committed && {
+                let turns = crate::forget::candidate_turns(&receipt.fingerprint);
+                receipt.products.iter().any(|(candidate, id)| {
+                    *id == committed && turns.get(candidate) == Some(source_turn)
+                })
+            }
+        });
+        let candidate = &entry.candidate;
+        let same_evidence = candidate.evidence.iter().all(|e| {
+            (e.session_id.0.as_str(), e.turn_id.0.as_str())
+                == (source_turn.0.as_str(), source_turn.1.as_str())
+                && record.evidence.contains(e)
+        });
+        let expected = Memory::from_candidate(committed, candidate, None);
+        let same_assertion = (
+            &record.owner_id,
+            &record.subject_id,
+            record.memory_type,
+            &record.predicate,
+            &record.value,
+            record.polarity,
+            record.strength,
+            &record.scope,
+        ) == (
+            &expected.owner_id,
+            &expected.subject_id,
+            expected.memory_type,
+            &expected.predicate,
+            &expected.value,
+            expected.polarity,
+            expected.strength,
+            &expected.scope,
+        ) && (
+            record.certainty,
+            record.extraction_confidence,
+            record.explicit_memory_request,
+            &record.tags,
+            record.temporal.observed_at,
+            &record.temporal.reference,
+            record.temporal.expires_at,
+            record.retention_tier,
+        ) == (
+            expected.certainty,
+            expected.extraction_confidence,
+            expected.explicit_memory_request,
+            &expected.tags,
+            expected.temporal.observed_at,
+            &expected.temporal.reference,
+            expected.temporal.expires_at,
+            expected.retention_tier,
+        );
+        if !(produced_here && same_evidence && same_assertion) {
+            return Ok(Some(format!(
+                "candidate {}: committed_id {} does not belong to this source and candidate",
+                entry.index, committed.0
+            )));
         }
     }
     Ok(None)
@@ -906,8 +1061,35 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
         return Err("W5 candidate indexes must be unique".into());
     }
     // 存储已为后续各段备好的字段，执行尚未实现：拒绝，而不是静默忽略。
-    if group.candidates.iter().any(|c| c.committed_id.is_some()) {
-        return Err("W5 committed_id is not supported yet".into());
+    // 重判已提交断言：每个 committed_id 只出现一次，有快照，不与自身比较、不并入自身。
+    let mut committed_ids: Vec<MemoryId> = Vec::new();
+    for c in &group.candidates {
+        let Some(committed) = c.committed_id else {
+            continue;
+        };
+        if committed_ids.contains(&committed) {
+            return Err(format!("W5 committed_id {} is used twice", committed.0).into());
+        }
+        committed_ids.push(committed);
+        if !group.seen.iter().any(|seen| seen.id == committed) {
+            return Err(format!("W5 committed_id {} has no W4 snapshot", committed.0).into());
+        }
+        for d in group.decisions.iter().filter(|d| d.candidate == c.index) {
+            if d.action == W5Action::Retract {
+                return Err(format!(
+                    "W5 decision {}: a committed assertion cannot be rejudged as a retraction",
+                    d.candidate
+                )
+                .into());
+            }
+            if d.targets.contains(&committed) {
+                return Err(format!(
+                    "W5 decision {}: a committed assertion cannot target or merge into itself",
+                    d.candidate
+                )
+                .into());
+            }
+        }
     }
     // 关系快照：每个涉及的关系只记一次；目标所在的 open 关系与要解决的关系都必须有快照。
     let mut seen_relation_ids: Vec<&String> = group.seen_relations.iter().map(|s| &s.id).collect();
@@ -1089,13 +1271,34 @@ fn active(repository: &InMemoryMemoryRepository, id: MemoryId) -> PersistenceRes
 }
 
 /// 执行一个决定，再解决它判定已解决的关系（同一事务；任一步失败整组回滚）。
+/// 决定执行后的产物。
+enum Applied {
+    /// 没有产物（强化、撤回、待定撤回）。
+    Nothing,
+    /// 新插入或复用（重判时的 committed_id）的记录。
+    Product(MemoryId),
+    /// 重判为强化另一记录：已提交记录归并进保留目标，退出投影。
+    Merged { from: MemoryId, into: MemoryId },
+}
+
 fn apply(
     state: &mut PersistedMemoryState,
     group_id: &str,
     candidate: &CandidateMemory,
     decision: &W5Decision,
-) -> PersistenceResult<Option<MemoryId>> {
-    let product = apply_action(&mut state.repository, candidate, decision)?;
+    reused: Option<MemoryId>,
+) -> PersistenceResult<Applied> {
+    let applied = match reused {
+        None => match apply_action(&mut state.repository, candidate, decision)? {
+            Some(id) => Applied::Product(id),
+            None => Applied::Nothing,
+        },
+        Some(committed) => apply_reused(state, committed, candidate, decision)?,
+    };
+    let product = match applied {
+        Applied::Product(id) => Some(id),
+        _ => None,
+    };
     if let (Some(spec), Some(id)) = (&decision.relation, product) {
         // 冲突：新记录与全部目标组成一个 open 关系；旧版本不结束。
         let mut members = decision.targets.clone();
@@ -1136,7 +1339,132 @@ fn apply(
         relation.resolution = decision.resolution.clone();
         relation.closed_by = Some(group_id.to_owned());
     }
-    Ok(product)
+    Ok(applied)
+}
+
+/// 证据是否已在记录上：同 ID 或同一轮即视为已有（来源幂等）。执行强化与删除时的重算共用此判断。
+pub(crate) fn evidence_present(existing: &[Evidence], e: &Evidence) -> bool {
+    existing.iter().any(|x| x.id == e.id || x.same_turn(e))
+}
+
+/// 按来源幂等并入证据：目标上已有的证据（同 ID 或同一轮）不再并入。强化与证据转移分开：只有
+/// 本次执行的原文（`counted`，即候选的证据）此前没有贡献过证据时才计一次强化；归并顺带转入的
+/// 其他来源证据不计数（contracts 2.5 按来源幂等）。返回目标是否改动。
+fn absorb(
+    target: &mut Memory,
+    evidence: &[Evidence],
+    counted: &[Evidence],
+    observed_at: Timestamp,
+) -> bool {
+    let reinforces = counted
+        .iter()
+        .any(|e| !evidence_present(&target.evidence, e));
+    let fresh: Vec<Evidence> = evidence
+        .iter()
+        .filter(|e| !evidence_present(&target.evidence, e))
+        .cloned()
+        .collect();
+    if fresh.is_empty() {
+        return false;
+    }
+    if reinforces {
+        target.reinforcement_count += 1;
+        target.last_reinforced_at = Some(observed_at);
+    }
+    target.evidence.extend(fresh);
+    true
+}
+
+/// state_change：以对应原因结束全部目标，由 `successor` 接替。W4 的 state_change / correction /
+/// refine 都走这里（contracts 2.4 动作对应表）；撤回走 retract。先核对全部目标，任一不可用则整组
+/// 失败，不产生部分结果。effective 未知时结束时间保持未知，不回填接收时间（契约 2.5）。
+fn end_targets(
+    repository: &mut InMemoryMemoryRepository,
+    decision: &W5Decision,
+    successor: MemoryId,
+) -> PersistenceResult<()> {
+    let reason = decision.reason.unwrap_or(SupersedeReason::StateChanged);
+    if !matches!(
+        reason,
+        SupersedeReason::StateChanged
+            | SupersedeReason::PreferenceChanged
+            | SupersedeReason::ConstraintChanged
+            | SupersedeReason::Correction
+            | SupersedeReason::Refinement
+            | SupersedeReason::ScopeRefined
+    ) {
+        return Err(format!("W5 state_change cannot end with {reason:?}").into());
+    }
+    let current: &InMemoryMemoryRepository = repository;
+    let olds = decision
+        .targets
+        .iter()
+        .map(|id| active(current, *id))
+        .collect::<PersistenceResult<Vec<_>>>()?;
+    for mut old in olds {
+        old.status = MemoryStatus::Superseded;
+        old.superseded_by = Some(successor);
+        old.supersede_reason = Some(reason);
+        old.temporal.valid_to = decision.effective;
+        repository.update(old)?;
+    }
+    Ok(())
+}
+
+/// 重判已提交断言（committed_id）：复用原记录，不再插入，也不把它当作对自身的强化。
+fn apply_reused(
+    state: &mut PersistedMemoryState,
+    committed: MemoryId,
+    candidate: &CandidateMemory,
+    decision: &W5Decision,
+) -> PersistenceResult<Applied> {
+    let repository = &mut state.repository;
+    let mut record = active(repository, committed)?;
+    if decision.pending_reason.is_some() {
+        return Ok(Applied::Product(committed));
+    }
+    match decision.action {
+        W5Action::New => Ok(Applied::Product(committed)),
+        W5Action::Conflict => {
+            for target in &decision.targets {
+                active(repository, *target)?;
+            }
+            Ok(Applied::Product(committed))
+        }
+        W5Action::StateChange => {
+            end_targets(repository, decision, committed)?;
+            if record.supersedes.is_none() {
+                record.supersedes = decision.targets.first().copied();
+            }
+            if let Some(effective) = decision.effective {
+                record.temporal.valid_from = Some(effective);
+            }
+            repository.update(record)?;
+            Ok(Applied::Product(committed))
+        }
+        W5Action::Reinforce => {
+            let into = decision.targets[0];
+            let mut target = active(repository, into)?;
+            if absorb(
+                &mut target,
+                &record.evidence,
+                &candidate.evidence,
+                record.temporal.observed_at,
+            ) {
+                repository.update(target)?;
+            }
+            // 退出投影：不同时返回两份等效记录；归并映射保存在回执。
+            record.status = MemoryStatus::Deleted;
+            repository.update(record)?;
+            Ok(Applied::Merged {
+                from: committed,
+                into,
+            })
+        }
+        W5Action::Retract => {
+            Err("W5 a committed assertion cannot be rejudged as a retraction".into())
+        }
+    }
 }
 
 fn apply_action(
@@ -1164,60 +1492,22 @@ fn apply_action(
         }
         W5Action::Reinforce => {
             let mut target = active(repository, decision.targets[0])?;
-            // 同一来源的证据只计一次：已在目标上的证据（同 ID 或同一轮）不再计数。
-            let fresh: Vec<Evidence> = candidate
-                .evidence
-                .iter()
-                .filter(|e| {
-                    !target
-                        .evidence
-                        .iter()
-                        .any(|x| x.id == e.id || x.same_turn(e))
-                })
-                .cloned()
-                .collect();
-            if !fresh.is_empty() {
-                target.reinforcement_count += 1;
-                target.last_reinforced_at = Some(candidate.temporal.observed_at);
-                target.evidence.extend(fresh);
+            if absorb(
+                &mut target,
+                &candidate.evidence,
+                &candidate.evidence,
+                candidate.temporal.observed_at,
+            ) {
                 repository.update(target)?;
             }
             Ok(None)
         }
         W5Action::StateChange => {
-            let reason = decision.reason.unwrap_or(SupersedeReason::StateChanged);
-            // W4 的 state_change / correction / refine 都走这里，以对应原因结束目标
-            // （contracts 2.4 动作对应表）；撤回走 retract。
-            if !matches!(
-                reason,
-                SupersedeReason::StateChanged
-                    | SupersedeReason::PreferenceChanged
-                    | SupersedeReason::ConstraintChanged
-                    | SupersedeReason::Correction
-                    | SupersedeReason::Refinement
-                    | SupersedeReason::ScopeRefined
-            ) {
-                return Err(format!("W5 state_change cannot end with {reason:?}").into());
-            }
-            // 先核对全部目标，任一不可用则整组失败，不产生部分结果。
-            let current: &InMemoryMemoryRepository = repository;
-            let olds = decision
-                .targets
-                .iter()
-                .map(|id| active(current, *id))
-                .collect::<PersistenceResult<Vec<_>>>()?;
             let id = repository.allocate_id()?;
+            end_targets(repository, decision, id)?;
             let mut new = Memory::from_candidate(id, candidate, decision.targets.first().copied());
             if let Some(effective) = decision.effective {
                 new.temporal.valid_from = Some(effective);
-            }
-            for mut old in olds {
-                old.status = MemoryStatus::Superseded;
-                old.superseded_by = Some(id);
-                old.supersede_reason = Some(reason);
-                // effective 未知时结束时间保持未知，不回填接收时间（契约 2.5）。
-                old.temporal.valid_to = decision.effective;
-                repository.update(old)?;
             }
             repository.insert(new)?;
             Ok(Some(id))

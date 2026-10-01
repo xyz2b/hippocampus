@@ -42,7 +42,7 @@ fn turn_of(evidence: &Evidence) -> Turn {
 }
 
 /// 已提交的 W5 回执里，每个候选的原文轮次（只认证据全部来自同一轮的候选；多源候选角色不明）。
-fn candidate_turns(fingerprint: &str) -> BTreeMap<usize, Turn> {
+pub(crate) fn candidate_turns(fingerprint: &str) -> BTreeMap<usize, Turn> {
     let Ok(group) = serde_json::from_str::<Value>(fingerprint) else {
         return BTreeMap::new();
     };
@@ -67,6 +67,38 @@ fn candidate_turns(fingerprint: &str) -> BTreeMap<usize, Turn> {
         }
     }
     turns
+}
+
+/// 已提交 W5 回执的组指纹里：每个候选的证据，以及组快照里每条记录提交前已有的证据。
+fn group_evidence(
+    fingerprint: &str,
+) -> (
+    BTreeMap<usize, Vec<Evidence>>,
+    BTreeMap<MemoryId, Vec<Evidence>>,
+) {
+    let Ok(group) = serde_json::from_str::<Value>(fingerprint) else {
+        return (BTreeMap::new(), BTreeMap::new());
+    };
+    let evidence = |value: &Value| -> Option<Vec<Evidence>> {
+        serde_json::from_value(value["evidence"].clone()).ok()
+    };
+    let candidates = group["candidates"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|c| Some((c["index"].as_u64()? as usize, evidence(&c["candidate"])?)))
+        .collect();
+    let seen = group["seen"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|entry| {
+            let id = serde_json::from_value::<MemoryId>(entry["id"].clone()).ok()?;
+            let record = serde_json::from_str::<Value>(entry["fingerprint"].as_str()?).ok()?;
+            Some((id, evidence(&record)?))
+        })
+        .collect();
+    (candidates, seen)
 }
 
 /// 由回执确认的证据角色。
@@ -151,6 +183,7 @@ impl Roles {
                 continue;
             }
             let turns = candidate_turns(&receipt.fingerprint);
+            let (candidate_evidence, seen) = group_evidence(&receipt.fingerprint);
             for (candidate, id) in &receipt.products {
                 if let Some(turn) = turns.get(candidate) {
                     roles.support.entry(*id).or_default().insert(turn.clone());
@@ -168,12 +201,48 @@ impl Roles {
                         .entry(*target)
                         .or_default()
                         .insert(turn.clone());
-                    roles
-                        .reinforce
-                        .entry(*target)
-                        .or_default()
-                        .insert(turn.clone());
+                    // 提交时是否实际计了强化：组快照里的目标已带有该候选的证据（同 ID 或同一轮，
+                    // 与执行时的判断相同；例如经归并转入）时，执行按来源幂等没有计数，重算也不能
+                    // 补算。没有快照的旧回执照旧认定。
+                    let counted = match (
+                        seen.get(target),
+                        candidate_evidence.get(&decision.candidate),
+                    ) {
+                        (Some(present), Some(evidence)) => evidence
+                            .iter()
+                            .any(|e| !crate::commit::evidence_present(present, e)),
+                        _ => true,
+                    };
+                    if counted {
+                        roles
+                            .reinforce
+                            .entry(*target)
+                            .or_default()
+                            .insert(turn.clone());
+                    }
                 }
+            }
+        }
+        // 归并（已提交记录 → 保留目标）：被归并记录的确认支持来源一并转给保留目标，只转支持，
+        // 不转强化。归并本身是回执里的一条 reinforce 决定，上面已按快照判断它是否计数。归并
+        // 可能成链，反复转移直到不再变化。
+        let merges: Vec<(MemoryId, MemoryId)> = state
+            .w5_receipts
+            .values()
+            .filter(|r| r.status == W5Status::Committed)
+            .flat_map(|r| r.merged.iter().map(|(from, into)| (*from, *into)))
+            .collect();
+        loop {
+            let mut changed = false;
+            for (from, into) in &merges {
+                let support = roles.support.get(from).cloned().unwrap_or_default();
+                let entry = roles.support.entry(*into).or_default();
+                for turn in support {
+                    changed |= entry.insert(turn);
+                }
+            }
+            if !changed {
+                break;
             }
         }
         roles
