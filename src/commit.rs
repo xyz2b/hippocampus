@@ -87,6 +87,10 @@ pub struct W5Receipt {
     /// v6 receipts (W5 A1–A3) had no status; all of them were committed.
     #[serde(default = "committed_status")]
     pub status: W5Status,
+    /// v6 receipts fingerprinted the group before `source_key` and `seen` existed, so a
+    /// replay is compared in that older form. Absent in stored JSON means a v6 receipt.
+    #[serde(default = "legacy_fingerprint_default")]
+    pub legacy_fingerprint: bool,
     /// 候选 → 本次产生的记录（new、state_change）。
     pub products: BTreeMap<usize, MemoryId>,
     /// 完整 targets 与 basis。
@@ -150,6 +154,25 @@ pub fn w5_seen(
 
 fn committed_status() -> W5Status {
     W5Status::Committed
+}
+
+fn legacy_fingerprint_default() -> bool {
+    true
+}
+
+/// The group as v6 (W5 A1–A3) serialized it: no `source_key`, no `seen`.
+fn legacy_fingerprint(group: &W5Group) -> PersistenceResult<String> {
+    #[derive(Serialize)]
+    struct V6Group<'a> {
+        id: &'a str,
+        candidates: &'a [W5Candidate],
+        decisions: &'a [W5Decision],
+    }
+    Ok(serde_json::to_string(&V6Group {
+        id: &group.id,
+        candidates: &group.candidates,
+        decisions: &group.decisions,
+    })?)
 }
 
 fn now() -> PersistenceResult<i64> {
@@ -220,7 +243,12 @@ pub fn commit_group_with_hook(
         );
         let source_turn = (source.session_id.clone(), source.turn_id.clone());
         if let Some(receipt) = state.w5_receipts.get(&group.id) {
-            if receipt.fingerprint != fingerprint {
+            let expected = if receipt.legacy_fingerprint {
+                legacy_fingerprint(group)?
+            } else {
+                fingerprint.clone()
+            };
+            if receipt.fingerprint != expected {
                 return Err(format!(
                     "W5 group {} was already committed with different content",
                     group.id
@@ -256,6 +284,7 @@ pub fn commit_group_with_hook(
                 group_id: group.id.clone(),
                 fingerprint,
                 status: W5Status::NeedsRejudge { reason },
+                legacy_fingerprint: false,
                 products: BTreeMap::new(),
                 decisions: group.decisions.clone(),
             };
@@ -279,6 +308,7 @@ pub fn commit_group_with_hook(
             group_id: group.id.clone(),
             fingerprint,
             status: W5Status::Committed,
+            legacy_fingerprint: false,
             products,
             decisions: group.decisions.clone(),
         };

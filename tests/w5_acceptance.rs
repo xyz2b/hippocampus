@@ -1129,12 +1129,21 @@ fn d2_one_group_needs_rejudge_while_the_other_commits_once() {
 
 // ---------------- 第二段复审修正
 
-#[test]
-fn a3_v6_receipts_without_status_still_open_and_replay() {
-    // bf83fd9（版本 6）保存的回执没有 status 字段；全部都是已提交的组。
-    let db = TestDb::new();
-    let (_, g, _) = w4_01(&db);
-    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
+/// 把已提交的回执改写成 bf83fd9（版本 6）真实保存的样子：没有 status、没有
+/// legacy_fingerprint，指纹是当时的组序列化（没有 source_key、seen）。
+fn rewrite_as_v6_receipt(db: &TestDb, g: &W5Group) {
+    #[derive(serde::Serialize)]
+    struct V6Group<'a> {
+        id: &'a str,
+        candidates: &'a [W5Candidate],
+        decisions: &'a [W5Decision],
+    }
+    let v6_fingerprint = serde_json::to_string(&V6Group {
+        id: &g.id,
+        candidates: &g.candidates,
+        decisions: &g.decisions,
+    })
+    .unwrap();
     let connection = rusqlite::Connection::open(&db.0).unwrap();
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -1142,10 +1151,10 @@ fn a3_v6_receipts_without_status_still_open_and_replay() {
         })
         .unwrap();
     let mut old: serde_json::Value = serde_json::from_str(&raw).unwrap();
-    old["w5_receipts"]["s-205#0"]
-        .as_object_mut()
-        .unwrap()
-        .remove("status");
+    let receipt = old["w5_receipts"][g.id.as_str()].as_object_mut().unwrap();
+    receipt.remove("status");
+    receipt.remove("legacy_fingerprint");
+    receipt.insert("fingerprint".into(), v6_fingerprint.into());
     connection
         .execute(
             "UPDATE memory_profiles SET state_json=?1",
@@ -1153,10 +1162,20 @@ fn a3_v6_receipts_without_status_still_open_and_replay() {
         )
         .unwrap();
     connection.pragma_update(None, "user_version", 6).unwrap();
+}
+
+#[test]
+fn a3_v6_receipts_without_status_still_open_and_replay() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    commit_group(&mut db.open(), &claim(&g), &g).unwrap();
+    rewrite_as_v6_receipt(&db, &g);
     let before = snapshot(&db);
 
-    let receipt = &db.open().read().unwrap().w5_receipts["s-205#0"];
+    let receipt = db.open().read().unwrap().w5_receipts["s-205#0"].clone();
     assert_eq!(receipt.status, W5Status::Committed);
+    assert!(receipt.legacy_fingerprint);
+    let connection = rusqlite::Connection::open(&db.0).unwrap();
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
@@ -1170,10 +1189,17 @@ fn a3_v6_receipts_without_status_still_open_and_replay() {
         raw.contains("\"status\":\"Committed\""),
         "迁移后显式写出 status"
     );
+    assert!(raw.contains("\"legacy_fingerprint\":true"));
+    // 用当前格式的组（带 source_key、seen）重放旧回执：识别为同一组，不再执行。
     assert!(matches!(
         commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
         W5Outcome::AlreadyApplied(_)
     ));
+    assert_eq!(snapshot(&db), before);
+    // 内容不同的组仍被拒绝。
+    let mut changed = g.clone();
+    changed.decisions[0].basis_sources.push("s-999".into());
+    assert!(commit_group(&mut db.open(), &claim(&changed), &changed).is_err());
     assert_eq!(snapshot(&db), before);
 }
 
