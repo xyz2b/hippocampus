@@ -403,7 +403,7 @@ fn v2_migration_backfills_live_sources_but_read_only_open_does_not_migrate() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 7);
+    assert_eq!(version, 8);
     assert_eq!(candidates(&search(&store, "孩子")).len(), 1);
     assert!(candidates(&search(&store, "房子")).is_empty());
     assert!(candidates(&search(&store, "秘密关键词")).is_empty());

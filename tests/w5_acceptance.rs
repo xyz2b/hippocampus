@@ -108,6 +108,10 @@ fn decision(
         basis_sources: basis.iter().map(|s| s.to_string()).collect(),
         reason: None,
         effective,
+        resolves_relations: vec![],
+        resolution: None,
+        relation: None,
+        pending_reason: None,
     }
 }
 
@@ -174,10 +178,16 @@ fn group(
         source_key,
         candidates: candidates
             .into_iter()
-            .map(|(index, candidate)| W5Candidate { index, candidate })
+            .map(|(index, candidate)| W5Candidate {
+                index,
+                candidate,
+                committed_id: None,
+            })
             .collect(),
         decisions,
         seen,
+        scope_complete: false,
+        seen_relations: vec![],
     }
 }
 
@@ -722,7 +732,8 @@ fn a3_same_group_id_with_different_content_is_rejected() {
 #[test]
 fn a3_receipts_live_in_a_version_older_binaries_reject() {
     // 引入 W5 回执前的程序只接受版本 1..=5，重写快照时会丢掉 w5_receipts，
-    // 随后重放已提交的组会再插入一次；回执加入 status 后再升到 7，让 v6 程序也拒绝打开。
+    // 随后重放已提交的组会再插入一次；回执加入 status 后再升到 7，让 v6 程序也拒绝打开；
+    // 加入关系与更新状态后升到 8，让 v7 程序也拒绝打开。
     let db = TestDb::new();
     let (_, g, _) = w4_01(&db);
     commit_group(&mut db.open(), &claim(&g), &g).unwrap();
@@ -730,7 +741,7 @@ fn a3_receipts_live_in_a_version_older_binaries_reject() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 7);
+    assert_eq!(version, 8);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1131,6 +1142,21 @@ fn d2_one_group_needs_rejudge_while_the_other_commits_once() {
 
 /// 把已提交的回执改写成 bf83fd9（版本 6）真实保存的样子：没有 status、没有
 /// legacy_fingerprint，指纹是当时的组序列化（没有 source_key、seen）。
+/// 去掉版本 8 才有的字段（快照的关系、更新状态，回执的 updates、merged、form）。真实旧数据
+/// 见 `tests/fixtures/w5_storage/`；这里只用于在新程序写的数据上构造个别旧形态。
+fn strip_v8_fields(state: &mut serde_json::Value) {
+    let state = state.as_object_mut().unwrap();
+    for key in ["relations", "next_relation", "record_updates"] {
+        state.remove(key);
+    }
+    for receipt in state["w5_receipts"].as_object_mut().unwrap().values_mut() {
+        let receipt = receipt.as_object_mut().unwrap();
+        for key in ["updates", "merged", "form"] {
+            receipt.remove(key);
+        }
+    }
+}
+
 fn rewrite_as_v6_receipt(db: &TestDb, g: &W5Group) {
     #[derive(serde::Serialize)]
     struct V6Group<'a> {
@@ -1151,6 +1177,7 @@ fn rewrite_as_v6_receipt(db: &TestDb, g: &W5Group) {
         })
         .unwrap();
     let mut old: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    strip_v8_fields(&mut old);
     let receipt = old["w5_receipts"][g.id.as_str()].as_object_mut().unwrap();
     receipt.remove("status");
     receipt.remove("legacy_fingerprint");
@@ -1179,7 +1206,7 @@ fn a3_v6_receipts_without_status_still_open_and_replay() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 7);
+    assert_eq!(version, 8);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1285,6 +1312,7 @@ fn rewrite_as_unflagged_receipt(db: &TestDb, group_id: &str, version: i64) {
         })
         .unwrap();
     let mut old: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    strip_v8_fields(&mut old);
     old["w5_receipts"][group_id]
         .as_object_mut()
         .unwrap()
@@ -1369,4 +1397,385 @@ fn a3_new_receipts_accept_only_the_current_fingerprint() {
     let before = snapshot(&db);
     assert!(commit_group(&mut db.open(), &claim(&other_snapshot), &other_snapshot).is_err());
     assert_eq!(snapshot(&db), before);
+}
+
+// ---------------- 存储第 1 段（docs/architecture/w5-storage.md）：版本 8、真实旧数据迁移与重放
+
+/// 把 `tests/fixtures/w5_storage/<name>.sql` 还原成数据库文件。这些脚本由对应提交自己的
+/// 程序写出的数据库导出（模式 + 行 + user_version），不是从新格式删字段近似出来的。
+fn restore_fixture(name: &str) -> TestDb {
+    let db = TestDb::new();
+    std::fs::create_dir_all(db.0.parent().unwrap()).unwrap();
+    let script = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/w5_storage")
+            .join(format!("{name}.sql")),
+    )
+    .unwrap();
+    rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .execute_batch(&script)
+        .unwrap();
+    db
+}
+
+fn user_version(db: &TestDb) -> i64 {
+    rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .pragma_query_value(None, "user_version", |row| row.get(0))
+        .unwrap()
+}
+
+fn raw_state(db: &TestDb) -> serde_json::Value {
+    let raw: String = rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .query_row("SELECT state_json FROM memory_profiles", [], |row| {
+            row.get(0)
+        })
+        .unwrap();
+    serde_json::from_str(&raw).unwrap()
+}
+
+/// 旧数据里的认领早已过期：给原文任务一个新的有效认领（不是业务数据，不推进 revision）。
+fn reclaim(db: &TestDb, key: &str) {
+    ensure_claimed_source(db, key);
+    edit_source(db, key, |s| {
+        s.enrichment = "running".into();
+        s.task.attempt_id = Some(ATTEMPT.into());
+        s.task.lease_until = Some(now() + 900);
+    });
+}
+
+/// 旧程序在同一场景下提交的组：在新程序的空库上按相同步骤构造（场景是确定的）。
+fn w4_01_group() -> W5Group {
+    w4_01(&TestDb::new()).1
+}
+
+fn rejudge_scenario(db: &TestDb) -> (MemoryId, W5Group, W5Group) {
+    let old = seed(
+        db,
+        &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+    )[0];
+    let earlier = older_source_reinforces(db, old);
+    let g = group(
+        db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "上海", "我搬到上海了。", 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    (old, earlier, g)
+}
+
+fn assert_pre8_receipts(db: &TestDb, label: &str) {
+    let state = raw_state(db);
+    let receipts = state["w5_receipts"].as_object().unwrap();
+    assert!(!receipts.is_empty(), "{label}");
+    for (id, receipt) in receipts {
+        assert_eq!(receipt["form"], "pre8", "{label} {id}");
+        assert_eq!(receipt["updates"], serde_json::json!({}), "{label} {id}");
+        assert_eq!(receipt["merged"], serde_json::json!({}), "{label} {id}");
+    }
+    assert_eq!(state["relations"], serde_json::json!({}), "{label}");
+    assert_eq!(state["record_updates"], serde_json::json!({}), "{label}");
+    assert_eq!(state["next_relation"], 0, "{label}");
+}
+
+#[test]
+fn s1_committed_receipts_of_every_released_version_migrate_and_replay() {
+    let g = w4_01_group();
+    for (name, version) in [
+        ("v6-bf83fd9", 6),
+        ("v6-baa1ff9", 6),
+        ("v7-708b2d2", 7),
+        ("v7-ca16b64", 7),
+    ] {
+        let db = restore_fixture(name);
+        assert_eq!(user_version(&db), version, "{name}");
+        // 夹具里的组确实是这个场景的组（决定原样保存在回执里）。
+        let stored: Vec<W5Decision> =
+            serde_json::from_value(raw_state(&db)["w5_receipts"]["s-205#0"]["decisions"].clone())
+                .unwrap();
+        assert_eq!(stored, g.decisions, "{name}");
+
+        // 迁移：版本 8，回执显式写出 form=pre8，快照补齐新字段。
+        drop(db.open());
+        assert_eq!(user_version(&db), 8, "{name}");
+        assert_pre8_receipts(&db, name);
+        // 关闭 → 重开 → 再保存一次（任务字段写入也会改写快照）→ 重开：标记仍在。
+        reclaim(&db, "s-205");
+        assert_pre8_receipts(&db, name);
+        let receipt = db.open().read().unwrap().w5_receipts["s-205#0"].clone();
+        assert_eq!(receipt.form, ReceiptForm::Pre8, "{name}");
+        assert_eq!(receipt.status, W5Status::Committed, "{name}");
+
+        // 重放同一组：识别为已提交，零变更。
+        let before = snapshot(&db);
+        assert!(
+            matches!(
+                commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+                W5Outcome::AlreadyApplied(_)
+            ),
+            "{name}"
+        );
+        assert_eq!(snapshot(&db), before, "{name}");
+        // 内容不同仍被拒绝；带上版本 8 新字段（scope_complete、关系快照）的同一组按旧投影比对。
+        let mut changed = g.clone();
+        changed.decisions[0].basis_sources.push("s-999".into());
+        assert!(
+            commit_group(&mut db.open(), &claim(&changed), &changed).is_err(),
+            "{name}"
+        );
+        let mut widened = g.clone();
+        widened.scope_complete = true;
+        widened.seen[0].relations.push("rel-0".into());
+        widened.seen_relations.push(W5SeenRelation {
+            id: "rel-0".into(),
+            fingerprint: "{}".into(),
+        });
+        assert!(
+            matches!(
+                commit_group(&mut db.open(), &claim(&widened), &widened).unwrap(),
+                W5Outcome::AlreadyApplied(_)
+            ),
+            "{name}"
+        );
+        assert_eq!(snapshot(&db), before, "{name}");
+    }
+}
+
+#[test]
+fn s1_needs_rejudge_receipts_of_released_versions_stay_needs_rejudge() {
+    let (_, _, g) = rejudge_scenario(&TestDb::new());
+    for name in [
+        "v6-baa1ff9-rejudge",
+        "v7-708b2d2-rejudge",
+        "v7-ca16b64-rejudge",
+    ] {
+        let db = restore_fixture(name);
+        drop(db.open());
+        assert_eq!(user_version(&db), 8, "{name}");
+        assert_pre8_receipts(&db, name);
+        reclaim(&db, "s-205");
+        let before = snapshot(&db);
+        needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+        assert_eq!(snapshot(&db), before, "{name}");
+        assert_eq!(
+            memory(&db, MemoryId(1)).status,
+            MemoryStatus::Active,
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn s1_v5_database_migrates_and_new_receipts_are_v8() {
+    let db = restore_fixture("v5");
+    assert_eq!(user_version(&db), 5);
+    drop(db.open());
+    assert_eq!(user_version(&db), 8);
+    reclaim(&db, "s-205");
+    let old = MemoryId(1);
+    assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+    let g = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "上海", "我搬到上海了。", 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(receipt.form, ReceiptForm::V8);
+    assert!(receipt.updates.is_empty() && receipt.merged.is_empty());
+    assert_eq!(raw_state(&db)["w5_receipts"]["s-205#0"]["form"], "v8");
+    // v8 回执只认当前形态：带新字段的组是另一组内容。
+    let mut widened = g.clone();
+    widened.scope_complete = true;
+    assert!(commit_group(&mut db.open(), &claim(&widened), &widened).is_err());
+    let before = snapshot(&db);
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    assert_eq!(snapshot(&db), before);
+}
+
+#[test]
+fn s1_relations_and_update_states_are_business_data() {
+    let db = TestDb::new();
+    ensure_claimed_source(&db, "s-205");
+    let revision = db.open().read().unwrap().revision;
+    db.open()
+        .transaction(|state| {
+            state.relations.insert(
+                "rel-0".into(),
+                StoredRelation {
+                    id: "rel-0".into(),
+                    kind: RelationKind::Conflict,
+                    members: vec![MemoryId(1), MemoryId(2)],
+                    conditions: serde_json::json!([]),
+                    times: serde_json::json!([]),
+                    basis: vec![],
+                    status: RelationStatus::Open,
+                    resolution: None,
+                    created_by: "test".into(),
+                    closed_by: None,
+                },
+            );
+            state.next_relation = 1;
+            Ok(())
+        })
+        .unwrap();
+    let state = db.open().read().unwrap();
+    assert_eq!(state.revision, revision + 1);
+    // 无来源的业务变更推进顺序闸门：正在整理的较早原文须重判。
+    assert_eq!(state.sources["s-205"].enrichment, "stale_requires_review");
+    assert_eq!(state.relations["rel-0"].status, RelationStatus::Open);
+    assert_eq!(state.next_relation, 1);
+
+    let pending = UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: vec![UpdateReason::UpdateScopeIncomplete],
+    };
+    db.open()
+        .transaction(|state| {
+            state.record_updates.insert(MemoryId(7), pending.clone());
+            Ok(())
+        })
+        .unwrap();
+    let state = db.open().read().unwrap();
+    assert_eq!(state.revision, revision + 2);
+    assert_eq!(state.record_updates[&MemoryId(7)], pending);
+    // 按契约的字面形式保存。
+    let raw = raw_state(&db);
+    assert_eq!(
+        raw["record_updates"]["7"],
+        serde_json::json!({"status":"pending","reasons":["update_scope_incomplete"]})
+    );
+    assert_eq!(raw["relations"]["rel-0"]["status"], "open");
+    assert_eq!(raw["relations"]["rel-0"]["kind"], "conflict");
+}
+
+#[test]
+fn s1_groups_using_later_segment_fields_are_rejected_without_writes() {
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    let before = snapshot(&db);
+    let mut conflict = g.clone();
+    conflict.decisions[0].action = W5Action::Conflict;
+    let mut resolving = g.clone();
+    resolving.decisions[0]
+        .resolves_relations
+        .push("rel-0".into());
+    let mut pending = g.clone();
+    pending.decisions[0].pending_reason = Some(W4PendingReason::TargetUnknown);
+    let mut reused = g.clone();
+    reused.candidates[0].committed_id = Some(MemoryId(1));
+    let mut complete = g.clone();
+    complete.scope_complete = true;
+    for (label, group) in [
+        ("conflict", conflict),
+        ("resolves_relations", resolving),
+        ("pending_reason", pending),
+        ("committed_id", reused),
+        ("scope_complete", complete),
+    ] {
+        let error = commit_group(&mut db.open(), &claim(&group), &group).unwrap_err();
+        assert!(
+            error.to_string().contains("not supported yet"),
+            "{label}: {error}"
+        );
+        assert_eq!(snapshot(&db), before, "{label}");
+    }
+}
+
+#[test]
+fn s1_unknown_fields_fail_closed_instead_of_being_dropped() {
+    // 以后的程序若给 W5 存储加字段，当前程序不能读入后在改写快照时悄悄丢掉它；
+    // 嵌套类型（回执状态、决定、更新状态、关系依据）同样适用。
+    let db = TestDb::new();
+    let (_, earlier, g) = rejudge_scenario(&db);
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    db.open()
+        .transaction(|state| {
+            state.relations.insert(
+                "rel-0".into(),
+                StoredRelation {
+                    id: "rel-0".into(),
+                    kind: RelationKind::Conflict,
+                    members: vec![MemoryId(1), MemoryId(2)],
+                    conditions: serde_json::json!([]),
+                    times: serde_json::json!([]),
+                    basis: vec![],
+                    status: RelationStatus::Resolved,
+                    resolution: Some(RelationEvidence {
+                        source_id: "s-205".into(),
+                        quote: "q".into(),
+                    }),
+                    created_by: "test".into(),
+                    closed_by: Some("test".into()),
+                },
+            );
+            state.record_updates.insert(
+                MemoryId(1),
+                UpdateState {
+                    status: UpdateStatus::Judged,
+                    reasons: vec![],
+                },
+            );
+            Ok(())
+        })
+        .unwrap();
+    let original = raw_state(&db);
+    let paths: [&[&str]; 6] = [
+        &["w5_receipts", "s-205#0"],
+        &["w5_receipts", "s-205#0", "status", "NeedsRejudge"],
+        &["w5_receipts", "s-050#0", "decisions", "0"],
+        &["record_updates", "1"],
+        &["relations", "rel-0"],
+        &["relations", "rel-0", "resolution"],
+    ];
+    for path in paths {
+        let mut state = original.clone();
+        let mut node = &mut state;
+        for key in path {
+            node = match key.parse::<usize>() {
+                Ok(i) if node.is_array() => &mut node[i],
+                _ => &mut node[*key],
+            };
+        }
+        assert!(node.is_object(), "{path:?}");
+        node["future_field"] = serde_json::json!(1);
+        rusqlite::Connection::open(&db.0)
+            .unwrap()
+            .execute(
+                "UPDATE memory_profiles SET state_json=?1",
+                [state.to_string()],
+            )
+            .unwrap();
+        assert!(
+            SqliteMemoryStore::open(&db.0, UserId::from(OWNER)).is_err(),
+            "{path:?}"
+        );
+    }
+    // 还原后能正常打开：失败确实来自新增字段。
+    rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .execute(
+            "UPDATE memory_profiles SET state_json=?1",
+            [original.to_string()],
+        )
+        .unwrap();
+    drop(db.open());
 }

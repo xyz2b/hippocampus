@@ -33,6 +33,16 @@ pub struct PersistedMemoryState {
     /// W5 提交回执，按依赖组 ID 保存；重放同一组不产生变更。
     #[serde(default)]
     pub w5_receipts: BTreeMap<String, W5Receipt>,
+    /// 冲突关系，按关系 ID（`rel-<n>`，owner 内唯一）保存；与 Memory 生命周期分开。
+    #[serde(default)]
+    pub relations: BTreeMap<String, StoredRelation>,
+    /// 下一个关系编号；单调递增，不复用。分配与关系写入在同一事务。
+    #[serde(default)]
+    pub next_relation: u64,
+    /// W5 产生或重判过的记录的更新状态；没有条目表示未知（召回为 null），不是 judged。
+    /// 不放进 Memory：Memory 的序列化形状是冻结的 LegacyMemory。
+    #[serde(default)]
+    pub record_updates: BTreeMap<MemoryId, UpdateState>,
     /// Set by an operation whose business change belongs to the source that is already the
     /// last applied one (a later W5 group of the same source). Not persisted; without it the
     /// change would count as source-less and invalidate that source's own running task.
@@ -161,7 +171,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=7 => (),
+            1..=8 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -210,9 +220,20 @@ impl SqliteMemoryStore {
         }
         if version < 7 {
             // v6 receipts (W5 A1–A3) carry no status and were all committed; decoding fills in
-            // Committed. Rewrite every profile that has receipts so the stored form is explicit,
-            // then raise the version: a v6 binary would drop the status (and turn a
-            // needs_rejudge group into a committed one) when rewriting the snapshot.
+            // Committed. A v6 binary would drop the status (and turn a needs_rejudge group into
+            // a committed one) when rewriting the snapshot, so it must reject version 7. The
+            // rewrite that stores the status explicitly is the version 8 step below, in the same
+            // transaction: one decode/save writes both the status and the receipt form.
+            tx.pragma_update(None, "user_version", 7)?;
+        }
+        if version < 8 {
+            // Relations, update states and receipt fields live in the owner snapshot; a v7
+            // binary would drop them when rewriting it (conflicts vanish, pending turns into
+            // unknown), so it must reject version 8. Rewrite every profile with receipts so
+            // each receipt's `form` is stored explicitly as pre8: after this rewrite the
+            // receipt also carries `updates`, so the absence of a field can no longer tell
+            // which group form its fingerprint was taken from. The same rewrite stores the
+            // status of v6 receipts explicitly (see the version 7 step).
             let profiles = {
                 let mut statement =
                     tx.prepare("SELECT owner_id, state_json FROM memory_profiles")?;
@@ -228,7 +249,7 @@ impl SqliteMemoryStore {
                     Self::save(&tx, &UserId(owner_id), &profile)?;
                 }
             }
-            tx.pragma_update(None, "user_version", 7)?;
+            tx.pragma_update(None, "user_version", 8)?;
         }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
@@ -268,9 +289,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=7).contains(&version) {
+        if !(3..=8).contains(&version) {
             return Err(format!(
-                "source search requires database version 3 to 7; found {version}; migrate explicitly"
+                "source search requires database version 3 to 8; found {version}; migrate explicitly"
             )
             .into());
         }
@@ -345,8 +366,15 @@ impl SqliteMemoryStore {
         let read_revision = state.revision;
         let applied_before = state.last_applied_source_sequence;
         // ponytail: compare one owner's full business snapshot; use indexed revisions if profiles grow large.
-        let business_before =
-            serde_json::to_value((&state.repository, &state.entities, &state.staging))?;
+        // Relations and update states are business data too: their change advances the
+        // revision and triggers the ordering barrier like a record change.
+        let business_before = serde_json::to_value((
+            &state.repository,
+            &state.entities,
+            &state.staging,
+            &state.relations,
+            &state.record_updates,
+        ))?;
         let before = crate::diagnostics::enabled()
             .then(|| serde_json::to_value(&state).ok())
             .flatten();
@@ -361,7 +389,13 @@ impl SqliteMemoryStore {
             }
         };
         let business_changed = business_before
-            != serde_json::to_value((&state.repository, &state.entities, &state.staging))?;
+            != serde_json::to_value((
+                &state.repository,
+                &state.entities,
+                &state.staging,
+                &state.relations,
+                &state.record_updates,
+            ))?;
         state.revision = if business_changed {
             read_revision
                 .checked_add(1)

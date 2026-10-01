@@ -111,6 +111,9 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 ## 7. 分段
 
 1. **存储与迁移**（本文）：加字段（含回执 `updates`、`merged`、`form`，组的 `scope_complete`、`seen_relations` 与 `W5Seen.relations`）、版本 8、事务业务快照纳入新字段、兼容测试。不改提交行为。
+   - 组与决定上后续各段要用的字段也在这一段定好，避免以后再改回执里保存的形状：决定加 `resolves_relations`、`resolution`、`relation`（conflict 要建立的关系）、`pending_reason`，动作加 `Conflict`，候选加 `committed_id`。都在为空时不序列化，旧组的指纹不变。执行尚未实现前，携带这些字段的组一律拒绝，不静默忽略。
+   - W5 的存储类型（回执、组、决定、关系、更新状态）拒绝未知字段：将来的程序若再加字段，当前程序读到时报错，而不是改写快照时悄悄丢掉。
+   - 兼容测试用的旧数据是各提交自己的程序写出的数据库，导出为 `tests/fixtures/w5_storage/*.sql`（模式 + 行 + user_version；仓库忽略 `*.sqlite3`，故存文本）。
 2. **更新状态**：W5 按第 3 节生成并写入；召回的 RecordView/RecallFact 带出 update；`pending_updates` 计数。
 3. **冲突关系**：建立、解决、替代未解决成员、删除失效；w4_21（D1）、w4_22（E1–E3）。
 4. **重判复用与归并**：B2、B3、B3a，以及第 3 节的状态改写规则。

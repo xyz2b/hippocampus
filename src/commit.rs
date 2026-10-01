@@ -6,7 +6,9 @@
 //! 已先应用、所在任务已被标为过期或依据来源已删除，该组记为 needs_rejudge，零业务写入，
 //! 且同一组以后只返回 needs_rejudge，不能重试旧决定（docs/architecture/w5-acceptance.md
 //! A1–A7）。候选的证据必须来自所认领的原文；租约按取得写锁后的时间判断。
-//! 尚未覆盖：关系、重判复用与归并、UpdateState。
+//! 存储形状（docs/architecture/w5-storage.md，版本 8）已一次定好：关系、更新状态、归并映射、
+//! 回执格式标记，以及组与决定上后续各段要用的字段。尚未执行：冲突关系、待定决定、
+//! 重判复用与归并、UpdateState 的生成；携带这些字段的组目前一律拒绝，不静默忽略。
 
 use std::collections::BTreeMap;
 
@@ -20,9 +22,105 @@ pub enum W5Action {
     Reinforce,
     StateChange,
     Retract,
+    /// 新断言与目标真实冲突：插入新记录并建立冲突关系（第 3 段实现）。
+    Conflict,
+}
+
+/// 更新判定状态（contracts 1.6）；由代码生成，不由 W4 直接给出。
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "snake_case")]
+pub enum UpdateStatus {
+    Judged,
+    Pending,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "snake_case")]
+pub enum UpdateReason {
+    UpdateScopeIncomplete,
+    UpdateTargetUnknown,
+    UpdateRelationUnclear,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct UpdateState {
+    pub status: UpdateStatus,
+    pub reasons: Vec<UpdateReason>,
+}
+
+/// W4 待定决定的原因（contracts 2.4 `pending_reason`）。
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum W4PendingReason {
+    TargetUnknown,
+    ScopeIncomplete,
+    UnclearRelation,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationKind {
+    Conflict,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationStatus {
+    Open,
+    Resolved,
+    Invalidated,
+}
+
+/// 关系依据：来源 ID 与原文片段（contracts EvidenceRef 的已保存来源形式）。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RelationEvidence {
+    pub source_id: String,
+    pub quote: String,
+}
+
+/// 冲突关系（contracts 2.4 RelationLink），与 Memory 生命周期分开保存在 owner 快照中。
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct StoredRelation {
+    pub id: String,
+    pub kind: RelationKind,
+    /// 至少两个，不重复。
+    pub members: Vec<MemoryId>,
+    /// TextQualifier / TimeInterp 原样保存，W5 不解释。
+    pub conditions: serde_json::Value,
+    pub times: serde_json::Value,
+    pub basis: Vec<RelationEvidence>,
+    pub status: RelationStatus,
+    /// resolved 时必填。
+    pub resolution: Option<RelationEvidence>,
+    /// 建立它的 W5 组。
+    pub created_by: String,
+    /// 解决或失效它的组；因删除失效时为 null。
+    pub closed_by: Option<String>,
+}
+
+/// conflict 决定要建立的关系内容（成员 = 新产物 + 目标，由代码补齐）。
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct W5RelationSpec {
+    pub conditions: serde_json::Value,
+    pub times: serde_json::Value,
+    pub basis: Vec<RelationEvidence>,
+}
+
+/// 回执的组指纹形态。迁移到版本 8 时写入，此后不靠“某字段缺失”推断来源版本。
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ReceiptForm {
+    /// 版本 8 之前写的回执：按去掉版本 8 新字段的组形态比对（再叠加 legacy_fingerprint）。
+    Pre8,
+    V8,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct W5Decision {
     /// 对应 `W5Group::candidates` 中的 `index`。
     pub candidate: usize,
@@ -35,23 +133,52 @@ pub struct W5Decision {
     pub reason: Option<SupersedeReason>,
     /// 已核验的生效时间；`None` 表示结束时间未知（end_unknown），不回填接收时间。
     pub effective: Option<DatedValue>,
+    /// W4 明确判定本次动作解决的 open 关系（第 3 段）。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resolves_relations: Vec<String>,
+    /// 解决依据；resolves_relations 非空时必填（第 3 段）。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resolution: Option<RelationEvidence>,
+    /// conflict 决定要建立的关系（第 3 段）。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relation: Option<W5RelationSpec>,
+    /// W4 待定决定：不对旧目标执行动作（第 2 段）。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pending_reason: Option<W4PendingReason>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct W5Candidate {
     pub index: usize,
     pub candidate: CandidateMemory,
+    /// 重判已提交断言时为原记录 ID（第 4 段）。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub committed_id: Option<MemoryId>,
 }
 
 /// W4 输入时某个目标的快照指纹（不含检索计数，读取不算变更）。
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct W5Seen {
     pub id: MemoryId,
+    pub fingerprint: String,
+    /// 目标所在 open 关系的编号集合；集合增减即快照过期（第 3 段核对）。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub relations: Vec<String>,
+}
+
+/// W4 输入时某个关系的快照指纹（要解决的关系、目标及既有冲突成员所在的 open 关系）。
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct W5SeenRelation {
+    pub id: String,
     pub fingerprint: String,
 }
 
 /// 一个依赖组：同一原文里彼此依赖的决定，一次调用、一个事务。
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct W5Group {
     /// 稳定的组 ID（例如 `<source_id>#<组序号>`），用作回执与幂等键。
     pub id: String,
@@ -61,6 +188,12 @@ pub struct W5Group {
     pub decisions: Vec<W5Decision>,
     /// W4 输入时全部目标的快照指纹；每个目标都必须有。
     pub seen: Vec<W5Seen>,
+    /// 运行时代码为 W4 输入生成的 coverage.complete；W5 不重新判断检索范围。缺省为
+    /// false（不完整），与通用 fact 检索范围永不完整一致。
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub scope_complete: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub seen_relations: Vec<W5SeenRelation>,
 }
 
 /// 执行者对原文任务的认领；沿用 `EnrichmentTask` 的 attempt_id 与租约。
@@ -71,6 +204,7 @@ pub struct W5Claim {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub enum W5Status {
     Committed,
     /// 快照已过期：本组零业务写入，须重新走 W4，不能重试旧决定。
@@ -80,6 +214,7 @@ pub enum W5Status {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct W5Receipt {
     pub group_id: String,
     /// 组内容的规范 JSON；同一组 ID 只接受完全相同的内容重放。
@@ -98,6 +233,15 @@ pub struct W5Receipt {
     pub products: BTreeMap<usize, MemoryId>,
     /// 完整 targets 与 basis。
     pub decisions: Vec<W5Decision>,
+    /// 候选 → 其产物的更新状态；版本 8 之前的回执为空，表示未知而非 judged。
+    #[serde(default)]
+    pub updates: BTreeMap<usize, UpdateState>,
+    /// 重判归并：已提交 ID → 保留目标（第 4 段写入）。
+    #[serde(default)]
+    pub merged: BTreeMap<MemoryId, MemoryId>,
+    /// 缺省只可能来自版本 8 之前写的回执；迁移到 8 时显式写出。
+    #[serde(default = "pre8_form")]
+    pub form: ReceiptForm,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -150,6 +294,7 @@ pub fn w5_seen(
             Ok(W5Seen {
                 id: *id,
                 fingerprint: w5_fingerprint(&memory)?,
+                relations: Vec::new(),
             })
         })
         .collect()
@@ -161,6 +306,22 @@ fn committed_status() -> W5Status {
 
 fn legacy_fingerprint_default() -> bool {
     true
+}
+
+fn pre8_form() -> ReceiptForm {
+    ReceiptForm::Pre8
+}
+
+/// 版本 8 之前的组形态：去掉 scope_complete、seen_relations 与 W5Seen.relations
+/// （都在为空 / false 时不序列化）。
+fn pre8_fingerprint(group: &W5Group) -> PersistenceResult<String> {
+    let mut group = group.clone();
+    group.scope_complete = false;
+    group.seen_relations.clear();
+    for seen in &mut group.seen {
+        seen.relations.clear();
+    }
+    Ok(serde_json::to_string(&group)?)
 }
 
 /// The group as v6 (W5 A1–A3) serialized it: no `source_key`, no `seen`.
@@ -246,9 +407,14 @@ pub fn commit_group_with_hook(
         );
         let source_turn = (source.session_id.clone(), source.turn_id.clone());
         if let Some(receipt) = state.w5_receipts.get(&group.id) {
-            let same = receipt.fingerprint == fingerprint
-                || (receipt.legacy_fingerprint
-                    && receipt.fingerprint == legacy_fingerprint(group)?);
+            let same = match receipt.form {
+                ReceiptForm::V8 => receipt.fingerprint == fingerprint,
+                ReceiptForm::Pre8 => {
+                    receipt.fingerprint == pre8_fingerprint(group)?
+                        || (receipt.legacy_fingerprint
+                            && receipt.fingerprint == legacy_fingerprint(group)?)
+                }
+            };
             if !same {
                 return Err(format!(
                     "W5 group {} was already committed with different content",
@@ -288,6 +454,9 @@ pub fn commit_group_with_hook(
                 legacy_fingerprint: false,
                 products: BTreeMap::new(),
                 decisions: group.decisions.clone(),
+                updates: BTreeMap::new(),
+                merged: BTreeMap::new(),
+                form: ReceiptForm::V8,
             };
             state.w5_receipts.insert(group.id.clone(), receipt.clone());
             return Ok(W5Outcome::NeedsRejudge(receipt));
@@ -312,6 +481,9 @@ pub fn commit_group_with_hook(
             legacy_fingerprint: false,
             products,
             decisions: group.decisions.clone(),
+            updates: BTreeMap::new(),
+            merged: BTreeMap::new(),
+            form: ReceiptForm::V8,
         };
         hook(W5Step::BeforeSave)?;
         // The change belongs to this source: advance the applied watermark (a later group of
@@ -410,6 +582,29 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
     if indexes.len() != group.candidates.len() {
         return Err("W5 candidate indexes must be unique".into());
     }
+    // 存储已为后续各段备好的字段，执行尚未实现：拒绝，而不是静默忽略。
+    if group.scope_complete || !group.seen_relations.is_empty() {
+        return Err("W5 scope_complete / seen_relations are not supported yet".into());
+    }
+    if group.seen.iter().any(|seen| !seen.relations.is_empty())
+        || group.candidates.iter().any(|c| c.committed_id.is_some())
+    {
+        return Err("W5 relation snapshots / committed_id are not supported yet".into());
+    }
+    for d in &group.decisions {
+        if d.action == W5Action::Conflict
+            || !d.resolves_relations.is_empty()
+            || d.resolution.is_some()
+            || d.relation.is_some()
+            || d.pending_reason.is_some()
+        {
+            return Err(format!(
+                "W5 decision {}: conflict, relation resolution and pending decisions are not supported yet",
+                d.candidate
+            )
+            .into());
+        }
+    }
     for d in &group.decisions {
         if !group.candidates.iter().any(|c| c.index == d.candidate) {
             return Err(format!("W5 decision refers to missing candidate {}", d.candidate).into());
@@ -442,7 +637,7 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
         let ok = match d.action {
             W5Action::New => d.targets.is_empty(),
             W5Action::Reinforce => d.targets.len() == 1,
-            W5Action::StateChange | W5Action::Retract => !d.targets.is_empty(),
+            W5Action::StateChange | W5Action::Retract | W5Action::Conflict => !d.targets.is_empty(),
         };
         if !ok {
             return Err(format!(
@@ -543,6 +738,7 @@ fn apply(
             repository.insert(new)?;
             Ok(Some(id))
         }
+        W5Action::Conflict => Err("W5 conflict is not supported yet".into()),
         W5Action::Retract => {
             for target in &decision.targets {
                 let mut old = active(repository, *target)?;
