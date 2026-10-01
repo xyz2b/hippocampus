@@ -4,6 +4,7 @@ pub mod diagnostics;
 mod engine;
 mod fact_answer;
 mod fact_index;
+mod forget;
 mod lexical;
 mod local_recall;
 mod model;

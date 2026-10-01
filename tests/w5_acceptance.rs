@@ -2678,11 +2678,690 @@ fn r2_resolving_rechecks_every_member_not_only_the_targets() {
     assert_eq!(relation(&db, &rel).status, RelationStatus::Open);
     // 少了某个成员的快照：直接拒绝。
     let db = TestDb::new();
-    let (seven, eight, rel, mut g) = w4_15(&db);
+    let (seven, eight, _rel, mut g) = w4_15(&db);
     g.seen.retain(|seen| seen.id != eight);
     let before = snapshot(&db);
     let error = commit_group(&mut db.open(), &claim(&g), &g).unwrap_err();
     assert!(error.to_string().contains("has no W4 snapshot"), "{error}");
     assert_eq!(snapshot(&db), before);
     assert_eq!(memory(&db, seven).status, MemoryStatus::Active);
+}
+
+// ---------------- 第 3 段后半：删除范围与关系失效（w5-storage.md 第 4 节）
+
+fn forget(db: &TestDb, arguments: serde_json::Value) -> serde_json::Value {
+    let mut service = hippocampus::chat::ChatMemoryService::new(
+        db.open(),
+        hippocampus::chat::ChatConfig::default(),
+    )
+    .unwrap();
+    service.call("memory_forget", arguments, || false).unwrap()
+}
+
+fn status(db: &TestDb, id: MemoryId) -> MemoryStatus {
+    memory(db, id).status
+}
+
+fn source_deleted(db: &TestDb, key: &str) -> bool {
+    source(db, key).request.is_none()
+}
+
+/// 提交一组并收尾任务。
+fn w5_commit(db: &TestDb, g: &W5Group) -> W5Receipt {
+    let receipt = committed(commit_group(&mut db.open(), &claim(g), g).unwrap());
+    w5_finish_task(&mut db.open(), &claim(g), &W5TaskEnd::Committed).unwrap();
+    receipt
+}
+
+/// W5 新增一条记录（有回执，创建来源可确认）。
+fn w5_new(db: &TestDb, key: &str, predicate: &str, value: &str, text: &str) -> MemoryId {
+    claimed_source(db, key, text);
+    let g = group(
+        db,
+        &format!("{key}#0"),
+        vec![(0, cand(key, predicate, value, text, 300))],
+        vec![decision(0, W5Action::New, &[], &[key], None)],
+    );
+    w5_commit(db, &g).products[&0]
+}
+
+/// 整份快照里不能再出现被删原文的文字（回执指纹、决定、关系、记录都算，软删除记录的值也
+/// 打墓碑，只留 ID、状态、谱系与墓碑证据）。
+fn assert_text_gone(db: &TestDb, text: &str) {
+    let state = raw_state(db);
+    let raw = serde_json::to_string(&state).unwrap();
+    let escaped = serde_json::to_string(text).unwrap();
+    let inner = &escaped[1..escaped.len() - 1];
+    assert!(!raw.contains(inner), "{text} still in the snapshot");
+    // 嵌套快照里的二次转义形式也不能有。
+    let twice = serde_json::to_string(inner).unwrap();
+    assert!(
+        !raw.contains(&twice[1..twice.len() - 1]),
+        "{text} still nested"
+    );
+}
+
+/// w4_22：110（北京，s-501）与 111（上海，s-502）互相冲突；s-510 同时替代两者为 N。
+fn w4_22_live(db: &TestDb) -> (MemoryId, MemoryId, MemoryId, String) {
+    let beijing = w5_new(db, "s-501", "lives_in", "北京", "我住在北京。");
+    claimed_source(db, "s-502", "我住在上海。");
+    let mut d = decision(0, W5Action::Conflict, &[beijing], &["s-501", "s-502"], None);
+    d.relation = Some(W5RelationSpec {
+        conditions: serde_json::json!([{"quote": "我住在北京。"}]),
+        times: serde_json::json!([]),
+        basis: vec![
+            evidence("s-501", "我住在北京。"),
+            evidence("s-502", "我住在上海。"),
+        ],
+    });
+    let g = group(
+        db,
+        "s-502#0",
+        vec![(0, cand("s-502", "lives_in", "上海", "我住在上海。", 310))],
+        vec![d],
+    );
+    let shanghai = w5_commit(db, &g).products[&0];
+    claimed_source(db, "s-510", "我已经搬到深圳了。");
+    let mut g = group(
+        db,
+        "s-510#0",
+        vec![(
+            0,
+            cand("s-510", "lives_in", "深圳", "我已经搬到深圳了。", 320),
+        )],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[beijing, shanghai],
+            &["s-501", "s-502", "s-510"],
+            None,
+        )],
+    );
+    g.scope_complete = true;
+    let new = w5_commit(db, &g).products[&0];
+    (beijing, shanghai, new, "rel-0".into())
+}
+
+#[test]
+fn f1_deleting_one_member_source_keeps_the_other_branch_and_invalidates_the_relation() {
+    let db = TestDb::new();
+    let (beijing, shanghai, new, rel) = w4_22_live(&db);
+    let result = forget(&db, serde_json::json!({"source_id":"s-501"}));
+    assert_eq!(result["forgotten_ids"], serde_json::json!([beijing]));
+    assert_eq!(status(&db, beijing), MemoryStatus::Deleted);
+    assert_eq!(status(&db, shanghai), MemoryStatus::Superseded);
+    assert_eq!(status(&db, new), MemoryStatus::Active);
+    assert!(source_deleted(&db, "s-501"));
+    assert!(!source_deleted(&db, "s-502") && !source_deleted(&db, "s-510"));
+    let invalid = relation(&db, &rel);
+    assert_eq!(invalid.status, RelationStatus::Invalidated);
+    assert_eq!(invalid.closed_by, None);
+    assert_eq!(invalid.basis[0].quote, "[deleted source]");
+    assert_eq!(invalid.basis[1].quote, "我住在上海。");
+    assert_eq!(result["invalidated_relation_ids"], serde_json::json!([rel]));
+    assert_text_gone(&db, "我住在北京。");
+}
+
+#[test]
+fn f2_forgetting_by_record_follows_its_own_lineage_only() {
+    // 删 N：两个前身都在谱系里。
+    let db = TestDb::new();
+    let (beijing, shanghai, new, _) = w4_22_live(&db);
+    forget(&db, serde_json::json!({"memory_id": new.0}));
+    for id in [beijing, shanghai, new] {
+        assert_eq!(status(&db, id), MemoryStatus::Deleted, "{id:?}");
+    }
+    for key in ["s-501", "s-502", "s-510"] {
+        assert!(source_deleted(&db, key), "{key}");
+    }
+    // 删 110：继任 N 在谱系里，但不经 N 折回到它的另一个前身 111。
+    let db = TestDb::new();
+    let (beijing, shanghai, new, rel) = w4_22_live(&db);
+    forget(&db, serde_json::json!({"memory_id": beijing.0}));
+    assert_eq!(status(&db, beijing), MemoryStatus::Deleted);
+    assert_eq!(status(&db, new), MemoryStatus::Deleted);
+    assert_eq!(status(&db, shanghai), MemoryStatus::Superseded);
+    assert!(!source_deleted(&db, "s-502"));
+    assert_eq!(relation(&db, &rel).status, RelationStatus::Invalidated);
+}
+
+#[test]
+fn f3_forgetting_the_middle_of_a_chain_forgets_all_three_generations() {
+    let db = TestDb::new();
+    let a = w5_new(&db, "s-1", "lives_in", "北京", "我住在北京。");
+    let mut ids = vec![a];
+    for (key, value, text) in [
+        ("s-2", "上海", "我搬到上海了。"),
+        ("s-3", "深圳", "我又搬到深圳了。"),
+    ] {
+        claimed_source(&db, key, text);
+        let mut g = group(
+            &db,
+            &format!("{key}#0"),
+            vec![(0, cand(key, "lives_in", value, text, 300))],
+            vec![decision(
+                0,
+                W5Action::StateChange,
+                &[*ids.last().unwrap()],
+                &[key],
+                None,
+            )],
+        );
+        g.scope_complete = true;
+        ids.push(w5_commit(&db, &g).products[&0]);
+    }
+    forget(&db, serde_json::json!({"memory_id": ids[1].0}));
+    for id in &ids {
+        assert_eq!(status(&db, *id), MemoryStatus::Deleted, "{id:?}");
+    }
+}
+
+#[test]
+fn f4_deleting_the_resolving_source_invalidates_the_resolved_relation() {
+    let db = TestDb::new();
+    let seven = w5_new(&db, "s-130", "fact", SEVEN, SEVEN);
+    claimed_source(&db, "s-261", EIGHT_UNSURE);
+    let mut d = decision(0, W5Action::Conflict, &[seven], &["s-130", "s-261"], None);
+    d.relation = Some(W5RelationSpec {
+        conditions: serde_json::json!([]),
+        times: serde_json::json!([]),
+        basis: vec![evidence("s-130", SEVEN), evidence("s-261", EIGHT_UNSURE)],
+    });
+    let g = group(
+        &db,
+        "s-261#0",
+        vec![(0, cand("s-261", "fact", EIGHT_UNSURE, EIGHT_UNSURE, 261))],
+        vec![d],
+    );
+    let eight = w5_commit(&db, &g).products[&0];
+    let text = "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。";
+    claimed_source(&db, "s-371", text);
+    let mut refine = decision(
+        0,
+        W5Action::StateChange,
+        &[eight],
+        &["s-261", "s-371"],
+        None,
+    );
+    refine.reason = Some(SupersedeReason::Refinement);
+    let mut retract = decision(1, W5Action::Retract, &[seven], &["s-130", "s-371"], None);
+    retract.resolves_relations = vec!["rel-0".into()];
+    retract.resolution = Some(evidence("s-371", text));
+    let mut second = retraction_of("s-371", text);
+    second.evidence[0].id = EvidenceId::from("s-371-b");
+    let g = group(
+        &db,
+        "s-371#0",
+        vec![(0, cand("s-371", "fact", text, text, 371)), (1, second)],
+        vec![refine, retract],
+    );
+    let verified = w5_commit(&db, &g).products[&0];
+    assert_eq!(relation(&db, "rel-0").status, RelationStatus::Resolved);
+
+    forget(&db, serde_json::json!({"source_id":"s-371"}));
+    let invalid = relation(&db, "rel-0");
+    assert_eq!(invalid.status, RelationStatus::Invalidated);
+    assert_eq!(invalid.resolution.unwrap().quote, "[deleted source]");
+    // 解决依据被删，不能再算已解决，也不回到 open；前身保持 superseded，不自动恢复。
+    assert_eq!(status(&db, verified), MemoryStatus::Deleted);
+    assert_eq!(status(&db, seven), MemoryStatus::Superseded);
+    assert_eq!(
+        memory(&db, seven).supersede_reason,
+        Some(SupersedeReason::UserRetracted)
+    );
+    assert_eq!(status(&db, eight), MemoryStatus::Superseded);
+    assert_text_gone(&db, text);
+}
+
+#[test]
+fn f5_only_control_evidence_left_means_the_record_goes() {
+    // M 由 s-1 创建、被 s-2 撤回（撤回原文作为控制证据追加）；删 s-1 后只剩控制证据。
+    let db = TestDb::new();
+    let m = w5_new(&db, "s-1", "lives_in", "北京", "我住在北京。");
+    let text = "之前说的住址不对。";
+    claimed_source(&db, "s-2", text);
+    let mut c = cand("s-2", "lives_in", "北京", text, 300);
+    c.intent = CandidateIntent::Retract { target: None };
+    let g = group(
+        &db,
+        "s-2#0",
+        vec![(0, c)],
+        vec![decision(0, W5Action::Retract, &[m], &["s-1", "s-2"], None)],
+    );
+    w5_commit(&db, &g);
+    forget(&db, serde_json::json!({"source_id":"s-1"}));
+    assert_eq!(status(&db, m), MemoryStatus::Deleted);
+    assert!(!source_deleted(&db, "s-2"));
+}
+
+#[test]
+fn f6_an_independently_reinforced_record_stays_with_recounted_reinforcement() {
+    let db = TestDb::new();
+    let m = w5_new(&db, "s-1", "lives_in", "北京", "我住在北京。");
+    for (key, text, observed) in [
+        ("s-2", "我还住在北京。", 2_000),
+        ("s-3", "我仍然住北京。", 3_000),
+    ] {
+        claimed_source(&db, key, text);
+        edit_source(&db, key, |s| s.observed_at = observed);
+        // 同一原文两组都强化：只算一次。
+        let groups: Vec<W5Group> = (0..2)
+            .map(|n| {
+                group(
+                    &db,
+                    &format!("{key}#{n}"),
+                    vec![(0, cand(key, "lives_in", "北京", text, observed))],
+                    vec![decision(0, W5Action::Reinforce, &[m], &[key], None)],
+                )
+            })
+            .collect();
+        committed(commit_group(&mut db.open(), &claim(&groups[0]), &groups[0]).unwrap());
+        // 第二组的快照早于第一组的强化：needs_rejudge，不执行。
+        needs_rejudge(commit_group(&mut db.open(), &claim(&groups[1]), &groups[1]).unwrap());
+        w5_finish_task(&mut db.open(), &claim(&groups[0]), &W5TaskEnd::Committed).unwrap();
+    }
+    assert_eq!(memory(&db, m).reinforcement_count, 2);
+    forget(&db, serde_json::json!({"source_id":"s-1"}));
+    let kept = memory(&db, m);
+    assert_eq!(kept.status, MemoryStatus::Active);
+    assert_eq!(kept.reinforcement_count, 2);
+    assert_eq!(kept.last_reinforced_at, Some(Timestamp(3_000)));
+    assert!(kept.evidence.iter().any(|e| e.quote == "[deleted source]"));
+    forget(&db, serde_json::json!({"source_id":"s-3"}));
+    let kept = memory(&db, m);
+    assert_eq!(kept.status, MemoryStatus::Active);
+    assert_eq!(kept.reinforcement_count, 1);
+    assert_eq!(kept.last_reinforced_at, Some(Timestamp(2_000)));
+    assert_text_gone(&db, "我住在北京。");
+    assert_text_gone(&db, "我仍然住北京。");
+}
+
+#[test]
+fn f7_a_needs_rejudge_reinforce_receipt_is_not_support() {
+    // s-2 的一组撤回了 M；另一组以旧快照强化 M，得到 needs_rejudge。删 s-1 后 M 只剩控制证据。
+    let db = TestDb::new();
+    let m = w5_new(&db, "s-1", "lives_in", "北京", "我住在北京。");
+    let text = "之前说的住址不对，不过我还住北京。";
+    claimed_source(&db, "s-2", text);
+    let mut c = cand("s-2", "lives_in", "北京", text, 300);
+    c.intent = CandidateIntent::Retract { target: None };
+    let retract = group(
+        &db,
+        "s-2#0",
+        vec![(0, c)],
+        vec![decision(0, W5Action::Retract, &[m], &["s-1", "s-2"], None)],
+    );
+    let mut r = cand("s-2", "lives_in", "北京", text, 300);
+    r.evidence[0].id = EvidenceId::from("s-2-b");
+    let reinforce = group(
+        &db,
+        "s-2#1",
+        vec![(0, r)],
+        vec![decision(0, W5Action::Reinforce, &[m], &["s-2"], None)],
+    );
+    committed(commit_group(&mut db.open(), &claim(&retract), &retract).unwrap());
+    needs_rejudge(commit_group(&mut db.open(), &claim(&reinforce), &reinforce).unwrap());
+    forget(&db, serde_json::json!({"source_id":"s-1"}));
+    assert_eq!(status(&db, m), MemoryStatus::Deleted);
+}
+
+/// 旧整理回执（memory_remember / memory_clarify 写的形状），直接写入快照。
+fn inject_legacy_receipt(
+    db: &TestDb,
+    key: &str,
+    request: serde_json::Value,
+    result: serde_json::Value,
+) {
+    let mut state = raw_state(db);
+    state["receipts"][key] = serde_json::json!({"request": request, "result": result});
+    rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .execute(
+            "UPDATE memory_profiles SET state_json=?1",
+            [state.to_string()],
+        )
+        .unwrap();
+}
+
+#[test]
+fn f8_legacy_clarified_record_is_supported_by_its_original_statement() {
+    // A 陈述（主体待澄清，暂存 7 号）→ B 澄清后创建 X → C 强化 X。删 C：X 由 A 支持，保留。
+    // 没有 A 的暂存回执时，剩下的 A、B 证据角色不明，X 删除。
+    for with_pending_receipt in [true, false] {
+        let db = TestDb::new();
+        stored_source(&db, "A", "孩子住在上海。");
+        stored_source(&db, "B", "孩子指的是小明");
+        stored_source(&db, "C", "小明还住在上海。");
+        let mut c = cand("A", "lives_in", "上海", "孩子住在上海。", 100);
+        c.evidence.push(Evidence::new(
+            EvidenceId::from("B"),
+            SessionId::from("chat"),
+            TurnId::from("B"),
+            "孩子指的是小明",
+        ));
+        c.evidence.push(Evidence::new(
+            EvidenceId::from("C"),
+            SessionId::from("chat"),
+            TurnId::from("C"),
+            "小明还住在上海。",
+        ));
+        let x = seed(&db, &[c])[0];
+        let applied = |action: &str| serde_json::json!({"Ingested":{"Applied":{"action":action,"memory_id":x,"target":null}}});
+        if with_pending_receipt {
+            inject_legacy_receipt(
+                &db,
+                "a",
+                serde_json::json!({"session_id":"chat","turn_id":"A","text":"孩子住在上海。"}),
+                serde_json::json!({"outcomes":[{"Pending":{"staged_id":7,"resolution":"NotFound"}}]}),
+            );
+        }
+        inject_legacy_receipt(
+            &db,
+            "b",
+            serde_json::json!({"staged_id":7,"session_id":"chat","turn_id":"B","text":"孩子指的是小明","entity_reference":"小明"}),
+            serde_json::json!({"outcome": applied("New")}),
+        );
+        inject_legacy_receipt(
+            &db,
+            "c",
+            serde_json::json!({"session_id":"chat","turn_id":"C","text":"小明还住在上海。"}),
+            serde_json::json!({"outcomes":[applied("Reinforce")]}),
+        );
+        forget(&db, serde_json::json!({"source_id":"C"}));
+        let expected = if with_pending_receipt {
+            MemoryStatus::Active
+        } else {
+            MemoryStatus::Deleted
+        };
+        assert_eq!(
+            status(&db, x),
+            expected,
+            "pending receipt: {with_pending_receipt}"
+        );
+        assert!(!source_deleted(&db, "A") && !source_deleted(&db, "B"));
+    }
+}
+
+#[test]
+fn f9_short_quotes_of_a_deleted_source_are_scrubbed_from_relation_text() {
+    // 条件、时间里的 Quote 只是原文的短片段（“冬天”），不含任何整句也要清掉。
+    let db = TestDb::new();
+    let body = "冬天我住在北京。";
+    let beijing = w5_new(&db, "s-501", "lives_in", "北京", body);
+    claimed_source(&db, "s-502", "我住在上海。");
+    let mut d = decision(0, W5Action::Conflict, &[beijing], &["s-501", "s-502"], None);
+    d.relation = Some(W5RelationSpec {
+        conditions: serde_json::json!([{"quote": {"text": "冬天"}, "resolved": true}]),
+        times: serde_json::json!([{"quote": {"text": "冬天"}, "interp": {"kind": "unknown"}}]),
+        basis: vec![evidence("s-501", body), evidence("s-502", "我住在上海。")],
+    });
+    let g = group(
+        &db,
+        "s-502#0",
+        vec![(0, cand("s-502", "lives_in", "上海", "我住在上海。", 310))],
+        vec![d],
+    );
+    let shanghai = w5_commit(&db, &g).products[&0];
+    forget(&db, serde_json::json!({"source_id":"s-501"}));
+    assert_eq!(status(&db, beijing), MemoryStatus::Deleted);
+    assert_eq!(status(&db, shanghai), MemoryStatus::Active);
+    assert_eq!(relation(&db, "rel-0").status, RelationStatus::Invalidated);
+    assert_text_gone(&db, body);
+    assert_text_gone(&db, "冬天");
+    // 另一方的文字不受影响。
+    assert_eq!(memory(&db, shanghai).evidence[0].quote, "我住在上海。");
+}
+
+#[test]
+fn f10_a_still_pending_clarification_is_not_the_original_statement() {
+    // A 陈述暂存 7 号；B 澄清后仍待定；C 再澄清创建 M。B 的回执键排在 A 之前。
+    // 删 A：M 只剩澄清证据，删除。
+    let db = TestDb::new();
+    stored_source(&db, "A", "孩子住在上海。");
+    stored_source(&db, "B", "孩子是说家里的");
+    stored_source(&db, "C", "孩子指的是小明");
+    let mut c = cand("A", "lives_in", "上海", "孩子住在上海。", 100);
+    for (turn, quote) in [("B", "孩子是说家里的"), ("C", "孩子指的是小明")] {
+        c.evidence.push(Evidence::new(
+            EvidenceId::from(turn),
+            SessionId::from("chat"),
+            TurnId::from(turn),
+            quote,
+        ));
+    }
+    let m = seed(&db, &[c])[0];
+    inject_legacy_receipt(
+        &db,
+        "z-a",
+        serde_json::json!({"session_id":"chat","turn_id":"A","text":"孩子住在上海。"}),
+        serde_json::json!({"outcomes":[{"Pending":{"staged_id":7,"resolution":"NotFound"}}]}),
+    );
+    inject_legacy_receipt(
+        &db,
+        "b",
+        serde_json::json!({"staged_id":7,"session_id":"chat","turn_id":"B","text":"孩子是说家里的","entity_reference":"家里的"}),
+        serde_json::json!({"outcome":{"Pending":{"staged_id":7,"resolution":"Ambiguous"}}}),
+    );
+    inject_legacy_receipt(
+        &db,
+        "c",
+        serde_json::json!({"staged_id":7,"session_id":"chat","turn_id":"C","text":"孩子指的是小明","entity_reference":"小明"}),
+        serde_json::json!({"outcome":{"Ingested":{"Applied":{"action":"New","memory_id":m,"target":null}}}}),
+    );
+    let result = forget(&db, serde_json::json!({"source_id":"A"}));
+    assert_eq!(status(&db, m), MemoryStatus::Deleted, "{result}");
+    assert_eq!(result["retained_ids"], serde_json::json!([]));
+    assert!(!source_deleted(&db, "B") && !source_deleted(&db, "C"));
+}
+
+#[test]
+fn f11_forgotten_values_are_tombstoned() {
+    // 通用 fact 的值就是原句：软删除后只留 ID、状态、谱系与墓碑证据。
+    let db = TestDb::new();
+    let m = w5_new(&db, "s-1", "fact", SEVEN, SEVEN);
+    let result = forget(&db, serde_json::json!({"memory_id": m.0}));
+    assert_eq!(result["audit_evidence_retained"], true);
+    let gone = memory(&db, m);
+    assert_eq!(gone.status, MemoryStatus::Deleted);
+    assert_eq!(gone.value, MemoryValue::Text("[deleted source]".into()));
+    assert!(gone.evidence.iter().all(|e| e.quote == "[deleted source]"));
+    assert_text_gone(&db, SEVEN);
+}
+
+#[test]
+fn f12_forgotten_records_keep_no_content_fields() {
+    // 条件、时间表达、标签都可能是原文片段（复审 0007 复现）。
+    let db = TestDb::new();
+    let body = "在锦瑟画室参加私人写生时，我住在北京。";
+    claimed_source(&db, "secret-source", body);
+    let mut c = cand("secret-source", "lives_in", "北京", body, 300);
+    c.scope
+        .conditions
+        .push(ScopeCondition::Activity("锦瑟画室参加私人写生".into()));
+    c.temporal.reference = Some(TemporalReference::Unknown {
+        expression: "参加私人写生时".into(),
+        source: TemporalSource::Unknown,
+    });
+    c.tags.push("锦瑟画室".into());
+    let g = group(
+        &db,
+        "secret-source#0",
+        vec![(0, c)],
+        vec![decision(0, W5Action::New, &[], &["secret-source"], None)],
+    );
+    let id = w5_commit(&db, &g).products[&0];
+    forget(&db, serde_json::json!({"source_id":"secret-source"}));
+    let gone = memory(&db, id);
+    assert_eq!(gone.status, MemoryStatus::Deleted);
+    assert_eq!(gone.scope, Scope::default());
+    assert!(gone.tags.is_empty() && gone.temporal.reference.is_none());
+    assert_text_gone(&db, "锦瑟画室");
+    assert_text_gone(&db, "参加私人写生时");
+}
+
+#[test]
+fn f13_a_source_less_legacy_record_is_scrubbed_without_spreading() {
+    // capture_source=false 的旧记录（契约 §2.6）：按 memory_id 删除时证据与旧回执里的文字也要清掉；
+    // 同轮的另一条记录没有原文可整条删除，不受牵连。
+    let db = TestDb::new();
+    let body = "星港账户的备用口令提示是锦瑟。";
+    let ids = seed(
+        &db,
+        &[
+            cand("legacy-turn", "fact", body, body, 100),
+            cand("legacy-turn", "likes", "星港", "星港", 100),
+        ],
+    );
+    inject_legacy_receipt(
+        &db,
+        "legacy-receipt",
+        serde_json::json!({"session_id":"chat","turn_id":"legacy-turn","text":body,"capture_source":false}),
+        serde_json::json!({"outcomes":[{"Ingested":{"Applied":{"action":"New","memory_id":ids[0],"target":null}}}]}),
+    );
+    assert!(db.open().read().unwrap().sources.is_empty());
+    let result = forget(&db, serde_json::json!({"memory_id": ids[0].0}));
+    assert_eq!(result["forgotten_ids"], serde_json::json!([ids[0]]));
+    assert_eq!(status(&db, ids[0]), MemoryStatus::Deleted);
+    assert_eq!(status(&db, ids[1]), MemoryStatus::Active);
+    assert_text_gone(&db, body);
+}
+
+#[test]
+fn f14_an_unrelated_short_phrase_leaves_other_receipts_alone() {
+    // 被删原文里的“冬天”与另一组关系条件里的“冬天”无关：那组回执不变，重放仍是 AlreadyApplied。
+    let db = TestDb::new();
+    let unrelated = w5_new(
+        &db,
+        "unrelated",
+        "fact",
+        "冬天我出门滑雪。",
+        "冬天我出门滑雪。",
+    );
+    let body_b = "冬天我住在北京。";
+    let beijing = w5_new(&db, "b", "lives_in", "北京", body_b);
+    let body_c = "冬天我住在上海。";
+    claimed_source(&db, "c", body_c);
+    let mut d = decision(0, W5Action::Conflict, &[beijing], &["b", "c"], None);
+    d.relation = Some(W5RelationSpec {
+        conditions: serde_json::json!([{"quote": {"text": "冬天"}, "resolved": true}]),
+        times: serde_json::json!([]),
+        basis: vec![evidence("b", body_b), evidence("c", body_c)],
+    });
+    let g = group(
+        &db,
+        "c#0",
+        vec![(0, cand("c", "lives_in", "上海", body_c, 310))],
+        vec![d],
+    );
+    let before = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    let result = forget(&db, serde_json::json!({"source_id":"unrelated"}));
+    assert_eq!(result["forgotten_ids"], serde_json::json!([unrelated]));
+    assert_eq!(result["invalidated_relation_ids"], serde_json::json!([]));
+    let open = relation(&db, "rel-0");
+    assert_eq!(open.status, RelationStatus::Open);
+    assert_eq!(open.conditions[0]["quote"]["text"], "冬天");
+    let after = db.open().read().unwrap().w5_receipts["c#0"].clone();
+    assert_eq!(before.fingerprint, after.fingerprint);
+    assert!(matches!(
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+    assert_text_gone(&db, "冬天我出门滑雪。");
+}
+
+#[test]
+fn f15_a_reinforce_from_the_creating_source_is_not_recounted() {
+    // A 创建 M，同一原文另一组再强化 M（证据重复，计数不变）；B 独立强化后删除 B：计数回到 0。
+    let db = TestDb::new();
+    let body = "我住在北京。";
+    claimed_source(&db, "A", body);
+    let g = group(
+        &db,
+        "A#0",
+        vec![(0, cand("A", "lives_in", "北京", body, 300))],
+        vec![decision(0, W5Action::New, &[], &["A"], None)],
+    );
+    let m = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap()).products[&0];
+    let g = group(
+        &db,
+        "A#1",
+        vec![(1, cand("A", "lives_in", "北京", body, 300))],
+        vec![decision(1, W5Action::Reinforce, &[m], &["A"], None)],
+    );
+    w5_commit(&db, &g);
+    assert_eq!(memory(&db, m).reinforcement_count, 0);
+    let other = "我还住在北京。";
+    claimed_source(&db, "B", other);
+    let g = group(
+        &db,
+        "B#0",
+        vec![(0, cand("B", "lives_in", "北京", other, 500))],
+        vec![decision(0, W5Action::Reinforce, &[m], &["B"], None)],
+    );
+    w5_commit(&db, &g);
+    assert_eq!(memory(&db, m).reinforcement_count, 1);
+    forget(&db, serde_json::json!({"source_id":"B"}));
+    let kept = memory(&db, m);
+    assert_eq!(kept.status, MemoryStatus::Active);
+    assert_eq!(kept.reinforcement_count, 0);
+    assert_eq!(kept.last_reinforced_at, None);
+}
+
+#[test]
+fn f16_history_copies_of_a_source_less_message_are_removed() {
+    // A 没有原文记录；无关消息 B 的请求历史里带着 A 的原话。删 A 的记录后历史副本也要去掉。
+    let db = TestDb::new();
+    let body = "星港账户的备用口令提示是锦瑟。";
+    let a = seed(&db, &[cand("legacy-a", "fact", body, body, 100)])[0];
+    inject_legacy_receipt(
+        &db,
+        "legacy-a",
+        serde_json::json!({"session_id":"chat","turn_id":"legacy-a","text":body,"capture_source":false}),
+        serde_json::json!({"outcomes":[{"Ingested":{"Applied":{"action":"New","memory_id":a,"target":null}}}]}),
+    );
+    stored_source(&db, "B", "今天天气不错。");
+    edit_source(&db, "B", |s| {
+        s.request.as_mut().unwrap()["history"] = serde_json::json!([body, "别的话"]);
+    });
+    forget(&db, serde_json::json!({"memory_id": a.0}));
+    assert_text_gone(&db, body);
+    assert_eq!(
+        source(&db, "B").request.unwrap()["history"],
+        serde_json::json!(["别的话"])
+    );
+}
+
+#[test]
+fn f17_a_surviving_legacy_reinforcement_keeps_its_receipt_time() {
+    // M 由有原文的 A 创建，被无原文的旧消息 B 强化（旧回执带显式 observed_at）。删 A 后 M 由 B
+    // 支持而保留，最近强化时间仍是 B 的时间。
+    let db = TestDb::new();
+    stored_source(&db, "A", "回答都必须使用中文。");
+    let mut c = cand("A", "fact", "中文", "回答都必须使用中文。", 100);
+    c.evidence.push(Evidence::new(
+        EvidenceId::from("B"),
+        SessionId::from("chat"),
+        TurnId::from("B"),
+        "以后所有回答都必须使用中文。",
+    ));
+    let m = seed(&db, &[c])[0];
+    let applied = |action: &str| serde_json::json!({"Ingested":{"Applied":{"action":action,"memory_id":m,"target":null}}});
+    inject_legacy_receipt(
+        &db,
+        "a",
+        serde_json::json!({"session_id":"chat","turn_id":"A","text":"回答都必须使用中文。"}),
+        serde_json::json!({"outcomes":[applied("New")]}),
+    );
+    inject_legacy_receipt(
+        &db,
+        "b",
+        serde_json::json!({"session_id":"chat","turn_id":"B","text":"以后所有回答都必须使用中文。",
+            "capture_source":false,"observed_at":1_700_000_100}),
+        serde_json::json!({"outcomes":[applied("Reinforce")]}),
+    );
+    forget(&db, serde_json::json!({"source_id":"A"}));
+    let kept = memory(&db, m);
+    assert_eq!(kept.status, MemoryStatus::Active);
+    assert_eq!(kept.reinforcement_count, 1);
+    assert_eq!(kept.last_reinforced_at, Some(Timestamp(1_700_000_100)));
 }

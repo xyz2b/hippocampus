@@ -370,11 +370,11 @@ struct List {
 #[serde(deny_unknown_fields)]
 #[schemars(crate = "rmcp::schemars")]
 struct Forget {
-    /// ID returned by memory_list or memory_recall. All connected versions are forgotten together.
+    /// ID returned by memory_list or memory_recall. Its version chain (all earlier and later versions) is forgotten together with the messages behind it; other memories from those messages are kept only when another message still supports them.
     memory_id: Option<u64>,
     /// Alternatively discard one pending candidate returned by memory_list.
     staged_id: Option<u64>,
-    /// Delete an independently retained source and its derived memories, including failed/pending inputs.
+    /// Delete an independently retained source and its derived memories, including failed/pending inputs. A derived memory that another message still supports is kept without this message's evidence.
     source_id: Option<String>,
 }
 
@@ -3323,81 +3323,13 @@ impl ChatMemoryService {
                 }
                 self.store.transaction(|state| {
                     check_cancelled(&cancelled)?;
-                    let memories = state.repository.list_by_owner(&owner)?;
-                    let mut ids = BTreeSet::new();
-                    let mut turns = BTreeSet::new();
-                    if let Some(source_id) = &input.source_id {
-                        let source = state.sources.values().find(|s| &s.id == source_id).ok_or("source ID not found for this owner")?;
-                        turns.insert((source.session_id.clone(),source.turn_id.clone()));
-                    }
-                    if let Some(id) = input.staged_id {
-                        if let Some(staged) = state.staging.remove(StagedCandidateId(id)) {
-                            for evidence in staged.candidate.evidence {
-                                turns.insert((evidence.session_id.0,evidence.turn_id.0));
-                            }
-                        } else { return Ok(json!({"staged_id":id,"removed":false})); }
-                    }
-                    if let Some(id) = input.memory_id {
-                        let id = MemoryId(id);
-                        if !memories.iter().any(|memory| memory.id == id) { return Err("memory ID not found for this owner".into()); }
-                        ids.insert(id);
-                    }
-                    // Whole-message retention cannot erase only one clause. Delete its derived records too.
-                    loop {
-                        let before = (ids.len(),turns.len());
-                        for memory in &memories {
-                            if ids.contains(&memory.id) || memory.supersedes.is_some_and(|id| ids.contains(&id))
-                                || memory.superseded_by.is_some_and(|id| ids.contains(&id))
-                                || memory.evidence.iter().any(|e| turns.contains(&(e.session_id.0.clone(),e.turn_id.0.clone()))) {
-                                ids.insert(memory.id);
-                                ids.extend(memory.supersedes);
-                                ids.extend(memory.superseded_by);
-                                for evidence in &memory.evidence {
-                                    let turn = (evidence.session_id.0.clone(),evidence.turn_id.0.clone());
-                                    if state.sources.values().any(|s| (s.session_id.clone(),s.turn_id.clone()) == turn) { turns.insert(turn); }
-                                }
-                            }
-                        }
-                        if before == (ids.len(),turns.len()) { break; }
-                    }
-                    let mut deleted_sources = Vec::new();
-                    let mut removed_text = Vec::new();
-                    for source in state.sources.values_mut().filter(|s| turns.contains(&(s.session_id.clone(),s.turn_id.clone()))) {
-                        if let Some(text) = source.request.as_ref().and_then(|r|r["text"].as_str()) { removed_text.push(text.to_owned()); }
-                        source.request = None;
-                        // Retain only the accepted mode; deletion removes business results and source text.
-                        source.result = source.result.as_ref()
-                            .filter(|result| result["enrichment_mode"] == "off")
-                            .map(|_| json!({"enrichment_mode":"off"}));
-                        source.error = Some("source_deleted".into());
-                        source.enrichment = "deleted".into();
-                        deleted_sources.push(source.id.clone());
-                    }
-                    if !deleted_sources.is_empty() {
-                        state.receipts.retain(|_,receipt| !turns.contains(&(receipt.request["session_id"].as_str().unwrap_or("").into(),receipt.request["turn_id"].as_str().unwrap_or("").into())));
-                        // Remove verbatim history copies too; affected old retry payloads now conflict rather than resurrect data.
-                        for request in state.sources.values_mut().filter_map(|s|s.request.as_mut()).chain(state.receipts.values_mut().map(|r| &mut r.request)) {
-                            if let Some(history) = request["history"].as_array_mut() {
-                                history.retain(|v| !v.as_str().is_some_and(|text| removed_text.iter().any(|removed| text.contains(removed))));
-                            }
-                        }
-                    }
-                    let pending:Vec<_> = state.staging.list_by_owner(&owner).into_iter()
-                        .filter(|s|s.candidate.evidence.iter().any(|e|turns.contains(&(e.session_id.0.clone(),e.turn_id.0.clone()))))
-                        .map(|s|s.id).collect();
-                    for id in pending { state.staging.remove(id); }
-                    for mut memory in memories.into_iter().filter(|memory| ids.contains(&memory.id)) {
-                        memory.status = MemoryStatus::Deleted;
-                        if !deleted_sources.is_empty() {
-                            for evidence in &mut memory.evidence {
-                                if turns.contains(&(evidence.session_id.0.clone(),evidence.turn_id.0.clone())) { evidence.quote = "[deleted source]".into(); }
-                            }
-                        }
-                        state.repository.update(memory)?;
-                    }
-                    Ok(json!({"forgotten_ids":ids,"deleted_source_ids":deleted_sources,"staged_id":input.staged_id,
-                        "removed":true,"deletion":"soft","audit_evidence_retained":true,
-                        "note":"Source bodies and linked receipts removed from the current snapshot; tombstones block replay. Existing diagnostic files, backups and WAL are not physically erased."}))
+                    crate::forget::forget(
+                        state,
+                        &owner,
+                        input.memory_id.map(MemoryId),
+                        input.staged_id,
+                        input.source_id.as_deref(),
+                    )
                 })
             }
             _ => Err("unknown memory tool".into()),
