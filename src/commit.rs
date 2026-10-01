@@ -87,8 +87,11 @@ pub struct W5Receipt {
     /// v6 receipts (W5 A1–A3) had no status; all of them were committed.
     #[serde(default = "committed_status")]
     pub status: W5Status,
-    /// v6 receipts fingerprinted the group before `source_key` and `seen` existed, so a
-    /// replay is compared in that older form. Absent in stored JSON means a v6 receipt.
+    /// Receipts written before this flag existed (bf83fd9, baa1ff9, 708b2d2) may hold either
+    /// the v6 group fingerprint (no `source_key`, no `seen`; bf83fd9) or the current one
+    /// (baa1ff9, 708b2d2), and the flag's absence cannot tell them apart. Such receipts
+    /// accept a replay in either form; new receipts write false and accept only the current
+    /// form.
     #[serde(default = "legacy_fingerprint_default")]
     pub legacy_fingerprint: bool,
     /// 候选 → 本次产生的记录（new、state_change）。
@@ -243,12 +246,10 @@ pub fn commit_group_with_hook(
         );
         let source_turn = (source.session_id.clone(), source.turn_id.clone());
         if let Some(receipt) = state.w5_receipts.get(&group.id) {
-            let expected = if receipt.legacy_fingerprint {
-                legacy_fingerprint(group)?
-            } else {
-                fingerprint.clone()
-            };
-            if receipt.fingerprint != expected {
+            let same = receipt.fingerprint == fingerprint
+                || (receipt.legacy_fingerprint
+                    && receipt.fingerprint == legacy_fingerprint(group)?);
+            if !same {
                 return Err(format!(
                     "W5 group {} was already committed with different content",
                     group.id

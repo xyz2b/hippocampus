@@ -1274,3 +1274,99 @@ fn a6_candidate_from_another_source_is_rejected() {
     );
     assert_eq!(snapshot(&db), before);
 }
+
+/// 把回执改写成 `flag` 字段出现之前、baa1ff9/708b2d2 写下的样子：有 status、当前形态的
+/// 指纹，但没有 legacy_fingerprint；数据库版本为 `version`。
+fn rewrite_as_unflagged_receipt(db: &TestDb, group_id: &str, version: i64) {
+    let connection = rusqlite::Connection::open(&db.0).unwrap();
+    let raw: String = connection
+        .query_row("SELECT state_json FROM memory_profiles", [], |row| {
+            row.get(0)
+        })
+        .unwrap();
+    let mut old: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    old["w5_receipts"][group_id]
+        .as_object_mut()
+        .unwrap()
+        .remove("legacy_fingerprint");
+    connection
+        .execute(
+            "UPDATE memory_profiles SET state_json=?1",
+            [old.to_string()],
+        )
+        .unwrap();
+    connection
+        .pragma_update(None, "user_version", version)
+        .unwrap();
+}
+
+#[test]
+fn a3_receipts_from_intermediate_versions_still_replay() {
+    // baa1ff9 写的是版本 6，708b2d2 写的是版本 7；两者都有 status、当前形态的指纹，
+    // 但都没有 legacy_fingerprint。
+    for version in [6, 7] {
+        let db = TestDb::new();
+        let (_, g, _) = w4_01(&db);
+        commit_group(&mut db.open(), &claim(&g), &g).unwrap();
+        rewrite_as_unflagged_receipt(&db, "s-205#0", version);
+        let before = snapshot(&db);
+        assert!(
+            matches!(
+                commit_group(&mut db.open(), &claim(&g), &g).unwrap(),
+                W5Outcome::AlreadyApplied(_)
+            ),
+            "version {version}"
+        );
+        assert_eq!(snapshot(&db), before, "version {version}");
+        let mut changed = g.clone();
+        changed.decisions[0].basis_sources.push("s-999".into());
+        assert!(
+            commit_group(&mut db.open(), &claim(&changed), &changed).is_err(),
+            "version {version}"
+        );
+        assert_eq!(snapshot(&db), before, "version {version}");
+    }
+}
+
+#[test]
+fn a3_needs_rejudge_receipt_from_an_intermediate_version_stays_needs_rejudge() {
+    let db = TestDb::new();
+    let old = seed(
+        &db,
+        &[cand("s-101", "lives_in", "北京", "我住在北京。", 100)],
+    )[0];
+    let earlier = older_source_reinforces(&db, old);
+    let g = group(
+        &db,
+        "s-205#0",
+        vec![(0, cand("s-205", "lives_in", "上海", "我搬到上海了。", 200))],
+        vec![decision(
+            0,
+            W5Action::StateChange,
+            &[old],
+            &["s-101", "s-205"],
+            None,
+        )],
+    );
+    committed(commit_group(&mut db.open(), &claim(&earlier), &earlier).unwrap());
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    rewrite_as_unflagged_receipt(&db, "s-205#0", 7);
+    let before = snapshot(&db);
+    needs_rejudge(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(memory(&db, old).status, MemoryStatus::Active);
+}
+
+#[test]
+fn a3_new_receipts_accept_only_the_current_fingerprint() {
+    // 新回执写明 legacy_fingerprint=false：只与当前形态比对，旧形态相同也不算同一组。
+    let db = TestDb::new();
+    let (_, g, _) = w4_01(&db);
+    let receipt = committed(commit_group(&mut db.open(), &claim(&g), &g).unwrap());
+    assert!(!receipt.legacy_fingerprint);
+    let mut other_snapshot = g.clone();
+    other_snapshot.seen[0].fingerprint.push(' ');
+    let before = snapshot(&db);
+    assert!(commit_group(&mut db.open(), &claim(&other_snapshot), &other_snapshot).is_err());
+    assert_eq!(snapshot(&db), before);
+}
