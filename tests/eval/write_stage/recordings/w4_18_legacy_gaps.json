@@ -1,0 +1,40 @@
+{
+  "id": "w4_18_legacy_gaps",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": null,
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": "scope_incomplete",
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "pending",
+            "targets": [
+              95
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":\"scope_incomplete\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\",\"targets\":[95]}]}",
+      "request": "fnv1a64:b637b2c5fed7c616",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1330,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 9671,
+        "output_tokens_details": {
+          "reasoning_tokens": 9613
+        },
+        "total_tokens": 11001
+      }
+    }
+  ]
+}

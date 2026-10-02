@@ -1,0 +1,67 @@
+{
+  "id": "w1_12_unresolved_subject",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "他上周辞职了。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "unresolved": {
+                "text": "他"
+              }
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "上周"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "他上周辞职了。"
+              },
+              "text": "他上周辞职了。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{ \"text\": \"他上周辞职了。\"\n},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"unresolved\":{\"text\":\"他\"}},\"times\":[{\"anchor\":\"said_on\",\"interp\": {\"kind\":\"relative\",\"offset\":-1,\"unit\":\"week\"},\"quote\": { \"text\": \"上周\"\n},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{ \"text\": \"他上周辞职了。\"\n},\"text\": \"他上周辞职了。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:951f72421d711174",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1144,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 12216,
+        "output_tokens_details": {
+          "reasoning_tokens": 12053
+        },
+        "total_tokens": 13360
+      }
+    }
+  ]
+}

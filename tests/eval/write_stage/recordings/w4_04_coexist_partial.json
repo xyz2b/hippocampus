@@ -1,0 +1,38 @@
+{
+  "id": "w4_04_coexist_partial",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "coexist",
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:bc396defb7665d73",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1324,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 4730,
+        "output_tokens_details": {
+          "reasoning_tokens": 4673
+        },
+        "total_tokens": 6054
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "w3_03_dropped_condition",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "condition",
+                "quote": {
+                  "text": "我画速写的时候"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"condition\",\"quote\":{\"text\":\"我画速写的时候\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:266511d9183d5aa1",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 813,
+        "input_tokens_details": {
+          "cached_tokens": 768
+        },
+        "output_tokens": 1137,
+        "output_tokens_details": {
+          "reasoning_tokens": 1070
+        },
+        "total_tokens": 1950
+      }
+    }
+  ]
+}

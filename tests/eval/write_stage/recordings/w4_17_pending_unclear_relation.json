@@ -1,0 +1,48 @@
+{
+  "id": "w4_17_pending_unclear_relation",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "new",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我最近在学韩语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-390"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我最近在学韩语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-390\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:c8e2fdb351fba9f0",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1345,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 826,
+        "output_tokens_details": {
+          "reasoning_tokens": 742
+        },
+        "total_tokens": 2171
+      }
+    }
+  ]
+}

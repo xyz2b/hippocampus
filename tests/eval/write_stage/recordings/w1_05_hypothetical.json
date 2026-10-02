@@ -1,0 +1,70 @@
+{
+  "id": "w1_05_hypothetical",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "unknown",
+            "relation": "fact",
+            "sentence": {
+              "text": "如果我以后去深圳工作，我会考虑租房。  "
+            },
+            "speech": "hypothetical",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "以后"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": {
+              "quote": {
+                "text": "如果"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "如果我以后去深圳工作，我会考虑租房。"
+              },
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"unknown\",\"relation\":\"fact\",\"sentence\":{  \"text\":\"如果我以后去深圳工作，我会考虑租房。  \"},\"speech\":\"hypothetical\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\", \"interp\": {\"kind\": \"relative\", \"offset\": 0, \"unit\": \"day\"}, \"quote\":{  \"text\":\"以后\"},\"role\":\"event\"}],\"uncertainty\":{  \"quote\":{    \"text\":\"如果\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":{  \"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"text\":\"如果我以后去深圳工作，我会考虑租房。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:89d9b58624885062",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1148,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 15702,
+        "output_tokens_details": {
+          "reasoning_tokens": 15507
+        },
+        "total_tokens": 16850
+      }
+    }
+  ]
+}

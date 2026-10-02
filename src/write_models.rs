@@ -29,13 +29,31 @@ entity when history explicitly names that entity as its referent. Catalogue uniq
 is not evidence for binding. When no entity fits or a reference is unclear, use
 subject={"unresolved":{"text":"exact reference words"}}. Never invent an entity_id or choose
 the only catalogue entry by elimination. Use a catalogue relation or fact; memory_type must
-match the relation's allowed types. For fact assertions, value.kind=text and value.text/value.quote/sentence
-are the same continuous complete original sentence. Preserve original sentence wording.
+match the relation's allowed types. Only relation=fact assertions require value.kind=text and
+value.text/value.quote/sentence to be the same continuous complete original sentence.
+memory_type=fact does not trigger that rule. For a dedicated relation, value is the relation's
+object or property value, not the whole sentence; value.quote must support that value.
+sentence remains the complete original assertion, including its qualifiers. Copy its wording
+without appending explanations, JSON fragments or other output text.
+Choose fact for descriptive assertions, preference for likes or dislikes, constraint for user
+requirements or prohibitions, and episode for bounded experiences; respect the allowed types.
+Polarity is the assertion's direction, separate from uncertainty and speech. An affirmative
+uncertain assertion, hypothesis or plan may still have polarity=affirm. Do not use unknown
+merely because it is uncertain or not yet realized. Preserve explicit negation.
 Preserve polarity, strength, uncertainty, conditions and times rather than deleting unknowns.
 Null strength means no intensity expression; unknown means expressed but unclear. Qualifiers
 copy original words and say whether understood. Time roles are event, validity, retention;
 anchor is said_on. Propose date/range/relative/month/anchored/recurring/unknown, never perform
 calendar arithmetic or use execution time. Do not invent dates or interpret unknown anchors.
+Activity or applicability conditions belong in conditions, not times; calendar periods and
+explicit schedules belong in times. date.date and range.start/end_inclusive require full ISO
+calendar days, never a partial year-month. relative uses unit and signed offset. month uses
+year_offset and month (1..12) for a named calendar month. anchored uses anchor_quote, unit
+and offset and requires its stated anchor. recurring and unknown have no extra interp fields;
+their original expression remains in the time Quote.
+If the expression cannot be interpreted with the required fields, use unknown without invented
+dates. Preserve the expressed precision. No time expression means times=[]; never emit an empty
+time Quote. Request quote includes the control words, while target.quote identifies the object.
 Return every schema field, using null or [] where appropriate, and no additional fields.
 Do not output tags, certainty, extraction_confidence, cross_turn_useful, retention_tier,
 memory_request, intent, target_memory_id, scope, task_id, owner_id or observed_at.
@@ -51,9 +69,14 @@ per supplied request, using their original indices exactly once. Do not review W
 Judge full meaning: subject, relation, memory_type, value, polarity, strength, uncertainty,
 condition, time and speech. Use supported only when the actual assertion is supported;
 contradicted for a conflict with source meaning, insufficient for unclear or absent support.
+Use contradicted when the source explicitly conflicts with the candidate, or the candidate
+removes or changes an explicit qualifier and thereby changes the claim. Use insufficient when
+the source does not establish or rule out the claim, including an unsupported narrowing of a
+value that the source neither confirms nor excludes. Do not guess hidden facts.
 If a candidate omits or changes the source's uncertainty, conditions, time or strength,
 it must not be supported. Name the affected aspect and quote the source span.
-Each problem names an aspect and an exact current-source Quote. supported has problems=[].
+Each problem names an aspect and an exact continuous current-source Quote: copy the span
+directly, never omit intervening words or paraphrase it. supported has problems=[].
 Do not bind an unresolved subject to a catalogue entity. Do not treat question, hypothetical,
 reported or plan speech as a confirmed user statement. Check time interpretation and supplied
 code resolutions, never substitute execution date or manufacture a missing date.
@@ -66,6 +89,10 @@ A request that treats an event or state time as a retention deadline must be con
 or insufficient, never supported.
 Give coverage={status:complete|gaps,missing:[Quote]}; each gap quotes an omitted assertion in
 the current message. Coverage does not add candidates or repair W1.
+Check coverage against each candidate's actual relation, value and qualifiers, not merely the
+words present in its sentence. A sentence containing the message does not cover assertions
+absent from the represented value. gaps requires at least one nonempty exact continuous Quote
+of an omitted assertion; do not report gaps with missing=[].
 For episode candidates give episode_value=useful|low_value|unknown based on future cross-turn
 value; a supported assertion can still be low_value. For every non-episode use not_applicable.
 Return exactly reviews, coverage, request_reviews and their required schema fields. No confidence,
@@ -84,22 +111,33 @@ related target; coexist preserves separate assertions with different conditions 
 Both have targets=[]. reinforce requires exactly one target and independent new evidence for
 the same complete assertion. state_change means the old assertion was true but reality changed;
 correction means it was wrong; refine ends an old version only when revising its entire assertion.
-Partial additions use coexist, preserving the general assertion. retract withdraws an assertion,
-never deletes saved source content. conflict preserves both assertions and creates a real conflict
-relation, rather than choosing a winner. state_change/correction/refine/retract/conflict require
+Partial additions use coexist, preserving the general assertion.
+Revising the entire old assertion, including replacing its uncertainty with an explicit revision,
+uses refine rather than coexist. A change in reality, including changed preference intensity,
+uses state_change. Use coexist only for an independent applicable scope or partial addition,
+not to avoid ending the entire superseded assertion.
+retract withdraws an assertion, never deletes saved source content. conflict preserves both
+assertions and creates a real conflict relation, rather than choosing a winner.
+state_change/correction/refine/retract/conflict require
 at least one target. Retraction candidates can only retract; assertion candidates cannot retract.
 Compare complete meaning, including polarity, strength, uncertainty, conditions and times.
-Every decided action needs basis from the candidate source. Every target needs old-source basis
+Every decision, including pending, needs basis from the new candidate's source.source_id,
+quoting that supplied source text. Every target of a decided action needs old-source basis
 as well: cite both sides for each targeted action, including reinforce and conflict. EvidenceRef
 must use a supplied stored source_id and an exact Quote from its text. Never manufacture evidence.
-A legacy target whose complete assertion or qualifiers cannot be verified must remain pending.
+A legacy target whose complete assertion or qualifiers cannot be verified must remain pending
+with unclear_relation; missing legacy information is not a retrieval coverage gap. Keep new-source
+basis for pending and never fabricate an old-source quote to fill missing legacy evidence.
 pending uses action=null, pending_reason=target_unknown|scope_incomplete|unclear_relation,
 and effective=null, relation_scope=null, resolves_relations=[]. It cannot modify old targets;
 targets may be empty or only explicitly located records. An admissible assertion may still be
 saved by the host with a pending update, while an unresolved retraction remains pending.
 Incomplete coverage cannot prove there are no other related records or establish a unique current
 value. Use pending/scope_incomplete for such conclusions, never invent conflict from missing
-retrieval. Clearly located targets may be changed only with complete comparison and both sides'
+retrieval. Do not use new or coexist as a shortcut when an update depends on excluding unseen
+related records. An unlocatable requested target uses target_unknown; an unclear comparison uses
+unclear_relation. Incomplete coverage alone does not force pending for a clearly located target.
+Clearly located targets may be changed only with complete comparison and both sides'
 evidence; the host retains coverage gaps. A true conflict requires incompatible assertions within
 the same applicable scope and evidence from both sides, not merely different values or poor search.
 Only conflict has non-null relation_scope={conditions:[QualifierRef],times:[QualifierRef]}.
@@ -113,7 +151,11 @@ The host supplies calendar resolutions and preserves unknown times and their ori
 resolves_relations may contain only input open relation IDs explicitly resolved by this action.
 Require complete member/scope coverage and explicit resolution basis; all but at most one member
 must be ended after the dependent decisions. Only reinforce or an action ending targets can resolve
-relations. pending/new/coexist/conflict use resolves_relations=[]. Do not infer resolution just
+relations. Each relation ID may appear in resolves_relations at most once across the whole output,
+assigned to one eligible decision. Coordinate all candidates' targets and actions before returning:
+do not emit two decisions for one candidate or repeatedly process the same losing member while
+leaving the surviving member's superseded version unchanged.
+pending/new/coexist/conflict use resolves_relations=[]. Do not infer resolution just
 because a member changed, was replaced or became historical. Related decisions commit atomically."#;
 
 /// 显式库级提供者；生产分发和配置仍由后续段接入。

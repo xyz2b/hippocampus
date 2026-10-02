@@ -1,0 +1,45 @@
+{
+  "id": "w3_20_wrong_relation",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "relation",
+                "quote": {
+                  "text": "我在用 Neovim 写代码。"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"relation\",\"quote\":{ \"text\":\"我在用 Neovim 写代码。\"} }],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:fbbcd43ce5bf8c4e",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 812,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 919,
+        "output_tokens_details": {
+          "reasoning_tokens": 845
+        },
+        "total_tokens": 1731
+      }
+    }
+  ]
+}

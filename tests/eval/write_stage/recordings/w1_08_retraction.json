@@ -1,0 +1,46 @@
+{
+  "id": "w1_08_retraction",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "retraction",
+            "memory_type": "fact",
+            "polarity": "unknown",
+            "relation": "works_at",
+            "sentence": {
+              "text": "之前说我在字节工作那个不对，收回。湖�。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": null
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"unknown\",\"relation\":\"works_at\",\"sentence\": \r\n\r\n{\"text\": \"之前说我在字节工作那个不对，收回。湖�。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[]}",
+      "request": "fnv1a64:1e21fdf13906f8c8",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1147,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 7363,
+        "output_tokens_details": {
+          "reasoning_tokens": 7264
+        },
+        "total_tokens": 8510
+      }
+    }
+  ]
+}

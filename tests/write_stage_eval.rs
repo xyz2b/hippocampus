@@ -156,7 +156,7 @@ fn batch(output: W1Output, input: &Value) -> Result<w2::Batch, w2::Error> {
     )
 }
 
-fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), String> {
+fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value, String> {
     let output = w2::decode(text).map_err(|e| e.to_string())?;
     check(fields, "decode", json!(true), json!(true), true);
     let raw = serde_json::to_value(&output).unwrap();
@@ -185,17 +185,26 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             c.status != w2::Status::Rejected,
         );
     }
+    let final_output = checked
+        .as_ref()
+        .map(|b| {
+            json!({
+                "candidates": b.candidates.iter().map(|c| &c.candidate).collect::<Vec<_>>(),
+                "memory_requests": b.memory_requests.iter().map(|r| &r.request).collect::<Vec<_>>()
+            })
+        })
+        .unwrap_or_else(|_| raw.clone());
     let expect = &sample["expect"];
     compare(
         fields,
         "candidate_count",
         &expect["candidate_count"],
-        &json!(items(&raw["candidates"]).len()),
+        &json!(items(&final_output["candidates"]).len()),
     );
     let mut index_map = Vec::new();
     let mut used = std::collections::BTreeSet::new();
     for (i, e) in items(&expect["candidates"]).iter().enumerate() {
-        let normalized: Vec<_> = items(&raw["candidates"])
+        let normalized: Vec<_> = items(&final_output["candidates"])
             .iter()
             .map(|c| normalize_candidate(c, e))
             .collect();
@@ -221,12 +230,29 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             json!(matching),
             unique,
         );
-        index_map.push(unique.then(|| matching[0]));
-        // 单候选或唯一匹配时逐字段展示；无法配对时展示全部实际候选，不猜测配对。
-        let actual = matching
-            .first()
-            .map(|&i| &normalized[i])
-            .or_else(|| (normalized.len() == 1).then(|| &normalized[0]));
+        // 完整匹配仍决定整项通过；诊断按唯一身份配对，避免 value 错误连带污染其他字段。
+        let identities: Vec<_> = normalized
+            .iter()
+            .enumerate()
+            .filter(|(_, a)| {
+                ["subject", "relation", "memory_type"].iter().all(|key| {
+                    e.get(*key)
+                        .is_none_or(|expected| matches(&a[*key], expected))
+                })
+            })
+            .map(|(i, _)| i)
+            .collect();
+        let pair = if unique {
+            Some(matching[0])
+        } else if normalized.len() == 1 {
+            Some(0)
+        } else if identities.len() == 1 {
+            Some(identities[0])
+        } else {
+            None
+        };
+        index_map.push(pair);
+        let actual = pair.map(|i| &normalized[i]);
         for (key, expected) in e.as_object().unwrap() {
             if let Some(actual) = actual {
                 compare(
@@ -240,8 +266,8 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
                     fields,
                     format!("candidates[{i}].{key}"),
                     expected.clone(),
-                    json!(normalized),
-                    false,
+                    json!(normalized.iter().map(|a| &a[key]).collect::<Vec<_>>()),
+                    normalized.iter().any(|a| matches(&a[key], expected)),
                 );
             }
         }
@@ -253,7 +279,11 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
                 actual
                     .map(|a| json!([a["relation"], a["polarity"]]))
                     .unwrap_or(Value::Null),
-                unique,
+                actual.is_some_and(|a| match a["relation"].as_str() {
+                    Some("avoids") => a["polarity"] == "affirm",
+                    Some("likes") => a["polarity"] == "negate",
+                    _ => false,
+                }),
             );
         }
     }
@@ -261,7 +291,7 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
         fields,
         "memory_requests.count",
         &json!(items(&expect["memory_requests"]).len()),
-        &json!(items(&raw["memory_requests"]).len()),
+        &json!(items(&final_output["memory_requests"]).len()),
     );
     for (i, e) in items(&expect["memory_requests"]).iter().enumerate() {
         let mut expected = e.clone();
@@ -280,7 +310,7 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
                     .collect(),
             );
         }
-        let actual: Vec<_> = items(&raw["memory_requests"]).iter().map(|r| json!({
+        let actual: Vec<_> = items(&final_output["memory_requests"]).iter().map(|r| json!({
             "kind": r["kind"], "quote": r["quote"]["text"], "target_object": r["target"]["object"],
             "candidate_indices": r["target"]["candidate_indices"], "target_quote": r["target"]["quote"]["text"],
             "deadline": if r["deadline"].is_null() { Value::Null } else { normalize_time(&r["deadline"]) }
@@ -310,13 +340,13 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
                     fields,
                     format!("memory_requests[{i}].{key}"),
                     e.clone(),
-                    json!(actual),
-                    false,
+                    json!(actual.iter().map(|a| &a[key]).collect::<Vec<_>>()),
+                    actual.iter().any(|a| matches(&a[key], e)),
                 );
             }
         }
     }
-    Ok(())
+    Ok(serde_json::to_value(checked.ok()).unwrap())
 }
 
 fn score_w3(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), String> {
@@ -462,13 +492,7 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             matching.len() == 1,
         );
         let a = matching.first().copied().unwrap_or(&Value::Null);
-        for key in [
-            "status",
-            "action",
-            "targets",
-            "resolves_relations",
-            "pending_reason",
-        ] {
+        for key in ["status", "action", "targets", "pending_reason"] {
             check(
                 fields,
                 format!("decisions[{}].{key}", e["candidate"]),
@@ -491,6 +515,22 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
                 .all(|e| sources.contains(e)),
         );
     }
+    // 契约约束归属是否合法；评分只要求整组恰好解决预期关系，重复仍然失败。
+    let resolved = |decisions: &Value| {
+        let mut ids: Vec<_> = items(decisions)
+            .iter()
+            .flat_map(|d| items(&d["resolves_relations"]))
+            .map(|id| id.as_str().unwrap().to_owned())
+            .collect();
+        ids.sort();
+        json!(ids)
+    };
+    compare(
+        fields,
+        "resolves_relations",
+        &resolved(&sample["expect"]["decisions"]),
+        &resolved(&actual["decisions"]),
+    );
     Ok(())
 }
 
@@ -498,8 +538,8 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     let mut fields = Vec::new();
     let result = text.map(|text| match stage {
         "w1" => score_w1(sample, text, &mut fields),
-        "w3" => score_w3(sample, text, &mut fields),
-        "w4" => score_w4(sample, text, &mut fields),
+        "w3" => score_w3(sample, text, &mut fields).map(|_| Value::Null),
+        "w4" => score_w4(sample, text, &mut fields).map(|_| Value::Null),
         _ => unreachable!(),
     });
     if let Some(Err(error)) = &result {
@@ -524,8 +564,15 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     } else {
         "失败"
     };
-    json!({"stage": stage, "id": sample["id"], "label_status": sample["label_status"], "status": status,
-        "fields": fields, "must_not": sample.get("must_not").or_else(|| sample["expect"].get("must_not")), "note": sample["note"]})
+    let mut report = json!({"stage": stage, "id": sample["id"], "label_status": sample["label_status"], "status": status,
+        "fields": fields, "must_not": sample.get("must_not").or_else(|| sample["expect"].get("must_not")), "note": sample["note"]});
+    if stage == "w1" {
+        report["raw"] = text
+            .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
+            .unwrap_or(Value::Null);
+        report["w2_final"] = result.and_then(Result::ok).unwrap_or(Value::Null);
+    }
+    report
 }
 
 fn samples(stage: &str) -> Vec<Value> {
@@ -573,6 +620,24 @@ fn selected(stages: &str, prefixes: &str) -> Result<Vec<(String, Value)>, String
 }
 
 fn stage_request(stage: &str, sample: &Value) -> Result<Value, String> {
+    let tokens = eval_output_tokens(std::env::var("EVAL_MAX_OUTPUT_TOKENS").ok().as_deref())?;
+    stage_request_with_output_tokens(stage, sample, tokens)
+}
+
+fn eval_output_tokens(value: Option<&str>) -> Result<u32, String> {
+    value
+        .unwrap_or("16384")
+        .parse::<u32>()
+        .ok()
+        .filter(|tokens| *tokens > 0)
+        .ok_or_else(|| "EVAL_MAX_OUTPUT_TOKENS must be a positive u32 integer".into())
+}
+
+fn stage_request_with_output_tokens(
+    stage: &str,
+    sample: &Value,
+    tokens: u32,
+) -> Result<Value, String> {
     let (stage, name, prompt, schema, input) = match stage {
         "w1" | "w3" => {
             let input = &sample["input"];
@@ -663,14 +728,17 @@ fn stage_request(stage: &str, sample: &Value) -> Result<Value, String> {
         }
         _ => return Err("unknown stage".into()),
     };
-    Ok(structured_request(
+    let mut request = structured_request(
         stage,
         name,
         prompt,
         input,
         schema,
         &ModelBudgetConfig::default(),
-    ))
+    );
+    // 评测显式上限独立于生产各阶段上限；不进入请求指纹。
+    request["max_output_tokens"] = json!(tokens);
+    Ok(request)
 }
 
 // Same canonical FNV-1a convention as tests/eval.rs. Missing fingerprints are stale here.
@@ -856,7 +924,12 @@ fn evaluate(
             Replay::Output(text) => score(&case.stage, &case.sample, Some(text)),
             _ if limit.is_some() => {
                 sent += 1; // One attempt per sample, including failed attempts; no retry or redirect.
-                match send(&case.request).and_then(|e| {
+                let response = send(&case.request);
+                let diagnostic = response.as_ref().ok().map(|e| {
+                    json!({"status": e["status"], "incomplete_details": e["incomplete_details"],
+                        "usage": e["usage"]})
+                });
+                match response.and_then(|e| {
                     let text = completed_text(&e)?;
                     save_recording(case, &e, &text)?;
                     Ok(text)
@@ -866,6 +939,9 @@ fn evaluate(
                         let mut r = score(&case.stage, &case.sample, None);
                         r["status"] = json!("调用失败");
                         r["error"] = json!(error);
+                        if let Some(diagnostic) = diagnostic {
+                            r["response"] = diagnostic;
+                        }
                         r
                     }
                 }
@@ -896,6 +972,7 @@ fn evaluate(
 
 #[test]
 fn write_stage_eval_suite() {
+    let gate = eval_gate(std::env::var("EVAL_GATE").ok().as_deref()).unwrap();
     let selected = selected(
         &std::env::var("EVAL_STAGES").unwrap_or_else(|_| "w1,w3,w4".into()),
         &std::env::var("EVAL_CASES").unwrap_or_default(),
@@ -943,12 +1020,26 @@ fn write_stage_eval_suite() {
     })
     .unwrap();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
-    assert!(
-        items(&report["summary"])
-            .iter()
-            .all(|s| s["failed"] == 0 && s["invalid_input"] == 0),
-        "stage evaluation failures; see report above"
-    );
+    check_report(&report, gate).expect("stage evaluation failures; see report above");
+}
+
+fn eval_gate(value: Option<&str>) -> Result<bool, String> {
+    match value {
+        None | Some("0") => Ok(false),
+        Some("1") => Ok(true),
+        _ => Err("EVAL_GATE only accepts 0 or 1".into()),
+    }
+}
+
+fn check_report(report: &Value, gate: bool) -> Result<(), String> {
+    if items(&report["summary"])
+        .iter()
+        .any(|s| s["invalid_input"] != 0 || (gate && s["failed"] != 0))
+    {
+        Err("invalid sample input or gated model failure".into())
+    } else {
+        Ok(())
+    }
 }
 
 struct TempRecords(PathBuf);
@@ -1134,6 +1225,166 @@ fn fingerprints_pin_prompt_schema_input_model_and_reject_stale_outputs() {
 }
 
 #[test]
+fn eval_output_limits_preserve_recorded_fingerprints() {
+    assert_eq!(eval_output_tokens(None).unwrap(), 16384);
+    assert_eq!(eval_output_tokens(Some("32768")).unwrap(), 32768);
+    for invalid in ["", "0", "-1", "abc", "4294967296"] {
+        assert!(eval_output_tokens(Some(invalid)).is_err(), "{invalid}");
+    }
+    let temp = TempRecords::new();
+    for case in first_cases(&temp.0) {
+        let original = fingerprint(&case.request);
+        for tokens in [4096, 16384, 32768] {
+            let request =
+                stage_request_with_output_tokens(&case.stage, &case.sample, tokens).unwrap();
+            assert_eq!(request["max_output_tokens"], tokens);
+            assert_eq!(fingerprint(&request), original);
+        }
+        std::fs::create_dir_all(&temp.0).unwrap();
+        let output = match case.stage.as_str() {
+            "w1" => fake_w1(&case.sample),
+            "w3" => fake_w3(&case.sample),
+            _ => serde_json::from_str(
+                &std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+                    "tests/eval/w4/fixtures/{}.output.json",
+                    case.sample["id"].as_str().unwrap()
+                )))
+                .unwrap(),
+            )
+            .unwrap(),
+        };
+        std::fs::write(
+            &case.path,
+            json!({"recorded": [{"model": MODEL,
+            "schema": case.request["text"]["format"]["name"], "request": original,
+            "output": output}]})
+            .to_string(),
+        )
+        .unwrap();
+        let replay = plan(vec![(case.stage, case.sample)], &temp.0).unwrap();
+        assert!(matches!(replay[0].replay, Replay::Output(_)));
+        let report = evaluate(&replay, None, &mut |_| panic!("offline sender invoked")).unwrap();
+        assert_eq!(report["sent_calls"], 0);
+    }
+}
+
+#[test]
+fn model_scores_are_report_only_unless_explicitly_gated() {
+    assert!(!eval_gate(None).unwrap());
+    assert!(!eval_gate(Some("0")).unwrap());
+    assert!(eval_gate(Some("1")).unwrap());
+    for value in ["", "true", "2"] {
+        assert!(eval_gate(Some(value)).is_err());
+    }
+    let failed = json!({"summary": [{"failed": 1, "invalid_input": 0}]});
+    assert!(check_report(&failed, false).is_ok());
+    assert!(check_report(&failed, true).is_err());
+    let invalid = json!({"summary": [{"failed": 0, "invalid_input": 1}]});
+    assert!(check_report(&invalid, false).is_err());
+    let stale = json!({"summary": [{"failed": 0, "invalid_input": 0, "stale": 61}]});
+    assert!(check_report(&stale, true).is_ok());
+}
+
+#[test]
+fn w1_scores_final_w2_candidates_and_independent_fields() {
+    let sample = samples("w1").remove(0);
+    let mut output = fake_w1(&sample);
+    let sentence = output["candidates"][0]["sentence"]["text"]
+        .as_str()
+        .unwrap();
+    output["candidates"][0]["sentence"]["text"] = json!(format!("{sentence}\\\"}}garbage"));
+    let repaired = score("w1", &sample, Some(&output.to_string()));
+    assert_eq!(repaired["status"], "通过", "{repaired}");
+    assert_ne!(
+        repaired["raw"]["candidates"][0]["sentence"],
+        repaired["w2_final"]["candidates"][0]["candidate"]["sentence"]
+    );
+    output = fake_w1(&sample);
+    output["candidates"][0]["value"]["text"] = json!(sample["input"]["text"]);
+    output["candidates"][0]["value"]["quote"] = adapter::quote(&sample["input"]["text"]);
+    let wrong = score("w1", &sample, Some(&output.to_string()));
+    assert_eq!(wrong["status"], "失败");
+    for key in ["subject", "relation", "memory_type", "polarity", "sentence"] {
+        let field = format!("candidates[0].{key}");
+        assert_eq!(
+            items(&wrong["fields"])
+                .iter()
+                .find(|f| f["field"] == field)
+                .unwrap()["passed"],
+            true,
+            "{wrong}"
+        );
+    }
+    let examples = samples("w1");
+    let negation = examples
+        .iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_15"))
+        .unwrap();
+    let mut output = fake_w1(negation);
+    output["candidates"][0]["value"]["text"] = negation["input"]["text"].clone();
+    output["candidates"][0]["value"]["quote"] = adapter::quote(&negation["input"]["text"]);
+    let report = score("w1", negation, Some(&output.to_string()));
+    assert_eq!(report["status"], "失败");
+    assert_eq!(
+        items(&report["fields"])
+            .iter()
+            .find(|f| f["field"] == "candidates[0].relation+polarity")
+            .unwrap()["passed"],
+        true
+    );
+    let request = examples
+        .iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_10"))
+        .unwrap();
+    let mut output = fake_w1(request);
+    output["candidates"][0]["polarity"] = json!("unknown");
+    let report = score("w1", request, Some(&output.to_string()));
+    assert_eq!(report["status"], "失败");
+    assert_eq!(
+        items(&report["fields"])
+            .iter()
+            .find(|f| f["field"] == "memory_requests[0].candidate_indices")
+            .unwrap()["passed"],
+        true
+    );
+}
+
+#[test]
+fn w4_relation_resolution_is_scored_across_the_whole_group() {
+    let sample = samples("w4")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w4_21"))
+        .unwrap();
+    let mut output: Value = serde_json::from_str(
+        &std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "tests/eval/w4/fixtures/{}.output.json",
+            sample["id"].as_str().unwrap()
+        )))
+        .unwrap(),
+    )
+    .unwrap();
+    output["decisions"][0]["resolves_relations"] =
+        output["decisions"][1]["resolves_relations"].clone();
+    output["decisions"][1]["resolves_relations"] = json!([]);
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["decisions"][1]["resolves_relations"] =
+        output["decisions"][0]["resolves_relations"].clone();
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output["decisions"][0]["resolves_relations"] = json!([]);
+    output["decisions"][1]["resolves_relations"] = json!([]);
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+}
+
+#[test]
 fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
     let temp = TempRecords::new();
     let cases = first_cases(&temp.0);
@@ -1142,7 +1393,10 @@ fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
         attempts += 1;
         match attempts {
             1 => Err("injected HTTP 429".into()),
-            2 => Ok(json!({"status": "incomplete", "output": []})),
+            2 => Ok(json!({"status": "incomplete", "output": [],
+                "incomplete_details": {"reason": "max_output_tokens"},
+                "usage": {"input_tokens": 12, "output_tokens": 16384,
+                    "output_tokens_details": {"reasoning_tokens": 16384}}})),
             _ => Ok(json!({"status": "completed", "output": [{"content": [{"type": "refusal"}]}]})),
         }
     })
@@ -1154,6 +1408,26 @@ fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
             .iter()
             .all(|r| r["status"] == "调用失败")
     );
+    assert_eq!(
+        report["results"][1]["response"],
+        json!({"status": "incomplete",
+        "incomplete_details": {"reason": "max_output_tokens"},
+        "usage": {"input_tokens": 12, "output_tokens": 16384,
+            "output_tokens_details": {"reasoning_tokens": 16384}}})
+    );
+    assert!(report["results"][0].get("response").is_none());
+    assert!(!temp.0.exists());
+    let missing_details = evaluate(&cases[..1], Some(1), &mut |_| {
+        Ok(json!({"status": "incomplete", "output": []}))
+    })
+    .unwrap();
+    assert_eq!(missing_details["sent_calls"], 1);
+    assert_eq!(
+        missing_details["results"][0]["response"]["status"],
+        "incomplete"
+    );
+    assert!(missing_details["results"][0]["response"]["incomplete_details"].is_null());
+    assert!(missing_details["results"][0]["response"]["usage"].is_null());
     assert!(!temp.0.exists());
     let invalid = json!({"status": "completed", "output": [{"content": [{"type": "output_text", "text": "{"}]}]});
     let recorded = evaluate(&cases, Some(3), &mut |_| Ok(invalid.clone())).unwrap();

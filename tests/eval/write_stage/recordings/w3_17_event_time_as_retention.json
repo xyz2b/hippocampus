@@ -1,0 +1,43 @@
+{
+  "id": "w3_17_event_time_as_retention",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [
+          {
+            "request": 0,
+            "verdict": "contradicted"
+          }
+        ],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[{\"request\":0,\"verdict\":\"contradicted\"}],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"}]}",
+      "request": "fnv1a64:1e1f1d0879ce5d5a",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 989,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 4156,
+        "output_tokens_details": {
+          "reasoning_tokens": 4093
+        },
+        "total_tokens": 5145
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "w1_17_unknown_time",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "owns",
+            "sentence": {
+              "text": "我以前养过一只猫。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "end_inclusive": "unknown",
+                  "kind": "range",
+                  "start": "unknown"
+                },
+                "quote": {
+                  "text": "以前"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我以前养过一只猫。"
+              },
+              "text": "我以前养过一只猫。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"owns\",\"sentence\":{\"text\":\"我以前养过一只猫。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{ \"end_inclusive\": \"unknown\", \"kind\": \"range\", \"start\": \"unknown\" }, \"quote\":{\"text\":\"以前\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我以前养过一只猫。\"},\"text\":\"我以前养过一只猫。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:c33872fb75fa3fc2",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1143,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 8931,
+        "output_tokens_details": {
+          "reasoning_tokens": 8773
+        },
+        "total_tokens": 10074
+      }
+    }
+  ]
+}

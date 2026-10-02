@@ -1,0 +1,48 @@
+{
+  "id": "w4_11_preference_strength",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "coexist",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在特别喜欢爵士乐。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-330"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[{\"quote\":{\"text\":\"我现在特别喜欢爵士乐。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-330\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:0a8a840e1b15e8f1",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1349,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 8542,
+        "output_tokens_details": {
+          "reasoning_tokens": 8462
+        },
+        "total_tokens": 9891
+      }
+    }
+  ]
+}

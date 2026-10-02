@@ -1,0 +1,63 @@
+{
+  "id": "w3_06_hypothetical_as_fact",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "condition",
+                "quote": {
+                  "text": "如果以后去深圳工作"
+                }
+              },
+              {
+                "aspect": "time",
+                "quote": {
+                  "text": "以后"
+                }
+              },
+              {
+                "aspect": "uncertainty",
+                "quote": {
+                  "text": "如果"
+                }
+              },
+              {
+                "aspect": "speech",
+                "quote": {
+                  "text": "如果我以后去深圳工作，我会考虑租房。"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"condition\",\"quote\":{ \"text\": \"如果以后去深圳工作\"}},{\"aspect\":\"time\",\"quote\":{ \"text\": \"以后\"}},{\"aspect\":\"uncertainty\",\"quote\":{ \"text\": \"如果\"}},{\"aspect\":\"speech\",\"quote\":{ \"text\": \"如果我以后去深圳工作，我会考虑租房。\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:b973130294a93e72",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 815,
+        "input_tokens_details": {
+          "cached_tokens": 768
+        },
+        "output_tokens": 11465,
+        "output_tokens_details": {
+          "reasoning_tokens": 11339
+        },
+        "total_tokens": 12280
+      }
+    }
+  ]
+}

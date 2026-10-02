@@ -1,0 +1,59 @@
+{
+  "id": "w4_05_retract",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "retract",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我之前说每周三晚上去游泳，那句不对，收回。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-250"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我每周三晚上去游泳。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-120"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              40
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"retract\",\"basis\":[{\"quote\":{\"text\":\"我之前说每周三晚上去游泳，那句不对，收回。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-250\"}},{\"quote\":{\"text\":\"我每周三晚上去游泳。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-120\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[40]}]}",
+      "request": "fnv1a64:d9d41efaf9f43986",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1396,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 5241,
+        "output_tokens_details": {
+          "reasoning_tokens": 5120
+        },
+        "total_tokens": 6637
+      }
+    }
+  ]
+}

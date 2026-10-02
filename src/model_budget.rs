@@ -136,12 +136,12 @@ impl ModelStage {
     }
     pub fn output_tokens(self, config: &ModelBudgetConfig) -> u32 {
         match self {
-            Self::W1 | Self::Extraction | Self::ExtractionRepair | Self::Reader => {
+            Self::W1 => 32768,
+            Self::W3 | Self::W4 => 16384,
+            Self::Extraction | Self::ExtractionRepair | Self::Reader => {
                 config.extraction_output_tokens
             }
-            Self::W3
-            | Self::W4
-            | Self::ExtractionReview
+            Self::ExtractionReview
             | Self::ExtractionRepairReview
             | Self::QueryReview
             | Self::Judge => config.review_output_tokens,
@@ -319,6 +319,9 @@ impl ModelBudget {
         if let Some(limit) = self.max_background_operation_calls {
             policy["max_background_operation_calls"] = json!(limit);
         }
+        let write_limits = json!({"w1":ModelStage::W1.output_tokens(&self.config),
+            "w3":ModelStage::W3.output_tokens(&self.config),
+            "w4":ModelStage::W4.output_tokens(&self.config)});
         let existing: Option<String> = tx
             .query_row(
                 "SELECT policy_json FROM model_budget_groups WHERE group_id=?1",
@@ -333,6 +336,15 @@ impl ModelBudget {
             .map(serde_json::from_str::<Value>)
             .transpose()
             .map_err(database_error)?;
+        // 新授权同时绑定后台输出额度。旧授权可继续旧阶段，不能静默提高后台额度。
+        if existing.is_none()
+            || matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4)
+            || persisted_policy
+                .as_ref()
+                .is_some_and(|old| old.get("write_output_tokens").is_some())
+        {
+            policy["write_output_tokens"] = write_limits;
+        }
         if persisted_policy.as_ref().is_some_and(|old| old != &policy) {
             return Err(budget_error(
                 "budget group policy differs from its persisted authorization",
@@ -863,6 +875,91 @@ pub(crate) mod tests {
             2,
             "a rejected contract must not consume or reset allowance"
         );
+    }
+
+    #[test]
+    fn write_output_caps_bind_new_authorizations_and_preserve_legacy_defaults() {
+        let ledger = TestLedger::new();
+        let budget = ledger.budget("write-operation", 10);
+        for (stage, limit) in [
+            (ModelStage::W1, 32768),
+            (ModelStage::W3, 16384),
+            (ModelStage::W4, 16384),
+        ] {
+            assert_eq!(stage.output_tokens(&budget.config), limit);
+            let request = crate::structured_request(
+                stage,
+                "test",
+                "prompt",
+                json!({}),
+                json!({}),
+                &budget.config,
+            );
+            assert_eq!(request["max_output_tokens"], limit);
+            budget
+                .reserve(stage, b"write")
+                .unwrap()
+                .settle("completed", None)
+                .unwrap();
+        }
+        for stage in [
+            ModelStage::Extraction,
+            ModelStage::ExtractionReview,
+            ModelStage::ExtractionRepair,
+            ModelStage::ExtractionRepairReview,
+            ModelStage::Query,
+            ModelStage::QueryReview,
+            ModelStage::Assistance,
+            ModelStage::Answer,
+            ModelStage::Reader,
+            ModelStage::Judge,
+        ] {
+            assert_eq!(stage.output_tokens(&ModelBudgetConfig::default()), 4096);
+        }
+        let db = Connection::open(&ledger.path).unwrap();
+        let rows: Vec<(String, u32, u32)> = db.prepare(
+            "SELECT stage,output_token_limit,reserved_output_tokens FROM model_calls ORDER BY rowid"
+        ).unwrap().query_map([], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?)))
+            .unwrap().map(Result::unwrap).collect();
+        assert_eq!(
+            rows,
+            vec![
+                ("w1".into(), 32768, 32768),
+                ("w3".into(), 16384, 16384),
+                ("w4".into(), 16384, 16384)
+            ]
+        );
+        // 模拟升级前授权：移除新额度绑定，重开仍可旧阶段，不准提高后台额度。
+        let policy: String = db
+            .query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        let mut old: Value = serde_json::from_str(&policy).unwrap();
+        old.as_object_mut().unwrap().remove("write_output_tokens");
+        db.execute(
+            "UPDATE model_budget_groups SET policy_json=?1",
+            [old.to_string()],
+        )
+        .unwrap();
+        let reopened = ledger.budget("reopened", 10);
+        reopened.reserve(ModelStage::Extraction, b"legacy").unwrap();
+        assert!(
+            matches!(reopened.reserve(ModelStage::W1, b"unauthorized increase"),
+            Err(OpenAiAdapterError::Budget(message)) if message.contains("persisted authorization"))
+        );
+        assert_eq!(
+            db.query_row("SELECT count(*) FROM model_calls", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            4
+        );
+        let stored: String = db
+            .query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(stored, old.to_string());
     }
 
     #[test]

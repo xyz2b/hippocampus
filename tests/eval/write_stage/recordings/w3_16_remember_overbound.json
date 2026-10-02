@@ -1,0 +1,56 @@
+{
+  "id": "w3_16_remember_overbound",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [
+          {
+            "request": 0,
+            "verdict": "contradicted"
+          }
+        ],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "low_value",
+            "problems": [
+              {
+                "aspect": "value",
+                "quote": {
+                  "text": "记住我的车牌是浙A12345"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[{\"request\":0,\"verdict\":\"contradicted\"}],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"},{\"candidate\":1,\"episode_value\":\"low_value\",\"problems\":[{\"aspect\":\"value\",\"quote\":{\"text\":\"记住我的车牌是浙A12345\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:a3d2d08f3e659135",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 1053,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 15171,
+        "output_tokens_details": {
+          "reasoning_tokens": 15068
+        },
+        "total_tokens": 16224
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "w3_09_wrong_time",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "time",
+                "quote": {
+                  "text": "去年五月"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"time\",\"quote\":{\"text\":\"去年五月\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:65afa5d0ff990083",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 867,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3126,
+        "output_tokens_details": {
+          "reasoning_tokens": 3062
+        },
+        "total_tokens": 3993
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "w3_04_wrong_polarity",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "polarity",
+                "quote": {
+                  "text": "不喝咖啡"
+                }
+              },
+              {
+                "aspect": "relation",
+                "quote": {
+                  "text": "不喝咖啡"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"polarity\",\"quote\":{\"text\":\"不喝咖啡\"}},{\"aspect\":\"relation\",\"quote\":{\"text\":\"不喝咖啡\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:a5ebb8f459089dcb",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 802,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 294,
+        "output_tokens_details": {
+          "reasoning_tokens": 215
+        },
+        "total_tokens": 1096
+      }
+    }
+  ]
+}

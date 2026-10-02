@@ -1,0 +1,57 @@
+{
+  "id": "w1_02_uncertainty",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "constraint",
+            "polarity": "unknown",
+            "relation": "allergic_to",
+            "sentence": {
+              "text": "我可能对花生过敏。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": {
+              "quote": {
+                "text": "可能"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我可能对花生过敏。"
+              },
+              "text": "我可能对花生过敏。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"constraint\",\"polarity\":\"unknown\",\"relation\":\"allergic_to\",\"sentence\":{\"text\":\"我可能对花生过敏。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":{\"quote\":{\"text\":\"可能\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我可能对花生过敏。\"},\"text\":\"我可能对花生过敏。\"} }],\"memory_requests\":[]}",
+      "request": "fnv1a64:0a19a6ad4d3166eb",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1144,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 11685,
+        "output_tokens_details": {
+          "reasoning_tokens": 11563
+        },
+        "total_tokens": 12829
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "w1_03_condition",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "uses",
+            "sentence": {
+              "text": "我画速写的时候固定用炭笔。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "我画速写的时候"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我画速写的时候固定用炭笔。"
+              },
+              "text": "我画速写的时候固定用炭笔。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"uses\",\"sentence\":{ \"text\":\"我画速写的时候固定用炭笔。\" },\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{ \"kind\":\"recurring\" },\"quote\":{\"text\":\"我画速写的时候\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我画速写的时候固定用炭笔。\"},\"text\":\"我画速写的时候固定用炭笔。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:06d34e98d57185b9",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1146,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 13345,
+        "output_tokens_details": {
+          "reasoning_tokens": 13184
+        },
+        "total_tokens": 14491
+      }
+    }
+  ]
+}

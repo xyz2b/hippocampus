@@ -1,0 +1,65 @@
+{
+  "id": "w1_01_simple_residence",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我现在住在杭州。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "现在"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我现在住在杭州。"
+              },
+              "text": "我现在住在杭州。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我现在住在杭州。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{ \"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"现在\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我现在住在杭州。\"},\"text\":\"我现在住在杭州。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:44cf79fa12fa617f",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1142,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1995,
+        "output_tokens_details": {
+          "reasoning_tokens": 1851
+        },
+        "total_tokens": 3137
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "w3_08_wrong_strength",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "strength",
+                "quote": {
+                  "text": "有点"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"strength\",\"quote\":{\"text\":\"有点\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:e47734982f83edc2",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 804,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 460,
+        "output_tokens_details": {
+          "reasoning_tokens": 397
+        },
+        "total_tokens": 1264
+      }
+    }
+  ]
+}

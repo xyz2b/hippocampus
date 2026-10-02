@@ -1,0 +1,48 @@
+{
+  "id": "w4_16_pending_scope_incomplete",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "new",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在只用这一台笔记本电脑了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-380"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我现在只用这一台笔记本电脑了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-380\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:05d9453338a5327f",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1365,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1708,
+        "output_tokens_details": {
+          "reasoning_tokens": 1627
+        },
+        "total_tokens": 3073
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "w1_10_remember_binds_one",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我女儿的生日是3月12日。\n},"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "e-daughter"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "3月12日"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我女儿的生日是3月12日。"
+              },
+              "text": "我女儿的生日是3月12日。"
+            }
+          }
+        ],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "remember",
+            "quote": {
+              "text": "记住："
+            },
+            "target": {
+              "candidate_indices": [
+                0
+              ],
+              "object": "unknown",
+              "quote": {
+                "text": "我女儿的生日是3月12日。"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{ \"text\": \"我女儿的生日是3月12日。\\n},\" \n  } \n\n  ,\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"e-daughter\"},\"times\":[{\"anchor\": \"said_on\",\"interp\":{ \"kind\": \"unknown\" \n},\"quote\":{ \"text\": \"3月12日\" \n},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{ \"kind\": \"text\", \"quote\": { \"text\": \"我女儿的生日是3月12日。\" \n}, \"text\": \"我女儿的生日是3月12日。\" \n}}],\"memory_requests\":[{\"deadline\":null,\"kind\":\"remember\",\"quote\":{ \"text\": \"记住：\" \n},\"target\":{\"candidate_indices\":[0],\"object\":\"unknown\",\"quote\":{ \"text\": \"我女儿的生日是3月12日。\" \n}}}]}",
+      "request": "fnv1a64:740fe5bcf4c72c00",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1150,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 14647,
+        "output_tokens_details": {
+          "reasoning_tokens": 14410
+        },
+        "total_tokens": 15797
+      }
+    }
+  ]
+}

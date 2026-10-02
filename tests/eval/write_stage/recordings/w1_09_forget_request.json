@@ -1,0 +1,42 @@
+{
+  "id": "w1_09_forget_request",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "forget",
+            "quote": {
+              "text": "我住址那条"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "facts",
+              "quote": {
+                "text": "我住址那条"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":  {\"text\":\"我住址那条\"}, \"target\":{\"candidate_indices\":[],\"object\":\"facts\",\"quote\":  {\"text\":\"我住址那条\"}}}]}",
+      "request": "fnv1a64:f3e1e81823556807",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1145,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 3833,
+        "output_tokens_details": {
+          "reasoning_tokens": 3771
+        },
+        "total_tokens": 4978
+      }
+    }
+  ]
+}

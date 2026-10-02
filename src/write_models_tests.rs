@@ -1379,7 +1379,7 @@ fn w4_schema_is_strict_and_matches_the_frozen_decision_fields() {
 }
 
 #[test]
-fn prompts_never_include_evaluation_source_text_or_w4_labels() {
+fn prompts_never_include_evaluation_source_text_ids_or_labels() {
     fn labels(value: &Json, out: &mut Vec<String>) {
         match value {
             Json::Object(map) => {
@@ -1431,9 +1431,18 @@ fn prompts_never_include_evaluation_source_text_or_w4_labels() {
             } else {
                 vec![sample["input"]["text"].as_str().unwrap().into()]
             };
-            if stage == "w4" {
-                labels(&sample, &mut texts);
+            let inputs: Vec<_> = if stage == "w4" {
+                sample["sources"].as_object().unwrap().values().collect()
+            } else {
+                vec![&sample["input"]]
+            };
+            for input in inputs {
+                if let Some(history) = input["history"].as_array() {
+                    texts.extend(history.iter().map(|s| s.as_str().unwrap().to_owned()));
+                }
             }
+            texts.push(sample["id"].as_str().unwrap().into());
+            labels(&sample, &mut texts);
             for text in texts {
                 assert!(!text.is_empty());
                 for prompt in [W1_PROMPT, W3_PROMPT, W4_PROMPT] {
@@ -1446,6 +1455,41 @@ fn prompts_never_include_evaluation_source_text_or_w4_labels() {
             }
         }
         assert!(count > 0);
+    }
+}
+
+#[test]
+fn second_revision_prompts_cover_value_qualifiers_and_group_decisions() {
+    for rule in [
+        "Only relation=fact",
+        "memory_type=fact does not trigger",
+        "Polarity is the assertion's direction",
+        "conditions, not times",
+        "range.start/end_inclusive",
+        "times=[]",
+        "Request quote includes the control words",
+    ] {
+        assert!(W1_PROMPT.contains(rule), "missing W1 rule: {rule}");
+    }
+    for rule in [
+        "unsupported narrowing",
+        "exact continuous current-source Quote",
+        "actual relation, value and qualifiers",
+        "gaps requires at least one",
+    ] {
+        assert!(W3_PROMPT.contains(rule), "missing W3 rule: {rule}");
+    }
+    for rule in [
+        "including pending",
+        "source.source_id",
+        "Every target of a decided action",
+        "changed preference intensity",
+        "scope_incomplete",
+        "not force pending",
+        "at most once across the whole output",
+        "surviving member's superseded version",
+    ] {
+        assert!(W4_PROMPT.contains(rule), "missing W4 rule: {rule}");
     }
 }
 

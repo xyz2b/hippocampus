@@ -1,0 +1,48 @@
+{
+  "id": "w4_09_new",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "new",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我在字节跳动工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-310"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我在字节跳动工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-310\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:7c191e1aeb883a00",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1286,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 3005,
+        "output_tokens_details": {
+          "reasoning_tokens": 2926
+        },
+        "total_tokens": 4291
+      }
+    }
+  ]
+}

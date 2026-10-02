@@ -1,0 +1,52 @@
+{
+  "id": "w1_15_negation",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "avoids",
+            "sentence": {
+              "text": "我不吃香菜。\"},"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我不吃香菜。"
+              },
+              "text": "我不吃香菜。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\":{\"text\":\"我不吃香菜。\\\"},\"},\"speech\":\"user_statement\" ,\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{ \"text\":\"我不吃香菜。\"},\"text\":\"我不吃香菜。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:c1d14562422fdea5",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1141,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 12054,
+        "output_tokens_details": {
+          "reasoning_tokens": 11940
+        },
+        "total_tokens": 13195
+      }
+    }
+  ]
+}

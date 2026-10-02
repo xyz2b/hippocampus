@@ -4,7 +4,7 @@
  "label_status": "reviewed",
  "focus": "remember 被扩展到无关候选",
  "input": {
-  "text": "记住我的车牌是浙A12345，另外今天好累。",
+  "text": "记住我的车牌是浙A12345。另外今天好累。",
   "said_on": "2026-09-20",
   "candidates": [
    {
@@ -14,7 +14,7 @@
     "relation": "owns",
     "memory_type": "fact",
     "value": "浙A12345",
-    "sentence": "记住我的车牌是浙A12345，另外今天好累。",
+    "sentence": "记住我的车牌是浙A12345。",
     "polarity": "affirm",
     "uncertainty": null,
     "conditions": [],
@@ -27,8 +27,8 @@
     "subject": "self",
     "relation": "fact",
     "memory_type": "episode",
-    "value": "记住我的车牌是浙A12345，另外今天好累。",
-    "sentence": "记住我的车牌是浙A12345，另外今天好累。",
+    "value": "另外今天好累。",
+    "sentence": "另外今天好累。",
     "polarity": "affirm",
     "uncertainty": null,
     "conditions": [],
@@ -77,5 +77,5 @@
    }
   ]
  },
- "note": "请求只针对车牌；绑定到“今天好累”会让低价值经历绕过准入。"
+ "note": "请求只针对车牌；绑定到“今天好累”会让低价值经历绕过准入。2026-10-03 改为两个完整句子，经历候选只取经历句（Codex 评审：原输入把控制请求与车牌整句塞入经历，属样本问题）。"
 }
