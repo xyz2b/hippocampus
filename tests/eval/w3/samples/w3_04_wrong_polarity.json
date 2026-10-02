@@ -1,0 +1,45 @@
+{
+ "id": "w3_04_wrong_polarity",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "极性反了",
+ "input": {
+  "text": "我不喝咖啡。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "likes",
+    "memory_type": "preference",
+    "value": "咖啡",
+    "sentence": "我不喝咖啡。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "polarity"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

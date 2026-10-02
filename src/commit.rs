@@ -2199,6 +2199,69 @@ fn owned_w4<'a>(
     Ok(source)
 }
 
+/// Model outputs are sidecars of the existing checkpoint, guarded by the same lease and snapshot.
+pub(crate) fn w4_load_model_stage(
+    store: &SqliteMemoryStore,
+    claim: &W4Claim,
+    stage: &str,
+    binding: &serde_json::Value,
+) -> PersistenceResult<Option<serde_json::Value>> {
+    let state = store.read()?;
+    let source = owned_w4(&state, claim, now()?)?;
+    model_stage(source, claim, stage, binding)
+}
+
+fn model_stage(
+    source: &SourceRecord,
+    claim: &W4Claim,
+    stage: &str,
+    binding: &serde_json::Value,
+) -> PersistenceResult<Option<serde_json::Value>> {
+    if !matches!(stage, "w1" | "w3") {
+        return Err("unknown write model stage".into());
+    }
+    let Some(saved) = source
+        .result
+        .as_ref()
+        .and_then(|r| r.get("w4_model_stages"))
+        .and_then(|s| s.get(stage))
+    else {
+        return Ok(None);
+    };
+    if saved["binding"] != *binding {
+        return if saved["operation_id"] == claim.operation_id {
+            Err("needs_rejudge: model stage input changed".into())
+        } else {
+            Ok(None)
+        };
+    }
+    Ok(saved.get("output").cloned())
+}
+
+pub(crate) fn w4_save_model_stage(
+    store: &mut SqliteMemoryStore,
+    claim: &W4Claim,
+    stage: &str,
+    binding: &serde_json::Value,
+    output: &serde_json::Value,
+) -> PersistenceResult<()> {
+    store.transaction(|state| {
+        let source = owned_w4(state, claim, now()?)?;
+        if let Some(prior) = model_stage(source, claim, stage, binding)? {
+            if prior != *output {
+                return Err("model_invalid_output: stage output changed".into());
+            }
+            if source.result.as_ref().unwrap()["w4_model_stages"][stage]["operation_id"] == claim.operation_id {
+                return Ok(());
+            }
+        }
+        let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
+        source.result.as_mut().ok_or("round checkpoint missing")?["w4_model_stages"][stage] =
+            serde_json::json!({"operation_id":claim.operation_id,"binding":binding,"output":output});
+        Ok(())
+    })
+}
+
 /// 启动新判定；request_id 也是本轮稳定的预算 operation_id，重复请求只返回原轮次。
 pub fn w4_start_round(
     store: &mut SqliteMemoryStore,

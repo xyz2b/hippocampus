@@ -832,7 +832,7 @@ pub(crate) fn forget(
     for source in state.sources.values_mut() {
         let mut batch_affected = false;
         if let Some(result) = source.result.as_mut() {
-            for key in ["w4_batch", "w4_controls"] {
+            for key in ["w4_batch", "w4_controls", "w4_model_stages"] {
                 if let Some(value) = result.get_mut(key) {
                     batch_affected |= touches(value, &deleted_source_ids, &deleted);
                     // 新批次的固定枚举不是原文；不能把被删的英文 supported 当作 verdict 清掉。

@@ -1,0 +1,85 @@
+{
+ "id": "w1_10_remember_binds_one",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "remember 请求只绑定被要求记住的候选",
+ "input": {
+  "text": "记住：我女儿的生日是3月12日。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "e-daughter",
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "我女儿的生日是3月12日。",
+    "sentence": "我女儿的生日是3月12日。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": [
+   {
+    "kind": "remember",
+    "quote": "记住",
+    "target_object": "facts",
+    "candidate_indices": [
+     0
+    ]
+   }
+  ]
+ },
+ "must_not": [],
+ "note": "生日是否同时作为 times（recurring/date）不评分。"
+}

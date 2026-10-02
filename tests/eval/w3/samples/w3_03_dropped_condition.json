@@ -1,0 +1,45 @@
+{
+ "id": "w3_03_dropped_condition",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "丢掉活动条件",
+ "input": {
+  "text": "我画速写的时候固定用炭笔。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "uses",
+    "memory_type": "fact",
+    "value": "炭笔",
+    "sentence": "我画速写的时候固定用炭笔。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "condition"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

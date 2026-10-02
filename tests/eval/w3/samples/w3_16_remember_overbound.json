@@ -1,0 +1,81 @@
+{
+ "id": "w3_16_remember_overbound",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "remember 被扩展到无关候选",
+ "input": {
+  "text": "记住我的车牌是浙A12345，另外今天好累。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "owns",
+    "memory_type": "fact",
+    "value": "浙A12345",
+    "sentence": "记住我的车牌是浙A12345，另外今天好累。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   },
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "episode",
+    "value": "今天好累",
+    "sentence": "记住我的车牌是浙A12345，另外今天好累。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": [
+   {
+    "kind": "remember",
+    "quote": "记住",
+    "target": {
+     "object": "facts",
+     "candidate_indices": [
+      0,
+      1
+     ]
+    },
+    "deadline": null
+   }
+  ]
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   },
+   {
+    "candidate": 1,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "low_value"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": [
+   {
+    "request": 0,
+    "verdict": "contradicted"
+   }
+  ]
+ },
+ "note": "请求只针对车牌；绑定到“今天好累”会让低价值经历绕过准入。"
+}

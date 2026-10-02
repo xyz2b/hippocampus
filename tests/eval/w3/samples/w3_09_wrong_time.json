@@ -1,0 +1,55 @@
+{
+ "id": "w3_09_wrong_time",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "时间解释错了一年",
+ "input": {
+  "text": "去年五月我搬到了成都。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "lives_in",
+    "memory_type": "fact",
+    "value": "成都",
+    "sentence": "去年五月我搬到了成都。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "去年五月",
+      "interp": {
+       "kind": "month",
+       "year_offset": 0,
+       "month": 5
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "time"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

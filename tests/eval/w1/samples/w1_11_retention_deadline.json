@@ -1,0 +1,96 @@
+{
+ "id": "w1_11_retention_deadline",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "保存期限请求带 retention 角色",
+ "input": {
+  "text": "这个手机号只保留到明天：13800001111。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "这个手机号只保留到明天：13800001111。",
+    "sentence": "这个手机号只保留到明天：13800001111。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": [
+   {
+    "kind": "retention",
+    "quote": "只保留到明天",
+    "target_object": "facts",
+    "candidate_indices": [
+     0
+    ],
+    "deadline": {
+     "role": "retention",
+     "quote": "明天",
+     "interp": {
+      "kind": "relative",
+      "unit": "day",
+      "offset": 1
+     }
+    }
+   }
+  ]
+ },
+ "must_not": [
+  "deadline.role 为 event"
+ ],
+ "note": "手机号的主体是谁原文未说明（可能是用户本人）；本样本只评请求，候选 subject 不评分。"
+}

@@ -1,0 +1,43 @@
+{
+ "id": "w3_14_episode_low_value",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "低价值经历",
+ "input": {
+  "text": "我刚吃了午饭。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "episode",
+    "value": "我刚吃了午饭。",
+    "sentence": "我刚吃了午饭。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "low_value"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

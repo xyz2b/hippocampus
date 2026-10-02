@@ -1,0 +1,79 @@
+{
+ "id": "w1_02_uncertainty",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "用户不确定性必须保留",
+ "input": {
+  "text": "我可能对花生过敏。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "allergic_to",
+    "memory_type": "fact",
+    "value": "花生",
+    "sentence": "我可能对花生过敏。",
+    "polarity": "affirm",
+    "uncertainty": "可能",
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "uncertainty 为 null（把“可能”丢掉会变成确定过敏）"
+ ],
+ "note": null
+}

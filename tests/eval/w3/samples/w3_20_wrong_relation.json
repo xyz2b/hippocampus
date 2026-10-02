@@ -1,0 +1,45 @@
+{
+ "id": "w3_20_wrong_relation",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "关系选错（owns 与 uses）",
+ "input": {
+  "text": "我在用 Neovim 写代码。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "owns",
+    "memory_type": "fact",
+    "value": "Neovim",
+    "sentence": "我在用 Neovim 写代码。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "relation"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

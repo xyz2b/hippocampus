@@ -23,6 +23,13 @@ use time::{Duration as CalendarDuration, OffsetDateTime, UtcOffset};
 use crate::ModelBudgetConfig;
 use crate::model_budget::{ModelBudget, ModelStage};
 
+#[path = "write_models.rs"]
+pub mod write_models;
+
+#[cfg(test)]
+type TestTransport =
+    dyn Fn(reqwest::blocking::Request) -> Result<(u16, String), OpenAiAdapterError> + Send + Sync;
+
 use crate::{
     CandidateIntent, CandidateMemory, CandidateSource, CandidateSubject, Cardinality,
     CompanionRole, Confidence, DatedValue, Domain, Entity, EntityId, EntityOrRole, EntityType,
@@ -310,6 +317,8 @@ pub struct OpenAiClient {
     call_count: Arc<AtomicU64>,
     budget: Option<ModelBudget>,
     accounting: Arc<Mutex<Vec<Value>>>,
+    #[cfg(test)]
+    transport: Option<Arc<TestTransport>>,
 }
 
 impl OpenAiClient {
@@ -360,6 +369,8 @@ impl OpenAiClient {
             call_count: Arc::new(AtomicU64::new(0)),
             budget: None,
             accounting: Arc::new(Mutex::new(Vec::new())),
+            #[cfg(test)]
+            transport: None,
         })
     }
 
@@ -405,6 +416,25 @@ impl OpenAiClient {
             config,
             operation_id.into(),
         )?);
+        Ok(self)
+    }
+
+    /// Sets a separate 1..3 write-operation allowance within the same durable authorization.
+    /// Use max_operation_calls=2 and this limit=3 for a shared foreground/background group.
+    pub fn with_background_operation_limit(
+        mut self,
+        limit: u64,
+    ) -> Result<Self, OpenAiAdapterError> {
+        self.budget = Some(
+            self.budget
+                .take()
+                .ok_or_else(|| {
+                    OpenAiAdapterError::Budget(
+                        "explicit persistent model budget is required".into(),
+                    )
+                })?
+                .with_background_operation_limit(limit)?,
+        );
         Ok(self)
     }
 
@@ -747,10 +777,25 @@ impl OpenAiClient {
         let mut diagnostic_response = Value::Null;
         let mut usage = None;
         let result = (|| {
-            let response = self.http.execute(http_request).map_err(http_error)?;
-            let status = response.status();
+            let execute = |request| {
+                let response = self.http.execute(request).map_err(http_error)?;
+                Ok::<_, OpenAiAdapterError>((
+                    response.status(),
+                    response.text().map_err(http_error)?,
+                ))
+            };
+            #[cfg(test)]
+            let (status, body) = if let Some(transport) = &self.transport {
+                let (status, body) = transport(http_request)?;
+                let status = reqwest::StatusCode::from_u16(status)
+                    .map_err(|e| OpenAiAdapterError::Http(e.to_string()))?;
+                (status, body)
+            } else {
+                execute(http_request)?
+            };
+            #[cfg(not(test))]
+            let (status, body) = execute(http_request)?;
             http_status = Some(status.as_u16());
-            let body = response.text().map_err(http_error)?;
             let envelope = serde_json::from_str::<Value>(&body).ok();
             // Usage accounting is unconditional; PMR_TRACE_DIR never controls the budget ledger.
             usage = envelope.as_ref().and_then(|e| e.get("usage")).cloned();

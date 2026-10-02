@@ -1,0 +1,93 @@
+{
+ "id": "w1_14_two_candidates",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "一句话两个独立断言",
+ "input": {
+  "text": "我住在上海，在一家银行做产品经理。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 2,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "lives_in",
+    "memory_type": "fact",
+    "value": "上海",
+    "sentence": "我住在上海，在一家银行做产品经理。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   },
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "job_title",
+    "memory_type": "fact",
+    "value": "产品经理",
+    "sentence": "我住在上海，在一家银行做产品经理。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "works_at=银行（“一家银行”不是具体雇主）"
+ ],
+ "note": "是否另给 works_at（值为“一家银行”）由人工复核；草稿按不给标注，故 candidate_count=2。"
+}

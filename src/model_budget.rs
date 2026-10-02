@@ -89,6 +89,8 @@ impl ModelBudgetConfig {
 
 #[derive(Clone, Copy, Debug)]
 pub enum ModelStage {
+    W1,
+    W3,
     Extraction,
     ExtractionReview,
     ExtractionRepair,
@@ -105,6 +107,8 @@ pub enum ModelStage {
 impl ModelStage {
     pub(crate) fn name(self) -> &'static str {
         match self {
+            Self::W1 => "w1",
+            Self::W3 => "w3",
             Self::Extraction => "extraction",
             Self::ExtractionReview => "extraction_review",
             Self::ExtractionRepair => "extraction_repair",
@@ -130,10 +134,11 @@ impl ModelStage {
     }
     pub fn output_tokens(self, config: &ModelBudgetConfig) -> u32 {
         match self {
-            Self::Extraction | Self::ExtractionRepair | Self::Reader => {
+            Self::W1 | Self::Extraction | Self::ExtractionRepair | Self::Reader => {
                 config.extraction_output_tokens
             }
-            Self::ExtractionReview
+            Self::W3
+            | Self::ExtractionReview
             | Self::ExtractionRepairReview
             | Self::QueryReview
             | Self::Judge => config.review_output_tokens,
@@ -181,9 +186,51 @@ pub(crate) struct ModelBudget {
     owner: String,
     pub(crate) config: ModelBudgetConfig,
     operation_id: String,
+    max_background_operation_calls: Option<u64>,
 }
 
 impl ModelBudget {
+    pub(crate) fn with_background_operation_limit(
+        mut self,
+        limit: u64,
+    ) -> Result<Self, OpenAiAdapterError> {
+        if !(1..=3).contains(&limit) {
+            return Err(budget_error("background operation limit must be 1..3"));
+        }
+        self.max_background_operation_calls = Some(limit);
+        Ok(self)
+    }
+
+    pub(crate) fn for_operation(
+        &self,
+        path: &Path,
+        owner: &str,
+        operation: &str,
+    ) -> Result<Self, OpenAiAdapterError> {
+        if self.owner != owner
+            || self.path.canonicalize().map_err(database_error)?
+                != path.canonicalize().map_err(database_error)?
+        {
+            return Err(budget_error(
+                "write provider budget must belong to this source database and owner",
+            ));
+        }
+        let mut budget = Self::new(path, owner.into(), self.config.clone(), operation.into())?;
+        budget.max_background_operation_calls = self.max_background_operation_calls;
+        Ok(budget)
+    }
+
+    /// A reservation survives a crash even when no stage output was saved.
+    pub(crate) fn has_call(&self, stage: ModelStage) -> Result<bool, OpenAiAdapterError> {
+        let db = self.connect(false)?;
+        let present: i64 = db.query_row(
+            "SELECT count(*) FROM model_calls WHERE owner_id=?1 AND operation_id=?2 AND stage=?3",
+            params![self.owner, self.operation_id, stage.name()],
+            |r| r.get(0),
+        ).map_err(database_error)?;
+        Ok(present != 0)
+    }
+
     pub(crate) fn new(
         path: &Path,
         owner: String,
@@ -211,6 +258,7 @@ impl ModelBudget {
             owner,
             config,
             operation_id,
+            max_background_operation_calls: None,
         })
     }
 
@@ -264,7 +312,10 @@ impl ModelBudget {
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(database_error)?;
         create_schema(&tx).map_err(database_error)?;
-        let policy = json!({"version":1,"per_stage_calls":1,"limits":self.config});
+        let mut policy = json!({"version":1,"per_stage_calls":1,"limits":self.config});
+        if let Some(limit) = self.max_background_operation_calls {
+            policy["max_background_operation_calls"] = json!(limit);
+        }
         let existing: Option<String> = tx
             .query_row(
                 "SELECT policy_json FROM model_budget_groups WHERE group_id=?1",
@@ -291,24 +342,42 @@ impl ModelBudget {
             )
             .map_err(database_error)?;
         }
-        let (total, operation, stage_calls): (i64, i64, i64) = tx
+        let (total, mut operation, mut stage_calls): (i64, i64, i64) = tx
             .query_row(
-                "SELECT count(*), coalesce(sum(owner_id=?2 AND operation_id=?3),0),
+                "SELECT count(*), coalesce(sum(owner_id=?2 AND operation_id=?3
+                 AND (stage IN ('w1','w3'))=?5),0),
              coalesce(sum(owner_id=?2 AND operation_id=?3 AND stage=?4),0)
              FROM model_calls WHERE group_id=?1",
                 params![
                     self.config.group_id,
                     self.owner,
                     self.operation_id,
-                    stage.name()
+                    stage.name(),
+                    matches!(stage, ModelStage::W1 | ModelStage::W3)
                 ],
                 |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
             )
             .map_err(database_error)?;
+        if matches!(stage, ModelStage::W1 | ModelStage::W3) {
+            (operation, stage_calls) = tx
+                .query_row(
+                    "SELECT count(*), coalesce(sum(stage=?3),0) FROM model_calls
+                 WHERE owner_id=?1 AND operation_id=?2 AND stage IN ('w1','w3')",
+                    params![self.owner, self.operation_id, stage.name()],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .map_err(database_error)?;
+        }
         if total >= self.config.max_calls as i64 {
             return Err(budget_error("budget group call limit reached"));
         }
-        if operation >= self.config.max_operation_calls as i64 {
+        let operation_limit = if matches!(stage, ModelStage::W1 | ModelStage::W3) {
+            self.max_background_operation_calls
+                .unwrap_or(self.config.max_operation_calls.min(3))
+        } else {
+            self.config.max_operation_calls
+        };
+        if operation >= operation_limit as i64 {
             return Err(budget_error("operation call limit reached"));
         }
         if stage_calls != 0 {

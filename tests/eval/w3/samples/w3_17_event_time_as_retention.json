@@ -1,0 +1,78 @@
+{
+ "id": "w3_17_event_time_as_retention",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "事件时间被误当保存期限（历史上 59/237 的误填类型）",
+ "input": {
+  "text": "我明天要去北京开会。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "plan",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "我明天要去北京开会。",
+    "sentence": "我明天要去北京开会。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "明天",
+      "interp": {
+       "kind": "relative",
+       "unit": "day",
+       "offset": 1
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "requests": [
+   {
+    "kind": "retention",
+    "quote": "明天",
+    "target": {
+     "object": "facts",
+     "candidate_indices": [
+      0
+     ]
+    },
+    "deadline": {
+     "role": "retention",
+     "quote": "明天",
+     "interp": {
+      "kind": "relative",
+      "unit": "day",
+      "offset": 1
+     }
+    }
+   }
+  ]
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": [
+   {
+    "request": 0,
+    "verdict": "contradicted"
+   }
+  ]
+ },
+ "note": null
+}

@@ -1,0 +1,45 @@
+{
+ "id": "w3_02_dropped_uncertainty",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "丢掉“可能”使断言比原文更强",
+ "input": {
+  "text": "我可能对花生过敏。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "allergic_to",
+    "memory_type": "fact",
+    "value": "花生",
+    "sentence": "我可能对花生过敏。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "uncertainty"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": "contradicted 还是 insufficient 由人工复核：候选宣称确定过敏，原文只说可能，草稿按 contradicted。"
+}

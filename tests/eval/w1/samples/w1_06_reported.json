@@ -1,0 +1,78 @@
+{
+ "id": "w1_06_reported",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "转述保留实际来源",
+ "input": {
+  "text": "我妈说我小时候特别怕狗。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "reported",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "我妈说我小时候特别怕狗。",
+    "sentence": "我妈说我小时候特别怕狗。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "speech 为 user_statement"
+ ],
+ "note": "主体是“我”（被转述的内容关于用户），来源是我妈。是否另给 times“小时候”（unknown）不评分。"
+}

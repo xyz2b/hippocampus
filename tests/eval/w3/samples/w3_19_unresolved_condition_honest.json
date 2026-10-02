@@ -1,0 +1,48 @@
+{
+ "id": "w3_19_unresolved_condition_honest",
+ "contract": "w3.v1",
+ "label_status": "draft",
+ "focus": "无法理解的条件如实标 resolved=false",
+ "input": {
+  "text": "那种场合我一般不喝酒。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "avoids",
+    "memory_type": "preference",
+    "value": "酒",
+    "sentence": "那种场合我一般不喝酒。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [
+     {
+      "quote": "那种场合",
+      "resolved": false
+     }
+    ],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": "“一般”是否应进 uncertainty 由人工复核；草稿认为它是频率而非不确定，不扣分。"
+}

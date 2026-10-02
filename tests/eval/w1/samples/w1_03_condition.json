@@ -1,0 +1,87 @@
+{
+ "id": "w1_03_condition",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "活动条件必须保留",
+ "input": {
+  "text": "我画速写的时候固定用炭笔。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": [
+     "uses",
+     "fact"
+    ],
+    "memory_type": [
+     "fact",
+     "preference"
+    ],
+    "value": "炭笔",
+    "sentence": "我画速写的时候固定用炭笔。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [
+     "画速写的时候"
+    ],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "conditions 为空（会变成无条件只用炭笔）"
+ ],
+ "note": null
+}

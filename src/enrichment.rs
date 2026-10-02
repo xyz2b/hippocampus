@@ -1,4 +1,4 @@
-//! 新路径的库级入口。调用方显式登记轮次；生产分发和模型提供者在第④段接入。
+//! 新路径的库级入口。调用方显式登记轮次；W1/W3 显式接入，生产分发仍待后续段。
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
@@ -79,6 +79,55 @@ pub fn run_source(
     key: &str,
     budget: RuntimeInputBudget,
     mut upstream: impl FnMut(&ProviderContext, &SourceInput) -> PersistenceResult<UpstreamBatch>,
+    judge: impl FnMut(
+        &ProviderContext,
+        &W4Input,
+        &BTreeMap<String, SourceInput>,
+    ) -> PersistenceResult<Option<W4Output>>,
+) -> PersistenceResult<serde_json::Value> {
+    run_with_upstream(
+        store,
+        key,
+        budget,
+        false,
+        |_, _, ctx, input| upstream(ctx, input),
+        judge,
+    )
+}
+
+/// 显式模型入口；不更改后台分发、MCP 或旧处理版本。W4 继续使用注入点。
+pub fn run_source_with_models(
+    store: &mut SqliteMemoryStore,
+    key: &str,
+    budget: RuntimeInputBudget,
+    provider: &crate::write_models::WriteModelProvider,
+    judge: impl FnMut(
+        &ProviderContext,
+        &W4Input,
+        &BTreeMap<String, SourceInput>,
+    ) -> PersistenceResult<Option<W4Output>>,
+) -> PersistenceResult<serde_json::Value> {
+    run_with_upstream(
+        store,
+        key,
+        budget,
+        true,
+        |store, claim, ctx, input| provider.provide(store, claim, ctx, input),
+        judge,
+    )
+}
+
+fn run_with_upstream(
+    store: &mut SqliteMemoryStore,
+    key: &str,
+    budget: RuntimeInputBudget,
+    verify_upstream: bool,
+    mut upstream: impl FnMut(
+        &mut SqliteMemoryStore,
+        &W4Claim,
+        &ProviderContext,
+        &SourceInput,
+    ) -> PersistenceResult<UpstreamBatch>,
     mut judge: impl FnMut(
         &ProviderContext,
         &W4Input,
@@ -86,7 +135,15 @@ pub fn run_source(
     ) -> PersistenceResult<Option<W4Output>>,
 ) -> PersistenceResult<serde_json::Value> {
     let claim = w4_claim_round(store, key)?;
-    if let Err(error) = run_claimed(store, key, budget, &claim, &mut upstream, &mut judge) {
+    if let Err(error) = run_claimed(
+        store,
+        key,
+        budget,
+        &claim,
+        verify_upstream,
+        &mut upstream,
+        &mut judge,
+    ) {
         let reason = error.to_string();
         // A late executor must not release or overwrite the successor's claim (or resurrect deletion).
         if reason.starts_with("claim_lost") || reason == "source_deleted" {
@@ -109,13 +166,11 @@ pub fn run_source(
             "budget_exhausted" => "budget_exhausted",
             _ => "failed",
         };
-        crate::commit::w4_pause_attempt(
-            store,
-            &claim,
-            status,
-            Some(code),
-            serde_json::json!({"reason":code}),
-        )?;
+        let mut diagnostic = serde_json::json!({"reason":code});
+        if reason == "model_invalid_output: model_result_missing" {
+            diagnostic["detail_code"] = serde_json::json!("model_result_missing");
+        }
+        crate::commit::w4_pause_attempt(store, &claim, status, Some(code), diagnostic)?;
     }
     receipt(store, key)
 }
@@ -125,7 +180,13 @@ fn run_claimed(
     key: &str,
     budget: RuntimeInputBudget,
     claim: &W4Claim,
-    upstream: &mut impl FnMut(&ProviderContext, &SourceInput) -> PersistenceResult<UpstreamBatch>,
+    verify_upstream: bool,
+    upstream: &mut impl FnMut(
+        &mut SqliteMemoryStore,
+        &W4Claim,
+        &ProviderContext,
+        &SourceInput,
+    ) -> PersistenceResult<UpstreamBatch>,
     judge: &mut impl FnMut(
         &ProviderContext,
         &W4Input,
@@ -149,25 +210,25 @@ fn run_claimed(
             crate::lexical::task(source).map(TaskId::from).as_ref(),
         )?;
     }
+    let previous = stored_batch(source)?;
+    let ctx = ProviderContext {
+        owner: store.owner().clone(),
+        source_key: key.into(),
+        source_id: source.id.clone(),
+        source_binding: claim.source_binding().clone(),
+        observed_at: source.observed_at,
+        received_sequence: source.received_sequence,
+        task_id: crate::lexical::task(source).map(TaskId::from),
+        round: claim.round,
+        operation_id: claim.operation_id.clone(),
+        previous_w2: previous.as_ref().map(|p| p.batch.w2.clone()),
+    };
+    let input = SourceInput::of(source)?;
+    let upstream_bytes = input.raw_bytes();
     if !saved.plan_ready {
         crate::commit::w4_check_order(store, claim)?;
-        let state = store.read()?;
-        let source = &state.sources[key];
-        let previous = stored_batch(source)?;
-        let ctx = ProviderContext {
-            owner: store.owner().clone(),
-            source_key: key.into(),
-            source_id: source.id.clone(),
-            source_binding: claim.source_binding().clone(),
-            observed_at: source.observed_at,
-            received_sequence: source.received_sequence,
-            task_id: crate::lexical::task(source).map(TaskId::from),
-            round: claim.round,
-            operation_id: claim.operation_id.clone(),
-            previous_w2: previous.as_ref().map(|p| p.batch.w2.clone()),
-        };
-        let input = SourceInput::of(source)?;
-        let upstream_bytes = input.raw_bytes();
+    }
+    if !saved.plan_ready {
         if over_budget(
             store,
             claim,
@@ -177,12 +238,23 @@ fn run_claimed(
         )? {
             return Ok(());
         }
+    }
+    // Model stage bindings must also be checked when a full batch/plan already exists.
+    let model_batch = if verify_upstream {
+        Some(upstream(store, claim, &ctx, &input)?)
+    } else {
+        None
+    };
+    if !saved.plan_ready {
         let inputs = match w4_load_inputs(store, claim)? {
             Some(inputs) => inputs,
             None => {
-                let batch = match previous {
-                    Some(prior) if prior.source_binding == ctx.source_binding => prior.batch,
-                    _ => upstream(&ctx, &input)?,
+                let batch = match (model_batch, previous) {
+                    (Some(batch), _) => batch,
+                    (None, Some(prior)) if prior.source_binding == ctx.source_binding => {
+                        prior.batch
+                    }
+                    _ => upstream(store, claim, &ctx, &input)?,
                 };
                 check_batch(
                     &batch,

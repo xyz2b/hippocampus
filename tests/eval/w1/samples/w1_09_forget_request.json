@@ -1,0 +1,73 @@
+{
+ "id": "w1_09_forget_request",
+ "contract": "w1.v1",
+ "label_status": "draft",
+ "focus": "删除请求是控制请求，不是撤回",
+ "input": {
+  "text": "把我住址那条忘掉吧。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 0,
+  "candidates": [],
+  "memory_requests": [
+   {
+    "kind": "forget",
+    "quote": "把我住址那条忘掉吧",
+    "target_object": "facts",
+    "candidate_indices": [],
+    "target_quote": "我住址那条"
+   }
+  ]
+ },
+ "must_not": [
+  "生成 retraction 候选代替 forget",
+  "candidate_indices 非空"
+ ],
+ "note": null
+}
