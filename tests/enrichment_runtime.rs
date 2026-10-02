@@ -6,6 +6,131 @@ use hippocampus::*;
 use serde_json::{Value as Json, json};
 use std::path::PathBuf;
 
+// 旧测试保留原断言；辅助提供者现在也构造完整 W2/W3 批次。
+struct SupportedCandidate {
+    index: usize,
+    contract: ContractCandidate,
+    admission: w4::Admission,
+}
+
+fn run_source(
+    store: &mut SqliteMemoryStore,
+    key: &str,
+    budget: RuntimeInputBudget,
+    mut upstream: impl FnMut(
+        &ProviderContext,
+        &SourceInput,
+    ) -> PersistenceResult<Vec<SupportedCandidate>>,
+    judge: impl FnMut(
+        &ProviderContext,
+        &W4Input,
+        &std::collections::BTreeMap<String, SourceInput>,
+    ) -> PersistenceResult<Option<W4Output>>,
+) -> PersistenceResult<Json> {
+    hippocampus::enrichment::run_source(
+        store,
+        key,
+        budget,
+        |ctx, input| {
+            let supported = upstream(ctx, input)?;
+            let said_on = supported
+                .first()
+                .map_or("2026-10-02", |c| c.contract.said_on.as_str())
+                .to_owned();
+            let mut memory_requests = Vec::new();
+            let mut request_reviews = Vec::new();
+            let reviews = supported
+                .iter()
+                .map(|c| {
+                    if c.admission.remember_bound {
+                        let index = memory_requests.len();
+                        memory_requests.push(w2::RequestResult {
+                            index,
+                            request: MemoryRequest {
+                                kind: RequestKind::Remember,
+                                quote: c.contract.candidate.sentence.clone(),
+                                target: RequestTarget {
+                                    object: RequestObject::Facts,
+                                    candidate_indices: vec![c.index],
+                                    quote: None,
+                                },
+                                deadline: None,
+                            },
+                            final_candidate_indices: vec![c.index],
+                            rejected_candidate_indices: vec![],
+                            deadline_resolution: None,
+                        });
+                        request_reviews.push(RequestReview {
+                            request: index,
+                            verdict: Verdict::Supported,
+                        });
+                    }
+                    CandidateReview {
+                        candidate: c.index,
+                        verdict: Verdict::Supported,
+                        problems: vec![],
+                        episode_value: if c.contract.candidate.memory_type == "episode" {
+                            if c.admission.episode_useful {
+                                EpisodeValue::Useful
+                            } else {
+                                EpisodeValue::Unknown
+                            }
+                        } else {
+                            EpisodeValue::NotApplicable
+                        },
+                    }
+                })
+                .collect();
+            let batch = w2::Batch {
+                index_map: supported.iter().map(|c| Some(c.index)).collect(),
+                candidates: supported
+                    .into_iter()
+                    .map(|c| {
+                        let unresolved =
+                            matches!(c.contract.candidate.subject, Subject::Unresolved(_));
+                        w2::CandidateResult {
+                            index: c.index,
+                            candidate: c.contract.candidate,
+                            time_resolutions: c.contract.time_resolutions,
+                            status: if unresolved {
+                                w2::Status::Unresolved
+                            } else {
+                                w2::Status::Ok
+                            },
+                            reasons: if unresolved {
+                                vec!["unresolved_subject".into()]
+                            } else {
+                                vec![]
+                            },
+                        }
+                    })
+                    .collect(),
+                memory_requests,
+                task_id: ctx.task_id.clone(),
+                said_on,
+                utc_offset_seconds: 28_800,
+            };
+            let review = if batch.candidates.is_empty() {
+                None
+            } else {
+                Some(
+                    W3Output {
+                        reviews,
+                        request_reviews,
+                        coverage: W3Coverage {
+                            status: CoverageStatus::Complete,
+                            missing: vec![],
+                        },
+                    }
+                    .validate(&batch, &ctx.source_binding, &input.text)?,
+                )
+            };
+            Ok(UpstreamBatch { w2: batch, review })
+        },
+        judge,
+    )
+}
+
 struct Db(PathBuf);
 impl Db {
     fn new() -> Self {
@@ -722,6 +847,7 @@ fn context(db: &Db, claim: &W4Claim) -> ProviderContext {
         task_id: None,
         round: claim.round,
         operation_id: claim.operation_id.clone(),
+        previous_w2: None,
     }
 }
 

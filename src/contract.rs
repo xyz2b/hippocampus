@@ -1,6 +1,6 @@
-//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.4 w4.v2、§3.2）。
+//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v1、§2.4 w4.v2、§3.2）。
 //!
-//! 这里只定义形状：JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分。
+//! JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分；包含 W3 输出核验。
 //! Quote 是否逐字存在、日历是否合法、目录与任务是否允许等机械校验属于 W2（§2.2），
 //! 不在解码时做。
 
@@ -272,6 +272,184 @@ pub struct MemoryRequest {
 pub struct W1Output {
     pub memory_requests: Vec<MemoryRequest>,
     pub candidates: Vec<Candidate>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum Verdict {
+    Supported,
+    Contradicted,
+    Insufficient,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ReviewAspect {
+    Subject,
+    Relation,
+    MemoryType,
+    Value,
+    Polarity,
+    Strength,
+    Uncertainty,
+    Condition,
+    Time,
+    Speech,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ReviewProblem {
+    pub aspect: ReviewAspect,
+    pub quote: Quote,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum EpisodeValue {
+    Useful,
+    LowValue,
+    Unknown,
+    NotApplicable,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CandidateReview {
+    pub candidate: usize,
+    pub verdict: Verdict,
+    pub problems: Vec<ReviewProblem>,
+    pub episode_value: EpisodeValue,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum CoverageStatus {
+    Complete,
+    Gaps,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct W3Coverage {
+    pub status: CoverageStatus,
+    pub missing: Vec<Quote>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RequestReview {
+    pub request: usize,
+    pub verdict: Verdict,
+}
+
+/// §2.3 w3.v1；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct W3Output {
+    pub reviews: Vec<CandidateReview>,
+    pub coverage: W3Coverage,
+    pub request_reviews: Vec<RequestReview>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct W3InvalidOutput;
+impl std::fmt::Display for W3InvalidOutput {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("model_invalid_output")
+    }
+}
+impl std::error::Error for W3InvalidOutput {}
+
+/// 内部核验回执，绑定完整 W2 结果和运行时来源快照；不是模型 wire 类型。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ReviewedW3 {
+    binding: serde_json::Value,
+    output: W3Output,
+}
+
+impl W3Output {
+    pub fn decode(text: &str) -> Result<Self, W3InvalidOutput> {
+        serde_json::from_str(text).map_err(|_| W3InvalidOutput)
+    }
+
+    pub fn validate(
+        mut self,
+        batch: &crate::w2::Batch,
+        source_snapshot: &serde_json::Value,
+        text: &str,
+    ) -> Result<ReviewedW3, W3InvalidOutput> {
+        use std::collections::BTreeSet;
+        let expected: BTreeSet<_> = batch
+            .candidates
+            .iter()
+            .filter(|c| c.status != crate::w2::Status::Rejected)
+            .map(|c| c.index)
+            .collect();
+        let actual: BTreeSet<_> = self.reviews.iter().map(|r| r.candidate).collect();
+        let requests: BTreeSet<_> = self.request_reviews.iter().map(|r| r.request).collect();
+        if expected != actual
+            || actual.len() != self.reviews.len()
+            || requests != batch.memory_requests.iter().map(|r| r.index).collect()
+            || requests.len() != self.request_reviews.len()
+        {
+            return Err(W3InvalidOutput);
+        }
+        let restore = |q: &mut Quote| {
+            let range = locate_quote(text, &q.text).ok_or(W3InvalidOutput)?;
+            q.text = text[range].into();
+            Ok(())
+        };
+        for review in &mut self.reviews {
+            if (review.verdict == Verdict::Supported && !review.problems.is_empty())
+                || (batch
+                    .candidates
+                    .iter()
+                    .find(|c| c.index == review.candidate)
+                    .unwrap()
+                    .candidate
+                    .memory_type
+                    != "episode"
+                    && review.episode_value != EpisodeValue::NotApplicable)
+            {
+                return Err(W3InvalidOutput);
+            }
+            for problem in &mut review.problems {
+                restore(&mut problem.quote)?;
+            }
+        }
+        for missing in &mut self.coverage.missing {
+            restore(missing)?;
+        }
+        Ok(ReviewedW3 {
+            binding: serde_json::json!([batch, source_snapshot]),
+            output: self,
+        })
+    }
+}
+
+impl ReviewedW3 {
+    pub fn output(&self) -> &W3Output {
+        &self.output
+    }
+
+    pub fn for_input(
+        &self,
+        batch: &crate::w2::Batch,
+        source_snapshot: &serde_json::Value,
+        text: &str,
+    ) -> Result<&W3Output, W3InvalidOutput> {
+        if self.binding != serde_json::json!([batch, source_snapshot]) {
+            return Err(W3InvalidOutput);
+        }
+        // 重开后的内部 JSON 也重新核验，不能只相信持久标记。
+        let checked = self.output.clone().validate(batch, source_snapshot, text)?;
+        if checked != *self {
+            return Err(W3InvalidOutput);
+        }
+        Ok(&self.output)
+    }
 }
 
 /// §2.4 W4 输入里的一个候选。

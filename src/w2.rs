@@ -24,14 +24,16 @@ pub struct Context<'a> {
     pub task_id: Option<&'a TaskId>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
 pub enum Status {
     Ok,
     Unresolved,
     Rejected,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct CandidateResult {
     /// 最终 W1 中的原始索引，拒收不改变其他候选的身份。
     pub index: usize,
@@ -41,7 +43,8 @@ pub struct CandidateResult {
     pub reasons: Vec<String>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RequestResult {
     pub index: usize,
     /// 保留原始目标索引；不能把全被拒收的 facts 请求改释成针对旧事实的请求。
@@ -52,13 +55,54 @@ pub struct RequestResult {
     pub deadline_resolution: Option<TimeResolution>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Batch {
     /// 包含拒收项，保留逐候选结果；送审时过滤 Rejected，并保留 index。
     pub candidates: Vec<CandidateResult>,
     pub memory_requests: Vec<RequestResult>,
     pub index_map: Vec<Option<usize>>,
     pub task_id: Option<TaskId>,
+    pub said_on: String,
+    pub utc_offset_seconds: i32,
+}
+
+/// 复用现有谓词注册表及类型约束；旧目录缺省表示允许四种类型，通用 fact 始终登记。
+pub fn relation_catalog(
+    predicates: &[crate::PredicateDefinition],
+    memory_types: &[(crate::Predicate, Vec<MemoryType>)],
+) -> Result<Vec<Relation>, Error> {
+    use std::collections::BTreeMap;
+    let all = vec![
+        MemoryType::Fact,
+        MemoryType::Preference,
+        MemoryType::Constraint,
+        MemoryType::Episode,
+    ];
+    let mut catalog = BTreeMap::new();
+    for predicate in predicates {
+        if predicate.predicate.0.trim().is_empty()
+            || catalog
+                .insert(predicate.predicate.0.clone(), all.clone())
+                .is_some()
+        {
+            return Err(Error::InvalidContext("relation_catalog"));
+        }
+    }
+    catalog.entry("fact".into()).or_insert(all);
+    let mut seen = std::collections::BTreeSet::new();
+    for (predicate, types) in memory_types {
+        if types.is_empty() || !seen.insert(predicate.0.clone()) {
+            return Err(Error::InvalidContext("relation_catalog"));
+        }
+        *catalog
+            .get_mut(&predicate.0)
+            .ok_or(Error::InvalidContext("relation_catalog"))? = types.clone();
+    }
+    Ok(catalog
+        .into_iter()
+        .map(|(id, memory_types)| Relation { id, memory_types })
+        .collect())
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -187,6 +231,8 @@ pub fn validate(mut output: W1Output, ctx: &Context<'_>) -> Result<Batch, Error>
         memory_requests,
         index_map,
         task_id: ctx.task_id.cloned(),
+        said_on: ctx.said_on.into(),
+        utc_offset_seconds: ctx.utc_offset_seconds,
     })
 }
 

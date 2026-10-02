@@ -355,10 +355,10 @@ const QUOTE_TEXT_KEYS: &[&str] = &["text", "quote"];
 /// 把字符串里出现的被删文字换成墓碑；对象的元数据字段不动。Quote 文字字段若是被删原文的
 /// 子片段（例如条件里的“冬天”），整体换成墓碑。返回是否改动。
 fn scrub(value: &mut Value, deleted: &Deleted) -> bool {
-    scrub_at(value, deleted, false)
+    scrub_at(value, deleted, false, &[])
 }
 
-fn scrub_at(value: &mut Value, deleted: &Deleted, quote_text: bool) -> bool {
+fn scrub_at(value: &mut Value, deleted: &Deleted, quote_text: bool, enum_keys: &[&str]) -> bool {
     match value {
         Value::String(text) => {
             if quote_text
@@ -381,15 +381,15 @@ fn scrub_at(value: &mut Value, deleted: &Deleted, quote_text: bool) -> bool {
             }
             changed
         }
-        Value::Array(items) => items
-            .iter_mut()
-            .fold(false, |acc, item| scrub_at(item, deleted, quote_text) | acc),
+        Value::Array(items) => items.iter_mut().fold(false, |acc, item| {
+            scrub_at(item, deleted, quote_text, enum_keys) | acc
+        }),
         Value::Object(map) => map.iter_mut().fold(false, |acc, (key, item)| {
-            if METADATA_KEYS.contains(&key.as_str()) {
+            if METADATA_KEYS.contains(&key.as_str()) || enum_keys.contains(&key.as_str()) {
                 acc
             } else {
                 let quote_text = QUOTE_TEXT_KEYS.contains(&key.as_str());
-                scrub_at(item, deleted, quote_text) | acc
+                scrub_at(item, deleted, quote_text, enum_keys) | acc
             }
         }),
         _ => false,
@@ -830,6 +830,34 @@ pub(crate) fn forget(
     }
     // Checkpoints are raw-content copies too, including JSON-encoded W5 snapshots.
     for source in state.sources.values_mut() {
+        let mut batch_affected = false;
+        if let Some(result) = source.result.as_mut() {
+            for key in ["w4_batch", "w4_controls"] {
+                if let Some(value) = result.get_mut(key) {
+                    batch_affected |= touches(value, &deleted_source_ids, &deleted);
+                    // 新批次的固定枚举不是原文；不能把被删的英文 supported 当作 verdict 清掉。
+                    // 自由文本（包括未通过 W2 的 relation/memory_type）仍照常清洗；旧路径用空列表。
+                    batch_affected |= scrub_at(
+                        value,
+                        &scrubbed,
+                        false,
+                        &[
+                            "verdict",
+                            "episode_value",
+                            "aspect",
+                            "speech",
+                            "polarity",
+                            "strength",
+                            "role",
+                            "unit",
+                            "anchor",
+                            "precision",
+                            "object",
+                        ],
+                    );
+                }
+            }
+        }
         let Some(checkpoint) = source
             .result
             .as_mut()
@@ -837,7 +865,7 @@ pub(crate) fn forget(
         else {
             continue;
         };
-        let mut affected = touches(checkpoint, &deleted_source_ids, &deleted);
+        let mut affected = batch_affected || touches(checkpoint, &deleted_source_ids, &deleted);
         for group in checkpoint
             .get_mut("plan")
             .and_then(|p| p.get_mut("groups"))

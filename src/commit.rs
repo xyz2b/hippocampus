@@ -762,6 +762,7 @@ fn commit_group_checked(
             let round_claim = round_claim.ok_or("w4_claim_required")?;
             owned_w4(state, round_claim, now)?;
             let checkpoint = checkpoint(source)?;
+            check_w4_batch(source, round_claim)?;
             if !checkpoint
                 .plan
                 .as_ref()
@@ -1889,60 +1890,118 @@ pub fn w4_save_inputs(
     candidates: &[crate::contract::W4Candidate],
     admissions: &BTreeMap<usize, crate::w4::Admission>,
 ) -> PersistenceResult<()> {
-    store.transaction(|state| {
-        let source = owned_w4(state, claim, now()?)?;
-        let mut cp = checkpoint(source)?;
-        let mut meta = input_meta(source)?.unwrap_or(W4InputMeta {
-            round: claim.round,
-            ..Default::default()
-        });
-        if meta.ready {
-            return if cp.candidates == candidates && meta.admissions == *admissions {
-                Ok(())
-            } else {
-                Err("round inputs are immutable".into())
-            };
-        }
-        if cp.plan.is_some() {
-            return Err("round plan already saved".into());
-        }
-        let by_index: BTreeMap<_, _> = candidates.iter().map(|c| (c.index, c)).collect();
-        if by_index.len() != candidates.len()
-            || admissions.keys().any(|i| !by_index.contains_key(i))
+    store.transaction(|state| save_w4_inputs(state, claim, candidates, admissions, None))
+}
+
+fn save_w4_inputs(
+    state: &mut PersistedMemoryState,
+    claim: &W4Claim,
+    candidates: &[crate::contract::W4Candidate],
+    admissions: &BTreeMap<usize, crate::w4::Admission>,
+    retained_batch: Option<&crate::enrichment::UpstreamBatch>,
+) -> PersistenceResult<()> {
+    let source = owned_w4(state, claim, now()?)?;
+    let mut cp = checkpoint(source)?;
+    let mut meta = input_meta(source)?.unwrap_or(W4InputMeta {
+        round: claim.round,
+        ..Default::default()
+    });
+    if meta.ready {
+        return if cp.candidates == candidates && meta.admissions == *admissions {
+            Ok(())
+        } else {
+            Err("round inputs are immutable".into())
+        };
+    }
+    if cp.plan.is_some() {
+        return Err("round plan already saved".into());
+    }
+    let by_index: BTreeMap<_, _> = candidates.iter().map(|c| (c.index, c)).collect();
+    if by_index.len() != candidates.len() || admissions.keys().any(|i| !by_index.contains_key(i)) {
+        return Err("invalid candidate or admission index".into());
+    }
+    for c in candidates {
+        if c.source
+            != (crate::contract::SourceRef::Stored {
+                source_id: source.id.clone(),
+            })
         {
-            return Err("invalid candidate or admission index".into());
+            return Err("candidate source does not match round".into());
         }
-        for c in candidates {
-            if c.source
-                != (crate::contract::SourceRef::Stored {
-                    source_id: source.id.clone(),
+        // committed_id is inherited by the orchestrator, never accepted from a provider.
+        if c.committed_id
+            != cp
+                .candidates
+                .iter()
+                .find(|prior| prior.index == c.index)
+                .and_then(|p| p.committed_id)
+        {
+            return Err("unexpected assertion binding".into());
+        }
+    }
+    for prior in cp.candidates.iter().filter(|c| c.committed_id.is_some()) {
+        if by_index.get(&prior.index).copied() != Some(prior) {
+            // 新核验可能暂停已提交候选：完整批次仍须保留同一候选，产物以历史回执为准。
+            // 低层接口没有完整批次时仍禁止移除绑定；恢复不能凭空把它变成新断言。
+            let retained = !by_index.contains_key(&prior.index)
+                && retained_batch.is_some_and(|batch| {
+                    batch.w2.said_on == prior.said_on
+                        && batch.w2.candidates.iter().any(|c| {
+                            c.index == prior.index
+                                && c.candidate == prior.candidate
+                                && c.time_resolutions == prior.time_resolutions
+                        })
                 })
-            {
-                return Err("candidate source does not match round".into());
-            }
-            // committed_id is inherited by the orchestrator, never accepted from a provider.
-            if c.committed_id
-                != cp
-                    .candidates
-                    .iter()
-                    .find(|prior| prior.index == c.index)
-                    .and_then(|p| p.committed_id)
-            {
-                return Err("unexpected assertion binding".into());
-            }
-        }
-        for prior in cp.candidates.iter().filter(|c| c.committed_id.is_some()) {
-            if by_index.get(&prior.index).copied() != Some(prior) {
+                && historical_products(state, &claim.claim.source_key)?
+                    .get(&prior.index)
+                    .copied()
+                    == prior.committed_id;
+            if !retained {
                 return Err("previous assertion binding cannot be removed or changed".into());
             }
         }
-        cp.candidates = candidates.to_vec();
-        meta.ready = true;
-        meta.admissions = admissions.clone();
-        meta.counts.insert("candidates".into(), candidates.len());
+    }
+    cp.candidates = candidates.to_vec();
+    meta.ready = true;
+    meta.admissions = admissions.clone();
+    meta.counts.insert("candidates".into(), candidates.len());
+    let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
+    write_checkpoint(source, &cp)?;
+    write_input_meta(source, &meta)
+}
+
+/// 批次、准入、控制标记与 W4 输入在同一事务保存，恢复时不会绕过请求暂停。
+pub(crate) fn w4_save_batch(
+    store: &mut SqliteMemoryStore,
+    claim: &W4Claim,
+    candidates: &[crate::contract::W4Candidate],
+    admissions: &BTreeMap<usize, crate::w4::Admission>,
+    batch: &crate::enrichment::UpstreamBatch,
+    requests: &[serde_json::Value],
+) -> PersistenceResult<()> {
+    store.transaction(|state| {
+        let source = owned_w4(state, claim, now()?)?;
+        let value = serde_json::to_value(crate::enrichment::StoredBatch {
+            source_binding: claim.source_binding.clone(),
+            batch: batch.clone(),
+        })?;
+        if input_meta(source)?.is_some_and(|m| m.ready)
+            && source.result.as_ref().and_then(|r| r.get("w4_batch")) != Some(&value)
+        {
+            return Err("round batch is immutable".into());
+        }
+        save_w4_inputs(state, claim, candidates, admissions, Some(batch))?;
         let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
-        write_checkpoint(source, &cp)?;
-        write_input_meta(source, &meta)
+        let result = source.result.as_mut().unwrap();
+        result["w4_batch"] = value;
+        result["w4_controls"] = serde_json::json!(
+            requests
+                .iter()
+                .filter(|r| r["status"] == "awaiting_confirmation"
+                    || r["status"] == "retention_pending")
+                .collect::<Vec<_>>()
+        );
+        Ok(())
     })
 }
 
@@ -1953,10 +2012,23 @@ pub fn w4_load_inputs(
     let state = store.read()?;
     let source = owned_w4(&state, claim, now()?)?;
     let cp = checkpoint(source)?;
+    check_w4_batch(source, claim)?;
     Ok(input_meta(source)?.filter(|m| m.ready).map(|m| W4Inputs {
         candidates: cp.candidates,
         admissions: m.admissions,
     }))
+}
+
+fn check_w4_batch(source: &SourceRecord, claim: &W4Claim) -> PersistenceResult<()> {
+    if let Some(meta) = input_meta(source)?.filter(|m| m.ready) {
+        crate::enrichment::check_saved_inputs(
+            source,
+            claim.source_binding(),
+            &checkpoint(source)?.candidates,
+            &meta.admissions,
+        )?;
+    }
+    Ok(())
 }
 
 pub(crate) fn w4_check_order(store: &SqliteMemoryStore, claim: &W4Claim) -> PersistenceResult<()> {
@@ -2011,11 +2083,12 @@ pub(crate) fn w4_pause_attempt(
         meta.diagnostic = Some(diagnostic.clone());
         let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
         source.enrichment = if source.enrichment == "stale_requires_review" {
-            "needs_rejudge"
+            "needs_rejudge".into()
+        } else if status == "pending" {
+            crate::enrichment::summary_status(source, status)?
         } else {
-            status
-        }
-        .into();
+            status.into()
+        };
         source.error = reason.map(str::to_owned);
         write_input_meta(source, &meta)?;
         release(source);
@@ -2047,6 +2120,38 @@ fn source_binding(source: &SourceRecord) -> serde_json::Value {
         source.received_sequence,
         source.request
     ])
+}
+
+/// 某轮暂停/拒收的候选可能不在当前 W4 输入中；历史产物仍只从已提交回执推导。
+fn historical_products(
+    state: &PersistedMemoryState,
+    key: &str,
+) -> PersistenceResult<BTreeMap<usize, MemoryId>> {
+    let prefix = format!("{key}#");
+    let mut products = BTreeMap::new();
+    for (id, receipt) in &state.w5_receipts {
+        if receipt.status != W5Status::Committed {
+            continue;
+        }
+        let Some(round) = id
+            .strip_prefix(&prefix)
+            .and_then(|s| s.split_once('#'))
+            .and_then(|(r, _)| r.parse::<u32>().ok())
+        else {
+            continue;
+        };
+        let group: serde_json::Value = serde_json::from_str(&receipt.fingerprint)?;
+        if group["source_key"] != key {
+            continue;
+        }
+        for (index, id) in &receipt.products {
+            let prior = products.entry(*index).or_insert((round, *id));
+            if round > prior.0 {
+                *prior = (round, *id);
+            }
+        }
+    }
+    Ok(products.into_iter().map(|(i, (_, id))| (i, id)).collect())
 }
 
 fn checkpoint(source: &SourceRecord) -> PersistenceResult<W4Checkpoint> {
@@ -2161,6 +2266,32 @@ pub fn w4_start_round(
                     candidate.committed_id = Some(*id);
                 }
             }
+            if let Some(saved) = crate::enrichment::stored_batch(source)? {
+                for (index, id) in historical_products(state, key)? {
+                    if let Some(c) = candidates.iter_mut().find(|c| c.index == index) {
+                        c.committed_id = Some(id);
+                    } else {
+                        let c = saved
+                            .batch
+                            .w2
+                            .candidates
+                            .iter()
+                            .find(|c| c.index == index)
+                            .ok_or("needs_rejudge: historical candidate missing")?;
+                        candidates.push(crate::contract::W4Candidate {
+                            index,
+                            committed_id: Some(id),
+                            candidate: c.candidate.clone(),
+                            source: crate::contract::SourceRef::Stored {
+                                source_id: source.id.clone(),
+                            },
+                            said_on: saved.batch.w2.said_on.clone(),
+                            time_resolutions: c.time_resolutions.clone(),
+                        });
+                    }
+                }
+                candidates.sort_by_key(|c| c.index);
+            }
         }
         let source = state.sources.get_mut(key).unwrap();
         source.task.processing_version = Some(W4_PROCESSING_VERSION.into());
@@ -2225,7 +2356,8 @@ pub fn w4_claim_round(store: &mut SqliteMemoryStore, key: &str) -> PersistenceRe
         if !matches!(
             source.enrichment.as_str(),
             "queued" | "running" | "failed" | "budget_exhausted" | "stale_requires_review"
-        ) && !(source.enrichment == "pending" && checkpoint.plan.is_none())
+        ) && !(matches!(source.enrichment.as_str(), "pending" | "coverage_gaps")
+            && checkpoint.plan.is_none())
         {
             return Err("round finished; explicit rejudge required".into());
         }
@@ -2295,6 +2427,7 @@ pub fn w4_save_plan(
 ) -> PersistenceResult<()> {
     store.transaction(|state| {
         let source = owned_w4(state, claim, now()?)?;
+        check_w4_batch(source, claim)?;
         let mut checkpoint = checkpoint(source)?;
         if checkpoint.plan.is_some() {
             return if checkpoint.plan.as_ref() == Some(plan) && checkpoint.candidates == candidates
@@ -2506,7 +2639,7 @@ pub(crate) fn w4_candidate_results(
                 serde_json::to_value(update.map(|u| &u.reasons).cloned().unwrap_or_default())?;
         }
     }
-    Ok(results.into_values().collect())
+    crate::enrichment::merge_candidate_results(source, results.into_values().collect())
 }
 
 pub fn w4_commit_group(
@@ -2560,7 +2693,8 @@ pub fn w4_finish_round(
     claim: &W4Claim,
 ) -> PersistenceResult<W4Progress> {
     store.transaction(|state| {
-        owned_w4(state, claim, now()?)?;
+        let source = owned_w4(state, claim, now()?)?;
+        check_w4_batch(source, claim)?;
         let result = progress(state, &claim.claim.source_key)?;
         let source = &state.sources[&claim.claim.source_key];
         let blocked =
@@ -2587,13 +2721,14 @@ pub fn w4_finish_round(
             } else {
                 ("committed", None)
             };
+        let status = crate::enrichment::summary_status(source, status)?;
         let summary = serde_json::json!({
             "round": claim.round, "status": status,
             "committed": result.committed, "needs_rejudge": result.needs_rejudge,
             "remaining": result.remaining.iter().map(|g| &g.id).collect::<Vec<_>>()
         });
         let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
-        source.enrichment = status.into();
+        source.enrichment = status;
         source.error = error.map(str::to_owned);
         source.result.as_mut().unwrap()["w4_summary"] = summary;
         release(source);
