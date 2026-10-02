@@ -3,6 +3,7 @@ mod commit;
 pub mod contract;
 pub mod diagnostics;
 mod engine;
+pub mod enrichment;
 mod fact_answer;
 mod fact_index;
 mod forget;

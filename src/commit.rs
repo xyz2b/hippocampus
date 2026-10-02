@@ -1827,6 +1827,12 @@ pub struct W4Claim {
     source_binding: serde_json::Value,
 }
 
+impl W4Claim {
+    pub fn source_binding(&self) -> &serde_json::Value {
+        &self.source_binding
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(deny_unknown_fields)]
 struct W4Checkpoint {
@@ -1835,6 +1841,186 @@ struct W4Checkpoint {
     candidates: Vec<crate::contract::W4Candidate>,
     plan: Option<crate::w4::Plan>,
     invalidated: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct W4Inputs {
+    pub candidates: Vec<crate::contract::W4Candidate>,
+    pub admissions: BTreeMap<usize, crate::w4::Admission>,
+}
+
+/// 这里只保存布尔准入、计数和诊断；原文副本仍全部留在已有删除清洗的 checkpoint 中。
+#[derive(Serialize, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+struct W4InputMeta {
+    round: u32,
+    ready: bool,
+    admissions: BTreeMap<usize, crate::w4::Admission>,
+    counts: BTreeMap<String, usize>,
+    diagnostic: Option<serde_json::Value>,
+}
+
+fn input_meta(source: &SourceRecord) -> PersistenceResult<Option<W4InputMeta>> {
+    let meta: Option<W4InputMeta> = source
+        .result
+        .as_ref()
+        .and_then(|r| r.get("w4_input_meta"))
+        .map(|v| serde_json::from_value(v.clone()))
+        .transpose()?;
+    if meta
+        .as_ref()
+        .is_some_and(|m| Some(m.round) != source.task.round)
+    {
+        return Err("needs_rejudge: input metadata round differs".into());
+    }
+    Ok(meta)
+}
+
+fn write_input_meta(source: &mut SourceRecord, meta: &W4InputMeta) -> PersistenceResult<()> {
+    source.result.as_mut().ok_or("round checkpoint missing")?["w4_input_meta"] =
+        serde_json::to_value(meta)?;
+    Ok(())
+}
+
+/// 同轮输入只允许原样重放；即使 W4 未接入或预算不足，候选也可先持久保存。
+pub fn w4_save_inputs(
+    store: &mut SqliteMemoryStore,
+    claim: &W4Claim,
+    candidates: &[crate::contract::W4Candidate],
+    admissions: &BTreeMap<usize, crate::w4::Admission>,
+) -> PersistenceResult<()> {
+    store.transaction(|state| {
+        let source = owned_w4(state, claim, now()?)?;
+        let mut cp = checkpoint(source)?;
+        let mut meta = input_meta(source)?.unwrap_or(W4InputMeta {
+            round: claim.round,
+            ..Default::default()
+        });
+        if meta.ready {
+            return if cp.candidates == candidates && meta.admissions == *admissions {
+                Ok(())
+            } else {
+                Err("round inputs are immutable".into())
+            };
+        }
+        if cp.plan.is_some() {
+            return Err("round plan already saved".into());
+        }
+        let by_index: BTreeMap<_, _> = candidates.iter().map(|c| (c.index, c)).collect();
+        if by_index.len() != candidates.len()
+            || admissions.keys().any(|i| !by_index.contains_key(i))
+        {
+            return Err("invalid candidate or admission index".into());
+        }
+        for c in candidates {
+            if c.source
+                != (crate::contract::SourceRef::Stored {
+                    source_id: source.id.clone(),
+                })
+            {
+                return Err("candidate source does not match round".into());
+            }
+            // committed_id is inherited by the orchestrator, never accepted from a provider.
+            if c.committed_id
+                != cp
+                    .candidates
+                    .iter()
+                    .find(|prior| prior.index == c.index)
+                    .and_then(|p| p.committed_id)
+            {
+                return Err("unexpected assertion binding".into());
+            }
+        }
+        for prior in cp.candidates.iter().filter(|c| c.committed_id.is_some()) {
+            if by_index.get(&prior.index).copied() != Some(prior) {
+                return Err("previous assertion binding cannot be removed or changed".into());
+            }
+        }
+        cp.candidates = candidates.to_vec();
+        meta.ready = true;
+        meta.admissions = admissions.clone();
+        meta.counts.insert("candidates".into(), candidates.len());
+        let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
+        write_checkpoint(source, &cp)?;
+        write_input_meta(source, &meta)
+    })
+}
+
+pub fn w4_load_inputs(
+    store: &SqliteMemoryStore,
+    claim: &W4Claim,
+) -> PersistenceResult<Option<W4Inputs>> {
+    let state = store.read()?;
+    let source = owned_w4(&state, claim, now()?)?;
+    let cp = checkpoint(source)?;
+    Ok(input_meta(source)?.filter(|m| m.ready).map(|m| W4Inputs {
+        candidates: cp.candidates,
+        admissions: m.admissions,
+    }))
+}
+
+pub(crate) fn w4_check_order(store: &SqliteMemoryStore, claim: &W4Claim) -> PersistenceResult<()> {
+    let state = store.read()?;
+    let source = owned_w4(&state, claim, now()?)?;
+    if !round_order_allowed(&state, source)? || source.enrichment == "stale_requires_review" {
+        return Err("needs_rejudge: round blocked by ordering barrier".into());
+    }
+    Ok(())
+}
+
+pub(crate) fn w4_note_inputs(
+    store: &mut SqliteMemoryStore,
+    claim: &W4Claim,
+    counts: BTreeMap<String, usize>,
+    diagnostic: Option<serde_json::Value>,
+) -> PersistenceResult<()> {
+    store.transaction(|state| {
+        let source = owned_w4(state, claim, now()?)?;
+        let mut meta = input_meta(source)?.unwrap_or(W4InputMeta {
+            round: claim.round,
+            ..Default::default()
+        });
+        meta.counts = counts;
+        meta.diagnostic = diagnostic.clone();
+        write_input_meta(
+            state.sources.get_mut(&claim.claim.source_key).unwrap(),
+            &meta,
+        )
+    })
+}
+
+pub(crate) fn w4_pause_attempt(
+    store: &mut SqliteMemoryStore,
+    claim: &W4Claim,
+    status: &str,
+    reason: Option<&str>,
+    diagnostic: serde_json::Value,
+) -> PersistenceResult<()> {
+    if !matches!(
+        status,
+        "pending" | "budget_exhausted" | "failed" | "needs_rejudge"
+    ) {
+        return Err("invalid pause status".into());
+    }
+    store.transaction(|state| {
+        let source = owned_w4(state, claim, now()?)?;
+        let mut meta = input_meta(source)?.unwrap_or(W4InputMeta {
+            round: claim.round,
+            ..Default::default()
+        });
+        meta.diagnostic = Some(diagnostic.clone());
+        let source = state.sources.get_mut(&claim.claim.source_key).unwrap();
+        source.enrichment = if source.enrichment == "stale_requires_review" {
+            "needs_rejudge"
+        } else {
+            status
+        }
+        .into();
+        source.error = reason.map(str::to_owned);
+        write_input_meta(source, &meta)?;
+        release(source);
+        Ok(())
+    })
 }
 
 /// 已提交状态只从回执读取；remaining 是计划里尚无回执的组。
@@ -2003,6 +2189,7 @@ pub fn w4_start_round(
             .and_then(serde_json::Value::as_object_mut)
         {
             result.remove("w4_summary");
+            result.remove("w4_input_meta");
         }
         state.receipts.insert(
             receipt_key,
@@ -2119,6 +2306,9 @@ pub fn w4_save_plan(
         }
         if !round_order_allowed(state, source)? || source.enrichment == "stale_requires_review" {
             return Err("needs_rejudge: round blocked by ordering barrier".into());
+        }
+        if input_meta(source)?.is_some_and(|m| m.ready) && checkpoint.candidates != candidates {
+            return Err("round inputs are immutable".into());
         }
         let by_index: BTreeMap<_, _> = candidates.iter().map(|c| (c.index, c)).collect();
         if by_index.len() != candidates.len() {
@@ -2251,6 +2441,74 @@ pub fn w4_progress(store: &SqliteMemoryStore, key: &str) -> PersistenceResult<W4
     progress(&store.read()?, key)
 }
 
+/// 来源汇总与对外转换共用实际逐候选结果；组回执成功不等于撤回已执行。
+pub(crate) fn w4_candidate_results(
+    state: &PersistedMemoryState,
+    key: &str,
+) -> PersistenceResult<Vec<serde_json::Value>> {
+    use crate::w4::Held;
+    let source = state.sources.get(key).ok_or("source missing")?;
+    if source.request.is_none() {
+        return Ok(Vec::new());
+    }
+    let checkpoint = checkpoint(source)?;
+    let progress = progress(state, key)?;
+    let mut results = BTreeMap::new();
+    for c in &checkpoint.candidates {
+        let (status, reasons) = match progress.held.get(&c.index) {
+            Some(Held::Unprojectable(crate::contract::Unprojectable::UnresolvedSubject)) => {
+                ("unresolved", vec!["unresolved_subject".to_owned()])
+            }
+            Some(held) => ("pending", vec![serde_json::to_string(held)?]),
+            None if matches!(
+                source.enrichment.as_str(),
+                "needs_rejudge" | "stale_requires_review"
+            ) =>
+            {
+                ("pending", vec!["needs_rejudge".to_owned()])
+            }
+            None => ("pending", Vec::new()),
+        };
+        results.insert(c.index, serde_json::json!({"index":c.index,"status":status,"memory_id":null,"update":null,"reasons":reasons}));
+    }
+    for group in checkpoint.plan.into_iter().flat_map(|p| p.groups) {
+        let Some(receipt) = state.w5_receipts.get(&group.id) else {
+            continue;
+        };
+        for decision in &receipt.decisions {
+            let result = results
+                .get_mut(&decision.candidate)
+                .ok_or("unknown receipt candidate")?;
+            if receipt.status != W5Status::Committed {
+                result["reasons"] = serde_json::json!(["needs_rejudge"]);
+                continue;
+            }
+            let id = receipt
+                .products
+                .get(&decision.candidate)
+                .copied()
+                .or_else(|| {
+                    (decision.action == W5Action::Reinforce)
+                        .then(|| decision.targets.first().copied())
+                        .flatten()
+                });
+            let executed = id.is_some()
+                || (decision.action == W5Action::Retract && decision.pending_reason.is_none());
+            result["status"] = serde_json::json!(if executed { "committed" } else { "pending" });
+            result["memory_id"] = serde_json::to_value(id)?;
+            let update = receipt
+                .products
+                .get(&decision.candidate)
+                .and_then(|id| state.record_updates.get(id))
+                .or_else(|| receipt.updates.get(&decision.candidate));
+            result["update"] = serde_json::to_value(update)?;
+            result["reasons"] =
+                serde_json::to_value(update.map(|u| &u.reasons).cloned().unwrap_or_default())?;
+        }
+    }
+    Ok(results.into_values().collect())
+}
+
 pub fn w4_commit_group(
     store: &mut SqliteMemoryStore,
     claim: &W4Claim,
@@ -2318,7 +2576,13 @@ pub fn w4_finish_round(
                 )
             } else if !result.plan_ready {
                 ("pending", Some("input_not_ready"))
-            } else if !result.held.is_empty() || result.committed.is_empty() {
+            } else if result.candidates.is_empty() && input_meta(source)?.is_some_and(|m| m.ready) {
+                ("no_candidates_unreviewed", None)
+            } else if w4_candidate_results(state, &claim.claim.source_key)?
+                .iter()
+                .any(|c| c["status"] != "committed")
+                || result.committed.is_empty()
+            {
                 ("pending", None)
             } else {
                 ("committed", None)

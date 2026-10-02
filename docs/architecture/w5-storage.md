@@ -18,7 +18,7 @@ W5 的冲突关系、重判复用与归并、更新状态使用版本 8 的存�
 
 不把更新状态放进 `Memory`：`Memory` 的序列化形状同时是冻结的 LegacyMemory（contracts 3.2，`tests/w4_legacy_fixture.rs` 按原样回写校验），加字段会改动它。
 
-运行时第②段另将 `EnrichmentTask` 的可选 round / rejudge / operation_id / order_sequence 放在原任务中；完整来源输入绑定、完整候选及提交计划位于 `SourceRecord.result.w4_checkpoint`。已提交进度只从 W5 回执推导，不新增表或游标。任务汇总位于同一 result 的 `w4_summary`，旧路径不输出这些内部检查点。
+运行时第②段另将 `EnrichmentTask` 的可选 round / rejudge / operation_id / order_sequence 放在原任务中；完整来源输入绑定、完整候选及提交计划位于 `SourceRecord.result.w4_checkpoint`。第③段在计划前用 `w4_save_inputs` 原子保存同轮不可变候选，旁侧 `result.w4_input_meta` 保存 round、ready、Admission 布尔值、输入计数和内部诊断（预算超限的 item / actual / limit、检索 full_text / fallback 等），不保存原文副本。已提交进度仍只从 W5 回执推导，不新增表或游标。任务汇总在 `w4_summary`，旧路径不输出这些内部检查点。显式新轮清除旧输入元数据与汇总；来源删除清空自身 result，他处原文副本仍由既有检查点清洗处理。
 
 ## 2. 结构
 
@@ -103,9 +103,12 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 - 只比对已见关系各自的指纹不够：W4 之后若目标新加入了一条 open 关系，逐条比对发现不了。因此每个目标的指纹还要覆盖“它所在的 open 关系编号集合”；集合有增减（新建、解决、失效）即整组 needs_rejudge。
 - 范围完整时，记录所在 open 关系都须有内容快照；范围不完整时允许实际存在的隔离关系缺少内容快照，不存在的关系编号仍直接拒绝。仍核对 open 编号集合且保留范围缺口，不能据缺少的内容清除关系缺口。要解决的关系不适用这条例外：关系内容与全部成员快照始终必须齐全。
 
-- 新任务在写锁内核对完整来源输入、处理版本、round、operation_id、order_sequence、attempt 和取得锁后的租约时间；所有计划写入、W5 提交、续租和收尾共用归属检查，旧执行者 claim_lost。W5 目标 / 关系快照检查继续生效，不用全局 revision 等值检查阻止自身首组后的余组。
+- 新任务在写锁内核对完整来源输入、处理版本、round、operation_id、order_sequence、attempt 和取得锁后的租约时间；输入保存、计划写入、W5 提交、续租和收尾共用归属检查，旧执行者 claim_lost，不能释放新认领。输入不可同轮替换，计划须与已保存输入完全相同。W5 目标 / 关系快照检查继续生效，不用全局 revision 等值检查阻止自身首组后的余组。
 - 新接收和显式重判共用 owner 内单调序号分配：所有 received_sequence、order_sequence 与两条屏障的最大值加一。首次任务沿用接收序号；重判只改任务排序序号，不改原文接收时间或顺序。W5 按任务排序序号推进 last_applied_source_sequence；无来源业务变更的屏障也覆盖全部任务排序序号。低于应用水位或不高于无来源屏障的余组需重判；新路径水位相等还须有本轮匹配的已提交回执，其他来源不能借用该许可。
 - 首组提交前落库完整不可变计划；业务写入与组回执仍是同一事务。重开后按计划核对回执指纹，已提交组直接重放，余组分别核验。单个组 needs_rejudge 不阻止合法独立组；全部组已有回执时只补总状态，不执行业务动作或模型调用。显式重判的启动回执与轮次更新同一事务，重复请求不重复加轮次；继承历史产物绑定，失效产物不能作为新断言再次插入。
+- 第③段 `enrichment::run_source` 在计划恢复时跳过两个提供者；只有输入检查点时复用候选与准入，重新组装后调用 W4 提供者。需要 W4 但未接入为 pending、释放认领、零业务提交；新输入预算超限为 budget_exhausted，不截断后继续。模型调用预算与阶段缓存由第④段提供者负责。
+- 提供者/解码错误可能包含原文片段，新运行时只持久保存已知错误码（未知故障用内部 attempt_failed），不保存异常细节到 source.error 或输入诊断，避免检查点之外留下无法随来源清洗的原文副本。
+- `w4_finish_round` 与 `enrichment::receipt` 共用逐候选结果：产品取真实 products（其更新状态可取 live record_updates），强化/归并取实际目标及本次回执 updates；撤回执行成功为 committed / memory_id=null，待定撤回虽有 Committed 组回执，候选及来源仍 pending。Held 为 pending（未解决主体为 unresolved），混合结果保留已提交候选。输入就绪且候选为空为 no_candidates_unreviewed，不推断 completed_no_facts；决定过期或余组屏障为 needs_rejudge。专用转换只输出 contracts 3.5 的片段，不展开检查点，也不改旧 MCP 输出。
 
 ## 6. 版本 9 与兼容
 
@@ -119,12 +122,13 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 | 7 | 708b2d2 | 同 baa1ff9 |
 | 7 | 88eb857 / ca16b64 | 有 status、有 legacy_fingerprint |
 | 8 | f1d1828 / 9933ece | 持久 form=pre8 或 v8，关系与更新状态 |
-| 9 | 运行时准备第②段 | 新任务轮次、排序与检查点；form 不变 |
+| 9 | 运行时第②/③段 | 新任务轮次、排序、输入与计划检查点；form 不变 |
 
 规则：
 
 - 新写入程序读 1–9，只读检索支持 3–9；迁移到 8 时快照补 `relations = {}`、`next_relation = 0`、`record_updates = {}`，回执缺 `updates` 时为空（含义“未知”，不是 judged）。迁移只补缺省，不推断旧记录的更新状态。
 - 版本 8 → 9 只提升数据库版本、由可选字段补缺省；不将旧任务迁入新路径，不改旧回执、指纹或 form。缺省新字段不序列化，旧任务写回也保持旧形状。版本 8 的 9933ece 程序拒读 9，防止改写快照丢掉轮次和检查点。新程序拒读未来版本 10。
+- 第③段直接扩展 `w4_runtime_v1` 的库级语义；此前没有运行时登记调用方或真实 v1 任务，不新增 v2 或版本兼容分支，不升数据库版本，不改冻结契约或 W5 回执形状。
 - `tests/fixtures/w5_storage/v8-9933ece.sql` 来自 9933ece 自己的程序升级真实 v7-ca16b64 库到 8 并写入失败旧任务；不是将新库降版本号。`tests/w4_recovery.rs` 检查迁移前后旧任务、回执不变，关闭重开、旧回执重放与版本边界。
 - 版本 7 的程序（88eb857、ca16b64）拒读 8：它们改写快照时会丢掉关系和更新状态，冲突会消失、pending 会变成未知。
 - 回执的旧格式比对规则（ca16b64）保持不变。

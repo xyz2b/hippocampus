@@ -1,6 +1,6 @@
-# W4 的代码侧（B 段）
+# W4 的代码侧与运行时离线闭环
 
-依据 contracts.md 2.4（`w4.v2`）、2.5、3.2。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。代码在 `src/w4.rs`，W5 的配套改动在 `src/commit.rs`。本段不调用模型，也没有接入运行时写入路径。
+依据 contracts.md 2.4（`w4.v2`）、2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。代码在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，第③段的库级入口在 `src/enrichment.rs`。通过注入提供者实现离线闭环，尚未接模型或生产分发。
 
 ## 1. 输入组装（`assemble`）
 
@@ -14,7 +14,7 @@
   - 重判还送入产生该记录的决定替代或列出过的、仍存在且未删除的前身，以及它们所在关系的最新状态（open / resolved / invalidated）。已删除或不存在的前身不作为必需记录、不阻止清除关系缺口；仍存在的前身关联到 invalidated 关系时，该关系照常送入，保留成员 ID 与墓碑，不恢复删除内容。
   - 带其他任务条件的记录不进入输入。关系含任何越界成员时整条不送入，也不由该关系带入其他成员；被挡住的成员数计入 `coverage.omitted`，范围不完整。
   - 重判的记录本身不与自己比较；它是关系成员时仍出现在记录里。
-- **记录预算**：`W4Budget { facts, records }` 中 `records` 是实际可送入记录的总数上限，已删除、缺失、越界记录不计。必需集合（专用关系记录、关系成员、重判前身）展开后超限时，记录与关系输入留空、不调用 W4，整批 pending / scope_incomplete；fact 命中按检索顺序逐条尝试加入。候选数、关系数、原文长度和 token 预算留待运行时接线，本段没有真实模型调用。
+- **记录预算**：`W4Budget { facts, records }` 中 `records` 是实际可送入记录的总数上限，已删除、缺失、越界记录不计。必需集合（专用关系记录、关系成员、重判前身）展开后超限时，记录与关系输入留空、不调用 W4，整批 pending / scope_incomplete；fact 命中按检索顺序逐条尝试加入。第③段另加候选数、关系数、原文 UTF-8 字节预算（第 5 节），不改变上述取数规则；token 和付费调用预算由第④段模型提供者负责。
 - **coverage.complete**：专用关系全部取到时为 true；存在通用 `fact` 候选、任务隔离挡住关系或必需集合超限时为 false。已删除记录不计入 omitted。这个值原样写进 W5 组的 `scope_complete`。
 - **记录视图（`record_view`）**
   - 有完整候选和更新状态的记录给 CurrentRecordView2：
@@ -97,15 +97,19 @@
 - **例外（用户同意）**：w4_09 不比对组装结果。样本为了测试“检索到无关记录时判为 new”，送入了一条按取数规则取不到的其他关系记录；该样本直接用样本输入验证校验、转换与提交。
 - **标签状态与验证边界**：样本迁移到 w4.v2 后为 draft，等用户复核。复核前，本测试只说明代码与当前标签一致；“无新回归”仅指约定检查覆盖范围，不代表模型语义、运行时接线或 recall.v3 已验收。
 
-## 5. 运行时准备与未接通部分
+## 5. 运行时库级离线闭环与未接通部分
 
-第②段在 `src/commit.rs` 提供离线任务接口，生产仍使用旧 `commit_candidates`，没有新 MCP 入口。数据库版本为 9，W5 回执格式继续为 `v8`。
+第③段在 `w4_runtime_v1` 上扩展，数据库保持 9，W5 回执格式仍为 `v8`。生产仍使用旧 `commit_candidates`，没有新 MCP 入口。
 
-- **轮次**：`w4_start_round` 首轮为 0；显式重判才加一。请求 ID 绑定稳定的预算 `operation_id`，启动回执复用 `TurnReceipt`；同参重放返回原轮次，即使之后已开始其他轮次也不重复加一。本段不申请预算、不调用模型，新语义请求的预算由第③段调用方负责。
-- **检查点**：`SourceRecord.result.w4_checkpoint` 保存完整来源输入绑定、完整候选和 `Plan { groups, held }`。首组提交前必须调用 `w4_save_plan`；同轮计划只允许完全相同的重放。组 ID、候选来源、完整候选绑定和分组覆盖在写锁内核对。`w4_progress` 从计划与 `w5_receipts` 推导已提交、需重判及余组，不另存提交游标。
-- **续跑**：`w4_claim_round` 可恢复 queued、租约过期的 running、failed、budget_exhausted，以及被屏障标为 stale_requires_review 的任务；缺计划的 pending 可恢复输入。同轮只换 attempt 和租约，round / operation_id 不变。无计划收尾为 pending / input_not_ready；空计划或 Held 不推断 completed_no_facts。全部组已提交但总状态未写时，只补写总状态；事实提交成功与逐记录 `update.pending` 分开。
-- **顺序与归属**：首次 `order_sequence = received_sequence`，显式重判用公共序号分配器分配新值，保留原文接收序号和 observed_at。与两条水位线的检查在事务内执行；水位相等须有本轮匹配的已提交回执才可续交。更新来源或无来源变更仍阻止余组，已提交组只重放。提交、保存计划、续租、故障结束和汇总均核对版本、轮次、operation、attempt、租约及完整来源输入；不用全局 revision 等值检查阻止自身余组。旧入口拒抢新处理版本。
+- **入口**：调用方先显式 `w4_start_round`，再调用 `enrichment::run_source(store, key, budget, upstream, judge)`。流程为认领 → 恢复检查 → 保存输入 → `assemble` → 提供者输出或 `assembly.skipped` → `plan`（内部已 `validate`）→ 保存计划 → 逐组提交 → 汇总。提供者调用期间不持有数据库事务。终态用 `enrichment::receipt` 读取，普通读取不重新认领或判定。
+- **提供者**：上游接收 `ProviderContext` 与 `SourceInput { text, history }`，返回完整已支持候选、稳定索引和 W3 `Admission`；不能返回 committed_id、Plan、组编号或快照。运行时绑定历史产物，`plan` 生成证据、组和快照。W4 提供者接收同一上下文、实际 `W4Input` 和按来源 ID 去重的原文及历史，返回 `Some(W4Output)` 或 `None`（未接入）。上下文包含 owner、完整来源绑定、可信任务、接收时间/序号、round、operation_id。测试读取夹具后注入，生产代码不读夹具。第④段在这两个位置实现 W1/W2/W3 与 W4；阶段缓存、token/付费预算归提供者，同操作同输入复用结果，结果缺失不自动重发。
+- **轮次**：首轮为 0；显式重判才加一，请求 ID 绑定稳定的 `operation_id`。启动回执复用 `TurnReceipt`；同参重放返回原轮次，即使之后已开始其他轮次也不重复加一。显式新轮清除旧输入元数据和汇总。
+- **检查点**：`SourceRecord.result.w4_checkpoint` 保存完整来源输入绑定、完整候选和 `Plan { groups, held }`。`w4_save_inputs` 在计划前原子保存候选及准入；同轮不可替换。旁侧 `w4_input_meta` 只含 round、ready、Admission 布尔值、计数和内部诊断，不存原文副本。首组提交前保存完整不可变计划，写锁内核对组 ID、完整候选和分组覆盖。`w4_progress` 只从计划与 W5 回执推导进度，不另存游标。
+- **续跑**：可认领 queued、过期 running、failed、budget_exhausted、stale_requires_review，以及尚无计划的 pending；同轮只换 attempt/租约，round/operation_id 不变。输入已保存就不调用上游；已有计划时两个提供者都不调用，也不重新检查输入制作预算。全部组已提交但未汇总时只补总状态。需要 W4 而提供者返回 None 时，保留候选，pending、释放认领、零业务提交；内部诊断为 capability_unavailable，不新增冻结失败码，不回落旧策略。
+- **输入预算**：`RuntimeInputBudget` 独立于 `W4Budget`，缺省候选 64、关系 64、原文 262144 字节（facts=64、records=256）。上游前检查当前原文及历史；上游后先保存候选，再检查候选数；assemble 后、W4 前检查实际关系数和实际提供的所有来源原文及历史字节，按来源去重。等于上限允许，超限为 budget_exhausted，诊断保存 item / actual / limit，保留 T1 与已获得候选，不截断后继续。必需记录超限仍沿用 scope_incomplete 的旧规则。
+- **回执**：专用转换只返回 contracts 3.5 的 source/enrichment 片段，不展开内部 result，不复用旧 `source_response`。新增、复用、归并及强化成功为 committed，绑定实际记录 ID；强化取本次回执的更新状态，不能用目标旧状态替代。执行撤回为 committed、memory_id=null，多目标留在 W5 回执；无目标撤回和 Held 为 pending，主体未解决为 unresolved。未执行者 memory_id=null、update=null；已提交断言即使 update.pending 仍算 committed。来源按逐候选实际结果汇总：存在未提交候选为 pending，决定过期/余组屏障为 needs_rejudge，普通错误/无效输出为 failed；输入就绪但候选为空为 no_candidates_unreviewed，无就绪标记不能从空数组推断上游已完成。completed_no_facts 本段不产生。
+- **顺序与归属**：首次 `order_sequence = received_sequence`，显式重判分配新序号，保留接收序号和 observed_at。两条水位线在事务内核对，水位相等须有本轮匹配的已提交回执；其他来源不能借用许可。更新来源或无来源变更仍阻止余组，已提交候选保留真实结果。输入保存、计划保存、提交、续租和收尾均核对版本、轮次、operation、attempt、租约及完整来源输入；不用全局 revision 等值检查阻止自身余组。旧执行者不能覆盖或释放新认领，旧入口拒抢新版本任务。
 - **重判复用**：新轮继承完整候选，从上一轮回执绑定 committed_id，原有绑定不能丢弃或替换。W5 继续核对产物的来源、完整候选、有效状态及快照；失效或归并退出的产物不能回落成无 ID 的新增。需要新输入时仍须显式重判，不自动再次调用模型。
-- **删除**：清空自身检查点和认领；清洗他处检查点中的原文、候选、依据和编码快照副本，受影响计划整体失效并进入 needs_rejudge。保留历史组 ID 供进度审计，不返回失效旧组用于执行。`tests/w4_recovery.rs` 用真实 SQLite 关闭重开覆盖以上恢复窗口、屏障、争抢、删除与版本兼容。
+- **删除与验证**：沿用已有检查点清洗：清空自身 result（含输入元数据）和认领；清洗他处候选、依据和编码快照，受影响计划整体失效，进入 needs_rejudge。旁侧元数据没有原文副本；新轮才重建。保留历史组 ID 供审计，不执行失效旧组。重判可读取失效关系的来源 ID 与墓碑，但不向提供者附已删除原文；输出若仍把它当动作依据，validate / W5 继续拒绝。`tests/enrichment_runtime.rs` 与 `tests/w4_recovery.rs` 用真实 SQLite 关闭重开覆盖 T1、注入输出、预算、恢复窗口、屏障、争抢、删除和回执映射。
 
-尚未接通：W1 / W3 / W4 模型调用及阶段检查点、运行时离线闭环、生产路径替换、无歧义的运行时证据 ID、检索降级诊断映射到任务回执、recall.v3。B 段已有 `w1:<来源 ID>:<候选索引>` 证据 ID 约定；旧 ID 和旧回执保持原样。关系只由 W4 决定或用户确认解决，不因成员进入历史自动关闭。
+尚未接通：W1 / W3 / W4 模型调用及模型阶段检查点、后台版本分发与生产切换、recall.v3。检索 full_text / fallback 仅记入新路径的内部输入诊断。继续使用已有 `w1:<来源 ID>:<候选索引>` 证据 ID；旧 ID、处理版本输出与回执保持原样。关系只由 W4 决定或用户确认解决，不因成员进入历史自动关闭。

@@ -298,7 +298,7 @@ pub struct W4Runtime<'a> {
 }
 
 /// W3 对一个候选给出的、影响准入的可信结果（contracts 2.3）。
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Admission {
     /// Episode 的 episode_value 为 useful。
     pub episode_useful: bool,
