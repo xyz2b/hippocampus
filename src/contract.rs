@@ -579,7 +579,7 @@ pub struct ProjectionContext {
 }
 
 /// 为什么不能投影为确定的事实记录。候选与原文照常保留，只是不提交为现有 Memory。
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub enum Unprojectable {
     UnresolvedSubject,
     NotUserStatement(Speech),

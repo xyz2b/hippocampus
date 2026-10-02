@@ -570,6 +570,9 @@ pub(crate) fn forget(
             .map(|_| json!({"enrichment_mode":"off"}));
         source.error = Some("source_deleted".into());
         source.enrichment = "deleted".into();
+        source.task.attempt_id = None;
+        source.task.lease_until = None;
+        source.task.claim_revision = None;
         deleted_sources.push(source.id.clone());
     }
     // 整段删除的文字：原文正文与无原文路径的片段。其他请求里的历史副本含有它们就整条去掉。
@@ -823,6 +826,48 @@ pub(crate) fn forget(
                     scrub(&mut spec.times, &scrubbed);
                 }
             }
+        }
+    }
+    // Checkpoints are raw-content copies too, including JSON-encoded W5 snapshots.
+    for source in state.sources.values_mut() {
+        let Some(checkpoint) = source
+            .result
+            .as_mut()
+            .and_then(|r| r.get_mut("w4_checkpoint"))
+        else {
+            continue;
+        };
+        let mut affected = touches(checkpoint, &deleted_source_ids, &deleted);
+        for group in checkpoint
+            .get_mut("plan")
+            .and_then(|p| p.get_mut("groups"))
+            .and_then(Value::as_array_mut)
+            .into_iter()
+            .flatten()
+        {
+            let before = serde_json::to_string(group)?;
+            let mut fingerprint = before.clone();
+            scrub_fingerprint(
+                &mut fingerprint,
+                &turns,
+                &deleted,
+                &deleted_source_ids,
+                &scrubbed,
+            )?;
+            if fingerprint != before {
+                affected = true;
+            }
+        }
+        affected |= scrub(checkpoint, &scrubbed);
+        if affected {
+            // No executable old plan survives privacy invalidation. Historical group IDs remain in receipts.
+            checkpoint["plan"] = Value::Null;
+            checkpoint["invalidated"] = json!("source_deleted");
+            source.task.attempt_id = None;
+            source.task.lease_until = None;
+            source.task.claim_revision = None;
+            source.enrichment = "needs_rejudge".into();
+            source.error = Some("checkpoint_invalidated_by_deletion".into());
         }
     }
     Ok(

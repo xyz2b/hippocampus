@@ -59,6 +59,14 @@ pub struct EnrichmentTask {
     pub lease_until: Option<i64>,
     pub claim_revision: Option<u64>,
     pub accepted_mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub round: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rejudge: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_sequence: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,6 +89,11 @@ pub struct SourceRecord {
 }
 
 impl SourceRecord {
+    /// 重判取得新的写入排序序号，原文接收顺序与时间保持不变。
+    pub fn order_sequence(&self) -> u64 {
+        self.task.order_sequence.unwrap_or(self.received_sequence)
+    }
+
     pub fn status(&self) -> Value {
         serde_json::json!({
             "source": {
@@ -105,6 +118,19 @@ pub(crate) struct TurnReceipt {
 }
 
 impl PersistedMemoryState {
+    /// 原文接收与显式重判共用一个 owner 内的序号空间。
+    pub fn next_source_sequence(&self) -> PersistenceResult<u64> {
+        self.sources
+            .values()
+            .map(|s| s.received_sequence.max(s.order_sequence()))
+            .max()
+            .unwrap_or(0)
+            .max(self.last_applied_source_sequence)
+            .max(self.source_less_barrier_sequence)
+            .checked_add(1)
+            .ok_or_else(|| "source sequence overflow".into())
+    }
+
     /// Restore both stores even if the operation returns an error; the SQLite transaction rolls back.
     pub fn with_engine<T>(
         &mut self,
@@ -171,7 +197,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=8 => (),
+            1..=9 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -251,6 +277,11 @@ impl SqliteMemoryStore {
             }
             tx.pragma_update(None, "user_version", 8)?;
         }
+        if version < 9 {
+            // v8 writers would drop round/operation/order fields when saving the snapshot.
+            // Missing optional fields remain absent; do not enroll legacy tasks or rewrite receipts.
+            tx.pragma_update(None, "user_version", 9)?;
+        }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
         if crate::lexical::initialize(&tx, &owner, &mut state)? && !state.sources.is_empty() {
@@ -289,9 +320,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=8).contains(&version) {
+        if !(3..=9).contains(&version) {
             return Err(format!(
-                "source search requires database version 3 to 8; found {version}; migrate explicitly"
+                "source search requires database version 3 to 9; found {version}; migrate explicitly"
             )
             .into());
         }
@@ -412,7 +443,7 @@ impl SqliteMemoryStore {
                     state
                         .sources
                         .values()
-                        .map(|source| source.received_sequence)
+                        .map(SourceRecord::order_sequence)
                         .max()
                         .unwrap_or(0),
                 );
@@ -425,9 +456,9 @@ impl SqliteMemoryStore {
                 {
                     continue;
                 }
-                let reason = if source.received_sequence <= barrier {
+                let reason = if source.order_sequence() <= barrier {
                     Some("source_less_authority_changed")
-                } else if source.received_sequence < applied {
+                } else if source.order_sequence() < applied {
                     Some("newer_source_applied")
                 } else {
                     None

@@ -1696,6 +1696,9 @@ impl ChatMemoryService {
             if source.request.is_none() {
                 return Err("source_deleted".into());
             }
+            if source.task.processing_version.as_deref().is_some_and(|v| v != ENRICHMENT_VERSION) {
+                return Err("unsupported_processing_version: this entry cannot claim the source".into());
+            }
             if matches!(
                 source.enrichment.as_str(),
                 "committed" | "completed_no_facts" | "completed_pending" | "completed_rejected"
@@ -2196,7 +2199,7 @@ impl ChatMemoryService {
                 if state.receipts.contains_key(&key) {
                     return Err("turn was already processed before independent capture; use its original receipt".into());
                 }
-                let received_sequence = state.sources.values().map(|s|s.received_sequence).max().unwrap_or(0).checked_add(1).ok_or("source sequence overflow")?;
+                let received_sequence = state.next_source_sequence()?;
                 let mut source = SourceRecord {
                     id:crate::diagnostics::new_id(), session_id:input.session_id.clone(),
                     turn_id:input.turn_id.clone(), observed_at:context.now.0,

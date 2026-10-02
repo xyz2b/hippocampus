@@ -101,7 +101,7 @@ fn migration_preserves_old_snapshots_and_is_repeatable() {
         connection
             .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
             .unwrap(),
-        8
+        9
     );
     let saved: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -109,7 +109,7 @@ fn migration_preserves_old_snapshots_and_is_repeatable() {
         })
         .unwrap();
     assert_eq!(serde_json::from_str::<Value>(&saved).unwrap(), old);
-    connection.pragma_update(None, "user_version", 9).unwrap();
+    connection.pragma_update(None, "user_version", 10).unwrap();
     assert!(SqliteMemoryStore::open(&db.0, UserId::from("alice")).is_err());
 }
 
@@ -164,7 +164,7 @@ fn v4_upgrade_preserves_legacy_pending_without_queueing_it() {
         connection
             .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
             .unwrap(),
-        8
+        9
     );
     let saved: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -285,7 +285,7 @@ fn s5_migration_keeps_v3_sources_facts_and_index_read_only_until_opened_for_writ
         connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
             .unwrap(),
-        8
+        9
     );
     assert_eq!(
         connection

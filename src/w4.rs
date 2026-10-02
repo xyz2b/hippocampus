@@ -307,7 +307,7 @@ pub struct Admission {
 }
 
 /// 没有进入 W5 的候选及原因；候选与原文照常保留。
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
 pub enum Held {
     /// 现有 Memory 会误述的候选。
     Unprojectable(Unprojectable),
@@ -318,7 +318,8 @@ pub enum Held {
 }
 
 /// 转换结果：可交给 `commit_group` 的依赖组，以及没有进入 W5 的候选。
-#[derive(Clone, Debug, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Plan {
     pub groups: Vec<W5Group>,
     pub held: BTreeMap<usize, Held>,

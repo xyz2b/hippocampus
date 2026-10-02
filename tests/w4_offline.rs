@@ -134,6 +134,7 @@ fn claim_source(db: &Db, sid: &str, text: &str) {
                         lease_until: Some(now() + 900),
                         claim_revision: Some(state.revision),
                         accepted_mode: Some("inline".into()),
+                        ..Default::default()
                     },
                 },
             );
