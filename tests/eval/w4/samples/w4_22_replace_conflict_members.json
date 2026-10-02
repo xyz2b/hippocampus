@@ -1,8 +1,8 @@
 {
   "id": "w4_22_replace_conflict_members",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 2,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "冲突双方被同一新版本替代：state_change 结束两条，不解决关系，不迁移成员",
   "boundary_with": "w4_21_confirm_conflict_side",
   "sources": {
@@ -63,6 +63,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -116,6 +117,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -221,6 +223,7 @@
           "s-510"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": null
       }
     ],

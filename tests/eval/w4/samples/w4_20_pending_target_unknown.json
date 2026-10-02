@@ -1,8 +1,8 @@
 {
   "id": "w4_20_pending_target_unknown",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 2,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "W4 返回 pending/target_unknown：撤回的目标在多条记录中不确定",
   "boundary_with": "w4_06_retract_target_unknown",
   "sources": {
@@ -57,6 +57,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -108,6 +109,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -180,6 +182,7 @@
           "s-410"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": "target_unknown"
       }
     ],

@@ -28,9 +28,9 @@ def recurring(q): return {"role": "event", "quote": Q(q), "interp": {"kind": "re
 def vague(q, role="validity"): return {"role": role, "quote": Q(q), "interp": {"kind": "unknown"}, "anchor": "said_on"}
 UNRESOLVABLE = ("recurring", "unknown")
 def rec(id, c, sid, said_on, status="active", reason=None, ended="not_ended", history=(), rel=(), update=JUDGED,
-        time_resolutions=None):
+        time_resolutions=None, end=None):
     tr = time_resolutions if time_resolutions is not None else [UNKNOWN_RES for t in c["times"] if t["interp"]["kind"] in UNRESOLVABLE]
-    return {"format": "current", "id": id, "stored_status": status, "termination_reason": reason, "ended": ended,
+    return {"format": "current", "id": id, "stored_status": status, "termination_reason": reason, "ended": ended, "end": end,
             "candidate": c, "evidence": [ev(sid, c["sentence"]["text"])], "grade": "committed", "said_on": said_on,
             "time_resolutions": tr, "history": list(history), "open_relations": list(rel), "update": update}
 def incand(c, sid, said_on, index=0, committed_id=None, time_resolutions=None):
@@ -41,7 +41,21 @@ SCOPE_PENDING = {"status": "pending", "reasons": ["update_scope_incomplete"]}
 PARTIAL = {"complete": False, "omitted": 0}
 def sample(id, focus, sources, candidates, records, expect, relations=(), coverage=None, call_w4=True,
            boundary_with=None, rejected=(), note=None, batch=1):
-    d = {"id": id, "contract": "w4.v1", "batch": batch, "label_status": None, "focus": focus,
+    # w4.v2: every decision carries relation_scope (null unless conflict). Existing
+    # conflict examples have no qualifier on the conflict itself: both lists empty.
+    def with_scope(dec):
+        if "relation_scope" in dec:
+            return dec
+        scope = {"conditions": [], "times": []} if dec.get("action") == "conflict" else None
+        out = {}
+        for k, v in dec.items():
+            if k == "pending_reason":
+                out["relation_scope"] = scope
+            out[k] = v
+        return out
+    if "decisions" in expect:
+        expect = dict(expect, decisions=[with_scope(x) for x in expect["decisions"]])
+    d = {"id": id, "contract": "w4.v2", "batch": batch, "label_status": None, "focus": focus,
          "boundary_with": boundary_with, "sources": sources,
          "input": {"candidates": candidates, "records": records, "relations": list(relations),
                    "coverage": coverage or {"complete": True, "omitted": 0}},

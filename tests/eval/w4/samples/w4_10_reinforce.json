@@ -1,8 +1,8 @@
 {
   "id": "w4_10_reinforce",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 2,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "强化 reinforce：独立的新原文重复同一断言",
   "boundary_with": "w4_11_preference_strength",
   "sources": {
@@ -59,6 +59,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -127,6 +128,7 @@
           "s-320"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": null
       }
     ],

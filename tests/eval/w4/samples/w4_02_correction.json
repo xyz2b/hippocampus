@@ -1,8 +1,8 @@
 {
   "id": "w4_02_correction",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 1,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "纠错 correction：旧值从来不对",
   "boundary_with": "w4_01_state_change",
   "sources": {
@@ -59,6 +59,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -127,6 +128,7 @@
           "s-230"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": null
       }
     ],

@@ -1,8 +1,8 @@
 {
   "id": "w4_17_pending_unclear_relation",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 2,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "W4 返回 pending/unclear_relation：可能改学、也可能同时在学",
   "boundary_with": null,
   "sources": {
@@ -77,6 +77,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -145,6 +146,7 @@
           "s-390"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": "unclear_relation"
       }
     ],

@@ -36,8 +36,8 @@ fn reviewed_w4_inputs_decode_and_round_trip() {
         );
         for record in &input.records {
             formats.insert(match record {
-                RecordView::Current(_) => "current",
-                RecordView::Legacy(_) => "legacy",
+                RecordView2::Current(_) => "current",
+                RecordView2::Legacy(_) => "legacy",
             });
         }
     }
@@ -65,7 +65,7 @@ fn candidate() -> Json {
 fn decision() -> Json {
     json!({"candidate": 0, "status": "pending", "action": null, "targets": [],
            "resolves_relations": [], "basis": [], "effective": null,
-           "pending_reason": "target_unknown"})
+           "relation_scope": null, "pending_reason": "target_unknown"})
 }
 
 #[test]
@@ -81,6 +81,17 @@ fn the_contract_example_candidate_decodes() {
     );
     let decision: W4Decision = serde_json::from_value(decision()).unwrap();
     assert_eq!(decision.action, None);
+    let mut scoped = self::decision();
+    scoped["relation_scope"] =
+        json!({"conditions": [{"of": "candidate", "index": 0}], "times": [{"of": 17, "index": 1}]});
+    let decoded: W4Decision = serde_json::from_value(scoped.clone()).unwrap();
+    let scope = decoded.relation_scope.clone().unwrap();
+    assert_eq!(scope.conditions[0].of, QualifierOwner::Candidate);
+    assert_eq!(
+        scope.times[0].of,
+        QualifierOwner::Record(hippocampus::MemoryId(17))
+    );
+    assert_eq!(serde_json::to_value(&decoded).unwrap(), scoped);
 }
 
 #[test]
@@ -113,6 +124,16 @@ fn shape_errors_are_rejected_at_decoding() {
     let mut c = candidate();
     c["subject"] = json!({"entity_id": "self", "unresolved": {"text": "他"}});
     cases.push(("subject with both forms", c, as_candidate));
+    let mut d = decision();
+    d["relation_scope"] = json!({"conditions": [{"of": "target", "index": 0}], "times": []});
+    cases.push((
+        "scope owner that is neither candidate nor id",
+        d,
+        as_decision,
+    ));
+    let mut d = decision();
+    d.as_object_mut().unwrap().remove("relation_scope");
+    cases.push(("relation_scope missing", d, as_decision));
     let mut d = decision();
     d["action"] = json!("null");
     cases.push(("action string null", d, as_decision));
@@ -298,4 +319,46 @@ fn projection_refuses_what_memory_would_misstate() {
         projected.candidate.intent,
         hippocampus::CandidateIntent::Retract { target: None }
     ));
+}
+
+#[test]
+fn quotes_are_located_as_continuous_source_text() {
+    let source = "I don’t  know.  Call me now, 我说 “画速写时 固定用炭笔”。";
+    let found = |quote: &str| locate_quote(source, quote).map(|range| &source[range]);
+    // 空白与引号排版的差异不算不同；返回的是原文写法。
+    assert_eq!(found("I don't know."), Some("I don’t  know."));
+    assert_eq!(
+        found("\"画速写时固定用炭笔\""),
+        Some("“画速写时 固定用炭笔”")
+    );
+    assert_eq!(found("don''t"), Some("don’t"));
+    // 英文不能落在词的中间：know 里没有独立的 now，后面那个才是。
+    assert_eq!(found("now"), Some("now"));
+    assert_eq!(
+        locate_quote(source, "now").unwrap().start,
+        source.find("now,").unwrap()
+    );
+    assert_eq!(locate_quote("I know", "now"), None);
+    // 缩合词不能截掉否定后缀；独立的引号照常匹配。
+    assert_eq!(locate_quote("I can’t swim.", "I can"), None);
+    assert_eq!(locate_quote("I can't swim.", "can"), None);
+    assert_eq!(locate_quote("I can’t swim.", "t swim"), None);
+    assert_eq!(locate_quote("I can''t swim.", "I can"), None);
+    assert_eq!(locate_quote("I can’t swim.", "I can'"), None);
+    assert_eq!(locate_quote("I can’t swim.", "'t swim."), None);
+    let possessive = "The dogs' bones.";
+    assert_eq!(
+        locate_quote(possessive, "dogs").map(|range| &possessive[range]),
+        Some("dogs")
+    );
+    let quoted = "He said ‘now’ twice.";
+    assert_eq!(
+        locate_quote(quoted, "now").map(|range| &quoted[range]),
+        Some("now")
+    );
+    // 不相邻的片段不能拼成一个；标点与大小写的差异不放过。
+    assert_eq!(found("know. now"), None);
+    assert_eq!(found("画速写时，固定用炭笔"), None);
+    assert_eq!(found("i don't know"), None);
+    assert_eq!(found("  "), None);
 }

@@ -1,4 +1,4 @@
-//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.4、§3.2）。
+//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.4 w4.v2、§3.2）。
 //!
 //! 这里只定义形状：JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分。
 //! Quote 是否逐字存在、日历是否合法、目录与任务是否允许等机械校验属于 W2（§2.2），
@@ -299,7 +299,7 @@ pub struct W4Coverage {
 #[serde(deny_unknown_fields)]
 pub struct W4Input {
     pub candidates: Vec<W4Candidate>,
-    pub records: Vec<RecordView>,
+    pub records: Vec<RecordView2>,
     pub relations: Vec<RelationLink>,
     pub coverage: W4Coverage,
 }
@@ -347,7 +347,55 @@ pub struct W4Decision {
     #[serde(deserialize_with = "required")]
     pub effective: Option<TimeInterp>,
     #[serde(deserialize_with = "required")]
+    pub relation_scope: Option<RelationScope>,
+    #[serde(deserialize_with = "required")]
     pub pending_reason: Option<PendingReason>,
+}
+
+/// §2.4 被引用限定语的所属断言：本决定的新候选，或某个 target 记录。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum QualifierOwner {
+    Candidate,
+    Record(MemoryId),
+}
+
+impl Serialize for QualifierOwner {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            QualifierOwner::Candidate => serializer.serialize_str("candidate"),
+            QualifierOwner::Record(id) => id.serialize(serializer),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for QualifierOwner {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        match serde_json::Value::deserialize(deserializer)? {
+            serde_json::Value::String(text) if text == "candidate" => Ok(QualifierOwner::Candidate),
+            value @ serde_json::Value::Number(_) => serde_json::from_value(value)
+                .map(QualifierOwner::Record)
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!(
+                "qualifier owner must be \"candidate\" or a record id, got {other}"
+            ))),
+        }
+    }
+}
+
+/// §2.4 对已核验限定语的引用：`conditions[index]` 或 `times[index]`。
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct QualifierRef {
+    pub of: QualifierOwner,
+    pub index: usize,
+}
+
+/// §2.4 冲突的适用范围，由 W4 引用新候选或目标已核验的限定语给出；都为空表示没有限定范围。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RelationScope {
+    pub conditions: Vec<QualifierRef>,
+    pub times: Vec<QualifierRef>,
 }
 
 /// §2.4 W4 输出。
@@ -462,6 +510,45 @@ impl RecordView {
         match self {
             RecordView::Current(view) => view.id,
             RecordView::Legacy(view) => view.id,
+        }
+    }
+}
+
+/// §3.2 w4.v2 输入用的完整记录视图：CurrentRecordView 的全部字段，加结束时间 `end`
+/// （`ended = known` 时为保留精度的换算结果，否则为 null）。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CurrentRecordView2 {
+    pub id: MemoryId,
+    pub stored_status: StoredStatus,
+    #[serde(deserialize_with = "required")]
+    pub termination_reason: Option<SupersedeReason>,
+    pub ended: Ended,
+    #[serde(deserialize_with = "required")]
+    pub end: Option<TimeResolution>,
+    pub candidate: Candidate,
+    pub evidence: Vec<EvidenceRef>,
+    pub grade: Grade,
+    pub said_on: String,
+    pub time_resolutions: Vec<TimeResolution>,
+    pub history: Vec<MemoryId>,
+    pub open_relations: Vec<String>,
+    pub update: UpdateState,
+}
+
+/// §3.2 `RecordView2 = CurrentRecordView2 | LegacyRecordView`。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(tag = "format", rename_all = "snake_case")]
+pub enum RecordView2 {
+    Current(CurrentRecordView2),
+    Legacy(LegacyRecordView),
+}
+
+impl RecordView2 {
+    pub fn id(&self) -> MemoryId {
+        match self {
+            RecordView2::Current(view) => view.id,
+            RecordView2::Legacy(view) => view.id,
         }
     }
 }
@@ -648,4 +735,65 @@ impl ContractCandidate {
             lossless: self.lossless(),
         })
     }
+}
+
+/// §1.1 在原文里定位 Quote：只忽略空白差异与引号排版（`’`/`‘` 与 `'`、`“`/`”` 与 `"`、
+/// 重复的 `''`），片段必须连续。返回原文中的字节范围，调用方据此还原原文写法；英文、数字
+/// 两端不能落在词的中间（`know` 里的 `now` 不算；`can’t` 不能只取 `can`）。
+pub fn locate_quote(source: &str, quote: &str) -> Option<std::ops::Range<usize>> {
+    // 规范化后的字符，连同它在原文里的字节范围。
+    fn normalized(text: &str) -> Vec<(char, usize, usize)> {
+        let mut out: Vec<(char, usize, usize)> = Vec::new();
+        for (start, ch) in text.char_indices() {
+            if ch.is_whitespace() {
+                continue;
+            }
+            let ch = match ch {
+                '’' | '‘' => '\'',
+                '“' | '”' => '"',
+                other => other,
+            };
+            let end = start + ch_len(text, start);
+            if ch == '\'' && out.last().is_some_and(|(last, _, _)| *last == '\'') {
+                // 重复的 '' 视为一个；范围并入前一个。
+                out.last_mut().expect("checked").2 = end;
+                continue;
+            }
+            out.push((ch, start, end));
+        }
+        out
+    }
+    fn ch_len(text: &str, start: usize) -> usize {
+        text[start..].chars().next().map_or(0, char::len_utf8)
+    }
+    let haystack = normalized(source);
+    let needle: Vec<char> = normalized(quote).into_iter().map(|(ch, _, _)| ch).collect();
+    if needle.is_empty() || needle.len() > haystack.len() {
+        return None;
+    }
+    let word = |ch: char| ch.is_ascii_alphanumeric();
+    (0..=haystack.len() - needle.len()).find_map(|at| {
+        let window = &haystack[at..at + needle.len()];
+        if !window
+            .iter()
+            .map(|(ch, _, _)| *ch)
+            .eq(needle.iter().copied())
+        {
+            return None;
+        }
+        let (_, start, _) = window[0];
+        let (_, _, end) = window[window.len() - 1];
+        // 片段的两端不能落在词的中间。词内的撇号（can’t、don't，含重复的 ''）连着两侧
+        // 字母，算在词里：越过紧邻边界的撇号后，两侧都是字母或数字，就是词的中间。
+        let apostrophe = |ch: char| matches!(ch, '\'' | '’' | '‘');
+        let inside_word = |at: usize| {
+            let left = source[..at].chars().rev().find(|ch| !apostrophe(*ch));
+            let right = source[at..].chars().find(|ch| !apostrophe(*ch));
+            left.is_some_and(word) && right.is_some_and(word)
+        };
+        if inside_word(start) || inside_word(end) {
+            return None;
+        }
+        Some(start..end)
+    })
 }

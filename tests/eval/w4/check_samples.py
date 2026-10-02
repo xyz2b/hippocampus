@@ -1,8 +1,8 @@
-"""Structural checks for the W4 sample set (contracts.md 2.4, w4.v1).
+"""Structural checks for the W4 sample set (contracts.md 2.4, w4.v2).
 
 Checks only what code can check: every quote occurs verbatim in its
 source, ids and references are consistent, and each expected decision
-obeys the w4.v1 output rules. Whether the expected action is the right
+obeys the w4.v2 output rules. Whether the expected action is the right
 judgement is for human review (label_status).
 
     python3 tests/eval/w4/check_samples.py
@@ -274,6 +274,21 @@ def check(s) -> list:
     rec_ids = [r["id"] for r in inp["records"]]
     if len(set(rec_ids)) != len(rec_ids):
         errs.append("记录 ID 重复")
+    if s.get("contract") != "w4.v2":
+        errs.append("contract 须为 w4.v2")
+    for r in inp["records"]:
+        # contracts 3.2 RecordView2: a full record carries `end`; it is a resolved
+        # TimeResolution exactly when ended = known (older receipts aside, which
+        # samples do not model), otherwise null.
+        if r.get("format") != "current":
+            continue
+        if "end" not in r:
+            errs.append(f"记录 {r['id']} 缺 end 字段")
+        elif (r["end"] is not None) != (r["ended"] == "known"):
+            errs.append(f"记录 {r['id']}：ended=known 时 end 须为换算结果，其余为 null")
+        elif r["end"] is not None and (r["end"].get("status") != "resolved" or r["end"].get("start") is None
+                                       or r["end"].get("end_exclusive") is None):
+            errs.append(f"记录 {r['id']}：end 须为已换算的区间")
     rel_ids = {r["id"] for r in inp["relations"]}
     for rel in inp["relations"]:
         if not set(rel["members"]) <= set(rec_ids) or len(set(rel["members"])) < 2 or \
@@ -374,6 +389,34 @@ def check(s) -> list:
                     errs.append(f"{tag}：pending 不能解决关系")
             else:
                 errs.append(f"{tag}：status 非法")
+            # w4.v2 relation_scope: present on every decision, non-null only for
+            # conflict; it references verified qualifiers of the new candidate or
+            # of a target full record, never a retention time.
+            if "relation_scope" not in d:
+                errs.append(f"{tag}：缺 relation_scope 字段")
+            elif (d["relation_scope"] is not None) != (d["status"] == "decided" and d["action"] == "conflict"):
+                errs.append(f"{tag}：relation_scope 只在 conflict 时非空")
+            elif d["relation_scope"] is not None and (
+                    not isinstance(d["relation_scope"], dict)
+                    or set(d["relation_scope"]) != {"conditions", "times"}
+                    or not all(isinstance(d["relation_scope"][f], list) for f in ("conditions", "times"))
+                    or not all(isinstance(ref, dict) and set(ref) == {"of", "index"} and isinstance(ref["index"], int)
+                               and not isinstance(ref["index"], bool)
+                               and (ref["of"] == "candidate" and isinstance(ref["of"], str)
+                                    or isinstance(ref["of"], int) and not isinstance(ref["of"], bool) and ref["of"] >= 0)
+                               for f in ("conditions", "times") for ref in d["relation_scope"][f])):
+                errs.append(f"{tag}：relation_scope 须恰好含 conditions、times 两个数组，引用恰好含 of（\"candidate\" 或记录 ID 整数）、index")
+            elif d["relation_scope"] is not None:
+                cand = next(c["candidate"] for c in inp["candidates"] if c["index"] == d["candidate"])
+                for field in ("conditions", "times"):
+                    for ref in d["relation_scope"][field]:
+                        owner = cand if ref["of"] == "candidate" else next(
+                            (r.get("candidate") for r in inp["records"]
+                             if r["id"] == ref["of"] and r["id"] in d["targets"] and r.get("format") == "current"), None)
+                        if owner is None or not 0 <= ref["index"] < len(owner[field]):
+                            errs.append(f"{tag}：relation_scope.{field} 引用了不存在的限定语")
+                        elif field == "times" and owner[field][ref["index"]]["role"] == "retention":
+                            errs.append(f"{tag}：relation_scope 不能引用保存期限")
             if not set(d["resolves_relations"]) <= {r["id"] for r in inp["relations"] if r["status"] == "open"}:
                 errs.append(f"{tag}：只能解决输入中 open 的关系")
             cand_src = next(c["source"]["source_id"] for c in inp["candidates"] if c["index"] == d["candidate"])

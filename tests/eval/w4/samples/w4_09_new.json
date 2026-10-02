@@ -1,8 +1,8 @@
 {
   "id": "w4_09_new",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 2,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "新增 new：检索到同主体的其他记录，但与新断言无关",
   "boundary_with": "w4_10_reinforce",
   "sources": {
@@ -59,6 +59,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -124,6 +125,7 @@
           "s-310"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": null
       }
     ],

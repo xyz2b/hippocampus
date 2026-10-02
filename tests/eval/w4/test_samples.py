@@ -17,6 +17,32 @@ class Samples(unittest.TestCase):
             with self.subTest(sample=sid):
                 self.assertEqual(check_samples.check(s), [])
 
+    def test_relation_scope_shape_is_strict(self):
+        base = self.samples["w4_07_conflict"]
+        cases = {
+            "空对象": {},
+            "缺 times": {"conditions": []},
+            "缺 conditions": {"times": []},
+            "未知字段": {"conditions": [], "times": [], "note": "x"},
+            "引用多余字段": {"conditions": [{"of": "candidate", "index": 0, "x": 1}], "times": []},
+            "引用越界": {"conditions": [{"of": "candidate", "index": 5}], "times": []},
+            "引用非目标记录": {"conditions": [{"of": 999, "index": 0}], "times": []},
+        }
+        for name, scope in cases.items():
+            with self.subTest(case=name):
+                s = copy.deepcopy(base)
+                s["expect"]["decisions"][0]["relation_scope"] = scope
+                self.assertNotEqual(check_samples.check(s), [])
+        # 目标带有效条件时，记录 ID 也必须是整数：50.0、True 与 50 在 Python 里相等，不能放过。
+        for name, of in {"浮点 ID": 50.0, "布尔": True, "字符串 ID": "50"}.items():
+            with self.subTest(case=name):
+                s = copy.deepcopy(base)
+                s["input"]["records"][0]["candidate"]["conditions"] = [{"quote": {"text": "屏幕"}, "resolved": True}]
+                s["expect"]["decisions"][0]["relation_scope"] = {"conditions": [{"of": of, "index": 0}], "times": []}
+                self.assertTrue(any("relation_scope" in e for e in check_samples.check(s)))
+        # 引用新候选自己的不确定表达以外的限定语：本例候选没有条件，空范围合法。
+        self.assertEqual(check_samples.check(base), [])
+
     def test_checker_rejects_broken_samples(self):
         base = self.samples["w4_01_state_change"]
         cases = {
@@ -27,6 +53,13 @@ class Samples(unittest.TestCase):
             "原文不存在": lambda s: s["input"]["candidates"][0]["candidate"]["value"]["quote"].update(text="广州"),
             "时间换算错": lambda s: s["input"]["candidates"][0]["time_resolutions"][0].update(start=0),
             "effective 用保存期限": lambda s: s["expect"]["decisions"][0]["effective"].update(role="retention"),
+            "非 conflict 带 relation_scope": lambda s: s["expect"]["decisions"][0].update(
+                relation_scope={"conditions": [], "times": []}),
+            "缺 relation_scope": lambda s: s["expect"]["decisions"][0].pop("relation_scope"),
+            "未结束却有 end": lambda s: s["input"]["records"][0].update(
+                end={"status": "resolved", "start": 1, "end_exclusive": 2, "precision": "day"}),
+            "缺 end": lambda s: s["input"]["records"][0].pop("end"),
+            "契约版本不对": lambda s: s.update(contract="w4.v1"),
             "effective 偏移改成 -12": lambda s: s["expect"]["decisions"][0]["effective"]["interp"].update(offset=-12),
             "删除全部时间换算": lambda s: s["input"]["candidates"][0].update(time_resolutions=[]),
             "月份换算精度错": lambda s: s["input"]["candidates"][0]["time_resolutions"][0].update(precision="day"),
@@ -166,7 +199,7 @@ class ReplacementBinding(unittest.TestCase):
         s["input"]["candidates"].append(c)
         s["expect"]["decisions"].append({"candidate": 1, "status": "decided", "action": "new", "targets": [],
                                          "resolves_relations": [], "basis_sources": ["s-511"], "effective": None,
-                                         "pending_reason": None})
+                                         "relation_scope": None, "pending_reason": None})
         s["expect"]["after"]["records"]["new_work"] = {"from_candidate": 1, "stored_status": "active",
                                                        "update": {"status": "judged", "reasons": []}}
         s["expect"]["after"]["new_records"] = 2  # both candidates are first commits
@@ -191,7 +224,7 @@ class ReplacementBinding(unittest.TestCase):
         s["qualifier_marks"]["candidate:1"] = {"times": ["现在"]}
         s["expect"]["decisions"].append({"candidate": 1, "status": "decided", "action": "new", "targets": [],
                                          "resolves_relations": [], "basis_sources": ["s-510"], "effective": None,
-                                         "pending_reason": None})
+                                         "relation_scope": None, "pending_reason": None})
         s["expect"]["after"]["records"]["new_work"] = {"from_candidate": 1, "stored_status": "active",
                                                        "update": {"status": "judged", "reasons": []}}
         s["expect"]["after"]["new_records"] = 2  # both candidates are first commits
@@ -343,7 +376,7 @@ class CorrectOutputsPass(unittest.TestCase):
         s["input"]["candidates"].append(c1)
         s["expect"]["decisions"].append({"candidate": 1, "status": "decided", "action": "new", "targets": [],
                                          "resolves_relations": [], "basis_sources": ["s-205"], "effective": None,
-                                         "pending_reason": None})
+                                         "relation_scope": None, "pending_reason": None})
         s["qualifier_marks"]["candidate:1"] = {"times": ["去年"]}
         return s
 

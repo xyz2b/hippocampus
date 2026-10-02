@@ -1,6 +1,6 @@
 # 第一阶段契约（已冻结，待实现；r4、recall 为 v3，其余 v1）
 
-本文是 [target-design.md](target-design.md) 第 5 节第 1 步“冻结契约和不变量”的产出：各模型环节的输入输出格式、代码核验规则、状态与失败码、预算，以及可测试的不变量。实现各环节时按本文生成对应的 Rust 类型和 strict JSON Schema；本文于 2026-09-30 冻结，各契约统一编号为 v1：`w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v1` 及宿主输出 `recall.v1`。冻结前的多轮草稿版本号不再使用。冻结后任何改动须升受影响契约的版本号；这些均为目标契约，不表示当前代码已经实现。同日按此规则将 `r4`、`recall` 依次升为 v2（elapsed 的提问时刻端点改由代码提供）和 v3（elapsed 的取整口径与精确天数由代码给出），见第 8 节；其余契约仍为 v1。
+本文是 [target-design.md](target-design.md) 第 5 节第 1 步“冻结契约和不变量”的产出：各模型环节的输入输出格式、代码核验规则、状态与失败码、预算，以及可测试的不变量。实现各环节时按本文生成对应的 Rust 类型和 strict JSON Schema；本文于 2026-09-30 冻结，各契约统一编号为 v1：`w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v1` 及宿主输出 `recall.v1`。冻结前的多轮草稿版本号不再使用。冻结后任何改动须升受影响契约的版本号；这些均为目标契约，不表示当前代码已经实现。同日按此规则将 `r4`、`recall` 依次升为 v2（elapsed 的提问时刻端点改由代码提供）和 v3（elapsed 的取整口径与精确天数由代码给出），见第 8 节。2026-10-02 `w4` 升为 v2（冲突范围由 W4 给出、输入记录带结束时间），见 2.4、3.2 与第 8 节；其余契约仍为 v1。
 
 形式约定：
 
@@ -184,7 +184,7 @@ W4 的持久决定、关系及解决依据只使用 stored 来源；只读 curre
 - `coverage.status = gaps` 时，已支持的候选照常提交，缺口写入整理状态（`coverage_gaps`），召回时可见。
 - W1 输出为空时不调用 W3，整理状态为 no_candidates_unreviewed：不代表原文没有可记内容，请求也不因此算核验通过。2.1 的疑似控制请求暂停规则仍独立生效；第一阶段不为了执行保存期限额外调用模型。
 
-### 2.4 W4 更新判定 `w4.v1`
+### 2.4 W4 更新判定 `w4.v2`
 
 **何时调用**：W3 支持且可判定的候选中，存在相关记录或未解决关系时调用。断言未检索到任何相关记录时不调用 W4，以追加新记录进入 W5；范围不完整时（通用 `fact` 按本次检索取候选，不作全量保证）令 update.status=pending、reasons 含 update_scope_incomplete，不宣称它是唯一当前值。retraction 找不到目标时由代码保留 pending/target_unknown，不调用 W4，也不作为有值断言提交；不能把“没检索到”当作“没有旧记录”。
 
@@ -195,11 +195,13 @@ W4 的持久决定、关系及解决依据只使用 stored 来源；只读 curre
 ```json
 {
   "candidates": [ { "index": 0, "committed_id": null, "candidate": "Candidate", "source": "SourceRef", "said_on": "2023-05-30", "time_resolutions": ["TimeResolution"] } ],
-  "records": [ "RecordView" ],
+  "records": [ "RecordView2" ],
   "relations": [ "RelationLink" ],
   "coverage": { "complete": true, "omitted": 0 }
 }
 ```
+
+`RecordView2` 见 3.2：在 RecordView 的完整记录分支上增加结束时间 `end`。
 
 **输出**：
 
@@ -214,11 +216,14 @@ W4 的持久决定、关系及解决依据只使用 stored 来源；只读 curre
       "resolves_relations": [],
       "basis": [ "EvidenceRef" ],
       "effective": null,
+      "relation_scope": null,
       "pending_reason": null
     }
   ]
 }
 ```
+
+`relation_scope` 只在 conflict 时非空：`{ "conditions": [QualifierRef], "times": [QualifierRef] }`，表示这对冲突在什么条件、时间下成立，由 W4 判断；两个数组都为空表示 W4 判断冲突没有限定范围。`QualifierRef = { "of": "candidate" | MemoryId, "index": integer }`：引用本决定的新候选（`"candidate"`）或某个 target 记录（其 ID）已核验的限定语，`conditions` 引用其 `conditions[index]`，`times` 引用其 `times[index]`。W4 不为冲突范围新写片段：限定语原文、所属来源与换算结果都取自被引用的断言，相对时间按那条断言的 `said_on` 换算。代码核验：被引用者是本决定的候选或 targets 之一、完整记录（legacy 记录没有可引用的限定语）、索引有效、时间不是 retention 角色；引用关系随决定回执保存。一个 conflict 决定的全部 targets 共用同一个范围；新断言与不同目标的冲突范围不同时，本版不表达，决定为 pending/unclear_relation。其他动作及 pending 时 `relation_scope` 为 null。
 
 代码核验：每个候选恰好一个决定，targets 无重复且只能为输入记录；decided 的 action 非空、pending_reason 为 null。new/coexist 的 targets 为空；reinforce 只有一个目标；state_change/correction/refine/retract/conflict 至少一个目标。basis 引用输入来源中的真实片段；真实冲突须有新旧双方依据，不能仅凭检索不足产生。action 为上述枚举或 JSON null（不是字符串 "null"）；effective 为 TimeInterp 或 null，非空时必须绑定新候选来源且在已核验时间中，只允许事件或有效期角色，不能使用保存期限；合法换算结果由代码提供，不由 W4 改写。
 
@@ -249,7 +254,7 @@ coverage 不完整时区分两类结论：
 | `conflict` | **新增：保存冲突成员及 RelationLink** | 旧版本不变 | 两条都返回，关系为 open，不给唯一当前值 |
 | `pending`（更新决定状态） | 不执行旧目标动作；合格 assertion 可追加并带 UpdateState，其余暂存 | 不变 | 事实提交状态与关系待判定分别呈现，不伪造真实冲突 |
 
-`RelationLink = { "id": string, "kind": "conflict", "members": [MemoryId], "conditions": [TextQualifier], "times": [TimeInterp], "basis": [EvidenceRef], "status": "open | resolved | invalidated", "resolution": EvidenceRef? }`。真实 conflict 保存已核验新断言及其与旧目标的关系，当前资格由关系是否解决共同约束；不把冲突当作事实已被否定，也不只给整条 Memory 加 Conflicted 状态。成员至少两个，均存在于同一授权范围。
+`RelationLink = { "id": string, "kind": "conflict", "members": [MemoryId], "conditions": [TextQualifier], "times": [TimeInterp], "basis": [EvidenceRef], "status": "open | resolved | invalidated", "resolution": EvidenceRef? }`。conditions、times 是建立关系时 W4 经 `relation_scope` 引用的限定语副本，表示关系的适用范围，不是任一侧限定语的机械复制。真实 conflict 保存已核验新断言及其与旧目标的关系，当前资格由关系是否解决共同约束；不把冲突当作事实已被否定，也不只给整条 Memory 加 Conflicted 状态。成员至少两个，均存在于同一授权范围。
 
 优先在现有 owner 快照增加关系集合，不新增数据库或存储框架；旧快照缺此集合时迁移为 []，快照格式版本与旧程序拒绝读取的规则同步调整。后续明确的 W4 判定或用户确认才能解决关系；解决依据持久保存。成员/依据来源删除时关系失效，不能通过关系恢复被删除内容，也不连带删除另一端仍获准保存的记录。
 
@@ -269,7 +274,7 @@ coverage 不完整时区分两类结论：
 
 现有记忆的条件主要是结构化字段，未必保留本契约要求的完整原句、TextQualifier 和 TimeInterp，不能无损适配为本版完整记录。现有 capture_source=false 路径也可提交事实（src/chat.rs），不能假定每条旧记忆都有独立 SourceRecord。第一阶段先盘点完整原文、旧回执、片段及原始保存授权，再决定哪些来源可重建；不把片段拼成整条原文，不因迁移扩大保存授权。
 
-- 对具备可核对完整原文、原始接收时间/顺序及保存授权的部分，按 target-design 1.4 用 w1.v1、w3.v1、w4.v1 重新整理，作为显式、有预算的重建任务；先产生并核验新结果，再切换对应的有效整理版本，不先清空可用记忆。
+- 对具备可核对完整原文、原始接收时间/顺序及保存授权的部分，按 target-design 1.4 用 w1.v1、w3.v1、w4.v2 重新整理，作为显式、有预算的重建任务；先产生并核验新结果，再切换对应的有效整理版本，不先清空可用记忆。
 - 用户确认、实体登记和删除墓碑等控制记录保留并约束重建；已删除的原文不参与重建。
 - 重建前及缺可用来源而无法重建的旧记录，通过 3.2 的 LegacyRecordView 持续召回：保留现有值、方向、强度、结构化条件、时间和依据，缺口单列，不补造完整 Candidate 或新 Quote。不能因新版本启用、预算耗尽或重建失败而丢掉这些记录；已删除或未获准的内容仍不可返回。
 - 旧/新记录的替代映射保存在重建回执；只有已核验替代的旧记录退出有效召回，不双返回已被替代的旧记录，也不删除未覆盖的 legacy 记录。确认与删除控制引用沿用该映射，重建不能改变其含义。
@@ -313,6 +318,8 @@ R3 交给 R4 的证据包：
 
 - `CurrentRecordView = { "format": "current", "id": MemoryId, "stored_status": "active | superseded | expired", "termination_reason": SupersedeReason?, "ended": "not_ended | known | end_unknown", "candidate": Candidate, "evidence": [EvidenceRef], "grade": "committed", "said_on": LocalDate, "time_resolutions": [TimeResolution], "history": [MemoryId], "open_relations": [string], "update": UpdateState }`。
 - `LegacyRecordView = { "format": "legacy", "id": MemoryId, "data": LegacyMemory, "evidence": [EvidenceRef], "grade": "committed", "update": UpdateState?, "gaps": ["source_missing | sentence_missing | qualifiers_unmapped | time_unmapped"] }`。LegacyMemory 冻结第一阶段开始前 src/model.rs 的 Memory 序列化形状，沿用旧格式解码并保留旧字段，不随新核心类型变化而改释；先执行相同的归属、任务与删除过滤，不把旧 scope 转成无依据的 TextQualifier。旧版没有更新判定状态时 update=null，表示未知而非 judged。
+
+`RecordView2 = CurrentRecordView2 | LegacyRecordView`（w4.v2 的输入使用）：`CurrentRecordView2` 在 CurrentRecordView 的全部字段之外增加 `"end": TimeResolution?`。`ended = known` 时 `end` 为结束时间的换算结果，保留原精度（月精度不补成具体日，多日区间用 start / end_exclusive 表达，不折成一个时间点）；`ended = not_ended` 或 `end_unknown` 时为 null。结束时间来自结束该记录的 W4 决定的 `effective`，其换算结果取候选已核验时间中的对应项，不由 W4 给出；换算结果为 unknown 时 `ended = end_unknown`。结束它的决定没有保存换算结果（本版之前的回执）时，`ended` 按旧字段判断、`end` 为 null，不补造精度。r4.v3、recall.v3 仍使用不含 `end` 的 RecordView；召回侧实现该字段时改用 RecordView2 并升版。
 
 沿用现有 SupersedeReason 区分现实变化、纠错和撤回；Deleted 不进入任一分支。完整记录的 candidate.kind 为 assertion；用户确认保留独立控制记录及依据，不改写成不存在的完整用户原话。legacy 的 evidence 仅包含能链接到真实获准来源的引用；只有旧数据中的片段而没有可链接原文时 evidence=[]，片段留在 data 内，不能伪造 source_id 或作为新契约已核验的原文依据。gaps 汇入 enrichment_gaps，原文存在则同时交给 R4 核对；无法核准完整断言及限定语的 legacy 目标在 W4 保持 pending，不能以缺字段等于无限定来更新。
 
@@ -531,4 +538,6 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 
 | 2026-09-30 | W5 提交规则（2.5，无版本号） | 同一原文的相关决定整组原子提交、整组重判或回滚；替代 open 关系成员且未解决关系时，关系与成员保持不变，替代记录标 update_relation_unclear 并经 history 带出该关系（不机械迁移成员） | W4 样本 w4_21：两个决定部分提交时败方会显得没有冲突；w4_22：两条冲突记录被同一新版本替代时，换 ID 会收敛成重复成员 |
 
-w1.v1、w3.v1、w4.v1、r1.v1 未变。旧版本的 r4/recall 输出不作为新版本的合规输出；评测夹具与适配器已同步到 v3。
+| 2026-10-02 | `w4.v1` → `w4.v2` | conflict 决定增加 `relation_scope`（引用新候选或目标已核验的限定语，作为关系适用范围）；输入记录改用 `RecordView2`（完整记录增加结束时间 `end`，保留精度） | 用户裁定（B 段设计评审 0021、0022）：冲突范围是语义判断，应由 W4 给出，不由代码复制单侧限定语；W4 样本 w4_01 的“至 2026-08，月精度”在原 RecordView 中无法表达 |
+
+w1.v1、w3.v1、r1.v1 未变；r4.v3、recall.v3 仍引用不含 `end` 的 RecordView。旧版本的 r4/recall 输出不作为新版本的合规输出；评测夹具与适配器已同步到 v3。

@@ -1,8 +1,8 @@
 {
   "id": "w4_01_state_change",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 1,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "现实变化 state_change：旧值曾经成立，现在变了",
   "boundary_with": "w4_02_correction",
   "sources": {
@@ -79,6 +79,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -158,6 +159,7 @@
           },
           "anchor": "said_on"
         },
+        "relation_scope": null,
         "pending_reason": null
       }
     ],

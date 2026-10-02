@@ -1,8 +1,8 @@
 {
   "id": "w4_05_retract",
-  "contract": "w4.v1",
+  "contract": "w4.v2",
   "batch": 1,
-  "label_status": "reviewed",
+  "label_status": "draft",
   "focus": "撤回 retract：用户收回旧断言，没有给出新值",
   "boundary_with": "w4_06_retract_target_unknown",
   "sources": {
@@ -71,6 +71,7 @@
         "stored_status": "active",
         "termination_reason": null,
         "ended": "not_ended",
+        "end": null,
         "candidate": {
           "kind": "assertion",
           "speech": "user_statement",
@@ -157,6 +158,7 @@
           "s-250"
         ],
         "effective": null,
+        "relation_scope": null,
         "pending_reason": null
       }
     ],
