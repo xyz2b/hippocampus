@@ -43,6 +43,34 @@ use crate::{
 /// Ark inference endpoint shared by memory extraction and query understanding.
 pub const DEEPSEEK_MODEL: &str = "ep-20260923215039-vxgxg";
 
+/// Production Responses request construction, also used by offline stage evaluations.
+pub fn structured_request(
+    stage: ModelStage,
+    schema_name: &str,
+    instructions: &str,
+    input: Value,
+    schema: Value,
+    config: &ModelBudgetConfig,
+) -> Value {
+    json!({
+        "model": DEEPSEEK_MODEL,
+        "instructions": format!(
+            "Return exactly one complete, compact JSON object matching the supplied JSON Schema. \
+             Do not emit Markdown, commentary, or whitespace padding. \
+             Stop immediately after the closing brace. \
+             Preserve whitespace inside string values verbatim.\n\n{instructions}"
+        ),
+        "input": input.to_string(),
+        // Least sampling randomness: a recorded eval set stays representative.
+        "temperature": 0,
+        "reasoning": { "effort": "medium" },
+        "max_output_tokens": stage.output_tokens(config),
+        "store": false,
+        "text": { "format": { "type": "json_schema", "name": schema_name,
+            "strict": true, "schema": schema } }
+    })
+}
+
 const SUPPORT_CHECKS: [&str; 9] = [
     "subject", "relation", "value", "polarity", "scope", "temporal", "intent", "source", "metadata",
 ];
@@ -465,23 +493,14 @@ impl OpenAiClient {
         let budget = self.budget.as_ref().ok_or_else(|| {
             OpenAiAdapterError::Budget("explicit persistent model budget is required".into())
         })?;
-        let request = json!({
-            "model": DEEPSEEK_MODEL,
-            "instructions": format!(
-                "Return exactly one complete, compact JSON object matching the supplied JSON Schema. \
-                 Do not emit Markdown, commentary, or whitespace padding. \
-                 Stop immediately after the closing brace. \
-                 Preserve whitespace inside string values verbatim.\n\n{instructions}"
-            ),
-            "input": input.to_string(),
-            // Least sampling randomness: a recorded eval set stays representative.
-            "temperature": 0,
-            "reasoning": { "effort": "medium" },
-            "max_output_tokens": stage.output_tokens(&budget.config),
-            "store": false,
-            "text": { "format": { "type": "json_schema", "name": schema_name,
-                "strict": true, "schema": schema } }
-        });
+        let request = structured_request(
+            stage,
+            schema_name,
+            instructions,
+            input,
+            schema,
+            &budget.config,
+        );
         self.send_response(stage, schema_name, request, true)
     }
 

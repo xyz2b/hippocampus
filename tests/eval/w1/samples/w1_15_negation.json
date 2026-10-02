@@ -1,7 +1,7 @@
 {
  "id": "w1_15_negation",
  "contract": "w1.v1",
- "label_status": "draft",
+ "label_status": "reviewed",
  "focus": "否定偏好的极性",
  "input": {
   "text": "我不吃香菜。",
@@ -61,13 +61,11 @@
     "subject": "self",
     "relation": [
      "avoids",
-     "likes",
-     "fact"
+     "likes"
     ],
     "memory_type": [
      "preference",
-     "constraint",
-     "fact"
+     "constraint"
     ],
     "value": "香菜",
     "sentence": "我不吃香菜。",
@@ -84,5 +82,5 @@
   "memory_requests": []
  },
  "must_not": [],
- "note": "relation=avoids 时 polarity=affirm；relation=likes 时须 polarity=negate。评分按组合核对，不接受 likes+affirm。"
+ "note": "只接受 avoids+affirm 或 likes+negate 两种组合。fact 不在可接受集合：fact 的 value 须为整句，与 value=香菜 不能同时成立。"
 }

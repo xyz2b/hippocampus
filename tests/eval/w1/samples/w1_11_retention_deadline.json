@@ -1,7 +1,7 @@
 {
  "id": "w1_11_retention_deadline",
  "contract": "w1.v1",
- "label_status": "draft",
+ "label_status": "reviewed",
  "focus": "保存期限请求带 retention 角色",
  "input": {
   "text": "这个手机号只保留到明天：13800001111。",
@@ -58,7 +58,6 @@
    {
     "kind": "assertion",
     "speech": "user_statement",
-    "subject": "self",
     "relation": "fact",
     "memory_type": "fact",
     "value": "这个手机号只保留到明天：13800001111。",

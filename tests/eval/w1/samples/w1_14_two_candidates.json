@@ -1,7 +1,7 @@
 {
  "id": "w1_14_two_candidates",
  "contract": "w1.v1",
- "label_status": "draft",
+ "label_status": "reviewed",
  "focus": "一句话两个独立断言",
  "input": {
   "text": "我住在上海，在一家银行做产品经理。",
@@ -89,5 +89,5 @@
  "must_not": [
   "works_at=银行（“一家银行”不是具体雇主）"
  ],
- "note": "是否另给 works_at（值为“一家银行”）由人工复核；草稿按不给标注，故 candidate_count=2。"
+ "note": "用户确认：不另给 works_at（“一家银行”不是具体雇主），故 candidate_count=2。"
 }

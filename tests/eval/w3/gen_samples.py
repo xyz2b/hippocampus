@@ -1,4 +1,4 @@
-"""生成 W3 语义核验样本（w3.v1）。标签由 Claude 起草，状态一律 draft，须经用户抽查。
+"""生成 W3 语义核验样本（w3.v1）。标签由 Claude 起草，用户已于 2026-10-02 抽查确认（label_status=reviewed）。
 
 input.candidates 是 W2 已通过的候选（有些故意带错），expect.reviews 按候选索引给出
 verdict、必须指出的 problems.aspect 集合（supported 时为空）与 episode_value。
@@ -28,7 +28,7 @@ def sample(id, focus, text, candidates, reviews, said_on="2026-09-20", requests=
            request_reviews=(), coverage="complete", missing=(), note=None):
     assert len(candidates) == len(reviews)
     return {
-        "id": id, "contract": "w3.v1", "label_status": "draft", "focus": focus,
+        "id": id, "contract": "w3.v1", "label_status": "reviewed", "focus": focus,
         "input": {"text": text, "said_on": said_on, "candidates": list(candidates),
                   "requests": list(requests)},
         "expect": {
@@ -51,7 +51,7 @@ SAMPLES = [
     sample("w3_02_dropped_uncertainty", "丢掉“可能”使断言比原文更强", "我可能对花生过敏。",
            [cand("我可能对花生过敏。", relation="allergic_to", value="花生")],
            [review("contradicted", ["uncertainty"])],
-           note="contradicted 还是 insufficient 由人工复核：候选宣称确定过敏，原文只说可能，草稿按 contradicted。"),
+           note="用户确认：判 contradicted（候选宣称确定过敏，原文只说可能）。"),
     sample("w3_03_dropped_condition", "丢掉活动条件", "我画速写的时候固定用炭笔。",
            [cand("我画速写的时候固定用炭笔。", relation="uses", value="炭笔")],
            [review("contradicted", ["condition"])]),
@@ -87,7 +87,7 @@ SAMPLES = [
            [cand("我住在上海，在一家银行做产品经理。", relation="lives_in", value="上海"),
             cand("我住在上海，在一家银行做产品经理。", relation="job_title", value="产品经理")],
            [review("supported"), review("supported")],
-           note="是否把“在一家银行”视为漏提由人工复核；草稿按 complete。"),
+           note="用户确认：“在一家银行”不算漏提，coverage 为 complete。"),
     sample("w3_13_episode_useful", "有跨轮价值的经历", "我今天第一次跑完了半程马拉松，用时2小时05分。",
            [cand("我今天第一次跑完了半程马拉松，用时2小时05分。", memory_type="episode",
                  times=[{"role": "event", "quote": "今天",
@@ -104,7 +104,7 @@ SAMPLES = [
            request_reviews=["supported"]),
     sample("w3_16_remember_overbound", "remember 被扩展到无关候选", "记住我的车牌是浙A12345，另外今天好累。",
            [cand("记住我的车牌是浙A12345，另外今天好累。", relation="owns", value="浙A12345"),
-            cand("记住我的车牌是浙A12345，另外今天好累。", memory_type="episode", value="今天好累")],
+            cand("记住我的车牌是浙A12345，另外今天好累。", memory_type="episode")],
            [review("supported"), review("supported", episode="low_value")],
            requests=[{"kind": "remember", "quote": "记住", "target": {"object": "facts", "candidate_indices": [0, 1]},
                       "deadline": None}],
@@ -126,7 +126,7 @@ SAMPLES = [
            [cand("那种场合我一般不喝酒。", relation="avoids", memory_type="preference", value="酒",
                  conditions=[{"quote": "那种场合", "resolved": False}])],
            [review("supported")],
-           note="“一般”是否应进 uncertainty 由人工复核；草稿认为它是频率而非不确定，不扣分。"),
+           note="用户确认：“一般”是频率而非不确定，不要求进 uncertainty。"),
     sample("w3_20_wrong_relation", "关系选错（owns 与 uses）", "我在用 Neovim 写代码。",
            [cand("我在用 Neovim 写代码。", relation="owns", value="Neovim")],
            [review("contradicted", ["relation"])]),

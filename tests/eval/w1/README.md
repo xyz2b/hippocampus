@@ -1,6 +1,6 @@
 # W1 / W3 样本（w1.v1、w3.v1）
 
-各 20 个，由 Claude 起草，`label_status` 一律 `draft`，须经用户抽查后才能改为 `reviewed`。用途：评价 W1 提取、W3 核验提示词在真实模型上的表现（真实调用须用户批准）。模拟服务测试不依赖它们。
+各 20 个，由 Claude 起草；用户于 2026-10-02 抽查并确认全部待定标注（w1_04、w1_13、w1_14、w1_17、w3_02、w3_12、w3_19），`label_status = reviewed`。用途：评价 W1 提取、W3 核验提示词在真实模型上的表现（真实调用须用户批准）。模拟服务测试不依赖它们。
 
 - `tests/eval/w1/samples/`：输入为原文、历史、实体与关系目录、said_on；`expect.candidates` 只列需要核对的字段，未列字段不评分；字段值为数组时表示可接受集合；`candidate_count` 为输出候选的确切数量；`must_not` 为禁止行为。
 - `tests/eval/w3/samples/`：输入为 W2 已通过的候选（部分故意带错，简写形式：Quote 用字符串表示，评测适配器负责展开成 w1.v1 结构）；`expect.reviews[].aspects` 是必须指出的问题方面集合。
@@ -11,3 +11,34 @@ python3 tests/eval/w1/gen_samples.py
 python3 tests/eval/w3/gen_samples.py
 python3 tests/eval/w1/check_samples.py   # 同时检查 w1 与 w3
 ```
+
+单阶段评测入口覆盖 W1 / W3 / W4，直接共用生产 `structured_request`、提示词、schema 与核验函数。W3 简写先展开并通过 W2；W4 仅选择 `call_w4=true`。每个待录制样本只发送一次，不重试、不跟随重定向。
+
+默认离线回放（无需密钥，不创建 HTTP 客户端）；逐样本逐字段的 JSON 报告打印到标准输出：
+
+```sh
+cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+EVAL_STAGES=w3 EVAL_CASES=w3_0 cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+`EVAL_STAGES` 接受 `w1,w3,w4` 的子集；`EVAL_CASES` 是 ID 前缀，也可用逗号选择多个前缀。过滤只作用于上述评测入口与干跑，注入回归测试始终完整运行。
+
+干跑不发送请求、不读取密钥：
+
+```sh
+cargo test --offline --test write_stage_eval dry_run_plan -- --exact --nocapture
+```
+
+全部样本的潜在调用数为 W1 20、W3 20、W4 21，共 61。真实录制须用户另行批准并提前报告实际需要录制的次数；**以下命令只用于获批后**。先在环境中配置 `DEEPSEEK_BASE_URL`（API base，例如以 `/v1` 结尾）与 `DEEPSEEK_API_KEY`，再执行：
+
+```sh
+EVAL_RECORD=61 cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+`EVAL_RECORD` 是本次发送尝试的整数上限。发送前打印所选、需录制、计划发送与上限；超过上限整批拒绝，零发送。有效录制直接复用，只补未录制或过期项。HTTP 错误、未完成和拒绝响应均不录制、不自动重试；已完成但解码失败的原输出仍录制，以便离线复核。报告记录实际发送尝试数，录制保留 usage，不等同于计费次数。
+
+录制保存于 `tests/eval/write_stage/recordings/<sample_id>.json` 的 `recorded` 数组，通过 `model` 标签分组；更新当前模型时保留其他模型。保留解析后的 `output` 和原始 `output_text`，回放优先使用原始文本，保证解码失败不会因二次解析变成通过。当前 `MODEL=DeepSeek-V4.1-Flash`，与 `tests/eval.rs` 一致；换模型时须同步标签与生产 `DEEPSEEK_MODEL`。
+
+请求指纹沿用原评测的 canonical FNV-1a：包含提示词、schema、模型和固定样本输入，排除输出 token 上限及每次运行的时钟/绑定字段。当前模型的指纹缺失或不符记为“录制过期”，不使用旧输出打分；无当前模型录制记为“未录制”。两者单列、不算模型失败，默认离线测试不会因此失败。有效录制的评分失败、输入无效或录制调用失败会使评测入口失败。
+
+报告的 `total` 是所选样本数，`evaluated` 是实际打分数；同时列出 passed、failed、missing、stale、draft。全为未录制时不代表模型通过。`must_not` 与 `note` 原样保留，供人工复核；不自动解释自然语言。标量数组按允许集合核对，条件/时间/索引等结构数组完整匹配、不评分顺序；W3 aspects 与 coverage missing、W4 basis_sources 按要求覆盖。W4 的 `expect.after` 属于提交与召回验收，本脚本不评分。样本没有时区与完整目录类型约束，评测固定为生产默认时区 UTC+8、关系允许四种 memory_type，不宣称验证实际账户的目录限制。

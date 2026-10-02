@@ -1,7 +1,7 @@
 {
  "id": "w1_04_question_with_statement",
  "contract": "w1.v1",
- "label_status": "draft",
+ "label_status": "reviewed",
  "focus": "问句里的个人陈述不能因整条是问句而丢掉",
  "input": {
   "text": "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？",
@@ -62,7 +62,10 @@
     "relation": "lives_in",
     "memory_type": "fact",
     "value": "成都",
-    "sentence": "我上个月刚搬到成都，",
+    "sentence": [
+     "我上个月刚搬到成都，",
+     "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
+    ],
     "polarity": "affirm",
     "uncertainty": null,
     "conditions": [],
@@ -85,5 +88,5 @@
  "must_not": [
   "为“哪里的火锅好吃”生成 user_statement 候选"
  ],
- "note": "sentence 取到逗号还是整句由人工复核；评分只要求 sentence 包含“我上个月刚搬到成都”。"
+ "note": "sentence 取到逗号或整句均可（可接受集合）。"
 }

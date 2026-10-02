@@ -24,7 +24,12 @@ def check_candidate(c, text, where, relations, entities, errors):
         if q is not None and q not in text:
             errors.append(f"{where}.{field}: {q!r} not in source text")
 
-    quote(c.get("sentence"), "sentence")
+    for sentence in options(c.get("sentence")):
+        quote(sentence, "sentence")
+    # contracts 2.1：fact 的值与完整原句相同。可接受集合含 fact 时，每个 fact 组合都必须合法。
+    if "fact" in options(c["relation"]) and c.get("kind", "assertion") == "assertion":
+        if not set(options(c.get("value"))) & set(options(c.get("sentence"))):
+            errors.append(f"{where}: relation fact requires value == sentence")
     for v in options(c.get("value")):
         # 值可以是规范化值（英文、实体名），只有含中文且看起来是原文片段时才要求逐字。
         if isinstance(v, str) and len(v) > 4:
@@ -42,7 +47,7 @@ def check_candidate(c, text, where, relations, entities, errors):
         errors.append(f"{where}.memory_type")
     if relations and not set(options(c["relation"])) <= set(relations):
         errors.append(f"{where}.relation not in catalog")
-    s = c["subject"]
+    s = c.get("subject", "self")
     if isinstance(s, dict):
         quote(s["unresolved"], "subject.unresolved")
     elif entities and s not in entities:
