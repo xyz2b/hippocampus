@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "pending",
+      "action": null,
+      "targets": [
+        90
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-306"
+          },
+          "quote": {
+            "text": "我在学日语。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-390"
+          },
+          "quote": {
+            "text": "我最近在学韩语。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": "unclear_relation"
+    }
+  ]
+}

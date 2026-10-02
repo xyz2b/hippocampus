@@ -34,7 +34,11 @@ StoredRelation {
 UpdateState { status: judged | pending, reasons: [update_scope_incomplete | update_target_unknown | update_relation_unclear] }
 ```
 
-conditions、times 先按 JSON 原样保存：当前代码还没有 TextQualifier、TimeInterp 的 Rust 类型，W5 也不需要解释它们；等 W1/W3 落地后再换成类型，那时是一次不改存储形态的替换。
+conditions、times 按 JSON 原样保存；完整契约已有 TextQualifier、TimeInterp 类型，W4 转换时按已核验引用取副本，W5 不再解释语义。
+
+决定的 `basis`、`effective_time`、`relation_scope` 为空时不序列化，旧组指纹不变。`effective_time = { interp: TimeInterp, resolution: TimeResolution }` 保存时间原文和原精度换算结果；W4 校验它属于该候选已核验时间、不是 retention，转换取对应换算结果。W5 的独立一致性检查是：存在 effective_time 时必须满足 `effective == effective_time.point()`；仅 resolved、日精度、恰好一天可有时间点，其余为 None。没有 effective_time 的旧形态时间点只允许 StateChange；pending 不允许 effective、effective_time、reason 或 relation_scope，reason 仅允许 StateChange。W5 不独立重算时间，候选时间核验属于上游。
+
+effective 可用于任何已定动作：StateChange（含 W4 correction / refine）及 Retract 用它作目标结束时间；没有或未知时不回填接收时间。月精度、多日区间不写旧 Memory 时间点，由记录视图保留原精度结束时间。New / Reinforce / Conflict 仅记回执，不据此结束记录。
 
 ## 3. 更新状态由代码生成
 
@@ -51,7 +55,7 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 - 只有显式重判覆盖了对应缺口才改写已有状态（contracts 1.6）：普通召回、整理完成、重放都不改。重判复用 committed_id 时，新缺口与旧缺口合并，旧缺口**逐项**判断是否清除，一项满足不代表其他项也解决：
   - update_scope_incomplete：本次组的 `scope_complete = true` 才清除；
   - update_target_unknown：本次决定 decided 且给出了明确目标（或判定为 new）才清除；
-  - update_relation_unclear：本次显式重判覆盖了这个缺口才清除，即 W4 输入包含该记录的前身（或相关旧成员）及其**最新**关系状态（open、resolved、invalidated，或像 w4_17 那样根本没有 StoredRelation 的普通新旧关系），并对该记录给出已定决定（共存、另建冲突、解决旧关系、普通替代均可）。不要求存在 open 关系，也不要求旧关系被关闭：更新判定完成不等于冲突解决（contracts 1.6）。关系被删除失效或被其他组解决只改变输入状态，本身不清除，要等下一次显式重判。
+  - update_relation_unclear：本次显式重判覆盖了这个缺口才清除，即实际 W4 输入包含该记录仍存在且未删除的前身（或相关旧成员），以及它们所在的**全部最新**关系状态（open、resolved、invalidated，或像 w4_17 那样根本没有 StoredRelation 的普通新旧关系），并对该记录给出已定决定（共存、另建冲突、解决旧关系、普通替代均可）。被任务隔离挡住的关系不算覆盖，数据库里的关系或 open 关系编号集合不能代替实际关系输入；已删除或不存在的前身不要求输入或快照、不阻止清除。关系覆盖与 scope_complete 独立判断。不要求存在 open 关系，也不要求旧关系被关闭：更新判定完成不等于冲突解决（contracts 1.6）。关系被删除失效或被其他组解决只改变输入状态，本身不清除，要等下一次显式重判。
   - 全部清空后才变为 judged。
 - 归并（重判为 reinforce 另一记录）时，已提交记录退出投影，其 `record_updates` 条目随之删除；目标记录的状态不因被强化而改变。
 
@@ -92,8 +96,9 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 ## 5. 事务与过期判断
 
 - `SqliteMemoryStore::transaction` 现在只用（记录、实体、暂存）判断“业务有变化”。关系和 `record_updates` 的变化也是业务变化：要一并纳入，才能推进 revision、触发现有的顺序屏障。
-- 组的 `seen` 从“目标记录指纹”扩展为“目标记录 + 涉及的关系”的指纹；涉及关系 = 决定要解决的关系 + 目标及既有冲突成员所在的 open 关系。
+- 组的 `seen` 保存实际输入中的目标、重判前身及运行时绑定的 committed_id 记录版本；`seen_relations` 保存实际 W4 输入中相关关系的内容版本，包括重判前身的 resolved / invalidated 关系。已删除或越界的上下文记录、被隔离的关系内容不补入快照。
 - 只比对已见关系各自的指纹不够：W4 之后若目标新加入了一条 open 关系，逐条比对发现不了。因此每个目标的指纹还要覆盖“它所在的 open 关系编号集合”；集合有增减（新建、解决、失效）即整组 needs_rejudge。
+- 范围完整时，记录所在 open 关系都须有内容快照；范围不完整时允许实际存在的隔离关系缺少内容快照，不存在的关系编号仍直接拒绝。仍核对 open 编号集合且保留范围缺口，不能据缺少的内容清除关系缺口。要解决的关系不适用这条例外：关系内容与全部成员快照始终必须齐全。
 
 ## 6. 版本 8 与兼容
 
@@ -126,7 +131,7 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 2. **更新状态**：W5 按第 3 节生成并写入；召回的 RecordView/RecallFact 带出 update；`pending_updates` 计数。
    - 实际范围（用户确认）：W5 当前只在测试中调用，RecordView / recall.v3 也未实现。本段做写入与读取，并在现有输出（`memory_list` 的记录、来源检索的 `known_memories`、召回的 `state_annotations`）里附 `update`；只在有条目时附加，没有条目即未知，旧记录的输出保持原样。RecordView、`pending_updates` 计数随 recall.v3 实现。
    - 每个决定的状态写进回执 `updates`（含强化、撤回等无产物的决定）；只有产生的记录写入 `record_updates`，被强化或被结束的目标不改状态。
-   - 待定决定：动作只能是 new（断言作为新记录追加）或 retract（零写入）；可列已定位目标（须有快照），不修改它们，不带 effective / reason。待定撤回不进入现有暂存队列（那是主体待澄清用的，澄清后会交给旧确定性策略）；候选与原文由上游保留。
+   - 待定决定：动作只能是 new（断言作为新记录追加）或 retract（零写入）；可列已定位目标（须有快照），不修改它们，不带 effective / effective_time / reason / relation_scope。待定撤回不进入现有暂存队列（那是主体待澄清用的，澄清后会交给旧确定性策略）；候选与原文由上游保留。
    - 逐项清除规则实现为 `UpdateState::after_rejudge`（本段单元测试），第 4 段在重判复用时接入。
    - 候选类别与动作必须一致：撤回候选只能走 retract，retract 只接受撤回候选，不一致整组拒绝、零写入。
    - 现有答复门读取待定状态：召回不为待定记录生成 `unique_in_snapshot`；`answer_policy` 对“唯一事实”“精确身份”两条路径按记录、对模型答案与计算答案按其引用的记录检查（补答候选在构造时从同一快照按记录带上待定标记，记录不在本地证据包里也能拦下；同一原文里的其他独立断言待定不影响；原文任务尚未完成、候选以未整理原文提供时，按答案片段绑定到该原文已提交的记录），有 pending 即返回 `answer_not_verified`（沿用现有状态与安全文本，不新增状态值）。没有 `update` 的旧记录照旧。
@@ -134,12 +139,13 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
    - 分两步提交：前半为建立、解决、替代未解决成员与关系快照核对；后半为删除失效与 `memory_forget` 删除范围重写。
    - 依据的机械核对：conflict 的 basis 与 resolution 的片段须逐字出现在获准保存（capture_source）的原文里；conflict 须同时有本原文与至少一个目标来源的依据；resolution 须来自本次认领的原文。
    - W4 的 correction / refine 走 state_change 并带对应结束原因（Correction、Refinement、ScopeRefined）。
+   - 已定 retract 可带 effective_time，日精度单日结果同时写目标 valid_to；没有或未知时结束时间仍未知。effective_time 与 effective 的一致性及旧形态兼容规则见第 2 节。
    - 处在 open 关系里的记录与待定记录同样不能被核准为唯一当前值；旧格式输出附 `open_relations`。E2（召回经 history 带出前身所在关系）随 recall.v3 实现。
 4. **重判复用与归并**：B2、B3、B3a，以及第 3 节的状态改写规则。
    - committed_id 的核对：记录仍有效、在 W4 输入快照中（指纹核对“有效版本”）、是本原文某个已提交 W5 组里候选的产物、候选的完整证据（不只是编号）都在它上面且来自本次认领的原文、由候选得来且之后不会被 W5 改动的字段（断言内容、确定程度、明确记忆请求、标签、留存层级、得知时间、时间引用与到期时间）与候选一致。不符即整组 needs_rejudge（contracts 2.5，复审 0010）。
    - 结构错误直接拒绝、零变更：committed_id 重复、不在快照中、作为自身的目标或归并目标、重判为撤回。
    - 复用：new / 待定只复用；state_change 以它接替目标；conflict 以它与目标组成关系。不插入、不追加证据、不计强化。
-   - 状态改写：`UpdateState::after_rejudge`。“关系输入”按产生它的那次决定的目标是否都在本次快照里判断（快照带出它们最新的关系集合）。
+   - 状态改写：`UpdateState::after_rejudge`。“关系输入”按第 3 节判断：产生它的决定所列仍存在且未删除的旧目标都在实际输入对应的记录快照中，且它们的全部关系（open / resolved / invalidated）都在实际输入对应的关系内容快照中；已删除前身不要求快照。被任务隔离挡住的关系、提交检查用的 open 关系编号集合均不能冒充 W4 已见关系。
    - 归并：证据按来源幂等并入保留目标；强化与证据转移分开，只有归并原文此前没有在保留目标上留下证据时才计一次强化，顺带转入的其他来源证据不计数（复审 0011）；已提交记录退出投影（status=Deleted，`record_updates` 条目删除），回执 `merged` 记 已提交 ID → 保留目标，`products` 不含它。按整个依赖组判断：组内全部决定执行后，它若仍在 open 关系里，整组拒绝，与决定顺序无关（复审 0010）。
    - 删除时的支持与强化来源：被归并记录的确认支持来源转给保留目标（只转支持，不转强化），归并成链时反复转移。W5 回执里的 reinforce 决定（含归并）是否算一次强化，按组快照里目标在提交前是否已有该候选的证据判断（同 ID 或同一轮，与执行时共用 `evidence_present`）；没有快照的旧回执照旧认定（复审 0012）。
 

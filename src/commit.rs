@@ -165,6 +165,29 @@ impl W5View {
                 }
             }
         }
+        // 结束时间已知但写不成时间点（月精度、多日区间等）：旧 Memory 的 valid_to 为空，旧历史
+        // 检索会把它当作没有上界。这类记录同样只作上下文，并附上结束时间的换算结果。
+        for receipt in &committed {
+            for decision in &receipt.decisions {
+                let Some(time) = &decision.effective_time else {
+                    continue;
+                };
+                // 只有结束目标的已定决定才给目标一个结束时间。
+                let ends = decision.pending_reason.is_none()
+                    && matches!(decision.action, W5Action::StateChange | W5Action::Retract);
+                if ends
+                    && time.point().is_none()
+                    && time.resolution.status == crate::contract::ResolutionStatus::Resolved
+                {
+                    for target in &decision.targets {
+                        let entry = qualified
+                            .entry(*target)
+                            .or_insert_with(|| serde_json::json!({}));
+                        entry["end"] = serde_json::json!(time.resolution);
+                    }
+                }
+            }
+        }
         Self {
             updates: state.record_updates.clone(),
             open,
@@ -425,6 +448,45 @@ pub struct W5Decision {
     /// W4 待定决定：不对旧目标执行动作（第 2 段）。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pending_reason: Option<W4PendingReason>,
+    /// W4 实际选择的完整依据（来源与片段，contracts 2.5）。非空时 `basis_sources` 必须正是
+    /// 其中的来源集合。为空不序列化，旧组的指纹不变。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub basis: Vec<crate::contract::EvidenceRef>,
+    /// 生效时间的原文与换算结果，保留原精度（contracts 3.2 RecordView2 的 `end`）。只有恰好
+    /// 一天的日精度结果才同时写 `effective`（旧 Memory 的时间点）；其余精度不写时间点。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub effective_time: Option<EffectiveTime>,
+    /// conflict 的适用范围：W4 对已核验限定语的引用（w4.v2）。`relation` 里的 conditions、
+    /// times 是按这些引用取出的副本。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relation_scope: Option<crate::contract::RelationScope>,
+}
+
+/// 结束旧记录的生效时间：W4 引用的候选时间原文，加代码的换算结果。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct EffectiveTime {
+    pub interp: crate::contract::TimeInterp,
+    pub resolution: crate::contract::TimeResolution,
+}
+
+impl EffectiveTime {
+    /// 能写成旧 Memory 时间点的结果：已换算、日精度、恰好一天。
+    pub fn point(&self) -> Option<DatedValue> {
+        use crate::contract::{Precision, ResolutionStatus};
+        let r = &self.resolution;
+        match (r.status, r.precision, r.start, r.end_exclusive) {
+            (ResolutionStatus::Resolved, Precision::Day, Some(start), Some(end))
+                if end - start == 86_400 =>
+            {
+                Some(DatedValue {
+                    at: Timestamp(start),
+                    source: TemporalSource::Explicit,
+                })
+            }
+            _ => None,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -711,7 +773,7 @@ pub fn commit_group_with_hook(
                 W5Status::NeedsRejudge { .. } => W5Outcome::NeedsRejudge(receipt.clone()),
             });
         }
-        validate(group, &owner)?;
+        validate(group, &owner, state)?;
         // Every candidate must come from the claimed source: a valid claim on one source cannot
         // carry candidates of another (possibly deleted) source.
         for c in &group.candidates {
@@ -783,9 +845,19 @@ pub fn commit_group_with_hook(
             let coverage = entry.committed_id.map(|committed| RejudgeCoverage {
                 scope_complete: group.scope_complete,
                 decided: decision.pending_reason.is_none(),
-                relation_inputs: related_records(state, committed)
-                    .iter()
-                    .all(|id| group.seen.iter().any(|seen| seen.id == *id)),
+                relation_inputs: related_records(state, committed).iter().all(|id| {
+                    group.seen.iter().any(|seen| seen.id == *id)
+                        && state
+                            .relations
+                            .values()
+                            .filter(|relation| relation.members.contains(id))
+                            .all(|relation| {
+                                group
+                                    .seen_relations
+                                    .iter()
+                                    .any(|seen| seen.id == relation.id)
+                            })
+                }),
             });
             match apply(
                 state,
@@ -917,9 +989,9 @@ fn stale_reason(
     Ok(None)
 }
 
-/// 与已提交断言相关的旧记录：产生它的那次决定替代或列出过的目标。重判覆盖
-/// update_relation_unclear 的前提是这些记录都在本次 W4 输入里（及其最新关系状态）。
-fn related_records(state: &PersistedMemoryState, committed: MemoryId) -> Vec<MemoryId> {
+/// 与已提交断言相关、仍存在且未删除的旧记录：产生它的决定替代或列出过的目标。
+/// 重判覆盖 update_relation_unclear 的前提是这些记录及其全部最新关系都在实际 W4 输入里。
+pub(crate) fn related_records(state: &PersistedMemoryState, committed: MemoryId) -> Vec<MemoryId> {
     let mut ids: Vec<MemoryId> = state
         .w5_receipts
         .values()
@@ -935,6 +1007,14 @@ fn related_records(state: &PersistedMemoryState, committed: MemoryId) -> Vec<Mem
         .collect();
     ids.sort();
     ids.dedup();
+    ids.retain(|id| {
+        state
+            .repository
+            .get(*id)
+            .ok()
+            .flatten()
+            .is_some_and(|memory| memory.status != MemoryStatus::Deleted)
+    });
     ids
 }
 
@@ -1053,6 +1133,15 @@ fn check_relation_evidence(
         Ok(source)
     };
     for d in &group.decisions {
+        // 决定的完整依据同样须逐字出现在获准保存的原文里。
+        for evidence in &d.basis {
+            if let crate::contract::SourceRef::Stored { source_id } = &evidence.source {
+                verbatim(&RelationEvidence {
+                    source_id: source_id.clone(),
+                    quote: evidence.quote.text.clone(),
+                })?;
+            }
+        }
         if let Some(spec) = &d.relation {
             let mut own = false;
             let mut old_side = false;
@@ -1141,7 +1230,11 @@ pub fn w5_finish_task(
     })
 }
 
-fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
+fn validate(
+    group: &W5Group,
+    owner: &UserId,
+    state: &PersistedMemoryState,
+) -> PersistenceResult<()> {
     if group.id.trim().is_empty() {
         return Err("W5 group id must not be empty".into());
     }
@@ -1183,7 +1276,9 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
             }
         }
     }
-    // 关系快照：每个涉及的关系只记一次；目标所在的 open 关系与要解决的关系都必须有快照。
+    // 关系快照只代表实际 W4 输入。范围不完整时可能隔离掉目标所在的 open 关系：
+    // 它的编号仍在 seen.relations，不能据此宣称 W4 看过关系内容；不存在的编号直接拒绝，
+    // 要解决的关系始终须有快照。
     let mut seen_relation_ids: Vec<&String> = group.seen_relations.iter().map(|s| &s.id).collect();
     seen_relation_ids.sort();
     seen_relation_ids.dedup();
@@ -1201,16 +1296,43 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
             )
             .into());
         }
-        if let Some(missing) = seen
-            .relations
-            .iter()
-            .find(|id| !seen_relation_ids.contains(id))
-        {
+        if let Some(missing) = seen.relations.iter().find(|id| {
+            !seen_relation_ids.contains(id)
+                && (group.scope_complete || !state.relations.contains_key(*id))
+        }) {
             return Err(format!("W5 relation {missing} has no W4 snapshot").into());
         }
     }
     let mut resolved: Vec<&String> = Vec::new();
     for d in &group.decisions {
+        if !d.basis.is_empty() {
+            // 持久决定只用已保存的来源；来源集合与 basis_sources 一致。
+            let mut cited: Vec<&str> = Vec::new();
+            for evidence in &d.basis {
+                match &evidence.source {
+                    crate::contract::SourceRef::Stored { source_id } => cited.push(source_id),
+                    crate::contract::SourceRef::Current {} => {
+                        return Err(format!(
+                            "W5 decision {}: basis must cite stored sources",
+                            d.candidate
+                        )
+                        .into());
+                    }
+                }
+            }
+            cited.sort_unstable();
+            cited.dedup();
+            let mut listed: Vec<&str> = d.basis_sources.iter().map(String::as_str).collect();
+            listed.sort_unstable();
+            listed.dedup();
+            if cited != listed {
+                return Err(format!(
+                    "W5 decision {}: basis and basis_sources cite different sources",
+                    d.candidate
+                )
+                .into());
+            }
+        }
         if (d.action == W5Action::Conflict) != d.relation.is_some() {
             return Err(format!(
                 "W5 decision {}: exactly a conflict carries the relation to create",
@@ -1310,7 +1432,11 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
                 )
                 .into());
             }
-            if d.effective.is_some() || d.reason.is_some() {
+            if d.effective.is_some()
+                || d.reason.is_some()
+                || d.effective_time.is_some()
+                || d.relation_scope.is_some()
+            {
                 return Err(format!(
                     "W5 decision {}: a pending decision does not end a target",
                     d.candidate
@@ -1341,9 +1467,36 @@ fn validate(group: &W5Group, owner: &UserId) -> PersistenceResult<()> {
                 return Err(format!("W5 target {} has no W4 snapshot", target.0).into());
             }
         }
-        if (d.effective.is_some() || d.reason.is_some()) && d.action != W5Action::StateChange {
+        if let Some(time) = &d.effective_time
+            && time.point() != d.effective
+        {
+            // 两个字段并存时必须一致：非日精度、多日区间或未知不写时间点。
             return Err(format!(
-                "W5 decision {}: only state_change carries an effective time or an end reason",
+                "W5 decision {}: effective and effective_time disagree",
+                d.candidate
+            )
+            .into());
+        }
+        if d.relation_scope.is_some() && d.action != W5Action::Conflict {
+            return Err(format!(
+                "W5 decision {}: only a conflict carries a relation scope",
+                d.candidate
+            )
+            .into());
+        }
+        // 生效时间（contracts 2.4 不按动作限制）：结束目标的动作用它作结束时间，其余动作只
+        // 记在决定里。没有换算结果的旧形态时间点只有 state_change 用过。
+        if d.reason.is_some() && d.action != W5Action::StateChange {
+            return Err(format!(
+                "W5 decision {}: only state_change carries an end reason",
+                d.candidate
+            )
+            .into());
+        }
+        if d.effective.is_some() && d.effective_time.is_none() && d.action != W5Action::StateChange
+        {
+            return Err(format!(
+                "W5 decision {}: an effective time needs its verified resolution",
                 d.candidate
             )
             .into());
@@ -1620,7 +1773,8 @@ fn apply_action(
                 old.status = MemoryStatus::Superseded;
                 old.superseded_by = None;
                 old.supersede_reason = Some(SupersedeReason::UserRetracted);
-                old.temporal.valid_to = None;
+                // 撤回带生效时间时是结束时间；没有或未知时保持未知，不回填接收时间。
+                old.temporal.valid_to = decision.effective;
                 repository.update(old)?;
             }
             Ok(None)

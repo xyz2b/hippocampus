@@ -113,6 +113,9 @@ fn decision(
         resolution: None,
         relation: None,
         pending_reason: None,
+        basis: vec![],
+        effective_time: None,
+        relation_scope: None,
     }
 }
 

@@ -1,0 +1,39 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "conflict",
+      "targets": [
+        50
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-130"
+          },
+          "quote": {
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-260"
+          },
+          "quote": {
+            "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": {
+        "conditions": [],
+        "times": []
+      },
+      "pending_reason": null
+    }
+  ]
+}

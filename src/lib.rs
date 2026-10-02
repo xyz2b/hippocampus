@@ -20,6 +20,7 @@ mod staging;
 mod store;
 mod temporal;
 mod temporal_grounding;
+pub mod w4;
 
 pub use commit::*;
 pub use engine::*;

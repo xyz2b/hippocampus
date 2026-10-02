@@ -22,8 +22,11 @@ legacy 记录的 `data` 是第一阶段前 `src/model.rs` 的完整 Memory 序�
 
 W5 验收（contracts 2.5）另列，须检查真实提交、回滚和重载后的状态，静态 `after` 不能证明事务正确：同一原文相关决定的原子提交与整组重判/回滚（w4_21）；替代 open 关系成员而未解决关系时关系保持不变、替代记录标 update_relation_unclear（w4_22）；幂等、并发过期、多目标原子提交。
 
+`fixtures/<id>.output.json` 是离线验收用的模型输出夹具，由 `gen_fixtures.py` 从期望决定生成：把 `basis_sources` 换成样本里的具体片段，其余字段不变。它们不是人工标签；`cargo test --test w4_offline` 用它们跑“校验 → 转换 → 提交 → 重开核对”，并检查夹具与期望决定一致。样本改动后须重新生成夹具。
+
 ```
 python3 tests/eval/w4/gen_samples.py            # 重新生成样本
+python3 tests/eval/w4/gen_fixtures.py           # 重新生成模型输出夹具
 python3 tests/eval/w4/check_samples.py          # 结构检查
 python3 -m unittest discover -s tests/eval/w4   # 检查器自身的测试
 ```

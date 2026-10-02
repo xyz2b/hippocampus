@@ -786,7 +786,24 @@ pub(crate) fn forget(
                 &deleted_source_ids,
                 &scrubbed,
             )?;
+            // 组自己的原文被删：指纹已整体墓碑化，决定里取自该原文的生效时间原文一并清掉。
+            let own_deleted = receipt.fingerprint == TOMBSTONE;
             for decision in &mut receipt.decisions {
+                for evidence in &mut decision.basis {
+                    if let crate::contract::SourceRef::Stored { source_id } = &evidence.source
+                        && deleted_source_ids.contains(source_id.as_str())
+                    {
+                        evidence.quote.text = TOMBSTONE.into();
+                    }
+                }
+                if own_deleted && let Some(time) = decision.effective_time.as_mut() {
+                    time.interp.quote.text = TOMBSTONE.into();
+                    if let crate::contract::Interp::Anchored { anchor_quote, .. } =
+                        &mut time.interp.interp
+                    {
+                        anchor_quote.text = TOMBSTONE.into();
+                    }
+                }
                 let mut cites_deleted = false;
                 for evidence in decision
                     .relation

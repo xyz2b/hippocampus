@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "refine",
+      "targets": [
+        30
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-110"
+          },
+          "quote": {
+            "text": "我每天早上都跑步。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-240"
+          },
+          "quote": {
+            "text": "更准确地说，我每天早上跑步五公里。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}

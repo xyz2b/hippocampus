@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "correction",
+      "targets": [
+        21
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-102"
+          },
+          "quote": {
+            "text": "我住在苏州。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-230"
+          },
+          "quote": {
+            "text": "之前说错了，我住在杭州，不是苏州。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}
