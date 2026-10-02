@@ -1,4 +1,4 @@
-//! 新路径的库级入口。调用方显式登记轮次；W1/W3/W4 显式接入，生产分发仍待后续段。
+//! 新路径的库级入口；CLI 按来源处理版本接入 W1/W3/W4，离线注入入口保留。
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
@@ -531,9 +531,19 @@ pub fn receipt(store: &SqliteMemoryStore, key: &str) -> PersistenceResult<serde_
     let source = state.sources.get(key).ok_or("source missing")?;
     let requests = visible_requests(source)?;
     let retention_pending = requests.iter().any(|r| r["status"] == "retention_pending");
+    let candidates = if source.task.round.is_some() {
+        crate::commit::w4_candidate_results(&state, key)?
+    } else {
+        Vec::new()
+    };
+    let status = if source.enrichment == "stale_requires_review" {
+        "needs_rejudge"
+    } else {
+        &source.enrichment
+    };
     Ok(serde_json::json!({
         "source": {"status":if source.request.is_some() {"stored"} else {"deleted"},"source_id":source.id},
-        "enrichment": {"status":source.enrichment,"candidates":crate::commit::w4_candidate_results(&state,key)?,"memory_requests":requests,"retention_pending":retention_pending}
+        "enrichment": {"status":status,"candidates":candidates,"memory_requests":requests,"retention_pending":retention_pending}
     }))
 }
 

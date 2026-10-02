@@ -2301,10 +2301,13 @@ pub fn w4_start_round(
         }
         let round = match (source.task.round, rejudge) {
             (None, false)
-                if matches!(
+                if (matches!(
                     source.enrichment.as_str(),
                     "queued" | "pending" | "not_requested"
-                ) && !state.receipts.contains_key(key) =>
+                ) || (source.enrichment == "stale_requires_review"
+                    && source.task.processing_version.as_deref()
+                        == Some(W4_PROCESSING_VERSION)))
+                    && !state.receipts.contains_key(key) =>
             {
                 0
             }

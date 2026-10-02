@@ -208,7 +208,7 @@ fn main() -> PersistenceResult<()> {
         match arg.as_str() {
             "--help" | "-h" => {
                 eprintln!(
-                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\nDeferred capture queues authorized sources without model calls; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. No automatic model retries."
+                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires off/deferred and capture_source=true, and runs only through these CLI batch commands. Existing sources keep their bound version.\nDeferred capture queues authorized sources without model calls; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. No automatic model retries."
                 );
                 return Ok(());
             }
@@ -265,6 +265,7 @@ fn main() -> PersistenceResult<()> {
     };
     let mut service = ChatMemoryService::new(SqliteMemoryStore::open(db, UserId(owner))?, config)?;
     if drain || enrich_source.is_some() {
+        // CLI model calls run before the MCP service is wrapped in its global mutex (J6).
         let result = if let Some(source_id) = enrich_source {
             service.enrich_source(&source_id)?
         } else {

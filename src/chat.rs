@@ -32,6 +32,14 @@ pub enum EnrichmentMode {
     Off,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WritePipeline {
+    #[default]
+    Legacy,
+    W4RuntimeV1,
+}
+
 const ENRICHMENT_VERSION: &str = "s5_enrichment_v1";
 const ENRICHMENT_LEASE_SECONDS: i64 = 900;
 
@@ -62,6 +70,7 @@ pub struct ChatConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub retrieval_mode: Option<RetrievalMode>,
     pub enrichment_mode: EnrichmentMode,
+    pub write_pipeline: WritePipeline,
     /// Experimental committed-fact search keys; raw statements remain the evidence.
     pub fact_index_enabled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -85,6 +94,7 @@ impl Default for ChatConfig {
             local_recall_enabled: false,
             retrieval_mode: None,
             enrichment_mode: EnrichmentMode::Inline,
+            write_pipeline: WritePipeline::Legacy,
             fact_index_enabled: false,
             model_budget: None,
             local_recall_budget: LocalRecallBudget::default(),
@@ -166,6 +176,7 @@ impl<'de> Deserialize<'de> for ChatConfig {
                 "local_recall_enabled" => read!(local_recall_enabled),
                 "retrieval_mode" => read!(retrieval_mode),
                 "enrichment_mode" => read!(enrichment_mode),
+                "write_pipeline" => read!(write_pipeline),
                 "fact_index_enabled" => read!(fact_index_enabled),
                 "model_budget" => read!(model_budget),
                 "local_recall_budget" => read!(local_recall_budget),
@@ -205,6 +216,11 @@ impl ChatConfig {
     }
 
     pub fn validate(&self) -> PersistenceResult<()> {
+        if self.write_pipeline == WritePipeline::W4RuntimeV1
+            && self.enrichment_mode == EnrichmentMode::Inline
+        {
+            return Err("w4_runtime_v1 requires enrichment_mode off/deferred: J6 defers inline and MCP background execution until model calls can run outside the service global lock".into());
+        }
         self.local_recall_budget.validate()?;
         if let Some(budget) = &self.model_budget {
             budget.validate()?;
@@ -2066,6 +2082,83 @@ impl ChatMemoryService {
         with_model_calls(response, model_calls)
     }
 
+    fn source_receipt(&self, key: &str, replayed: bool) -> PersistenceResult<Value> {
+        let state = self.store.read()?;
+        let source = state.sources.get(key).ok_or("source missing")?;
+        if source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION) {
+            let receipt = crate::enrichment::receipt(&self.store, key)?;
+            if source.request.is_none() {
+                Err(Box::new(CaptureError(receipt)))
+            } else {
+                Ok(receipt)
+            }
+        } else {
+            source_response(source, replayed)
+        }
+    }
+
+    fn process_w4_source(&mut self, key: &str) -> PersistenceResult<Value> {
+        if self.config.enrichment_mode == EnrichmentMode::Inline {
+            return Err("unsupported_processing_version: w4_runtime_v1 requires off/deferred processing (J6); inline and MCP background execution are not enabled".into());
+        }
+        let state = self.store.read()?;
+        let source = state.sources.get(key).ok_or("source missing")?;
+        if source.request.is_none() {
+            return crate::enrichment::receipt(&self.store, key);
+        }
+        if source.task.round.is_some() {
+            let now = unix_seconds()?;
+            let resumable =
+                matches!(
+                    source.enrichment.as_str(),
+                    "queued" | "running" | "failed" | "budget_exhausted" | "stale_requires_review"
+                ) || (matches!(source.enrichment.as_str(), "pending" | "coverage_gaps")
+                    && !w4_progress(&self.store, key)?.plan_ready);
+            if !resumable || source.task.lease_until.is_some_and(|at| at >= now) {
+                return crate::enrichment::receipt(&self.store, key);
+            }
+        } else {
+            w4_start_round(&mut self.store, key, &format!("w4:{}:0", source.id), false)?;
+        }
+        let state = self.store.read()?;
+        let source = &state.sources[key];
+        let request: Remember =
+            serde_json::from_value(source.request.clone().ok_or("source_deleted")?)?;
+        let context = self.config.context(
+            self.store.owner().clone(),
+            state.entities.list_by_owner(self.store.owner()),
+            request.task_id,
+            20,
+        )?;
+        let client = match self.model_client(
+            source
+                .task
+                .operation_id
+                .as_deref()
+                .ok_or("round operation missing")?,
+        ) {
+            Ok(client) => client,
+            Err(_) => {
+                let claim = w4_claim_round(&mut self.store, key)?;
+                w4_pause_attempt(
+                    &mut self.store,
+                    &claim,
+                    "failed",
+                    Some("attempt_failed"),
+                    json!({"reason":"model_client_unavailable"}),
+                )?;
+                return crate::enrichment::receipt(&self.store, key);
+            }
+        };
+        let provider = crate::write_models::WriteModelProvider::new(client, context);
+        crate::enrichment::run_source_with_all_models(
+            &mut self.store,
+            key,
+            crate::enrichment::RuntimeInputBudget::default(),
+            &provider,
+        )
+    }
+
     pub fn drain_enrichment(&mut self, max_jobs: usize) -> PersistenceResult<Value> {
         if self.config.enrichment_mode != EnrichmentMode::Deferred {
             return Err("deferred mode is disabled; no queued tasks may be claimed".into());
@@ -2075,15 +2168,42 @@ impl ChatMemoryService {
         }
         let mut results = Vec::new();
         for _ in 0..max_jobs {
-            let Some(claim) = self.claim_source(None, ClaimMode::Drain)? else {
-                break;
+            let state = self.store.read()?;
+            let barrier = state
+                .last_applied_source_sequence
+                .max(state.source_less_barrier_sequence);
+            let next = state
+                .sources
+                .iter()
+                .filter(|(_, source)| {
+                    source.enrichment == "queued"
+                        && (source.task.processing_version.as_deref()
+                            == Some(W4_PROCESSING_VERSION)
+                            || (source.task.processing_version.as_deref()
+                                == Some(ENRICHMENT_VERSION)
+                                && source.received_sequence > barrier))
+                })
+                .min_by_key(|(_, source)| source.order_sequence());
+            let (source_id, result) = if let Some((key, source)) = next
+                && source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION)
+            {
+                (source.id.clone(), self.process_w4_source(key))
+            } else {
+                let Some(claim) = self.claim_source(None, ClaimMode::Drain)? else {
+                    break;
+                };
+                (
+                    claim.source_id.clone(),
+                    self.process_claim(claim, &|| false, None),
+                )
             };
-            let source_id = claim.source_id.clone();
-            let result = self.process_claim(claim, &|| false, None);
-            let budget_exhausted = result
-                .as_ref()
-                .err()
-                .is_some_and(|error| error_body(error.as_ref())["error"] == "model_budget_denied");
+            let budget_exhausted =
+                result.as_ref().err().is_some_and(|error| {
+                    error_body(error.as_ref())["error"] == "model_budget_denied"
+                }) || result
+                    .as_ref()
+                    .ok()
+                    .is_some_and(|value| value["enrichment"]["status"] == "budget_exhausted");
             results.push(match result {
                 Ok(result) => json!({"source_id":source_id,"status":"completed","result":result}),
                 Err(error) => json!({"source_id":source_id,"status":"failed","result":error_body(error.as_ref())}),
@@ -2099,6 +2219,15 @@ impl ChatMemoryService {
         bounded_text(source_id, "source_id", 512)?;
         if self.config.model_budget.is_none() {
             return Err("explicit source processing requires a model budget".into());
+        }
+        let state = self.store.read()?;
+        if let Some((key, source)) = state
+            .sources
+            .iter()
+            .find(|(_, source)| source.id == source_id)
+            && source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION)
+        {
+            return self.process_w4_source(key);
         }
         match self.claim_source(Some(source_id), ClaimMode::Explicit)? {
             Some(claim) => self.process_claim(claim, &|| false, None),
@@ -2138,13 +2267,13 @@ impl ChatMemoryService {
         })?;
         if let Some(source) = state.sources.get(&key) {
             if source.request.is_none() {
-                return source_response(source, true);
+                return self.source_receipt(&key, true);
             }
             if source.request.as_ref() != Some(&request) {
                 return Err("these session/turn IDs were already used with different arguments; use a new turn_id".into());
             }
             crate::diagnostics::record("source_receipt", || source.status());
-            return source_response(source, true);
+            return self.source_receipt(&key, true);
         }
         if let Some(result) = replay(&state, &key, &request)? {
             let mut result = result;
@@ -2210,7 +2339,9 @@ impl ChatMemoryService {
                     task: Default::default(),
                 };
                 source.task.accepted_mode = Some(if enrichment_off {"off"} else if enrichment_deferred {"deferred"} else {"inline"}.into());
-                if !enrichment_off {
+                if self.config.write_pipeline == WritePipeline::W4RuntimeV1 {
+                    source.task.processing_version = Some(W4_PROCESSING_VERSION.into());
+                } else if !enrichment_off {
                     source.task.processing_version = Some(ENRICHMENT_VERSION.into());
                 }
                 state.sources.insert(key.clone(), source.clone());
@@ -2227,7 +2358,7 @@ impl ChatMemoryService {
                         .ok_or("source receipt missing after capture")?;
                     crate::diagnostics::record("source_receipt", || source.status());
                     if !created || enrichment_off || enrichment_deferred {
-                        return source_response(source, !created);
+                        return self.source_receipt(&key, !created);
                     }
                 }
                 Err(error) => {
