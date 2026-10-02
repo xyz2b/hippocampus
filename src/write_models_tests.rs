@@ -1,5 +1,7 @@
 use super::*;
 use crate::chat::{ChatConfig, ChatMemoryService, EnrichmentMode};
+use crate::contract::{SourceRef, W4Candidate, W4Input};
+use crate::enrichment::run_source_with_all_models;
 use crate::enrichment::{RuntimeInputBudget, run_source_with_models};
 use crate::*;
 use std::collections::{BTreeSet, VecDeque};
@@ -853,4 +855,808 @@ fn w1_w3_schema_fields_are_strict_and_match_frozen_contracts() {
             "Never invent an entity_id or choose\nthe only catalogue entry by elimination"
         )
     );
+}
+
+fn run_all(db: &Db, key: &str, provider: &WriteModelProvider) -> Json {
+    run_source_with_all_models(&mut db.open(), key, RuntimeInputBudget::default(), provider)
+        .unwrap()
+}
+
+// Use the sample's model response, rebinding only database-assigned source/record IDs.
+fn w4_case(db: &Db, extra: bool) -> (String, Json, Json) {
+    let sample: Json = serde_json::from_str(include_str!(
+        "../tests/eval/w4/samples/w4_10_reinforce.json"
+    ))
+    .unwrap();
+    let old_text = sample["sources"]["s-111"]["text"].as_str().unwrap();
+    let old_key = db.start_turn(old_text, "seed", &[]);
+    let old_w1 =
+        json!({"memory_requests":[],"candidates":[sample["input"]["records"][0]["candidate"]]});
+    let (seed, _) = mocked(
+        db,
+        vec![
+            Ok(envelope(&old_w1.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    let old = run_all(db, &old_key, &seed)["enrichment"]["candidates"][0]["memory_id"].clone();
+    assert!(old.is_number());
+    let text = sample["sources"]["s-320"]["text"].as_str().unwrap();
+    let text = if extra {
+        format!("{text}我收藏陶瓷杯。")
+    } else {
+        text.into()
+    };
+    let key = db.start(&text);
+    let state = db.open().read().unwrap();
+    let mut upstream =
+        json!({"memory_requests":[],"candidates":[sample["input"]["candidates"][0]["candidate"]]});
+    let mut output: Json = serde_json::from_str(include_str!(
+        "../tests/eval/w4/fixtures/w4_10_reinforce.output.json"
+    ))
+    .unwrap();
+    output["decisions"][0]["targets"] = json!([old]);
+    output["decisions"][0]["basis"][0]["source"]["source_id"] = json!(state.sources[&old_key].id);
+    output["decisions"][0]["basis"][1]["source"]["source_id"] = json!(state.sources[&key].id);
+    if extra {
+        upstream["candidates"]
+            .as_array_mut()
+            .unwrap()
+            .push(w1("我收藏陶瓷杯。")["candidates"][0].clone());
+        output["decisions"].as_array_mut().unwrap().push(json!({
+            "candidate":1,"status":"decided","action":"new","targets":[],"resolves_relations":[],
+            "basis":[{"source":{"kind":"stored","source_id":state.sources[&key].id},"quote":{"text":"我收藏陶瓷杯。"}}],
+            "effective":null,"relation_scope":null,"pending_reason":null
+        }));
+    }
+    (key, upstream, output)
+}
+
+fn w3_for(upstream: &Json) -> Json {
+    let mut output = w3();
+    output["reviews"] = json!(
+        upstream["candidates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .enumerate()
+            .map(|(i, _)| {
+                let mut r = w3()["reviews"][0].clone();
+                r["candidate"] = json!(i);
+                r
+            })
+            .collect::<Vec<_>>()
+    );
+    output
+}
+
+fn ready_w4(
+    db: &Db,
+    key: &str,
+    provider: &WriteModelProvider,
+) -> (
+    W4Claim,
+    ProviderContext,
+    W4Input,
+    BTreeMap<String, SourceInput>,
+) {
+    let mut store = db.open();
+    let claim = w4_claim_round(&mut store, key).unwrap();
+    let (ctx, text) = inputs(&store, key, &claim);
+    let batch = provider.provide(&mut store, &claim, &ctx, &text).unwrap();
+    let candidates: Vec<_> = batch
+        .w2
+        .candidates
+        .iter()
+        .map(|c| W4Candidate {
+            index: c.index,
+            committed_id: None,
+            candidate: c.candidate.clone(),
+            source: SourceRef::Stored {
+                source_id: ctx.source_id.clone(),
+            },
+            said_on: batch.w2.said_on.clone(),
+            time_resolutions: c.time_resolutions.clone(),
+        })
+        .collect();
+    let admissions = candidates
+        .iter()
+        .map(|c| {
+            (
+                c.index,
+                w4::Admission {
+                    episode_useful: false,
+                    remember_bound: false,
+                },
+            )
+        })
+        .collect();
+    crate::commit::w4_save_batch(&mut store, &claim, &candidates, &admissions, &batch, &[])
+        .unwrap();
+    let pending: Vec<_> = candidates
+        .iter()
+        .map(|c| w4::Pending {
+            index: c.index,
+            committed_id: c.committed_id,
+            contract: crate::contract::ContractCandidate {
+                candidate: c.candidate.clone(),
+                source: c.source.clone(),
+                said_on: c.said_on.clone(),
+                time_resolutions: c.time_resolutions.clone(),
+            },
+        })
+        .collect();
+    let (state, assembly) = w4::assemble(
+        &store,
+        key,
+        None,
+        &pending,
+        RuntimeInputBudget::default().w4,
+    )
+    .unwrap();
+    assert!(assembly.call_w4);
+    let sources = state
+        .sources
+        .values()
+        .map(|s| {
+            (
+                s.id.clone(),
+                SourceInput {
+                    text: crate::lexical::body(s).unwrap().into(),
+                    history: serde_json::from_value(s.request.as_ref().unwrap()["history"].clone())
+                        .unwrap(),
+                },
+            )
+        })
+        .collect();
+    (claim, ctx, assembly.input, sources)
+}
+
+#[test]
+fn all_models_runtime_skips_w4_for_empty_or_unrelated_inputs() {
+    for empty in [true, false] {
+        let db = Db::new();
+        let key = db.start("我使用铅笔。");
+        let upstream = if empty {
+            json!({"memory_requests":[],"candidates":[]})
+        } else {
+            w1("我使用铅笔。")
+        };
+        let mut responses = vec![Ok(envelope(&upstream.to_string()))];
+        if !empty {
+            responses.push(Ok(envelope(&w3().to_string())));
+        }
+        let (provider, _) = mocked(&db, responses);
+        assert_eq!(
+            run_all(&db, &key, &provider)["enrichment"]["status"],
+            if empty {
+                "no_candidates_unreviewed"
+            } else {
+                "committed"
+            }
+        );
+        assert_eq!(
+            provider.client.model_call_count(),
+            if empty { 1 } else { 2 }
+        );
+        assert_eq!(db.calls(), if empty { 1 } else { 2 });
+    }
+}
+
+#[test]
+fn w4_fixture_closes_the_model_pipeline_with_three_sends_and_reopen() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let result = run_all(&db, &key, &provider);
+    assert_eq!(result["enrichment"]["status"], "committed");
+    assert_eq!(provider.client.model_call_count(), 3);
+    assert_eq!(db.calls(), 5); // The seed operation used two calls.
+    let state = db.open().read().unwrap();
+    let memories = state
+        .repository
+        .list_by_owner(&UserId::from("alice"))
+        .unwrap();
+    assert_eq!(memories.len(), 1);
+    assert_eq!(memories[0].reinforcement_count, 1);
+    assert_eq!(memories[0].evidence.len(), 2);
+    assert_eq!(
+        result["enrichment"]["candidates"][0]["memory_id"],
+        json!(memories[0].id)
+    );
+    let request = &sent.lock().unwrap()[2];
+    assert_eq!(request["text"]["format"]["name"], "w4_v2");
+    assert_eq!(request["text"]["format"]["strict"], true);
+    let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+    let stage = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"]["w4"];
+    assert_eq!(stage["binding"], input);
+    assert_eq!(stage["output"], output);
+    assert_eq!(
+        crate::enrichment::receipt(&db.open(), &key).unwrap(),
+        result
+    );
+}
+
+#[test]
+fn w4_cache_survives_reopen_and_rejects_every_changed_input_component() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let (provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let (claim, ctx, input, sources) = ready_w4(&db, &key, &provider);
+    let first = provider
+        .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+        .unwrap();
+    w4_fail_attempt(&mut db.open(), &claim, "crash after W4 before plan").unwrap();
+    let (reopened, _) = mocked(&db, vec![]);
+    let claim = w4_claim_round(&mut db.open(), &key).unwrap();
+    assert_eq!(
+        reopened
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap(),
+        first
+    );
+    for change in 0..4 {
+        let mut changed = input.clone();
+        let mut texts = sources.clone();
+        match change {
+            0 => {
+                let crate::contract::RecordView2::Current(record) = &mut changed.records[0] else {
+                    unreachable!()
+                };
+                record.candidate.polarity = crate::contract::Polarity::Negate;
+            }
+            1 => changed.relations.push(crate::contract::RelationLink {
+                id: "changed-relation".into(),
+                kind: crate::contract::RelationKind::Conflict,
+                members: vec![input.records[0].id()],
+                conditions: vec![],
+                times: vec![],
+                basis: vec![],
+                status: crate::contract::RelationStatus::Open,
+                resolution: None,
+            }),
+            2 => changed.coverage.omitted += 1,
+            _ => texts
+                .values_mut()
+                .next()
+                .unwrap()
+                .history
+                .push("新增历史".into()),
+        }
+        assert!(
+            reopened
+                .judge(&mut db.open(), &claim, &ctx, &changed, &texts)
+                .unwrap_err()
+                .to_string()
+                .starts_with("needs_rejudge")
+        );
+    }
+    assert_eq!(reopened.client.model_call_count(), 0);
+    w4_fail_attempt(&mut db.open(), &claim, "resume runtime").unwrap();
+    assert_eq!(
+        run_all(&db, &key, &reopened)["enrichment"]["status"],
+        "committed"
+    );
+    assert_eq!(reopened.client.model_call_count(), 0);
+    assert_eq!(db.calls(), 5);
+}
+
+#[test]
+fn w4_invalid_output_rejects_the_whole_batch_without_retry_or_business_writes() {
+    for missing in [0, 1, 2] {
+        let db = Db::new();
+        let (key, upstream, mut output) = w4_case(&db, true);
+        let before = db.open().read().unwrap().repository;
+        if missing < 2 {
+            output["decisions"][0]["basis"]
+                .as_array_mut()
+                .unwrap()
+                .remove(missing);
+        } else {
+            output["decisions"][0]["unexpected"] = json!(true);
+        }
+        let (provider, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+                Ok(envelope(&output.to_string())),
+            ],
+        );
+        assert_eq!(
+            run_all(&db, &key, &provider)["enrichment"]["status"],
+            "failed"
+        );
+        let state = db.open().read().unwrap();
+        assert_eq!(
+            serde_json::to_value(&state.repository).unwrap(),
+            serde_json::to_value(&before).unwrap()
+        );
+        assert_eq!(
+            state.sources[&key].error.as_deref(),
+            Some("w4_invalid_output")
+        );
+        assert!(!w4_progress(&db.open(), &key).unwrap().plan_ready);
+        let (reopened, _) = mocked(&db, vec![]);
+        assert_eq!(
+            run_all(&db, &key, &reopened)["enrichment"]["status"],
+            "failed"
+        );
+        assert_eq!(reopened.client.model_call_count(), 0);
+        assert_eq!(provider.client.model_call_count(), 3);
+        assert_eq!(db.calls(), 5);
+    }
+}
+
+#[test]
+fn w4_call_without_a_durable_result_never_resends() {
+    let db = Db::new();
+    let (key, upstream, _) = w4_case(&db, false);
+    let (provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+        ],
+    );
+    let (claim, ctx, _, _) = ready_w4(&db, &key, &provider);
+    provider
+        .operation_client(&db.open(), &ctx)
+        .unwrap()
+        .budget
+        .unwrap()
+        .reserve(ModelStage::W4, b"reserved before crash")
+        .unwrap();
+    w4_fail_attempt(&mut db.open(), &claim, "crash before result checkpoint").unwrap();
+    let (reopened, _) = mocked(&db, vec![]);
+    assert_eq!(
+        run_all(&db, &key, &reopened)["enrichment"]["status"],
+        "failed"
+    );
+    let state = db.open().read().unwrap();
+    assert_eq!(
+        state.sources[&key].error.as_deref(),
+        Some("model_invalid_output")
+    );
+    assert_eq!(
+        state.sources[&key].result.as_ref().unwrap()["w4_input_meta"]["diagnostic"]["detail_code"],
+        "model_result_missing"
+    );
+    assert_eq!(reopened.client.model_call_count(), 0);
+    assert_eq!(db.calls(), 5);
+}
+
+#[test]
+fn w4_saved_plan_and_partial_commits_resume_without_model_sends() {
+    for committed in 0..=2 {
+        let db = Db::new();
+        let (key, upstream, output) = w4_case(&db, true);
+        let (provider, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+                Ok(envelope(&output.to_string())),
+            ],
+        );
+        let (claim, ctx, input, sources) = ready_w4(&db, &key, &provider);
+        let output = provider
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap();
+        let state = db.open().read().unwrap();
+        let admissions = input
+            .candidates
+            .iter()
+            .map(|c| {
+                (
+                    c.index,
+                    w4::Admission {
+                        episode_useful: false,
+                        remember_bound: false,
+                    },
+                )
+            })
+            .collect();
+        let plan = w4::plan(
+            &w4::W4Runtime {
+                state: &state,
+                owner: ctx.owner,
+                source_key: &key,
+                round: claim.round,
+                task_id: None,
+                admissions,
+            },
+            &input,
+            &output,
+        )
+        .unwrap();
+        assert_eq!(plan.groups.len(), 2);
+        w4_save_plan(&mut db.open(), &claim, &input.candidates, &plan).unwrap();
+        for group in plan.groups.iter().take(committed) {
+            w4_commit_group(&mut db.open(), &claim, group).unwrap();
+        }
+        w4_fail_attempt(&mut db.open(), &claim, "crash before source summary").unwrap();
+        let (reopened, _) = mocked(&db, vec![]);
+        assert_eq!(
+            run_all(&db, &key, &reopened)["enrichment"]["status"],
+            "committed"
+        );
+        let state = db.open().read().unwrap();
+        let memories = state
+            .repository
+            .list_by_owner(&UserId::from("alice"))
+            .unwrap();
+        assert_eq!(memories.len(), 2);
+        assert_eq!(memories[0].reinforcement_count, 1);
+        assert_eq!(memories[0].evidence.len(), 2);
+        assert!(w4_progress(&db.open(), &key).unwrap().remaining.is_empty());
+        assert_eq!(reopened.client.model_call_count(), 0);
+        assert_eq!(db.calls(), 5);
+    }
+}
+
+#[test]
+fn w4_schema_is_strict_and_matches_the_frozen_decision_fields() {
+    let schema = w4_schema();
+    let mut pending = vec![&schema];
+    while let Some(value) = pending.pop() {
+        match value {
+            Json::Object(map) => {
+                if value["type"] == "object" {
+                    assert_eq!(value["additionalProperties"], false);
+                    let fields: BTreeSet<_> = value["properties"]
+                        .as_object()
+                        .unwrap()
+                        .keys()
+                        .map(String::as_str)
+                        .collect();
+                    let required: BTreeSet<_> = value["required"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|v| v.as_str().unwrap())
+                        .collect();
+                    assert_eq!(fields, required);
+                }
+                pending.extend(map.values());
+            }
+            Json::Array(array) => pending.extend(array),
+            _ => {}
+        }
+    }
+    assert_eq!(schema["required"], json!(["decisions"]));
+    let decision = &schema["properties"]["decisions"]["items"];
+    assert_eq!(
+        decision["required"],
+        json!([
+            "candidate",
+            "status",
+            "action",
+            "targets",
+            "resolves_relations",
+            "basis",
+            "effective",
+            "relation_scope",
+            "pending_reason"
+        ])
+    );
+    assert_eq!(
+        decision["properties"]["action"]["anyOf"][0]["enum"],
+        json!([
+            "new",
+            "reinforce",
+            "state_change",
+            "correction",
+            "refine",
+            "retract",
+            "coexist",
+            "conflict"
+        ])
+    );
+    for nullable in ["action", "effective", "relation_scope", "pending_reason"] {
+        assert_eq!(decision["properties"][nullable]["anyOf"][1]["type"], "null");
+    }
+    let scope = &decision["properties"]["relation_scope"]["anyOf"][0];
+    assert_eq!(scope["required"], json!(["conditions", "times"]));
+    assert_eq!(
+        scope["properties"]["conditions"]["items"]["required"],
+        json!(["of", "index"])
+    );
+}
+
+#[test]
+fn prompts_never_include_evaluation_source_text_or_w4_labels() {
+    fn labels(value: &Json, out: &mut Vec<String>) {
+        match value {
+            Json::Object(map) => {
+                for (key, value) in map {
+                    if matches!(key.as_str(), "focus" | "note" | "why" | "must_not") {
+                        fn text(value: &Json, out: &mut Vec<String>) {
+                            match value {
+                                Json::String(s) => out.push(s.clone()),
+                                Json::Array(a) => {
+                                    for v in a {
+                                        text(v, out);
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                        text(value, out);
+                    } else {
+                        labels(value, out);
+                    }
+                }
+            }
+            Json::Array(a) => {
+                for v in a {
+                    labels(v, out);
+                }
+            }
+            _ => {}
+        }
+    }
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/eval");
+    for stage in ["w1", "w3", "w4"] {
+        let mut count = 0;
+        for entry in std::fs::read_dir(root.join(stage).join("samples")).unwrap() {
+            let path = entry.unwrap().path();
+            if path.extension().is_none_or(|e| e != "json") {
+                continue;
+            }
+            count += 1;
+            let sample: Json =
+                serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+            let mut texts: Vec<String> = if stage == "w4" {
+                sample["sources"]
+                    .as_object()
+                    .unwrap()
+                    .values()
+                    .map(|s| s["text"].as_str().unwrap().into())
+                    .collect()
+            } else {
+                vec![sample["input"]["text"].as_str().unwrap().into()]
+            };
+            if stage == "w4" {
+                labels(&sample, &mut texts);
+            }
+            for text in texts {
+                assert!(!text.is_empty());
+                for prompt in [W1_PROMPT, W3_PROMPT, W4_PROMPT] {
+                    assert!(
+                        !prompt.contains(&text),
+                        "evaluation leak: {} contains {text:?}",
+                        path.display()
+                    );
+                }
+            }
+        }
+        assert!(count > 0);
+    }
+}
+
+#[test]
+fn w4_cached_output_is_revalidated_without_sending() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let (provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let (claim, ctx, input, sources) = ready_w4(&db, &key, &provider);
+    provider
+        .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+        .unwrap();
+    db.open()
+        .transaction(|state| {
+            state
+                .sources
+                .get_mut(&key)
+                .unwrap()
+                .result
+                .as_mut()
+                .unwrap()["w4_model_stages"]["w4"]["output"]["decisions"][0]["basis"] = json!([]);
+            Ok(())
+        })
+        .unwrap();
+    let (reopened, _) = mocked(&db, vec![]);
+    assert!(
+        reopened
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap_err()
+            .to_string()
+            .starts_with("w4_invalid_output")
+    );
+    assert_eq!(reopened.client.model_call_count(), 0);
+    assert_eq!(db.calls(), 5);
+}
+
+#[test]
+fn w4_background_cap_counts_the_first_two_stages() {
+    let db = Db::new();
+    let (key, upstream, _) = w4_case(&db, false);
+    let (mut provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+        ],
+    );
+    provider.client.budget.as_mut().unwrap().config.group_id = "background-two".into();
+    provider.client = provider.client.with_background_operation_limit(2).unwrap();
+    let before = db.open().read().unwrap().repository;
+    assert_eq!(
+        run_all(&db, &key, &provider)["enrichment"]["status"],
+        "budget_exhausted"
+    );
+    assert_eq!(provider.client.model_call_count(), 2);
+    assert_eq!(db.calls(), 4);
+    assert_eq!(
+        serde_json::to_value(&db.open().read().unwrap().repository).unwrap(),
+        serde_json::to_value(&before).unwrap()
+    );
+    let mut other = client(&db);
+    other.budget.as_mut().unwrap().config.group_id = "different-background-two".into();
+    other = other.with_background_operation_limit(2).unwrap();
+    let operation = other
+        .budget
+        .unwrap()
+        .for_operation(&db.0, "alice", "write-op")
+        .unwrap();
+    assert!(
+        operation
+            .reserve(
+                ModelStage::W4,
+                b"changing group cannot reset background cap"
+            )
+            .is_err()
+    );
+}
+
+#[test]
+fn w4_deletion_scrubs_related_raw_sources_and_invalidates_the_cache() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let (provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let (claim, ctx, input, sources) = ready_w4(&db, &key, &provider);
+    provider
+        .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+        .unwrap();
+    let old = output["decisions"][0]["basis"][0]["source"]["source_id"]
+        .as_str()
+        .unwrap();
+    let text = &sources[old].text;
+    let mut service = ChatMemoryService::new(
+        db.open(),
+        ChatConfig {
+            enrichment_mode: EnrichmentMode::Off,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    service
+        .call("memory_forget", json!({"source_id":old}), || false)
+        .unwrap();
+    let state = db.open().read().unwrap();
+    let result = state.sources[&key].result.as_ref().unwrap();
+    assert!(!result.to_string().contains(text));
+    assert_eq!(result["w4_checkpoint"]["invalidated"], "source_deleted");
+    assert_eq!(
+        result["w4_model_stages"]["w4"]["output"]["decisions"][0]["action"],
+        "reinforce"
+    );
+    assert!(
+        provider
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap_err()
+            .to_string()
+            .starts_with("claim_lost")
+    );
+    assert_eq!(db.calls(), 5);
+}
+
+#[test]
+fn w4_late_output_cannot_overwrite_a_successor_or_restore_deleted_content() {
+    for delete in [false, true] {
+        let db = Db::new();
+        let (key, upstream, output) = w4_case(&db, false);
+        let (provider, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+            ],
+        );
+        let (claim, ctx, input, sources) = ready_w4(&db, &key, &provider);
+        let path = db.0.clone();
+        let task = key.clone();
+        let id = ctx.source_id.clone();
+        let successor = Arc::new(Mutex::new(None));
+        let captured = successor.clone();
+        let mut c = client(&db);
+        c.transport = Some(Arc::new(move |_| {
+            let mut store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
+            if delete {
+                let mut service = ChatMemoryService::new(
+                    store,
+                    ChatConfig {
+                        enrichment_mode: EnrichmentMode::Off,
+                        ..Default::default()
+                    },
+                )
+                .unwrap();
+                service
+                    .call("memory_forget", json!({"source_id":id}), || false)
+                    .unwrap();
+            } else {
+                store
+                    .transaction(|s| {
+                        s.sources.get_mut(&task).unwrap().task.lease_until = Some(0);
+                        Ok(())
+                    })
+                    .unwrap();
+                *captured.lock().unwrap() = Some(w4_claim_round(&mut store, &task).unwrap());
+            }
+            Ok(envelope(&output.to_string()))
+        }));
+        let late = WriteModelProvider::new(c, context());
+        let error = late
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap_err()
+            .to_string();
+        let state = db.open().read().unwrap();
+        let source = &state.sources[&key];
+        if delete {
+            assert!(error == "source_deleted" || error.starts_with("claim_lost"));
+            assert!(source.request.is_none());
+        } else {
+            assert!(error.starts_with("claim_lost"));
+            assert_eq!(
+                source.task.attempt_id.as_deref(),
+                Some(
+                    successor
+                        .lock()
+                        .unwrap()
+                        .as_ref()
+                        .unwrap()
+                        .claim
+                        .attempt_id
+                        .as_str()
+                )
+            );
+        }
+        assert!(
+            source
+                .result
+                .as_ref()
+                .is_none_or(|r| r["w4_model_stages"]["w4"].is_null())
+        );
+        assert_eq!(late.client.model_call_count(), 1);
+        assert_eq!(db.calls(), 5);
+    }
 }

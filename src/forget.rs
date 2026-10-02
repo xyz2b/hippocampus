@@ -853,6 +853,9 @@ pub(crate) fn forget(
                             "anchor",
                             "precision",
                             "object",
+                            "action",
+                            "pending_reason",
+                            "of",
                         ],
                     );
                 }

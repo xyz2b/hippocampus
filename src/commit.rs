@@ -2217,7 +2217,7 @@ fn model_stage(
     stage: &str,
     binding: &serde_json::Value,
 ) -> PersistenceResult<Option<serde_json::Value>> {
-    if !matches!(stage, "w1" | "w3") {
+    if !matches!(stage, "w1" | "w3" | "w4") {
         return Err("unknown write model stage".into());
     }
     let Some(saved) = source

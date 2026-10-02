@@ -1,4 +1,4 @@
-//! 新路径的库级入口。调用方显式登记轮次；W1/W3 显式接入，生产分发仍待后续段。
+//! 新路径的库级入口。调用方显式登记轮次；W1/W3/W4 显式接入，生产分发仍待后续段。
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
@@ -49,7 +49,7 @@ pub struct ProviderContext {
     pub previous_w2: Option<w2::Batch>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, Clone, Debug)]
 pub struct SourceInput {
     pub text: String,
     pub history: Vec<String>,
@@ -79,7 +79,7 @@ pub fn run_source(
     key: &str,
     budget: RuntimeInputBudget,
     mut upstream: impl FnMut(&ProviderContext, &SourceInput) -> PersistenceResult<UpstreamBatch>,
-    judge: impl FnMut(
+    mut judge: impl FnMut(
         &ProviderContext,
         &W4Input,
         &BTreeMap<String, SourceInput>,
@@ -91,7 +91,7 @@ pub fn run_source(
         budget,
         false,
         |_, _, ctx, input| upstream(ctx, input),
-        judge,
+        |_, _, ctx, input, texts| judge(ctx, input, texts),
     )
 }
 
@@ -101,7 +101,7 @@ pub fn run_source_with_models(
     key: &str,
     budget: RuntimeInputBudget,
     provider: &crate::write_models::WriteModelProvider,
-    judge: impl FnMut(
+    mut judge: impl FnMut(
         &ProviderContext,
         &W4Input,
         &BTreeMap<String, SourceInput>,
@@ -113,7 +113,24 @@ pub fn run_source_with_models(
         budget,
         true,
         |store, claim, ctx, input| provider.provide(store, claim, ctx, input),
-        judge,
+        |_, _, ctx, input, texts| judge(ctx, input, texts),
+    )
+}
+
+/// 完整 W1/W3/W4 模型入口；沿用同一恢复、validate、计划与 W5 提交流程。
+pub fn run_source_with_all_models(
+    store: &mut SqliteMemoryStore,
+    key: &str,
+    budget: RuntimeInputBudget,
+    provider: &crate::write_models::WriteModelProvider,
+) -> PersistenceResult<serde_json::Value> {
+    run_with_upstream(
+        store,
+        key,
+        budget,
+        true,
+        |store, claim, ctx, input| provider.provide(store, claim, ctx, input),
+        |store, claim, ctx, input, texts| provider.judge(store, claim, ctx, input, texts).map(Some),
     )
 }
 
@@ -129,6 +146,8 @@ fn run_with_upstream(
         &SourceInput,
     ) -> PersistenceResult<UpstreamBatch>,
     mut judge: impl FnMut(
+        &mut SqliteMemoryStore,
+        &W4Claim,
         &ProviderContext,
         &W4Input,
         &BTreeMap<String, SourceInput>,
@@ -188,6 +207,8 @@ fn run_claimed(
         &SourceInput,
     ) -> PersistenceResult<UpstreamBatch>,
     judge: &mut impl FnMut(
+        &mut SqliteMemoryStore,
+        &W4Claim,
         &ProviderContext,
         &W4Input,
         &BTreeMap<String, SourceInput>,
@@ -406,7 +427,7 @@ fn run_claimed(
             return Ok(());
         }
         let output = if assembly.call_w4 {
-            match judge(&ctx, &assembly.input, &texts)? {
+            match judge(store, claim, &ctx, &assembly.input, &texts)? {
                 Some(output) => output,
                 None => {
                     crate::commit::w4_pause_attempt(

@@ -91,6 +91,7 @@ impl ModelBudgetConfig {
 pub enum ModelStage {
     W1,
     W3,
+    W4,
     Extraction,
     ExtractionReview,
     ExtractionRepair,
@@ -109,6 +110,7 @@ impl ModelStage {
         match self {
             Self::W1 => "w1",
             Self::W3 => "w3",
+            Self::W4 => "w4",
             Self::Extraction => "extraction",
             Self::ExtractionReview => "extraction_review",
             Self::ExtractionRepair => "extraction_repair",
@@ -138,6 +140,7 @@ impl ModelStage {
                 config.extraction_output_tokens
             }
             Self::W3
+            | Self::W4
             | Self::ExtractionReview
             | Self::ExtractionRepairReview
             | Self::QueryReview
@@ -345,7 +348,7 @@ impl ModelBudget {
         let (total, mut operation, mut stage_calls): (i64, i64, i64) = tx
             .query_row(
                 "SELECT count(*), coalesce(sum(owner_id=?2 AND operation_id=?3
-                 AND (stage IN ('w1','w3'))=?5),0),
+                 AND (stage IN ('w1','w3','w4'))=?5),0),
              coalesce(sum(owner_id=?2 AND operation_id=?3 AND stage=?4),0)
              FROM model_calls WHERE group_id=?1",
                 params![
@@ -353,16 +356,16 @@ impl ModelBudget {
                     self.owner,
                     self.operation_id,
                     stage.name(),
-                    matches!(stage, ModelStage::W1 | ModelStage::W3)
+                    matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4)
                 ],
                 |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
             )
             .map_err(database_error)?;
-        if matches!(stage, ModelStage::W1 | ModelStage::W3) {
+        if matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4) {
             (operation, stage_calls) = tx
                 .query_row(
                     "SELECT count(*), coalesce(sum(stage=?3),0) FROM model_calls
-                 WHERE owner_id=?1 AND operation_id=?2 AND stage IN ('w1','w3')",
+                 WHERE owner_id=?1 AND operation_id=?2 AND stage IN ('w1','w3','w4')",
                     params![self.owner, self.operation_id, stage.name()],
                     |r| Ok((r.get(0)?, r.get(1)?)),
                 )
@@ -371,7 +374,7 @@ impl ModelBudget {
         if total >= self.config.max_calls as i64 {
             return Err(budget_error("budget group call limit reached"));
         }
-        let operation_limit = if matches!(stage, ModelStage::W1 | ModelStage::W3) {
+        let operation_limit = if matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4) {
             self.max_background_operation_calls
                 .unwrap_or(self.config.max_operation_calls.min(3))
         } else {
