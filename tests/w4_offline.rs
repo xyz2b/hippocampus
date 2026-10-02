@@ -183,6 +183,371 @@ fn runtime<'a>(
     }
 }
 
+// 旧回归只观察组装结果；主样本流程另直接复用组装返回的状态快照进行 plan。
+fn assemble(
+    db: &Db,
+    rt: &W4Runtime<'_>,
+    candidates: &[Pending],
+    budget: W4Budget,
+) -> PersistenceResult<Assembly> {
+    hippocampus::w4::assemble(
+        &db.open(),
+        rt.source_key,
+        rt.task_id.as_ref(),
+        candidates,
+        budget,
+    )
+    .map(|(_, assembly)| assembly)
+}
+
+fn fact_candidate(sid: &str, sentence: &str) -> W4Candidate {
+    let mut candidate: W4Candidate =
+        serde_json::from_value(sample("w4_10_reinforce")["input"]["candidates"][0].clone())
+            .unwrap();
+    candidate.source = SourceRef::Stored {
+        source_id: sid.into(),
+    };
+    candidate.candidate.sentence.text = sentence.into();
+    candidate.candidate.value = Some(hippocampus::contract::Value::Text {
+        text: sentence.into(),
+        quote: candidate.candidate.sentence.clone(),
+    });
+    candidate
+}
+
+fn seed_fact(db: &Db, sid: &str, sentence: &str, raw: &str) -> MemoryId {
+    claim_source(db, sid, raw);
+    let id = commit_new(db, sid, 0, None, vec![fact_candidate(sid, sentence)], false)[0];
+    w5_finish_task(&mut db.open(), &claim(sid), &W5TaskEnd::Committed).unwrap();
+    id
+}
+
+fn fact_pending(sid: &str, sentence: &str) -> Vec<Pending> {
+    let c = fact_candidate(sid, sentence);
+    vec![Pending {
+        index: c.index,
+        committed_id: c.committed_id,
+        contract: ContractCandidate {
+            candidate: c.candidate,
+            source: c.source,
+            said_on: c.said_on,
+            time_resolutions: c.time_resolutions,
+        },
+    }]
+}
+
+#[test]
+fn equally_relevant_fact_hits_follow_recency_before_the_record_budget() {
+    let db = Db::new();
+    let older = seed_fact(&db, "older", "coffee tea", "coffee tea");
+    let newer = seed_fact(&db, "newer", "coffee tea", "coffee tea");
+    claim_source(&db, "query", "coffee tea");
+    let input = W4Input {
+        candidates: vec![fact_candidate("query", "coffee tea")],
+        records: vec![],
+        relations: vec![],
+        coverage: W4Coverage {
+            complete: false,
+            omitted: 0,
+        },
+    };
+    let state = db.state();
+    let assembly = assemble(
+        &db,
+        &runtime(&state, "query", 1, None),
+        &pending_of(&input),
+        W4Budget {
+            facts: 1,
+            records: 64,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&assembly.input).0, [newer.0]);
+    assert!(!ids(&assembly.input).0.contains(&older.0));
+    assert_eq!(assembly.input.coverage.omitted, 1);
+    assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
+}
+
+#[test]
+fn older_fact_with_more_matching_phrases_wins_the_record_budget() {
+    let db = Db::new();
+    let older = seed_fact(&db, "older", "周末喜欢喝咖啡", "周末喜欢喝咖啡");
+    let newer = seed_fact(&db, "newer", "周末散步", "周末散步");
+    claim_source(&db, "query", "周末喜欢喝咖啡");
+    let (_, assembly) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &fact_pending("query", "周末喜欢喝咖啡"),
+        W4Budget {
+            facts: 1,
+            records: 64,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&assembly.input).0, [older.0]);
+    assert!(!ids(&assembly.input).0.contains(&newer.0));
+    assert_eq!(assembly.input.coverage.omitted, 1);
+    assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
+}
+
+#[test]
+fn registered_entity_alias_matches_rank_before_generic_phrase_matches() {
+    let db = Db::new();
+    let older = seed_fact(&db, "older", "小石项目", "小石项目");
+    let newer = seed_fact(&db, "newer", "coffee tea", "coffee tea");
+    db.open()
+        .transaction(|state| {
+            state.entities.upsert(Entity {
+                id: EntityId::from("project"),
+                owner_id: UserId::from(OWNER),
+                entity_type: EntityType::Other("project".into()),
+                canonical_name: "松石47".into(),
+                aliases: vec!["小石项目".into()],
+            });
+            Ok(())
+        })
+        .unwrap();
+    claim_source(&db, "query", "松石47 coffee tea");
+    let (_, assembly) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &fact_pending("query", "松石47 coffee tea"),
+        W4Budget {
+            facts: 1,
+            records: 64,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&assembly.input).0, [older.0]);
+    assert!(!ids(&assembly.input).0.contains(&newer.0));
+    assert_eq!(assembly.input.coverage.omitted, 1);
+    assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
+}
+
+#[test]
+fn overlapping_source_hits_consume_one_record_slot() {
+    let db = Db::new();
+    seed_fact(&db, "older", "coffee tea", "coffee tea");
+    // 片段长度 768、重叠 128；此证据同时完整落在两个片段里。
+    let raw = format!(
+        "{}coffee tea{}",
+        "padding ".repeat(90),
+        " filler".repeat(90)
+    );
+    let newer = seed_fact(&db, "newer", "coffee tea", &raw);
+    claim_source(&db, "query", "coffee tea");
+    let candidate = fact_candidate("query", "coffee tea");
+    let pending = vec![Pending {
+        index: 0,
+        committed_id: None,
+        contract: ContractCandidate {
+            candidate: candidate.candidate,
+            source: candidate.source,
+            said_on: candidate.said_on,
+            time_resolutions: candidate.time_resolutions,
+        },
+    }];
+    let (_, assembly) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &pending,
+        W4Budget {
+            facts: 1,
+            records: 1,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&assembly.input).0, [newer.0]);
+    assert_eq!(assembly.input.coverage.omitted, 1);
+    assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
+}
+
+#[test]
+fn fact_filters_apply_before_full_text_hits_are_truncated() {
+    let db = Db::new();
+    let global = seed_fact(&db, "global", "coffee tea", "coffee tea");
+    let mine = seed_fact(&db, "mine", "coffee tea", "coffee tea");
+    let outside = seed_fact(&db, "outside", "coffee tea", "coffee tea");
+    let another_subject = seed_fact(&db, "subject", "coffee tea", "coffee tea");
+    let another_relation = seed_fact(&db, "relation", "coffee tea", "coffee tea");
+    let deleted = seed_fact(&db, "deleted", "coffee tea", "coffee tea");
+    db.open()
+        .transaction(|state| {
+            for (id, task) in [(mine, "mine"), (outside, "other")] {
+                let mut memory = state.repository.get(id)?.unwrap();
+                memory
+                    .scope
+                    .conditions
+                    .push(ScopeCondition::Task(TaskId::from(task)));
+                state.repository.update(memory)?;
+            }
+            let mut memory = state.repository.get(another_subject)?.unwrap();
+            memory.subject_id = EntityId::from("someone-else");
+            state.repository.update(memory)?;
+            let mut memory = state.repository.get(another_relation)?.unwrap();
+            memory.predicate = Predicate::from("likes");
+            state.repository.update(memory)?;
+            let mut memory = state.repository.get(deleted)?.unwrap();
+            memory.status = MemoryStatus::Deleted;
+            state.repository.update(memory)?;
+            Ok(())
+        })
+        .unwrap();
+    claim_source(&db, "query", "coffee tea");
+    let pending = fact_pending("query", "coffee tea");
+    let (_, assembly) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        Some(&TaskId::from("mine")),
+        &pending,
+        W4Budget {
+            facts: 1,
+            records: 1,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&assembly.input).0, [mine.0]);
+    assert_eq!(
+        assembly.input.coverage.omitted, 1,
+        "only the global fact was truncated"
+    );
+    assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
+    let (_, unscoped) =
+        hippocampus::w4::assemble(&db.open(), "query", None, &pending, BUDGET).unwrap();
+    assert_eq!(ids(&unscoped.input).0, [global.0]);
+    assert_eq!(unscoped.input.coverage.omitted, 0);
+}
+
+#[test]
+fn a_completed_full_text_search_can_have_no_record_hits() {
+    let db = Db::new();
+    seed_fact(&db, "older", "coffee tea", "coffee tea");
+    claim_source(&db, "query", "mocha");
+    let (_, assembly) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &fact_pending("query", "mocha"),
+        BUDGET,
+    )
+    .unwrap();
+    assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
+    assert!(assembly.input.records.is_empty());
+    assert_eq!(
+        assembly.input.coverage,
+        W4Coverage {
+            complete: false,
+            omitted: 0
+        }
+    );
+    assert!(!assembly.call_w4);
+}
+
+#[test]
+fn relation_members_and_repeated_fact_hits_are_counted_once() {
+    let db = Db::new();
+    let a = seed_fact(&db, "older", "coffee tea", "coffee tea");
+    let b = seed_fact(&db, "newer", "coffee tea", "coffee tea");
+    open_relation(&db, "rel-1", &[a, b]);
+    claim_source(&db, "query", "coffee tea");
+    let mut pending = fact_pending("query", "coffee tea");
+    let (_, assembly) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &pending,
+        W4Budget {
+            facts: 1,
+            records: 2,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&assembly.input), (vec![a.0, b.0], vec!["rel-1".into()]));
+    assert_eq!(
+        assembly.input.coverage.omitted, 0,
+        "both members are actually in the input"
+    );
+    let mut second = pending[0].clone();
+    second.index = 1;
+    pending.push(second);
+    let (_, zero) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &pending,
+        W4Budget {
+            facts: 8,
+            records: 0,
+        },
+    )
+    .unwrap();
+    assert_eq!(
+        zero.input.coverage.omitted, 2,
+        "two omitted records, not four candidate hits"
+    );
+}
+
+#[test]
+fn unavailable_full_text_search_reports_its_fallback_without_repairing_the_index() {
+    for reason in [
+        "source_search_disabled",
+        "source_index_missing",
+        "source_index_version_mismatch",
+    ] {
+        let db = Db::new();
+        let existing = seed_fact(&db, "older", "coffee tea", "coffee tea");
+        claim_source(&db, "query", "coffee tea");
+        let mut store = db.open();
+        match reason {
+            "source_search_disabled" => store.set_source_search_enabled(false),
+            "source_index_missing" => {
+                rusqlite::Connection::open(&db.0)
+                    .unwrap()
+                    .execute("DELETE FROM source_indexes WHERE owner_id=?1", [OWNER])
+                    .unwrap();
+            }
+            _ => {
+                rusqlite::Connection::open(&db.0)
+                    .unwrap()
+                    .execute(
+                        "UPDATE source_indexes SET processing_version='stale' WHERE owner_id=?1",
+                        [OWNER],
+                    )
+                    .unwrap();
+            }
+        }
+        let before = serde_json::to_value(store.read().unwrap()).unwrap();
+        let pending = fact_pending("query", "coffee tea");
+        let (_, assembly) =
+            hippocampus::w4::assemble(&store, "query", None, &pending, BUDGET).unwrap();
+        assert_eq!(
+            assembly.fact_retrieval[&0],
+            FactRetrieval::Fallback(reason.into())
+        );
+        assert_eq!(ids(&assembly.input).0, [existing.0]);
+        assert!(!assembly.input.coverage.complete);
+        // 零预算仍按唯一记录计 omitted，降级不绕过预算。
+        let (_, zero) = hippocampus::w4::assemble(
+            &store,
+            "query",
+            None,
+            &pending,
+            W4Budget {
+                facts: 8,
+                records: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(zero.input.coverage.omitted, 1);
+        assert!(zero.input.records.is_empty());
+        assert_eq!(zero.fact_retrieval, assembly.fact_retrieval);
+        assert_eq!(serde_json::to_value(store.read().unwrap()).unwrap(), before);
+    }
+}
+
 /// 经真实流程提交若干候选为新记录（不调用 W4 的路径），返回各候选的产物。
 fn commit_new(
     db: &Db,
@@ -436,8 +801,6 @@ fn run_with(sample: Json, output: Option<Json>) -> Run {
     let db = Db::new();
     let own = seed(&db, &sample);
     let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
-    let before = db.state();
-    let rt = runtime(&before, &own, 1, task_of(id));
     let pending: Vec<Pending> = input
         .candidates
         .iter()
@@ -452,7 +815,10 @@ fn run_with(sample: Json, output: Option<Json>) -> Run {
             },
         })
         .collect();
-    let assembly = assemble(&rt, &pending, BUDGET).unwrap();
+    let (before, assembly) =
+        hippocampus::w4::assemble(&db.open(), &own, task_of(id).as_ref(), &pending, BUDGET)
+            .unwrap();
+    let rt = runtime(&before, &own, 1, task_of(id));
     let (w4_input, output, called_w4) = if id == "w4_09_new" {
         // 用户同意的例外：不比对组装结果，直接用样本输入。
         assert!(!assembly.call_w4, "the unrelated record is not retrieved");
@@ -1518,7 +1884,7 @@ fn a_rejudge_cannot_clear_a_relation_withheld_by_task_scope() {
         let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
         let state = db.state();
         let rt = runtime(&state, &own, 1, None);
-        let assembly = assemble(&rt, &pending_of(&input), BUDGET).unwrap();
+        let assembly = assemble(&db, &rt, &pending_of(&input), BUDGET).unwrap();
         let output = serde_json::from_value(fixture("w4_01_state_change")).unwrap();
         let first = plan(&rt, &assembly.input, &output).unwrap();
         let product = match commit_group(&mut db.open(), &claim(&own), &first.groups[0]).unwrap() {
@@ -1548,7 +1914,7 @@ fn a_rejudge_cannot_clear_a_relation_withheld_by_task_scope() {
         input.candidates[0].committed_id = Some(product);
         let state = db.state();
         let rt = runtime(&state, &own, 2, None);
-        let assembly = assemble(&rt, &pending_of(&input), BUDGET).unwrap();
+        let assembly = assemble(&db, &rt, &pending_of(&input), BUDGET).unwrap();
         assert_eq!(ids(&assembly.input), (vec![17], vec![]));
         assert!(!assembly.input.coverage.complete);
         let plan = plan(&rt, &assembly.input, &rejudged_new(&assembly.input)).unwrap();
@@ -1598,7 +1964,7 @@ fn a_rejudge_after_forgetting_a_predecessor_can_clear_the_relation_gap() {
     input.candidates[0].committed_id = Some(product);
     let state = run.db.state();
     let rt = runtime(&state, "s-510", 2, None);
-    let assembly = assemble(&rt, &pending_of(&input), BUDGET).unwrap();
+    let assembly = assemble(&run.db, &rt, &pending_of(&input), BUDGET).unwrap();
     assert!(assembly.call_w4);
     assert_eq!(ids(&assembly.input), (vec![111], vec!["rel-2".into()]));
     assert_eq!(
@@ -1638,6 +2004,7 @@ fn a_deleted_relation_member_does_not_consume_the_input_budget() {
     let state = run.db.state();
     let rt = runtime(&state, "s-510", 2, None);
     let assembly = assemble(
+        &run.db,
         &rt,
         &pending_of(&input),
         W4Budget {
@@ -1667,6 +2034,7 @@ fn a_deleted_relation_member_does_not_consume_the_input_budget() {
     }
     // 真正放不下唯一的可送入记录时，仍整批待定；删除成员不计入 omitted。
     let zero = assemble(
+        &run.db,
         &rt,
         &pending_of(&input),
         W4Budget {
@@ -1752,7 +2120,7 @@ fn a_relation_reaching_into_another_task_is_withheld_and_reported() {
     let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
     let state = db.state();
     let rt = runtime(&state, &own, 1, task_of("w4_19_task_scope"));
-    let assembly = assemble(&rt, &pending_of(&input), BUDGET).unwrap();
+    let assembly = assemble(&db, &rt, &pending_of(&input), BUDGET).unwrap();
     assert_eq!(ids(&assembly.input), (vec![97], vec![]));
     assert_eq!(
         assembly.input.coverage,
@@ -1763,7 +2131,7 @@ fn a_relation_reaching_into_another_task_is_withheld_and_reported() {
     );
     // 在 98 所属的任务里，同一条关系完整可见。
     let rt = runtime(&state, &own, 1, Some(TaskId::from("s6-plateau-demo")));
-    let other = assemble(&rt, &pending_of(&input), BUDGET).unwrap();
+    let other = assemble(&db, &rt, &pending_of(&input), BUDGET).unwrap();
     assert!(other.input.records.iter().all(|r| r.id().0 != 97));
 }
 
@@ -1780,8 +2148,13 @@ fn relation_expansion_runs_to_a_fixpoint_whatever_the_relation_ids() {
         open_relation(&db, far, &[a, b]);
         let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
         let state = db.state();
-        let assembly =
-            assemble(&runtime(&state, &own, 1, None), &pending_of(&input), BUDGET).unwrap();
+        let assembly = assemble(
+            &db,
+            &runtime(&state, &own, 1, None),
+            &pending_of(&input),
+            BUDGET,
+        )
+        .unwrap();
         let mut relations = vec![near.to_owned(), far.to_owned()];
         relations.sort();
         assert_eq!(ids(&assembly.input), (vec![17, a.0, b.0], relations));
@@ -1798,11 +2171,23 @@ fn required_records_over_budget_make_the_whole_batch_pending() {
     let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
     let state = db.state();
     let rt = runtime(&state, &own, 1, None);
+    let untruncated = assemble(
+        &db,
+        &rt,
+        &pending_of(&input),
+        W4Budget {
+            facts: 0,
+            records: 64,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&untruncated.input).0, [62, 63]);
+    assert_eq!(untruncated.input.coverage.omitted, 0);
     let tight = W4Budget {
         facts: 8,
         records: 1,
     };
-    let assembly = assemble(&rt, &pending_of(&input), tight).unwrap();
+    let assembly = assemble(&db, &rt, &pending_of(&input), tight).unwrap();
     assert!(!assembly.call_w4);
     assert_eq!(ids(&assembly.input), (vec![], vec![]));
     assert_eq!(
@@ -1841,7 +2226,13 @@ fn required_records_over_budget_make_the_whole_batch_pending() {
         facts: 8,
         records: 0,
     };
-    let assembly = assemble(&runtime(&state, &own, 1, None), &pending_of(&input), none).unwrap();
+    let assembly = assemble(
+        &db,
+        &runtime(&state, &own, 1, None),
+        &pending_of(&input),
+        none,
+    )
+    .unwrap();
     assert!(!assembly.call_w4);
     assert_eq!(
         assembly.input.coverage,
@@ -1884,7 +2275,7 @@ fn a_rejudge_sees_its_predecessors_and_a_later_source_can_resolve_their_relation
     {
         let state = db.state();
         let rt = runtime(&state, own, 2, None);
-        let assembly = assemble(&rt, &pending_of(&rejudge), BUDGET).unwrap();
+        let assembly = assemble(&db, &rt, &pending_of(&rejudge), BUDGET).unwrap();
         assert!(assembly.call_w4);
         assert_eq!(
             ids(&assembly.input),
@@ -1936,7 +2327,7 @@ fn a_rejudge_sees_its_predecessors_and_a_later_source_can_resolve_their_relation
     {
         let state = db.state();
         let rt = runtime(&state, "s-520", 1, None);
-        let assembly = assemble(&rt, &pending_of(&input), BUDGET).unwrap();
+        let assembly = assemble(&db, &rt, &pending_of(&input), BUDGET).unwrap();
         assert_eq!(
             ids(&assembly.input),
             (vec![110, 111, 112], vec!["rel-2".to_owned()])
@@ -1977,7 +2368,7 @@ fn a_rejudge_sees_its_predecessors_and_a_later_source_can_resolve_their_relation
     }
     // 之后再重判 112 时，输入给出的是 rel-2 的最新状态（已解决），不是漏掉它。
     let rt = runtime(&after, own, 3, None);
-    let assembly = assemble(&rt, &pending_of(&rejudge), BUDGET).unwrap();
+    let assembly = assemble(&db, &rt, &pending_of(&rejudge), BUDGET).unwrap();
     assert_eq!(
         ids(&assembly.input),
         (vec![110, 111], vec!["rel-2".to_owned()])

@@ -834,6 +834,15 @@ pub struct Assembly {
     pub input: W4Input,
     pub call_w4: bool,
     pub skipped: W4Output,
+    /// 按 fact 候选索引报告检索状态；不进入 W4 契约或持久存储。
+    pub fact_retrieval: BTreeMap<usize, FactRetrieval>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum FactRetrieval {
+    FullText,
+    /// 索引不可用时沿用旧词元规则，原因与成功但零命中区分。
+    Fallback(String),
 }
 
 /// W4 输入预算（contracts 2.4“合计不超过输入预算”）。
@@ -846,8 +855,8 @@ pub struct W4Budget {
     pub records: usize,
 }
 
-/// 通用 fact 的检索：与候选原句共有至少两个词元的同主体记录，按共有词元数从高到低。
-fn fact_hits(sentence: &str, records: &[&crate::Memory]) -> Vec<MemoryId> {
+/// 全文索引不可用时的降级：与候选共有至少两个词元，按共有数从高到低。
+fn fallback_fact_hits(sentence: &str, records: &[&crate::Memory]) -> Vec<MemoryId> {
     let wanted: BTreeSet<String> = crate::lexical::tokens(sentence).into_iter().collect();
     let mut scored: Vec<(usize, MemoryId)> = records
         .iter()
@@ -952,35 +961,40 @@ fn expand(
     }
 }
 
-/// 为一条原文的候选组装 W4 输入（contracts 2.4）。
+/// 在同一 SQLite 读事务中取得全文命中并组装 W4 输入（contracts 2.4）。
+/// 返回状态快照供 plan 复用；模型调用后不能重新取状态补造旧判断的快照。
 /// - 专用关系：同主体、同关系的全部有效记录，不受相似度截断。
 /// - 通用 `fact`：检索命中的同主体记录，每个候选最多 `budget.facts` 条；范围恒不完整。
 /// - 重判（committed_id）：产生该记录的决定替代或列出过的前身，及其所在关系的最新状态。
 /// - 已选记录及其前身所在 open 关系的全部成员与关系本身，展开到不再增加。
 /// - 以上除 fact 命中外都是必须送入的；合计超过 `budget.records` 时不调用 W4，整批待定。
-///   fact 命中按相关度逐条加入，放不下的计入 `coverage.omitted`。
+///   fact 命中按全文检索顺序逐条加入，放不下的唯一记录计入 `coverage.omitted`。
 ///
 /// 任务范围由可信上下文决定：带其他任务条件的记录不进入输入，含这种成员的关系整条不送入，
 /// 并把范围报告为不完整。
 pub fn assemble(
-    rt: &W4Runtime<'_>,
+    store: &crate::SqliteMemoryStore,
+    source_key: &str,
+    task_id: Option<&crate::TaskId>,
     candidates: &[Pending],
     budget: W4Budget,
-) -> PersistenceResult<Assembly> {
+) -> PersistenceResult<(PersistedMemoryState, Assembly)> {
     use crate::contract::{Action, DecisionStatus, Subject, W4Candidate, W4Coverage, W4Decision};
-    let state = rt.state;
+    let tx = store.connection.unchecked_transaction()?;
+    let snapshot = crate::SqliteMemoryStore::load(&tx, store.owner())?;
+    let state = &snapshot;
     let source = state
         .sources
-        .get(rt.source_key)
+        .get(source_key)
         .ok_or("W4 claimed source does not exist")?;
-    let all = state.repository.list_by_owner(&rt.owner)?;
+    let all = state.repository.list_by_owner(store.owner())?;
     let in_task = |memory: &crate::Memory| {
         memory
             .scope
             .conditions
             .iter()
             .all(|condition| match condition {
-                crate::ScopeCondition::Task(task) => rt.task_id.as_ref() == Some(task),
+                crate::ScopeCondition::Task(task) => task_id == Some(task),
                 _ => true,
             })
     };
@@ -1009,6 +1023,7 @@ pub fn assemble(
         }
     }
     let mut fact_candidates: Vec<Vec<MemoryId>> = Vec::new();
+    let mut fact_retrieval = BTreeMap::new();
     for candidate in candidates {
         let Subject::Entity(subject) = &candidate.contract.candidate.subject else {
             continue;
@@ -1029,10 +1044,16 @@ pub fn assemble(
                 .into_iter()
                 .filter(|memory| memory.predicate.0 == "fact")
                 .collect();
-            fact_candidates.push(fact_hits(
-                &candidate.contract.candidate.sentence.text,
-                &facts,
-            ));
+            let sentence = &candidate.contract.candidate.sentence.text;
+            let (hits, retrieval) = match store.search_w4_facts(&tx, state, sentence, &facts) {
+                Ok(hits) => (hits, FactRetrieval::FullText),
+                Err(error) => (
+                    fallback_fact_hits(sentence, &facts),
+                    FactRetrieval::Fallback(error.to_string()),
+                ),
+            };
+            fact_candidates.push(hits);
+            fact_retrieval.insert(candidate.index, retrieval);
         } else {
             required.extend(
                 same_subject
@@ -1044,13 +1065,14 @@ pub fn assemble(
     }
     let mut chosen = expand(state, &in_scope, &required, &committed, &lineage);
     let overflow = chosen.records.len() > budget.records;
+    let mut omitted_facts = BTreeSet::new();
     if !overflow {
-        // fact 命中按相关度逐条加入：连同它带入的关系成员放得下才加。
+        // fact 命中按检索顺序逐条加入：连同它带入的关系成员放得下才加。
         let mut seeds = required.clone();
         for hits in &fact_candidates {
             let mut taken = 0;
             for hit in hits {
-                if seeds.contains(hit) {
+                if chosen.records.contains(hit) {
                     continue;
                 }
                 let mut trial = seeds.clone();
@@ -1061,11 +1083,13 @@ pub fn assemble(
                     chosen = expansion;
                     taken += 1;
                 } else {
-                    omitted += 1;
+                    omitted_facts.insert(*hit);
                 }
             }
         }
     }
+    // 同一记录可被多个候选命中，也可稍后随关系带入；只计最终未送入的唯一命中记录。
+    omitted += omitted_facts.difference(&chosen.records).count();
     if chosen.withheld > 0 {
         complete = false;
         omitted += chosen.withheld;
@@ -1140,9 +1164,12 @@ pub fn assemble(
             })
             .collect(),
     };
-    Ok(Assembly {
+    let assembly = Assembly {
         input,
         call_w4,
         skipped,
-    })
+        fact_retrieval,
+    };
+    tx.commit()?;
+    Ok((snapshot, assembly))
 }
