@@ -13,6 +13,7 @@ mod model;
 mod model_budget;
 mod openai;
 mod policy;
+pub mod r1;
 mod retrieval;
 mod scope;
 mod semantic;

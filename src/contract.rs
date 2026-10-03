@@ -1,4 +1,4 @@
-//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v1、§2.4 w4.v2、§3.2）。
+//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v1、§2.4 w4.v2、§3.1 r1.v1、§3.2）。
 //!
 //! JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分；包含 W3 输出核验。
 //! Quote 是否逐字存在、日历是否合法、目录与任务是否允许等机械校验属于 W2（§2.2），
@@ -177,6 +177,92 @@ pub struct EntitySubject {
 #[serde(deny_unknown_fields)]
 pub struct UnresolvedSubject {
     pub unresolved: Quote,
+}
+
+/// §3.1 R1 主体；不扩展写入侧 Subject 的分支。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(untagged)]
+pub enum R1Subject {
+    Entity(EntitySubject),
+    Unresolved(UnresolvedSubject),
+    Ambiguous(AmbiguousSubject),
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct AmbiguousSubject {
+    pub ambiguous: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum R1Need {
+    ContextOnly,
+    Judge,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum R1CurrentEvidence {
+    AssertionPresent,
+    QueryOnly,
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum R1Type {
+    Single,
+    Aggregate,
+    Comparison,
+    Temporal,
+    Open,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum R1Op {
+    Lookup,
+    List,
+    Count,
+    Sum,
+    Compare,
+    Elapsed,
+}
+
+/// §3.1 唯一允许的过滤字段；主体与任务取运行时可信范围。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct R1Filter {
+    #[serde(deserialize_with = "required")]
+    pub relation: Option<String>,
+    #[serde(deserialize_with = "required")]
+    pub time: Option<TimeInterp>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct R1Plan {
+    pub op: R1Op,
+    pub filter: R1Filter,
+    #[serde(deserialize_with = "required")]
+    pub unit: Option<String>,
+}
+
+/// §3.1 r1.v1 模型输出；自然语言 relation/conditions 仅为检索提示。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct R1Output {
+    pub need: R1Need,
+    pub current_evidence: R1CurrentEvidence,
+    #[serde(rename = "type")]
+    pub query_type: R1Type,
+    pub subject: R1Subject,
+    pub relation: String,
+    pub conditions: Vec<TextQualifier>,
+    #[serde(deserialize_with = "required")]
+    pub time: Option<TimeInterp>,
+    pub plan: R1Plan,
 }
 
 /// §1.5 值；每个分支都保留原文依据。
