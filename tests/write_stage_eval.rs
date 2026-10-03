@@ -18,6 +18,12 @@ fn items(value: &Value) -> &[Value] {
 
 // 标量字段的数组是允许集合；结构数组（条件、时间、索引）逐项匹配，顺序不评分。
 fn matches(actual: &Value, expected: &Value) -> bool {
+    quote_matches(actual, expected, "", "")
+}
+
+// U4 仅对引用选择开放：连续原文中的末尾句号/分句逗号，以及条件开头的“我”。
+// 不折叠内部标点，不缩短目标指代，不改时间、限定语或专用关系的值。
+fn quote_matches(actual: &Value, expected: &Value, field: &str, source: &str) -> bool {
     match (actual, expected) {
         (Value::Array(a), Value::Array(e)) => {
             let mut used = vec![false; a.len()];
@@ -26,7 +32,7 @@ fn matches(actual: &Value, expected: &Value) -> bool {
                     if let Some(i) = a
                         .iter()
                         .enumerate()
-                        .position(|(i, a)| !used[i] && matches(a, e))
+                        .position(|(i, a)| !used[i] && quote_matches(a, e, field, source))
                     {
                         used[i] = true;
                         true
@@ -35,12 +41,100 @@ fn matches(actual: &Value, expected: &Value) -> bool {
                     }
                 })
         }
-        (_, Value::Array(e)) => e.iter().any(|e| matches(actual, e)),
-        (Value::Object(a), Value::Object(e)) => e
-            .iter()
-            .all(|(k, e)| a.get(k).is_some_and(|a| matches(a, e))),
+        (_, Value::Array(e)) => e.iter().any(|e| quote_matches(actual, e, field, source)),
+        (Value::Object(a), Value::Object(e)) => e.iter().all(|(k, e)| {
+            a.get(k).is_some_and(|a| {
+                quote_matches(
+                    a,
+                    e,
+                    &if field.is_empty() {
+                        k.clone()
+                    } else {
+                        format!("{field}.{k}")
+                    },
+                    source,
+                )
+            })
+        }),
+        (Value::String(a), Value::String(e))
+            if matches!(
+                field,
+                "sentence"
+                    | "conditions"
+                    | "conditions.quote"
+                    | "quote"
+                    | "target_quote"
+                    | "fact_value"
+            ) =>
+        {
+            if a == e {
+                return true;
+            }
+            if a.is_empty() || e.is_empty() || !source.contains(a) || !source.contains(e) {
+                return false;
+            }
+            let trim = |s: &str| {
+                s.strip_suffix(['。', '.', '，', ','])
+                    .unwrap_or(s)
+                    .to_owned()
+            };
+            if a == &trim(e) || e == &trim(a) {
+                return true;
+            }
+            matches!(field, "conditions" | "conditions.quote")
+                && (a.strip_prefix('我') == Some(e.as_str())
+                    || e.strip_prefix('我') == Some(a.as_str()))
+        }
         _ => actual == expected,
     }
+}
+
+fn candidate_matches(actual: &Value, expected: &Value, source: &str) -> bool {
+    expected.as_object().unwrap().iter().all(|(key, e)| {
+        let field = if key == "value" && actual["relation"] == "fact" {
+            "fact_value"
+        } else {
+            key
+        };
+        let context = if key == "conditions" {
+            actual["sentence"].as_str().unwrap_or("")
+        } else {
+            source
+        };
+        quote_matches(&actual[key], e, field, context)
+    })
+}
+
+fn category(field: &str) -> &'static str {
+    if field == "decode"
+        || field.contains("validate")
+        || field.starts_with("w2.")
+        || field.ends_with(".identity")
+        || field == "assembly"
+    {
+        "contract"
+    } else if field.ends_with(".sentence")
+        || field.ends_with(".quote")
+        || field.ends_with(".target_quote")
+        || field.ends_with(".basis_sources")
+    {
+        "reference"
+    } else {
+        "semantic"
+    }
+}
+
+fn categories(fields: &[Value]) -> Value {
+    let mut result = json!({});
+    for category in ["contract", "semantic", "reference"] {
+        let rows: Vec<_> = fields
+            .iter()
+            .filter(|f| f["category"] == category)
+            .collect();
+        result[category] = json!({"passed":(!rows.is_empty()).then(||rows.iter().all(|f| f["passed"] == true)),
+            "failures":rows.iter().filter(|f| f["passed"] != true).map(|f| &f["field"]).collect::<Vec<_>>()});
+    }
+    result
 }
 
 fn check(
@@ -50,9 +144,9 @@ fn check(
     actual: Value,
     passed: bool,
 ) {
-    fields.push(
-        json!({"field": field.into(), "expected": expected, "actual": actual, "passed": passed}),
-    );
+    let field = field.into();
+    fields.push(json!({"category":category(&field), "field":field,
+        "expected":expected,"actual":actual,"passed":passed}));
 }
 
 fn compare(fields: &mut Vec<Value>, field: impl Into<String>, expected: &Value, actual: &Value) {
@@ -212,7 +306,7 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
             .iter()
             .enumerate()
             .filter(|(_, a)| {
-                matches(a, e)
+                candidate_matches(a, e, sample["input"]["text"].as_str().unwrap())
                     && (sample["id"] != "w1_15_negation"
                         || match a["relation"].as_str() {
                             Some("avoids") => a["polarity"] == "affirm",
@@ -255,11 +349,26 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
         let actual = pair.map(|i| &normalized[i]);
         for (key, expected) in e.as_object().unwrap() {
             if let Some(actual) = actual {
-                compare(
+                let quote_field = if key == "value" && actual["relation"] == "fact" {
+                    "fact_value"
+                } else {
+                    key
+                };
+                check(
                     fields,
                     format!("candidates[{i}].{key}"),
-                    expected,
-                    &actual[key],
+                    expected.clone(),
+                    actual[key].clone(),
+                    quote_matches(
+                        &actual[key],
+                        expected,
+                        quote_field,
+                        if key == "conditions" {
+                            actual["sentence"].as_str().unwrap_or("")
+                        } else {
+                            sample["input"]["text"].as_str().unwrap()
+                        },
+                    ),
                 );
             } else {
                 check(
@@ -267,7 +376,14 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
                     format!("candidates[{i}].{key}"),
                     expected.clone(),
                     json!(normalized.iter().map(|a| &a[key]).collect::<Vec<_>>()),
-                    normalized.iter().any(|a| matches(&a[key], expected)),
+                    normalized.iter().any(|a| {
+                        quote_matches(
+                            &a[key],
+                            expected,
+                            key,
+                            sample["input"]["text"].as_str().unwrap(),
+                        )
+                    }),
                 );
             }
         }
@@ -318,7 +434,9 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
         let matching: Vec<_> = actual
             .iter()
             .enumerate()
-            .filter(|(_, a)| matches(a, &expected))
+            .filter(|(_, a)| {
+                quote_matches(a, &expected, "", sample["input"]["text"].as_str().unwrap())
+            })
             .map(|(i, _)| i)
             .collect();
         check(
@@ -334,14 +452,22 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
             .or_else(|| (actual.len() == 1).then(|| &actual[0]));
         for (key, e) in expected.as_object().unwrap() {
             if let Some(a) = row {
-                compare(fields, format!("memory_requests[{i}].{key}"), e, &a[key]);
+                check(
+                    fields,
+                    format!("memory_requests[{i}].{key}"),
+                    e.clone(),
+                    a[key].clone(),
+                    quote_matches(&a[key], e, key, sample["input"]["text"].as_str().unwrap()),
+                );
             } else {
                 check(
                     fields,
                     format!("memory_requests[{i}].{key}"),
                     e.clone(),
                     json!(actual.iter().map(|a| &a[key]).collect::<Vec<_>>()),
-                    actual.iter().any(|a| matches(&a[key], e)),
+                    actual.iter().any(|a| {
+                        quote_matches(&a[key], e, key, sample["input"]["text"].as_str().unwrap())
+                    }),
                 );
             }
         }
@@ -505,14 +631,25 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             .iter()
             .map(|b| b["source"]["source_id"].clone())
             .collect();
+        let required: Vec<_> = items(&e["basis_sources"])
+            .iter()
+            .filter(|id| {
+                // coexist 无 targets：不把比较可解释性偏好变成冻结契约的旧方要求。
+                e["action"] != "coexist"
+                    || !items(&e["targets"]).is_empty()
+                    || input.candidates.iter().any(|c| {
+                        c.index == e["candidate"].as_u64().unwrap() as usize
+                            && serde_json::to_value(&c.source).unwrap()["source_id"] == **id
+                    })
+            })
+            .cloned()
+            .collect();
         check(
             fields,
             format!("decisions[{}].basis_sources", e["candidate"]),
-            e["basis_sources"].clone(),
+            json!(required),
             json!(sources),
-            items(&e["basis_sources"])
-                .iter()
-                .all(|e| sources.contains(e)),
+            required.iter().all(|id| sources.contains(id)),
         );
     }
     // 契约约束归属是否合法；评分只要求整组恰好解决预期关系，重复仍然失败。
@@ -534,7 +671,7 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
     Ok(())
 }
 
-fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
+fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     let mut fields = Vec::new();
     let result = text.map(|text| match stage {
         "w1" => score_w1(sample, text, &mut fields),
@@ -565,13 +702,49 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         "失败"
     };
     let mut report = json!({"stage": stage, "id": sample["id"], "label_status": sample["label_status"], "status": status,
-        "fields": fields, "must_not": sample.get("must_not").or_else(|| sample["expect"].get("must_not")), "note": sample["note"]});
+        "categories": categories(&fields), "fields": fields, "must_not": sample.get("must_not").or_else(|| sample["expect"].get("must_not")), "note": sample["note"]});
     if stage == "w1" {
         report["raw"] = text
             .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
             .unwrap_or(Value::Null);
         report["w2_final"] = result.and_then(Result::ok).unwrap_or(Value::Null);
     }
+    report
+}
+
+fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
+    let raw = score_raw(stage, sample, text);
+    if stage != "w4" || text.is_none() {
+        return raw;
+    }
+    let assembled = serde_json::from_str::<W4Output>(text.unwrap())
+        .map_err(|e| e.to_string())
+        .and_then(|output| {
+            let input: W4Input =
+                serde_json::from_value(sample["input"].clone()).map_err(|e| e.to_string())?;
+            w4::assemble_new_basis(&input, &output, &|id| {
+                sample["sources"][id]["text"].as_str().map(str::to_owned)
+            })
+            .map_err(|e| e.to_string())
+        });
+    let mut report = match &assembled {
+        Ok(output) => score_raw(stage, sample, Some(&serde_json::to_string(output).unwrap())),
+        Err(error) => {
+            let mut report = raw.clone();
+            let fields = report["fields"].as_array_mut().unwrap();
+            check(fields, "assembly", json!(true), json!(error), false);
+            report["categories"] = categories(fields);
+            report["status"] = json!("失败");
+            report
+        }
+    };
+    report["final_result"] = json!({"status":report["status"],"fields":report["fields"],"categories":report["categories"]});
+    report["raw_result"] = raw;
+    report["raw_output"] = serde_json::from_str(text.unwrap()).unwrap_or(json!(text.unwrap()));
+    report["final_output"] = assembled
+        .ok()
+        .map(|o| serde_json::to_value(o).unwrap())
+        .unwrap_or(Value::Null);
     report
 }
 
@@ -620,7 +793,12 @@ fn selected(stages: &str, prefixes: &str) -> Result<Vec<(String, Value)>, String
 }
 
 fn stage_request(stage: &str, sample: &Value) -> Result<Value, String> {
-    let tokens = eval_output_tokens(std::env::var("EVAL_MAX_OUTPUT_TOKENS").ok().as_deref())?;
+    let configured = std::env::var("EVAL_MAX_OUTPUT_TOKENS").ok();
+    let tokens = eval_output_tokens(configured.as_deref().or(Some(if stage == "w1" {
+        "32768"
+    } else {
+        "16384"
+    })))?;
     stage_request_with_output_tokens(stage, sample, tokens)
 }
 
@@ -736,7 +914,7 @@ fn stage_request_with_output_tokens(
         schema,
         &ModelBudgetConfig::default(),
     );
-    // 评测显式上限独立于生产各阶段上限；不进入请求指纹。
+    // 缺省与生产一致；显式覆盖及实际上限另存入录制绑定。
     request["max_output_tokens"] = json!(tokens);
     Ok(request)
 }
@@ -772,10 +950,68 @@ fn fingerprint(request: &Value) -> Value {
     json!(format!("fnv1a64:{hash:016x}"))
 }
 
+#[derive(Clone)]
+struct EvalModel {
+    label: String,
+    model: Option<String>,
+    base: Option<String>,
+}
+impl EvalModel {
+    fn default_model() -> Self {
+        Self {
+            label: MODEL.into(),
+            model: None,
+            base: None,
+        }
+    }
+    fn from_env() -> Result<Self, String> {
+        let model = Self {
+            label: std::env::var("EVAL_MODEL_LABEL").unwrap_or_else(|_| MODEL.into()),
+            model: std::env::var("EVAL_MODEL").ok(),
+            base: std::env::var("EVAL_BASE_URL")
+                .ok()
+                .or_else(|| std::env::var("DEEPSEEK_BASE_URL").ok())
+                .map(|s| s.trim_end_matches('/').to_owned()),
+        };
+        model.validate()?;
+        Ok(model)
+    }
+    fn validate(&self) -> Result<(), String> {
+        if self.label.is_empty()
+            || matches!(self.label.as_str(), "." | "..")
+            || !self
+                .label
+                .chars()
+                .all(|c| c.is_alphanumeric() || matches!(c, '-' | '_' | '.'))
+        {
+            return Err("EVAL_MODEL_LABEL must be a nonempty safe directory name".into());
+        }
+        if self.model.as_ref().is_some_and(|m| m.trim().is_empty()) {
+            return Err("EVAL_MODEL must not be empty".into());
+        }
+        if let Some(base) = &self.base {
+            let url = reqwest::Url::parse(base).map_err(|_| "EVAL_BASE_URL must be a valid URL")?;
+            if !matches!(url.scheme(), "http" | "https") {
+                return Err("EVAL_BASE_URL must use http or https".into());
+            }
+        }
+        Ok(())
+    }
+}
+fn repeat_count(value: Option<&str>) -> Result<usize, String> {
+    value
+        .unwrap_or("1")
+        .parse::<usize>()
+        .ok()
+        .filter(|n| *n > 0)
+        .ok_or_else(|| "EVAL_REPEAT must be a positive integer".into())
+}
+
 enum Replay {
     Missing,
     Stale,
     Output(String),
+    Failed(Value),
 }
 
 struct Case {
@@ -785,20 +1021,63 @@ struct Case {
     path: PathBuf,
     file: Value,
     replay: Replay,
+    model: EvalModel,
+    repeat: usize,
 }
 
 fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String> {
+    plan_once(selected, root, &EvalModel::default_model(), 1)
+}
+
+fn plan_repeated(
+    selected: Vec<(String, Value)>,
+    root: &Path,
+    model: &EvalModel,
+    repeats: usize,
+) -> Result<Vec<Case>, String> {
+    model.validate()?;
+    if repeats == 0 {
+        return Err("EVAL_REPEAT must be positive".into());
+    }
+    selected
+        .len()
+        .checked_mul(repeats)
+        .ok_or("evaluation plan is too large")?;
+    // Interleave repetitions by sample, retaining every attempt independently.
+    let mut cases = Vec::new();
+    for case in selected {
+        for repeat in 1..=repeats {
+            cases.extend(plan_once(
+                vec![case.clone()],
+                &root.join(&model.label).join(format!("repeat-{repeat}")),
+                model,
+                repeat,
+            )?);
+        }
+    }
+    Ok(cases)
+}
+
+fn plan_once(
+    selected: Vec<(String, Value)>,
+    root: &Path,
+    model: &EvalModel,
+    repeat: usize,
+) -> Result<Vec<Case>, String> {
     selected
         .into_iter()
         .map(|(stage, sample)| {
-            let request = stage_request(&stage, &sample)?;
+            let mut request = stage_request(&stage, &sample)?;
+            if let Some(id) = &model.model {
+                request["model"] = json!(id);
+            }
             let path = root.join(format!("{}.json", sample["id"].as_str().unwrap()));
             let file: Value = match std::fs::read_to_string(&path) {
                 Ok(text) => {
                     serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                    json!({"id": sample["id"], "recorded": []})
+                    json!({"id":sample["id"],"recorded":[]})
                 }
                 Err(e) => return Err(format!("{}: {e}", path.display())),
             };
@@ -807,20 +1086,27 @@ fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String
             }
             let current: Vec<_> = items(&file["recorded"])
                 .iter()
-                .filter(|r| r["model"] == MODEL)
+                .filter(|r| r["model"] == model.label)
                 .collect();
             let replay = if let Some(r) = current.iter().rev().find(|r| {
                 r["request"] == fingerprint(&request)
                     && r["schema"] == request["text"]["format"]["name"]
-                    && r.get("output").is_some()
+                    && r["max_output_tokens"] == request["max_output_tokens"]
+                    && r["base_url"] == json!(model.base)
+                    && r["repeat"] == repeat
+                    && r["endpoint"] == request["model"]
+                    && r["recording_version"] == 2
             }) {
-                Replay::Output(
-                    r.get("output_text")
-                        .and_then(Value::as_str)
-                        .or_else(|| r["output"].as_str())
-                        .map(str::to_owned)
-                        .unwrap_or_else(|| r["output"].to_string()),
-                )
+                if r.get("error").is_some() {
+                    Replay::Failed((*r).clone())
+                } else if let Some(text) = r["output_text"].as_str() {
+                    Replay::Output(text.into())
+                } else {
+                    return Err(format!(
+                        "{}: completed recording has no output_text",
+                        path.display()
+                    ));
+                }
             } else if current.is_empty() {
                 Replay::Missing
             } else {
@@ -833,6 +1119,8 @@ fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String
                 path,
                 file,
                 replay,
+                model: model.clone(),
+                repeat,
             })
         })
         .collect()
@@ -841,7 +1129,7 @@ fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String
 fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
     let needed = cases
         .iter()
-        .filter(|c| !matches!(c.replay, Replay::Output(_)))
+        .filter(|c| !matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
         .count();
     let sends = if limit.is_some() { needed } else { 0 };
     println!(
@@ -885,19 +1173,28 @@ fn completed_text(envelope: &Value) -> Result<String, String> {
     }
 }
 
-fn save_recording(case: &Case, envelope: &Value, text: &str) -> Result<(), String> {
+fn save_recording(
+    case: &Case,
+    envelope: &Value,
+    text: Option<&str>,
+    error: Option<&str>,
+) -> Result<(), String> {
     let mut file = case.file.clone();
-    let mut recorded: Vec<_> = items(&file["recorded"])
-        .iter()
-        .filter(|r| r["model"] != MODEL)
-        .cloned()
-        .collect();
-    recorded.push(
-        json!({"model": MODEL, "schema": case.request["text"]["format"]["name"],
-        "endpoint": case.request["model"], "request": fingerprint(&case.request),
-        "output": serde_json::from_str::<Value>(text).unwrap_or_else(|_| json!(text)),
-        "output_text": text, "usage": envelope["usage"]}),
-    );
+    let mut recorded = items(&file["recorded"]).to_vec();
+    let mut record = json!({"recording_version":2,"model":case.model.label,"repeat":case.repeat,
+        "schema":case.request["text"]["format"]["name"],"endpoint":case.request["model"],
+        "base_url":case.model.base,"max_output_tokens":case.request["max_output_tokens"],
+        "request":fingerprint(&case.request),"response":{
+            "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}});
+    if let Some(text) = text {
+        record["output"] = serde_json::from_str(text).unwrap_or(json!(text));
+        record["output_text"] = json!(text);
+        record["usage"] = envelope["usage"].clone();
+    }
+    if let Some(error) = error {
+        record["error"] = json!(error);
+    }
+    recorded.push(record); // Includes failed attempts; reruns replay them instead of picking a success.
     file["recorded"] = json!(recorded);
     std::fs::create_dir_all(case.path.parent().unwrap()).map_err(|e| e.to_string())?;
     let temp = case
@@ -911,6 +1208,16 @@ fn save_recording(case: &Case, envelope: &Value, text: &str) -> Result<(), Strin
     std::fs::rename(temp, &case.path).map_err(|e| e.to_string())
 }
 
+fn failed_score(case: &Case, record: &Value) -> Value {
+    let mut report = score(&case.stage, &case.sample, None);
+    report["status"] = json!("调用失败");
+    report["error"] = record["error"].clone();
+    report["response"] = record["response"].clone();
+    report["categories"] = json!({"contract":{"passed":false,"failures":["call"]},
+        "semantic":{"passed":null,"failures":[]},"reference":{"passed":null,"failures":[]}});
+    report
+}
+
 fn evaluate(
     cases: &[Case],
     limit: Option<usize>,
@@ -922,27 +1229,24 @@ fn evaluate(
     for case in cases {
         let mut result = match &case.replay {
             Replay::Output(text) => score(&case.stage, &case.sample, Some(text)),
+            Replay::Failed(record) => failed_score(case, record),
             _ if limit.is_some() => {
-                sent += 1; // One attempt per sample, including failed attempts; no retry or redirect.
+                sent += 1;
                 let response = send(&case.request);
-                let diagnostic = response.as_ref().ok().map(|e| {
-                    json!({"status": e["status"], "incomplete_details": e["incomplete_details"],
-                        "usage": e["usage"]})
-                });
-                match response.and_then(|e| {
-                    let text = completed_text(&e)?;
-                    save_recording(case, &e, &text)?;
-                    Ok(text)
-                }) {
-                    Ok(text) => score(&case.stage, &case.sample, Some(&text)),
+                let envelope = response.as_ref().ok().cloned().unwrap_or(Value::Null);
+                let text = response.and_then(|e| completed_text(&e));
+                match text {
+                    Ok(text) => {
+                        save_recording(case, &envelope, Some(&text), None)?;
+                        score(&case.stage, &case.sample, Some(&text))
+                    }
                     Err(error) => {
-                        let mut r = score(&case.stage, &case.sample, None);
-                        r["status"] = json!("调用失败");
-                        r["error"] = json!(error);
-                        if let Some(diagnostic) = diagnostic {
-                            r["response"] = diagnostic;
-                        }
-                        r
+                        save_recording(case, &envelope, None, Some(&error))?;
+                        failed_score(
+                            case,
+                            &json!({"error":error,"response":{
+                            "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}}),
+                        )
                     }
                 }
             }
@@ -953,7 +1257,9 @@ fn evaluate(
                 r
             }
         };
-        result["model"] = json!(MODEL);
+        result["model"] = json!(case.model.label);
+        result["repeat"] = json!(case.repeat);
+        result["max_output_tokens"] = case.request["max_output_tokens"].clone();
         result["request"] = fingerprint(&case.request);
         results.push(result);
     }
@@ -966,12 +1272,105 @@ fn evaluate(
             "draft": rows.iter().filter(|r| r["label_status"] == "draft").count()})
     }).collect();
     Ok(
-        json!({"model": MODEL, "planned_calls": planned, "sent_calls": sent, "summary": summary, "results": results}),
+        json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
+            "summary":summary,"per_sample":per_sample(&results),"results":results}),
     )
+}
+
+fn per_sample(results: &[Value]) -> Vec<Value> {
+    let mut groups = std::collections::BTreeMap::<(String, String, String), Vec<&Value>>::new();
+    for row in results {
+        groups
+            .entry((
+                row["model"].as_str().unwrap().into(),
+                row["stage"].as_str().unwrap().into(),
+                row["id"].as_str().unwrap().into(),
+            ))
+            .or_default()
+            .push(row);
+    }
+    groups.into_iter().map(|((model,stage,id),rows)| {
+        let errors:Value = ["contract","semantic","reference"].into_iter().map(|category| {
+            (category.to_owned(),json!(rows.iter().filter(|r|r["categories"][category]["passed"]==false).count()))
+        }).collect();
+        json!({"model":model,"stage":stage,"id":id,"passed":rows.iter().filter(|r|r["status"]=="通过").count(),
+            "total":rows.len(),"error_categories":errors,
+            "repeats":rows.iter().map(|r|json!({"repeat":r["repeat"],"status":r["status"]})).collect::<Vec<_>>()})
+    }).collect()
+}
+
+// Historical rescoring is deliberately separate from request-bound repeat comparisons.
+fn historical_reports() -> Result<Value, String> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    if !std::process::Command::new("git")
+        .args(["rev-parse", "--verify", "54ef102^{commit}"])
+        .current_dir(root)
+        .output()
+        .map_err(|e| e.to_string())?
+        .status
+        .success()
+    {
+        return Err("historical baseline 54ef102 is unavailable".into());
+    }
+    let mut reports = Vec::new();
+    for version in [1, 2] {
+        let mut results = Vec::new();
+        for (stage, sample) in selected("w1,w3,w4", "")? {
+            let path = format!(
+                "tests/eval/write_stage/recordings/{}.json",
+                sample["id"].as_str().unwrap()
+            );
+            let text = if version == 1 {
+                let output = std::process::Command::new("git")
+                    .args(["show", &format!("54ef102:{path}")])
+                    .current_dir(root)
+                    .output()
+                    .map_err(|e| e.to_string())?;
+                if output.status.success() {
+                    Some(String::from_utf8(output.stdout).map_err(|e| e.to_string())?)
+                } else {
+                    None
+                }
+            } else {
+                Some(std::fs::read_to_string(root.join(path)).map_err(|e| e.to_string())?)
+            };
+            let file: Value = text
+                .map(|t| serde_json::from_str(&t))
+                .transpose()
+                .map_err(|e| e.to_string())?
+                .unwrap_or(Value::Null);
+            let record = items(&file["recorded"])
+                .iter()
+                .rev()
+                .find(|r| r["model"] == MODEL);
+            let text = record.and_then(|r| {
+                r["output_text"]
+                    .as_str()
+                    .map(str::to_owned)
+                    .or_else(|| r.get("output").map(Value::to_string))
+            });
+            results.push(score(&stage, &sample, text.as_deref()));
+        }
+        let summary:Vec<_> = ["w1","w3","w4"].into_iter().map(|stage| {
+            let rows:Vec<_> = results.iter().filter(|r|r["stage"]==stage).collect();
+            json!({"stage":stage,"total":rows.len(),"passed":rows.iter().filter(|r|r["status"]=="通过").count(),
+                "raw_passed":rows.iter().filter(|r|r.get("raw_result").unwrap_or(r)["status"]=="通过").count(),
+                "missing":rows.iter().filter(|r|r["status"]=="未录制").count()})
+        }).collect();
+        reports.push(json!({"prompt_version":version,"summary":summary,"results":results}));
+    }
+    Ok(json!({"historical":true,"comparison_eligible":false,"sent_calls":0,"versions":reports}))
 }
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var("EVAL_HISTORY").as_deref() == Ok("1") {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&historical_reports().unwrap()).unwrap()
+        );
+        return;
+    }
     let gate = eval_gate(std::env::var("EVAL_GATE").ok().as_deref()).unwrap();
     let selected = selected(
         &std::env::var("EVAL_STAGES").unwrap_or_else(|_| "w1,w3,w4".into()),
@@ -979,18 +1378,27 @@ fn write_stage_eval_suite() {
     )
     .unwrap();
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
-    let cases = plan(selected, &root).unwrap();
+    let model = EvalModel::from_env().unwrap();
+    let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
+    let cases = plan_repeated(selected, &root, &model, repeats).unwrap();
     let limit = std::env::var("EVAL_RECORD").ok().map(|s| {
         s.parse::<usize>()
             .expect("EVAL_RECORD must be a nonnegative integer")
     });
-    preflight(&cases, limit).unwrap();
-    // No client, credentials, DNS or socket in the default replay branch.
-    let live = limit.map(|_| {
-        let base =
-            std::env::var("DEEPSEEK_BASE_URL").expect("EVAL_RECORD requires DEEPSEEK_BASE_URL");
-        let key = std::env::var("DEEPSEEK_API_KEY").expect("EVAL_RECORD requires DEEPSEEK_API_KEY");
-        assert!(!key.trim().is_empty(), "DEEPSEEK_API_KEY must not be empty");
+    let sends = preflight(&cases, limit).unwrap();
+    // No client or credentials when there are no sends, including fully cached EVAL_RECORD=0.
+    let live = (sends > 0).then(|| {
+        let base = model
+            .base
+            .as_ref()
+            .expect("EVAL_RECORD requires EVAL_BASE_URL or DEEPSEEK_BASE_URL");
+        let key = std::env::var("EVAL_API_KEY")
+            .or_else(|_| std::env::var("DEEPSEEK_API_KEY"))
+            .expect("EVAL_RECORD requires EVAL_API_KEY or DEEPSEEK_API_KEY");
+        assert!(
+            !key.trim().is_empty(),
+            "evaluation API key must not be empty"
+        );
         let url = format!("{}/responses", base.trim_end_matches('/'));
         let parsed = reqwest::Url::parse(&url).expect("DEEPSEEK_BASE_URL must be a valid URL");
         assert!(
@@ -1253,12 +1661,11 @@ fn eval_output_limits_preserve_recorded_fingerprints() {
             )
             .unwrap(),
         };
-        std::fs::write(
-            &case.path,
-            json!({"recorded": [{"model": MODEL,
-            "schema": case.request["text"]["format"]["name"], "request": original,
-            "output": output}]})
-            .to_string(),
+        save_recording(
+            &case,
+            &fake_envelope(output.clone()),
+            Some(&output.to_string()),
+            None,
         )
         .unwrap();
         let replay = plan(vec![(case.stage, case.sample)], &temp.0).unwrap();
@@ -1385,7 +1792,7 @@ fn w4_relation_resolution_is_scored_across_the_whole_group() {
 }
 
 #[test]
-fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
+fn failed_or_incomplete_attempts_are_bounded_recorded_and_never_retried() {
     let temp = TempRecords::new();
     let cases = first_cases(&temp.0);
     let mut attempts = 0;
@@ -1415,9 +1822,16 @@ fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
         "usage": {"input_tokens": 12, "output_tokens": 16384,
             "output_tokens_details": {"reasoning_tokens": 16384}}})
     );
-    assert!(report["results"][0].get("response").is_none());
-    assert!(!temp.0.exists());
-    let missing_details = evaluate(&cases[..1], Some(1), &mut |_| {
+    assert!(report["results"][0]["response"]["status"].is_null());
+    let replay = evaluate(&first_cases(&temp.0), Some(0), &mut |_| {
+        panic!("failed attempt retried")
+    })
+    .unwrap();
+    assert_eq!(replay["results"], report["results"]);
+    assert_eq!(replay["sent_calls"], 0);
+    let missing_temp = TempRecords::new();
+    let missing_cases = first_cases(&missing_temp.0);
+    let missing_details = evaluate(&missing_cases[..1], Some(1), &mut |_| {
         Ok(json!({"status": "incomplete", "output": []}))
     })
     .unwrap();
@@ -1428,7 +1842,8 @@ fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
     );
     assert!(missing_details["results"][0]["response"]["incomplete_details"].is_null());
     assert!(missing_details["results"][0]["response"]["usage"].is_null());
-    assert!(!temp.0.exists());
+    let invalid_temp = TempRecords::new();
+    let cases = first_cases(&invalid_temp.0);
     let invalid = json!({"status": "completed", "output": [{"content": [{"type": "output_text", "text": "{"}]}]});
     let recorded = evaluate(&cases, Some(3), &mut |_| Ok(invalid.clone())).unwrap();
     assert!(
@@ -1436,7 +1851,7 @@ fn failed_or_incomplete_attempts_are_bounded_and_not_recorded() {
             .iter()
             .all(|r| r["status"] == "失败")
     );
-    let replayed = evaluate(&first_cases(&temp.0), None, &mut |_| {
+    let replayed = evaluate(&first_cases(&invalid_temp.0), None, &mut |_| {
         panic!("invalid-output replay must not retry")
     })
     .unwrap();
@@ -1490,7 +1905,7 @@ fn dry_run_plan() {
         "本次需录制: {}",
         cases
             .iter()
-            .filter(|c| !matches!(c.replay, Replay::Output(_)))
+            .filter(|c| !matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
             .count()
     );
     println!("本次真实调用: 0");
@@ -1739,6 +2154,283 @@ fn injected_w4_fields_fail_and_all_fixtures_validate() {
             score("w4", sample, Some(&output.to_string()))["status"],
             "失败",
             "{prefix} {key}"
+        );
+    }
+}
+
+#[test]
+fn calibrated_quotes_accept_only_u4_equivalences() {
+    for (field, a, e, source, pass) in [
+        (
+            "conditions",
+            "我练琴时",
+            "练琴时",
+            "我练琴时用节拍器。",
+            true,
+        ),
+        (
+            "sentence",
+            "我使用节拍器",
+            "我使用节拍器，",
+            "我使用节拍器，然后录音。",
+            true,
+        ),
+        (
+            "quote",
+            "请记住这件事。",
+            "请记住这件事",
+            "请记住这件事。",
+            true,
+        ),
+        (
+            "sentence",
+            "我吃饭然后散步。",
+            "我吃饭，然后散步。",
+            "我吃饭，然后散步。",
+            false,
+        ),
+        (
+            "target_quote",
+            "住址",
+            "我住址那条",
+            "请忘掉我住址那条。",
+            false,
+        ),
+        ("conditions", "练琴", "练琴时", "我练琴时用节拍器。", false),
+        (
+            "conditions",
+            "他练琴时",
+            "练琴时",
+            "他练琴时用节拍器。",
+            false,
+        ),
+        (
+            "sentence",
+            "我不使用节拍器。",
+            "我使用节拍器。",
+            "我不使用节拍器。",
+            false,
+        ),
+        (
+            "quote",
+            "记住这件事。。",
+            "记住这件事",
+            "记住这件事。。",
+            false,
+        ),
+    ] {
+        assert_eq!(
+            quote_matches(&json!(a), &json!(e), field, source),
+            pass,
+            "{field}: {a} / {e}"
+        );
+    }
+    let sample = samples("w1")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_03"))
+        .unwrap();
+    let mut output = fake_w1(&sample);
+    output["candidates"][0]["conditions"][0]["quote"]["text"] = json!("我画速写的时候");
+    assert_eq!(
+        score("w1", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["candidates"][0]["conditions"] = json!([]);
+    let bad = score("w1", &sample, Some(&output.to_string()));
+    assert_eq!(bad["status"], "失败");
+    assert_eq!(bad["categories"]["semantic"]["passed"], false);
+    let expected = json!({"sentence":"女儿练琴时戴耳机。","conditions":["练琴时"]});
+    let actual = json!({"sentence":"女儿练琴时戴耳机。","conditions":["我练琴时"]});
+    assert!(
+        !candidate_matches(&actual, &expected, "我练琴时用节拍器。女儿练琴时戴耳机。"),
+        "the optional subject must belong to this assertion, not another sentence"
+    );
+    let request = samples("w1")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_09"))
+        .unwrap();
+    let mut output = fake_w1(&request);
+    output["memory_requests"][0]["quote"] = adapter::quote(&request["input"]["text"]);
+    assert_eq!(
+        score("w1", &request, Some(&output.to_string()))["status"],
+        "通过"
+    );
+}
+
+#[test]
+fn w4_assembly_reports_raw_and_final_without_relaxing_validation() {
+    let sample = samples("w4").remove(0);
+    let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
+    let mut output: W4Output = serde_json::from_str(
+        &std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "tests/eval/w4/fixtures/{}.output.json",
+            sample["id"].as_str().unwrap()
+        )))
+        .unwrap(),
+    )
+    .unwrap();
+    output.decisions[0]
+        .basis
+        .retain(|e| e.source != input.candidates[0].source);
+    let text_of = |id: &str| sample["sources"][id]["text"].as_str().map(str::to_owned);
+    assert!(w4::validate(&input, &output, &text_of).is_err());
+    let final_output = w4::prepare_output(&input, &output, &text_of).unwrap();
+    assert_eq!(
+        w4::prepare_output(&input, &final_output, &text_of).unwrap(),
+        final_output
+    );
+    let report = score(
+        "w4",
+        &sample,
+        Some(&serde_json::to_string(&output).unwrap()),
+    );
+    assert_eq!(report["raw_result"]["status"], "失败");
+    assert_eq!(report["final_result"]["status"], "通过");
+    assert!(
+        w4::prepare_output(&input, &output, &|_| None).is_err(),
+        "deleted source cannot be copied"
+    );
+    let mut bad_input = input.clone();
+    bad_input.candidates[0].candidate.sentence.text = "not present in source".into();
+    assert!(w4::prepare_output(&bad_input, &output, &text_of).is_err());
+    let mut outsider = output.clone();
+    outsider.decisions[0].candidate = usize::MAX;
+    assert!(w4::prepare_output(&input, &outsider, &text_of).is_err());
+    output.decisions[0].basis.clear();
+    assert!(
+        w4::prepare_output(&input, &output, &text_of).is_err(),
+        "missing old basis still invalid"
+    );
+    let pending_sample = samples("w4")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w4_20"))
+        .unwrap();
+    let mut pending: Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/eval/w4/fixtures/w4_20_pending_target_unknown.output.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    pending["decisions"][0]["basis"] = json!([]);
+    let report = score("w4", &pending_sample, Some(&pending.to_string()));
+    assert_eq!(report["final_result"]["status"], "通过");
+    assert!(!items(&report["final_output"]["decisions"][0]["basis"]).is_empty());
+}
+
+#[test]
+fn coexist_without_targets_does_not_require_old_basis() {
+    let sample = samples("w4")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w4_04"))
+        .unwrap();
+    let mut output: Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/eval/w4/fixtures/w4_04_coexist_partial.output.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let own = &sample["input"]["candidates"][0]["source"]["source_id"];
+    output["decisions"][0]["basis"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|b| &b["source"]["source_id"] == own);
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["raw_result"]["status"],
+        "通过"
+    );
+}
+
+#[test]
+fn repeats_models_and_caps_are_independent_and_all_attempts_count() {
+    assert_eq!(repeat_count(None).unwrap(), 1);
+    for bad in ["0", "-1", "", "x"] {
+        assert!(repeat_count(Some(bad)).is_err());
+    }
+    let temp = TempRecords::new();
+    let mut model = EvalModel::default_model();
+    model.label = "comparison-A".into();
+    model.model = Some("model-a".into());
+    let chosen = selected("w1", "w1_01").unwrap();
+    let cases = plan_repeated(chosen.clone(), &temp.0, &model, 2).unwrap();
+    assert_ne!(cases[0].path, cases[1].path);
+    let mut calls = 0;
+    let report = evaluate(&cases, Some(2), &mut |_| {
+        let mut output = fake_w1(&cases[0].sample);
+        calls += 1;
+        if calls == 2 {
+            output["candidates"][0]["polarity"] = json!("unknown");
+        }
+        Ok(fake_envelope(output))
+    })
+    .unwrap();
+    assert_eq!(report["per_sample"][0]["passed"], 1);
+    assert_eq!(report["per_sample"][0]["total"], 2);
+    assert_eq!(report["per_sample"][0]["error_categories"]["semantic"], 1);
+    let ready = plan_repeated(chosen.clone(), &temp.0, &model, 2).unwrap();
+    assert_eq!(
+        evaluate(&ready, Some(0), &mut |_| panic!("repeat resent")).unwrap()["results"],
+        report["results"]
+    );
+    let mut other = model.clone();
+    other.label = "comparison-B".into();
+    assert_eq!(
+        preflight(
+            &plan_repeated(chosen.clone(), &temp.0, &other, 2).unwrap(),
+            Some(2)
+        )
+        .unwrap(),
+        2
+    );
+    other = model.clone();
+    other.model = Some("different-model".into());
+    assert!(
+        plan_repeated(chosen.clone(), &temp.0, &other, 2)
+            .unwrap()
+            .iter()
+            .all(|c| matches!(c.replay, Replay::Stale))
+    );
+    other = model.clone();
+    other.base = Some("https://example.invalid".into());
+    assert!(
+        plan_repeated(chosen.clone(), &temp.0, &other, 2)
+            .unwrap()
+            .iter()
+            .all(|c| matches!(c.replay, Replay::Stale))
+    );
+    let cap_temp = TempRecords::new();
+    let mut cases = plan_repeated(chosen.clone(), &cap_temp.0, &model, 1).unwrap();
+    cases[0].request["max_output_tokens"] = json!(4096);
+    let output = fake_w1(&cases[0].sample);
+    save_recording(
+        &cases[0],
+        &fake_envelope(output.clone()),
+        Some(&output.to_string()),
+        None,
+    )
+    .unwrap();
+    assert!(matches!(
+        plan_repeated(chosen, &cap_temp.0, &model, 1).unwrap()[0].replay,
+        Replay::Stale
+    ));
+    assert_eq!(
+        plan_repeated(selected("w1,w4", "").unwrap(), &temp.0, &model, 2)
+            .unwrap()
+            .len(),
+        82
+    );
+    for label in ["../escape", "/tmp/x", ".", ""] {
+        let mut bad = model.clone();
+        bad.label = label.into();
+        assert!(bad.validate().is_err());
+    }
+    for stage in ["w1", "w3", "w4"] {
+        assert_eq!(
+            stage_request(stage, &samples(stage).remove(0)).unwrap()["max_output_tokens"],
+            if stage == "w1" { 32768 } else { 16384 }
         );
     }
 }

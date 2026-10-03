@@ -324,35 +324,84 @@ impl WriteModelProvider {
             return Err("attempt_failed: write catalogue owner differs".into());
         }
         let client = self.operation_client(store, ctx)?;
-        let binding = json!({"contract":"w4.v2","w4_input":input,"sources":sources});
-        let text = match crate::commit::w4_load_model_stage(store, claim, "w4", &binding)? {
-            Some(output) => output.to_string(),
+        let payload = json!({"contract":"w4.v2","w4_input":input,"sources":sources});
+        let failed_binding = |operation: &str| {
+            let mut binding = payload.clone();
+            binding["invalid_operation_id"] = json!(operation);
+            binding
+        };
+        // 无效响应可审计、同操作不重发；显式新操作可重新调用，不能复用失败响应。
+        let state = store.read()?;
+        let prior = state
+            .sources
+            .get(&claim.claim.source_key)
+            .and_then(|s| s.result.as_ref())
+            .map(|r| &r["w4_model_stages"]["w4"]["output"])
+            .unwrap_or(&Json::Null);
+        let binding = if prior.get("raw_output").is_some() && prior["valid"] == false {
+            failed_binding(&ctx.operation_id)
+        } else {
+            payload.clone()
+        };
+        let saved = crate::commit::w4_load_model_stage(store, claim, "w4", &binding)?;
+        let raw = match &saved {
+            Some(output) => output.get("raw_output").unwrap_or(output).clone(),
             None => {
                 no_missing_result(&client, ModelStage::W4)?;
-                client
+                let text = client
                     .structured_output(
                         ModelStage::W4,
                         "w4_v2",
                         W4_PROMPT,
-                        binding.clone(),
+                        payload.clone(),
                         w4_schema(),
                     )
-                    .map_err(provider_error)?
+                    .map_err(provider_error)?;
+                serde_json::from_str(&text).unwrap_or(Json::String(text))
             }
         };
-        let output: W4Output = serde_json::from_str(&text).map_err(|_| "w4_invalid_output")?;
-        let output = crate::w4::validate(input, &output, &|id| {
-            sources.get(id).map(|source| source.text.clone())
-        })
-        .map_err(|error| error.to_string())?;
-        crate::commit::w4_save_model_stage(
-            store,
-            claim,
-            "w4",
-            &binding,
-            &serde_json::to_value(&output)?,
-        )?;
-        Ok(output)
+        let state = store.read()?;
+        let text_of = |id: &str| {
+            let provided = sources.get(id)?;
+            let source = state.sources.values().find(|s| s.id == id)?;
+            let live = crate::lexical::body(source)?;
+            (live == provided.text).then(|| live.to_owned())
+        };
+        let assembled = serde_json::from_value::<W4Output>(raw.clone())
+            .map_err(|_| "w4_invalid_output".to_owned())
+            .and_then(|output| {
+                crate::w4::assemble_new_basis(input, &output, &text_of)
+                    .map_err(|error| error.to_string())
+            });
+        let checked = assembled.as_ref().map_err(Clone::clone).and_then(|output| {
+            crate::w4::validate(input, output, &text_of).map_err(|e| e.to_string())
+        });
+        let final_output = checked
+            .as_ref()
+            .ok()
+            .or_else(|| assembled.as_ref().ok())
+            .map(serde_json::to_value)
+            .transpose()?;
+        if let Some(saved) = &saved {
+            // 旧检查点是已校验的 W4Output；新检查点同时绑定原始与最终输出。
+            if saved.get("raw_output").is_some() && saved["final_output"] != json!(final_output) {
+                return Err("w4_invalid_output: cached final output differs".into());
+            }
+        } else {
+            crate::commit::w4_save_model_stage(
+                store,
+                claim,
+                "w4",
+                &if checked.is_err() {
+                    failed_binding(&ctx.operation_id)
+                } else {
+                    payload
+                },
+                &json!({"raw_output":raw,"final_output":final_output,"valid":checked.is_ok(),
+                    "validation_error":checked.as_ref().err()}),
+            )?;
+        }
+        checked.map_err(Into::into)
     }
 
     fn operation_client(

@@ -7,7 +7,7 @@
       "output": {
         "coverage": {
           "missing": [],
-          "status": "gaps"
+          "status": "complete"
         },
         "request_reviews": [],
         "reviews": [
@@ -19,19 +19,19 @@
           }
         ]
       },
-      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"gaps\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"}]}",
-      "request": "fnv1a64:4cbb4e61ccaa39bd",
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"}]}",
+      "request": "fnv1a64:afde1a72337550af",
       "schema": "w3_v1",
       "usage": {
-        "input_tokens": 814,
+        "input_tokens": 963,
         "input_tokens_details": {
           "cached_tokens": 0
         },
-        "output_tokens": 1091,
+        "output_tokens": 1287,
         "output_tokens_details": {
-          "reasoning_tokens": 1041
+          "reasoning_tokens": 1237
         },
-        "total_tokens": 1905
+        "total_tokens": 2250
       }
     }
   ]

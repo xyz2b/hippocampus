@@ -11,31 +11,31 @@
             "deadline": null,
             "kind": "forget",
             "quote": {
-              "text": "我住址那条"
+              "text": "把我住址那条忘掉吧。"
             },
             "target": {
               "candidate_indices": [],
               "object": "facts",
               "quote": {
-                "text": "我住址那条"
+                "text": "住址"
               }
             }
           }
         ]
       },
-      "output_text": "{\"candidates\":[],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":  {\"text\":\"我住址那条\"}, \"target\":{\"candidate_indices\":[],\"object\":\"facts\",\"quote\":  {\"text\":\"我住址那条\"}}}]}",
-      "request": "fnv1a64:f3e1e81823556807",
+      "output_text": "{\"candidates\":[],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":{\"text\":\"把我住址那条忘掉吧。\"},\"target\":{\"candidate_indices\":[],\"object\":\"facts\",\"quote\":{\"text\":\"住址\"}}}]}",
+      "request": "fnv1a64:46f5de21bfc8992b",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1145,
+        "input_tokens": 1456,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 0
         },
-        "output_tokens": 3833,
+        "output_tokens": 7768,
         "output_tokens_details": {
-          "reasoning_tokens": 3771
+          "reasoning_tokens": 7706
         },
-        "total_tokens": 4978
+        "total_tokens": 9224
       }
     }
   ]

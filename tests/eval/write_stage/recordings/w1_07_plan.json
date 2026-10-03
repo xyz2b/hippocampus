@@ -1,0 +1,70 @@
+{
+  "id": "w1_07_plan",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我打算下个月开始学日语。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "下个月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": {
+              "quote": {
+                "text": "打算"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我打算下个月开始学日语。"
+              },
+              "text": "我打算下个月开始学日语。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我打算下个月开始学日语。\"},\"speech\":\"plan\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":1,\"unit\":\"month\"},\"quote\":{\"text\":\"下个月\"},\"role\":\"event\"}],\"uncertainty\":{\"quote\":{\"text\":\"打算\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我打算下个月开始学日语。\"},\"text\":\"我打算下个月开始学日语。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:113216cd07e3b17d",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1455,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7919,
+        "output_tokens_details": {
+          "reasoning_tokens": 7761
+        },
+        "total_tokens": 9374
+      }
+    }
+  ]
+}

@@ -8,10 +8,20 @@
         "decisions": [
           {
             "action": null,
-            "basis": [],
+            "basis": [
+              {
+                "quote": {
+                  "text": "我搬到成都了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-400"
+                }
+              }
+            ],
             "candidate": 0,
             "effective": null,
-            "pending_reason": "scope_incomplete",
+            "pending_reason": "unclear_relation",
             "relation_scope": null,
             "resolves_relations": [],
             "status": "pending",
@@ -21,19 +31,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":\"scope_incomplete\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\",\"targets\":[95]}]}",
-      "request": "fnv1a64:b637b2c5fed7c616",
+      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[{\"quote\":{\"text\":\"我搬到成都了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-400\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":\"unclear_relation\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\" ,\"targets\":[95]}]}",
+      "request": "fnv1a64:cb3c23b1ffd09cca",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1330,
+        "input_tokens": 1559,
         "input_tokens_details": {
-          "cached_tokens": 1280
+          "cached_tokens": 0
         },
-        "output_tokens": 9671,
+        "output_tokens": 3357,
         "output_tokens_details": {
-          "reasoning_tokens": 9613
+          "reasoning_tokens": 3270
         },
-        "total_tokens": 11001
+        "total_tokens": 4916
       }
     }
   ]

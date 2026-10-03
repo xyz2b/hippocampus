@@ -62,7 +62,10 @@
     "speech": "user_statement",
     "subject": "e-laowang",
     "relation": "fact",
-    "memory_type": "fact",
+    "memory_type": [
+     "fact",
+     "episode"
+    ],
     "value": "他上周辞职了。",
     "sentence": "他上周辞职了。",
     "polarity": "affirm",

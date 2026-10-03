@@ -14,31 +14,24 @@
           {
             "candidate": 0,
             "episode_value": "not_applicable",
-            "problems": [
-              {
-                "aspect": "condition",
-                "quote": {
-                  "text": "我画速写的时候"
-                }
-              }
-            ],
-            "verdict": "contradicted"
+            "problems": [],
+            "verdict": "supported"
           }
         ]
       },
-      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"condition\",\"quote\":{\"text\":\"我画速写的时候\"}}],\"verdict\":\"contradicted\"}]}",
-      "request": "fnv1a64:266511d9183d5aa1",
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"}]}",
+      "request": "fnv1a64:9b00d3965f4009cb",
       "schema": "w3_v1",
       "usage": {
-        "input_tokens": 813,
+        "input_tokens": 962,
         "input_tokens_details": {
-          "cached_tokens": 768
+          "cached_tokens": 0
         },
-        "output_tokens": 1137,
+        "output_tokens": 5068,
         "output_tokens_details": {
-          "reasoning_tokens": 1070
+          "reasoning_tokens": 5016
         },
-        "total_tokens": 1950
+        "total_tokens": 6030
       }
     }
   ]

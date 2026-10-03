@@ -52,6 +52,55 @@ fn record_sources(record: &RecordView2) -> BTreeSet<&str> {
     evidence.iter().filter_map(|e| stored(&e.source)).collect()
 }
 
+/// U3：在唯一的输出组装边界复制新候选依据；不推断动作，也不补旧方依据。
+/// 调用方提供当前仍存在的原文。失败时不返回部分组装结果，validate 本身保持严格。
+pub fn assemble_new_basis(
+    input: &W4Input,
+    output: &W4Output,
+    text_of: &dyn Fn(&str) -> Option<String>,
+) -> Result<W4Output, W4Invalid> {
+    let mut assembled = output.clone();
+    for decision in &mut assembled.decisions {
+        let Some(candidate) = input
+            .candidates
+            .iter()
+            .find(|c| c.index == decision.candidate)
+        else {
+            return invalid("决定引用了输入之外的候选");
+        };
+        let Some(id) = stored(&candidate.source) else {
+            return invalid("新方依据只能引用已保存的来源");
+        };
+        let Some(text) = text_of(id) else {
+            return invalid("新候选来源不存在或已删除");
+        };
+        let quote = &candidate.candidate.sentence;
+        if quote.text.is_empty() || !text.contains(&quote.text) {
+            return invalid("新候选原句不在当前来源原文中");
+        }
+        let equivalent = decision.basis.iter().any(|e| {
+            e.source == candidate.source
+                && locate_quote(&text, &e.quote.text).is_some_and(|range| text[range] == quote.text)
+        });
+        if !equivalent {
+            decision.basis.push(EvidenceRef {
+                source: candidate.source.clone(),
+                quote: quote.clone(),
+            });
+        }
+    }
+    Ok(assembled)
+}
+
+/// 运行时边界：组装成功后仍执行原有严格校验。
+pub fn prepare_output(
+    input: &W4Input,
+    output: &W4Output,
+    text_of: &dyn Fn(&str) -> Option<String>,
+) -> Result<W4Output, W4Invalid> {
+    validate(input, &assemble_new_basis(input, output, text_of)?, text_of)
+}
+
 /// 机械校验 W4 输出，并把依据片段还原成原文写法（contracts 1.1）。`text_of` 返回已保存来源
 /// 的原文；来源不存在或已删除时返回 None。任何一条不满足，整份输出无效。
 pub fn validate(

@@ -7,18 +7,8 @@
       "output": {
         "decisions": [
           {
-            "action": "new",
-            "basis": [
-              {
-                "quote": {
-                  "text": "我现在只用这一台笔记本电脑了。"
-                },
-                "source": {
-                  "kind": "stored",
-                  "source_id": "s-380"
-                }
-              }
-            ],
+            "action": "coexist",
+            "basis": [],
             "candidate": 0,
             "effective": null,
             "pending_reason": null,
@@ -29,19 +19,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我现在只用这一台笔记本电脑了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-380\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
-      "request": "fnv1a64:05d9453338a5327f",
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:48a0734444879aab",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1365,
+        "input_tokens": 1594,
         "input_tokens_details": {
           "cached_tokens": 0
         },
-        "output_tokens": 1708,
+        "output_tokens": 25799,
         "output_tokens_details": {
-          "reasoning_tokens": 1627
+          "reasoning_tokens": 25742
         },
-        "total_tokens": 3073
+        "total_tokens": 27393
       }
     }
   ]

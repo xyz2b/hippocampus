@@ -60,7 +60,10 @@
     "speech": "user_statement",
     "subject": "self",
     "relation": "response_language",
-    "memory_type": "preference",
+    "memory_type": [
+     "preference",
+     "constraint"
+    ],
     "value": "英文",
     "sentence": "以后回答我请用英文。",
     "polarity": "affirm",

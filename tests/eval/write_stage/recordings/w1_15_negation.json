@@ -13,7 +13,7 @@
             "polarity": "affirm",
             "relation": "avoids",
             "sentence": {
-              "text": "我不吃香菜。\"},"
+              "text": "香菜"
             },
             "speech": "user_statement",
             "strength": null,
@@ -25,27 +25,27 @@
             "value": {
               "kind": "text",
               "quote": {
-                "text": "我不吃香菜。"
+                "text": "香菜"
               },
-              "text": "我不吃香菜。"
+              "text": "香菜"
             }
           }
         ],
         "memory_requests": []
       },
-      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\":{\"text\":\"我不吃香菜。\\\"},\"},\"speech\":\"user_statement\" ,\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{ \"text\":\"我不吃香菜。\"},\"text\":\"我不吃香菜。\"}}],\"memory_requests\":[]}",
-      "request": "fnv1a64:c1d14562422fdea5",
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{\"text\":\"香菜\"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t},\"speech\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{\"text\":\"香菜\"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t},\"text\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\"香菜\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:7b50f8cff212f285",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1141,
+        "input_tokens": 1452,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 0
         },
-        "output_tokens": 12054,
+        "output_tokens": 10847,
         "output_tokens_details": {
-          "reasoning_tokens": 11940
+          "reasoning_tokens": 10716
         },
-        "total_tokens": 13195
+        "total_tokens": 12299
       }
     }
   ]

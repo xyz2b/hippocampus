@@ -8,7 +8,17 @@
         "decisions": [
           {
             "action": null,
-            "basis": [],
+            "basis": [
+              {
+                "quote": {
+                  "text": "我之前说的那个住处不对，收回。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-410"
+                }
+              }
+            ],
             "candidate": 0,
             "effective": null,
             "pending_reason": "target_unknown",
@@ -19,19 +29,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":\"target_unknown\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\",\"targets\":[]}]}",
-      "request": "fnv1a64:4b4f0ea5293876bb",
+      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[{\"quote\":{\"text\":\"我之前说的那个住处不对，收回。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-410\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":\"target_unknown\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\",\"targets\":[]}]}",
+      "request": "fnv1a64:52730da07411cc67",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1508,
+        "input_tokens": 1737,
         "input_tokens_details": {
-          "cached_tokens": 1408
+          "cached_tokens": 0
         },
-        "output_tokens": 5450,
+        "output_tokens": 6755,
         "output_tokens_details": {
-          "reasoning_tokens": 5396
+          "reasoning_tokens": 6669
         },
-        "total_tokens": 6958
+        "total_tokens": 8492
       }
     }
   ]

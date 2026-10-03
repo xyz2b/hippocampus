@@ -41,7 +41,9 @@
             "effective": null,
             "pending_reason": null,
             "relation_scope": null,
-            "resolves_relations": [],
+            "resolves_relations": [
+              "rel-2"
+            ],
             "status": "decided",
             "targets": [
               110,
@@ -50,19 +52,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我已经搬到深圳了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-510\"}},{\"quote\":{\"text\":\"我住在北京。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-501\"}},{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-502\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[110,111]}]}",
-      "request": "fnv1a64:ced0d5ddd39d6d3d",
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我已经搬到深圳了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-510\"}},{\"quote\":{\"text\":\"我住在北京。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-501\"}},{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-502\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[\"rel-2\"],\"status\":\"decided\",\"targets\":[110,111]}]}",
+      "request": "fnv1a64:58d4de99bf2d1725",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1591,
+        "input_tokens": 1820,
         "input_tokens_details": {
-          "cached_tokens": 1536
+          "cached_tokens": 0
         },
-        "output_tokens": 12914,
+        "output_tokens": 6726,
         "output_tokens_details": {
-          "reasoning_tokens": 12779
+          "reasoning_tokens": 6587
         },
-        "total_tokens": 14505
+        "total_tokens": 8546
       }
     }
   ]

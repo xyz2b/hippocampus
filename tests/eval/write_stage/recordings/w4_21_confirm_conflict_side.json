@@ -7,7 +7,7 @@
       "output": {
         "decisions": [
           {
-            "action": "correction",
+            "action": "refine",
             "basis": [
               {
                 "quote": {
@@ -20,11 +20,11 @@
               },
               {
                 "quote": {
-                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
                 },
                 "source": {
                   "kind": "stored",
-                  "source_id": "s-130"
+                  "source_id": "s-261"
                 }
               }
             ],
@@ -32,12 +32,10 @@
             "effective": null,
             "pending_reason": null,
             "relation_scope": null,
-            "resolves_relations": [
-              "rel-1"
-            ],
+            "resolves_relations": [],
             "status": "decided",
             "targets": [
-              50
+              51
             ]
           },
           {
@@ -76,19 +74,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"correction\",\"basis\":[{\"quote\":{\"text\":\"我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-371\"}},{\"quote\":{\"text\":\"我已确认栖风读书机的屏幕尺寸是7英寸。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-130\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[\"rel-1\"],\"status\": \"decided\",\"targets\":[50]},{\"action\":\"retract\",\"basis\":[{\"quote\":{\"text\":\"我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-371\"}},{\"quote\":{\"text\":\"我已确认栖风读书机的屏幕尺寸是7英寸。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-130\"}}],\"candidate\":1,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[\"rel-1\"],\"status\": \"decided\",\"targets\":[50]}]}",
-      "request": "fnv1a64:6ace777393db4a53",
+      "output_text": "{\"decisions\":[{\"action\":\"refine\",\"basis\":[{\"quote\":{\"text\":\"我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-371\"}},{\"quote\":{\"text\":\"另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-261\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[51]},{\"action\":\"retract\",\"basis\":[{\"quote\":{\"text\":\"我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-371\"}},{\"quote\":{\"text\":\"我已确认栖风读书机的屏幕尺寸是7英寸。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-130\"}}],\"candidate\":1,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[\"rel-1\"],\"status\":\"decided\",\"targets\":[50]}]}",
+      "request": "fnv1a64:7d12d40eff4691bf",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1977,
+        "input_tokens": 2206,
         "input_tokens_details": {
-          "cached_tokens": 1920
+          "cached_tokens": 0
         },
-        "output_tokens": 15442,
+        "output_tokens": 12482,
         "output_tokens_details": {
-          "reasoning_tokens": 15173
+          "reasoning_tokens": 12217
         },
-        "total_tokens": 17419
+        "total_tokens": 14688
       }
     }
   ]

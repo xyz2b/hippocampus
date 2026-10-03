@@ -7,31 +7,43 @@
       "output": {
         "decisions": [
           {
-            "action": "coexist",
-            "basis": [],
+            "action": "refine",
+            "basis": [
+              {
+                "quote": {
+                  "text": "更准确地说，我每天早上跑步五公里。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-240"
+                }
+              }
+            ],
             "candidate": 0,
             "effective": null,
             "pending_reason": null,
             "relation_scope": null,
             "resolves_relations": [],
             "status": "decided",
-            "targets": []
+            "targets": [
+              30
+            ]
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\": \"decided\",\"targets\":[]}]}",
-      "request": "fnv1a64:e38bb6e172b6835c",
+      "output_text": "{\"decisions\":[{\"action\":\"refine\",\"basis\":[{\"quote\":{\"text\":\"更准确地说，我每天早上跑步五公里。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-240\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\": \"decided\",\"targets\":[30]}]}",
+      "request": "fnv1a64:432ce81b1c39ff9c",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1407,
+        "input_tokens": 1636,
         "input_tokens_details": {
-          "cached_tokens": 1280
+          "cached_tokens": 0
         },
-        "output_tokens": 6662,
+        "output_tokens": 12349,
         "output_tokens_details": {
-          "reasoning_tokens": 6604
+          "reasoning_tokens": 12259
         },
-        "total_tokens": 8069
+        "total_tokens": 13985
       }
     }
   ]

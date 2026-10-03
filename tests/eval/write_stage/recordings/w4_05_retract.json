@@ -8,26 +8,7 @@
         "decisions": [
           {
             "action": "retract",
-            "basis": [
-              {
-                "quote": {
-                  "text": "我之前说每周三晚上去游泳，那句不对，收回。"
-                },
-                "source": {
-                  "kind": "stored",
-                  "source_id": "s-250"
-                }
-              },
-              {
-                "quote": {
-                  "text": "我每周三晚上去游泳。"
-                },
-                "source": {
-                  "kind": "stored",
-                  "source_id": "s-120"
-                }
-              }
-            ],
+            "basis": [],
             "candidate": 0,
             "effective": null,
             "pending_reason": null,
@@ -40,19 +21,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"retract\",\"basis\":[{\"quote\":{\"text\":\"我之前说每周三晚上去游泳，那句不对，收回。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-250\"}},{\"quote\":{\"text\":\"我每周三晚上去游泳。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-120\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[40]}]}",
-      "request": "fnv1a64:d9d41efaf9f43986",
+      "output_text": "{\"decisions\":[{\"action\":\"retract\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[40]}]}",
+      "request": "fnv1a64:dd949161b8b6755a",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1396,
+        "input_tokens": 1625,
         "input_tokens_details": {
-          "cached_tokens": 1280
+          "cached_tokens": 0
         },
-        "output_tokens": 5241,
+        "output_tokens": 4844,
         "output_tokens_details": {
-          "reasoning_tokens": 5120
+          "reasoning_tokens": 4784
         },
-        "total_tokens": 6637
+        "total_tokens": 6469
       }
     }
   ]

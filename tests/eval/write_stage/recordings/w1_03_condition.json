@@ -7,9 +7,16 @@
       "output": {
         "candidates": [
           {
-            "conditions": [],
+            "conditions": [
+              {
+                "quote": {
+                  "text": "我画速写的时候"
+                },
+                "resolved": true
+              }
+            ],
             "kind": "assertion",
-            "memory_type": "preference",
+            "memory_type": "fact",
             "polarity": "affirm",
             "relation": "uses",
             "sentence": {
@@ -20,43 +27,32 @@
             "subject": {
               "entity_id": "self"
             },
-            "times": [
-              {
-                "anchor": "said_on",
-                "interp": {
-                  "kind": "recurring"
-                },
-                "quote": {
-                  "text": "我画速写的时候"
-                },
-                "role": "event"
-              }
-            ],
+            "times": [],
             "uncertainty": null,
             "value": {
               "kind": "text",
               "quote": {
-                "text": "我画速写的时候固定用炭笔。"
+                "text": "炭笔"
               },
-              "text": "我画速写的时候固定用炭笔。"
+              "text": "炭笔"
             }
           }
         ],
         "memory_requests": []
       },
-      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"uses\",\"sentence\":{ \"text\":\"我画速写的时候固定用炭笔。\" },\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{ \"kind\":\"recurring\" },\"quote\":{\"text\":\"我画速写的时候\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我画速写的时候固定用炭笔。\"},\"text\":\"我画速写的时候固定用炭笔。\"}}],\"memory_requests\":[]}",
-      "request": "fnv1a64:06d34e98d57185b9",
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\": \t{\t\"text\":\t\"我画速写的时候\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"uses\",\"sentence\": \t{\t\"text\":\t\"我画速写的时候固定用炭笔。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\": \t{\t\"text\":\t\"炭笔\"},\"text\":\"炭笔\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:85cdb366aa0f79e1",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1146,
+        "input_tokens": 1457,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 0
         },
-        "output_tokens": 13345,
+        "output_tokens": 7687,
         "output_tokens_details": {
-          "reasoning_tokens": 13184
+          "reasoning_tokens": 7544
         },
-        "total_tokens": 14491
+        "total_tokens": 9144
       }
     }
   ]

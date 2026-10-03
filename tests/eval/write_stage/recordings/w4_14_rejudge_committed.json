@@ -8,7 +8,26 @@
         "decisions": [
           {
             "action": "state_change",
-            "basis": [],
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在每天喝两杯咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-360"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我每天喝一杯咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-112"
+                }
+              }
+            ],
             "candidate": 0,
             "effective": null,
             "pending_reason": null,
@@ -21,19 +40,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[55]}]}",
-      "request": "fnv1a64:34c465e3406ec5ad",
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我现在每天喝两杯咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-360\"}},{\"quote\":{\"text\":\"我每天喝一杯咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-112\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[55]}]}",
+      "request": "fnv1a64:35a6834c4a530335",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1445,
+        "input_tokens": 1674,
         "input_tokens_details": {
-          "cached_tokens": 1408
+          "cached_tokens": 1024
         },
-        "output_tokens": 4146,
+        "output_tokens": 8854,
         "output_tokens_details": {
-          "reasoning_tokens": 4088
+          "reasoning_tokens": 8743
         },
-        "total_tokens": 5591
+        "total_tokens": 10528
       }
     }
   ]

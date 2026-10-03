@@ -56,7 +56,7 @@ pub struct SourceInput {
 }
 
 impl SourceInput {
-    fn of(source: &SourceRecord) -> PersistenceResult<Self> {
+    pub(crate) fn of(source: &SourceRecord) -> PersistenceResult<Self> {
         let request = source.request.as_ref().ok_or("source_deleted")?;
         Ok(Self {
             text: crate::lexical::body(source).ok_or("source_deleted")?.into(),
@@ -443,6 +443,15 @@ fn run_claimed(
         } else {
             assembly.skipped
         };
+        // 注入输出和模型/缓存输出共用同一个组装边界；重复组装不会重复引用。
+        let live = store.read()?;
+        let output = w4::prepare_output(&assembly.input, &output, &|id| {
+            let provided = texts.get(id)?;
+            let source = live.sources.values().find(|s| s.id == id)?;
+            let text = crate::lexical::body(source)?;
+            (text == provided.text).then(|| text.to_owned())
+        })
+        .map_err(|e| e.to_string())?;
         let plan = w4::plan(
             &w4::W4Runtime {
                 state: &state,

@@ -9,11 +9,11 @@
           {
             "conditions": [],
             "kind": "assertion",
-            "memory_type": "fact",
-            "polarity": "unknown",
+            "memory_type": "episode",
+            "polarity": "affirm",
             "relation": "fact",
             "sentence": {
-              "text": "他上周辞职了。\n"
+              "text": "他上周辞职了。"
             },
             "speech": "user_statement",
             "strength": null,
@@ -46,19 +46,19 @@
         ],
         "memory_requests": []
       },
-      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"unknown\",\"relation\":\"fact\",\"sentence\":{ \"text\":\"他上周辞职了。\\n\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"e-laowang\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{ \"kind\":\"relative\",\"offset\":-1,\"unit\":\"week\"},\"quote\":{\"text\":\"上周\" },\"role\":\"event\"}] ,\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"他上周辞职了。\" },\"text\":\"他上周辞职了。\"}}],\"memory_requests\":[]}",
-      "request": "fnv1a64:c15e4c2f3c5009e8",
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"episode\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":  {\"text\":\"他上周辞职了。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"e-laowang\"},\"times\":[{\"anchor\":  \"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"week\"},\"quote\":  {\"text\":\"上周\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":  {\"text\":\"他上周辞职了。\"},\"text\":\"他上周辞职了。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:a2af6704421643f2",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1150,
+        "input_tokens": 1461,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 1408
         },
-        "output_tokens": 10123,
+        "output_tokens": 6896,
         "output_tokens_details": {
-          "reasoning_tokens": 9968
+          "reasoning_tokens": 6743
         },
-        "total_tokens": 11273
+        "total_tokens": 8357
       }
     }
   ]

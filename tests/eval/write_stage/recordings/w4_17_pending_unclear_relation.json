@@ -29,19 +29,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我最近在学韩语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-390\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
-      "request": "fnv1a64:c8e2fdb351fba9f0",
+      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我最近在学韩语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-390\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\": \"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:f28523a8144ab510",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1345,
+        "input_tokens": 1574,
         "input_tokens_details": {
           "cached_tokens": 0
         },
-        "output_tokens": 826,
+        "output_tokens": 2650,
         "output_tokens_details": {
-          "reasoning_tokens": 742
+          "reasoning_tokens": 2565
         },
-        "total_tokens": 2171
+        "total_tokens": 4224
       }
     }
   ]

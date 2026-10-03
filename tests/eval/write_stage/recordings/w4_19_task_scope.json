@@ -8,7 +8,26 @@
         "decisions": [
           {
             "action": "state_change",
-            "basis": [],
+            "basis": [
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-510"
+                }
+              },
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-501"
+                }
+              }
+            ],
             "candidate": 0,
             "effective": null,
             "pending_reason": null,
@@ -21,19 +40,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[97]}]}",
-      "request": "fnv1a64:2f93861bea670ac2",
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-510\"}},{\"quote\":{\"text\":\"在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-501\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[97]}]}",
+      "request": "fnv1a64:a2d3b68a28153046",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1498,
+        "input_tokens": 1727,
         "input_tokens_details": {
-          "cached_tokens": 1408
+          "cached_tokens": 0
         },
-        "output_tokens": 6298,
+        "output_tokens": 1731,
         "output_tokens_details": {
-          "reasoning_tokens": 6243
+          "reasoning_tokens": 1582
         },
-        "total_tokens": 7796
+        "total_tokens": 3458
       }
     }
   ]

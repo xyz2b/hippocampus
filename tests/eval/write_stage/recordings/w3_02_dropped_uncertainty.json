@@ -22,23 +22,23 @@
                 }
               }
             ],
-            "verdict": "insufficient"
+            "verdict": "contradicted"
           }
         ]
       },
-      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"uncertainty\",\"quote\":{\"text\":\"可能\"}}],\"verdict\":\"insufficient\"}]}",
-      "request": "fnv1a64:4f28f06307a7273b",
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"uncertainty\",\"quote\":{\"text\":\"可能\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:8032c788ed1c4129",
       "schema": "w3_v1",
       "usage": {
-        "input_tokens": 809,
+        "input_tokens": 958,
         "input_tokens_details": {
           "cached_tokens": 0
         },
-        "output_tokens": 2047,
+        "output_tokens": 2670,
         "output_tokens_details": {
-          "reasoning_tokens": 1984
+          "reasoning_tokens": 2606
         },
-        "total_tokens": 2856
+        "total_tokens": 3628
       }
     }
   ]

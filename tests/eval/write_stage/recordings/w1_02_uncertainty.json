@@ -9,8 +9,8 @@
           {
             "conditions": [],
             "kind": "assertion",
-            "memory_type": "constraint",
-            "polarity": "unknown",
+            "memory_type": "fact",
+            "polarity": "affirm",
             "relation": "allergic_to",
             "sentence": {
               "text": "我可能对花生过敏。"
@@ -21,36 +21,31 @@
               "entity_id": "self"
             },
             "times": [],
-            "uncertainty": {
-              "quote": {
-                "text": "可能"
-              },
-              "resolved": true
-            },
+            "uncertainty": null,
             "value": {
               "kind": "text",
               "quote": {
-                "text": "我可能对花生过敏。"
+                "text": "花生"
               },
-              "text": "我可能对花生过敏。"
+              "text": "花生"
             }
           }
         ],
         "memory_requests": []
       },
-      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"constraint\",\"polarity\":\"unknown\",\"relation\":\"allergic_to\",\"sentence\":{\"text\":\"我可能对花生过敏。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":{\"quote\":{\"text\":\"可能\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我可能对花生过敏。\"},\"text\":\"我可能对花生过敏。\"} }],\"memory_requests\":[]}",
-      "request": "fnv1a64:0a19a6ad4d3166eb",
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"allergic_to\",\"sentence\": \t{ \"text\": \"我可能对花生过敏。\"\n  },\n  \"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\": \t{\n    \"kind\": \"text\",\n    \"quote\": \t{ \"text\": \"花生\"\n    },\n    \"text\": \"花生\"\n  }}],\"memory_requests\":[]}",
+      "request": "fnv1a64:2673d0d9078e8bc7",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1144,
+        "input_tokens": 1455,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 0
         },
-        "output_tokens": 11685,
+        "output_tokens": 6385,
         "output_tokens_details": {
-          "reasoning_tokens": 11563
+          "reasoning_tokens": 6256
         },
-        "total_tokens": 12829
+        "total_tokens": 7840
       }
     }
   ]

@@ -8,7 +8,17 @@
         "decisions": [
           {
             "action": "coexist",
-            "basis": [],
+            "basis": [
+              {
+                "quote": {
+                  "text": "周末的时候我更喜欢喝手冲咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-241"
+                }
+              }
+            ],
             "candidate": 0,
             "effective": null,
             "pending_reason": null,
@@ -19,19 +29,19 @@
           }
         ]
       },
-      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
-      "request": "fnv1a64:bc396defb7665d73",
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[{\"quote\":{\"text\":\"周末的时候我更喜欢喝手冲咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-241\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:4a3572937f28bcdf",
       "schema": "w4_v2",
       "usage": {
-        "input_tokens": 1324,
+        "input_tokens": 1553,
         "input_tokens_details": {
-          "cached_tokens": 1280
+          "cached_tokens": 0
         },
-        "output_tokens": 4730,
+        "output_tokens": 4411,
         "output_tokens_details": {
-          "reasoning_tokens": 4673
+          "reasoning_tokens": 4327
         },
-        "total_tokens": 6054
+        "total_tokens": 5964
       }
     }
   ]

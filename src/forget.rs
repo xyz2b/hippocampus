@@ -834,10 +834,11 @@ pub(crate) fn forget(
         if let Some(result) = source.result.as_mut() {
             for key in ["w4_batch", "w4_controls", "w4_model_stages"] {
                 if let Some(value) = result.get_mut(key) {
-                    batch_affected |= touches(value, &deleted_source_ids, &deleted);
+                    let w4_before = (key == "w4_model_stages").then(|| value["w4"].clone());
+                    let touched = touches(value, &deleted_source_ids, &deleted);
                     // 新批次的固定枚举不是原文；不能把被删的英文 supported 当作 verdict 清掉。
                     // 自由文本（包括未通过 W2 的 relation/memory_type）仍照常清洗；旧路径用空列表。
-                    batch_affected |= scrub_at(
+                    let scrubbed_stage = scrub_at(
                         value,
                         &scrubbed,
                         false,
@@ -858,6 +859,20 @@ pub(crate) fn forget(
                             "of",
                         ],
                     );
+                    batch_affected |= touched || scrubbed_stage;
+                    if let Some(before) = w4_before
+                        && (touches(&before, &deleted_source_ids, &deleted)
+                            || before != value["w4"])
+                        && let Some(output) = value.get_mut("w4").and_then(|s| s.get_mut("output"))
+                        && output.get("raw_output").is_some()
+                    {
+                        // 原始引用可含空白变体或无效 JSON，不能靠逐字替换清洗。
+                        output["raw_output"] = Value::Null;
+                        if output["valid"] == false {
+                            output["final_output"] = Value::Null;
+                        }
+                        output["validation_error"] = Value::Null;
+                    }
                 }
             }
         }

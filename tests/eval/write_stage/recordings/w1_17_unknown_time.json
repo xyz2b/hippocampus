@@ -9,11 +9,11 @@
           {
             "conditions": [],
             "kind": "assertion",
-            "memory_type": "fact",
+            "memory_type": "episode",
             "polarity": "affirm",
             "relation": "owns",
             "sentence": {
-              "text": "我以前养过一只猫。"
+              "text": "我以前养过一只猫。},"
             },
             "speech": "user_statement",
             "strength": null,
@@ -24,9 +24,7 @@
               {
                 "anchor": "said_on",
                 "interp": {
-                  "end_inclusive": "unknown",
-                  "kind": "range",
-                  "start": "unknown"
+                  "kind": "unknown"
                 },
                 "quote": {
                   "text": "以前"
@@ -38,27 +36,27 @@
             "value": {
               "kind": "text",
               "quote": {
-                "text": "我以前养过一只猫。"
+                "text": "一只猫"
               },
-              "text": "我以前养过一只猫。"
+              "text": "一只猫"
             }
           }
         ],
         "memory_requests": []
       },
-      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"owns\",\"sentence\":{\"text\":\"我以前养过一只猫。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{ \"end_inclusive\": \"unknown\", \"kind\": \"range\", \"start\": \"unknown\" }, \"quote\":{\"text\":\"以前\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我以前养过一只猫。\"},\"text\":\"我以前养过一只猫。\"}}],\"memory_requests\":[]}",
-      "request": "fnv1a64:c33872fb75fa3fc2",
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"episode\",\"polarity\":\"affirm\",\"relation\":\"owns\",\"sentence\":{\"text\":\"我以前养过一只猫。},\"}\n  \n  ,\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\" , \"interp\":{\"kind\":\"unknown\"},\"quote\" : \t{\"text\":\"以前\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\"\t:\t{\"text\":\"一只猫\"},\"text\":\"一只猫\"}\t}]\t,\"memory_requests\":[]}",
+      "request": "fnv1a64:f18eadf722904a10",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1143,
+        "input_tokens": 1454,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 0
         },
-        "output_tokens": 8931,
+        "output_tokens": 12071,
         "output_tokens_details": {
-          "reasoning_tokens": 8773
+          "reasoning_tokens": 11923
         },
-        "total_tokens": 10074
+        "total_tokens": 13525
       }
     }
   ]

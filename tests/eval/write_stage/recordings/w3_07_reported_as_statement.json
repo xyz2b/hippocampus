@@ -20,31 +20,25 @@
                 "quote": {
                   "text": "我妈说"
                 }
-              },
-              {
-                "aspect": "time",
-                "quote": {
-                  "text": "小时候"
-                }
               }
             ],
             "verdict": "contradicted"
           }
         ]
       },
-      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"speech\",\"quote\":{ \"text\":\"我妈说\" }},{\"aspect\":\"time\",\"quote\":{ \"text\":\"小时候\" }}],\"verdict\":\"contradicted\"}]}",
-      "request": "fnv1a64:f6904f82ede06f81",
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"speech\",\"quote\":{\"text\":\"我妈说\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:aec72eb1eca4caeb",
       "schema": "w3_v1",
       "usage": {
-        "input_tokens": 816,
+        "input_tokens": 965,
         "input_tokens_details": {
-          "cached_tokens": 768
+          "cached_tokens": 0
         },
-        "output_tokens": 9629,
+        "output_tokens": 9077,
         "output_tokens_details": {
-          "reasoning_tokens": 9547
+          "reasoning_tokens": 9012
         },
-        "total_tokens": 10445
+        "total_tokens": 10042
       }
     }
   ]

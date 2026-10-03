@@ -2247,6 +2247,24 @@ pub(crate) fn w4_save_model_stage(
 ) -> PersistenceResult<()> {
     store.transaction(|state| {
         let source = owned_w4(state, claim, now()?)?;
+        // 与来源删除共用写事务，避免无效响应审计重新写回已删除的输入副本。
+        if stage == "w4" {
+            let sources = binding["sources"]
+                .as_object()
+                .ok_or("W4 stage sources missing")?;
+            for (id, provided) in sources {
+                let source = state
+                    .sources
+                    .values()
+                    .find(|s| s.id == *id)
+                    .ok_or("needs_rejudge: W4 input source missing")?;
+                let current = crate::enrichment::SourceInput::of(source)
+                    .map_err(|_| "needs_rejudge: W4 input source deleted or changed")?;
+                if serde_json::to_value(current)? != *provided {
+                    return Err("needs_rejudge: W4 input source changed".into());
+                }
+            }
+        }
         if let Some(prior) = model_stage(source, claim, stage, binding)? {
             if prior != *output {
                 return Err("model_invalid_output: stage output changed".into());

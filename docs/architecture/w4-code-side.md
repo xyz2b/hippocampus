@@ -101,7 +101,7 @@
 
 第③段及④-1～④-5在 `w4_runtime_v1` 上扩展，数据库保持 9，W5 回执格式仍为 `v8`。默认使用旧 `commit_candidates`；新路径通过 opt-in 配置与现有 CLI 接通，没有新 MCP 入口（见第 8 节）。
 
-- **入口**：调用方先显式 `w4_start_round`，再调用 `enrichment::run_source(store, key, budget, upstream, judge)`。流程为认领 → 恢复检查 → 保存输入 → `assemble` → 提供者输出或 `assembly.skipped` → `plan`（内部已 `validate`）→ 保存计划 → 逐组提交 → 汇总。提供者调用期间不持有数据库事务。终态用 `enrichment::receipt` 读取，普通读取不重新认领或判定。
+- **入口**：调用方先显式 `w4_start_round`，再调用 `enrichment::run_source(store, key, budget, upstream, judge)`。流程为认领 → 恢复检查 → 保存输入 → `assemble` → 提供者输出或 `assembly.skipped` → `prepare_output`（共享组装函数后严格校验） → `plan`（内部再次 `validate`）→ 保存计划 → 逐组提交 → 汇总。提供者调用期间不持有数据库事务。终态用 `enrichment::receipt` 读取，普通读取不重新认领或判定。
 - **提供者**：上游接收 `ProviderContext` 与 `SourceInput { text, history }`，返回 `UpstreamBatch { w2, review }`，包括所有 W2 ok/unresolved/rejected 候选、原始索引和请求映射，以及 W3 verdict、problems、episode_value、coverage 和 request_reviews；不返回准入布尔缺省、committed_id、Plan、组编号或提交快照。`review` 由代码 `W3Output::validate` 产生，核对候选（含 unresolved，排除 rejected）和请求一一对应、无重复、所有 Quote 逐字存在且还原、supported 的 problems 为空、非 Episode 的 episode_value 为 not_applicable。核验绑定最终完整 W2 结果（含时间换算、请求索引映射）和运行时来源快照，保存后重新加载也复验；改变输入不得沿用核验。W1 为空时 review 必须为 None；全部被 W2 拒收时允许不调用 W3，请求仍未核验。只有 W2 ok 且 W3 supported、未被控制请求阻断的候选进入 W4/W5。运行时由 episode_value 和已核验 remember 的最终索引映射计算 Admission，绑定历史产物，`plan` 生成证据、组和快照。
 - **目录与 W4 注入**：`w2::relation_catalog` 从现有谓词注册定义和 memory_types 约束构造目录，始终含 fact。没有专用类型约束时沿用现有目录的四种允许类型；有约束则原样使用，不把未知谓词加入目录。W4 提供者接收同一上下文、实际 `W4Input` 和按来源 ID 去重的原文及历史，返回 `Some(W4Output)` 或 None（未接入）。上下文包含 owner、完整来源绑定、可信任务、接收时间/序号、round、operation_id、需要重新核验时可复用的 previous_w2。测试注入合成结果或夹具，生产代码不读夹具。④-3 已在上游位置接 W1/W3，④-4 已在判定位置接 W4；阶段缓存、token/付费预算归提供者，同操作同输入复用结果，结果缺失不自动重发（见第 6 节）。
 - **轮次**：首轮为 0；显式重判才加一，请求 ID 绑定稳定的 `operation_id`。启动回执复用 `TurnReceipt`；同参重放返回原轮次，即使之后已开始其他轮次也不重复加一。显式新轮清除旧输入元数据和汇总。
@@ -127,10 +127,10 @@
 ## 7. W4 模型提供者（④-4）
 
 - **入口与约束**：`enrichment::run_source_with_all_models(store, key, budget, provider)` 将同一个 `WriteModelProvider` 接到 W1/W3 上游和 W4 判定位置；保留 `run_source` 与 `run_source_with_models` 的注入接口。`W4_PROMPT` 与 `w4_schema()` 在 `src/write_models.rs`，覆盖 w4.v2 动作、逐候选决定、目标数量、新旧双方依据、legacy 待定、范围缺口、关系解决、生效时间及 QualifierRef 冲突范围；原文和历史没有指令权限。提示词不放样本原文、ID 或说明标签，静态测试扫描 W1/W3/W4 samples 的原文、ID 和说明标签。
-- **输入与阶段结果**：W4 请求传入 `contract=w4.v2`、实际 `w4_input` 和按来源 ID 去重的 `sources { text, history }`；完整输入 JSON 作为 `result.w4_model_stages.w4.binding`，与已核验输出、operation_id 一起保存，不改数据库版本。记录、关系、coverage 或提供原文/历史变化时，同操作缓存拒绝复用并要求 needs_rejudge。加载和保存均核对认领、租约、轮次及来源绑定；缓存重新严格解码，并按本次实际提供的原文执行 `w4::validate` 后才返回。
-- **校验与提交**：W4 单次输出经严格解码和 validate 后才保存阶段结果，再交现有 `plan`（再次 validate）、保存计划与 W5 提交。任何决定无效均整份失败、零业务写入，T1 与预算记录保留，错误为 w4_invalid_output 或已有模型错误码。新旧双方依据缺失不补造、不修复或自动重试。有调用记录无阶段结果的崩溃窗口仍为 failed/model_invalid_output，内部 detail_code=model_result_missing。
+- **输入与阶段结果**：W4 请求传入 `contract=w4.v2`、实际 `w4_input` 和按来源 ID 去重的 `sources { text, history }`；完整输入 JSON 作为 `result.w4_model_stages.w4.binding`，与已核验输出、operation_id 一起保存，不改数据库版本。记录、关系、coverage 或提供原文/历史变化时，同操作缓存拒绝复用并要求 needs_rejudge。加载和保存均核对认领、租约、轮次及来源绑定。阶段内部 `output` 保存 `{raw_output, final_output, valid, validation_error}`：原始模型 JSON 不被覆盖，最终决定经过同一组装规则和严格校验；组装成功但校验失败仍保留组装后的 final_output；解码或组装失败时为 null，valid=false。失败检查点另绑定 invalid_operation_id：同操作复验失败不重发，显式重判的新操作可再次调用。缓存重开重新组装、校验并核对保存的最终输出，差异拒收、不发送。旧的裸 W4Output 检查点继续复验，但不能冒充已保存过原始模型输出。此内部 JSON 扩展不升数据库版本，不改变外部回执或冻结 schema。
+- **校验与提交**：W4 提供者、注入入口和离线回放共用 `w4::assemble_new_basis`（运行时包装入口为 prepare_output），组装逻辑只有这一处，重复调用幂等。为每条 decided/pending 复制当前输入候选的 source 与 sentence；来源必须仍存在、属于本次提供的输入、原文未变化且候选原句逐字存在。已有等价原句引用不重复；其他原始引用不删改，旧方依据、动作、目标和关系解决均不补。组装后调用原有严格 validate，再交现有 `plan`（再次 validate）、保存计划与 W5 提交。原始输出及最终输出保存到阶段检查点；无效决定仍整份失败、零业务写入，T1 与预算记录保留，错误为 w4_invalid_output 或已有模型错误码，不自动重试。有调用记录无阶段结果的崩溃窗口仍为 failed/model_invalid_output，内部 detail_code=model_result_missing。
 - **预算与恢复**：w4 与 w1/w3 共用后台每消息额度（最多 3），与旧前台计数分开，共享授权 group 总额；同 owner/operation 的后台次数跨 group 统计。W1 空发送一次，无需 W4 发送两次，需要 W4 最多三次。W4 阶段已保存但计划尚未保存时，同输入重开可零发送恢复；计划已经保存时直接续交余组或补来源汇总，不重新 assemble 或调用 W4，目标变化由 W5 快照检查要求重判。
-- **清洗与离线验证**：W4 的输入记录、关系、提供原文/历史和输出依据都是阶段检查点里的原文副本，沿用删除清洗及整份计划失效；固定 action/pending_reason/of 枚举保留。真实 SQLite 与假 HTTP 回归使用 W4 强化夹具作为响应（只重绑定数据库生成的来源和目标 ID），覆盖完整闭环、1/2/3 次发送、整份无效零写入、缓存输入变化、缺结果、计划/部分提交/未写总状态重开、晚到结果和删除。测试不评价真实模型语义或改变样本标签。
+- **清洗与离线验证**：W4 的输入记录、关系、提供原文/历史和输出依据都是阶段检查点里的原文副本，沿用删除清洗及整份计划失效；固定 action/pending_reason/of 枚举保留。涉及删除的 W4 阶段整体清空 raw_output 与 validation_error，避免空白变体或无效 JSON 残留；valid=false 时 final_output 也整体清空，已校验的 final_output 沿用逐片段墓碑清洗。受影响的缓存与计划不可续跑，未涉及的来源与审计副本保持不变。真实 SQLite 与假 HTTP 回归使用 W4 强化夹具作为响应（只重绑定数据库生成的来源和目标 ID），覆盖完整闭环、1/2/3 次发送、整份无效零写入、缓存输入变化、缺结果、计划/部分提交/未写总状态重开、晚到结果和删除；删除回归另覆盖空白变体、无效/不可解码响应、检查点失效及无关审计副本保留。w4_save_model_stage 在保存的同一事务内复用 SourceInput::of 核对全部提供来源的正文与历史，不使用全局 revision 等值检查；来源已删除或变化时整次保存回滚，不保留原始输出或输入绑定，运行时仅记录 needs_rejudge 失败码。旧方删除先于保存时拒绝晚到响应，保存先于删除时沿用上述清洗。回归同时覆盖有效/无效响应、正文/历史变化及终态不自动续跑。测试不评价真实模型语义或改变样本标签。
 
 ## 8. 配置与 CLI 分发（④-5）
 
@@ -158,5 +158,17 @@
 - **W3**：明确冲突或删改明确限定语判 contradicted，无法确认或排除命题判 insufficient。覆盖按 relation/value/限定语判断，不因 sentence 包含整条消息就判完整；gaps 必须附遗漏断言的非空连续原文。问题 Quote 不省略中间文字。
 - **W4**：提示词要求每条决定（含 pending）附新候选 `source.source_id` 的依据；decided 的每个目标还要分别引用旧依据。pending 要求仅为提示词约束，不收紧 validate。legacy 信息缺失用 unclear_relation，不伪造旧依据；依赖排除未检索记录的结论用 scope_incomplete，双方完整的已定位目标仍可更新。整个旧断言的修订用 refine，现实及偏好强度变化用 state_change，独立范围或局部补充才 coexist。整组协调目标与动作，每候选一条决定，每关系最多解决一次。
 - **生产预算**：新写入阶段固定 W1=32768、W3/W4=16384；旧阶段沿用原配置及默认 4096。W1 按既有超时规则使用 360 秒，W3/W4 使用 180 秒。新授权的内部 policy_json 增加 `write_output_tokens` 绑定；已有无此字段的授权仍可用于旧阶段且不重写，不能静默用于提高额度后的新写入阶段，须提供新 group_id。公开配置和数据库版本不变，调用次数限制不变。
-- **评分与门禁**：`tests/write_stage_eval.rs` 默认仅报告模型评分或调用失败；显式 `EVAL_GATE=1` 才因此失败，`EVAL_GATE=0` 关闭门禁。无效样本、损坏录制、非法配置及上限预检仍失败。W1 按 W2 最终候选与还原后的请求评分，保留 raw 和含拒收、原因、索引映射的 w2_final。候选完整匹配仍决定整项是否通过；字段独立诊断，不把一个错误扩散到正确字段。W4 resolves_relations 按整组比对，合法的归属变化不扣分，遗漏或重复仍失败。
-- **录制兼容与复测**：提示词变化使旧请求指纹过期，离线报告不把过期录制冒充模型失败。上限兼容性测试使用注入录制，不要求仓库里的旧录制匹配新提示词。评测默认上限仍为 16384，可用 `EVAL_MAX_OUTPUT_TOKENS` 覆盖；与生产 W1 对齐时须为 W1 录制设置 32768。此上限不进入指纹。三阶段全量重录共 61 次（20/20/21），另行取得真实调用授权；W4 标签仍为 draft，提高上限不能修复输出失控。
+- **评分与门禁**：`tests/write_stage_eval.rs` 默认仅报告模型评分或调用失败；显式 `EVAL_GATE=1` 才因最终评分或调用失败而失败（原始 W4 评分另行报告），`EVAL_GATE=0` 关闭门禁。无效样本、损坏录制、非法配置及上限预检仍失败。W1 按 W2 最终候选与还原后的请求评分，保留 raw 和含拒收、原因、索引映射的 w2_final。候选完整匹配仍决定整项是否通过；字段独立诊断，不把一个错误扩散到正确字段。W4 resolves_relations 按整组比对，合法的归属变化不扣分，遗漏或重复仍失败。
+- **U4 评分校准**：逐字段及逐样本分别报告 contract（解码、机械校验、编号一致性）、semantic（标签语义）和 reference（引用选择）；机械校验通过不证明完整语义正确。允许的引用等价仅为：两边均是当前原文连续片段，末尾单个句号（中文或英文）或分句逗号可有可无；conditions 可多/少一个本候选完整原句中明确存在的开头主语“我”（不从其他断言借主语）。不忽略内部标点，不缩短目标指代，不改变限定语或时间，不放宽专用关系的值；fact 的原句值沿用原句引用等价。coexist 且 targets 为空时不要求旧方依据。W4 报告 raw_result/raw_output 与 final_result/final_output，最终评分采用和运行时相同的组装规则；不能把组装后的通过当作模型原始引用能力改善。
+- **多模型与重复录制**：`EVAL_MODEL_LABEL` 为安全目录标签；`EVAL_BASE_URL`、`EVAL_MODEL`、`EVAL_API_KEY` 覆盖 Responses 地址、模型 ID 和密钥，缺省沿用现有 DeepSeek 配置。密钥不进入请求、录制或报告。回放须设置与录制相同的标签、模型 ID 和 base URL，不需要 API key。需兼容现有 Responses/严格 JSON Schema 请求形状，本段不做其他供应商协议适配。`EVAL_REPEAT=N` 为正整数，缺省 1；录制放在 `tests/eval/write_stage/recordings/<label>/repeat-<k>/<sample>.json`。每次尝试单独计分并保留，报告每样本通过次数、错误类别及每次结果，不挑最好。HTTP/未完成/拒绝也保存诊断，续跑回放失败尝试而不自动重试；非法 JSON 原样保留并计失败。写文件或录制格式错误始终失败。
+- **录制绑定与历史重算**：提示词/schema/模型/输入仍进入请求指纹，上限另由录制元数据严格绑定；同时核对模型标签、实际模型 ID、base URL、repeat 和录制版本。缺省上限与生产一致：W1=32768、W3/W4=16384，可显式 `EVAL_MAX_OUTPUT_TOKENS` 覆盖，但不同上限不得复用。旧平铺录制不自动进入新的重复比较；第 3 轮没有重复序号及上限元数据，且 W4 用了 32768，不能作为本轮受控比较的第 1 次重复。`EVAL_HISTORY=1` 仅离线重算：第 1 版取 54ef102 中的历史录制，第 2 版取现有平铺录制，按当前裁定标签与评分规则报告；不检查当前提示词指纹、不发请求、不改录制，标记 comparison_eligible=false。历史预算及 w3_16 输入变更使其不能作为受控 A/B 结论。
+
+干跑或回放（不设置 EVAL_RECORD，不创建客户端）：
+
+```sh
+EVAL_STAGES=w1,w4 EVAL_REPEAT=2 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+EVAL_MODEL_LABEL=stronger EVAL_MODEL=MODEL_ID EVAL_BASE_URL=https://example.invalid EVAL_STAGES=w1,w4 EVAL_REPEAT=2 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+EVAL_HISTORY=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+每个模型为 41×2=82 项，两个模型共 164 项。预检覆盖全部所需调用后才读取录制凭证和建立客户端；仅显式 `EVAL_RECORD=上限` 启用真实发送，真实评测须另行授权。新比较目录为空时上限低于 82 会在发送前拒绝。完整三阶段为 61×N 项，W4 标签仍为 draft。

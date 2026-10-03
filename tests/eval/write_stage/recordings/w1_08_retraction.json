@@ -10,10 +10,10 @@
             "conditions": [],
             "kind": "retraction",
             "memory_type": "fact",
-            "polarity": "unknown",
+            "polarity": "negate",
             "relation": "works_at",
             "sentence": {
-              "text": "之前说我在字节工作那个不对，收回。湖�。"
+              "text": "之前说我在字节工作那个不对，收回。"
             },
             "speech": "user_statement",
             "strength": null,
@@ -25,21 +25,36 @@
             "value": null
           }
         ],
-        "memory_requests": []
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "forget",
+            "quote": {
+              "text": "收回"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "unknown",
+              "quote": {
+                "text": "之前说我在字节工作那个"
+              }
+            }
+          }
+        ]
       },
-      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"unknown\",\"relation\":\"works_at\",\"sentence\": \r\n\r\n{\"text\": \"之前说我在字节工作那个不对，收回。湖�。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[]}",
-      "request": "fnv1a64:1e21fdf13906f8c8",
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"works_at\",\"sentence\":{ \"text\": \"之前说我在字节工作那个不对，收回。\"\n  }, \"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":{ \"text\": \"收回\"\n  },\"target\":{\"candidate_indices\":[],\"object\":\"unknown\",\"quote\":{ \"text\": \"之前说我在字节工作那个\"\n   }}}]}",
+      "request": "fnv1a64:1c7cc3baff4fca52",
       "schema": "w1_v1",
       "usage": {
-        "input_tokens": 1147,
+        "input_tokens": 1458,
         "input_tokens_details": {
-          "cached_tokens": 1024
+          "cached_tokens": 0
         },
-        "output_tokens": 7363,
+        "output_tokens": 4502,
         "output_tokens_details": {
-          "reasoning_tokens": 7264
+          "reasoning_tokens": 4353
         },
-        "total_tokens": 8510
+        "total_tokens": 5960
       }
     }
   ]
