@@ -1,0 +1,66 @@
+{
+ "id": "r4_19_truncated_count_lower_bound",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "检索截断时计数只能给下限或不足",
+ "input": {
+  "query": "我总共去过几个国家？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "aggregate",
+   "op": "count",
+   "relation": "visited"
+  },
+  "records": [
+   {
+    "id": 27,
+    "sentence": "我去过日本。",
+    "said_on": "2025-01-01",
+    "source": "s-27",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 28,
+    "sentence": "我去过泰国。",
+    "said_on": "2025-06-01",
+    "source": "s-28",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": true,
+   "plan_complete": false
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [],
+  "compute": {
+   "op": "count",
+   "coverage": [
+    "incomplete",
+    "unknown"
+   ]
+  }
+ },
+ "must_not": [
+  "coverage=complete"
+ ],
+ "note": null
+}

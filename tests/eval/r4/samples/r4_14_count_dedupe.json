@@ -1,0 +1,75 @@
+{
+ "id": "r4_14_count_dedupe",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "计数：同一事件不重复计",
+ "input": {
+  "query": "我今年去了几次北京？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "aggregate",
+   "op": "count",
+   "relation": "visited"
+  },
+  "records": [
+   {
+    "id": 18,
+    "sentence": "我三月去了北京出差。",
+    "said_on": "2026-03-20",
+    "source": "s-18",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 19,
+    "sentence": "三月那次北京出差挺累的。",
+    "said_on": "2026-03-25",
+    "source": "s-19",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 20,
+    "sentence": "我八月又去了一趟北京。",
+    "said_on": "2026-08-12",
+    "source": "s-20",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [],
+  "compute": {
+   "op": "count",
+   "items": 3,
+   "distinct_groups": 2
+  }
+ },
+ "must_not": [],
+ "note": "18、19 指同一次出差，event_group 应相同；代码按组去重得 2。"
+}

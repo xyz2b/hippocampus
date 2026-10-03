@@ -1,0 +1,55 @@
+{
+ "id": "r4_16_elapsed_request_at",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "距今：终点用 @request.at",
+ "input": {
+  "query": "我搬到成都多久了？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "temporal",
+   "op": "elapsed",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 23,
+    "sentence": "我2026年7月1日搬到成都了。",
+    "said_on": "2026-07-02",
+    "source": "s-23",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [],
+  "compute": {
+   "op": "elapsed",
+   "items": 1,
+   "operands": [
+    "@request.at",
+    "<item>"
+   ]
+  }
+ },
+ "must_not": [
+  "模型自己给出天数",
+  "把 said_on 当作终点"
+ ],
+ "note": null
+}

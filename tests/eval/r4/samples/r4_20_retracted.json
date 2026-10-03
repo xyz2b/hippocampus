@@ -1,0 +1,47 @@
+{
+ "id": "r4_20_retracted",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "已撤回的记录不再作为当前值",
+ "input": {
+  "query": "我在哪工作？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "works_at"
+  },
+  "records": [
+   {
+    "id": 29,
+    "sentence": "我在字节工作。",
+    "said_on": "2026-01-01",
+    "source": "s-29",
+    "status": "superseded",
+    "ended": "known",
+    "termination": "retracted",
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "insufficient",
+  "facts": [],
+  "compute": null
+ },
+ "must_not": [
+  "把字节作为当前雇主"
+ ],
+ "note": null
+}

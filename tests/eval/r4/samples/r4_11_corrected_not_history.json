@@ -1,0 +1,72 @@
+{
+ "id": "r4_11_corrected_not_history",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "被纠正的旧值不能作为历史事实",
+ "input": {
+  "query": "我以前在哪家公司？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "temporal",
+   "op": "lookup",
+   "relation": "works_at"
+  },
+  "records": [
+   {
+    "id": 12,
+    "sentence": "我在字节工作。",
+    "said_on": "2026-01-01",
+    "source": "s-12",
+    "status": "superseded",
+    "ended": "known",
+    "termination": "correction",
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 13,
+    "sentence": "我说错了，我在阿里工作。",
+    "said_on": "2026-01-02",
+    "source": "s-13",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     13
+    ],
+    "sources": [
+     "s-13"
+    ],
+    "must": {
+     "current": "yes"
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [
+  "把字节当作曾经的雇主"
+ ],
+ "note": null
+}

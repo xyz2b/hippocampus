@@ -1,0 +1,58 @@
+{
+ "id": "r4_01_single_supported",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "单一当前事实",
+ "input": {
+  "query": "我住在哪？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 1,
+    "sentence": "我住在杭州。",
+    "said_on": "2026-05-01",
+    "source": "s-1",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     1
+    ],
+    "sources": [
+     "s-1"
+    ],
+    "must": {
+     "current": "yes",
+     "polarity": "affirm"
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [],
+ "note": null
+}

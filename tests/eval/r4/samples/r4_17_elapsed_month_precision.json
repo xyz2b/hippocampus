@@ -1,0 +1,50 @@
+{
+ "id": "r4_17_elapsed_month_precision",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "端点只有月精度时不足",
+ "input": {
+  "query": "我搬到成都多少天了？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "temporal",
+   "op": "elapsed",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 24,
+    "sentence": "我七月搬到成都的。",
+    "said_on": "2026-07-15",
+    "source": "s-24",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [],
+  "compute": {
+   "op": "elapsed",
+   "insufficient_ok": true
+  }
+ },
+ "must_not": [
+  "把七月补成具体日期"
+ ],
+ "note": null
+}

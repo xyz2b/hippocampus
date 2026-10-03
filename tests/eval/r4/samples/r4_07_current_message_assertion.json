@@ -1,0 +1,77 @@
+{
+ "id": "r4_07_current_message_assertion",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "本轮陈述可作为证据",
+ "input": {
+  "query": "我现在住在苏州，附近有什么好吃的？",
+  "at": "2026-10-03",
+  "current_evidence": "assertion_present",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 7,
+    "sentence": "我住在杭州。",
+    "said_on": "2026-02-01",
+    "source": "s-7",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": [
+   "supported",
+   "conflict"
+  ],
+  "facts": [
+   {
+    "record_ids": [],
+    "sources": [
+     "current"
+    ],
+    "must": {
+     "current": [
+      "yes",
+      "unknown"
+     ]
+    }
+   },
+   {
+    "record_ids": [
+     7
+    ],
+    "sources": [
+     "s-7"
+    ],
+    "must": {
+     "current": [
+      "no",
+      "unknown"
+     ]
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [
+  "杭州 current=yes"
+ ],
+ "note": null
+}

@@ -1,0 +1,78 @@
+{
+ "id": "r4_12_end_unknown",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "结束时间未知的记录不能当作一直有效",
+ "input": {
+  "query": "我去年三月住在哪？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "temporal",
+   "op": "lookup",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 14,
+    "sentence": "我住在上海。",
+    "said_on": "2024-06-01",
+    "source": "s-14",
+    "status": "superseded",
+    "ended": "end_unknown",
+    "termination": "state_changed",
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 15,
+    "sentence": "我已经搬到杭州了。",
+    "said_on": "2025-09-01",
+    "source": "s-15",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": [
+   "supported",
+   "insufficient"
+  ],
+  "facts": [
+   {
+    "record_ids": [
+     14
+    ],
+    "sources": [
+     "s-14"
+    ],
+    "must": {
+     "applies": [
+      "yes",
+      "unknown"
+     ]
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [
+  "断言上海一直住到某个具体日期"
+ ],
+ "note": "2025-03 时上海记录尚未被替代（替代消息 2025-09 才收到），但结束时间未知，R4 可判 supported 或不足，不能编造结束日。"
+}

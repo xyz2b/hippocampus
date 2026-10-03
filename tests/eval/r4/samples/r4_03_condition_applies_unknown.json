@@ -1,0 +1,68 @@
+{
+ "id": "r4_03_condition_applies_unknown",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "查询没提条件：标注适用条件而不是过滤",
+ "input": {
+  "query": "我平时用什么笔？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "uses"
+  },
+  "records": [
+   {
+    "id": 3,
+    "sentence": "我画速写的时候固定用炭笔。",
+    "said_on": "2026-03-01",
+    "source": "s-3",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [
+     "画速写的时候"
+    ],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     3
+    ],
+    "sources": [
+     "s-3"
+    ],
+    "must": {
+     "conditions": [
+      "画速写的时候"
+     ],
+     "applies": [
+      "unknown",
+      "no"
+     ]
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [
+  "把炭笔说成无条件的常用笔",
+  "applies=yes"
+ ],
+ "note": "roadmap M1：条件不匹配时从“过滤掉”改为“标注适用条件”。"
+}

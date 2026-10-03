@@ -140,13 +140,40 @@ def check_r1(s, errors):
         errors.append("split")
 
 
+R4_VERDICTS = {"supported", "insufficient", "conflict", "needs_clarification"}
+
+
+def check_r4(s, errors):
+    i, e = s["input"], s["expect"]
+    ids = {r["id"] for r in i["records"]}
+    sources = {r["source"] for r in i["records"] if r["source"]} | {r["source"] for r in i["raw"]} | {"current"}
+    if not set(options(e["verdict"])) <= R4_VERDICTS:
+        errors.append("verdict enum")
+    for f in e["facts"]:
+        if not set(f["record_ids"]) <= ids:
+            errors.append(f"fact record_ids {f['record_ids']} not in input")
+        if not set(f["sources"]) <= sources:
+            errors.append(f"fact sources {f['sources']} not in input")
+        if "current" in f["sources"] and i["current_evidence"] == "query_only":
+            errors.append("query_only current message used as evidence")
+    for r in i["records"]:
+        for q in r["conditions"]:
+            if r["sentence"] is None or q not in r["sentence"]:
+                errors.append(f"record {r['id']} condition not in sentence")
+    for rel in i["relations"]:
+        if not set(rel["members"]) <= ids:
+            errors.append("relation member not in records")
+    if s.get("split") not in {"dev", "holdout"}:
+        errors.append("split")
+
+
 def main():
     failed = 0
-    for contract, check in (("w1", check_w1), ("w3", check_w3), ("r1", check_r1)):
+    for contract, check in (("w1", check_w1), ("w3", check_w3), ("r1", check_r1), ("r4", check_r4)):
         for path in sorted((ROOT / contract / "samples").glob("*.json")):
             s = json.loads(path.read_text())
             errors = []
-            if s["contract"] != f"{contract}.v1" or s["label_status"] not in {"draft", "reviewed"}:
+            if s["contract"] != {"r4": "r4.v3"}.get(contract, f"{contract}.v1") or s["label_status"] not in {"draft", "reviewed"}:
                 errors.append("contract/label_status")
             check(s, errors)
             failed += bool(errors)

@@ -1,0 +1,66 @@
+{
+ "id": "r4_15_sum_quantities",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "求和：需要数量与单位",
+ "input": {
+  "query": "我上个月买咖啡一共花了多少钱？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "aggregate",
+   "op": "sum",
+   "relation": "fact"
+  },
+  "records": [
+   {
+    "id": 21,
+    "sentence": "九月我买咖啡豆花了120元。",
+    "said_on": "2026-09-10",
+    "source": "s-21",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 22,
+    "sentence": "九月下旬又买了一袋，80元。",
+    "said_on": "2026-09-25",
+    "source": "s-22",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [],
+  "compute": {
+   "op": "sum",
+   "items": 2,
+   "quantities": [
+    "120",
+    "80"
+   ],
+   "unit": "元"
+  }
+ },
+ "must_not": [],
+ "note": null
+}
