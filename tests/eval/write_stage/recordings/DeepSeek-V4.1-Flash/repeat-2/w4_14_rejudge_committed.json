@@ -1,0 +1,78 @@
+{
+  "id": "w4_14_rejudge_committed",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在每天喝两杯咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-360"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我每天喝一杯咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-112"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              55
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我现在每天喝两杯咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-360\"}},{\"quote\":{\"text\":\"我每天喝一杯咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-112\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[55]}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:35a6834c4a530335",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1674,
+          "input_tokens_details": {
+            "cached_tokens": 1664
+          },
+          "output_tokens": 9105,
+          "output_tokens_details": {
+            "reasoning_tokens": 8994
+          },
+          "total_tokens": 10779
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1674,
+        "input_tokens_details": {
+          "cached_tokens": 1664
+        },
+        "output_tokens": 9105,
+        "output_tokens_details": {
+          "reasoning_tokens": 8994
+        },
+        "total_tokens": 10779
+      }
+    }
+  ]
+}

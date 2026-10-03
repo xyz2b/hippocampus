@@ -1,0 +1,84 @@
+{
+  "id": "w1_13_history_disambiguates",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "episode",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "他上周辞职了。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "e-laowang"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "上周"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "他上周辞职了。"
+              },
+              "text": "他上周辞职了。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"episode\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"他上周辞职了。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"e-laowang\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"week\"},\"quote\":{\"text\":\"上周\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"他上周辞职了。\"},\"text\":\"他上周辞职了。\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:1bd414a83a54fa68",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3543,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1858,
+          "output_tokens_details": {
+            "reasoning_tokens": 1717
+          },
+          "total_tokens": 5401
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3543,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1858,
+        "output_tokens_details": {
+          "reasoning_tokens": 1717
+        },
+        "total_tokens": 5401
+      }
+    }
+  ]
+}

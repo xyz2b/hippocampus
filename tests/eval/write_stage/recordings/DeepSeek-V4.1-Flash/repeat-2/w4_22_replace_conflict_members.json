@@ -1,0 +1,72 @@
+{
+  "id": "w4_22_replace_conflict_members",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我已经搬到深圳了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-510"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [
+              "rel-2"
+            ],
+            "status": "decided",
+            "targets": [
+              110,
+              111
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我已经搬到深圳了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-510\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[\"rel-2\"],\"status\": \"decided\",\"targets\":[110,111]}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:58d4de99bf2d1725",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1820,
+          "input_tokens_details": {
+            "cached_tokens": 1792
+          },
+          "output_tokens": 14594,
+          "output_tokens_details": {
+            "reasoning_tokens": 14503
+          },
+          "total_tokens": 16414
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1820,
+        "input_tokens_details": {
+          "cached_tokens": 1792
+        },
+        "output_tokens": 14594,
+        "output_tokens_details": {
+          "reasoning_tokens": 14503
+        },
+        "total_tokens": 16414
+      }
+    }
+  ]
+}

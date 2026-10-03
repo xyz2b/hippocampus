@@ -1,0 +1,67 @@
+{
+  "id": "w4_04_coexist_partial",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "coexist",
+            "basis": [
+              {
+                "quote": {
+                  "text": "周末的时候我更喜欢喝手冲咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-241"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[{\"quote\":{\"text\":\"周末的时候我更喜欢喝手冲咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-241\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:4a3572937f28bcdf",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1553,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 2507,
+          "output_tokens_details": {
+            "reasoning_tokens": 2423
+          },
+          "total_tokens": 4060
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1553,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2507,
+        "output_tokens_details": {
+          "reasoning_tokens": 2423
+        },
+        "total_tokens": 4060
+      }
+    }
+  ]
+}

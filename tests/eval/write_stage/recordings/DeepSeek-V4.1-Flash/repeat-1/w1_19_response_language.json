@@ -1,0 +1,82 @@
+{
+  "id": "w1_19_response_language",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "constraint",
+            "polarity": "affirm",
+            "relation": "response_language",
+            "sentence": {
+              "text": "英文"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "以后"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "英文"
+              },
+              "text": "英文"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"constraint\",\"polarity\":\"affirm\",\"relation\":\"response_language\",\"sentence\":{ \"text\": \"英文\" },\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\": \t{\"text\": \"以后\"},\"role\":\"validity\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\": \t{\"text\": \"英文\"},\"text\": \"英文\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:244639890351156d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1455,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 7367,
+          "output_tokens_details": {
+            "reasoning_tokens": 7229
+          },
+          "total_tokens": 8822
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1455,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7367,
+        "output_tokens_details": {
+          "reasoning_tokens": 7229
+        },
+        "total_tokens": 8822
+      }
+    }
+  ]
+}

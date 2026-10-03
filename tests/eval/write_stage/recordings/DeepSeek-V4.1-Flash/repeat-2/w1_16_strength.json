@@ -1,0 +1,76 @@
+{
+  "id": "w1_16_strength",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "likes",
+            "sentence": {
+              "text": "我超级喜欢爬山。"
+            },
+            "speech": "user_statement",
+            "strength": "strong",
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": {
+              "quote": {
+                "text": "我超级喜欢爬山。"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "爬山"
+              },
+              "text": "爬山"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"likes\",\"sentence\": \t{ \"text\": \"我超级喜欢爬山。\" },\"speech\":\"user_statement\",\"strength\":\"strong\",\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":\t{\"quote\": \t{ \"text\": \"我超级喜欢爬山。\" },\"resolved\": true},\"value\":{\"kind\":\"text\",\"quote\": \t{ \"text\": \"爬山\" },\"text\": \t\"爬山\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:67cd13c2fd768f28",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1453,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 11861,
+          "output_tokens_details": {
+            "reasoning_tokens": 11725
+          },
+          "total_tokens": 13314
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1453,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 11861,
+        "output_tokens_details": {
+          "reasoning_tokens": 11725
+        },
+        "total_tokens": 13314
+      }
+    }
+  ]
+}

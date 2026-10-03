@@ -1,0 +1,69 @@
+{
+  "id": "w4_13_state_change_date_unknown",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我换工作了，现在在腾讯。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-350"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              64
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我换工作了，现在在腾讯。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-350\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\": \"decided\",\"targets\":[64]}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:7d65e5e893091d56",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1567,
+          "input_tokens_details": {
+            "cached_tokens": 1536
+          },
+          "output_tokens": 6791,
+          "output_tokens_details": {
+            "reasoning_tokens": 6703
+          },
+          "total_tokens": 8358
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1567,
+        "input_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "output_tokens": 6791,
+        "output_tokens_details": {
+          "reasoning_tokens": 6703
+        },
+        "total_tokens": 8358
+      }
+    }
+  ]
+}

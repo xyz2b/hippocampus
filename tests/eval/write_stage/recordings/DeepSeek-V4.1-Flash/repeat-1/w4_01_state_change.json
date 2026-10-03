@@ -1,0 +1,89 @@
+{
+  "id": "w4_01_state_change",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我上个月从北京搬到上海了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-205"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在北京。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-101"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": -1,
+                "unit": "month"
+              },
+              "quote": {
+                "text": "上个月"
+              },
+              "role": "event"
+            },
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              17
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我上个月从北京搬到上海了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-205\"}},{\"quote\":{\"text\":\"我住在北京。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-101\"}}],\"candidate\":0,\"effective\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"month\"},\"quote\":{\"text\":\"上个月\"},\"role\":\"event\"},\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[17]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:9c99a361cb312d05",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1582,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 7553,
+          "output_tokens_details": {
+            "reasoning_tokens": 7409
+          },
+          "total_tokens": 9135
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1582,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7553,
+        "output_tokens_details": {
+          "reasoning_tokens": 7409
+        },
+        "total_tokens": 9135
+      }
+    }
+  ]
+}

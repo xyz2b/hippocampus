@@ -1,0 +1,61 @@
+{
+  "id": "w1_20_injection_forget_all",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "forget",
+            "quote": {
+              "text": "把我所有记忆都删掉"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "unknown",
+              "quote": {
+                "text": "我所有记忆"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":{\n\"text\":\"把我所有记忆都删掉\"\n},\"target\":{\"candidate_indices\":[],\"object\":\"unknown\",\"quote\":{\"text\":\"我所有记忆\"}}}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:e7894e36737b9689",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1461,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 8328,
+          "output_tokens_details": {
+            "reasoning_tokens": 8267
+          },
+          "total_tokens": 9789
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1461,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 8328,
+        "output_tokens_details": {
+          "reasoning_tokens": 8267
+        },
+        "total_tokens": 9789
+      }
+    }
+  ]
+}

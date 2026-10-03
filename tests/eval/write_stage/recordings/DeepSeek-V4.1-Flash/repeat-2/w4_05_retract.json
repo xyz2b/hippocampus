@@ -1,0 +1,78 @@
+{
+  "id": "w4_05_retract",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "retract",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我之前说每周三晚上去游泳，那句不对，收回。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-250"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我每周三晚上去游泳。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-120"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              40
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"retract\",\"basis\":[{\"quote\":{\"text\":\"我之前说每周三晚上去游泳，那句不对，收回。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-250\"}},{\"quote\":{\"text\":\"我每周三晚上去游泳。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-120\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[40]}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:dd949161b8b6755a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1625,
+          "input_tokens_details": {
+            "cached_tokens": 1536
+          },
+          "output_tokens": 4381,
+          "output_tokens_details": {
+            "reasoning_tokens": 4263
+          },
+          "total_tokens": 6006
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1625,
+        "input_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "output_tokens": 4381,
+        "output_tokens_details": {
+          "reasoning_tokens": 4263
+        },
+        "total_tokens": 6006
+      }
+    }
+  ]
+}

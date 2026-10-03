@@ -1,0 +1,78 @@
+{
+  "id": "w4_19_task_scope",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-510"
+                }
+              },
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-501"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              97
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-510\"}},{\"quote\":{\"text\":\"在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-501\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[97]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:b635d1a3735fdb50",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2914,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 722,
+          "output_tokens_details": {
+            "reasoning_tokens": 573
+          },
+          "total_tokens": 3636
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2914,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 722,
+        "output_tokens_details": {
+          "reasoning_tokens": 573
+        },
+        "total_tokens": 3636
+      }
+    }
+  ]
+}

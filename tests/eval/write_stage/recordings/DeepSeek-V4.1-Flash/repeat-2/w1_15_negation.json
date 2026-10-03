@@ -1,0 +1,71 @@
+{
+  "id": "w1_15_negation",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "avoids",
+            "sentence": {
+              "text": "我不吃香菜。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "香菜"
+              },
+              "text": "香菜"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\" : \t{\"text\":\"我不吃香菜。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\" : \t{\"text\":\"香菜\"},\"text\":\"香菜\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:7b50f8cff212f285",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1452,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 9642,
+          "output_tokens_details": {
+            "reasoning_tokens": 9536
+          },
+          "total_tokens": 11094
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1452,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 9642,
+        "output_tokens_details": {
+          "reasoning_tokens": 9536
+        },
+        "total_tokens": 11094
+      }
+    }
+  ]
+}

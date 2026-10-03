@@ -1,0 +1,87 @@
+{
+  "id": "w1_06_reported",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "avoids",
+            "sentence": {
+              "text": "我小时候特别怕狗。"
+            },
+            "speech": "reported",
+            "strength": "strong",
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "anchor_quote": {
+                    "text": "我妈说"
+                  },
+                  "kind": "anchored",
+                  "offset": 0,
+                  "unit": "year"
+                },
+                "quote": {
+                  "text": "小时候"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "狗"
+              },
+              "text": "狗"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\":{\"text\":\"我小时候特别怕狗。\"},\"speech\":\"reported\",\"strength\":\"strong\",\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\", \"interp\":{\"anchor_quote\": \t{\"text\":\"我妈说\"}, \"kind\":\"anchored\", \"offset\": 0, \"unit\":\"year\"}, \"quote\":\t{\"text\":\"小时候\"}, \"role\":\"validity\"}], \"uncertainty\":null, \"value\":\t{\"kind\":\"text\", \"quote\":\t{\"text\":\"狗\"}, \"text\":\t\"狗\"}}], \"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:bbee53f9ec16c700",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1454,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 15280,
+          "output_tokens_details": {
+            "reasoning_tokens": 15115
+          },
+          "total_tokens": 16734
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1454,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 15280,
+        "output_tokens_details": {
+          "reasoning_tokens": 15115
+        },
+        "total_tokens": 16734
+      }
+    }
+  ]
+}

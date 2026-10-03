@@ -1,0 +1,71 @@
+{
+  "id": "w1_14_two_candidates",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我住在上海"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "上海"
+              },
+              "text": "上海"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{ \"text\": \"我住在上海\" },\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{ \"text\": \"上海\" },\"text\":\"上海\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:06f2b6bef76b1ac5",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1459,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 16718,
+          "output_tokens_details": {
+            "reasoning_tokens": 16613
+          },
+          "total_tokens": 18177
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1459,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16718,
+        "output_tokens_details": {
+          "reasoning_tokens": 16613
+        },
+        "total_tokens": 18177
+      }
+    }
+  ]
+}

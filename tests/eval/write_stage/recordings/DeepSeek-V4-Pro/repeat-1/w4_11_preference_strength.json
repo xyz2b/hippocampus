@@ -1,0 +1,87 @@
+{
+  "id": "w4_11_preference_strength",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在特别喜欢爵士乐。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-330"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我有点喜欢爵士乐。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-121"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "现在"
+              },
+              "role": "validity"
+            },
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              41
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我现在特别喜欢爵士乐。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-330\"}},{\"quote\":{\"text\":\"我有点喜欢爵士乐。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-121\"}}],\"candidate\":0,\"effective\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"现在\"},\"role\":\"validity\"},\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[41]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:7b7ce095de9799e3",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2765,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 962,
+          "output_tokens_details": {
+            "reasoning_tokens": 829
+          },
+          "total_tokens": 3727
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2765,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 962,
+        "output_tokens_details": {
+          "reasoning_tokens": 829
+        },
+        "total_tokens": 3727
+      }
+    }
+  ]
+}

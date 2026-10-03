@@ -1,0 +1,75 @@
+{
+  "id": "w1_11_retention_deadline",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [],
+        "memory_requests": [
+          {
+            "deadline": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "这个手机号只保留到明天：13800001111。"
+                },
+                "kind": "anchored",
+                "offset": 1,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "这个手机号只保留到明天：13800001111。"
+              },
+              "role": "retention"
+            },
+            "kind": "retention",
+            "quote": {
+              "text": "这个手机号只保留到明天：13800001111。"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "unknown",
+              "quote": {
+                "text": "这个手机号只保留到明天：13800001111。"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[],\"memory_requests\":[{\"deadline\":{\"anchor\": \"said_on\",\"interp\":{\"anchor_quote\": \t{\"text\": \"这个手机号只保留到明天：13800001111。\"},\"kind\":\"anchored\",\"offset\":1,\"unit\":\"day\"},\"quote\":\t{\"text\": \"这个手机号只保留到明天：13800001111。\"},\"role\":\"retention\"},\"kind\":\"retention\",\"quote\":{\"text\": \"这个手机号只保留到明天：13800001111。\"},\"target\":{\"candidate_indices\":[],\"object\":\"unknown\",\"quote\":{\"text\": \"这个手机号只保留到明天：13800001111。\"}}}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:4086b262bef7b74e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1464,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 14448,
+          "output_tokens_details": {
+            "reasoning_tokens": 14294
+          },
+          "total_tokens": 15912
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1464,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 14448,
+        "output_tokens_details": {
+          "reasoning_tokens": 14294
+        },
+        "total_tokens": 15912
+      }
+    }
+  ]
+}

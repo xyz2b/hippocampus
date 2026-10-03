@@ -1,0 +1,69 @@
+{
+  "id": "w4_16_pending_scope_incomplete",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": null,
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在只用这一台笔记本电脑了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-380"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": "unclear_relation",
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "pending",
+            "targets": [
+              81
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[{\"quote\":{\"text\":\"我现在只用这一台笔记本电脑了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-380\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":\"unclear_relation\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\",\"targets\":[81]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:48a0734444879aab",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1594,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 13623,
+          "output_tokens_details": {
+            "reasoning_tokens": 13536
+          },
+          "total_tokens": 15217
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1594,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 13623,
+        "output_tokens_details": {
+          "reasoning_tokens": 13536
+        },
+        "total_tokens": 15217
+      }
+    }
+  ]
+}

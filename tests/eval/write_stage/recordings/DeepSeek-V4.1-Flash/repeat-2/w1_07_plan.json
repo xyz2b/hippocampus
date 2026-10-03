@@ -1,0 +1,89 @@
+{
+  "id": "w1_07_plan",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我打算下个月开始学日语。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "下个月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": {
+              "quote": {
+                "text": "打算"
+              },
+              "resolved": false
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我打算下个月开始学日语。"
+              },
+              "text": "我打算下个月开始学日语。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{ \"text\": \"我打算下个月开始学日语。\" },\"speech\":\"plan\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":1,\"unit\":\"month\"},\"quote\": \t{\"text\": \"下个月\"} ,\"role\":\"event\"}],\"uncertainty\":\t{\"quote\":\t{\"text\": \"打算\"} ,\"resolved\":false},\"value\":{\"kind\":\"text\",\"quote\":\t{\"text\": \"我打算下个月开始学日语。\"} ,\"text\":\t\t\"我打算下个月开始学日语。\"\n\t}\t}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:113216cd07e3b17d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1455,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 4112,
+          "output_tokens_details": {
+            "reasoning_tokens": 3926
+          },
+          "total_tokens": 5567
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1455,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 4112,
+        "output_tokens_details": {
+          "reasoning_tokens": 3926
+        },
+        "total_tokens": 5567
+      }
+    }
+  ]
+}
