@@ -24,7 +24,7 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 逐字依据只链接仍存在且获准保存的来源。legacy 有可用原文时，即使来源已 committed，也通过 raw 交出正文供后续核对；其 grade 为 uncommitted，不表示后台重新排队。这些完成来源不计 pending_related_sources。
 
-相关未整理、失败、待重判来源进入 raw，按 received_sequence 升序、source_id 排序；保留接收日、整理状态及 MemoryRequest 的冻结字段。接收日由来源 observed_at 与可信时区换算。MemoryRequest 从现有合并回执读取，控制记录优先，不自行重新理解请求或执行删除/期限。删除或未获准保存的来源不进入 raw。
+可信范围内所有未整理、失败、待重判、待确认等未完成来源进入 raw 候选，不依赖词法命中、R1 主体提示或记录种子命中；owner/task 和可确定的可信主体范围检查保持不变。已完成来源继续按原有相关性规则进入（如已选中的 legacy 来源），不自动变为待整理原文。按 received_sequence 最新优先进入数量/字节预算，选中的条目最终按 received_sequence 升序、source_id 排序输出；保留接收日、整理状态及 MemoryRequest 的冻结字段。接收日由来源 observed_at 与可信时区换算。MemoryRequest 从现有合并回执读取，控制记录优先，不自行重新理解请求或执行删除/期限。删除或未获准保存的来源不进入 raw。
 
 只读 current_message 固定保留完整 query，与检索和存储证据预算无关；source_id/sequence=null，enrichment=not_stored，memory_requests=[]。bootstrap 无本轮消息时为 null。R1 current_evidence=query_only 的送审资格通过 Assembly.review_current_message() 保持为 false；标记不扩展冻结 JSON。仅有 query_only 的问题文本不算判断证据。
 
@@ -34,10 +34,10 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 默认上限：64 records、32 raw、64 relations，三类存储证据条目序列化 JSON 的合计字节数 262144。current_message、request 和输出包固定元数据不计入此证据预算；模型输入/输出总预算在召回④实施。
 
-先获取范围内候选和展开关系，统计缺口，然后裁剪。记录按检索顺序整项保留，raw 按接收顺序保留，关系按 ID 保留；字节额度依次分给 records、raw、relations。记录/关系不破坏其内部字段；raw 正文可以在 UTF-8 边界取前缀，按 JSON 实际转义后的长度核算，放不下元数据则整项省略。所有数量/字节裁剪均令 retrieval_truncated=true、plan_complete=false。预算裁掉的记录/来源仍进入已知缺口计数；关系中的 ID 可以指向已裁掉但未删除的记录，不绕过预算补回正文。
+先获取范围内候选和展开关系，统计缺口，然后裁剪。记录按检索顺序整项保留，raw 优先保留接收顺序最新的条目（同序号按 source_id），裁剪后按接收顺序升序输出，关系按 ID 保留；字节额度依次分给 records、raw、relations。记录/关系不破坏其内部字段；raw 正文可以在 UTF-8 边界取前缀，按 JSON 实际转义后的长度核算，放不下元数据则整项省略。所有数量/字节裁剪均令 retrieval_truncated=true、plan_complete=false。预算裁掉的记录/来源仍进入已知缺口计数；关系中的 ID 可以指向已裁掉但未删除的记录，不绕过预算补回正文。
 
 - pending_updates：裁剪前唯一相关记录中 update.pending 的记录数，包含已提交记录。
-- pending_related_sources：裁剪前已检索、已获准进入 raw 的未完成来源数；不能把 0 解释为未检索范围没有缺口。
+- pending_related_sources：裁剪前可信范围内已获准进入 raw 的未完成来源数，包含最终被数量/字节预算裁掉的条目；归属不明或状态无法映射而扣留的来源仍按已有规则标不完整/整理缺口。
 - enrichment_gaps：裁剪前 legacy.gaps 的条目总数，加无法映射的来源状态的缺口数；不是 legacy 记录数。
 - plan_complete：获准的计划范围已枚举、关系未因可信范围被扣留，且没有预算截断、未知过滤时间或来源归属/状态缺口。自然语言条件是否匹配仍由 R4 判断；本字段不认证语义正确或精确计算。
 
@@ -76,4 +76,4 @@ clarification 由代码模板列出歧义实体名称或未解析指代，引用
 
 conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消解的 open 关系；R4 conflict 涉及的记录保留在 records/facts 与 status 中，不把记录伪装成关系或由代码新建关系。失败/跳过时沿用原有关系审计输出。
 
-`tests/recall_r4.rs` 从已复核 R4 样本的 input 展开真实 SQLite 来源与 W5 提交、关系、结束信息，通过同一 assemble/finish_r4 注入人工输出，并重开验证无写入。样本的 expect/must_not 不进入运行时；r4_04 的包使用获准广泛枚举计划取得原文，不把既有单事实词法检索假定为能穷尽新原文。模型质量和真实单事实召回命中率另由后续评测衡量。
+`tests/recall_r4.rs` 从已复核 R4 样本的 input 展开真实 SQLite 来源与 W5 提交、关系、结束信息，通过同一 assemble/finish_r4 注入人工输出，并重开验证无写入。样本的 expect/must_not 不进入运行时；r4_04 追加以原始 single/lookup 计划验证：问题与新原文没有词法命中时仍取得 s-40，R4 注入后南京 current=yes、grade=uncommitted，上海 current=no，不判冲突。`tests/recall_offline.rs` 同时验证最新优先的数量/字节裁剪、裁剪前计数、任务/归属/主体隔离和已完成来源相关性规则。模型语义质量另由后续真实评测衡量。

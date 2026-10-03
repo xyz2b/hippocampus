@@ -863,6 +863,7 @@ pub fn assemble(
             status,
             Some(EnrichmentStatus::Committed | EnrichmentStatus::CompletedNoFacts)
         );
+        // 未完成来源全送审；完成来源仍仅保留已选中的 legacy 链接。
         if !pending && !legacy_sources.contains(source.id.as_str()) {
             continue;
         }
@@ -871,13 +872,6 @@ pub fn assemble(
             .get(source.id.as_str())
             .map(Vec::as_slice)
             .unwrap_or_default();
-        let related = legacy_sources.contains(source.id.as_str())
-            || linked.iter().any(|m| selected.contains(&m.id))
-            || enumerate
-            || crate::lexical::matches_phrases(body, &phrases);
-        if !related {
-            continue;
-        }
         if request.subject_ids.as_ref().is_some_and(Vec::is_empty) {
             continue;
         }
@@ -913,7 +907,8 @@ pub fn assemble(
             memory_requests: requests(source)?,
         });
     }
-    raw.sort_by_key(|r| (r.sequence, r.source_id.clone()));
+    // 先把最新来源放进数量/字节预算，选中后再按接收顺序交给宿主。
+    raw.sort_by_key(|r| (std::cmp::Reverse(r.sequence), r.source_id.clone()));
     let mut relations = Vec::new();
     for relation in state
         .relations
@@ -978,6 +973,7 @@ pub fn assemble(
             truncated = true;
         }
     }
+    bounded_raw.sort_by_key(|r| (r.sequence, r.source_id.clone()));
     let raw = bounded_raw;
     if relations.len() > budget.relations {
         truncated = true;

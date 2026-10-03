@@ -1799,3 +1799,39 @@ fn history_never_uses_old_received_boundary_but_keeps_explicit_legacy_end() {
         RecordView::Legacy(_)
     ));
 }
+
+#[test]
+fn r4_04_lookup_retrieves_lexically_unmatched_update_and_answers_from_new_raw() {
+    let f = Fixture::sample("r4_04_");
+    let understood = f.plan_json();
+    assert_eq!(understood["type"], "single");
+    assert_eq!(understood["plan"]["op"], "lookup");
+    let before = serde_json::to_value(f.db.state()).unwrap();
+    let assembly = f.assembly();
+    assert_eq!(assembly.evidence.raw.len(), 1);
+    assert_eq!(assembly.evidence.raw[0].source_id, "s-40");
+    assert_eq!(
+        assembly.evidence.raw[0].quote.text,
+        "我上周已经搬到南京了。"
+    );
+    assert_eq!(assembly.evidence.completeness.pending_related_sources, 1);
+    let new = fact(
+        "现在住南京",
+        vec![stored("s-40", "我上周已经搬到南京了。")],
+        vec![],
+        "yes",
+    );
+    let result = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![new, f.fact(4, "no")], None).to_string()),
+        )
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Answered);
+    assert_eq!(result.facts[0].current, Qualification::Yes);
+    assert_eq!(result.facts[0].grade, RecallGrade::Uncommitted);
+    assert!(result.facts[0].update.is_none());
+    assert_eq!(result.facts[1].current, Qualification::No);
+    assert!(result.conflicts.is_empty());
+    assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
+}

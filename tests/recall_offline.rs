@@ -911,3 +911,213 @@ fn subject_limited_unclassified_raw_is_not_assigned_by_guessing() {
     assert_eq!(broad.raw.len(), 1);
     assert_eq!(broad.completeness.pending_related_sources, 1);
 }
+
+fn lookup_understanding() -> Json {
+    let mut output = understanding();
+    output["type"] = json!("single");
+    output["relation"] = json!("居住地点");
+    output["plan"]["op"] = json!("lookup");
+    output
+}
+
+#[test]
+fn lookup_raw_includes_all_unfinished_states_and_budgets_newest_first() {
+    let db = Db::new();
+    let states = [
+        "queued",
+        "running",
+        "failed",
+        "stale_requires_review",
+        "awaiting_confirmation",
+        "completed_pending",
+        "coverage_gaps",
+        "no_candidates_unreviewed",
+        "budget_exhausted",
+        "not_requested",
+    ];
+    for (index, status) in states.iter().enumerate() {
+        source(
+            &db,
+            &format!("raw-{index:02}"),
+            "炉灶已停用。",
+            None,
+            status,
+        );
+    }
+    let req = request("我住在哪？", None, None);
+    let before = serde_json::to_value(db.state()).unwrap();
+    let full = run(&db, &req, Some(lookup_understanding()), Budget::default());
+    assert_eq!(full.raw.len(), states.len());
+    assert_eq!(full.completeness.pending_related_sources, states.len());
+    assert!(full.completeness.plan_complete && !full.completeness.retrieval_truncated);
+    assert!(
+        full.raw
+            .windows(2)
+            .all(|rows| rows[0].sequence < rows[1].sequence)
+    );
+    let newest = &full.raw[full.raw.len() - 2..];
+    let bytes = newest
+        .iter()
+        .map(|r| serde_json::to_vec(r).unwrap().len())
+        .sum();
+    for budget in [
+        Budget {
+            raw: 2,
+            ..Budget::default()
+        },
+        Budget {
+            stored_bytes: bytes,
+            ..Budget::default()
+        },
+    ] {
+        let clipped = run(&db, &req, Some(lookup_understanding()), budget);
+        assert_eq!(clipped.raw, newest);
+        assert_eq!(clipped.completeness.pending_related_sources, states.len());
+        assert!(clipped.completeness.retrieval_truncated && !clipped.completeness.plan_complete);
+    }
+    let empty = run(
+        &db,
+        &req,
+        Some(lookup_understanding()),
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    );
+    assert!(empty.raw.is_empty());
+    assert_eq!(empty.completeness.pending_related_sources, states.len());
+    assert!(empty.completeness.retrieval_truncated && !empty.completeness.plan_complete);
+    assert_eq!(serde_json::to_value(db.state()).unwrap(), before);
+}
+
+#[test]
+fn lookup_unfinished_raw_keeps_task_owner_and_subject_boundaries() {
+    let db = Db::new();
+    source(&db, "global", "炉灶已停用。", None, "queued");
+    source(&db, "mine", "颜色换了。", Some("mine"), "failed");
+    source(
+        &db,
+        "other-task",
+        "别的任务私密内容。",
+        Some("other"),
+        "awaiting_confirmation",
+    );
+    let own = seed(
+        &db,
+        "classified-self",
+        "物品位置换了。",
+        "self",
+        Some("mine"),
+        true,
+    );
+    let child = seed(
+        &db,
+        "classified-child",
+        "尺寸变了。",
+        "child",
+        Some("mine"),
+        true,
+    );
+    let mixed = seed(&db, "mixed", "安排变了。", "self", Some("mine"), true);
+    db.open()
+        .transaction(|state| {
+            for sid in ["classified-self", "classified-child", "mixed"] {
+                state.sources.get_mut(sid).unwrap().enrichment = "needs_rejudge".into();
+            }
+            let mut second = state.repository.get(mixed)?.unwrap();
+            second.id = state.repository.allocate_id()?;
+            second.subject_id = EntityId::from("child");
+            state.repository.insert(second)?;
+            Ok(())
+        })
+        .unwrap();
+    let mut foreign = db.state().sources["global"].clone();
+    foreign.id = "foreign-owner".into();
+    foreign.turn_id = foreign.id.clone();
+    foreign.request = Some(json!({"text":"其他归属的私密内容。","capture_source":true}));
+    SqliteMemoryStore::open(&db.0, UserId::from("other-owner"))
+        .unwrap()
+        .transaction(|state| {
+            state.sources.insert(foreign.id.clone(), foreign.clone());
+            Ok(())
+        })
+        .unwrap();
+    let req = request("我住在哪？", Some("mine"), None);
+    let broad = run(&db, &req, Some(lookup_understanding()), Budget::default());
+    let visible: BTreeSet<_> = broad.raw.iter().map(|r| r.source_id.as_str()).collect();
+    assert_eq!(
+        visible,
+        [
+            "global",
+            "mine",
+            "classified-self",
+            "classified-child",
+            "mixed"
+        ]
+        .into()
+    );
+    // R1 的主体提示不删除可信范围内、未被其记录种子选中的来源。
+    assert!(ids(&broad).contains(&own) && !ids(&broad).contains(&child));
+    assert_eq!(broad.completeness.pending_related_sources, 5);
+    let narrow = run(
+        &db,
+        &request(
+            "我住在哪？",
+            Some("mine"),
+            Some(vec![EntityId::from("self")]),
+        ),
+        Some(lookup_understanding()),
+        Budget::default(),
+    );
+    assert_eq!(
+        narrow
+            .raw
+            .iter()
+            .map(|r| r.source_id.as_str())
+            .collect::<Vec<_>>(),
+        ["classified-self"]
+    );
+    assert_eq!(narrow.completeness.pending_related_sources, 1);
+    assert!(!narrow.completeness.plan_complete && !narrow.completeness.retrieval_truncated);
+    let empty = run(
+        &db,
+        &request("我住在哪？", Some("mine"), Some(vec![])),
+        None,
+        Budget::default(),
+    );
+    assert!(empty.raw.is_empty());
+}
+
+#[test]
+fn lookup_completed_sources_keep_legacy_relevance_and_do_not_become_pending_raw() {
+    let db = Db::new();
+    seed(&db, "current", "我住在杭州。", "self", None, true);
+    let related = seed(&db, "legacy-self", "周末看书。", "self", None, true);
+    let unrelated = seed(&db, "legacy-child", "每天画画。", "child", None, true);
+    source(&db, "no-facts", "我住在哪？", None, "completed_no_facts");
+    source(&db, "unlinked-completed", "我住在哪？", None, "committed");
+    db.open()
+        .transaction(|state| {
+            state.record_updates.remove(&related);
+            state.record_updates.remove(&unrelated);
+            Ok(())
+        })
+        .unwrap();
+    let result = run(
+        &db,
+        &request("我住在哪？", None, None),
+        Some(lookup_understanding()),
+        Budget::default(),
+    );
+    assert_eq!(
+        result
+            .raw
+            .iter()
+            .map(|r| r.source_id.as_str())
+            .collect::<Vec<_>>(),
+        ["legacy-self"]
+    );
+    assert_eq!(result.raw[0].enrichment, EnrichmentStatus::Committed);
+    assert_eq!(result.completeness.pending_related_sources, 0);
+    assert!(ids(&result).contains(&related) && !ids(&result).contains(&unrelated));
+}
