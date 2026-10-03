@@ -1,10 +1,10 @@
-# 召回运行时：离线证据闭环
+# 召回运行时：证据闭环、R4 核验与 R5
 
-本段实现 contracts 3.2 和 3.4 的 R4 跳过分支，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。没有模型调用、来源写入、读取计数更新、数据库迁移或旧召回入口改动。
+本模块实现 contracts 3.2–3.4 的证据组装、R4 跳过/注入分支与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。没有模型调用、来源写入、读取计数更新、数据库迁移或旧召回入口改动。
 
 ## 入口与快照
 
-`recall::run_offline(store, request, plan, budget)` 使用同一个 `assemble` 入口，随后消费 `Assembly::finish_skipped`。后续 R4 在这两个步骤之间取得证据包并注入判断，不重建一条测试专用流水线。
+`recall::run_offline(store, request, plan, budget)` 使用同一个 `assemble` 入口，随后消费 `Assembly::finish_skipped`。需要判断时，调用方取得同一个 Assembly 的证据包，把 r4.v3 JSON 或 JudgmentFailure 传给 Assembly::finish_r4；该入口先严格解码、完整核验再计算、组装 R5。context_only 继续走跳过分支。生产不读取评测夹具；后续④只在此注入点前增加模型提供者与调用门控，不重建测试专用流水线。
 
 `Request` 的归属、任务、主体范围、said_on 和时区均由运行时提供。输出的 request 复制稳定 request_id、原始 query/context/task_id/at；R1 Plan 的原问题、上下文及可信范围必须与请求相同，否则拒绝组装。本段不持久化请求或缓存；跨调用同 ID 的参数一致性及模型预算留给召回④。
 
@@ -47,4 +47,33 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 旧 completed_pending 映射 pending，stale_requires_review 映射 needs_rejudge；旧 completed_rejected 以及未知状态没有冻结枚举的唯一对应项，暂扣留该 raw 并增加 enrichment_gaps，plan_complete=false，不自行解释成 failed 或成功。已有 records 继续返回，旧路径字符串回执保持原状。未知状态的正式映射与 enrichment_gaps 按缺口条目计数属于需产品复核的口径，本段未改冻结契约。
 
-没有接通 CLI/MCP、在线 R1/R4、计算、请求缓存或召回迁移。并发模型调用的锁范围、重试/缓存失效策略另段处理；本段只读证据包可以独立测试和提交。
+没有接通 CLI/MCP、在线 R1/R4、请求缓存或召回迁移。并发模型调用的锁范围、重试/缓存失效策略另段处理；本段只读证据包可以独立测试和提交。
+
+
+## R4 核验与计算
+
+`r4::decode/evaluate` 检查冻结字段、枚举、必填可空项和非空文本。FactView/ComputeItem 的每条依据必须落在本包的来源与连续片段中，复用 locate_quote 的空白归一并恢复原文，不拼接不同片段。query_only 的本轮文本不能成为事实或计算依据。record_ids/supersedes_record_ids 除在输入内，还必须有该条记录的依据；supersedes 必须同时有旧条目与新方依据。legacy 没有可核准来源时不能形成事实；有获准原文时可重新判断原文，不补造旧限定语。
+
+不确定性、条件、TimeInterp 及 anchor_quote 都检查对应依据来源；输出完整保留 polarity、strength、uncertainty、conditions、times、current、applies。来源接收日与时区在同一读快照中取得，不接受模型自报时钟；来源时刻改变会推进 source_revision，已有快照屏障拒绝旧日期锚点。时间换算复用 W2，并补核对纯月名不得补为日精度；Anchored/Recurring/Unknown 沿用 W2 的 unknown，所需端点无法确定时计算不足。代码不证明概括、主体、条件适用性、事件同一性及时间自然语言解释的语义正确性，这些由 R4 样本评测验证。
+
+任一结构/引用失效整份输出变为 degraded、semantic_judgment=failed、facts=[]、computed=null；既有记录与原文继续交出，不保留部分有效模型事实。使用冻结 model_invalid_output/model_timeout 原因。合法输出因身份、覆盖、单位、精度或算术容量不足而不能计算时，保留事实，computed=null，附 compute_insufficient，并按状态优先级得到 insufficient 等状态。
+
+- count：按非空 event_group 去重，null 不视作独立事件；只计已确认组，存在未知身份或范围缺口时只能给 at_least；没有已确认组时不足。完整且明确的空集可精确计零，同一来源允许多个条目。
+- sum：同组重复数量归一后相等只计一次，矛盾、身份未知或数量缺失时不足。coverage=complete 还须满足代码范围完整、无裁剪/待判记录/整理缺口，相关 raw 已由条目覆盖；模型自报不能覆盖这些已知缺口。冻结形状没有证明遗漏部分非负的字段，因此不完整 sum 保守返回不足，不把已见正数的部分和当下限。
+- quantity 使用有符号十进制文本及 i128 定点数，逐步 checked 运算，最多38位小数；不使用浮点数。机械依据当前只核准字面数字与相邻单位；不解释中文数量词。相同字面单位可直接运算；固定 SI 别名与质量/长度的十进制倍率可归一（kg/g/mg、km/m/cm/mm 及中文别名），其他换算、汇率和隐含单位不推断。不能运算或溢出则不足，伪造数字/单位依据则整份无效。
+- elapsed：两个自然日端点用现有 openai::elapsed_count 算法与冻结四种取整规则。端点粗于日或多日区间、倒序、未知时不足。@request.at 只允许第一个操作数，由可信 at 和时区生成 request_time；不使用 current said_on 或执行日期代替。
+- compare：数量同维度归一后比较；日期用半开区间，分离即确定先后（X3），重叠不足；同一个精确日可判 equal。不得以粗精度区间相同判日期相等。
+
+## R5 派生与边界
+
+成功判断按 needs_clarification > conflict > insufficient > answered 排序；R1 未解析/歧义主体也触发澄清。已有相关 open 关系仍阻止确定答案，除非同一个 current=yes 事实以新旧依据明确 supersedes 全部冲突成员，或只保留唯一所引用成员；此消解只用于本轮，不改变存储或关系状态。R4 自报 conflict 同样得到 conflict。没有事实或计算的 supported 不包装成 answered。
+
+grade 仅为标注：所有依据来自已提交记录且没有 raw/current 来源时为 committed，否则 uncommitted；同一来源同时出现在 raw/records 时保守取 uncommitted。update 合并显式 ID 和依据实际涉及记录的状态，不能省略 record_ids 绕过 pending；pending 优先、原因去重；其他未知或只有原文依据则 null，全部已明确判定才 judged。grade 不改变 status。
+
+history 仅包含模型 current=no 且由 StateChanged/PreferenceChanged/ConstraintChanged 结束的记录，Correction/UserRetracted 等只保留审计。until 从同一快照的已知结束日取得（内部读取 RecordView2.end 或已有 Explicit valid_to），不在冻结 RecordView 添加 end；未知/粗精度或多条记录结束日不一致为 null，不回填接收日。旧 Supersession/Inferred 等边界不能证明真实结束日，until 保守为空。
+
+clarification 由代码模板列出歧义实体名称或未解析指代，引用当前触发原话。若未解析指代仅来自 USER context，冻结 SourceRef 没有 context 定位项：保留问题中的真实指代，evidence=[]，不把历史文本假装成 current。R4 单独要求澄清而未给触发事实时使用通用模板，不补猜指代或条件。
+
+conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消解的 open 关系；R4 conflict 涉及的记录保留在 records/facts 与 status 中，不把记录伪装成关系或由代码新建关系。失败/跳过时沿用原有关系审计输出。
+
+`tests/recall_r4.rs` 从已复核 R4 样本的 input 展开真实 SQLite 来源与 W5 提交、关系、结束信息，通过同一 assemble/finish_r4 注入人工输出，并重开验证无写入。样本的 expect/must_not 不进入运行时；r4_04 的包使用获准广泛枚举计划取得原文，不把既有单事实词法检索假定为能穷尽新原文。模型质量和真实单事实召回命中率另由后续评测衡量。

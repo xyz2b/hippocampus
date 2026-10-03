@@ -897,6 +897,62 @@ pub enum Qualification {
     Unknown,
 }
 
+/// §3.3 r4.v3；不把写入侧 insufficient/contradicted 枚举混入召回判断。
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum R4Verdict {
+    Supported,
+    Insufficient,
+    Conflict,
+    NeedsClarification,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct FactView {
+    pub statement: String,
+    pub evidence: Vec<EvidenceRef>,
+    pub record_ids: Vec<MemoryId>,
+    pub polarity: Polarity,
+    #[serde(deserialize_with = "required")]
+    pub strength: Option<Strength>,
+    #[serde(deserialize_with = "required")]
+    pub uncertainty: Option<TextQualifier>,
+    pub conditions: Vec<TextQualifier>,
+    pub times: Vec<TimeInterp>,
+    pub current: Qualification,
+    pub applies: Qualification,
+    pub supersedes_record_ids: Vec<MemoryId>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ComputeCoverage {
+    Complete,
+    Incomplete,
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ComputePlan {
+    pub op: ComputeOp,
+    pub items: Vec<ComputeItem>,
+    pub operands: Vec<String>,
+    #[serde(deserialize_with = "required")]
+    pub unit: Option<String>,
+    pub coverage: ComputeCoverage,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct R4Output {
+    pub verdict: R4Verdict,
+    pub facts: Vec<FactView>,
+    #[serde(deserialize_with = "required")]
+    pub compute: Option<ComputePlan>,
+}
+
 /// §3.4：仅定义冻结形状；R4 核验与 R5 派生留给召回③。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]

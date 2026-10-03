@@ -1,10 +1,11 @@
-//! R2/R3 的只读证据组装；同一入口供离线跳过与后续 R4 使用。
+//! R2/R3 只读组装与 R4 注入、R5 派生；不调用模型或改变旧召回入口。
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
 use crate::{
     EntityId, Memory, MemoryId, MemoryRepository, MemoryStatus, PersistedMemoryState,
-    PersistenceResult, ScopeCondition, SourceRecord, SqliteMemoryStore, UpdateStatus, UserId, r1,
+    PersistenceResult, ScopeCondition, SourceRecord, SqliteMemoryStore, UpdateState, UpdateStatus,
+    UserId, r1, r4,
 };
 
 /// 由调用方提供的可信输入；不从 R1 模型输出取得归属、任务或时钟。
@@ -57,6 +58,21 @@ impl SkipReason {
     }
 }
 
+/// ④ 的提供者在此报告失败；错误文本不进入对外输出。
+#[derive(Clone, Copy, Debug)]
+pub enum JudgmentFailure {
+    Timeout,
+    InvalidOutput,
+}
+impl JudgmentFailure {
+    fn code(self) -> &'static str {
+        match self {
+            Self::Timeout => "model_timeout",
+            Self::InvalidOutput => "model_invalid_output",
+        }
+    }
+}
+
 /// R4 的注入位置：消费本次组装，沿用原请求、R1 标记与读快照，不另做一次检索。
 pub struct Assembly {
     pub request: RecallRequest,
@@ -65,9 +81,299 @@ pub struct Assembly {
     pub snapshot: RecallSnapshot,
     owner: UserId,
     source_metadata: Vec<(String, String, Vec<MemoryRequest>)>,
+    utc_offset_seconds: i32,
+    source_dates: BTreeMap<String, String>,
+    entity_names: BTreeMap<String, String>,
+    history_until: BTreeMap<MemoryId, String>,
 }
 
 impl Assembly {
+    /// 人工离线输出与后续模型提供者共用此入口；生产不读取评测夹具。
+    pub fn finish_r4(
+        self,
+        store: &SqliteMemoryStore,
+        response: Result<&str, JudgmentFailure>,
+    ) -> PersistenceResult<RecallOutput> {
+        if self.plan.need() == R1Need::ContextOnly {
+            return self.finish_skipped(store, SkipReason::ContextOnly);
+        }
+        let context = r4::Context {
+            evidence: &self.evidence,
+            plan: &self.plan,
+            request: &self.request,
+            utc_offset_seconds: self.utc_offset_seconds,
+            source_dates: &self.source_dates,
+        };
+        let result = response.and_then(|text| {
+            r4::decode(text)
+                .and_then(|output| r4::evaluate(output, &context))
+                .map_err(|_| JudgmentFailure::InvalidOutput)
+        });
+        let mut reasons: Vec<String> = self
+            .plan
+            .degraded_reasons()
+            .iter()
+            .map(|s| (*s).into())
+            .collect();
+        let (status, facts, computed, history, conflicts, clarification, semantic) = match result {
+            Err(error) => {
+                reasons.push(error.code().into());
+                (
+                    RecallStatus::Degraded,
+                    vec![],
+                    None,
+                    vec![],
+                    self.evidence.relations.clone(),
+                    None,
+                    SemanticJudgment::Failed,
+                )
+            }
+            Ok(evaluated) => {
+                let output = evaluated.output;
+                let facts: Vec<_> = output.facts.into_iter().map(|f| self.fact(f)).collect();
+                let conflicts: Vec<_> = self
+                    .evidence
+                    .relations
+                    .iter()
+                    .filter(|link| {
+                        link.status == crate::contract::RelationStatus::Open
+                            && !resolved_here(link, &facts)
+                    })
+                    .cloned()
+                    .collect();
+                let clarification_needed = self.plan.needs_clarification()
+                    || output.verdict == R4Verdict::NeedsClarification;
+                let insufficient = evaluated.compute_insufficient
+                    || output.verdict == R4Verdict::Insufficient
+                    || (facts.is_empty() && evaluated.computed.is_none());
+                if evaluated.compute_insufficient {
+                    reasons.push("compute_insufficient".into());
+                }
+                let status = if clarification_needed {
+                    RecallStatus::NeedsClarification
+                } else if output.verdict == R4Verdict::Conflict || !conflicts.is_empty() {
+                    RecallStatus::Conflict
+                } else if insufficient {
+                    RecallStatus::Insufficient
+                } else {
+                    RecallStatus::Answered
+                };
+                let history = facts.iter().filter_map(|f| self.history(f)).collect();
+                let clarification = clarification_needed.then(|| self.clarification(&facts));
+                (
+                    status,
+                    facts,
+                    evaluated.computed,
+                    history,
+                    conflicts,
+                    clarification,
+                    SemanticJudgment::Model,
+                )
+            }
+        };
+        // 包含计算/判断所用来源日期与终止元数据的快照也必须仍有效。
+        self.check_snapshot(store)?;
+        Ok(RecallOutput {
+            version: "recall.v3".into(),
+            request: self.request,
+            status,
+            current_message: self.evidence.current_message,
+            records: self.evidence.records,
+            raw: self.evidence.raw,
+            facts,
+            computed,
+            history,
+            conflicts,
+            clarification,
+            semantic_judgment: semantic,
+            completeness: self.evidence.completeness,
+            degraded_reasons: reasons,
+            snapshot: self.snapshot,
+        })
+    }
+
+    fn fact(&self, f: FactView) -> RecallFact {
+        let related: Vec<_> = self
+            .evidence
+            .records
+            .iter()
+            .filter(|r| {
+                f.record_ids.contains(&r.id())
+                    || f.supersedes_record_ids.contains(&r.id())
+                    || f.evidence.iter().any(|e| {
+                        r4::record_evidence(r).iter().any(|re| {
+                            e.source == re.source
+                                && (locate_quote(&re.quote.text, &e.quote.text).is_some()
+                                    || locate_quote(&e.quote.text, &re.quote.text).is_some())
+                        })
+                    })
+            })
+            .collect();
+        let grade = if f.evidence.iter().all(|e|
+            !self.evidence.raw.iter().any(|raw| matches!(&e.source, SourceRef::Stored {source_id} if source_id == &raw.source_id))
+            && self.evidence.records.iter().any(|r| r4::supports_record(e, r)))
+            { RecallGrade::Committed } else { RecallGrade::Uncommitted };
+        let mut pending = Vec::new();
+        let mut has_pending = false;
+        let mut unknown = related.is_empty();
+        for r in &related {
+            let update = match r {
+                RecordView::Current(v) => Some(&v.update),
+                RecordView::Legacy(v) => v.update.as_ref(),
+            };
+            match update {
+                Some(u) if u.status == UpdateStatus::Pending => {
+                    has_pending = true;
+                    for reason in &u.reasons {
+                        if !pending.contains(reason) {
+                            pending.push(*reason);
+                        }
+                    }
+                }
+                None => unknown = true,
+                _ => (),
+            }
+        }
+        unknown |= f
+            .evidence
+            .iter()
+            .any(|e| !related.iter().any(|r| r4::supports_record(e, r)));
+        let update = if has_pending {
+            Some(UpdateState {
+                status: UpdateStatus::Pending,
+                reasons: pending,
+            })
+        } else if unknown {
+            None
+        } else {
+            Some(UpdateState {
+                status: UpdateStatus::Judged,
+                reasons: vec![],
+            })
+        };
+        RecallFact {
+            statement: f.statement,
+            evidence: f.evidence,
+            record_ids: f.record_ids,
+            polarity: f.polarity,
+            strength: f.strength,
+            uncertainty: f.uncertainty,
+            conditions: f.conditions,
+            times: f.times,
+            current: f.current,
+            applies: f.applies,
+            supersedes_record_ids: f.supersedes_record_ids,
+            grade,
+            update,
+        }
+    }
+
+    fn history(&self, fact: &RecallFact) -> Option<RecallHistory> {
+        if fact.current != Qualification::No {
+            return None;
+        }
+        let ended: Vec<_> = fact
+            .record_ids
+            .iter()
+            .filter_map(|id| self.evidence.records.iter().find(|r| r.id() == *id))
+            .filter(|r| match r {
+                RecordView::Current(v) => {
+                    v.stored_status == StoredStatus::Superseded
+                        && matches!(
+                            v.termination_reason,
+                            Some(
+                                crate::SupersedeReason::StateChanged
+                                    | crate::SupersedeReason::PreferenceChanged
+                                    | crate::SupersedeReason::ConstraintChanged
+                            )
+                        )
+                }
+                RecordView::Legacy(v) => {
+                    v.data.status == MemoryStatus::Superseded
+                        && matches!(
+                            v.data.supersede_reason,
+                            Some(
+                                crate::SupersedeReason::StateChanged
+                                    | crate::SupersedeReason::PreferenceChanged
+                                    | crate::SupersedeReason::ConstraintChanged
+                            )
+                        )
+                }
+            })
+            .collect();
+        // 同一概括混入纠错/撤回等旧值时，不把它包装为曾经成立的历史事实。
+        if ended.is_empty() || ended.len() != fact.record_ids.len() {
+            return None;
+        }
+        let dates: Vec<_> = ended
+            .iter()
+            .map(|r| self.history_until.get(&r.id()))
+            .collect();
+        let until = dates
+            .first()
+            .and_then(|d| *d)
+            .filter(|first| dates.iter().all(|d| *d == Some(*first)))
+            .cloned();
+        Some(RecallHistory {
+            statement: fact.statement.clone(),
+            until,
+            evidence: fact.evidence.clone(),
+        })
+    }
+
+    fn clarification(&self, facts: &[RecallFact]) -> RecallClarification {
+        let mut evidence = Vec::new();
+        let question = match self.plan.output.as_ref().map(|o| &o.subject) {
+            Some(R1Subject::Ambiguous(s)) => {
+                let names: Vec<_> = s
+                    .ambiguous
+                    .iter()
+                    .map(|id| {
+                        self.entity_names
+                            .get(id)
+                            .map_or(id.as_str(), String::as_str)
+                    })
+                    .collect();
+                format!("你指的是{}中的哪一位？", names.join("、"))
+            }
+            Some(R1Subject::Unresolved(s)) => format!("“{}”指的是谁？", s.unresolved.text),
+            _ => {
+                for fact in facts {
+                    for e in &fact.evidence {
+                        if !evidence.contains(e) {
+                            evidence.push(e.clone());
+                        }
+                    }
+                }
+                "请明确要查询的对象或条件。".into()
+            }
+        };
+        if matches!(
+            self.plan.output.as_ref().map(|o| &o.subject),
+            Some(R1Subject::Ambiguous(_) | R1Subject::Unresolved(_))
+        ) {
+            // 澄清依据引用触发歧义的原话，query_only 仍不能成为 FactView/ComputeItem 证据。
+            if let Some(current) = &self.evidence.current_message {
+                let text = match self.plan.output.as_ref().map(|o| &o.subject) {
+                    Some(R1Subject::Unresolved(s))
+                        if locate_quote(&current.text, &s.unresolved.text).is_some() =>
+                    {
+                        s.unresolved.text.clone()
+                    }
+                    Some(R1Subject::Unresolved(_)) => {
+                        return RecallClarification { question, evidence };
+                    }
+                    _ => current.text.clone(),
+                };
+                evidence.push(EvidenceRef {
+                    source: SourceRef::Current {},
+                    quote: Quote { text },
+                });
+            }
+        }
+        RecallClarification { question, evidence }
+    }
+
     pub fn review_current_message(&self) -> bool {
         self.evidence.current_message.is_some() && self.plan.review_current_message()
     }
@@ -135,6 +441,34 @@ impl Assembly {
             snapshot: self.snapshot,
         })
     }
+}
+
+// 仅本轮消解：同一个有新旧依据的当前事实取代全部冲突成员（或保留唯一成员）。
+// RelationLink 的持久状态原样呈现，不写 resolution 或变更存储。
+fn resolved_here(link: &RelationLink, facts: &[RecallFact]) -> bool {
+    facts.iter().any(|f| {
+        link.members.len() >= 2
+            && f.current == Qualification::Yes
+            && !f.supersedes_record_ids.is_empty()
+            && link
+                .members
+                .iter()
+                .filter(|id| !f.supersedes_record_ids.contains(id))
+                .count()
+                <= 1
+            && link
+                .members
+                .iter()
+                .all(|id| f.supersedes_record_ids.contains(id) || f.record_ids.contains(id))
+            && facts.iter().all(|other| {
+                other == f
+                    || other.current == Qualification::No
+                    || other
+                        .record_ids
+                        .iter()
+                        .all(|id| !f.supersedes_record_ids.contains(id))
+            })
+    })
 }
 
 pub fn run_offline(
@@ -673,6 +1007,47 @@ pub fn assemble(
         plan: plan.clone(),
         owner: request.owner.clone(),
         source_metadata: source_metadata(&state)?,
+        utc_offset_seconds: request.utc_offset_seconds,
+        source_dates: state
+            .sources
+            .values()
+            .filter(|s| source_in_task(s, request))
+            .map(|s| Ok((s.id.clone(), local_date(s.observed_at, offset)?)))
+            .collect::<PersistenceResult<_>>()?,
+        entity_names: state
+            .entities
+            .list_by_owner(store.owner())
+            .into_iter()
+            .map(|e| (e.id.0, e.canonical_name))
+            .collect(),
+        history_until: views
+            .iter()
+            .filter_map(|v| {
+                let explicit_old_end = || {
+                    let to = state.repository.get(v.id()).ok()??.temporal.valid_to?;
+                    // 旧 engine 的 Supersession 可能只用声明接收时刻，不能当作已知结束日。
+                    (to.source == crate::TemporalSource::Explicit).then_some(to.at.0)
+                };
+                let at = match crate::w4::record_view(&state, v.id())? {
+                    RecordView2::Current(full) if full.ended == Ended::Known => {
+                        if let Some(end) = full.end {
+                            if end.status != ResolutionStatus::Resolved
+                                || end.precision != Precision::Day
+                                || end.end_exclusive?.checked_sub(end.start?)? != 86400
+                            {
+                                return None;
+                            }
+                            end.start?
+                        } else {
+                            explicit_old_end()?
+                        }
+                    }
+                    RecordView2::Legacy(_) => explicit_old_end()?,
+                    _ => return None,
+                };
+                Some((v.id(), local_date(at, offset).ok()?))
+            })
+            .collect(),
         snapshot: RecallSnapshot {
             read_revision: state.revision,
             source_revision: state.source_revision,
