@@ -1,0 +1,71 @@
+{
+  "id": "r4_02_uncertainty_kept",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我可能对花生过敏。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-2"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "我可能对花生过敏。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"unknown\",\"evidence\":[{\"quote\":{\"text\":\"我可能对花生过敏。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-2\"}}],\"polarity\":\"affirm\",\"record_ids\":[],\"statement\":\"我可能对花生过敏。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:d1c4c96456a09bcc94475d262e3c50e1f5816471ee555f5505abdd93e747e3e8",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1383,
+          "input_tokens_details": {
+            "cached_tokens": 1280
+          },
+          "output_tokens": 12958,
+          "output_tokens_details": {
+            "reasoning_tokens": 12854
+          },
+          "total_tokens": 14341
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1383,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 12958,
+        "output_tokens_details": {
+          "reasoning_tokens": 12854
+        },
+        "total_tokens": 14341
+      }
+    }
+  ]
+}

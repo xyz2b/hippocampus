@@ -1,0 +1,141 @@
+{
+  "id": "r4_19_truncated_count_lower_bound",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [
+            {
+              "date": null,
+              "date_source": null,
+              "event_group": "country_japan",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我去过日本。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-27"
+                  }
+                }
+              ],
+              "id": "country_japan",
+              "quantity": null
+            },
+            {
+              "date": null,
+              "date_source": null,
+              "event_group": "country_thailand",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我去过泰国。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-28"
+                  }
+                }
+              ],
+              "id": "country_thailand",
+              "quantity": null
+            }
+          ],
+          "op": "count",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我去过日本。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-27"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              27
+            ],
+            "statement": "我去过日本。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我去过泰国。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-28"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              28
+            ],
+            "statement": "我去过泰国。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"incomplete\",\"items\":[{\"date\":null,\"date_source\":null,\"event_group\":\"country_japan\",\"evidence\":[{\"quote\":{\"text\":\"我去过日本。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-27\"}}],\"id\":\"country_japan\",\"quantity\":null},{\"date\":null,\"date_source\":null,\"event_group\":\"country_thailand\",\"evidence\":[{\"quote\":{\"text\":\"我去过泰国。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-28\"}}],\"id\":\"country_thailand\",\"quantity\":null}],\"op\":\"count\",\"operands\":[],\"unit\":null},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我去过日本。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-27\"}}],\"polarity\":\"affirm\",\"record_ids\":[27],\"statement\":\"我去过日本。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null},{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我去过泰国。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-28\"}}],\"polarity\":\"affirm\",\"record_ids\":[28],\"statement\":\"我去过泰国。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:aa7dd2ddd61c0e6fefbde96218698816c3dc60ff7692e49c57db96ba345a8edb",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3702,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4638,
+          "output_tokens_details": {
+            "reasoning_tokens": 4324
+          },
+          "total_tokens": 8340
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3702,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4638,
+        "output_tokens_details": {
+          "reasoning_tokens": 4324
+        },
+        "total_tokens": 8340
+      }
+    }
+  ]
+}

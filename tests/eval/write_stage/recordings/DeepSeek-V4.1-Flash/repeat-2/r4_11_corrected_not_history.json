@@ -1,0 +1,100 @@
+{
+  "id": "r4_11_corrected_not_history",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我在字节工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-12"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              12
+            ],
+            "statement": "我在字节工作。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我说错了，我在阿里工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-13"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              13
+            ],
+            "statement": "我说错了，我在阿里工作。",
+            "strength": null,
+            "supersedes_record_ids": [
+              12
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"no\",\"conditions\":[],\"current\":\"no\",\"evidence\":[{\"quote\":{\"text\":\"我在字节工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-12\"}}],\"polarity\":\"affirm\",\"record_ids\":[12],\"statement\":\"我在字节工作。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null},{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我说错了，我在阿里工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-13\"}}],\"polarity\":\"affirm\",\"record_ids\":[13],\"statement\":\"我说错了，我在阿里工作。\",\"strength\":null,\"supersedes_record_ids\":[12],\"times\":[],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:e3247a4282e2ea4ebe64afbe6219baa0785dc03f6c3d6c0d41996b3ed69367a7",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1581,
+          "input_tokens_details": {
+            "cached_tokens": 1536
+          },
+          "output_tokens": 11763,
+          "output_tokens_details": {
+            "reasoning_tokens": 11565
+          },
+          "total_tokens": 13344
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1581,
+        "input_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "output_tokens": 11763,
+        "output_tokens_details": {
+          "reasoning_tokens": 11565
+        },
+        "total_tokens": 13344
+      }
+    }
+  ]
+}

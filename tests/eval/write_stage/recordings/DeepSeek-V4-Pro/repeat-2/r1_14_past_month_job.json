@@ -1,0 +1,83 @@
+{
+  "id": "r1_14_past_month_job",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "works_at",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "month",
+                "month": 5,
+                "year_offset": -1
+              },
+              "quote": {
+                "text": "去年五月"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "works_at",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "month",
+            "month": 5,
+            "year_offset": -1
+          },
+          "quote": {
+            "text": "去年五月"
+          },
+          "role": "validity"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"works_at\",\n      \"time\": {\n        \"anchor\": \"said_on\",\n        \"interp\": {\n          \"kind\": \"month\",\n          \"month\": 5,\n          \"year_offset\": -1\n        },\n        \"quote\": {\n          \"text\": \"去年五月\"\n        },\n        \"role\": \"validity\"\n      }\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"works_at\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n      \"kind\": \"month\",\n      \"month\": 5,\n      \"year_offset\": -1\n    },\n    \"quote\": {\n      \"text\": \"去年五月\"\n    },\n    \"role\": \"validity\"\n  },\n  \"type\": \"temporal\"\n}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:db4cc007e14034b0ac54519d56f5e2f94e3bdc37d7439aad632059806ae67e4e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2440,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 5221,
+          "output_tokens_details": {
+            "reasoning_tokens": 4992
+          },
+          "total_tokens": 7661
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2440,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5221,
+        "output_tokens_details": {
+          "reasoning_tokens": 4992
+        },
+        "total_tokens": 7661
+      }
+    }
+  ]
+}

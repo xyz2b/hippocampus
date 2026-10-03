@@ -1,0 +1,68 @@
+{
+  "id": "r1_20_elapsed_days",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "上次体检"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "elapsed",
+          "unit": "day"
+        },
+        "relation": "temporal",
+        "subject": {
+          "ambiguous": []
+        },
+        "time": null,
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\t\"text\": \"上次体检\"\n\t}\n\n, \"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":null},\"op\":\"elapsed\",\"unit\":\"day\"},\"relation\":\"temporal\",\"subject\":{\"ambiguous\":[] \t}\n\n,\"time\":null, \"type\":\"temporal\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:0bd89e6195ee0d4faa58f81b7dc38272774d80a9f47d911be9b62d0f10fae9a7",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 901,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 7266,
+          "output_tokens_details": {
+            "reasoning_tokens": 7174
+          },
+          "total_tokens": 8167
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 901,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 7266,
+        "output_tokens_details": {
+          "reasoning_tokens": 7174
+        },
+        "total_tokens": 8167
+      }
+    }
+  ]
+}

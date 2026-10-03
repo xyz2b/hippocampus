@@ -1,0 +1,86 @@
+{
+  "id": "r1_10_context_binds_name",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "最近"
+            },
+            "resolved": false
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "unknown",
+        "subject": {
+          "entity_id": "e-laowang"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "validity"
+        },
+        "type": "open"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"最近\"\n      },\n      \"resolved\": false\n    }\n  ],\n  \"current_evidence\": \"assertion_present\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": null,\n      \"time\": {\n        \"anchor\": \"said_on\",\n        \"interp\": {\n          \"kind\": \"unknown\"\n        },\n        \"quote\": {\n          \"text\": \"最近\"\n        },\n        \"role\": \"validity\"\n      }\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"unknown\",\n  \"subject\": {\n    \"entity_id\": \"e-laowang\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n      \"kind\": \"unknown\"\n    },\n    \"quote\": {\n      \"text\": \"最近\"\n    },\n    \"role\": \"validity\"\n  },\n  \"type\": \"open\"\n}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:f76b5ee8c75739626a80abe5ed5d96f9e22521d7cebda098eae041fc40f3f9c9",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2446,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 6121,
+          "output_tokens_details": {
+            "reasoning_tokens": 5896
+          },
+          "total_tokens": 8567
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2446,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6121,
+        "output_tokens_details": {
+          "reasoning_tokens": 5896
+        },
+        "total_tokens": 8567
+      }
+    }
+  ]
+}

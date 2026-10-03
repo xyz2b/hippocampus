@@ -1,0 +1,33 @@
+{
+  "id": "r4_16_elapsed_request_at",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "error": "response is not completed; not recorded",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:a977ee85c07186f693150cb196ab569bc3fa5550f39a2e8dedd27cf6d1e7bba7",
+      "response": {
+        "incomplete_details": {
+          "reason": "length"
+        },
+        "status": "incomplete",
+        "usage": {
+          "input_tokens": 1412,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 16384,
+          "output_tokens_details": {
+            "reasoning_tokens": 16384
+          },
+          "total_tokens": 17796
+        }
+      },
+      "schema": "r4_v3"
+    }
+  ]
+}

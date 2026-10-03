@@ -1,0 +1,89 @@
+{
+  "id": "r1_12_statement_plus_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "杭州"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "附近"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "好吃的"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "list",
+          "unit": null
+        },
+        "relation": "附近好吃的",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "刚"
+          },
+          "role": "event"
+        },
+        "type": "open"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"杭州\"\n      },\n      \"resolved\": true\n    },\n    {\n      \"quote\": {\n        \"text\": \"附近\"\n      },\n      \"resolved\": true\n    },\n    {\n      \"quote\": {\n        \"text\": \"好吃的\"\n      },\n      \"resolved\": true\n    }\n  ],\n  \"current_evidence\": \"assertion_present\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": null,\n      \"time\": null\n    },\n    \"op\": \"list\",\n    \"unit\": null\n  },\n  \"relation\": \"附近好吃的\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n      \"kind\": \"unknown\"\n    },\n    \"quote\": {\n      \"text\": \"刚\"\n    },\n    \"role\": \"event\"\n  },\n  \"type\": \"open\"\n}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:6b4d61248a9d60b81da4f0f818a708dae1a1ce21d658c3deba990d858266e35b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2443,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 8309,
+          "output_tokens_details": {
+            "reasoning_tokens": 8084
+          },
+          "total_tokens": 10752
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2443,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8309,
+        "output_tokens_details": {
+          "reasoning_tokens": 8084
+        },
+        "total_tokens": 10752
+      }
+    }
+  ]
+}

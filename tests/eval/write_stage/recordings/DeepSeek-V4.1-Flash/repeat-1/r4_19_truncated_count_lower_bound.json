@@ -1,0 +1,73 @@
+{
+  "id": "r4_19_truncated_count_lower_bound",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我去过日本。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-27"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              27
+            ],
+            "statement": "我去过日本。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我去过日本。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-27\"}}],\"polarity\":\"affirm\",\"record_ids\":[27],\"statement\":\"我去过日本。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:6bdbffc504e8b2d9175824ea02c31c42b9d9f4325ebb1da0504c6a20fbd67b39",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1570,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 14249,
+          "output_tokens_details": {
+            "reasoning_tokens": 14146
+          },
+          "total_tokens": 15819
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1570,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 14249,
+        "output_tokens_details": {
+          "reasoning_tokens": 14146
+        },
+        "total_tokens": 15819
+      }
+    }
+  ]
+}

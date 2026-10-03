@@ -1,0 +1,73 @@
+{
+  "id": "r4_05_hypothetical_raw_not_update",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我住在上海。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-5"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              5
+            ],
+            "statement": "我住在上海。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-5\"}}],\"polarity\":\"affirm\",\"record_ids\":[5],\"statement\":\"我住在上海。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:da0bf9c8aafedaef6d9aadc4d08ba677cca7630825463c2607da6e5fdeb0a457",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1431,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 12116,
+          "output_tokens_details": {
+            "reasoning_tokens": 12016
+          },
+          "total_tokens": 13547
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1431,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 12116,
+        "output_tokens_details": {
+          "reasoning_tokens": 12016
+        },
+        "total_tokens": 13547
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "r1_02_plain_statement",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "visited",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "今天"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "visited",
+        "subject": {
+          "ambiguous": []
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"assertion_present\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":\"visited\",\"time\":{\"anchor\": \"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":\t\t\t{\"text\":\"今天\"\t\t}\t\t,\"role\":\"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"visited\",\"subject\":{\"ambiguous\":[]\t\t},\"time\":null,\"type\":\"single\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:7f14f911360164df91a20b460d51de0d3320998558de8aafba552c8076647d39",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 897,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 13819,
+          "output_tokens_details": {
+            "reasoning_tokens": 13710
+          },
+          "total_tokens": 14716
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 897,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 13819,
+        "output_tokens_details": {
+          "reasoning_tokens": 13710
+        },
+        "total_tokens": 14716
+      }
+    }
+  ]
+}

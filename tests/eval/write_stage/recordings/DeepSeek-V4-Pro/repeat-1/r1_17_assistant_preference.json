@@ -1,0 +1,79 @@
+{
+  "id": "r1_17_assistant_preference",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "response_language",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "以后"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "response_language",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "以后"
+          },
+          "role": "validity"
+        },
+        "type": "open"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"assertion_present\",\n  \"need\": \"context_only\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"response_language\",\n      \"time\": {\n        \"anchor\": \"said_on\",\n        \"interp\": {\n          \"kind\": \"unknown\"\n        },\n        \"quote\": {\n          \"text\": \"以后\"\n        },\n        \"role\": \"validity\"\n      }\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"response_language\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n      \"kind\": \"unknown\"\n    },\n    \"quote\": {\n      \"text\": \"以后\"\n    },\n    \"role\": \"validity\"\n  },\n  \"type\": \"open\"\n}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:e8205dabd44a991b4a264b657958b9faeb7f5a47e2518377116d3af93b5e5d22",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2441,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4753,
+          "output_tokens_details": {
+            "reasoning_tokens": 4553
+          },
+          "total_tokens": 7194
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2441,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4753,
+        "output_tokens_details": {
+          "reasoning_tokens": 4553
+        },
+        "total_tokens": 7194
+      }
+    }
+  ]
+}

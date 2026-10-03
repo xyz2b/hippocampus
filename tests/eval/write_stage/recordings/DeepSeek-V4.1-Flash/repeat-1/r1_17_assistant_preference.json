@@ -1,0 +1,96 @@
+{
+  "id": "r1_17_assistant_preference",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "用英文"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "response_language",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "以后"
+                },
+                "kind": "anchored",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "以后"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "response_language",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "anchor_quote": {
+              "text": "以后"
+            },
+            "kind": "anchored",
+            "offset": 0,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "以后"
+          },
+          "role": "validity"
+        },
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"用英文\"}, \"resolved\": true}], \"current_evidence\": \"query_only\", \"need\": \"context_only\", \"plan\": {\"filter\": {\"relation\": \"response_language\", \"time\": {\"anchor\": \"said_on\", \"interp\": {\"anchor_quote\": \t{\"text\": \"以后\"}, \"kind\": \"anchored\"\t, \"offset\": 0, \"unit\": \"day\"\t}, \"quote\": \t{\"text\": \"以后\"\t}, \"role\": \"validity\"}}\t, \"op\": \"lookup\"\t, \"unit\": null}, \"relation\": \"response_language\", \"subject\": {\"entity_id\": \"self\"\t}, \"time\": {\"anchor\": \"said_on\", \"interp\": {\"anchor_quote\": \t{\"text\": \"以后\"}, \"kind\": \"anchored\"\t, \"offset\": 0, \"unit\": \"day\"\t}, \"quote\": \t{\"text\": \"以后\"}, \"role\": \"validity\"}, \"type\": \"open\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:456bb9cfa09830f6cdfc2a66cc058289e9677cc198f96ddc7325e69bf6c7f5da",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 900,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 11881,
+          "output_tokens_details": {
+            "reasoning_tokens": 11645
+          },
+          "total_tokens": 12781
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 900,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11881,
+        "output_tokens_details": {
+          "reasoning_tokens": 11645
+        },
+        "total_tokens": 12781
+      }
+    }
+  ]
+}

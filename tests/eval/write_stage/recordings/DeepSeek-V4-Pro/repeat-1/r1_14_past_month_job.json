@@ -1,0 +1,83 @@
+{
+  "id": "r1_14_past_month_job",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "works_at",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "month",
+                "month": 5,
+                "year_offset": -1
+              },
+              "quote": {
+                "text": "去年五月"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "works_at",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "month",
+            "month": 5,
+            "year_offset": -1
+          },
+          "quote": {
+            "text": "去年五月"
+          },
+          "role": "event"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"works_at\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"month\",\"month\":5,\"year_offset\":-1},\"quote\":{\"text\":\"去年五月\"},\"role\":\"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"works_at\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"month\",\"month\":5,\"year_offset\":-1},\"quote\":{\"text\":\"去年五月\"},\"role\":\"event\"},\"type\":\"temporal\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:db4cc007e14034b0ac54519d56f5e2f94e3bdc37d7439aad632059806ae67e4e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2440,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2727,
+          "output_tokens_details": {
+            "reasoning_tokens": 2595
+          },
+          "total_tokens": 5167
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2440,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2727,
+        "output_tokens_details": {
+          "reasoning_tokens": 2595
+        },
+        "total_tokens": 5167
+      }
+    }
+  ]
+}

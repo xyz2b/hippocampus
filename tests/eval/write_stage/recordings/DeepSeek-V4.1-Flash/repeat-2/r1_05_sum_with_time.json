@@ -1,0 +1,90 @@
+{
+  "id": "r1_05_sum_with_time",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "买咖啡"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "end_inclusive": "2026-09-30",
+                "kind": "range",
+                "start": "2026-09-01"
+              },
+              "quote": {
+                "text": "上个月"
+              },
+              "role": "event"
+            }
+          },
+          "op": "sum",
+          "unit": "元"
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": -1,
+            "unit": "month"
+          },
+          "quote": {
+            "text": "上个月"
+          },
+          "role": "event"
+        },
+        "type": "aggregate"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"买咖啡\"}, \"resolved\": true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\": null, \"time\": {\"anchor\": \"said_on\", \"interp\": {\"end_inclusive\":  \"2026-09-30\", \"kind\": \"range\", \"start\": \"2026-09-01\"}, \"quote\": \t{\"text\": \"上个月\"}, \"role\": \"event\"}}, \"op\":\"sum\", \"unit\": \t\"元\"},\"relation\": \t\"lives_in\",\"subject\":{\"entity_id\": \"self\" },\"time\": { \"anchor\": \"said_on\", \"interp\": { \"kind\": \"relative\", \"offset\": -1, \"unit\": \"month\" }, \"quote\": \t{\"text\": \"上个月\"}, \"role\": \"event\" },\"type\":\"aggregate\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:96da363983c5fbdbff63680ed88382542af704dad2832416e6ef567aa20f2d37",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 902,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 13477,
+          "output_tokens_details": {
+            "reasoning_tokens": 13270
+          },
+          "total_tokens": 14379
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 902,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 13477,
+        "output_tokens_details": {
+          "reasoning_tokens": 13270
+        },
+        "total_tokens": 14379
+      }
+    }
+  ]
+}

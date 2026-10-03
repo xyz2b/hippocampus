@@ -1,0 +1,126 @@
+{
+  "id": "r4_16_elapsed_request_at",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2026-07-01",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2026年7月1日"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s-23"
+              },
+              "event_group": "move_to_chengdu",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我2026年7月1日搬到成都了。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-23"
+                  }
+                }
+              ],
+              "id": "i_move_chengdu_2026_07_01",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "i_move_chengdu_2026_07_01"
+          ],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我2026年7月1日搬到成都了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-23"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              23
+            ],
+            "statement": "我2026年7月1日搬到成都了。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2026-07-01",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2026年7月1日"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2026-07-01\",\"kind\":\"date\"},\"quote\":{\"text\":\"2026年7月1日\" },\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s-23\"},\"event_group\":\"move_to_chengdu\",\"evidence\":[{\"quote\":{\"text\":\"我2026年7月1日搬到成都了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-23\"}}],\"id\":\"i_move_chengdu_2026_07_01\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"i_move_chengdu_2026_07_01\"],\"unit\":null},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我2026年7月1日搬到成都了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-23\"}}],\"polarity\":\"affirm\",\"record_ids\":[23],\"statement\":\"我2026年7月1日搬到成都了。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2026-07-01\",\"kind\":\"date\"},\"quote\":{\"text\":\"2026年7月1日\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:97e65bc7cf26058843c0c4fd41b1281943f2ef433ef5a44df5b24c2ada281664",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3544,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 6791,
+          "output_tokens_details": {
+            "reasoning_tokens": 6474
+          },
+          "total_tokens": 10335
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3544,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6791,
+        "output_tokens_details": {
+          "reasoning_tokens": 6474
+        },
+        "total_tokens": 10335
+      }
+    }
+  ]
+}

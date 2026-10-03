@@ -1,0 +1,68 @@
+{
+  "id": "r1_13_hypothetical_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "搬去深圳"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "lookup",
+          "unit": "km"
+        },
+        "relation": "通勤",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"搬去深圳\"\n      },\n      \"resolved\": true\n    }\n  ],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": null,\n      \"time\": null\n    },\n    \"op\": \"lookup\",\n    \"unit\": \"km\"\n  },\n  \"relation\": \"通勤\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"single\"\n}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:f2131f35dc36a3f4eeb1cad057ff90c80bc38eb9acea2cfb14525e26dbd7bb6b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2444,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4065,
+          "output_tokens_details": {
+            "reasoning_tokens": 3933
+          },
+          "total_tokens": 6509
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2444,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4065,
+        "output_tokens_details": {
+          "reasoning_tokens": 3933
+        },
+        "total_tokens": 6509
+      }
+    }
+  ]
+}

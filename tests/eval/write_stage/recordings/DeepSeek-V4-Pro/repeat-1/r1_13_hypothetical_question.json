@@ -1,0 +1,68 @@
+{
+  "id": "r1_13_hypothetical_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "如果我搬去深圳"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "works_at",
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "works_at",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "open"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"如果我搬去深圳\"\n      },\n      \"resolved\": true\n    }\n  ],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"works_at\",\n      \"time\": null\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"works_at\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"open\"\n}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:f2131f35dc36a3f4eeb1cad057ff90c80bc38eb9acea2cfb14525e26dbd7bb6b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2444,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 10107,
+          "output_tokens_details": {
+            "reasoning_tokens": 9973
+          },
+          "total_tokens": 12551
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2444,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10107,
+        "output_tokens_details": {
+          "reasoning_tokens": 9973
+        },
+        "total_tokens": 12551
+      }
+    }
+  ]
+}
