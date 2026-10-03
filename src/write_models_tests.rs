@@ -8,6 +8,216 @@ use std::collections::{BTreeSet, VecDeque};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
+#[test]
+fn write_role_configuration_is_strict_and_defaults_to_the_legacy_model() {
+    let default: ChatConfig = serde_json::from_value(json!({})).unwrap();
+    assert!(default.write_models.is_none());
+    let partial: ChatConfig = serde_json::from_value(json!({"write_models":{"w1":"pro"}})).unwrap();
+    let models = partial.write_models.unwrap();
+    assert_eq!(models.w1, "pro");
+    assert_eq!(models.w3, DEEPSEEK_MODEL);
+    assert_eq!(models.w4, DEEPSEEK_MODEL);
+    for invalid in [
+        json!(null),
+        json!(["a", "b", "c"]),
+        json!({"w2":"pro"}),
+        json!({"w1":null}),
+        json!({"w3":false}),
+        json!({"w4":""}),
+        json!({"w1":" \t"}),
+    ] {
+        assert!(serde_json::from_value::<ChatConfig>(json!({"write_models":invalid})).is_err());
+    }
+    let invalid = WriteModels {
+        w3: "".into(),
+        ..Default::default()
+    };
+    assert!(
+        ChatConfig {
+            write_models: Some(invalid),
+            ..Default::default()
+        }
+        .validate()
+        .is_err()
+    );
+}
+
+#[test]
+fn configured_roles_reach_requests_and_bindings_without_changing_legacy_requests() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let config: ChatConfig = serde_json::from_value(json!({"write_models":{
+        "w1":"ep-20261003130756-trhj6","w3":DEEPSEEK_MODEL,"w4":"ep-20261003130756-trhj6"
+    }}))
+    .unwrap();
+    let models = config.write_models.unwrap();
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+            Ok(envelope(&upstream.to_string())),
+        ],
+    );
+    let provider = provider.with_models(models.clone()).unwrap();
+    assert_eq!(
+        run_all(&db, &key, &provider)["enrichment"]["status"],
+        "committed"
+    );
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    for (index, (stage, model)) in [("w1", &models.w1), ("w3", &models.w3), ("w4", &models.w4)]
+        .iter()
+        .enumerate()
+    {
+        assert_eq!(sent.lock().unwrap()[index]["model"], **model);
+        assert_eq!(stages[stage]["binding"]["model"], **model);
+    }
+    provider
+        .client
+        .structured_output(
+            ModelStage::Extraction,
+            "legacy_probe",
+            W1_PROMPT,
+            json!({}),
+            w1_schema(),
+        )
+        .unwrap();
+    assert_eq!(sent.lock().unwrap()[3]["model"], DEEPSEEK_MODEL);
+    assert_eq!(provider.client.model_call_count(), 4);
+}
+
+#[test]
+fn changed_role_models_never_reuse_same_round_results_and_rejudge_only_eligible_stages() {
+    for role in ["w1", "w3", "w4"] {
+        let db = Db::new();
+        let (key, upstream, output) = w4_case(&db, false);
+        let (first, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+                Ok(envelope(&output.to_string())),
+            ],
+        );
+        let (claim, ctx, input, sources) = ready_w4(&db, &key, &first);
+        first
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap();
+        w4_fail_attempt(&mut db.open(), &claim, "crash before plan").unwrap();
+        let mut models = WriteModels::default();
+        let selected = match role {
+            "w1" => &mut models.w1,
+            "w3" => &mut models.w3,
+            _ => &mut models.w4,
+        };
+        *selected = format!("replacement-{role}");
+        let responses = match role {
+            "w1" => vec![], // Frozen W2 identities cannot be re-extracted.
+            "w3" => vec![Ok(envelope(&w3_for(&upstream).to_string()))],
+            _ => vec![Ok(envelope(&output.to_string()))],
+        };
+        let (changed, sent) = mocked(&db, responses);
+        let changed = changed.with_models(models).unwrap();
+        assert_eq!(
+            run_all(&db, &key, &changed)["enrichment"]["status"],
+            "needs_rejudge",
+            "{role}"
+        );
+        assert_eq!(changed.client.model_call_count(), 0);
+        w4_start_round(&mut db.open(), &key, "roles-rejudge", true).unwrap();
+        assert_eq!(
+            run_all(&db, &key, &changed)["enrichment"]["status"],
+            if role == "w1" {
+                "needs_rejudge"
+            } else {
+                "committed"
+            },
+            "{role}"
+        );
+        assert_eq!(
+            changed.client.model_call_count(),
+            if role == "w1" { 0 } else { 1 }
+        );
+        let state = db.open().read().unwrap();
+        let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+        if role == "w1" {
+            assert_eq!(stages[role]["binding"]["model"], DEEPSEEK_MODEL);
+        } else {
+            assert_eq!(
+                sent.lock().unwrap()[0]["model"],
+                format!("replacement-{role}")
+            );
+            assert_eq!(
+                stages[role]["binding"]["model"],
+                format!("replacement-{role}")
+            );
+        }
+    }
+}
+
+#[test]
+fn changed_w1_model_can_extract_in_an_explicit_round_before_w2_is_frozen() {
+    let db = Db::new();
+    let key = db.start("我使用玻璃茶壶。");
+    let upstream = w1("我使用玻璃茶壶。");
+    let (first, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    let claim = w4_claim_round(&mut db.open(), &key).unwrap();
+    let (ctx, source) = inputs(&db.open(), &key, &claim);
+    first
+        .provide(&mut db.open(), &claim, &ctx, &source)
+        .unwrap();
+    w4_fail_attempt(&mut db.open(), &claim, "crash before saving W2 batch").unwrap();
+    w4_start_round(&mut db.open(), &key, "replace-w1-before-freeze", true).unwrap();
+    let (changed, sent) = mocked(&db, vec![Ok(envelope(&upstream.to_string()))]);
+    let changed = changed
+        .with_models(WriteModels {
+            w1: "replacement-w1".into(),
+            ..Default::default()
+        })
+        .unwrap();
+    assert_eq!(
+        run_all(&db, &key, &changed)["enrichment"]["status"],
+        "committed"
+    );
+    assert_eq!(changed.client.model_call_count(), 1);
+    assert_eq!(sent.lock().unwrap()[0]["model"], "replacement-w1");
+    let state = db.open().read().unwrap();
+    assert_eq!(
+        state.sources[&key].result.as_ref().unwrap()["w4_model_stages"]["w1"]["binding"]["model"],
+        "replacement-w1"
+    );
+}
+
+#[test]
+fn third_revision_prompts_cover_remaining_relation_and_qualifier_errors() {
+    for rule in [
+        "every candidate copies that whole sentence",
+        "negative-direction relation such as avoids",
+        "every other memory_type requires strength=null",
+        "calendar time actually expressed",
+        "kind=relative, unit=month and signed offset",
+    ] {
+        assert!(W1_PROMPT.contains(rule), "missing W1 rule: {rule}");
+    }
+    for rule in [
+        "Do not use new to",
+        "same claim or whether one replaces the other",
+        "target_unknown means the requested target cannot be located",
+        "current supplied input explicitly establishes resolution",
+        "Ending or replacing one member is not evidence",
+    ] {
+        assert!(W4_PROMPT.contains(rule), "missing W4 rule: {rule}");
+    }
+}
+
 struct Db(PathBuf);
 impl Db {
     fn new() -> Self {

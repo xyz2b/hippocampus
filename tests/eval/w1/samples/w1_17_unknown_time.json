@@ -78,7 +78,10 @@
     "conditions": [],
     "times": [
      {
-      "role": "validity",
+      "role": [
+       "validity",
+       "event"
+      ],
       "quote": "以前",
       "interp": {
        "kind": "unknown"
@@ -94,5 +97,5 @@
   "丢掉“以前”（会变成现在养猫）",
   "把“以前”换算成具体日期"
  ],
- "note": "用户确认：role 取 validity。"
+ "note": "用户确认（2026-10-03）：role 取 validity 或 event 均可；关键是保留“以前”且不换算成日期。"
 }

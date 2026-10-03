@@ -72,7 +72,10 @@
    {
     "kind": "retention",
     "quote": "只保留到明天",
-    "target_object": "facts",
+    "target_object": [
+     "facts",
+     "source"
+    ],
     "candidate_indices": [
      0
     ],

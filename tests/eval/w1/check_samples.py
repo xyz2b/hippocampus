@@ -39,7 +39,7 @@ def check_candidate(c, text, where, relations, entities, errors):
         quote(q["quote"] if isinstance(q, dict) else q, "conditions")
     for tm in c.get("times", []):
         quote(tm["quote"], "times")
-        if tm["role"] not in ROLES or tm["interp"]["kind"] not in TIME_KINDS:
+        if not set(options(tm["role"])) <= ROLES or tm["interp"]["kind"] not in TIME_KINDS:
             errors.append(f"{where}.times: bad role/kind")
     if not set(options(c.get("speech", "user_statement"))) <= SPEECH:
         errors.append(f"{where}.speech")

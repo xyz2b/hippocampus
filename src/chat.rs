@@ -71,6 +71,8 @@ pub struct ChatConfig {
     pub retrieval_mode: Option<RetrievalMode>,
     pub enrichment_mode: EnrichmentMode,
     pub write_pipeline: WritePipeline,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub write_models: Option<crate::write_models::WriteModels>,
     /// Experimental committed-fact search keys; raw statements remain the evidence.
     pub fact_index_enabled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -95,6 +97,7 @@ impl Default for ChatConfig {
             retrieval_mode: None,
             enrichment_mode: EnrichmentMode::Inline,
             write_pipeline: WritePipeline::Legacy,
+            write_models: None,
             fact_index_enabled: false,
             model_budget: None,
             local_recall_budget: LocalRecallBudget::default(),
@@ -177,6 +180,15 @@ impl<'de> Deserialize<'de> for ChatConfig {
                 "retrieval_mode" => read!(retrieval_mode),
                 "enrichment_mode" => read!(enrichment_mode),
                 "write_pipeline" => read!(write_pipeline),
+                "write_models" => {
+                    if !value.is_object() {
+                        return Err(D::Error::custom("write_models must be an object"));
+                    }
+                    let models: crate::write_models::WriteModels =
+                        serde_json::from_value(value).map_err(D::Error::custom)?;
+                    models.validate().map_err(D::Error::custom)?;
+                    config.write_models = Some(models);
+                }
                 "fact_index_enabled" => read!(fact_index_enabled),
                 "model_budget" => read!(model_budget),
                 "local_recall_budget" => read!(local_recall_budget),
@@ -216,6 +228,9 @@ impl ChatConfig {
     }
 
     pub fn validate(&self) -> PersistenceResult<()> {
+        if let Some(models) = &self.write_models {
+            models.validate()?;
+        }
         if self.write_pipeline == WritePipeline::W4RuntimeV1
             && self.enrichment_mode == EnrichmentMode::Inline
         {
@@ -2150,7 +2165,8 @@ impl ChatMemoryService {
                 return crate::enrichment::receipt(&self.store, key);
             }
         };
-        let provider = crate::write_models::WriteModelProvider::new(client, context);
+        let provider = crate::write_models::WriteModelProvider::new(client, context)
+            .with_models(self.config.write_models.clone().unwrap_or_default())?;
         crate::enrichment::run_source_with_all_models(
             &mut self.store,
             key,

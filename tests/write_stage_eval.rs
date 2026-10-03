@@ -901,7 +901,7 @@ fn stage_request_with_output_tokens(
                 "w4_v2",
                 write_models::W4_PROMPT,
                 write_models::w4_schema(),
-                json!({"contract": "w4.v2", "w4_input": input, "sources": sources}),
+                json!({"contract": "w4.v2", "model": hippocampus::DEEPSEEK_MODEL, "w4_input": input, "sources": sources}),
             )
         }
         _ => return Err("unknown stage".into()),
@@ -1070,6 +1070,12 @@ fn plan_once(
             let mut request = stage_request(&stage, &sample)?;
             if let Some(id) = &model.model {
                 request["model"] = json!(id);
+                if stage == "w4" {
+                    let mut payload: Value =
+                        serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+                    payload["model"] = json!(id);
+                    request["input"] = json!(payload.to_string());
+                }
             }
             let path = root.join(format!("{}.json", sample["id"].as_str().unwrap()));
             let file: Value = match std::fs::read_to_string(&path) {
@@ -1504,6 +1510,11 @@ fn fake_w1(sample: &Value) -> Value {
                     c[key] = c[key][0].clone();
                 }
             }
+            for time in c["times"].as_array_mut().unwrap() {
+                if time["role"].is_array() {
+                    time["role"] = time["role"][0].clone();
+                }
+            }
             adapter::candidate(&c)
         })
         .collect();
@@ -1533,6 +1544,52 @@ fn corrected_w1_labels_match_injected_outputs_and_draft_is_visible() {
         fingerprint(&request),
         "label approval is not model input"
     );
+}
+
+#[test]
+fn acceptable_time_roles_and_request_objects_keep_other_semantics_strict() {
+    let sample = samples("w1")
+        .into_iter()
+        .find(|s| s["id"] == "w1_17_unknown_time")
+        .unwrap();
+    for role in ["validity", "event", "retention"] {
+        let mut output = fake_w1(&sample);
+        output["candidates"][0]["times"][0]["role"] = json!(role);
+        let report = score("w1", &sample, Some(&output.to_string()));
+        assert_eq!(
+            report["status"],
+            if role == "retention" {
+                "失败"
+            } else {
+                "通过"
+            },
+            "{report}"
+        );
+    }
+    let mut wrong = fake_w1(&sample);
+    wrong["candidates"][0]["times"][0]["interp"] =
+        json!({"kind":"relative","unit":"year","offset":-1});
+    assert_eq!(
+        score("w1", &sample, Some(&wrong.to_string()))["status"],
+        "失败"
+    );
+    for id in ["w1_10_remember_binds_one", "w1_11_retention_deadline"] {
+        let sample = samples("w1").into_iter().find(|s| s["id"] == id).unwrap();
+        for object in ["facts", "source", "unknown"] {
+            let mut output = fake_w1(&sample);
+            output["memory_requests"][0]["target"]["object"] = json!(object);
+            let report = score("w1", &sample, Some(&output.to_string()));
+            assert_eq!(
+                report["status"],
+                if object == "unknown" {
+                    "失败"
+                } else {
+                    "通过"
+                },
+                "{id}: {report}"
+            );
+        }
+    }
 }
 
 #[test]
@@ -2432,5 +2489,28 @@ fn repeats_models_and_caps_are_independent_and_all_attempts_count() {
             stage_request(stage, &samples(stage).remove(0)).unwrap()["max_output_tokens"],
             if stage == "w1" { 32768 } else { 16384 }
         );
+    }
+}
+
+#[test]
+fn single_eval_model_overrides_all_selected_roles_and_w4_binding_input() {
+    let temp = TempRecords::new();
+    let mut model = EvalModel::default_model();
+    model.model = Some("evaluation-model".into());
+    let cases = plan_repeated(
+        selected("w1,w3,w4", "w1_01,w3_01,w4_01").unwrap(),
+        &temp.0,
+        &model,
+        1,
+    )
+    .unwrap();
+    assert_eq!(cases.len(), 3);
+    for case in cases {
+        assert_eq!(case.request["model"], "evaluation-model");
+        if case.stage == "w4" {
+            let payload: Value =
+                serde_json::from_str(case.request["input"].as_str().unwrap()).unwrap();
+            assert_eq!(payload["model"], "evaluation-model");
+        }
     }
 }

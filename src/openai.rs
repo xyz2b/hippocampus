@@ -487,13 +487,32 @@ impl OpenAiClient {
         input: Value,
         schema: Value,
     ) -> Result<String, OpenAiAdapterError> {
+        self.structured_output_for_model(
+            DEEPSEEK_MODEL,
+            stage,
+            schema_name,
+            instructions,
+            input,
+            schema,
+        )
+    }
+
+    fn structured_output_for_model(
+        &self,
+        model: &str,
+        stage: ModelStage,
+        schema_name: &str,
+        instructions: &str,
+        input: Value,
+        schema: Value,
+    ) -> Result<String, OpenAiAdapterError> {
         if !self.network_allowed {
             return Err(OpenAiAdapterError::NetworkDisabled);
         }
         let budget = self.budget.as_ref().ok_or_else(|| {
             OpenAiAdapterError::Budget("explicit persistent model budget is required".into())
         })?;
-        let request = structured_request(
+        let mut request = structured_request(
             stage,
             schema_name,
             instructions,
@@ -501,6 +520,7 @@ impl OpenAiClient {
             schema,
             &budget.config,
         );
+        request["model"] = json!(model);
         self.send_response(stage, schema_name, request, true)
     }
 

@@ -1,4 +1,5 @@
 //! w1.v1 / w3.v1 / w4.v2：单次调用、严格解码及绑定输入的持久结果。
+use serde::{Deserialize, Serialize};
 use serde_json::{Value as Json, json};
 use std::collections::BTreeMap;
 use time::{OffsetDateTime, UtcOffset};
@@ -34,21 +35,31 @@ value.text/value.quote/sentence to be the same continuous complete original sent
 memory_type=fact does not trigger that rule. For a dedicated relation, value is the relation's
 object or property value, not the whole sentence; value.quote must support that value.
 sentence remains the complete original assertion, including its qualifiers. Copy its wording
-without appending explanations, JSON fragments or other output text.
+without appending explanations, JSON fragments or other output text. When one original sentence
+contains multiple assertions, every candidate copies that whole sentence; do not split sentence
+into candidate-specific clauses. Dedicated values and qualifiers still describe each candidate.
 Choose fact for descriptive assertions, preference for likes or dislikes, constraint for user
 requirements or prohibitions, and episode for bounded experiences; respect the allowed types.
 Polarity is the assertion's direction, separate from uncertainty and speech. An affirmative
 uncertain assertion, hypothesis or plan may still have polarity=affirm. Do not use unknown
 merely because it is uncertain or not yet realized. Preserve explicit negation.
+Evaluate polarity relative to the relation itself: a negative-direction relation such as avoids
+already expresses avoidance. Affirm that relation with polarity=affirm; adding negate would deny
+the avoidance, not express it. Negate only when the source negates that relation's own assertion.
 Preserve polarity, strength, uncertainty, conditions and times rather than deleting unknowns.
-Null strength means no intensity expression; unknown means expressed but unclear. Qualifiers
+Use strength only for memory_type=preference; every other memory_type requires strength=null,
+even if its sentence contains an intensity word. For preferences, null strength means no intensity
+expression; unknown means expressed but unclear. Qualifiers
 copy original words and say whether understood. Time roles are event, validity, retention;
 anchor is said_on. Propose date/range/relative/month/anchored/recurring/unknown, never perform
 calendar arithmetic or use execution time. Do not invent dates or interpret unknown anchors.
 Activity or applicability conditions belong in conditions, not times; calendar periods and
-explicit schedules belong in times. date.date and range.start/end_inclusive require full ISO
+explicit schedules belong in times. Add times only for calendar time actually expressed in the
+source; applicability or situational language alone creates no time. date.date and range.start/end_inclusive require full ISO
 calendar days, never a partial year-month. relative uses unit and signed offset. month uses
-year_offset and month (1..12) for a named calendar month. anchored uses anchor_quote, unit
+year_offset and month (1..12) for a named calendar month. Relative month shifts use
+kind=relative, unit=month and signed offset; never put a relative offset in month.month or invent
+a numbered month. anchored uses anchor_quote, unit
 and offset and requires its stated anchor. recurring and unknown have no extra interp fields;
 their original expression remains in the time Quote.
 If the expression cannot be interpreted with the required fields, use unknown without invented
@@ -137,6 +148,11 @@ value. Use pending/scope_incomplete for such conclusions, never invent conflict 
 retrieval. Do not use new or coexist as a shortcut when an update depends on excluding unseen
 related records. An unlocatable requested target uses target_unknown; an unclear comparison uses
 unclear_relation. Incomplete coverage alone does not force pending for a clearly located target.
+If relevant old records are present but it is unclear whether the new and old assertions are the
+same claim or whether one replaces the other, use pending/unclear_relation. Do not use new to
+avoid making that comparison. target_unknown means the requested target cannot be located;
+unclear_relation means the comparison or replacement relation cannot be established, even when
+the target is known. Keep these reasons distinct.
 Clearly located targets may be changed only with complete comparison and both sides'
 evidence; the host retains coverage gaps. A true conflict requires incompatible assertions within
 the same applicable scope and evidence from both sides, not merely different values or poor search.
@@ -155,18 +171,63 @@ relations. Each relation ID may appear in resolves_relations at most once across
 assigned to one eligible decision. Coordinate all candidates' targets and actions before returning:
 do not emit two decisions for one candidate or repeatedly process the same losing member while
 leaving the surviving member's superseded version unchanged.
-pending/new/coexist/conflict use resolves_relations=[]. Do not infer resolution just
-because a member changed, was replaced or became historical. Related decisions commit atomically."#;
+pending/new/coexist/conflict use resolves_relations=[]. Set resolves_relations only when the
+current supplied input explicitly establishes resolution of that relation within its scope.
+Ending or replacing one member is not evidence that the relation itself is resolved; absent
+explicit resolution evidence, leave resolves_relations empty even when an update ends a member.
+Do not infer resolution just because a member changed, was replaced or became historical.
+Related decisions commit atomically."#;
 
-/// 显式库级提供者；生产分发和配置仍由后续段接入。
+/// 新写入路径的角色模型；缺省与旧路径相同，不改变共享地址与凭证。
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct WriteModels {
+    pub w1: String,
+    pub w3: String,
+    pub w4: String,
+}
+
+impl Default for WriteModels {
+    fn default() -> Self {
+        Self {
+            w1: super::DEEPSEEK_MODEL.into(),
+            w3: super::DEEPSEEK_MODEL.into(),
+            w4: super::DEEPSEEK_MODEL.into(),
+        }
+    }
+}
+
+impl WriteModels {
+    pub fn validate(&self) -> PersistenceResult<()> {
+        for (role, model) in [("w1", &self.w1), ("w3", &self.w3), ("w4", &self.w4)] {
+            if model.trim().is_empty() {
+                return Err(format!("write_models.{role} must be nonempty").into());
+            }
+        }
+        Ok(())
+    }
+}
+
+/// 共享显式库级入口与 CLI 分发的按角色模型提供者。
 pub struct WriteModelProvider {
     client: OpenAiClient,
     context: OpenAiAdapterContext,
+    models: WriteModels,
 }
 
 impl WriteModelProvider {
     pub fn new(client: OpenAiClient, context: OpenAiAdapterContext) -> Self {
-        Self { client, context }
+        Self {
+            client,
+            context,
+            models: WriteModels::default(),
+        }
+    }
+
+    pub fn with_models(mut self, models: WriteModels) -> PersistenceResult<Self> {
+        models.validate()?;
+        self.models = models;
+        Ok(self)
     }
 
     pub(crate) fn provide(
@@ -204,7 +265,7 @@ impl WriteModelProvider {
             "said_on":said_on,"utc_offset_seconds":self.context.utc_offset_seconds,"task_id":ctx.task_id,
         });
         let client = self.operation_client(store, ctx)?;
-        let w1_binding = json!({"contract":"w1.v1","input":input});
+        let w1_binding = json!({"contract":"w1.v1","model":self.models.w1,"input":input});
         // Even when the full batch exists, compare the stage binding before reusing it.
         let saved_w1 = crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?;
         if let Some(output) = &saved_w1 {
@@ -212,6 +273,16 @@ impl WriteModelProvider {
             crate::commit::w4_save_model_stage(store, claim, "w1", &w1_binding, output)?;
         }
         let output = if let Some(previous) = &ctx.previous_w2 {
+            // 已冻结的候选不能重提取后按旧索引提交，也不能冒充由新模型产生。
+            let state = store.read()?;
+            let prior_model = state.sources[&ctx.source_key]
+                .result
+                .as_ref()
+                .and_then(|r| r["w4_model_stages"]["w1"]["binding"]["model"].as_str())
+                .unwrap_or(super::DEEPSEEK_MODEL);
+            if prior_model != self.models.w1 {
+                return Err("needs_rejudge: frozen W1 model changed".into());
+            }
             W1Output {
                 candidates: previous
                     .candidates
@@ -230,7 +301,8 @@ impl WriteModelProvider {
                 None => {
                     no_missing_result(&client, ModelStage::W1)?;
                     let text = client
-                        .structured_output(
+                        .structured_output_for_model(
+                            &self.models.w1,
                             ModelStage::W1,
                             "w1_v1",
                             W1_PROMPT,
@@ -278,7 +350,8 @@ impl WriteModelProvider {
                 review: None,
             });
         }
-        let w3_binding = json!({"contract":"w3.v1","input":input,"final_w2":batch});
+        let w3_binding =
+            json!({"contract":"w3.v1","model":self.models.w3,"input":input,"final_w2":batch});
         let output = match crate::commit::w4_load_model_stage(store, claim, "w3", &w3_binding)? {
             Some(output) => W3Output::decode(&output.to_string())?,
             None => {
@@ -293,7 +366,14 @@ impl WriteModelProvider {
                 )?;
                 input["memory_requests"] = serde_json::to_value(&batch.memory_requests)?;
                 let text = client
-                    .structured_output(ModelStage::W3, "w3_v1", W3_PROMPT, input, w3_schema())
+                    .structured_output_for_model(
+                        &self.models.w3,
+                        ModelStage::W3,
+                        "w3_v1",
+                        W3_PROMPT,
+                        input,
+                        w3_schema(),
+                    )
                     .map_err(provider_error)?;
                 W3Output::decode(&text)?
             }
@@ -324,7 +404,8 @@ impl WriteModelProvider {
             return Err("attempt_failed: write catalogue owner differs".into());
         }
         let client = self.operation_client(store, ctx)?;
-        let payload = json!({"contract":"w4.v2","w4_input":input,"sources":sources});
+        let payload =
+            json!({"contract":"w4.v2","model":self.models.w4,"w4_input":input,"sources":sources});
         let failed_binding = |operation: &str| {
             let mut binding = payload.clone();
             binding["invalid_operation_id"] = json!(operation);
@@ -349,7 +430,8 @@ impl WriteModelProvider {
             None => {
                 no_missing_result(&client, ModelStage::W4)?;
                 let text = client
-                    .structured_output(
+                    .structured_output_for_model(
+                        &self.models.w4,
                         ModelStage::W4,
                         "w4_v2",
                         W4_PROMPT,
