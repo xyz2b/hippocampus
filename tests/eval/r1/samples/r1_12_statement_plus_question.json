@@ -1,0 +1,81 @@
+{
+ "id": "r1_12_statement_plus_question",
+ "contract": "r1.v1",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "陈述与问题混合",
+ "input": {
+  "message": "我刚搬到杭州了，附近有什么好吃的？",
+  "context": [],
+  "said_on": "2026-10-03",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-1",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-2",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "need": "judge",
+  "current_evidence": "assertion_present",
+  "type": [
+   "single",
+   "open"
+  ],
+  "subject": "self",
+  "conditions": [],
+  "time": null,
+  "plan.op": [
+   "lookup",
+   "list"
+  ],
+  "plan.filter.relation": [
+   "lives_in",
+   null
+  ]
+ },
+ "note": "本轮陈述可能更新旧住址，需要 R4 判断新旧关系，故 need=judge。"
+}

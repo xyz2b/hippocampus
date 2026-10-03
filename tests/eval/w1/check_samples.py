@@ -106,9 +106,43 @@ def check_w3(s, errors):
             errors.append("request verdict")
 
 
+NEED = {"context_only", "judge"}
+CURRENT = {"assertion_present", "query_only", "unknown"}
+TYPES = {"single", "aggregate", "comparison", "temporal", "open"}
+OPS = {"lookup", "list", "count", "sum", "compare", "elapsed"}
+
+
+def check_r1(s, errors):
+    i, e = s["input"], s["expect"]
+    text = "\n".join([i["message"], *i["context"]])
+    entities = {x["id"] for x in i["entities"]}
+    for field, allowed in (("need", NEED), ("current_evidence", CURRENT), ("type", TYPES), ("plan.op", OPS)):
+        if not set(options(e[field])) <= allowed:
+            errors.append(f"{field} enum")
+    for r in options(e["plan.filter.relation"]):
+        if r is not None and r not in i["relations"]:
+            errors.append("plan.filter.relation not in catalog")
+    for subj in options(e["subject"]) if isinstance(e["subject"], list) else [e["subject"]]:
+        if isinstance(subj, dict) and "unresolved" in subj:
+            if subj["unresolved"] not in text:
+                errors.append("subject.unresolved not in text")
+        elif isinstance(subj, dict) and "ambiguous" in subj:
+            if len(set(subj["ambiguous"])) < 2 or not set(subj["ambiguous"]) <= entities:
+                errors.append("subject.ambiguous")
+        elif subj not in entities:
+            errors.append("subject not in catalog")
+    for c in e["conditions"]:
+        if not any(q in i["message"] for q in options(c)):
+            errors.append(f"condition {c!r} not in message")
+    if e["time"] is not None and e["time"]["quote"] not in i["message"]:
+        errors.append("time quote not in message")
+    if s.get("split") not in {"dev", "holdout"}:
+        errors.append("split")
+
+
 def main():
     failed = 0
-    for contract, check in (("w1", check_w1), ("w3", check_w3)):
+    for contract, check in (("w1", check_w1), ("w3", check_w3), ("r1", check_r1)):
         for path in sorted((ROOT / contract / "samples").glob("*.json")):
             s = json.loads(path.read_text())
             errors = []

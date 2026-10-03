@@ -1,0 +1,80 @@
+{
+ "id": "r1_10_context_binds_name",
+ "contract": "r1.v1",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "上下文点名后可绑定",
+ "input": {
+  "message": "他最近怎么样？",
+  "context": [
+   "我同事老王上个月换了部门。"
+  ],
+  "said_on": "2026-10-03",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-1",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-2",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "need": "judge",
+  "current_evidence": "query_only",
+  "type": [
+   "single",
+   "open"
+  ],
+  "subject": "e-laowang",
+  "conditions": [],
+  "time": null,
+  "plan.op": [
+   "lookup",
+   "list"
+  ],
+  "plan.filter.relation": null
+ },
+ "note": "与 w1_13 的用户裁定一致：上下文明确点名的对象可作为绑定依据。"
+}

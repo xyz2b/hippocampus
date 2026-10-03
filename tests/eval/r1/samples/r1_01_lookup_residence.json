@@ -1,0 +1,75 @@
+{
+ "id": "r1_01_lookup_residence",
+ "contract": "r1.v1",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "单事实查询",
+ "input": {
+  "message": "我住在哪？",
+  "context": [],
+  "said_on": "2026-10-03",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-1",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-2",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "need": "judge",
+  "current_evidence": "query_only",
+  "type": "single",
+  "subject": "self",
+  "conditions": [],
+  "time": null,
+  "plan.op": "lookup",
+  "plan.filter.relation": [
+   "lives_in",
+   null
+  ]
+ },
+ "note": null
+}
