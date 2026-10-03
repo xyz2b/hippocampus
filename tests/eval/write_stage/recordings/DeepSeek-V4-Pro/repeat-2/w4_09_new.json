@@ -62,68 +62,6 @@
         },
         "total_tokens": 3154
       }
-    },
-    {
-      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
-      "endpoint": "ep-20261003130756-trhj6",
-      "max_output_tokens": 16384,
-      "model": "DeepSeek-V4-Pro",
-      "output": {
-        "decisions": [
-          {
-            "action": "new",
-            "basis": [
-              {
-                "quote": {
-                  "text": "我在字节跳动工作。"
-                },
-                "source": {
-                  "kind": "stored",
-                  "source_id": "s-310"
-                }
-              }
-            ],
-            "candidate": 0,
-            "effective": null,
-            "pending_reason": null,
-            "relation_scope": null,
-            "resolves_relations": [],
-            "status": "decided",
-            "targets": []
-          }
-        ]
-      },
-      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我在字节跳动工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-310\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
-      "recording_version": 2,
-      "repeat": 2,
-      "request": "fnv1a64:09b235c9de08ed24",
-      "response": {
-        "incomplete_details": null,
-        "status": "completed",
-        "usage": {
-          "input_tokens": 2856,
-          "input_tokens_details": {
-            "cached_tokens": 2560
-          },
-          "output_tokens": 282,
-          "output_tokens_details": {
-            "reasoning_tokens": 203
-          },
-          "total_tokens": 3138
-        }
-      },
-      "schema": "w4_v2",
-      "usage": {
-        "input_tokens": 2856,
-        "input_tokens_details": {
-          "cached_tokens": 2560
-        },
-        "output_tokens": 282,
-        "output_tokens_details": {
-          "reasoning_tokens": 203
-        },
-        "total_tokens": 3138
-      }
     }
   ]
 }

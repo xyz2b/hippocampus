@@ -89,6 +89,56 @@ fn configured_roles_reach_requests_and_bindings_without_changing_legacy_requests
 }
 
 #[test]
+fn write_model_ids_stay_out_of_payloads_but_remain_in_stage_bindings() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let models = WriteModels {
+        w1: "routing-only-w1".into(),
+        w3: "routing-only-w3".into(),
+        w4: "routing-only-w4".into(),
+    };
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let provider = provider.with_models(models.clone()).unwrap();
+    assert_eq!(
+        run_all(&db, &key, &provider)["enrichment"]["status"],
+        "committed"
+    );
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    for (index, (stage, model)) in [("w1", &models.w1), ("w3", &models.w3), ("w4", &models.w4)]
+        .iter()
+        .enumerate()
+    {
+        let mut request = sent.lock().unwrap()[index].clone();
+        assert_eq!(
+            request.as_object_mut().unwrap().remove("model"),
+            Some(json!(model))
+        );
+        for model in [
+            models.w1.as_str(),
+            models.w3.as_str(),
+            models.w4.as_str(),
+            DEEPSEEK_MODEL,
+        ] {
+            assert!(
+                !request.to_string().contains(model),
+                "{stage} leaked {model}"
+            );
+        }
+        let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        assert!(payload.get("model").is_none(), "{stage}");
+        assert_eq!(stages[stage]["binding"]["model"], **model);
+    }
+}
+
+#[test]
 fn changed_role_models_never_reuse_same_round_results_and_rejudge_only_eligible_stages() {
     for role in ["w1", "w3", "w4"] {
         let db = Db::new();
@@ -197,7 +247,7 @@ fn changed_w1_model_can_extract_in_an_explicit_round_before_w2_is_frozen() {
 }
 
 #[test]
-fn third_revision_prompts_cover_remaining_relation_and_qualifier_errors() {
+fn third_revision_w1_prompt_covers_remaining_relation_and_qualifier_errors() {
     for rule in [
         "every candidate copies that whole sentence",
         "negative-direction relation such as avoids",
@@ -206,15 +256,6 @@ fn third_revision_prompts_cover_remaining_relation_and_qualifier_errors() {
         "kind=relative, unit=month and signed offset",
     ] {
         assert!(W1_PROMPT.contains(rule), "missing W1 rule: {rule}");
-    }
-    for rule in [
-        "Do not use new to",
-        "same claim or whether one replaces the other",
-        "target_unknown means the requested target cannot be located",
-        "current supplied input explicitly establishes resolution",
-        "Ending or replacing one member is not evidence",
-    ] {
-        assert!(W4_PROMPT.contains(rule), "missing W4 rule: {rule}");
     }
 }
 
@@ -1286,7 +1327,12 @@ fn w4_fixture_closes_the_model_pipeline_with_three_sends_and_reopen() {
     assert_eq!(request["text"]["format"]["strict"], true);
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     let stage = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"]["w4"];
-    assert_eq!(stage["binding"], input);
+    let mut binding_input = stage["binding"].clone();
+    assert_eq!(
+        binding_input.as_object_mut().unwrap().remove("model"),
+        Some(json!(DEEPSEEK_MODEL))
+    );
+    assert_eq!(binding_input, input);
     assert_eq!(stage["output"]["raw_output"], output);
     assert_eq!(stage["output"]["final_output"], output);
     assert_eq!(

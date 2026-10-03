@@ -148,11 +148,6 @@ value. Use pending/scope_incomplete for such conclusions, never invent conflict 
 retrieval. Do not use new or coexist as a shortcut when an update depends on excluding unseen
 related records. An unlocatable requested target uses target_unknown; an unclear comparison uses
 unclear_relation. Incomplete coverage alone does not force pending for a clearly located target.
-If relevant old records are present but it is unclear whether the new and old assertions are the
-same claim or whether one replaces the other, use pending/unclear_relation. Do not use new to
-avoid making that comparison. target_unknown means the requested target cannot be located;
-unclear_relation means the comparison or replacement relation cannot be established, even when
-the target is known. Keep these reasons distinct.
 Clearly located targets may be changed only with complete comparison and both sides'
 evidence; the host retains coverage gaps. A true conflict requires incompatible assertions within
 the same applicable scope and evidence from both sides, not merely different values or poor search.
@@ -171,12 +166,8 @@ relations. Each relation ID may appear in resolves_relations at most once across
 assigned to one eligible decision. Coordinate all candidates' targets and actions before returning:
 do not emit two decisions for one candidate or repeatedly process the same losing member while
 leaving the surviving member's superseded version unchanged.
-pending/new/coexist/conflict use resolves_relations=[]. Set resolves_relations only when the
-current supplied input explicitly establishes resolution of that relation within its scope.
-Ending or replacing one member is not evidence that the relation itself is resolved; absent
-explicit resolution evidence, leave resolves_relations empty even when an update ends a member.
-Do not infer resolution just because a member changed, was replaced or became historical.
-Related decisions commit atomically."#;
+pending/new/coexist/conflict use resolves_relations=[]. Do not infer resolution just
+because a member changed, was replaced or became historical. Related decisions commit atomically."#;
 
 /// 新写入路径的角色模型；缺省与旧路径相同，不改变共享地址与凭证。
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -404,10 +395,12 @@ impl WriteModelProvider {
             return Err("attempt_failed: write catalogue owner differs".into());
         }
         let client = self.operation_client(store, ctx)?;
-        let payload =
-            json!({"contract":"w4.v2","model":self.models.w4,"w4_input":input,"sources":sources});
+        let payload = json!({"contract":"w4.v2","w4_input":input,"sources":sources});
+        // 模型 ID 只绑定阶段结果，不能进入模型可见输入；保留现有检查点结构。
+        let mut stage_binding = payload.clone();
+        stage_binding["model"] = json!(self.models.w4);
         let failed_binding = |operation: &str| {
-            let mut binding = payload.clone();
+            let mut binding = stage_binding.clone();
             binding["invalid_operation_id"] = json!(operation);
             binding
         };
@@ -422,7 +415,7 @@ impl WriteModelProvider {
         let binding = if prior.get("raw_output").is_some() && prior["valid"] == false {
             failed_binding(&ctx.operation_id)
         } else {
-            payload.clone()
+            stage_binding.clone()
         };
         let saved = crate::commit::w4_load_model_stage(store, claim, "w4", &binding)?;
         let raw = match &saved {
@@ -477,7 +470,7 @@ impl WriteModelProvider {
                 &if checked.is_err() {
                     failed_binding(&ctx.operation_id)
                 } else {
-                    payload
+                    stage_binding
                 },
                 &json!({"raw_output":raw,"final_output":final_output,"valid":checked.is_ok(),
                     "validation_error":checked.as_ref().err()}),

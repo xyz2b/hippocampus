@@ -151,7 +151,7 @@
 
 - `write_pipeline` 缺省为 `legacy`，只接受 `legacy` / `w4_runtime_v1`，未知值报错。新路径只允许 `deferred` / `off`；与 `inline` 同时配置时启动报错（J6：现有 MCP 全局锁仍覆盖整次调用），不静默改模式。改回 legacy 开关后，inline 配置仍不能整理已绑定的新来源，分发入口返回 unsupported_processing_version；旧版本来源不受影响。原文接收必须 `capture_source=true`；无独立原文的请求明确拒绝。此开关不选择或改写召回路径。
 - `write_models` 仅选择新写入路径的 W1/W3/W4 模型 ID；推荐 W1/W4 用 DeepSeek-V4-Pro，W3 暂用 V4.1-Flash（端点如上）。配置项或单个角色缺省沿用常量 `DEEPSEEK_MODEL`；不读取同名环境变量，不自动切换现有部署。未知角色、非字符串、null 或空白 ID 报错；模型 ID 为供应商端点标识，离线配置检查不验证远端是否存在。base URL/API key、旧提取核验及召回模型不变。
-- 所选模型 ID 进入每个阶段的持久输入绑定。已有结果时同轮换模型返回 needs_rejudge，零发送；未写出结果的已占用调用也不重发。显式新轮次可重跑变化的 W3/W4，其他相同阶段继续复用。尚未冻结 W2 批次时，显式新轮次可重新提取 W1；已有冻结批次后，换 W1 仍返回 needs_rejudge，不能重提取后按旧候选索引提交或把旧候选标为新模型产物。旧检查点缺少模型字段时同轮也需重判；其冻结 W1 按已知旧默认 Flash 识别。已保存计划仍按既有规则续交，不因换 W4 模型重做已保存决定。数据库版本、schema、回执和冻结契约不变。
+- 所选模型 ID 仅用于 API 外层 model 路由及每个阶段的持久输入绑定，不进入模型可见的 payload。W1/W3 已独立构造绑定；W4 将 payload 与 stage_binding 分开，绑定仍保留原有 model、w4_input、sources 结构，失败操作标识也仅保留在绑定中。已有结果时同轮换模型返回 needs_rejudge，零发送；未写出结果的已占用调用也不重发。显式新轮次可重跑变化的 W3/W4，其他相同阶段继续复用。尚未冻结 W2 批次时，显式新轮次可重新提取 W1；已有冻结批次后，换 W1 仍返回 needs_rejudge，不能重提取后按旧候选索引提交或把旧候选标为新模型产物。旧检查点缺少模型字段时同轮也需重判；其冻结 W1 按已知旧默认 Flash 识别。已保存计划仍按既有规则续交，不因换 W4 模型重做已保存决定。数据库版本、schema、回执和冻结契约不变。
 - T1 在 `SourceRecord.task.processing_version` 绑定版本，包括新路径 off 来源；此时 round 仍为空，不调用模型。修改配置不会迁移既有来源或重排队列。同消息键同参数重放只读实际回执，不增加任务、轮次或模型调用；不同参数仍要求新 turn_id。
 - `pmr-mcp --db PATH --owner ID --config CONFIG --drain-enrichment --max-jobs N` 在 deferred 模式整理 queued 来源，按任务排序序号选取新旧版本并分别执行；旧来源继续 `commit_candidates`。旧顺序屏障仍生效，新路径复用 W4/W5 屏障、租约和快照检查。
 - `pmr-mcp --db PATH --owner ID --config CONFIG --enrich-source SOURCE_ID` 按来源绑定版本处理，当前开关即使为 legacy 也能整理已绑定的新来源；off 来源只能由显式入口启动。新来源首次整理用稳定 `w4:<source_id>:0` 登记第 0 轮，随后 `run_source_with_all_models` 串联 W1/W2/W3/W4/W5。若首轮登记前已被顺序屏障标 stale_requires_review，只有已在 T1 绑定新版本的来源可登记第 0 轮，沿用原序号，仍由原屏障阻止模型调用与提交并返回 needs_rejudge；不放宽旧来源的登记规则。续跑沿用 operation_id 与轮次；needs_rejudge、已提交等终态只返回回执，活跃租约只返回 running；pending/coverage_gaps 仅在无计划时续跑。drain 不自动重试 failed/budget_exhausted 或显式重判；加轮次仍须库级 `w4_start_round(..., rejudge=true)`，本段不新增重判 CLI。
@@ -159,19 +159,19 @@
 - 批处理在 `pmr-mcp` 创建 `Arc<Mutex<ChatMemoryService>>` 之前执行并返回，模型调用不持有服务全局锁；提供者调用期间也无 SQLite 写事务。本段不改全局锁，不启用新路径 MCP 后台或 inline，不调用真实模型。
 - `tests/write_pipeline.rs` 与 `tests/write_pipeline_process.py` 覆盖严格配置、原文授权、T1 版本绑定、关闭重开后配置切换/同参重放、终态与租约、缺凭证、两种 CLI 入口和混合队列；HTTP 仅使用本机合成 Responses。
 
-## 9. 提示词第 3 版、输出上限与分阶段评测
+## 9. 提示词版本（W1 第 3 版、W3/W4 第 2 版）、输出上限与分阶段评测
 
 - **W1**：仅 `relation=fact` 要求 value 与完整原句相同，专用关系保存宾语或属性值；`memory_type=fact` 不触发整句规则。polarity 表示命题方向，与不确定性及 speech 分开。活动适用条件放 conditions，时间按各 kind 的字段及原始粒度表达；没有时间时用空数组，禁止空 Quote。请求原话含控制动作，目标 Quote 指对象，unknown 对象不带候选索引。
 - **第 3 版 W1 增补**：strength 仅用于 preference，其余类型必须 null；avoids 等关系本身已表达回避，肯定该关系用 affirm，不能叠加 negate。times 仅来自原文实际时间，不能把适用情境变成时间；相对月份用 relative/unit=month/offset，命名月份用 month/year_offset/month。多个候选来自同一句时，每个 sentence 复制完整原句，值及限定语仍各自对应本断言。
 - **W3**：明确冲突或删改明确限定语判 contradicted，无法确认或排除命题判 insufficient。覆盖按 relation/value/限定语判断，不因 sentence 包含整条消息就判完整；gaps 必须附遗漏断言的非空连续原文。问题 Quote 不省略中间文字。
 - **W4**：提示词要求每条决定（含 pending）附新候选 `source.source_id` 的依据；decided 的每个目标还要分别引用旧依据。pending 要求仅为提示词约束，不收紧 validate。legacy 信息缺失用 unclear_relation，不伪造旧依据；依赖排除未检索记录的结论用 scope_incomplete，双方完整的已定位目标仍可更新。整个旧断言的修订用 refine，现实及偏好强度变化用 state_change，独立范围或局部补充才 coexist。整组协调目标与动作，每候选一条决定，每关系最多解决一次。
-- **第 3 版 W4 增补**：已有相关记录但是否同一断言、是否替代无法判断时用 pending/unclear_relation，不以 new 回避比较；target_unknown 只表示请求目标未定位。resolves_relations 仅在当前输入明确证明该关系在其范围内已解决时填写；结束或替代一个成员本身不构成解决依据。W3 提示词保持第 2 版原文，提示词泄漏扫描继续覆盖三阶段全部样本原文、ID 和标签。
+- **V6 回退**：W4 提示词逐字恢复 554ae73/e887e63 的第 2 版；W1 保留第 3 版，W3 不变。w4_16/w4_17 标签仍为 pending，decided 不算通过。提示词泄漏扫描继续覆盖三阶段全部样本原文、ID 和标签；schema、契约、validate 不变。
 - **生产预算**：新写入阶段固定 W1=32768、W3/W4=16384；旧阶段沿用原配置及默认 4096。W1 按既有超时规则使用 360 秒，W3/W4 使用 180 秒。新授权的内部 policy_json 增加 `write_output_tokens` 绑定；已有无此字段的授权仍可用于旧阶段且不重写，不能静默用于提高额度后的新写入阶段，须提供新 group_id。本轮不改变上述预算、数据库版本及调用次数限制。
 - **评分与门禁**：`tests/write_stage_eval.rs` 默认仅报告模型评分或调用失败；显式 `EVAL_GATE=1` 才因最终评分或调用失败而失败（原始 W4 评分另行报告），`EVAL_GATE=0` 关闭门禁。无效样本、损坏录制、非法配置及上限预检仍失败。W1 按 W2 最终候选与还原后的请求评分，保留 raw 和含拒收、原因、索引映射的 w2_final。候选完整匹配仍决定整项是否通过；字段独立诊断，不把一个错误扩散到正确字段。W4 resolves_relations 按整组比对，合法的归属变化不扣分，遗漏或重复仍失败。
 - 时间对象内的 role 与请求 target_object 均支持标签的可接受集合，结构数组仍逐项完整匹配；接受 event/validity 不意味着接受 retention，时间解释、Quote 和其他限定语继续逐字段严格评分。
 - **U4 评分校准**：逐字段及逐样本分别报告 contract（解码、机械校验、编号一致性）、semantic（标签语义）和 reference（引用选择）；机械校验通过不证明完整语义正确。允许的引用等价仅为：两边均是当前原文连续片段，末尾单个句号（中文或英文）或分句逗号可有可无；conditions 可多/少一个本候选完整原句中明确存在的开头主语“我”（不从其他断言借主语）。不忽略内部标点，不缩短目标指代，不改变限定语或时间，不放宽专用关系的值；fact 的原句值沿用原句引用等价。coexist 且 targets 为空时不要求旧方依据。W4 报告 raw_result/raw_output 与 final_result/final_output，最终评分采用和运行时相同的组装规则；不能把组装后的通过当作模型原始引用能力改善。
 - **多模型与重复录制**：`EVAL_MODEL_LABEL` 为安全目录标签；`EVAL_BASE_URL`、`EVAL_MODEL`、`EVAL_API_KEY` 覆盖 Responses 地址、模型 ID 和密钥，缺省沿用现有 DeepSeek 配置。密钥不进入请求、录制或报告。回放须设置与录制相同的标签、模型 ID 和 base URL，不需要 API key。需兼容现有 Responses/严格 JSON Schema 请求形状，本段不做其他供应商协议适配。`EVAL_REPEAT=N` 为正整数，缺省 1；录制放在 `tests/eval/write_stage/recordings/<label>/repeat-<k>/<sample>.json`。每次尝试单独计分并保留，报告每样本通过次数、错误类别及每次结果，不挑最好。HTTP/未完成/拒绝也保存诊断，续跑回放失败尝试而不自动重试；非法 JSON 原样保留并计失败。写文件或录制格式错误始终失败。
-- `EVAL_MODEL` 仍覆盖整次评测的全部所选阶段，独立于生产角色配置；W4 请求输入与生产一样携带所选模型 ID。第 3 版 W1/W4 指纹使第 2 版录制过期；Pro 的 W1/W4 各两次干跑应显示需录制 82，发送 0 次。
+- `EVAL_MODEL` 仍覆盖整次评测的全部所选阶段，独立于生产角色配置，只改 API 外层 model，不把端点 ID 加入任何阶段的模型可见输入。8b41bc5 曾错误地把 W4 payload 同时充当模型绑定，新增 input.model，导致恢复第 2 版提示词后 554ae73 的 Pro W4 42 项仍过期；V8 修正为仅在阶段绑定中保存模型 ID。发给模型的内容恢复后，从 554ae73 按原字节恢复 repeat-1/2 的 W4 录制，按现有指纹、模型、上限、地址和重复序号正常检查；不增加兼容豁免、不改写指纹。W1 第 3 版录制保持原样。同标签 W1/W4 各两次回放应为 W1 27/40、W4 36/42，全部 42 项有效（无过期），需录制 0、发送 0 次。过去两版 W4 分数差异同时包含提示词和输入字段变化，不能仅归因于提示词。
 - **录制绑定与历史重算**：提示词/schema/模型/输入仍进入请求指纹，上限另由录制元数据严格绑定；同时核对模型标签、实际模型 ID、base URL、repeat 和录制版本。缺省上限与生产一致：W1=32768、W3/W4=16384，可显式 `EVAL_MAX_OUTPUT_TOKENS` 覆盖，但不同上限不得复用。旧平铺录制不自动进入新的重复比较；第 3 轮没有重复序号及上限元数据，且 W4 用了 32768，不能作为本轮受控比较的第 1 次重复。`EVAL_HISTORY=1` 仅离线重算：第 1 版取 54ef102 中的历史录制，第 2 版取现有平铺录制，按当前裁定标签与评分规则报告；不检查当前提示词指纹、不发请求、不改录制，标记 comparison_eligible=false。历史预算及 w3_16 输入变更使其不能作为受控 A/B 结论。
 
 干跑或回放（不设置 EVAL_RECORD，不创建客户端）：

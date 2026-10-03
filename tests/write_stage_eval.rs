@@ -901,7 +901,7 @@ fn stage_request_with_output_tokens(
                 "w4_v2",
                 write_models::W4_PROMPT,
                 write_models::w4_schema(),
-                json!({"contract": "w4.v2", "model": hippocampus::DEEPSEEK_MODEL, "w4_input": input, "sources": sources}),
+                json!({"contract": "w4.v2", "w4_input": input, "sources": sources}),
             )
         }
         _ => return Err("unknown stage".into()),
@@ -1070,12 +1070,6 @@ fn plan_once(
             let mut request = stage_request(&stage, &sample)?;
             if let Some(id) = &model.model {
                 request["model"] = json!(id);
-                if stage == "w4" {
-                    let mut payload: Value =
-                        serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
-                    payload["model"] = json!(id);
-                    request["input"] = json!(payload.to_string());
-                }
             }
             let path = root.join(format!("{}.json", sample["id"].as_str().unwrap()));
             let file: Value = match std::fs::read_to_string(&path) {
@@ -2493,7 +2487,7 @@ fn repeats_models_and_caps_are_independent_and_all_attempts_count() {
 }
 
 #[test]
-fn single_eval_model_overrides_all_selected_roles_and_w4_binding_input() {
+fn single_eval_model_overrides_only_api_routing_for_all_selected_roles() {
     let temp = TempRecords::new();
     let mut model = EvalModel::default_model();
     model.model = Some("evaluation-model".into());
@@ -2506,11 +2500,59 @@ fn single_eval_model_overrides_all_selected_roles_and_w4_binding_input() {
     .unwrap();
     assert_eq!(cases.len(), 3);
     for case in cases {
-        assert_eq!(case.request["model"], "evaluation-model");
-        if case.stage == "w4" {
-            let payload: Value =
-                serde_json::from_str(case.request["input"].as_str().unwrap()).unwrap();
-            assert_eq!(payload["model"], "evaluation-model");
-        }
+        let mut request = case.request;
+        assert_eq!(
+            request.as_object_mut().unwrap().remove("model"),
+            Some(json!("evaluation-model"))
+        );
+        assert!(
+            !request.to_string().contains("evaluation-model"),
+            "{}",
+            case.stage
+        );
+        assert!(
+            !request.to_string().contains(hippocampus::DEEPSEEK_MODEL),
+            "{}",
+            case.stage
+        );
+        let payload: Value = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        assert!(payload.get("model").is_none(), "{}", case.stage);
     }
+}
+
+#[test]
+fn adding_w4_input_model_field_expires_recordings_even_with_the_same_prompt_and_endpoint() {
+    let temp = TempRecords::new();
+    let mut model = EvalModel::default_model();
+    model.model = Some("evaluation-model".into());
+    let chosen = selected("w4", "w4_01").unwrap();
+    let mut case = plan_repeated(chosen.clone(), &temp.0, &model, 1)
+        .unwrap()
+        .remove(0);
+    let current = case.request.clone();
+    let mut polluted_payload: Value =
+        serde_json::from_str(current["input"].as_str().unwrap()).unwrap();
+    assert!(polluted_payload.get("model").is_none());
+    polluted_payload["model"] = current["model"].clone();
+    case.request["input"] = json!(polluted_payload.to_string());
+    assert_eq!(case.request["instructions"], current["instructions"]);
+    assert_eq!(case.request["model"], current["model"]);
+    assert_ne!(case.request, current, "the JSON actually sent is different");
+    assert_ne!(fingerprint(&case.request), fingerprint(&current));
+    let text = json!({"decisions":[]}).to_string();
+    save_recording(
+        &case,
+        &fake_envelope(json!({"decisions":[]})),
+        Some(&text),
+        None,
+    )
+    .unwrap();
+    let replay = plan_repeated(chosen, &temp.0, &model, 1).unwrap();
+    assert!(matches!(replay[0].replay, Replay::Stale));
+    let report = evaluate(&replay, None, &mut |_| {
+        panic!("stale recording caused a send")
+    })
+    .unwrap();
+    assert_eq!(report["sent_calls"], 0);
+    assert_eq!(report["results"][0]["status"], "录制过期");
 }
