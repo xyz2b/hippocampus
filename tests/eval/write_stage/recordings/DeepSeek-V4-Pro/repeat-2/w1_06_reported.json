@@ -77,6 +77,83 @@
         },
         "total_tokens": 11765
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我妈说我小时候特别怕狗。"
+            },
+            "speech": "reported",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "小时候"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我妈说我小时候特别怕狗。"
+              },
+              "text": "我妈说我小时候特别怕狗。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我妈说我小时候特别怕狗。\"},\"speech\":\"reported\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"小时候\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我妈说我小时候特别怕狗。\"},\"text\":\"我妈说我小时候特别怕狗。\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:b2e857d2359063cc",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3716,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2419,
+          "output_tokens_details": {
+            "reasoning_tokens": 2286
+          },
+          "total_tokens": 6135
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3716,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2419,
+        "output_tokens_details": {
+          "reasoning_tokens": 2286
+        },
+        "total_tokens": 6135
+      }
     }
   ]
 }

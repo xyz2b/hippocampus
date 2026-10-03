@@ -94,6 +94,100 @@
         },
         "total_tokens": 7355
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我女儿的生日是3月12日。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "e-daughter"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "3月12日"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我女儿的生日是3月12日。"
+              },
+              "text": "我女儿的生日是3月12日。"
+            }
+          }
+        ],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "remember",
+            "quote": {
+              "text": "记住："
+            },
+            "target": {
+              "candidate_indices": [
+                0
+              ],
+              "object": "facts",
+              "quote": {
+                "text": "我女儿的生日是3月12日。"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我女儿的生日是3月12日。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"e-daughter\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"recurring\"},\"quote\":{\"text\":\"3月12日\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我女儿的生日是3月12日。\"},\"text\":\"我女儿的生日是3月12日。\"}}],\"memory_requests\":[{\"deadline\":null,\"kind\":\"remember\",\"quote\":{\"text\":\"记住：\"},\"target\":{\"candidate_indices\":[0],\"object\":\"facts\",\"quote\":{\"text\":\"我女儿的生日是3月12日。\"}}}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:4efabb3c4e782152",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3723,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3698,
+          "output_tokens_details": {
+            "reasoning_tokens": 3506
+          },
+          "total_tokens": 7421
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3723,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3698,
+        "output_tokens_details": {
+          "reasoning_tokens": 3506
+        },
+        "total_tokens": 7421
+      }
     }
   ]
 }

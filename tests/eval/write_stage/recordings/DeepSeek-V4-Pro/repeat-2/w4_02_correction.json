@@ -73,6 +73,79 @@
         },
         "total_tokens": 3374
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "correction",
+            "basis": [
+              {
+                "quote": {
+                  "text": "之前说错了，我住在杭州，不是苏州。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-230"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在苏州。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-102"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              21
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"correction\",\"basis\":[{\"quote\":{\"text\":\"之前说错了，我住在杭州，不是苏州。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-230\"}},{\"quote\":{\"text\":\"我住在苏州。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-102\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[21]}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:b13ffb5a2d05fc1c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2867,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 620,
+          "output_tokens_details": {
+            "reasoning_tokens": 507
+          },
+          "total_tokens": 3487
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2867,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 620,
+        "output_tokens_details": {
+          "reasoning_tokens": 507
+        },
+        "total_tokens": 3487
+      }
     }
   ]
 }

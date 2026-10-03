@@ -75,6 +75,81 @@
         },
         "total_tokens": 6440
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "retraction",
+            "memory_type": "fact",
+            "polarity": "negate",
+            "relation": "works_at",
+            "sentence": {
+              "text": "之前说我在字节工作那个不对，收回。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": null
+          }
+        ],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "forget",
+            "quote": {
+              "text": "收回"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "facts",
+              "quote": {
+                "text": "之前说我在字节工作那个"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"works_at\",\"sentence\":{\"text\":\"之前说我在字节工作那个不对，收回。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":{\"text\":\"收回\"},\"target\":{\"candidate_indices\":[],\"object\":\"facts\",\"quote\":{\"text\":\"之前说我在字节工作那个\"}}}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:4e0be85ee087705a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3720,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4632,
+          "output_tokens_details": {
+            "reasoning_tokens": 4500
+          },
+          "total_tokens": 8352
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3720,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4632,
+        "output_tokens_details": {
+          "reasoning_tokens": 4500
+        },
+        "total_tokens": 8352
+      }
     }
   ]
 }

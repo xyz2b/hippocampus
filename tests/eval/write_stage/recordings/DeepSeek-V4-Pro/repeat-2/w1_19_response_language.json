@@ -77,6 +77,96 @@
         },
         "total_tokens": 12554
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "以后"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "constraint",
+            "polarity": "affirm",
+            "relation": "response_language",
+            "sentence": {
+              "text": "以后回答我请用英文。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "英文"
+              },
+              "text": "英文"
+            }
+          }
+        ],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "remember",
+            "quote": {
+              "text": "以后回答我请用英文。"
+            },
+            "target": {
+              "candidate_indices": [
+                0
+              ],
+              "object": "source",
+              "quote": {
+                "text": "以后回答我请用英文。"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\":{\"text\":\"以后\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"constraint\",\"polarity\":\"affirm\",\"relation\":\"response_language\",\"sentence\":{\"text\":\"以后回答我请用英文。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"英文\"},\"text\":\"英文\"}}],\"memory_requests\":[{\"deadline\":null,\"kind\":\"remember\",\"quote\":{\"text\":\"以后回答我请用英文。\"},\"target\":{\"candidate_indices\":[0],\"object\":\"source\",\"quote\":{\"text\":\"以后回答我请用英文。\"}}}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:ef38a74edec4ab59",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3717,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3270,
+          "output_tokens_details": {
+            "reasoning_tokens": 3108
+          },
+          "total_tokens": 6987
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3717,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3270,
+        "output_tokens_details": {
+          "reasoning_tokens": 3108
+        },
+        "total_tokens": 6987
+      }
     }
   ]
 }

@@ -73,6 +73,79 @@
         },
         "total_tokens": 5262
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写的时候"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "uses",
+            "sentence": {
+              "text": "我画速写的时候固定用炭笔。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "炭笔"
+              },
+              "text": "炭笔"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\":{\"text\":\"画速写的时候\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"uses\",\"sentence\":{\"text\":\"我画速写的时候固定用炭笔。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"炭笔\"},\"text\":\"炭笔\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:f06340562c289fc5",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3719,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2110,
+          "output_tokens_details": {
+            "reasoning_tokens": 1991
+          },
+          "total_tokens": 5829
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3719,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2110,
+        "output_tokens_details": {
+          "reasoning_tokens": 1991
+        },
+        "total_tokens": 5829
+      }
     }
   ]
 }

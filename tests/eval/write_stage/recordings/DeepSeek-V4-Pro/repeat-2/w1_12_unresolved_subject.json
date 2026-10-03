@@ -81,6 +81,87 @@
         },
         "total_tokens": 4868
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "他上周辞职了。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "unresolved": {
+                "text": "他"
+              }
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "上周"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "他上周辞职了。"
+              },
+              "text": "他上周辞职了。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"他上周辞职了。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"unresolved\":{\"text\":\"他\"}},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"week\"},\"quote\":{\"text\":\"上周\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"他上周辞职了。\"},\"text\":\"他上周辞职了。\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:6e04a964b6bfb056",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3717,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1291,
+          "output_tokens_details": {
+            "reasoning_tokens": 1150
+          },
+          "total_tokens": 5008
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3717,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1291,
+        "output_tokens_details": {
+          "reasoning_tokens": 1150
+        },
+        "total_tokens": 5008
+      }
     }
   ]
 }
