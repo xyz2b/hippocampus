@@ -14,6 +14,7 @@ mod model_budget;
 mod openai;
 mod policy;
 pub mod r1;
+pub mod recall;
 mod retrieval;
 mod scope;
 mod semantic;

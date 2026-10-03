@@ -841,7 +841,7 @@ pub fn record_view(state: &PersistedMemoryState, id: MemoryId) -> Option<RecordV
 }
 
 /// 关系的 W4 输入视图。
-fn relation_link(
+pub(crate) fn relation_link(
     relation: &crate::StoredRelation,
 ) -> PersistenceResult<crate::contract::RelationLink> {
     use crate::contract::{Quote, RelationKind, RelationLink};

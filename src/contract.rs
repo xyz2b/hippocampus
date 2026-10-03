@@ -778,6 +778,263 @@ impl RecordView {
     }
 }
 
+/// §3.2 / §3.5 来源整理状态；不改变旧路径的字符串回执。
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum EnrichmentStatus {
+    Queued,
+    Running,
+    Committed,
+    CompletedNoFacts,
+    NoCandidatesUnreviewed,
+    CoverageGaps,
+    Pending,
+    AwaitingConfirmation,
+    Failed,
+    NeedsRejudge,
+    BudgetExhausted,
+    NotRequested,
+    Deleted,
+    NotStored,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RecallGrade {
+    Committed,
+    Uncommitted,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CurrentMessage {
+    #[serde(deserialize_with = "required")]
+    pub source_id: Option<String>,
+    pub text: String,
+    pub said_on: String,
+    #[serde(deserialize_with = "required")]
+    pub sequence: Option<u64>,
+    pub enrichment: EnrichmentStatus,
+    pub memory_requests: Vec<MemoryRequest>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RawEvidence {
+    pub source_id: String,
+    pub quote: Quote,
+    pub said_on: String,
+    pub sequence: u64,
+    pub grade: RecallGrade,
+    pub enrichment: EnrichmentStatus,
+    pub memory_requests: Vec<MemoryRequest>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallCompleteness {
+    pub retrieval_truncated: bool,
+    pub pending_related_sources: usize,
+    pub pending_updates: usize,
+    pub enrichment_gaps: usize,
+    pub plan_complete: bool,
+}
+
+/// R3 与 R4 的共享输入；current_evidence 的送审标记由运行时另行绑定，不扩展 wire。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallEvidence {
+    #[serde(deserialize_with = "required")]
+    pub current_message: Option<CurrentMessage>,
+    pub records: Vec<RecordView>,
+    pub raw: Vec<RawEvidence>,
+    pub relations: Vec<RelationLink>,
+    pub completeness: RecallCompleteness,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallRequest {
+    pub request_id: String,
+    pub query: String,
+    pub context: Vec<String>,
+    #[serde(deserialize_with = "required")]
+    pub task_id: Option<String>,
+    pub at: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallSnapshot {
+    pub read_revision: u64,
+    pub source_revision: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RecallStatus {
+    Answered,
+    ContextOnly,
+    Insufficient,
+    Conflict,
+    NeedsClarification,
+    Degraded,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum SemanticJudgment {
+    Model,
+    Skipped,
+    Failed,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum Qualification {
+    Yes,
+    No,
+    Unknown,
+}
+
+/// §3.4：仅定义冻结形状；R4 核验与 R5 派生留给召回③。
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallFact {
+    pub statement: String,
+    pub evidence: Vec<EvidenceRef>,
+    pub record_ids: Vec<MemoryId>,
+    pub polarity: Polarity,
+    #[serde(deserialize_with = "required")]
+    pub strength: Option<Strength>,
+    #[serde(deserialize_with = "required")]
+    pub uncertainty: Option<TextQualifier>,
+    pub conditions: Vec<TextQualifier>,
+    pub times: Vec<TimeInterp>,
+    pub current: Qualification,
+    pub applies: Qualification,
+    pub supersedes_record_ids: Vec<MemoryId>,
+    pub grade: RecallGrade,
+    #[serde(deserialize_with = "required")]
+    pub update: Option<UpdateState>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Quantity {
+    pub amount: String,
+    #[serde(deserialize_with = "required")]
+    pub unit: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ComputeItem {
+    pub id: String,
+    pub evidence: Vec<EvidenceRef>,
+    #[serde(deserialize_with = "required")]
+    pub quantity: Option<Quantity>,
+    #[serde(deserialize_with = "required")]
+    pub date: Option<TimeInterp>,
+    #[serde(deserialize_with = "required")]
+    pub date_source: Option<SourceRef>,
+    #[serde(deserialize_with = "required")]
+    pub event_group: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ComputeOp {
+    Count,
+    Sum,
+    Elapsed,
+    Compare,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ComputeBound {
+    Exact,
+    AtLeast,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ElapsedRounding {
+    CalendarDays,
+    NearestWeek,
+    CompleteCalendarMonths,
+    CompleteCalendarYears,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RequestTime {
+    pub at: i64,
+    pub local_date: String,
+    pub tz_offset_seconds: i32,
+    pub precision: Precision,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Computed {
+    pub op: ComputeOp,
+    pub value: String,
+    #[serde(deserialize_with = "required")]
+    pub unit: Option<String>,
+    pub bound: ComputeBound,
+    pub items: Vec<ComputeItem>,
+    pub operands: Vec<String>,
+    #[serde(deserialize_with = "required")]
+    pub rounding: Option<ElapsedRounding>,
+    #[serde(deserialize_with = "required")]
+    pub exact_days: Option<i64>,
+    #[serde(deserialize_with = "required")]
+    pub approximate: Option<bool>,
+    #[serde(deserialize_with = "required")]
+    pub request_time: Option<RequestTime>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallHistory {
+    pub statement: String,
+    #[serde(deserialize_with = "required")]
+    pub until: Option<String>,
+    pub evidence: Vec<EvidenceRef>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallClarification {
+    pub question: String,
+    pub evidence: Vec<EvidenceRef>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RecallOutput {
+    pub version: String,
+    pub request: RecallRequest,
+    pub status: RecallStatus,
+    #[serde(deserialize_with = "required")]
+    pub current_message: Option<CurrentMessage>,
+    pub records: Vec<RecordView>,
+    pub raw: Vec<RawEvidence>,
+    pub facts: Vec<RecallFact>,
+    #[serde(deserialize_with = "required")]
+    pub computed: Option<Computed>,
+    pub history: Vec<RecallHistory>,
+    pub conflicts: Vec<RelationLink>,
+    #[serde(deserialize_with = "required")]
+    pub clarification: Option<RecallClarification>,
+    pub semantic_judgment: SemanticJudgment,
+    pub completeness: RecallCompleteness,
+    pub degraded_reasons: Vec<String>,
+    pub snapshot: RecallSnapshot,
+}
+
 /// §3.2 w4.v2 输入用的完整记录视图：CurrentRecordView 的全部字段，加结束时间 `end`
 /// （`ended = known` 时为保留精度的换算结果，否则为 null）。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
