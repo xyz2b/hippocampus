@@ -592,6 +592,7 @@ pub(crate) fn forget(
         }
     }
     let deleted_source_ids: BTreeSet<&str> = deleted_sources.iter().map(String::as_str).collect();
+    crate::recall_models::invalidate_deleted(state, &deleted_source_ids);
     for relation in state.relations.values() {
         for evidence in relation.basis.iter().chain(relation.resolution.iter()) {
             if deleted_source_ids.contains(evidence.source_id.as_str()) {

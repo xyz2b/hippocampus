@@ -1,12 +1,12 @@
 # 召回运行时：证据闭环、R4 核验与 R5
 
-本模块实现 contracts 3.2–3.4 的证据组装、R4 跳过/注入分支与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。没有模型调用、来源写入、读取计数更新、数据库迁移或旧召回入口改动。
+本模块实现 contracts 3.1–3.4 的问题理解、证据组装、R4 核验与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。召回④新增可选模型提供者与请求重放；不新增来源、不更新读取计数、不迁移数据库，也不改变旧召回入口。
 
 ## 入口与快照
 
-`recall::run_offline(store, request, plan, budget)` 使用同一个 `assemble` 入口，随后消费 `Assembly::finish_skipped`。需要判断时，调用方取得同一个 Assembly 的证据包，把 r4.v3 JSON 或 JudgmentFailure 传给 Assembly::finish_r4；该入口先严格解码、完整核验再计算、组装 R5。context_only 继续走跳过分支。生产不读取评测夹具；后续④只在此注入点前增加模型提供者与调用门控，不重建测试专用流水线。
+`recall::run_offline(store, request, plan, budget)` 使用同一个 `assemble` 入口，随后消费 `Assembly::finish_skipped`。需要判断时，调用方取得同一个 Assembly 的证据包，把 r4.v3 JSON 或 JudgmentFailure 传给 Assembly::finish_r4；该入口先严格解码、完整核验再计算、组装 R5。context_only 继续走跳过分支。生产不读取评测夹具；④的 RecallRuntime 沿用相同 assemble/finish 入口，提供者只增加模型调用与门控。
 
-`Request` 的归属、任务、主体范围、said_on 和时区均由运行时提供。输出的 request 复制稳定 request_id、原始 query/context/task_id/at；R1 Plan 的原问题、上下文及可信范围必须与请求相同，否则拒绝组装。本段不持久化请求或缓存；跨调用同 ID 的参数一致性及模型预算留给召回④。
+`Request` 的归属、任务、主体范围、said_on 和时区均由运行时提供。输出的 request 复制稳定 request_id、原始 query/context/task_id/at；R1 Plan 的原问题、上下文及可信范围必须与请求相同，否则拒绝组装。跨调用同 ID 的参数一致性与首次 at 由④的摘要回执绑定，正文与完整结果只留内存，见下文。
 
 records、raw、relations 和 completeness 在同一个 SQLite 读事务内产生，FTS 也使用该事务。snapshot 保存该次 read_revision/source_revision。返回前重读并核对这两个版本及来源整理状态、MemoryRequest 控制回执的内存绑定：状态/限制改变不一定增加正文索引的 source_revision。发现变化返回 `recall_snapshot_changed`，不返回旧包，不自动重新执行语义判断。此错误为库级错误，不新增 MCP 输出或冻结失败码。
 
@@ -28,7 +28,7 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 只读 current_message 固定保留完整 query，与检索和存储证据预算无关；source_id/sequence=null，enrichment=not_stored，memory_requests=[]。bootstrap 无本轮消息时为 null。R1 current_evidence=query_only 的送审资格通过 Assembly.review_current_message() 保持为 false；标记不扩展冻结 JSON。仅有 query_only 的问题文本不算判断证据。
 
-相关关系在 R3.relations 和跳过输出的 conflicts 中保留 open/resolved/invalidated 及可见依据。这是已有关系的审计呈现，不生成本轮冲突判断。跳过时 facts=[]、computed=null、history=[]、clarification=null；need=context_only 时 status=context_only，其他原因均 degraded，semantic_judgment=skipped，并写入 semantic_judgment_skipped:context_only/no_evidence/offline/budget。
+相关关系在 R3.relations 和跳过输出的 conflicts 中保留 open/resolved/invalidated 及可见依据。这是已有关系的审计呈现，不生成本轮冲突判断。跳过时 facts=[]、computed=null、history=[]；need=context_only 时 status=context_only。no_evidence 下 R1 已识别的未解析/歧义主体保留 needs_clarification 与代码澄清模板，其他跳过均 degraded、clarification=null，semantic_judgment=skipped，并写入 semantic_judgment_skipped:context_only/no_evidence/offline/budget。
 
 ## 预算与完整性
 
@@ -47,7 +47,7 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 旧 completed_pending 映射 pending，stale_requires_review 映射 needs_rejudge；旧 completed_rejected 以及未知状态没有冻结枚举的唯一对应项，暂扣留该 raw 并增加 enrichment_gaps，plan_complete=false，不自行解释成 failed 或成功。已有 records 继续返回，旧路径字符串回执保持原状。未知状态的正式映射与 enrichment_gaps 按缺口条目计数属于需产品复核的口径，本段未改冻结契约。
 
-没有接通 CLI/MCP、在线 R1/R4、请求缓存或召回迁移。并发模型调用的锁范围、重试/缓存失效策略另段处理；本段只读证据包可以独立测试和提交。
+CLI/MCP 与配置分发仍留⑤，MCP 在线锁改造另项处理。④只提供库级模型入口，生产不读取样本；现有离线证据包入口保持可独立测试。
 
 
 ## R4 核验与计算
@@ -77,3 +77,26 @@ clarification 由代码模板列出歧义实体名称或未解析指代，引用
 conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消解的 open 关系；R4 conflict 涉及的记录保留在 records/facts 与 status 中，不把记录伪装成关系或由代码新建关系。失败/跳过时沿用原有关系审计输出。
 
 `tests/recall_r4.rs` 从已复核 R4 样本的 input 展开真实 SQLite 来源与 W5 提交、关系、结束信息，通过同一 assemble/finish_r4 注入人工输出，并重开验证无写入。样本的 expect/must_not 不进入运行时；r4_04 追加以原始 single/lookup 计划验证：问题与新原文没有词法命中时仍取得 s-40，R4 注入后南京 current=yes、grade=uncommitted，上海 current=no，不判冲突。`tests/recall_offline.rs` 同时验证最新优先的数量/字节裁剪、裁剪前计数、任务/归属/主体隔离和已完成来源相关性规则。模型语义质量另由后续真实评测衡量。
+
+
+## 召回④：提供者、预算与重放
+
+`recall_models::RecallRuntime::run(store, request, evidence_budget, provider)` 串联 R1 → assemble → R4 → finish。provider=None、客户端网络关闭或 bootstrap 跳过两次调用；context_only 或 query_only 且无 records/raw 时只跳过 R4。R1 无效或失败按 judge/unknown 宽泛检索，保留 r1_not_understood 和具体失败原因；R4 超时/HTTP失败/无效输出按③的整份降级规则处理。预算不足标 semantic_judgment_skipped:budget 与 budget_exhausted，没有隐式重试。
+
+角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；本段仅提供配置类型与 with_models，尚未接配置文件或 CLI/MCP。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；生产与评测共用 r1_input/r4_payload。
+
+新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1/R4 输出上限分别沿用 ModelBudgetConfig.query_output_tokens/review_output_tokens（缺省4096），输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置，尚无真实模型质量或延迟结论。
+
+回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
+
+同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap 与证据预算须相同；不同参数拒绝。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
+
+重放及结束事务核对业务/来源版本和来源整理/限制摘要，失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；这不代表旧 MCP 服务全局锁问题已经解决。
+
+以上新失败说明仅是库级错误，不增加冻结状态枚举或新的 MCP 输出。⑤需要在授权范围内决定宿主如何呈现缓存不可用，不能将其当作自动重调许可。
+
+## 单阶段评测
+
+`tests/write_stage_eval.rs` 新增 EVAL_STAGES=r1,r4，共40项（各20；dev14/holdout6），仍复用预检、录制、请求指纹、重复与离线回放。R4 仅把固定样本 input 展开成完整 RecordView/RawEvidence/RelationLink 与获准计划后调用一个阶段，不运行模型 R1；expect、must_not、split、样本 ID 不进入请求。展开策略与评分边界见 `tests/eval/recall_stage/README.md`。
+
+新召回请求指纹完整绑定请求时钟、said_on、时区、模型、提示词/schema及实际证据包；旧 W 录制指纹保持不变。默认只出报告；显式 EVAL_GATE=1 才因模型评分/调用失败报错。真实调用仍需另行批准，本段只做干跑及注入/离线回放。

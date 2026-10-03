@@ -528,33 +528,33 @@ fn provider_error(error: OpenAiAdapterError) -> Box<dyn std::error::Error + Send
     .into()
 }
 
-fn object(fields: &[(&str, Json)]) -> Json {
+pub(crate) fn object(fields: &[(&str, Json)]) -> Json {
     json!({"type":"object","properties":fields.iter().map(|(k,v)| (k.to_string(),v.clone()))
         .collect::<serde_json::Map<_,_>>(), "required":fields.iter().map(|(k,_)| k).collect::<Vec<_>>(),
         "additionalProperties":false})
 }
-fn string() -> Json {
+pub(crate) fn string() -> Json {
     json!({"type":"string"})
 }
-fn choices(values: &[&str]) -> Json {
+pub(crate) fn choices(values: &[&str]) -> Json {
     json!({"type":"string","enum":values})
 }
-fn array(items: Json) -> Json {
+pub(crate) fn array(items: Json) -> Json {
     json!({"type":"array","items":items})
 }
-fn nullable(value: Json) -> Json {
+pub(crate) fn nullable(value: Json) -> Json {
     json!({"anyOf":[value,{"type":"null"}]})
 }
-fn quote() -> Json {
+pub(crate) fn quote() -> Json {
     object(&[("text", string())])
 }
-fn qualifier() -> Json {
+pub(crate) fn qualifier() -> Json {
     object(&[("quote", quote()), ("resolved", json!({"type":"boolean"}))])
 }
-fn index() -> Json {
+pub(crate) fn index() -> Json {
     json!({"type":"integer","minimum":0})
 }
-fn time_interp() -> Json {
+pub(crate) fn time_interp() -> Json {
     let unit = choices(&["day", "week", "month", "year"]);
     let offset = json!({"type":"integer"});
     let branch = |kind, fields: Vec<(&str, Json)>| {

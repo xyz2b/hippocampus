@@ -418,11 +418,16 @@ impl Assembly {
             .map(|reason| (*reason).into())
             .collect();
         degraded_reasons.push(format!("semantic_judgment_skipped:{}", reason.code()));
+        // 无事实证据只阻止 R4；R1 已识别的主体歧义仍须按 Y1 请求澄清。
+        let clarification = (reason == SkipReason::NoEvidence && self.plan.needs_clarification())
+            .then(|| self.clarification(&[]));
         Ok(RecallOutput {
             version: "recall.v3".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
+            } else if clarification.is_some() {
+                RecallStatus::NeedsClarification
             } else {
                 RecallStatus::Degraded
             },
@@ -434,7 +439,7 @@ impl Assembly {
             history: Vec::new(),
             // 原有关系的审计视图，不新增本轮冲突判断。
             conflicts: self.evidence.relations,
-            clarification: None,
+            clarification,
             semantic_judgment: SemanticJudgment::Skipped,
             completeness: self.evidence.completeness,
             degraded_reasons,
@@ -579,7 +584,7 @@ fn requests(source: &SourceRecord) -> PersistenceResult<Vec<MemoryRequest>> {
 
 // 来源状态/控制回执的改变不一定增加 source_revision（它主要绑定正文索引）。
 // 只在内存绑定 R3 使用的元数据，避免相同 revision 掩盖刚完成的整理或限制确认。
-fn source_metadata(
+pub(crate) fn source_metadata(
     state: &PersistedMemoryState,
 ) -> PersistenceResult<Vec<(String, String, Vec<MemoryRequest>)>> {
     state

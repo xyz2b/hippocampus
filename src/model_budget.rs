@@ -89,6 +89,8 @@ impl ModelBudgetConfig {
 
 #[derive(Clone, Copy, Debug)]
 pub enum ModelStage {
+    R1,
+    R4,
     W1,
     W3,
     W4,
@@ -108,6 +110,8 @@ pub enum ModelStage {
 impl ModelStage {
     pub(crate) fn name(self) -> &'static str {
         match self {
+            Self::R1 => "r1",
+            Self::R4 => "r4",
             Self::W1 => "w1",
             Self::W3 => "w3",
             Self::W4 => "w4",
@@ -136,6 +140,8 @@ impl ModelStage {
     }
     pub fn output_tokens(self, config: &ModelBudgetConfig) -> u32 {
         match self {
+            Self::R1 => config.query_output_tokens,
+            Self::R4 => config.review_output_tokens,
             Self::W1 => 32768,
             Self::W3 | Self::W4 => 16384,
             Self::Extraction | Self::ExtractionRepair | Self::Reader => {
@@ -383,12 +389,25 @@ impl ModelBudget {
                 )
                 .map_err(database_error)?;
         }
+        // 新召回按请求跨授权组计数，换 group_id 也不能重做已尝试的阶段。
+        if matches!(stage, ModelStage::R1 | ModelStage::R4) {
+            (operation, stage_calls) = tx
+                .query_row(
+                    "SELECT count(*), coalesce(sum(stage=?3),0) FROM model_calls
+                 WHERE owner_id=?1 AND operation_id=?2 AND stage IN ('r1','r4')",
+                    params![self.owner, self.operation_id, stage.name()],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .map_err(database_error)?;
+        }
         if total >= self.config.max_calls as i64 {
             return Err(budget_error("budget group call limit reached"));
         }
         let operation_limit = if matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4) {
             self.max_background_operation_calls
                 .unwrap_or(self.config.max_operation_calls.min(3))
+        } else if matches!(stage, ModelStage::R1 | ModelStage::R4) {
+            self.config.max_operation_calls.min(2)
         } else {
             self.config.max_operation_calls
         };

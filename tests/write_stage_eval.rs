@@ -2,6 +2,9 @@
 #[path = "eval/w3/adapter.rs"]
 mod adapter;
 
+#[path = "eval/recall_stage/adapter.rs"]
+mod recall_adapter;
+
 use hippocampus::{
     EntityId, MemoryType, ModelBudgetConfig, ModelStage, contract::*, structured_request, w2, w4,
     write_models,
@@ -677,6 +680,7 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         "w1" => score_w1(sample, text, &mut fields),
         "w3" => score_w3(sample, text, &mut fields).map(|_| Value::Null),
         "w4" => score_w4(sample, text, &mut fields).map(|_| Value::Null),
+        "r1" | "r4" => recall_adapter::score(stage, sample, text, &mut fields).map(|_| Value::Null),
         _ => unreachable!(),
     });
     if let Some(Err(error)) = &result {
@@ -701,13 +705,19 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     } else {
         "失败"
     };
-    let mut report = json!({"stage": stage, "id": sample["id"], "label_status": sample["label_status"], "status": status,
+    let mut report = json!({"stage": stage, "id": sample["id"], "label_status": sample["label_status"], "split":sample["split"], "status": status,
         "categories": categories(&fields), "fields": fields, "must_not": sample.get("must_not").or_else(|| sample["expect"].get("must_not")), "note": sample["note"]});
     if stage == "w1" {
         report["raw"] = text
             .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
             .unwrap_or(Value::Null);
         report["w2_final"] = result.and_then(Result::ok).unwrap_or(Value::Null);
+    }
+    if matches!(stage, "r1" | "r4") {
+        report["raw_output"] = text
+            .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
+            .unwrap_or(Value::Null);
+        report["manual_review"] = json!({"must_not":"pending","unlabelled_semantics":"pending"});
     }
     report
 }
@@ -765,15 +775,18 @@ fn samples(stage: &str) -> Vec<Value> {
 
 fn selected(stages: &str, prefixes: &str) -> Result<Vec<(String, Value)>, String> {
     let stages: Vec<_> = stages.split(',').map(str::trim).collect();
-    if stages.iter().any(|s| !["w1", "w3", "w4"].contains(s)) {
-        return Err("EVAL_STAGES only accepts w1,w3,w4".into());
+    if stages
+        .iter()
+        .any(|s| !["w1", "w3", "w4", "r1", "r4"].contains(s))
+    {
+        return Err("EVAL_STAGES only accepts w1,w3,w4,r1,r4".into());
     }
     let prefixes: Vec<_> = prefixes.split(',').map(str::trim).collect();
     if prefixes.len() > 1 && prefixes.iter().any(|p| p.is_empty()) {
         return Err("EVAL_CASES must not contain an empty prefix".into());
     }
     let mut result = Vec::new();
-    for stage in ["w1", "w3", "w4"]
+    for stage in ["w1", "w3", "w4", "r1", "r4"]
         .into_iter()
         .filter(|s| stages.contains(s))
     {
@@ -904,6 +917,7 @@ fn stage_request_with_output_tokens(
                 json!({"contract": "w4.v2", "w4_input": input, "sources": sources}),
             )
         }
+        "r1" | "r4" => recall_adapter::request(stage, sample)?,
         _ => return Err("unknown stage".into()),
     };
     let mut request = structured_request(
@@ -939,6 +953,13 @@ fn fingerprint(request: &Value) -> Value {
         && let Ok(input) = serde_json::from_str::<Value>(input)
     {
         request["input"] = input;
+    }
+    if matches!(
+        request["text"]["format"]["name"].as_str(),
+        Some("r1_v1" | "r4_v3")
+    ) {
+        // 新召回不删除时钟字段；request.at/said_on/时区/模型/提示词/完整包都须参与绑定。
+        return json!(hippocampus::recall_models::fingerprint(&request));
     }
     strip(&mut request);
     let hash = request
@@ -1263,7 +1284,8 @@ fn evaluate(
         result["request"] = fingerprint(&case.request);
         results.push(result);
     }
-    let summary: Vec<_> = ["w1", "w3", "w4"].into_iter().map(|stage| {
+    let summary: Vec<_> = ["w1", "w3", "w4", "r1", "r4"].into_iter()
+        .filter(|stage| !stage.starts_with('r') || cases.iter().any(|c|c.stage==*stage)).map(|stage| {
         let rows: Vec<_> = results.iter().filter(|r| r["stage"] == stage).collect();
         let count = |status| rows.iter().filter(|r| r["status"] == status).count();
         json!({"stage": stage, "passed": count("通过"), "total": rows.len(),
@@ -1273,8 +1295,18 @@ fn evaluate(
     }).collect();
     Ok(
         json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
-            "summary":summary,"per_sample":per_sample(&results),"results":results}),
+            "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
     )
+}
+
+fn split_reports(results: &[Value]) -> Vec<Value> {
+    ["r1","r4"].into_iter().flat_map(|stage|["dev","holdout"].into_iter().map(move |split|(stage,split)))
+        .filter(|(stage,_)|results.iter().any(|r|r["stage"]==*stage)).map(|(stage,split)|{
+            let rows:Vec<_>=results.iter().filter(|r|r["stage"]==stage && r["split"]==split).collect();
+            json!({"stage":stage,"split":split,"total":rows.len(),"passed":rows.iter().filter(|r|r["status"]=="通过").count(),
+                "failed":rows.iter().filter(|r|matches!(r["status"].as_str(),Some("失败"|"调用失败"))).count(),
+                "missing":rows.iter().filter(|r|r["status"]=="未录制").count(),"stale":rows.iter().filter(|r|r["status"]=="录制过期").count()})
+        }).collect()
 }
 
 fn per_sample(results: &[Value]) -> Vec<Value> {
@@ -1942,14 +1974,23 @@ fn dry_run_plan() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
     let cases = plan(selected(&stages, &prefix).unwrap(), &root).unwrap();
     let mut total = 0;
-    println!("写入侧分阶段评测干跑计划（不发送请求）");
-    for stage in ["w1", "w3", "w4"] {
+    println!("分阶段评测干跑计划（不发送请求）");
+    for stage in ["w1", "w3", "w4", "r1", "r4"] {
         if !stages.split(',').any(|s| s.trim() == stage) {
             continue;
         }
         let count = cases.iter().filter(|c| c.stage == stage).count();
         total += count;
         println!("{stage}: {count} 次潜在真实调用");
+        if stage.starts_with('r') {
+            for split in ["dev", "holdout"] {
+                let n = cases
+                    .iter()
+                    .filter(|c| c.stage == stage && c.sample["split"] == split)
+                    .count();
+                println!("  {split}: {n} 次潜在真实调用");
+            }
+        }
     }
     println!("合计: {total} 次潜在真实调用");
     println!(
@@ -2555,4 +2596,243 @@ fn adding_w4_input_model_field_expires_recordings_even_with_the_same_prompt_and_
     .unwrap();
     assert_eq!(report["sent_calls"], 0);
     assert_eq!(report["results"][0]["status"], "录制过期");
+}
+
+fn fake_r1(sample: &Value) -> Value {
+    fn pick(value: &Value) -> Value {
+        if value.is_array() {
+            value[0].clone()
+        } else {
+            value.clone()
+        }
+    }
+    let e = &sample["expect"];
+    let subject = pick(&e["subject"]);
+    let subject = if subject.is_string() {
+        json!({"entity_id":subject})
+    } else if subject.get("unresolved").is_some() {
+        json!({"unresolved":{"text":subject["unresolved"]}})
+    } else {
+        subject
+    };
+    let time = if e["time"].is_null() {
+        Value::Null
+    } else {
+        json!({"role":"event","quote":{"text":e["time"]["quote"]},"interp":e["time"]["interp"],"anchor":"said_on"})
+    };
+    json!({"need":pick(&e["need"]),"current_evidence":pick(&e["current_evidence"]),"type":pick(&e["type"]),"subject":subject,
+        "relation":"stage query relation","conditions":items(&e["conditions"]).iter().map(|q|json!({"quote":{"text":pick(q)},"resolved":true})).collect::<Vec<_>>(),
+        "time":time,"plan":{"op":pick(&e["plan.op"]),"filter":{"relation":pick(&e["plan.filter.relation"]),"time":null},"unit":if e.get("unit").is_some(){pick(&e["unit"])}else{Value::Null}}})
+}
+fn fake_r4(sample: &Value) -> Value {
+    let f = recall_adapter::R4Input::new(&sample["input"]).unwrap();
+    let mut facts = vec![];
+    for e in items(&sample["expect"]["facts"]) {
+        let basis:Vec<_>=items(&e["sources"]).iter().map(|id|{
+            if id=="current" {json!({"source":{"kind":"current"},"quote":{"text":f.request.query}})}else{
+                let source=id.as_str().unwrap();
+                let text=f.evidence.raw.iter().find(|r|r.source_id==source).map(|r|r.quote.text.clone()).or_else(||f.evidence.records.iter().flat_map(|r| match r {
+                    RecordView::Current(r)=>r.evidence.clone(),RecordView::Legacy(r)=>r.evidence.clone() }).find_map(|e|matches!(&e.source,SourceRef::Stored {source_id} if source_id==source).then_some(e.quote.text))).unwrap();
+                json!({"source":{"kind":"stored","source_id":source},"quote":{"text":text}})
+            }
+        }).collect();
+        let mut fact = json!({"statement":basis[0]["quote"]["text"],"evidence":basis,"record_ids":e["record_ids"],"polarity":"affirm","strength":null,
+            "uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[]});
+        for (key, v) in e["must"].as_object().unwrap() {
+            let v = if v.is_array() && key != "conditions" {
+                &v[0]
+            } else {
+                v
+            };
+            fact[key] = match key.as_str() {
+                "uncertainty" => json!({"quote":{"text":v},"resolved":true}),
+                "conditions" => json!(
+                    items(v)
+                        .iter()
+                        .map(|v| json!({"quote":{"text":v},"resolved":true}))
+                        .collect::<Vec<_>>()
+                ),
+                _ => v.clone(),
+            };
+        }
+        facts.push(fact);
+    }
+    let mut compute = Value::Null;
+    let expected = &sample["expect"]["compute"];
+    if !expected.is_null() {
+        let op = expected["op"].as_str().unwrap();
+        let mut inputs:Vec<_>=f.evidence.records.iter().enumerate().map(|(i,r)|{
+            let evidence=match r {RecordView::Current(r)=>r.evidence.clone(),RecordView::Legacy(r)=>r.evidence.clone()};
+            json!({"id":r.id().0.to_string(),"evidence":evidence,"quantity":null,"date":null,"date_source":null,
+                "event_group":if op=="count" && expected["distinct_groups"]==2 && i<2 {"same".to_owned()}else{format!("g{i}")}})
+        }).collect();
+        if op == "sum" {
+            for (i, item) in inputs.iter_mut().enumerate() {
+                item["quantity"] =
+                    json!({"amount":expected["quantities"][i],"unit":expected["unit"]});
+            }
+        }
+        if op == "elapsed" || op == "compare" {
+            let dates = if op == "compare" {
+                vec![
+                    (
+                        "2024年3月",
+                        json!({"kind":"month","year_offset":0,"month":3}),
+                    ),
+                    (
+                        "2025年",
+                        json!({"kind":"relative","unit":"year","offset":0}),
+                    ),
+                ]
+            } else if expected["insufficient_ok"] == true {
+                vec![("七月", json!({"kind":"month","year_offset":0,"month":7}))]
+            } else {
+                vec![("7月1日", json!({"kind":"date","date":"2026-07-01"}))]
+            };
+            for (item, (quote, interp)) in inputs.iter_mut().zip(dates) {
+                item["date"] = json!({"role":"event","quote":{"text":quote},"interp":interp,"anchor":"said_on"});
+                item["date_source"] = item["evidence"][0]["source"].clone();
+            }
+        }
+        let operands = match op {
+            "elapsed" => json!(["@request.at", inputs[0]["id"]]),
+            "compare" => json!([inputs[0]["id"], inputs[1]["id"]]),
+            _ => json!([]),
+        };
+        compute = json!({"op":op,"items":inputs,"operands":operands,"unit":if op=="elapsed"{json!("day")}else{expected["unit"].clone()},
+            "coverage":if expected.get("coverage").is_some(){expected["coverage"][0].clone()}else{json!("complete")}});
+    }
+    json!({"verdict":if sample["expect"]["verdict"].is_array(){sample["expect"]["verdict"][0].clone()}else{sample["expect"]["verdict"].clone()},"facts":facts,"compute":compute})
+}
+#[test]
+fn recall_stage_all_inputs_expand_to_frozen_packages_without_labels_or_model_ids() {
+    for (stage, sample) in selected("r1,r4", "").unwrap() {
+        let request = stage_request(&stage, &sample).unwrap();
+        let input: Value = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        assert!(input.get("model").is_none());
+        assert!(input.get("expect").is_none());
+        assert!(input.get("split").is_none());
+        assert!(!input.to_string().contains(sample["id"].as_str().unwrap()));
+        if stage == "r4" {
+            let evidence: RecallEvidence =
+                serde_json::from_value(input["evidence"].clone()).unwrap();
+            for record in evidence.records {
+                if let RecordView::Current(r) = record {
+                    assert!(
+                        !serde_json::to_value(r)
+                            .unwrap()
+                            .as_object()
+                            .unwrap()
+                            .contains_key("end")
+                    );
+                }
+            }
+        }
+    }
+}
+#[test]
+fn recall_stage_calibrated_injections_validate_and_score_all_fields() {
+    for (stage, sample) in selected("r1,r4", "").unwrap() {
+        let output = if stage == "r1" {
+            fake_r1(&sample)
+        } else {
+            fake_r4(&sample)
+        };
+        let report = score(&stage, &sample, Some(&output.to_string()));
+        assert_eq!(report["status"], "通过", "{}: {report}", sample["id"]);
+        assert_eq!(report["split"], sample["split"]);
+    }
+}
+#[test]
+fn recall_stage_wrong_fields_and_missing_sources_fail_without_lenient_semantics() {
+    let sample = &samples("r1")[0];
+    let good = fake_r1(sample);
+    for field in [
+        "need",
+        "current_evidence",
+        "type",
+        "subject",
+        "conditions",
+        "time",
+        "plan.op",
+        "plan.filter.relation",
+    ] {
+        let mut bad = good.clone();
+        match field {
+            "subject" => bad[field] = json!({"entity_id":"absent"}),
+            "conditions" => bad[field] = json!([{"quote":{"text":"absent"},"resolved":true}]),
+            "time" => {
+                bad[field] = json!({"role":"event","quote":{"text":"absent"},"anchor":"said_on","interp":{"kind":"unknown"}})
+            }
+            "plan.op" => bad["plan"]["op"] = json!("count"),
+            "plan.filter.relation" => bad["plan"]["filter"]["relation"] = json!("absent"),
+            "need" => bad[field] = json!("context_only"),
+            "current_evidence" => bad[field] = json!("assertion_present"),
+            _ => bad[field] = json!("aggregate"),
+        }
+        assert_eq!(
+            score("r1", sample, Some(&bad.to_string()))["status"],
+            "失败",
+            "{field}"
+        );
+    }
+    let sample = &samples("r4")[0];
+    let good = fake_r4(sample);
+    for (field, value) in [
+        ("polarity", json!("negate")),
+        ("record_ids", json!([999])),
+        ("current", json!("no")),
+    ] {
+        let mut bad = good.clone();
+        bad["facts"][0][field] = value;
+        assert_eq!(
+            score("r4", sample, Some(&bad.to_string()))["status"],
+            "失败"
+        );
+    }
+    let mut bad = good;
+    bad["facts"][0]["evidence"][0]["source"]["source_id"] = json!("absent");
+    assert_eq!(
+        score("r4", sample, Some(&bad.to_string()))["status"],
+        "失败"
+    );
+}
+#[test]
+fn recall_stage_recording_replay_splits_and_clock_fingerprints_are_complete() {
+    let temp = TempRecords::new();
+    let selected = selected("r1,r4", "").unwrap();
+    assert_eq!(selected.len(), 40);
+    let cases = plan(selected.clone(), &temp.0).unwrap();
+    assert_eq!(preflight(&cases, None).unwrap(), 0);
+    assert!(preflight(&cases, Some(39)).is_err());
+    let report = evaluate(&cases, Some(40), &mut |request| {
+        let case = cases.iter().find(|c| c.request == *request).unwrap();
+        Ok(fake_envelope(if case.stage == "r1" {
+            fake_r1(&case.sample)
+        } else {
+            fake_r4(&case.sample)
+        }))
+    })
+    .unwrap();
+    for row in items(&report["splits"]) {
+        assert_eq!(row["total"], if row["split"] == "dev" { 14 } else { 6 });
+        assert_eq!(row["passed"], row["total"]);
+    }
+    let replay = evaluate(&plan(selected, &temp.0).unwrap(), None, &mut |_| {
+        panic!("recall replay sent")
+    })
+    .unwrap();
+    assert_eq!(replay["results"], report["results"]);
+    assert_eq!(replay["sent_calls"], 0);
+    let mut request = cases
+        .iter()
+        .find(|c| c.stage == "r4")
+        .unwrap()
+        .request
+        .clone();
+    let original = fingerprint(&request);
+    let mut input: Value = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+    input["request"]["at"] = json!(0);
+    request["input"] = json!(input.to_string());
+    assert_ne!(original, fingerprint(&request));
 }

@@ -26,6 +26,9 @@ use crate::model_budget::{ModelBudget, ModelStage};
 #[path = "write_models.rs"]
 pub mod write_models;
 
+#[path = "recall_models.rs"]
+pub mod recall_models;
+
 #[cfg(test)]
 type TestTransport =
     dyn Fn(reqwest::blocking::Request) -> Result<(u16, String), OpenAiAdapterError> + Send + Sync;
