@@ -870,3 +870,186 @@ fn unresolved_subject_without_judgment_evidence_keeps_r1_clarification_and_skips
     assert_eq!(sent.lock().unwrap().len(), 1);
     assert_eq!(db.calls(), 1);
 }
+
+#[test]
+fn host_dispatch_online_replay_validator_and_mcp_guard_share_one_result() {
+    let db = Db::new();
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(p);
+    let args = json!({"query":"我的灯色是什么，临时标记 Q9？","context":["当前查询不授权保存。"],
+        "request_id":"host-online","at":AT});
+    let blocked = service.call_with_global_context("memory_recall", args.clone(), || false);
+    assert_eq!(blocked.is_error, Some(true));
+    assert!(
+        blocked.structured_content.unwrap()["error"]
+            .as_str()
+            .unwrap()
+            .contains("recall_v3_mcp_online_disabled")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 0);
+    let prepare = json!({"user_turn":{"text":"新陈述不会在拒绝后保存。","session_id":"host","turn_id":"blocked","capture_source":true}});
+    assert_eq!(
+        service
+            .call_with_global_context("memory_prepare", prepare, || false)
+            .is_error,
+        Some(true)
+    );
+    assert_eq!(db.open().read().unwrap().sources.len(), 1);
+    let out = service
+        .call("memory_recall", args.clone(), || false)
+        .unwrap();
+    assert_eq!(out["version"], "recall.v3");
+    assert_eq!(out["status"], "answered", "{out}");
+    assert!(out.get("answer_contract").is_none());
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(service.call("memory_recall", args, || false).unwrap(), out);
+    let legacy = service
+        .call(
+            "memory_recall",
+            json!({"query":out["request"]["query"],"context":out["request"]["context"],
+        "request_id":"host-online","at":AT,"recall_version":"answer_contract.v1"}),
+            || false,
+        )
+        .unwrap();
+    assert_eq!(legacy["answer_contract"]["version"], 1);
+    assert_eq!(legacy["answer_contract"]["status"], "insufficient_evidence");
+    assert!(legacy.get("facts").is_none());
+    assert!(legacy.get("version").is_none());
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let validation = json!({"query":out["request"]["query"],"context":out["request"]["context"],
+        "request_id":"host-online","draft_answer":TEXT,"source_ids":["s-purple"],"at":AT});
+    let approved = service
+        .call("memory_validate_answer", validation.clone(), || false)
+        .unwrap();
+    assert_eq!(approved["approved"], true, "{approved}");
+    let mcp =
+        service.call_with_global_context("memory_validate_answer", validation.clone(), || false);
+    assert_ne!(mcp.is_error, Some(true));
+    assert_eq!(mcp.structured_content.unwrap()["approved"], true);
+    for (key, value) in [
+        ("draft_answer", json!("我的灯是红色。")),
+        ("source_ids", json!(["wrong-source"])),
+        ("context", json!(["不同的用户上下文"])),
+        ("at", json!(AT - 1)),
+        ("task_id", json!("other")),
+    ] {
+        let mut bad = validation.clone();
+        bad[key] = value;
+        let checked = service.call("memory_validate_answer", bad, || false);
+        assert!(
+            checked.is_err() || checked.unwrap()["approved"] == false,
+            "{key}"
+        );
+    }
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+    let state = db.open().read().unwrap();
+    assert_eq!(state.sources.len(), 1);
+    let receipts = serde_json::to_string(&state.receipts).unwrap();
+    assert!(!receipts.contains("临时标记 Q9"));
+    db.open()
+        .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some("s-purple")))
+        .unwrap();
+    assert!(
+        service
+            .call("memory_validate_answer", validation, || false)
+            .is_err()
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
+    let db = Db::new();
+    let (p, sent) = mocked(&db, vec![]);
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(p);
+    for (id, more) in [
+        ("host-offline", json!({"offline":true})),
+        ("host-bootstrap", json!({"bootstrap":true})),
+    ] {
+        let mut args = json!({"query":"全局回答要求","request_id":id,"at":AT});
+        args.as_object_mut()
+            .unwrap()
+            .extend(more.as_object().unwrap().clone());
+        let result = service.call_with_global_context("memory_recall", args.clone(), || false);
+        assert_eq!(
+            service
+                .call_with_global_context("memory_recall", args, || false)
+                .structured_content,
+            result.structured_content
+        );
+        assert_ne!(result.is_error, Some(true), "{result:?}");
+        let result = result.structured_content.unwrap();
+        assert_eq!(result["recall"]["version"], "recall.v3");
+        assert!(result.get("answer_contract").is_none());
+        assert!(result["recall"].get("answer_contract").is_none());
+        serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
+        if id == "host-bootstrap" {
+            assert_eq!(result["recall"]["raw"], json!([]));
+            assert_eq!(result["recall"]["records"], json!([]));
+        }
+    }
+    assert!(service.call("memory_recall", json!({"query":"全局回答要求","request_id":"host-bootstrap","at":AT,"offline":true}), ||false)
+        .unwrap_err().to_string().contains("recall_request_mismatch"));
+    let args = json!({"user_turn":{"text":"我在练习素描。","session_id":"host","turn_id":"offline-prepare", "capture_source":true,"observed_at":AT},"offline":true});
+    let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
+    let body = response.structured_content.as_ref().unwrap();
+    assert_eq!(body["source"]["status"], "stored");
+    assert_eq!(body["recall"]["version"], "recall.v3");
+    assert!(body.get("remember").is_none());
+    assert_eq!(
+        service
+            .validate_prepare_response(&args, response.clone())
+            .structured_content,
+        response.structured_content
+    );
+    let id = body["source"]["source_id"].as_str().unwrap();
+    db.open()
+        .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some(id)))
+        .unwrap();
+    let invalidated = service.validate_prepare_response(&args, response);
+    let body = invalidated.structured_content.unwrap();
+    assert_eq!(body["source"]["status"], "deleted");
+    assert_eq!(body["enrichment"]["status"], "deleted");
+    assert_eq!(body["recall"]["status"], "not_requested");
+    assert_eq!(sent.lock().unwrap().len(), 0);
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
+fn host_validator_rejects_unknown_current_even_for_identical_statement_and_sources() {
+    let db = Db::new();
+    let mut r4 = r4_out();
+    r4["facts"][0]["current"] = json!("unknown");
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4)]);
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(p);
+    let out = service
+        .call(
+            "memory_recall",
+            json!({"query":"请核对我的灯色。","request_id":"unknown-current","at":AT}),
+            || false,
+        )
+        .unwrap();
+    assert_eq!(out["facts"][0]["current"], "unknown");
+    let out = service.call("memory_validate_answer",json!({"query":"请核对我的灯色。","request_id":"unknown-current","draft_answer":TEXT,"source_ids":["s-purple"]}),||false).unwrap();
+    assert_eq!(out["approved"], false);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}

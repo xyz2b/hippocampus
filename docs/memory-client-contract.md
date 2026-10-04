@@ -2,6 +2,14 @@
 
 本约定规定客户端如何向现有 MCP 工具提交用户原话、读取安全答复、核对改写。工具名称和参数以连接时的 `tools/list` schema 为准；v1 不增加工具或输入字段；结果增加版本、问题/作用域回显与快照字段，保留既有字段位置。仅适用于本仓库 S5 开发版，正式 S4 尚未切换。此处的 `version: 1` 是**结果契约版本**，不是请求参数。服务端以固定 `owner` 运行，客户端不能在工具请求中自报或切换 owner。
 
+## recall.v3 opt-in
+
+默认仍使用下文 v1。服务器可设置 `recall_pipeline=recall_v3`，三个入口也可传 `recall_version=recall.v3` 或 `answer_contract.v1` 显式选择；每次只返回所选权威输出。新流水线的旧回执从同一次 R4/快照机械适配，复杂、未知或未提交事实保守返回不足，不重跑旧模型链路。新 MCP Recall 的冻结对象位于 `recall`，Prepare 为 `source/enrichment/recall` 三段，均另附独立 global_context，不含旧 answer_contract。宿主按新版 facts/computed/history/conflicts 及真实 evidence 组织答复，完整保留 polarity、限定语、grade/update 和 unknown/pending；skipped/failed 不授予本轮确定事实判断。
+
+只读新版提交稳定 request_id；Prepare 可从 session/turn 自动派生。重试保持参数不变，省略 at 时服务端复用首次时钟。bootstrap 完全离线且只取全局规则。MCP 在线新版暂明确报错（全局锁 W8），可用 offline=true、bootstrap 或禁网运行；在线改用 CLI，详见 [运行时接线](architecture/recall-runtime.md#⑤-配置cli-与客户端迁移)。离线 Prepare 需 off/deferred 写入模式。不要以静默旧版回落继续答复。
+
+新版 memory_validate_answer 提交同一 request_id 与完整原问题/上下文/任务，仅校验同进程、同快照的保留结果，零模型调用。只机械批准简单事实的逐字 statement 和对应来源集合；任意改写、复杂限定或计算不据来源 ID 批准。回执为 version=recall.v3、request、snapshot、approved、approved_source_ids、reason；失败后没有旧 safe_answer，应按原权威新版结果保守组织答复，缺失/失效则说明无法核对。跨 CLI 进程无完整保留结果时也报错，不重调。
+
 ## 输入与调用顺序
 
 1. 新聊天第一次调用 `memory_recall`，传 `{"query":"全局回答要求","bootstrap":true}`，离线读取全局要求。其 `not_applicable` 结果不核准任何具体记忆答案。之后，纯查询、明确不保存的消息及单独 `memory_remember` 成功后的检索使用普通 `memory_recall`；有获准保存的个人陈述时用 `memory_prepare`，不要为同一消息再重复 `memory_remember`。

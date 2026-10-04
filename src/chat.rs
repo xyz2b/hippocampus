@@ -40,6 +40,26 @@ pub enum WritePipeline {
     W4RuntimeV1,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RecallPipeline {
+    #[default]
+    Legacy,
+    RecallV3,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, JsonSchema)]
+#[schemars(crate = "rmcp::schemars")]
+enum RecallVersion {
+    #[serde(rename = "answer_contract.v1")]
+    Legacy,
+    #[serde(rename = "recall.v3")]
+    V3,
+}
+
+#[path = "chat_recall.rs"]
+mod recall_dispatch;
+
 const ENRICHMENT_VERSION: &str = "s5_enrichment_v1";
 const ENRICHMENT_LEASE_SECONDS: i64 = 900;
 
@@ -71,6 +91,9 @@ pub struct ChatConfig {
     pub retrieval_mode: Option<RetrievalMode>,
     pub enrichment_mode: EnrichmentMode,
     pub write_pipeline: WritePipeline,
+    pub recall_pipeline: RecallPipeline,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recall_models: Option<crate::openai::recall_models::RecallModels>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub write_models: Option<crate::write_models::WriteModels>,
     /// Experimental committed-fact search keys; raw statements remain the evidence.
@@ -97,6 +120,8 @@ impl Default for ChatConfig {
             retrieval_mode: None,
             enrichment_mode: EnrichmentMode::Inline,
             write_pipeline: WritePipeline::Legacy,
+            recall_pipeline: RecallPipeline::Legacy,
+            recall_models: None,
             write_models: None,
             fact_index_enabled: false,
             model_budget: None,
@@ -180,6 +205,13 @@ impl<'de> Deserialize<'de> for ChatConfig {
                 "retrieval_mode" => read!(retrieval_mode),
                 "enrichment_mode" => read!(enrichment_mode),
                 "write_pipeline" => read!(write_pipeline),
+                "recall_pipeline" => read!(recall_pipeline),
+                "recall_models" => {
+                    let models: crate::openai::recall_models::RecallModels =
+                        serde_json::from_value(value).map_err(D::Error::custom)?;
+                    models.validate().map_err(D::Error::custom)?;
+                    config.recall_models = Some(models);
+                }
                 "write_models" => {
                     if !value.is_object() {
                         return Err(D::Error::custom("write_models must be an object"));
@@ -228,6 +260,9 @@ impl ChatConfig {
     }
 
     pub fn validate(&self) -> PersistenceResult<()> {
+        if let Some(models) = &self.recall_models {
+            models.validate()?;
+        }
         if let Some(models) = &self.write_models {
             models.validate()?;
         }
@@ -338,6 +373,15 @@ fn past_time(at: Option<i64>, field: &str) -> PersistenceResult<()> {
 struct Prepare {
     /// Current USER message and its provenance. Never submit assistant-generated query text as user evidence.
     user_turn: Remember,
+    /// Selected authoritative recall contract; omission follows recall_pipeline.
+    #[serde(default)]
+    recall_version: Option<RecallVersion>,
+    /// Stable recall identity; prepare defaults to its session/turn identity.
+    #[serde(default)]
+    request_id: Option<String>,
+    /// Skip recall models. Offline prepare requires off/deferred enrichment.
+    #[serde(default)]
+    offline: bool,
     #[serde(default = "default_limit")]
     limit: usize,
 }
@@ -348,6 +392,15 @@ struct Prepare {
 struct Recall {
     /// Complete original USER question; put separate USER clarifications in context.
     query: String,
+    /// Selected authoritative contract; omission follows recall_pipeline.
+    #[serde(default)]
+    recall_version: Option<RecallVersion>,
+    /// Required for recall.v3; reuse on retries with identical parameters.
+    #[serde(default)]
+    request_id: Option<String>,
+    /// Completely offline recall, even when loopback/live calls are permitted.
+    #[serde(default)]
+    offline: bool,
     /// At most 8 verbatim USER messages, each at most 2000 Unicode characters, including later clarification; never assistant text or invented history.
     #[serde(default)]
     context: Vec<String>,
@@ -378,6 +431,23 @@ struct ValidateAnswer {
     source_ids: Vec<String>,
     #[serde(default)]
     task_id: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+#[schemars(crate = "rmcp::schemars")]
+struct VersionedValidateAnswer {
+    #[serde(flatten)]
+    answer: ValidateAnswer,
+    /// Selected authoritative contract; omission follows recall_pipeline.
+    #[serde(default)]
+    recall_version: Option<RecallVersion>,
+    /// recall.v3 validates a retained result, never starts another model request.
+    #[serde(default)]
+    request_id: Option<String>,
+    /// If supplied, must match the original recall clock.
+    #[serde(default)]
+    at: Option<i64>,
 }
 
 fn default_limit() -> usize {
@@ -1352,6 +1422,9 @@ fn validated_single_relation<'a>(
 pub struct ChatMemoryService {
     store: SqliteMemoryStore,
     config: ChatConfig,
+    recall_runtime: crate::openai::recall_models::RecallRuntime,
+    #[cfg(test)]
+    recall_provider: Option<crate::openai::recall_models::RecallModelProvider>,
 }
 
 fn bootstrap_runtime(owner: UserId, now: Timestamp, limit: usize) -> RuntimeContext {
@@ -1389,7 +1462,13 @@ impl ChatMemoryService {
             }
             Ok(())
         })?;
-        Ok(Self { store, config })
+        Ok(Self {
+            store,
+            config,
+            recall_runtime: Default::default(),
+            #[cfg(test)]
+            recall_provider: None,
+        })
     }
 
     /// MCP response envelope: auxiliary reads must never change the committed operation's outcome.
@@ -1457,7 +1536,9 @@ impl ChatMemoryService {
             );
         }
         let bootstrap = name == "memory_recall" && arguments["bootstrap"] == true;
-        let mut operation = self.call_in_operation(name, arguments, cancelled, operation_id, false);
+        let mut operation = self
+            .mcp_recall_guard(name, &arguments)
+            .and_then(|()| self.call_in_operation(name, arguments, cancelled, operation_id, false));
         let context_started = std::time::Instant::now();
         let local_context = operation.as_mut().ok().and_then(|value| {
             if name == "memory_recall"
@@ -1508,6 +1589,9 @@ impl ChatMemoryService {
             {
                 value["model_calls"] = json!([]);
             }
+        }
+        if value["version"] == "recall.v3" && value.get("facts").is_some() {
+            value = json!({"recall":value});
         }
         value["global_context"] = context;
         if crate::diagnostics::incomplete() {
@@ -1586,6 +1670,9 @@ impl ChatMemoryService {
         arguments: &Value,
         response: CallToolResult,
     ) -> CallToolResult {
+        if let Some(checked) = self.validate_v3_prepare_response(&response) {
+            return checked;
+        }
         if response.is_error == Some(true) {
             return response;
         }
@@ -2702,11 +2789,21 @@ impl ChatMemoryService {
         if serde_json::to_vec(&arguments)?.len() > 65_536 {
             return Err("tool arguments exceed 64 KiB".into());
         }
+        if self.uses_recall_runtime(name, &arguments)? {
+            check_cancelled(&cancelled)?;
+            return self.call_recall_v3(name, arguments, cancelled, operation_id);
+        }
+        if name == "memory_prepare" && arguments["offline"] == true {
+            return Err("offline is supported only by recall.v3; select recall.v3".into());
+        }
         if name == "memory_recall" {
             // Invalid arguments are tool errors, never a seemingly usable answer contract.
             let input: Recall = serde_json::from_value(arguments.clone())?;
             validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
             check_limit(input.limit)?;
+            if input.offline && !input.bootstrap {
+                return Err("offline is supported only by recall.v3; select recall.v3".into());
+            }
             if input.bootstrap && input.task_id.is_some() {
                 return Err("bootstrap loads global requirements; omit task_id".into());
             }
@@ -2808,7 +2905,7 @@ impl ChatMemoryService {
                         "memory_recall",
                         json!({
                             "query": query, "task_id": task_id, "limit": input.limit, "context":context,
-                            "at": at,
+                            "at": at, "recall_version":"answer_contract.v1",
                         }),
                         cancelled,
                         operation_id,
@@ -2829,7 +2926,8 @@ impl ChatMemoryService {
                 )
             }
             "memory_validate_answer" => {
-                let input: ValidateAnswer = serde_json::from_value(arguments)?;
+                let input: VersionedValidateAnswer = serde_json::from_value(arguments)?;
+                let input = input.answer;
                 validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
                 bounded_text(&input.draft_answer, "draft_answer", 4_000)?;
                 if input.source_ids.len() > 20 {
@@ -2853,7 +2951,7 @@ impl ChatMemoryService {
                 let recall = self.call_in_operation(
                     "memory_recall",
                     json!({"query":input.query,"context":input.context,
-                        "task_id":input.task_id,"limit":default_limit()}),
+                        "task_id":input.task_id,"limit":default_limit(),"recall_version":"answer_contract.v1"}),
                     cancelled,
                     operation_id,
                     false,
@@ -3516,7 +3614,7 @@ fn tool<T: JsonSchema>(
         .expect("tool arguments are objects")
         .clone();
     let contract = if matches!(name, "memory_recall" | "memory_prepare") {
-        "Question recalls include answer_contract v1 (version=1), computed locally without another model request. Prepare places it at recall.result.answer_contract on success, or recall.answer_contract on runtime failure; in_progress/not_requested provide no answer permission. Match query/context/task_id to the intended question. read_revision/source_revision bind the evidence snapshot, not permanent permission. Unknown/missing versions or statuses cannot approve an answer. Use its safe_answer verbatim for its query/context, followed only by the source quotes and IDs in its sources array. Show these as readable source text, never invent a source URL. Empty safe_source_ids/sources means cite nothing, even when other fields contain candidate or historical records. source_linked_fact and source_linked_exact_identity approve only their exact safe_answer value and listed sources; other statuses do not authorize factual citations. not_applicable with safe_answer=null covers bootstrap and nonquestions; it does not approve a factual answer. To rewrite or extend a memory-based answer, submit the complete draft and original question to memory_validate_answer. Do not call validation again just to repeat an unchanged safe_answer. These constraints apply to this question only; a narrower lookup cannot approve a broader conclusion. "
+        "When recall.v3 is selected (recall_version=recall.v3, or recall_pipeline=recall_v3 with no version override), one authoritative recall.v3 replaces the old answer_contract; do not apply the legacy safe_answer gate to it. Provide a stable request_id for recall; prepare derives one from session/turn if omitted. MCP online recall.v3 is rejected until W8 lock work; use offline=true or bootstrap=true, or the CLI. MCP read-only recall wraps the frozen object at recall; prepare returns source/enrichment/recall directly. Organize answers from facts/computed/history/conflicts, preserve all qualifiers, grade/update/unknown markers, and cite only their exact evidence; skipped/failed semantics cannot turn records/raw into current conclusions. Validation of recall.v3 only uses a retained result for the same request_id/query/context/task_id/at and current snapshot, never a third model request; simple unchanged unqualified facts may be approved, other drafts need semantic review. New-process/missing-result validation fails without retry. Otherwise, question recalls include answer_contract v1 (version=1), computed locally without another model request. Prepare places it at recall.result.answer_contract on success, or recall.answer_contract on runtime failure; in_progress/not_requested provide no answer permission. Match query/context/task_id to the intended question. read_revision/source_revision bind the evidence snapshot, not permanent permission. Unknown/missing versions or statuses cannot approve an answer. Use its safe_answer verbatim for its query/context, followed only by the source quotes and IDs in its sources array. Show these as readable source text, never invent a source URL. Empty safe_source_ids/sources means cite nothing, even when other fields contain candidate or historical records. source_linked_fact and source_linked_exact_identity approve only their exact safe_answer value and listed sources; other statuses do not authorize factual citations. not_applicable with safe_answer=null covers bootstrap and nonquestions; it does not approve a factual answer. To rewrite or extend a memory-based answer, submit the complete draft and original question to memory_validate_answer. Do not call validation again just to repeat an unchanged safe_answer. These constraints apply to this question only; a narrower lookup cannot approve a broader conclusion. "
     } else {
         ""
     };
@@ -3533,7 +3631,7 @@ pub fn memory_tools() -> Vec<Tool> {
     vec![
         tool::<Prepare>(
             "memory_prepare",
-            "After the new-chat bootstrap, use this for ordinary personalized messages before web search or advice. Processes the current USER message once: stores authorized source evidence, optionally extracts and saves eligible personal assertions in inline mode, then recalls relevant context. Use for advice containing household/living/home/equipment facts, user-authorized personal or family health background, and follow-up details; the question format does not cancel its factual background. Pass the complete verbatim current message in user_turn with stable session/turn IDs and only needed preceding USER history. Never pass a rewritten search query as user evidence. No separate remember call is needed. For personal assertions within the user-authorized raw-retention scope, set user_turn.capture_source=true on the FIRST call, including factual background in questions, follow-ups and corrections. The entire message and necessary USER history must be authorized. Save raw text first; in inline mode the extractor selects facts afterwards. Server enrichment_mode=off finishes after source storage and indexing: enrichment=not_requested is normal completion, no model work is queued, and capture_source=true is required. Uncertainty about useful facts or model success does not disable authorized capture. Omitted/false requests legacy fact-only processing without independent raw protection; use memory_recall for a pure lookup with no new personal assertion. source=stored is not proof of committed facts; inspect enrichment and outcomes. Failed or interrupted source receipts replay without another model attempt. Do not submit secrets or messages the user says not to save; use memory_recall for read-only lookup instead. If status is in_progress, call memory_prepare again with EXACTLY the same arguments until the result arrives; this resumes existing work, not a new save. Never report failure just because it is still running. Check remember and recall statuses independently: a successful recall does not mean saving succeeded; rejected/pending/conflict are not saved facts.",
+            "After the new-chat bootstrap, use this for ordinary personalized messages before web search or advice. Processes the current USER message once: stores authorized source evidence, optionally extracts and saves eligible personal assertions in inline mode, then recalls relevant context. Use for advice containing household/living/home/equipment facts, user-authorized personal or family health background, and follow-up details; the question format does not cancel its factual background. Pass the complete verbatim current message in user_turn with stable session/turn IDs and only needed preceding USER history. Never pass a rewritten search query as user evidence. No separate remember call is needed. For personal assertions within the user-authorized raw-retention scope, set user_turn.capture_source=true on the FIRST call, including factual background in questions, follow-ups and corrections. The entire message and necessary USER history must be authorized. Save raw text first; in inline mode the extractor selects facts afterwards. Server enrichment_mode=off finishes after source storage and indexing: enrichment=not_requested is normal completion, no model work is queued, and capture_source=true is required. Uncertainty about useful facts or model success does not disable authorized capture. Omitted/false requests legacy fact-only processing without independent raw protection; use memory_recall for a pure lookup with no new personal assertion. source=stored is not proof of committed facts; inspect enrichment and outcomes. Failed or interrupted source receipts replay without another model attempt. Do not submit secrets or messages the user says not to save; use memory_recall for read-only lookup instead. If status is in_progress, call memory_prepare again with EXACTLY the same arguments until the result arrives; this resumes existing work, not a new save. Never report failure just because it is still running. For legacy, check remember and recall statuses independently; for recall.v3, check source/enrichment/recall separately: a successful recall does not mean saving succeeded; rejected/pending/conflict are not saved facts.",
             true,
             false,
             true,
@@ -3552,9 +3650,9 @@ pub fn memory_tools() -> Vec<Tool> {
             false,
             true,
         ),
-        tool::<ValidateAnswer>(
+        tool::<VersionedValidateAnswer>(
             "memory_validate_answer",
-            "Use this to validate a rewritten or extended memory-based answer. The verdict returns the same v1 fields at its root: version, query, context, task_id, status, safe_answer, safe_source_ids, sources, read_revision and source_revision. Missing snapshot revisions are null; empty sources are []. approved=true may approve a clarification or refusal, not a factual answer; inspect status. An unchanged answer_contract.safe_answer with its listed sources from the full original question does not require a second call. Pass the complete original USER question, only necessary verbatim USER clarifications in context, the proposed answer text, and every source ID it would cite. This tool recomputes evidence for that full question; prior narrower lookups and client-provided source IDs cannot approve a claim. Only approved=true authorizes sending the draft with approved_source_ids. Otherwise use safe_answer verbatim with safe_source_ids. Display only the quotes and IDs in sources, without inventing URLs. A missing relation, unbound subject, absent source, or unsupported inference fails closed. Complex claims may require manual review. In assisted mode validation may make one budgeted model-assisted recall, but the final gate itself makes no extra model judgment.",
+            "For recall.v3, pass its request_id with identical query/context/task_id (optional at must match); validate only a retained same-process result, without another model call. A valid source ID alone cannot approve a draft; arbitrary rewrites and complex qualifiers/computation are not mechanically approved. Missing/stale results fail closed; never automatically call recall again to validate. The verdict includes selected version, bound request/snapshot, approved, approved_source_ids and reason; use the authoritative recall.v3 for a conservative response. When recall_pipeline=recall_v3 with answer_contract.v1 selected, pass request_id too: the old verdict is mechanically adapted from the same retained R4/snapshot without another model call. For the legacy pipeline, use this to validate a rewritten or extended memory-based answer. The verdict returns the same v1 fields at its root: version, query, context, task_id, status, safe_answer, safe_source_ids, sources, read_revision and source_revision. Missing snapshot revisions are null; empty sources are []. approved=true may approve a clarification or refusal, not a factual answer; inspect status. An unchanged answer_contract.safe_answer with its listed sources from the full original question does not require a second call. Pass the complete original USER question, only necessary verbatim USER clarifications in context, the proposed answer text, and every source ID it would cite. This tool recomputes evidence for that full question; prior narrower lookups and client-provided source IDs cannot approve a claim. Only approved=true authorizes sending the draft with approved_source_ids. Otherwise use safe_answer verbatim with safe_source_ids. Display only the quotes and IDs in sources, without inventing URLs. A missing relation, unbound subject, absent source, or unsupported inference fails closed. Complex claims may require manual review. In assisted mode validation may make one budgeted model-assisted recall, but the final gate itself makes no extra model judgment.",
             false,
             false,
             true,

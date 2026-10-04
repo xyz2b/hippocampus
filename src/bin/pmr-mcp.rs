@@ -204,11 +204,13 @@ fn main() -> PersistenceResult<()> {
     let mut drain = false;
     let mut max_jobs = None;
     let mut enrich_source = None;
+    let mut tool_call = None;
+    let mut arguments_file = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--help" | "-h" => {
                 eprintln!(
-                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires off/deferred and capture_source=true, and runs only through these CLI batch commands. Existing sources keep their bound version.\nDeferred capture queues authorized sources without model calls; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. No automatic model retries."
+                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\n--call memory_recall|memory_prepare|memory_validate_answer --arguments JSON_FILE runs one CLI tool call (explicit --db/--owner). recall_pipeline: legacy (default)/recall_v3; request recall_version=recall.v3 or answer_contract.v1. recall.v3 needs a stable request_id; prepare defaults to session/turn. offline=true and bootstrap make no recall model calls. MCP online recall.v3 is disabled (W8); use CLI or offline=true. Recall and write pipelines are independent.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires off/deferred and capture_source=true, and runs only through these CLI batch commands. Existing sources keep their bound version.\nDeferred capture queues authorized sources without model calls; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. No automatic model retries."
                 );
                 return Ok(());
             }
@@ -227,6 +229,24 @@ fn main() -> PersistenceResult<()> {
                     args.next().ok_or("--config requires a path")?,
                 )?)?
             }
+            "--call" if tool_call.is_none() => {
+                let name = args.next().ok_or("--call requires a tool name")?;
+                if !matches!(
+                    name.as_str(),
+                    "memory_recall" | "memory_prepare" | "memory_validate_answer"
+                ) {
+                    return Err(
+                        "--call supports memory_recall/memory_prepare/memory_validate_answer"
+                            .into(),
+                    );
+                }
+                tool_call = Some(name);
+            }
+            "--arguments" if arguments_file.is_none() => {
+                arguments_file = Some(PathBuf::from(
+                    args.next().ok_or("--arguments requires a JSON file")?,
+                ));
+            }
             "--drain-enrichment" if !drain => drain = true,
             "--max-jobs" if max_jobs.is_none() => {
                 max_jobs = Some(
@@ -242,6 +262,21 @@ fn main() -> PersistenceResult<()> {
         }
     }
     config.validate()?;
+    if tool_call.is_some() || arguments_file.is_some() {
+        if tool_call.is_none()
+            || arguments_file.is_none()
+            || drain
+            || max_jobs.is_some()
+            || enrich_source.is_some()
+        {
+            return Err(
+                "choose --call TOOL --arguments JSON_FILE or a batch enrichment command".into(),
+            );
+        }
+        if db.is_none() || !owner_explicit {
+            return Err("CLI tool calls require explicit --db and --owner".into());
+        }
+    }
     if drain || max_jobs.is_some() || enrich_source.is_some() {
         if drain == enrich_source.is_some() || drain != max_jobs.is_some() {
             return Err(
@@ -264,6 +299,13 @@ fn main() -> PersistenceResult<()> {
             .join(".local/share/personal-memory-runtime/memory.sqlite3"),
     };
     let mut service = ChatMemoryService::new(SqliteMemoryStore::open(db, UserId(owner))?, config)?;
+    if let Some(name) = tool_call {
+        // CLI 不持 MCP 全局锁；调用共用版本选择、冻结输出和请求预算。
+        let arguments = serde_json::from_slice(&std::fs::read(arguments_file.unwrap())?)?;
+        let result = service.call(&name, arguments, || false)?;
+        println!("{}", serde_json::to_string(&result)?);
+        return Ok(());
+    }
     if drain || enrich_source.is_some() {
         // CLI model calls run before the MCP service is wrapped in its global mutex (J6).
         let result = if let Some(source_id) = enrich_source {

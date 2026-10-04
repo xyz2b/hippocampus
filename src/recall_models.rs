@@ -318,12 +318,17 @@ pub fn r4_payload(
         "current_evidence":plan.current_evidence(),"utc_offset_seconds":utc_offset_seconds})
 }
 
+#[derive(Clone)]
 pub struct RecallModelProvider {
     client: OpenAiClient,
     context: OpenAiAdapterContext,
     pub recall_models: RecallModels,
 }
 impl RecallModelProvider {
+    pub(crate) fn network_allowed(&self) -> bool {
+        self.client.network_allowed()
+    }
+
     pub fn new(client: OpenAiClient, context: OpenAiAdapterContext) -> Self {
         Self {
             client,
@@ -398,6 +403,34 @@ struct CachedResult {
     r4: Option<crate::r4::OutputAudit>,
 }
 impl RecallRuntime {
+    /// 宿主核验只读取同进程保留结果；缺失/失效不启动新模型尝试。
+    pub fn retained(
+        &self,
+        store: &SqliteMemoryStore,
+        request_id: &str,
+    ) -> PersistenceResult<RecallOutput> {
+        let operation = json!(["recall.v3", fingerprint(&json!(request_id))]).to_string();
+        let key = (
+            store.path().canonicalize()?.to_string_lossy().into_owned(),
+            store.owner().0.clone(),
+            operation.clone(),
+        );
+        let state = store.read()?;
+        let receipt = state
+            .receipts
+            .get(&operation)
+            .ok_or("recall_result_not_retained:no_model_retry")?;
+        let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
+        if receipt.result["state"] != "finished" || receipt.result["stamp"] != stamp(&state)? {
+            cache.remove(&key);
+            return Err("recall_cached_snapshot_stale".into());
+        }
+        cache
+            .get(&key)
+            .map(|c| c.output.clone())
+            .ok_or_else(|| "recall_result_not_retained:no_model_retry".into())
+    }
+
     /// 同进程复用完整结果；重开只保留摘要/尝试状态，无结果时明确失败且不重新调用。
     pub fn run(
         &self,
@@ -417,6 +450,40 @@ impl RecallRuntime {
         request: &Request,
         budget: Budget,
         provider: Option<&RecallModelProvider>,
+    ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
+        self.run_inner(store, request, budget, provider, None)
+    }
+
+    /// 启动的全局视图由宿主离线生成；仍共用请求绑定、缓存和删除检查。
+    pub(crate) fn run_bootstrap(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        output: RecallOutput,
+    ) -> PersistenceResult<RecallOutput> {
+        if !request.bootstrap
+            || output.request != request.binding
+            || output.version != "recall.v3"
+            || output.current_message.is_some()
+            || !output.raw.is_empty()
+            || !output.facts.is_empty()
+            || output.computed.is_some()
+            || output.semantic_judgment != crate::contract::SemanticJudgment::Skipped
+        {
+            return Err("invalid_bootstrap_output".into());
+        }
+        self.run_inner(store, request, budget, None, Some(output))
+            .map(|(out, _)| out)
+    }
+
+    fn run_inner(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        provider: Option<&RecallModelProvider>,
+        bootstrap: Option<RecallOutput>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         if store.owner() != &request.owner {
             return Err("recall_owner_mismatch".into());
@@ -473,6 +540,9 @@ impl RecallRuntime {
             budget.relations,
             budget.stored_bytes
         ]));
+        if bootstrap.is_some() {
+            binding = fingerprint(&json!([binding, "global_bootstrap"]));
+        }
         if let Some(p) = provider
             && ["r1", "r4"]
                 .iter()
@@ -518,6 +588,14 @@ impl RecallRuntime {
         }
         let mut r4_audit = None;
         let result: PersistenceResult<RecallOutput> = (|| {
+            if let Some(output) = bootstrap {
+                if output.snapshot.read_revision != state.revision
+                    || output.snapshot.source_revision != state.source_revision
+                {
+                    return Err("recall_snapshot_changed".into());
+                }
+                return Ok(output);
+            }
             let offline = request.bootstrap || provider.is_none_or(|p| !p.client.network_allowed);
             let client = if offline {
                 None

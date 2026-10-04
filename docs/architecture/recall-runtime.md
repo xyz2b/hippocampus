@@ -47,7 +47,7 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 旧 completed_pending 映射 pending，stale_requires_review 映射 needs_rejudge；旧 completed_rejected 以及未知状态没有冻结枚举的唯一对应项，暂扣留该 raw 并增加 enrichment_gaps，plan_complete=false，不自行解释成 failed 或成功。已有 records 继续返回，旧路径字符串回执保持原状。未知状态的正式映射与 enrichment_gaps 按缺口条目计数属于需产品复核的口径，本段未改冻结契约。
 
-CLI/MCP 与配置分发仍留⑤，MCP 在线锁改造另项处理。④只提供库级模型入口，生产不读取样本；现有离线证据包入口保持可独立测试。
+④先提供库级模型入口；⑤已接通配置、CLI 与 MCP 离线分发，MCP 在线锁改造仍另项处理。生产不读取样本；现有离线证据包入口保持可独立测试。
 
 
 ## R4 核验与计算
@@ -97,7 +97,7 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 ### 推荐配置与实测边界
 
-用户已选 R1、R4 均使用 DeepSeek-V4-Pro（`ep-20261003130756-trhj6`）+ `reasoning_effort=minimal`。代码缺省值和新路径启用状态不变。[示例配置](../../examples/recall-models.json) 是可反序列化为 `RecallModels` 并传给 `with_models` 的库级配置，尚不能直接传给 `pmr-mcp --config`；配置分发在⑤接通。
+用户已选 R1、R4 均使用 DeepSeek-V4-Pro（`ep-20261003130756-trhj6`）+ `reasoning_effort=minimal`。代码缺省值和新路径启用状态不变。[示例配置](../../examples/recall-models.json) 是可反序列化为 `RecallModels` 并传给 `with_models` 的库级配置，可作为完整 ChatConfig 的 `recall_models` 字段；⑤已接通配置分发，完整示例见下文。
 
 2026-10-04 三档结果，每阶段20个已复核样本、各重复2次；使用相同 R1/R4 第1版提示词及 Z8 评分规则：
 
@@ -126,3 +126,35 @@ R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_a
 `tests/write_stage_eval.rs` 新增 EVAL_STAGES=r1,r4，共40项（各20；dev14/holdout6），仍复用预检、录制、请求指纹、重复与离线回放。R4 仅把固定样本 input 展开成完整 RecordView/RawEvidence/RelationLink 与获准计划后调用一个阶段，不运行模型 R1；expect、must_not、split、样本 ID 不进入请求。展开策略与评分边界见 `tests/eval/recall_stage/README.md`。
 
 新召回请求指纹完整绑定请求时钟、said_on、时区、模型、提示词/schema及实际证据包；旧 W 录制指纹保持不变。默认只出报告；显式 EVAL_GATE=1 才因模型评分/调用失败报错。真实调用仍需另行批准，本段只做干跑及注入/离线回放。
+
+## ⑤ 配置、CLI 与客户端迁移
+
+`ChatConfig.recall_pipeline` 接受 `legacy`（默认）或 `recall_v3`，未知值报错。`recall_models` 接受上面的角色配置；可直接运行的完整示例为 [examples/recall-v3.json](../../examples/recall-v3.json)。`write_pipeline` 和 `recall_pipeline` 独立选择；新召回可以读取旧写入的记录和原文，旧召回也可继续读取新写入。缺省配置和未显式迁移的客户端仍取得旧输出。
+
+三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 均接受 `recall_version`：`recall.v3` 或 `answer_contract.v1`。显式参数选择权威输出版本；legacy 流水线收到 recall.v3 请求时改用新运行时，recall_v3 流水线收到 answer_contract.v1 请求时从同一次新召回/快照机械适配（不重跑旧模型链路）。新流水线请求旧回执的 validate 同样须提交 request_id 并只读已有结果。未知版本返回 `contract_version_unsupported`，不换版本。新 Recall 只返回冻结的 recall.v3，不附旧 answer_contract。CLI/库调用直接返回该对象；MCP 在 `{recall: <recall.v3>, global_context: ...}` 包络内返回。新 Prepare 直接返回冻结3.5的 `source/enrichment/recall` 三段，MCP 另附 global_context；不再返回 remember 或 recall.result.answer_contract。源未获接收时 recall 为 not_requested；合法原文先接收，召回上下文超限或运行失败不会回滚保存，recall 返回 failed 错误片段，两种情况均无事实答复权限。
+
+使用新流水线（包括请求旧回执）须提交稳定 `request_id`，保持 query/context/task_id/limit/离线选择不变。`at` 可省略：首次取服务器时钟，重放读取已绑定的首次 at（bootstrap 也共用绑定和缓存）；显式 at 须为过去时刻并与首次绑定一致。Prepare 请求旧回执时保留 remember/recall.result 包络，其中旧 recall.result 含机械生成的 answer_contract 和 request_id/快照元数据；未指定 request_id 时从 session_id/turn_id 摘要派生，不把用户原话用于身份。只读 query/context 不保存为原文；模型预算和只读回执仍保留不含正文的元数据。跨进程结果不保留，CLI 重跑已完成 request_id 或验证上一 CLI 进程的结果会明确失败，零重调；需要新尝试须显式新请求及预算，不能把重试改成隐式付费。
+
+`offline=true` 强制跳过新召回模型；缺凭据或网络门关闭也走离线路径。新离线 Prepare 需 `enrichment_mode=off/deferred`，避免旧 inline 写入发起模型请求。bootstrap 无论网络配置如何均零调用，仅读取全局规则，current_message=null、raw=[]、facts=[]，语义标 skipped。普通离线保留本轮消息、记录和未完成原文，facts=[]、computed=null，不能包装为确定当前结论。
+
+CLI 在 MCP 服务锁建立前运行一次工具：
+
+```sh
+pmr-mcp --db /tmp/recall-demo.sqlite3 --owner demo \
+  --config examples/recall-v3.json \
+  --call memory_recall --arguments /tmp/recall-request.json
+```
+
+参数文件示例（在线需另行批准真实调用、提供凭据与有限 model_budget；此文件示例强制离线）：
+
+```json
+{"query":"请查阅已记录信息。","recall_version":"recall.v3","request_id":"demo-recall-1","offline":true}
+```
+
+同样支持 `--call memory_prepare` 和 `--call memory_validate_answer`，其参数文件按 tools/list schema 提交。CLI 工具调用要求显式 db/owner，不能与批量整理参数混用。模型 ID 只用于 API 路由及阶段绑定，不放进模型可见 payload；预算仍为每请求 R1/R4 各一次、共最多两次，无自动重试。
+
+**MCP 在线选择明确报错。** 因现有全局锁尚未拆分（W8），当新召回可联网时返回 `recall_v3_mcp_online_disabled`，Prepare 在保存前拒绝。选择报错而不静默回落，是为了保持客户端选中的唯一权威版本。可用 `offline=true`、bootstrap 或关闭网络门安全运行 MCP 离线分发；`PMR_MODEL_NETWORK=offline` 仍允许字面 loopback 测试端点，因此仅设该环境变量并不保证完全零调用。新 validate_answer 仅读缓存，不调用模型，可在 MCP 使用。
+
+**新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和当前快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
+
+迁移客户端须先适配单一 recall.v3、prepare 三段和上述校验边界；未迁移客户端显式选择 answer_contract.v1 或保留 legacy 默认。当前未开始默认切换或旧契约退出，也未证明生产整链路 P95≤15秒。

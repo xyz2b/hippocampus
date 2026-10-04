@@ -386,6 +386,10 @@ pub struct OpenAiClient {
 }
 
 impl OpenAiClient {
+    pub(crate) fn network_allowed(&self) -> bool {
+        self.network_allowed
+    }
+
     /// Builds a client from an API base URL and key.
     pub fn new(
         base_url: impl Into<String>,

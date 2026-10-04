@@ -569,7 +569,7 @@ fn record_in_scope(state: &PersistedMemoryState, memory: &Memory, request: &Requ
         && origin_allowed
 }
 
-fn projection(state: &PersistedMemoryState, id: MemoryId) -> Option<RecordView> {
+pub(crate) fn projection(state: &PersistedMemoryState, id: MemoryId) -> Option<RecordView> {
     match crate::w4::record_view(state, id)? {
         RecordView2::Legacy(view) => Some(RecordView::Legacy(view)),
         RecordView2::Current(view) => Some(RecordView::Current(CurrentRecordView {
