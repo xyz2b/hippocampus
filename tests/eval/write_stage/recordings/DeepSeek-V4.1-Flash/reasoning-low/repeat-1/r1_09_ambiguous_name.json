@@ -1,0 +1,91 @@
+{
+  "id": "r1_09_ambiguous_name",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 39906,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "最近"
+            },
+            "resolved": false
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "person",
+        "subject": {
+          "ambiguous": [
+            "e-xiaowang-1",
+            "e-xiaowang-2"
+          ]
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "event"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\":\"最近\"},\"resolved\":false}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":\t{\"relation\":null,\"time\":\t{\"anchor\":\t\"said_on\",\"interp\":\t{\"kind\":\"unknown\"\t}\t\t,\"quote\":\t{\"text\":\"最近\"},\"role\":\"event\"\t}\t},\"op\":\"lookup\"\t,\"unit\":null},\"relation\":\t\"person\",\"subject\":\t{\"ambiguous\":[\"e-xiaowang-1\",\"e-xiaowang-2\"]},\"time\":\t{\"anchor\":\t\"said_on\",\"interp\":\t{\"kind\":\"unknown\"},\"quote\":\t{\"text\":\"最近\"},\"role\":\"event\"},\"type\":\t\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:92b2f0bf685a503cbe5fcea591ed43bf5a2943d65d25bcc0aa904b2b30f0154a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 898,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 7129,
+          "output_tokens_details": {
+            "reasoning_tokens": 6946
+          },
+          "total_tokens": 8027
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 898,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7129,
+        "output_tokens_details": {
+          "reasoning_tokens": 6946
+        },
+        "total_tokens": 8027
+      }
+    }
+  ]
+}

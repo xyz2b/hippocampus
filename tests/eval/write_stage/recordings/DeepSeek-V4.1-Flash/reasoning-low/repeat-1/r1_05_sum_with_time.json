@@ -1,0 +1,84 @@
+{
+  "id": "r1_05_sum_with_time",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 69746,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "买咖啡"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "上个月"
+                },
+                "kind": "anchored",
+                "offset": -1,
+                "unit": "month"
+              },
+              "quote": {
+                "text": "上个月"
+              },
+              "role": "event"
+            }
+          },
+          "op": "sum",
+          "unit": "元"
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "aggregate"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\":\"买咖啡\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\":\"said_on\",\"interp\":{\"anchor_quote\":\t{\"text\":\"上个月\"},\"kind\":\"anchored\",\"offset\":-1,\"unit\":\"month\"},\"quote\": \t{\"text\":\"上个月\"}\n\n   ,\"role\":\"event\"}},\"op\":\"sum\",\"unit\":\"元\"},\"relation\":\t\"fact\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"aggregate\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:9b91574a1d61f76c996dd7abdf3f769b8ceea9d3662188f2003871c8fd46eef9",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 902,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 12848,
+          "output_tokens_details": {
+            "reasoning_tokens": 12715
+          },
+          "total_tokens": 13750
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 902,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 12848,
+        "output_tokens_details": {
+          "reasoning_tokens": 12715
+        },
+        "total_tokens": 13750
+      }
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "id": "r4_19_truncated_count_lower_bound",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 62321,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [
+            {
+              "date": null,
+              "date_source": null,
+              "event_group": null,
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我去过日本。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-27"
+                  }
+                }
+              ],
+              "id": "item-27",
+              "quantity": null
+            },
+            {
+              "date": null,
+              "date_source": null,
+              "event_group": null,
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我去过泰国。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-28"
+                  }
+                }
+              ],
+              "id": "item-28",
+              "quantity": null
+            }
+          ],
+          "op": "count",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我去过日本。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-27"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              27
+            ],
+            "statement": "我去过日本。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我去过泰国。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-28"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              28
+            ],
+            "statement": "我去过泰国。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"incomplete\",\"items\":[{\"date\":null,\"date_source\":null,\"event_group\":null,\"evidence\":[{\"quote\":{\"text\":\"我去过日本。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-27\"}}],\"id\":\"item-27\",\"quantity\":null},{\"date\":null,\"date_source\":null,\"event_group\":null,\"evidence\":[{\"quote\":{\"text\":\"我去过泰国。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-28\"}}],\"id\":\"item-28\",\"quantity\":null}],\"op\":\"count\",\"operands\":[],\"unit\":null},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我去过日本。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-27\"}}],\"polarity\":\"affirm\",\"record_ids\":[27],\"statement\":\"我去过日本。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null},{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我去过泰国。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-28\"}}],\"polarity\":\"affirm\",\"record_ids\":[28],\"statement\":\"我去过泰国。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:3f62ad4f8d8a8749b7ac0e568d65e698e586eaabbef08534ee806c078786ed8d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3623,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3733,
+          "output_tokens_details": {
+            "reasoning_tokens": 3423
+          },
+          "total_tokens": 7356
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3623,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3733,
+        "output_tokens_details": {
+          "reasoning_tokens": 3423
+        },
+        "total_tokens": 7356
+      }
+    }
+  ]
+}

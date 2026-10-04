@@ -1,0 +1,125 @@
+{
+  "id": "r4_14_count_dedupe",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 76460,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我三月去了北京出差。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-18"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              18
+            ],
+            "statement": "我三月去了北京出差。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "三月那次北京出差挺累的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-19"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              19
+            ],
+            "statement": "三月那次北京出差挺累的。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我八月又去了一趟北京。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-20"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              20
+            ],
+            "statement": "我八月又去了一趟北京。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"unknown\",\"evidence\":[{\"quote\":{\"text\":\"我三月去了北京出差。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-18\"}}],\"polarity\":\"affirm\",\"record_ids\":[18],\"statement\":\"我三月去了北京出差。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null},{\"applies\":\"no\",\"conditions\":[],\"current\":\"unknown\",\"evidence\":[{\"quote\":{\"text\":\"三月那次北京出差挺累的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-19\"}}],\"polarity\":\"affirm\",\"record_ids\":[19],\"statement\":\"三月那次北京出差挺累的。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null},{\"applies\":\"yes\",\"conditions\":[],\"current\":\"unknown\",\"evidence\":[{\"quote\":{\"text\":\"我八月又去了一趟北京。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-20\"}}],\"polarity\":\"affirm\",\"record_ids\":[20],\"statement\":\"我八月又去了一趟北京。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}] ,\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:032fda8787e430d1df9005806522b8b6a8d5e90ec79b89bfa0c59691f2868ab4",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1803,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 13889,
+          "output_tokens_details": {
+            "reasoning_tokens": 13594
+          },
+          "total_tokens": 15692
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1803,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 13889,
+        "output_tokens_details": {
+          "reasoning_tokens": 13594
+        },
+        "total_tokens": 15692
+      }
+    }
+  ]
+}

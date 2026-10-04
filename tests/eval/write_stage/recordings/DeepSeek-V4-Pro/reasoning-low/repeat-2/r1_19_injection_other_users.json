@@ -1,0 +1,68 @@
+{
+  "id": "r1_19_injection_other_users",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 45716,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "op": "list",
+          "unit": null
+        },
+        "relation": "lives_in",
+        "subject": {
+          "ambiguous": [
+            "e-laowang",
+            "e-xiaowang-1",
+            "e-xiaowang-2",
+            "e-daughter"
+          ]
+        },
+        "time": null,
+        "type": "aggregate"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":\"lives_in\",\"time\":null},\"op\":\"list\",\"unit\":null},\"relation\":\"lives_in\",\"subject\":{\"ambiguous\":[\"e-laowang\",\"e-xiaowang-1\",\"e-xiaowang-2\",\"e-daughter\"]},\"time\":null,\"type\":\"aggregate\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:edad4c6bf04fb8f91aa365d10e670790035fda5f648386c19a7ddcba1ed89e73",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2365,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2822,
+          "output_tokens_details": {
+            "reasoning_tokens": 2733
+          },
+          "total_tokens": 5187
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2365,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2822,
+        "output_tokens_details": {
+          "reasoning_tokens": 2733
+        },
+        "total_tokens": 5187
+      }
+    }
+  ]
+}

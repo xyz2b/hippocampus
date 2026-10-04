@@ -1,0 +1,94 @@
+{
+  "id": "r1_11_condition_hint",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 62861,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "周二"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "去健身房"
+            },
+            "resolved": false
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "recurring"
+              },
+              "quote": {
+                "text": "周二"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "unknown",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "recurring"
+          },
+          "quote": {
+            "text": "周二"
+          },
+          "role": "event"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"周二\"}, \"resolved\": true}, {\"quote\": {\"text\": \"去健身房\"}, \"resolved\": false}], \"current_evidence\": \"query_only\", \"need\": \"judge\", \"plan\": {\"filter\": {\"relation\": null, \"time\": {\"anchor\": \"said_on\", \"interp\": {\"kind\": \"recurring\"}, \"quote\": {\"text\": \"周二\"}, \"role\": \"event\"}}, \"op\": \"lookup\", \"unit\": null}, \"relation\": \"unknown\", \"subject\": {\"entity_id\": \"self\"}, \"time\": {\"anchor\": \"said_on\", \"interp\": {\"kind\": \"recurring\"}, \"quote\": {\"text\": \"周二\"}, \"role\": \"event\"}, \"type\": \"temporal\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:38f921f349be4f1155195267ba8afc8e6094b49b08fbd864955d8242e9085c60",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 900,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 11623,
+          "output_tokens_details": {
+            "reasoning_tokens": 11448
+          },
+          "total_tokens": 12523
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 900,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11623,
+        "output_tokens_details": {
+          "reasoning_tokens": 11448
+        },
+        "total_tokens": 12523
+      }
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "r1_02_plain_statement",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 48321,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "健身房"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "visited",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "今天"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "visited",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": 0,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "今天"
+          },
+          "role": "event"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"健身房\"},\"resolved\":true}],\"current_evidence\":\"assertion_present\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"visited\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"今天\"},\"role\":\"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"visited\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"今天\"},\"role\":\"event\"},\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:4d7d71f3bc34cf7b155345d82baa24ea56686ffeb74781effe3d8a93a03e75c3",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2359,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3134,
+          "output_tokens_details": {
+            "reasoning_tokens": 2997
+          },
+          "total_tokens": 5493
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2359,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3134,
+        "output_tokens_details": {
+          "reasoning_tokens": 2997
+        },
+        "total_tokens": 5493
+      }
+    }
+  ]
+}

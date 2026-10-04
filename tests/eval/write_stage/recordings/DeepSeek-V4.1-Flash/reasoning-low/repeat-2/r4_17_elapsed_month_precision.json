@@ -1,0 +1,90 @@
+{
+  "id": "r4_17_elapsed_month_precision",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 36341,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "july",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s-24"
+              },
+              "event_group": null,
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我七月搬到成都的。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-24"
+                  }
+                }
+              ],
+              "id": "i1",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "i1"
+          ],
+          "unit": null
+        },
+        "facts": [],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":{\"coverage\": \"incomplete\" ,\"items\": [{\"date\": {\"anchor\": \"said_on\",\"interp\": {\"date\": \"july\" ,\"kind\": \"date\" } ,\"quote\": {\"text\": \"我七月搬到成都的。\"},\"role\": \"event\"},\"date_source\": {\"kind\": \"stored\",\"source_id\": \"s-24\"},\"event_group\": null,\"evidence\": [{\"quote\": {\"text\": \"我七月搬到成都的。\"},\"source\": {\"kind\": \"stored\",\"source_id\": \"s-24\"}}],\"id\": \"i1\",\"quantity\": null}],\"op\": \"elapsed\",\"operands\": [\"@request.at\",\"i1\"],\"unit\": null},\"facts\": [],\"verdict\": \"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:25f500a8bfaa4ab6a5119697692fe017ffc2b2a0e1aefa77f5aeb2431b5ed8af",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1388,
+          "input_tokens_details": {
+            "cached_tokens": 1280
+          },
+          "output_tokens": 6153,
+          "output_tokens_details": {
+            "reasoning_tokens": 5973
+          },
+          "total_tokens": 7541
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1388,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 6153,
+        "output_tokens_details": {
+          "reasoning_tokens": 5973
+        },
+        "total_tokens": 7541
+      }
+    }
+  ]
+}

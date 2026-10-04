@@ -1,0 +1,70 @@
+{
+  "id": "r1_06_elapsed_since_move",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 42234,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "成都"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "op": "elapsed",
+          "unit": null
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"成都\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"lives_in\",\"time\":null},\"op\":\"elapsed\",\"unit\":null},\"relation\":\"lives_in\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"temporal\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:3e04e86c30934edb05674de46e6d84a6d79cdb4f0a3b7d4af51400909bfae0e2",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2361,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2481,
+          "output_tokens_details": {
+            "reasoning_tokens": 2403
+          },
+          "total_tokens": 4842
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2361,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2481,
+        "output_tokens_details": {
+          "reasoning_tokens": 2403
+        },
+        "total_tokens": 4842
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "id": "r1_14_past_month_job",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 58649,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "去年五月"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "works_at",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "去年五月"
+                },
+                "kind": "anchored",
+                "offset": -1,
+                "unit": "year"
+              },
+              "quote": {
+                "text": "去年五月"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "works_at",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "anchor_quote": {
+              "text": "去年五月"
+            },
+            "kind": "anchored",
+            "offset": -1,
+            "unit": "year"
+          },
+          "quote": {
+            "text": "去年五月"
+          },
+          "role": "validity"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\":\"去年五月\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"works_at\",\"time\":{\"anchor\":\t\"said_on\",\"interp\":\t{\"anchor_quote\":\t\t{\"text\":\"去年五月\"},\"kind\":\"anchored\",\"offset\":-1,\"unit\":\"year\"\t},\"quote\":\t{\"text\":\"去年五月\"},\"role\":\"validity\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"works_at\",\"subject\":{\"entity_id\":\"self\"},\"time\":\t{\"anchor\":\t\"said_on\",\"interp\":\t{\"anchor_quote\":\t\t{\"text\":\"去年五月\"},\"kind\":\"anchored\",\"offset\":-1,\"unit\":\"year\"\t},\"quote\":\t{\"text\":\"去年五月\"},\"role\":\"validity\"},\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:6418ee77a076fc735a68691be8d87a97d0523c2b7c00dda514bda10adb07efbb",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 899,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 10793,
+          "output_tokens_details": {
+            "reasoning_tokens": 10596
+          },
+          "total_tokens": 11692
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 899,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 10793,
+        "output_tokens_details": {
+          "reasoning_tokens": 10596
+        },
+        "total_tokens": 11692
+      }
+    }
+  ]
+}

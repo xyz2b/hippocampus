@@ -1,0 +1,97 @@
+{
+  "id": "r4_04_new_raw_overrides_old",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 83230,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我上周已经搬到南京了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-40"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在上海。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-4"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "我住在南京。",
+            "strength": "strong",
+            "supersedes_record_ids": [
+              4
+            ],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "上周"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我上周已经搬到南京了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-40\"}},{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-4\"}}],\"polarity\":\"affirm\",\"record_ids\":[],\"statement\":\"我住在南京。\",\"strength\":\"strong\",\"supersedes_record_ids\":[4],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"week\"},\"quote\":{\"text\":\"上周\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:6c96e9b4afb24ba2e015c2e4cab52dd339a822303f2409f3082576c18e83a30e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3481,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 5198,
+          "output_tokens_details": {
+            "reasoning_tokens": 5038
+          },
+          "total_tokens": 8679
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3481,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5198,
+        "output_tokens_details": {
+          "reasoning_tokens": 5038
+        },
+        "total_tokens": 8679
+      }
+    }
+  ]
+}

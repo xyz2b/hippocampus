@@ -1,0 +1,175 @@
+{
+  "id": "r4_15_sum_quantities",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 102874,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": null,
+              "date_source": null,
+              "event_group": "september-purchase-120",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "九月我买咖啡豆花了120元。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-21"
+                  }
+                }
+              ],
+              "id": "item-21",
+              "quantity": {
+                "amount": "120",
+                "unit": "元"
+              }
+            },
+            {
+              "date": null,
+              "date_source": null,
+              "event_group": "september-purchase-80",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "九月下旬又买了一袋，80元。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-22"
+                  }
+                }
+              ],
+              "id": "item-22",
+              "quantity": {
+                "amount": "80",
+                "unit": "元"
+              }
+            }
+          ],
+          "op": "sum",
+          "operands": [],
+          "unit": "元"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "九月我买咖啡豆花了120元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-21"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              21
+            ],
+            "statement": "九月我买咖啡豆花了120元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 9,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "九月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "九月下旬又买了一袋，80元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-22"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              22
+            ],
+            "statement": "九月下旬又买了一袋，80元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 9,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "九月下旬"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":null,\"date_source\":null,\"event_group\":\"september-purchase-120\",\"evidence\":[{\"quote\":{\"text\":\"九月我买咖啡豆花了120元。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-21\"}}],\"id\":\"item-21\",\"quantity\":{\"amount\":\"120\",\"unit\":\"元\"}},{\"date\":null,\"date_source\":null,\"event_group\":\"september-purchase-80\",\"evidence\":[{\"quote\":{\"text\":\"九月下旬又买了一袋，80元。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-22\"}}],\"id\":\"item-22\",\"quantity\":{\"amount\":\"80\",\"unit\":\"元\"}}],\"op\":\"sum\",\"operands\":[],\"unit\":\"元\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"九月我买咖啡豆花了120元。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-21\"}}],\"polarity\":\"affirm\",\"record_ids\":[21],\"statement\":\"九月我买咖啡豆花了120元。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"month\",\"month\":9,\"year_offset\":0},\"quote\":{\"text\":\"九月\"},\"role\":\"event\"}],\"uncertainty\":null},{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"九月下旬又买了一袋，80元。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-22\"}}],\"polarity\":\"affirm\",\"record_ids\":[22],\"statement\":\"九月下旬又买了一袋，80元。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"month\",\"month\":9,\"year_offset\":0},\"quote\":{\"text\":\"九月下旬\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:4e5ce70536b6cca383d5d7bfce33fcc0b6160275db956e3c580c587d740cd2ae",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3669,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 6377,
+          "output_tokens_details": {
+            "reasoning_tokens": 5947
+          },
+          "total_tokens": 10046
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3669,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6377,
+        "output_tokens_details": {
+          "reasoning_tokens": 5947
+        },
+        "total_tokens": 10046
+      }
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "id": "r1_10_context_binds_name",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 41676,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "上个月"
+                },
+                "kind": "anchored",
+                "offset": -1,
+                "unit": "month"
+              },
+              "quote": {
+                "text": "上个月"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "e-laowang",
+        "subject": {
+          "entity_id": "e-laowang"
+        },
+        "time": null,
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\": \"said_on\",\"interp\": {\"anchor_quote\":  {\"text\": \"上个月\"}, \"kind\": \"anchored\" , \"offset\": -1, \"unit\": \"month\" },\"quote\":  {\"text\": \"上个月\"},\"role\": \"event\"} },\"op\":\"lookup\",\"unit\":null},\"relation\": \"e-laowang\",\"subject\":{\"entity_id\":\"e-laowang\"},\"time\":null,\"type\":\"open\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:dc03123b2eae53a83a70365c7fe9cf8ff1fd4ca972ac9fa5c8f5382299148340",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 905,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 7612,
+          "output_tokens_details": {
+            "reasoning_tokens": 7479
+          },
+          "total_tokens": 8517
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 905,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7612,
+        "output_tokens_details": {
+          "reasoning_tokens": 7479
+        },
+        "total_tokens": 8517
+      }
+    }
+  ]
+}

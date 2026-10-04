@@ -1,0 +1,75 @@
+{
+  "id": "r4_20_retracted",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 19990,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我在字节工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-29"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              29
+            ],
+            "statement": "我在字节工作。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"no\",\"conditions\":[],\"current\":\"no\",\"evidence\":[{\"quote\":{\"text\":\"我在字节工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-29\"}}],\"polarity\":\"affirm\",\"record_ids\":[29],\"statement\":\"我在字节工作。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:6b77cdc61711cf90da885ce1114356c755e1b2ec5515e1591ec8c4ef1ab70f7c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3429,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1088,
+          "output_tokens_details": {
+            "reasoning_tokens": 989
+          },
+          "total_tokens": 4517
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3429,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1088,
+        "output_tokens_details": {
+          "reasoning_tokens": 989
+        },
+        "total_tokens": 4517
+      }
+    }
+  ]
+}

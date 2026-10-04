@@ -1,0 +1,82 @@
+{
+  "id": "r1_11_condition_hint",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 66869,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "周二"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "recurring"
+              },
+              "quote": {
+                "text": "周二"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "retrieve",
+        "subject": {
+          "ambiguous": [
+            "小王",
+            "小王"
+          ]
+        },
+        "time": null,
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"周二\"\t}, \"resolved\": true}], \"current_evidence\": \"query_only\", \"need\": \"judge\", \"plan\": {\"filter\": {\"relation\": null, \"time\": {\"anchor\": \"said_on\", \"interp\": {\"kind\": \"recurring\"\t}, \"quote\": \t{\"text\": \"周二\"\t}, \"role\": \"event\"}} , \"op\": \"lookup\", \"unit\": null}, \"relation\": \"retrieve\", \"subject\": {\"ambiguous\": [\"小王\", \"小王\"\t]}, \"time\": null, \"type\": \"temporal\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:38f921f349be4f1155195267ba8afc8e6094b49b08fbd864955d8242e9085c60",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 900,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 12386,
+          "output_tokens_details": {
+            "reasoning_tokens": 12241
+          },
+          "total_tokens": 13286
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 900,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 12386,
+        "output_tokens_details": {
+          "reasoning_tokens": 12241
+        },
+        "total_tokens": 13286
+      }
+    }
+  ]
+}

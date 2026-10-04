@@ -1,0 +1,100 @@
+{
+  "id": "r4_13_open_conflict",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 29156,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我是 A 型血。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-16"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              16
+            ],
+            "statement": "我是 A 型血。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我是 O 型血。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-17"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              17
+            ],
+            "statement": "我是 O 型血。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "conflict"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n      \"applies\": \"yes\",\n      \"conditions\": [],\n      \"current\": \"unknown\",\n      \"evidence\": [\n        {\n          \"quote\": {\n            \"text\": \"我是 A 型血。\"\n          },\n          \"source\": {\n            \"kind\": \"stored\",\n            \"source_id\": \"s-16\"\n          }\n        }\n      ],\n      \"polarity\": \"affirm\",\n      \"record_ids\": [\n        16\n      ],\n      \"statement\": \"我是 A 型血。\",\n      \"strength\": null,\n      \"supersedes_record_ids\": [],\n      \"times\": [],\n      \"uncertainty\": null\n    },\n    {\n      \"applies\": \"yes\",\n      \"conditions\": [],\n      \"current\": \"unknown\",\n      \"evidence\": [\n        {\n          \"quote\": {\n            \"text\": \"我是 O 型血。\"\n          },\n          \"source\": {\n            \"kind\": \"stored\",\n            \"source_id\": \"s-17\"\n          }\n        }\n      ],\n      \"polarity\": \"affirm\",\n      \"record_ids\": [\n        17\n      ],\n      \"statement\": \"我是 O 型血。\",\n      \"strength\": null,\n      \"supersedes_record_ids\": [],\n      \"times\": [],\n      \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"conflict\"\n}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:c08efa5074f6231e538a799805f4d4cd01a3d63b985a0723bb9f1f9d7466aafd",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3737,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1700,
+          "output_tokens_details": {
+            "reasoning_tokens": 1395
+          },
+          "total_tokens": 5437
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3737,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1700,
+        "output_tokens_details": {
+          "reasoning_tokens": 1395
+        },
+        "total_tokens": 5437
+      }
+    }
+  ]
+}

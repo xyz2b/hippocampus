@@ -1,0 +1,76 @@
+{
+  "id": "r1_07_compare_order",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 48550,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "先学的日语"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "先学的韩语"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "fact",
+            "time": null
+          },
+          "op": "compare",
+          "unit": null
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "comparison"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"先学的日语\"},\"resolved\":true},{\"quote\":{\"text\":\"先学的韩语\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"fact\",\"time\":null},\"op\":\"compare\",\"unit\":null},\"relation\":\"fact\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"comparison\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:232aa6c31ebb66898688f7f1c6dbe8015c4722ce97ec4e055aad1e10c7dae9a4",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2365,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2990,
+          "output_tokens_details": {
+            "reasoning_tokens": 2900
+          },
+          "total_tokens": 5355
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2365,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2990,
+        "output_tokens_details": {
+          "reasoning_tokens": 2900
+        },
+        "total_tokens": 5355
+      }
+    }
+  ]
+}

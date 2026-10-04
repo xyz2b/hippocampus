@@ -1,0 +1,130 @@
+{
+  "id": "r4_17_elapsed_month_precision",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 80997,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 6,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s-24"
+              },
+              "event_group": "move-to-chengdu",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我七月搬到成都的。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s-24"
+                  }
+                }
+              ],
+              "id": "move-to-chengdu",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "move-to-chengdu"
+          ],
+          "unit": "day"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-24"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              24
+            ],
+            "statement": "我七月搬到成都的。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 6,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"incomplete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"month\",\"month\":6,\"year_offset\":0},\"quote\":{\"text\":\"我七月搬到成都的。\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s-24\"},\"event_group\":\"move-to-chengdu\",\"evidence\":[{\"quote\":{\"text\":\"我七月搬到成都的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-24\"}}],\"id\":\"move-to-chengdu\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"move-to-chengdu\"],\"unit\":\"day\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我七月搬到成都的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-24\"}}],\"polarity\":\"affirm\",\"record_ids\":[24],\"statement\":\"我七月搬到成都的。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"month\",\"month\":6,\"year_offset\":0},\"quote\":{\"text\":\"我七月搬到成都的。\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:7b17a1811650cc3b499fd1ab921a3300663e8730c290f1f5dd551657bfd0c501",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3441,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4896,
+          "output_tokens_details": {
+            "reasoning_tokens": 4613
+          },
+          "total_tokens": 8337
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3441,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4896,
+        "output_tokens_details": {
+          "reasoning_tokens": 4613
+        },
+        "total_tokens": 8337
+      }
+    }
+  ]
+}

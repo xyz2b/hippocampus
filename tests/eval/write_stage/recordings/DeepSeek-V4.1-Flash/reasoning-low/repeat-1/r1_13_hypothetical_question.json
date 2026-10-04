@@ -1,0 +1,84 @@
+{
+  "id": "r1_13_hypothetical_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 24738,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "如果我搬去深圳"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "如果我搬去深圳"
+                },
+                "kind": "anchored",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "如果我搬去深圳"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"如果我搬去深圳\"}, \"resolved\": true}] ,\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\":\"said_on\",\"interp\": {\"anchor_quote\": \t{\"text\": \"如果我搬去深圳\"}, \"kind\": \"anchored\", \"offset\": 0, \"unit\": \"day\"}, \"quote\": \t{\"text\": \"如果我搬去深圳\" },\"role\":\"event\"}},\"op\":\"lookup\" ,\"unit\":null},\"relation\": \"lives_in\",\"subject\":{\"entity_id\":\"self\" },\"time\":null,\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:9797840d7ca866494c7fd0db5034fdbfc7dd100ec2bb038d0c4e2c2284c406e7",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 903,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 4080,
+          "output_tokens_details": {
+            "reasoning_tokens": 3930
+          },
+          "total_tokens": 4983
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 903,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4080,
+        "output_tokens_details": {
+          "reasoning_tokens": 3930
+        },
+        "total_tokens": 4983
+      }
+    }
+  ]
+}

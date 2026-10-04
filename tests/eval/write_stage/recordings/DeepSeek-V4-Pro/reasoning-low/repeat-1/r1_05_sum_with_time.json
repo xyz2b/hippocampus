@@ -1,0 +1,92 @@
+{
+  "id": "r1_05_sum_with_time",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 64381,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "买咖啡"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "fact",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": -1,
+                "unit": "month"
+              },
+              "quote": {
+                "text": "上个月"
+              },
+              "role": "event"
+            }
+          },
+          "op": "sum",
+          "unit": "元"
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": -1,
+            "unit": "month"
+          },
+          "quote": {
+            "text": "上个月"
+          },
+          "role": "event"
+        },
+        "type": "aggregate"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"买咖啡\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"fact\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"month\"},\"quote\":{\"text\":\"上个月\"},\"role\":\"event\"}},\"op\":\"sum\",\"unit\":\"元\"},\"relation\":\"fact\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"month\"},\"quote\":{\"text\":\"上个月\"},\"role\":\"event\"},\"type\":\"aggregate\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:2b5501e51edad6be36cf602d15b6ad71d6905d419f946b50177b9795d8a94820",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2364,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3957,
+          "output_tokens_details": {
+            "reasoning_tokens": 3817
+          },
+          "total_tokens": 6321
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2364,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3957,
+        "output_tokens_details": {
+          "reasoning_tokens": 3817
+        },
+        "total_tokens": 6321
+      }
+    }
+  ]
+}
