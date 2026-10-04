@@ -2132,3 +2132,247 @@ fn r4_04_lookup_retrieves_lexically_unmatched_update_and_answers_from_new_raw() 
     assert!(result.conflicts.is_empty());
     assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
 }
+
+fn visibility_fixture() -> Fixture {
+    Fixture::new(json!({
+        "query":"我目前住在哪里？","at":SAID_ON,"current_evidence":"query_only",
+        "plan":{"type":"single","relation":"居住地","op":"lookup"},
+        "records":[{"id":1,"source":"home","sentence":"我住上海。",
+            "said_on":SAID_ON,"status":"active","update":"judged"}],
+        "raw":[],"relations":[]
+    }))
+}
+
+#[test]
+fn visibility_gate_withholds_old_current_when_new_raw_is_count_omitted() {
+    let f = visibility_fixture();
+    source(&f.db, "move", "我已搬到南京。", None, "queued");
+    let before = serde_json::to_value(f.db.state()).unwrap();
+    let assembly = f.assembly_with(
+        &f.request(),
+        f.plan_json(),
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    );
+    assert!(assembly.evidence.raw.is_empty());
+    let out = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![f.fact(1, "yes")], None).to_string()),
+        )
+        .unwrap();
+    assert_eq!(out.facts[0].current, Qualification::Unknown);
+    assert_eq!(out.status, RecallStatus::Insufficient);
+    assert!(out.completeness.retrieval_truncated);
+    assert!(!out.completeness.plan_complete);
+    assert_eq!(out.completeness.pending_related_sources, 1);
+    assert!(out.degraded_reasons.is_empty());
+    assert_eq!(out.semantic_judgment, SemanticJudgment::Model);
+    assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
+}
+
+#[test]
+fn visibility_gate_detects_partial_raw_even_when_pending_count_equals_raw_count() {
+    let f = visibility_fixture();
+    source(&f.db, "move", "我已搬到南京。", None, "failed");
+    let full = f.assembly();
+    let records_bytes: usize = full
+        .evidence
+        .records
+        .iter()
+        .map(|r| serde_json::to_vec(r).unwrap().len())
+        .sum();
+    let mut raw = full.evidence.raw[0].clone();
+    raw.quote.text = "我已".into();
+    let budget = Budget {
+        stored_bytes: records_bytes + serde_json::to_vec(&raw).unwrap().len(),
+        ..Budget::default()
+    };
+    let assembly = f.assembly_with(&f.request(), f.plan_json(), budget);
+    assert_eq!(assembly.evidence.raw[0].quote.text, "我已");
+    assert_eq!(
+        assembly.evidence.raw.len(),
+        assembly.evidence.completeness.pending_related_sources
+    );
+    let out = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![f.fact(1, "yes")], None).to_string()),
+        )
+        .unwrap();
+    assert_eq!(out.facts[0].current, Qualification::Unknown);
+    assert_eq!(out.status, RecallStatus::Insufficient);
+    assert!(out.completeness.retrieval_truncated);
+    assert!(!out.completeness.plan_complete);
+    assert!(out.degraded_reasons.is_empty());
+}
+
+#[test]
+fn visibility_gate_allows_complete_new_raw_and_keeps_no_current_history() {
+    let f = visibility_fixture();
+    source(&f.db, "move", "我已搬到南京。", None, "failed");
+    let out = f.finish(output(
+        vec![
+            fact(
+                "我现在住南京。",
+                vec![stored("move", "我已搬到南京。")],
+                vec![],
+                "yes",
+            ),
+            f.fact(1, "no"),
+        ],
+        None,
+    ));
+    assert_eq!(out.status, RecallStatus::Answered);
+    assert_eq!(out.facts[0].current, Qualification::Yes);
+    assert_eq!(out.facts[0].grade, RecallGrade::Uncommitted);
+    assert_eq!(out.facts[1].current, Qualification::No);
+    assert!(!out.completeness.retrieval_truncated);
+    assert!(out.degraded_reasons.is_empty());
+}
+
+#[test]
+fn visibility_gate_excludes_whole_source_with_known_other_subject() {
+    let f = visibility_fixture();
+    seed_on(
+        &f.db,
+        "child",
+        "孩子喜欢绘画。",
+        "child",
+        None,
+        true,
+        SAID_ON,
+    );
+    f.db.open()
+        .transaction(|s| {
+            s.sources.get_mut("child").unwrap().enrichment = "needs_rejudge".into();
+            Ok(())
+        })
+        .unwrap();
+    let assembly = f.assembly_with(
+        &f.request(),
+        f.plan_json(),
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    );
+    assert_eq!(assembly.evidence.completeness.pending_related_sources, 1);
+    assert!(
+        assembly
+            .evidence
+            .records
+            .iter()
+            .all(|r| r.id() == f.ids[&1])
+    );
+    let out = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![f.fact(1, "yes")], None).to_string()),
+        )
+        .unwrap();
+    assert!(out.completeness.retrieval_truncated);
+    assert_eq!(out.status, RecallStatus::Answered);
+    assert_eq!(out.facts[0].current, Qualification::Yes);
+    assert!(out.degraded_reasons.is_empty());
+}
+
+#[test]
+fn visibility_gate_does_not_use_partial_other_subject_link_to_exclude_source() {
+    let f = visibility_fixture();
+    seed_on(
+        &f.db,
+        "mixed",
+        "孩子喜欢绘画。",
+        "child",
+        None,
+        true,
+        SAID_ON,
+    );
+    f.db.open()
+        .transaction(|s| {
+            let source = s.sources.get_mut("mixed").unwrap();
+            source.enrichment = "needs_rejudge".into();
+            source.request.as_mut().unwrap()["text"] = json!("孩子喜欢绘画。我已搬到南京。");
+            Ok(())
+        })
+        .unwrap();
+    let assembly = f.assembly_with(
+        &f.request(),
+        f.plan_json(),
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    );
+    let out = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![f.fact(1, "yes")], None).to_string()),
+        )
+        .unwrap();
+    assert_eq!(out.facts[0].current, Qualification::Unknown);
+    assert_eq!(out.status, RecallStatus::Insufficient);
+}
+
+#[test]
+fn visibility_gate_accepts_omitted_raw_already_fully_visible_in_record_evidence() {
+    let f = visibility_fixture();
+    f.db.open()
+        .transaction(|s| {
+            s.sources.get_mut("home").unwrap().enrichment = "queued".into();
+            Ok(())
+        })
+        .unwrap();
+    let assembly = f.assembly_with(
+        &f.request(),
+        f.plan_json(),
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    );
+    let out = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![f.fact(1, "yes")], None).to_string()),
+        )
+        .unwrap();
+    assert!(out.completeness.retrieval_truncated);
+    assert_eq!(out.completeness.pending_related_sources, 1);
+    assert_eq!(out.facts[0].current, Qualification::Yes);
+    assert_eq!(out.status, RecallStatus::Answered);
+}
+
+#[test]
+fn visibility_gate_does_not_downgrade_for_record_truncation_alone() {
+    let f = Fixture::new(json!({
+        "query":"我住上海，核对住所。","at":SAID_ON,"current_evidence":"query_only",
+        "plan":{"type":"single","relation":"居住地","op":"lookup"},
+        "records":[
+            {"id":2,"source":"hobby","sentence":"我喜欢红色。","said_on":SAID_ON,"status":"active","update":"judged"},
+            {"id":1,"source":"home","sentence":"我住上海。","said_on":SAID_ON,"status":"active","update":"judged"}
+        ],"raw":[],"relations":[]
+    }));
+    let assembly = f.assembly_with(
+        &f.request(),
+        f.plan_json(),
+        Budget {
+            records: 1,
+            ..Budget::default()
+        },
+    );
+    assert_eq!(assembly.evidence.records[0].id(), f.ids[&1]);
+    let out = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![f.fact(1, "yes")], None).to_string()),
+        )
+        .unwrap();
+    assert!(out.completeness.retrieval_truncated);
+    assert_eq!(out.completeness.pending_related_sources, 0);
+    assert_eq!(out.facts[0].current, Qualification::Yes);
+    assert_eq!(out.status, RecallStatus::Answered);
+}

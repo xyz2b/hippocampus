@@ -78,6 +78,14 @@ Z18 在解码与完整核验之间共用 `r4::assemble_old_basis`：仅对模型
 
 grade 仅为标注：所有依据来自已提交记录且没有 raw/current 来源时为 committed，否则 uncommitted；同一来源同时出现在 raw/records 时保守取 uncommitted。update 合并显式 ID 和依据实际涉及记录的状态，不能省略 record_ids 绕过 pending；pending 优先、原因去重；其他未知或只有原文依据则 null，全部已明确判定才 judged。grade 不改变 status。
 
+**当前结论的可见性门控。** 组装在同一快照内记录获准进入 raw 的未完成来源，逐个核对预算裁剪后的覆盖：完整正文仍在 raw 或已返回记录的依据中，则已覆盖；整项省略或只保留前缀且记录依据未覆盖全文，则未覆盖。不能仅比较 pending_related_sources 与 raw 条数，字节截断可能保留相同条数。该内部定位不新增冻结字段，也不补回超预算正文。
+
+R5 只对与未覆盖来源可能相关的 current=yes 事实降为 unknown。无可靠定位的来源保守视为可能相关，不以词法不命中或 received_sequence 先后证明无关；只有来源唯一未删除的已提交 Current 候选，其 sentence 逐字覆盖整条现存正文且依据仍能在该来源核准时，才可按其主体/关系槽位排除不同槽位的事实。多个记录、仅片段链接或 legacy 链接均不能据此证明整条来源无关。事实槽位取其实际引用及 supersedes 涉及的记录；仅 raw 依据或无法定位的事实也保守处理。
+
+门控触发时保留事实、限定语与依据，semantic_judgment=model；按既有状态优先级至少进入 insufficient（澄清/冲突仍优先），completeness 保持 retrieval_truncated=true、plan_complete=false 和裁剪前计数。检索预算截断不附加 degraded_reasons=budget_exhausted；模型调用预算确实耗尽时仍由既有路径附该码。current=no 不被改成当前事实；门控后的 unknown 不能消解 open 关系。完整的新原文仍可支持新事实；仅 records/relations 被裁剪、确知不同槽位的 raw 被遗漏、正文已完整出现在记录依据中，或 queued/failed 等标签本身，均不触发这个门控。模型对完整证据的语义误判仍由评测检验。
+
+新 validate_answer 使用已保留的 R5 结果，门控后的 current=unknown 或非 answered 状态均拒绝机械批准；不另作付费判断，也不因包级截断标记一律拒绝其他未受影响的事实。旧回执适配继续沿用已有更保守的整体完整性要求。
+
 history 仅包含模型 current=no 且由 StateChanged/PreferenceChanged/ConstraintChanged 结束的记录，Correction/UserRetracted 等只保留审计。until 从同一快照的已知结束日取得（内部读取 RecordView2.end 或已有 Explicit valid_to），不在冻结 RecordView 添加 end；未知/粗精度或多条记录结束日不一致为 null，不回填接收日。旧 Supersession/Inferred 等边界不能证明真实结束日，until 保守为空。
 
 clarification 由代码模板列出歧义实体名称或未解析指代，引用当前触发原话。若未解析指代仅来自 USER context，冻结 SourceRef 没有 context 定位项：保留问题中的真实指代，evidence=[]，不把历史文本假装成 current。R4 单独要求澄清而未给触发事实时使用通用模板，不补猜指代或条件。

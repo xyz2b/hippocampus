@@ -85,6 +85,8 @@ pub struct Assembly {
     source_dates: BTreeMap<String, String>,
     entity_names: BTreeMap<String, String>,
     history_until: BTreeMap<MemoryId, String>,
+    // 仅保留未覆盖来源的可靠槽位；None 表示无法证明它与某条事实无关。
+    uncovered_sources: Vec<Option<(String, String)>>,
 }
 
 impl Assembly {
@@ -159,7 +161,16 @@ impl Assembly {
             }
             Ok(evaluated) => {
                 let output = evaluated.output;
-                let facts: Vec<_> = output.facts.into_iter().map(|f| self.fact(f)).collect();
+                let mut visibility_incomplete = false;
+                let facts: Vec<_> = output
+                    .facts
+                    .into_iter()
+                    .map(|f| {
+                        let (fact, incomplete) = self.fact(f);
+                        visibility_incomplete |= incomplete;
+                        fact
+                    })
+                    .collect();
                 let conflicts: Vec<_> = self
                     .evidence
                     .relations
@@ -173,6 +184,7 @@ impl Assembly {
                 let clarification_needed = self.plan.needs_clarification()
                     || output.verdict == R4Verdict::NeedsClarification;
                 let insufficient = evaluated.compute_insufficient
+                    || visibility_incomplete
                     || output.verdict == R4Verdict::Insufficient
                     || (facts.is_empty() && evaluated.computed.is_none());
                 if evaluated.compute_insufficient {
@@ -224,7 +236,7 @@ impl Assembly {
         ))
     }
 
-    fn fact(&self, f: FactView) -> RecallFact {
+    fn fact(&self, f: FactView) -> (RecallFact, bool) {
         let related: Vec<_> = self
             .evidence
             .records
@@ -241,6 +253,19 @@ impl Assembly {
                     })
             })
             .collect();
+        // 无法定位的遗漏可能改变当前结论，不能用词法不命中证明无关。
+        // 仅有截断标记、或完整可见的 queued/failed 原文，不触发此门控。
+        let slots: Option<BTreeSet<_>> = (!related.is_empty())
+            .then(|| related.iter().map(|r| record_slot(r)).collect())
+            .flatten();
+        let visibility_incomplete = f.current == Qualification::Yes
+            && self
+                .uncovered_sources
+                .iter()
+                .any(|source_slots| match (source_slots, &slots) {
+                    (Some(source), Some(fact)) => fact.contains(source),
+                    _ => true,
+                });
         let grade = if f.evidence.iter().all(|e|
             !self.evidence.raw.iter().any(|raw| matches!(&e.source, SourceRef::Stored {source_id} if source_id == &raw.source_id))
             && self.evidence.records.iter().any(|r| r4::supports_record(e, r)))
@@ -283,21 +308,28 @@ impl Assembly {
                 reasons: vec![],
             })
         };
-        RecallFact {
-            statement: f.statement,
-            evidence: f.evidence,
-            record_ids: f.record_ids,
-            polarity: f.polarity,
-            strength: f.strength,
-            uncertainty: f.uncertainty,
-            conditions: f.conditions,
-            times: f.times,
-            current: f.current,
-            applies: f.applies,
-            supersedes_record_ids: f.supersedes_record_ids,
-            grade,
-            update,
-        }
+        (
+            RecallFact {
+                statement: f.statement,
+                evidence: f.evidence,
+                record_ids: f.record_ids,
+                polarity: f.polarity,
+                strength: f.strength,
+                uncertainty: f.uncertainty,
+                conditions: f.conditions,
+                times: f.times,
+                current: if visibility_incomplete {
+                    Qualification::Unknown
+                } else {
+                    f.current
+                },
+                applies: f.applies,
+                supersedes_record_ids: f.supersedes_record_ids,
+                grade,
+                update,
+            },
+            visibility_incomplete,
+        )
     }
 
     fn history(&self, fact: &RecallFact) -> Option<RecallHistory> {
@@ -521,6 +553,18 @@ pub fn run_offline(
         SkipReason::NoEvidence
     };
     assembly.finish_skipped(store, reason)
+}
+
+fn record_slot(record: &RecordView) -> Option<(String, String)> {
+    match record {
+        RecordView::Current(v) => match &v.candidate.subject {
+            Subject::Entity(subject) => {
+                Some((subject.entity_id.clone(), v.candidate.relation.clone()))
+            }
+            Subject::Unresolved(_) => None,
+        },
+        RecordView::Legacy(v) => Some((v.data.subject_id.0.clone(), v.data.predicate.0.clone())),
+    }
 }
 
 fn source_in_task(source: &SourceRecord, request: &Request) -> bool {
@@ -898,6 +942,7 @@ pub fn assemble(
         .collect();
     let mut raw = Vec::new();
     let mut pending_related_sources = 0;
+    let mut pending_sources = Vec::new();
     for source in state
         .sources
         .values()
@@ -942,6 +987,9 @@ pub fn assemble(
             continue;
         };
         pending_related_sources += usize::from(pending);
+        if pending {
+            pending_sources.push(source);
+        }
         raw.push(RawEvidence {
             source_id: source.id.clone(),
             quote: Quote { text: body.into() },
@@ -1020,6 +1068,51 @@ pub fn assemble(
     }
     bounded_raw.sort_by_key(|r| (r.sequence, r.source_id.clone()));
     let raw = bounded_raw;
+    let uncovered_sources = pending_sources
+        .into_iter()
+        .filter_map(|source| {
+            let id = source.id.as_str();
+            let body = crate::lexical::body(source).unwrap();
+            // raw 被裁掉但完整正文已在记录依据中时，没有遗漏新证据。
+            let covered = body.is_empty()
+                || raw
+                    .iter()
+                    .any(|r| r.source_id == id && r.quote.text == body)
+                || views.iter().any(|r| {
+                    r4::record_evidence(r).iter().any(|e| {
+                        matches!(&e.source, SourceRef::Stored {source_id} if source_id == id)
+                            && locate_quote(&e.quote.text, body).is_some()
+                    })
+                });
+            if covered {
+                return None;
+            }
+            // 仅单条已提交 Current 候选的整句覆盖整个来源时，才用其槽位排除无关事实。
+            // 片段链接、legacy 或未整理原文都不足以排除来源中尚未理解的其他断言。
+            let linked: Vec<_> = source_links
+                .get(id)
+                .into_iter()
+                .flatten()
+                .filter(|m| m.status != MemoryStatus::Deleted)
+                .collect();
+            let slot = if linked.len() == 1 {
+                projection(&state, linked[0].id).and_then(|view| match &view {
+                    RecordView::Current(v)
+                        if v.candidate.sentence.text == body && v.evidence.iter().any(|e| {
+                            matches!(&e.source, SourceRef::Stored {source_id} if source_id == id)
+                                && locate_quote(body, &e.quote.text).is_some()
+                        }) =>
+                    {
+                        record_slot(&view)
+                    }
+                    _ => None,
+                })
+            } else {
+                None
+            };
+            Some(slot)
+        })
+        .collect();
     if relations.len() > budget.relations {
         truncated = true;
         relations.truncate(budget.relations);
@@ -1047,6 +1140,7 @@ pub fn assemble(
         request: request.binding.clone(),
         plan: plan.clone(),
         owner: request.owner.clone(),
+        uncovered_sources,
         source_metadata: source_metadata(&state)?,
         utc_offset_seconds: request.utc_offset_seconds,
         source_dates: state

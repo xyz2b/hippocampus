@@ -483,6 +483,8 @@ fn legacy_candidates(result: &Value) -> Vec<Value> {
 /// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v3 组织回答。
 fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value {
     let fact = out.facts.first();
+    // R5 对已知相关原文遗漏降 current=unknown、status=insufficient；两者都不能批准。
+    // completeness 是包级计数，不能因无关裁剪或完整可见的 pending 原文一律拒绝。
     let eligible = out.status == RecallStatus::Answered
         && out.semantic_judgment == SemanticJudgment::Model
         && out.facts.len() == 1
@@ -593,6 +595,30 @@ fn legacy_contract(out: &RecallOutput) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn new_validator_checks_r5_gate_instead_of_blanket_truncation() {
+        let mut out: RecallOutput = serde_json::from_value(json!({
+            "version":"recall.v3","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
+            "status":"answered","current_message":null,"records":[],"raw":[],
+            "facts":[{"statement":"我住上海。","evidence":[{"source":{"kind":"stored","source_id":"home"},"quote":{"text":"我住上海。"}}],
+                "record_ids":[1],"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes",
+                "supersedes_record_ids":[],"grade":"committed","update":{"status":"judged","reasons":[]}}],
+            "computed":null,"history":[],"conflicts":[],"clarification":null,"semantic_judgment":"model",
+            "completeness":{"retrieval_truncated":true,"pending_related_sources":1,"pending_updates":0,"enrichment_gaps":0,"plan_complete":false},
+            "degraded_reasons":[],"snapshot":{"read_revision":1,"source_revision":1}
+        })).unwrap();
+        let input: ValidateAnswer = serde_json::from_value(json!({
+            "query":"住所？","draft_answer":"我住上海。","source_ids":["home"]
+        }))
+        .unwrap();
+        assert_eq!(validate_retained_answer(&input, &out)["approved"], true);
+        out.facts[0].current = Qualification::Unknown;
+        assert_eq!(validate_retained_answer(&input, &out)["approved"], false);
+        out.facts[0].current = Qualification::Yes;
+        out.status = RecallStatus::Insufficient;
+        assert_eq!(validate_retained_answer(&input, &out)["approved"], false);
+    }
+
     #[test]
     fn legacy_adapter_quotes_committed_fact_but_withholds_incomplete_and_uncommitted() {
         // 已经经过 R4/R5 的冻结结果；这里只检验无模型适配，不替代上游核验。

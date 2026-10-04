@@ -1053,3 +1053,70 @@ fn host_validator_rejects_unknown_current_even_for_identical_statement_and_sourc
     assert_eq!(out["approved"], false);
     assert_eq!(sent.lock().unwrap().len(), 2);
 }
+
+#[test]
+fn host_validator_rejects_r5_visibility_gate_without_another_model_send() {
+    let db = Db::new();
+    db.open()
+        .transaction(|s| {
+            let template = s.sources["s-purple"].clone();
+            // 33 个可信来源，紫灯原文完整进入 32 项预算，另一个未定位来源被遗漏。
+            s.sources.get_mut("s-purple").unwrap().received_sequence = 34;
+            for i in 0..32 {
+                let mut source = template.clone();
+                source.id = format!("unprocessed-{i}");
+                source.turn_id = source.id.clone();
+                source.received_sequence = i + 2;
+                source.enrichment = "queued".into();
+                source.request.as_mut().unwrap()["text"] = json!(if i == 0 {
+                    "灯已经换成绿色。"
+                } else {
+                    "一条尚未整理的原文。"
+                });
+                s.sources.insert(source.id.clone(), source);
+            }
+            Ok(())
+        })
+        .unwrap();
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(p);
+    let args = json!({"query":"请核对我的灯色。","request_id":"visibility-gate","at":AT});
+    let out = service
+        .call("memory_recall", args.clone(), || false)
+        .unwrap();
+    assert_eq!(out["raw"].as_array().unwrap().len(), 32);
+    assert!(
+        !out["raw"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|r| r["source_id"] == "unprocessed-0")
+    );
+    assert_eq!(out["completeness"]["pending_related_sources"], 33);
+    assert_eq!(out["completeness"]["retrieval_truncated"], true);
+    assert_eq!(out["completeness"]["plan_complete"], false);
+    assert_eq!(out["facts"][0]["current"], "unknown");
+    assert_eq!(out["status"], "insufficient");
+    assert_eq!(out["degraded_reasons"], json!([]));
+    let validation = service
+        .call(
+            "memory_validate_answer",
+            json!({
+                "query":"请核对我的灯色。","request_id":"visibility-gate",
+                "draft_answer":TEXT,"source_ids":["s-purple"]
+            }),
+            || false,
+        )
+        .unwrap();
+    assert_eq!(validation["approved"], false);
+    assert_eq!(validation["approved_source_ids"], json!([]));
+    assert_eq!(service.call("memory_recall", args, || false).unwrap(), out);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
