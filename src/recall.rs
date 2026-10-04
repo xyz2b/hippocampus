@@ -3,12 +3,13 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
 use crate::{
-    EntityId, Memory, MemoryId, MemoryRepository, MemoryStatus, PersistedMemoryState,
-    PersistenceResult, ScopeCondition, SourceRecord, SqliteMemoryStore, UpdateState, UpdateStatus,
-    UserId, r1, r4,
+    EntityId, EntityRepository, Memory, MemoryId, MemoryRepository, MemoryStatus,
+    PersistedMemoryState, PersistenceResult, ScopeCondition, SourceRecord, SqliteMemoryStore,
+    UpdateState, UpdateStatus, UserId, r1, r4,
 };
 
 /// 由调用方提供的可信输入；不从 R1 模型输出取得归属、任务或时钟。
+#[derive(Clone)]
 pub struct Request {
     pub binding: RecallRequest,
     pub owner: UserId,
@@ -73,14 +74,143 @@ impl JudgmentFailure {
     }
 }
 
+/// 进度/普通提交可推进；只有输入完整性、删除和访问范围改变才使读快照失效。
+/// ponytail: 保守绑定可信任务内的既有来源/记录；规模变大时再缩到实际依赖集合。
+#[derive(Clone)]
+pub(crate) struct SafetySnapshot {
+    request: Request,
+    sources: BTreeMap<String, String>,
+    records: BTreeMap<MemoryId, (String, Vec<crate::Evidence>)>,
+    entities: BTreeMap<EntityId, String>,
+    pub(crate) prepared: BTreeMap<String, serde_json::Value>,
+}
+
+fn source_binding(source: &SourceRecord) -> PersistenceResult<String> {
+    // remember 的核验回执是整理进度，不是访问/保存限制；保留限制请求全部控制字段。
+    let controls: Vec<_> = crate::enrichment::visible_requests(source)?
+        .into_iter()
+        .filter(|r| r["kind"] != "remember")
+        .collect();
+    Ok(crate::openai::recall_models::fingerprint(
+        &serde_json::json!([
+            source.id,
+            source.session_id,
+            source.turn_id,
+            source.observed_at,
+            source.received_sequence,
+            source.request,
+            source.enrichment == "awaiting_confirmation",
+            controls
+        ]),
+    ))
+}
+
+fn record_binding(memory: &Memory) -> String {
+    crate::openai::recall_models::fingerprint(&serde_json::json!([
+        memory.owner_id,
+        memory.subject_id,
+        memory.memory_type,
+        memory.predicate,
+        memory.value,
+        memory.polarity,
+        memory.strength,
+        memory.scope,
+        memory.temporal.observed_at
+    ]))
+}
+
+impl SafetySnapshot {
+    pub(crate) fn capture(
+        state: &PersistedMemoryState,
+        request: &Request,
+    ) -> PersistenceResult<Self> {
+        let mut sources = BTreeMap::new();
+        let mut prepared = BTreeMap::new();
+        for (key, source) in &state.sources {
+            if source_in_task(source, request) {
+                sources.insert(source.id.clone(), source_binding(source)?);
+                prepared.insert(
+                    key.clone(),
+                    crate::enrichment::receipt_from_state(state, key)?,
+                );
+            }
+        }
+        let records = state
+            .repository
+            .list_by_owner(&request.owner)?
+            .into_iter()
+            .filter(|m| record_in_scope(state, m, request))
+            .map(|m| (m.id, (record_binding(&m), m.evidence)))
+            .collect();
+        let entities = state
+            .entities
+            .list_by_owner(&request.owner)
+            .into_iter()
+            .map(|e| {
+                (
+                    e.id.clone(),
+                    crate::openai::recall_models::fingerprint(&serde_json::json!(e)),
+                )
+            })
+            .collect();
+        Ok(Self {
+            request: request.clone(),
+            sources,
+            records,
+            entities,
+            prepared,
+        })
+    }
+
+    pub(crate) fn source_ids(&self) -> Vec<&str> {
+        self.sources.keys().map(String::as_str).collect()
+    }
+
+    pub(crate) fn check(
+        &self,
+        owner: &UserId,
+        state: &PersistedMemoryState,
+    ) -> PersistenceResult<()> {
+        if owner != &self.request.owner {
+            return Err("recall_owner_mismatch".into());
+        }
+        let valid_sources = self.sources.iter().all(|(id, binding)| {
+            state
+                .sources
+                .values()
+                .find(|s| &s.id == id)
+                .is_some_and(|s| {
+                    source_in_task(s, &self.request)
+                        && source_binding(s).is_ok_and(|b| &b == binding)
+                })
+        });
+        let valid_records = self.records.iter().all(|(id, (binding, evidence))| {
+            state.repository.get(*id).ok().flatten().is_some_and(|m| {
+                record_in_scope(state, &m, &self.request)
+                    && record_binding(&m) == *binding
+                    && evidence.iter().all(|e| m.evidence.contains(e))
+            })
+        });
+        let valid_entities = self.entities.iter().all(|(id, binding)| {
+            state.entities.get(id).is_some_and(|e| {
+                e.owner_id == *owner
+                    && crate::openai::recall_models::fingerprint(&serde_json::json!(e)) == *binding
+            })
+        });
+        if !valid_sources || !valid_records || !valid_entities {
+            return Err("recall_snapshot_changed".into());
+        }
+        Ok(())
+    }
+}
+
 /// R4 的注入位置：消费本次组装，沿用原请求、R1 标记与读快照，不另做一次检索。
 pub struct Assembly {
     pub request: RecallRequest,
     pub plan: r1::Plan,
     pub evidence: RecallEvidence,
     pub snapshot: RecallSnapshot,
-    owner: UserId,
-    source_metadata: Vec<(String, String, Vec<MemoryRequest>)>,
+    pub(crate) safety: SafetySnapshot,
     utc_offset_seconds: i32,
     source_dates: BTreeMap<String, String>,
     entity_names: BTreeMap<String, String>,
@@ -448,19 +578,9 @@ impl Assembly {
             || !self.evidence.raw.is_empty()
     }
 
-    /// 返回前核对新快照。来源/业务变化时拒绝旧包，不重试语义判断，也不复活删除内容。
+    /// 返回前重查内容仍获准可见；进度或普通提交不要求与最新版本相等。
     pub fn check_snapshot(&self, store: &SqliteMemoryStore) -> PersistenceResult<()> {
-        if store.owner() != &self.owner {
-            return Err("recall_owner_mismatch".into());
-        }
-        let latest = store.read()?;
-        if latest.revision != self.snapshot.read_revision
-            || latest.source_revision != self.snapshot.source_revision
-            || source_metadata(&latest)? != self.source_metadata
-        {
-            return Err("recall_snapshot_changed".into());
-        }
-        Ok(())
+        self.safety.check(store.owner(), &store.read()?)
     }
 
     pub fn finish_skipped(
@@ -660,7 +780,7 @@ fn requests(source: &SourceRecord) -> PersistenceResult<Vec<MemoryRequest>> {
 }
 
 // 来源状态/控制回执的改变不一定增加 source_revision（它主要绑定正文索引）。
-// 只在内存绑定 R3 使用的元数据，避免相同 revision 掩盖刚完成的整理或限制确认。
+// 仅用于进度诊断/节奏测量；安全有效性由 SafetySnapshot 检查，不拿进度作失效条件。
 pub(crate) fn source_metadata(
     state: &PersistedMemoryState,
 ) -> PersistenceResult<Vec<(String, String, Vec<MemoryRequest>)>> {
@@ -1139,9 +1259,8 @@ pub fn assemble(
     let assembly = Assembly {
         request: request.binding.clone(),
         plan: plan.clone(),
-        owner: request.owner.clone(),
         uncovered_sources,
-        source_metadata: source_metadata(&state)?,
+        safety: SafetySnapshot::capture(&state, request)?,
         utc_offset_seconds: request.utc_offset_seconds,
         source_dates: state
             .sources

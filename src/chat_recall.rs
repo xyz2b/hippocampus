@@ -145,7 +145,7 @@ impl ChatMemoryService {
         if input.bootstrap {
             // 启动召回只读取既有全局规则；不把普通个人事实或未整理正文送到宿主。
             let before = self.store.read()?;
-            let global = self.global_context()?;
+            let global = self.global_context_from_state(&before)?;
             let memories = global
                 .mandatory
                 .iter()
@@ -159,11 +159,6 @@ impl ChatMemoryService {
                 .take(input.limit)
                 .filter_map(|m| crate::recall::projection(&before, m.id))
                 .collect::<Vec<_>>();
-            let after = self.store.read()?;
-            if before.revision != after.revision || before.source_revision != after.source_revision
-            {
-                return Err("recall_snapshot_changed".into());
-            }
             let output = RecallOutput {
                 version: "recall.v3".into(),
                 request: request.binding.clone(),
@@ -198,6 +193,7 @@ impl ChatMemoryService {
                     ..Default::default()
                 },
                 output,
+                crate::recall::SafetySnapshot::capture(&before, &request)?,
             )?;
             return format_recall_output(output, legacy_output);
         }
@@ -255,11 +251,12 @@ impl ChatMemoryService {
                 let at = input.user_turn.observed_at;
                 let source_request = serde_json::to_value(&input.user_turn)?;
                 let saved = self.remember(input.user_turn, &cancelled, false, operation);
-                let receipt = self.prepare_fragments(&key, &source_request, &saved)?;
+                let mut receipt = self.prepare_fragments(&key, &source_request, &saved)?;
                 let rejected = matches!(
                     receipt["source"]["status"].as_str(),
                     Some("rejected" | "failed" | "deleted")
                 );
+                let recall_id = id.clone();
                 let recall = if rejected || (capture && receipt["source"]["status"] != "stored") {
                     json!({"status":"not_requested","reason":"source_not_accepted"})
                 } else {
@@ -279,7 +276,16 @@ impl ChatMemoryService {
                         operation,
                         &cancelled,
                     ) {
-                        Ok(out) => out,
+                        Ok(out) => {
+                            if capture {
+                                receipt = self.recall_runtime.prepared_receipt(
+                                    &self.store,
+                                    &recall_id,
+                                    &key,
+                                )?;
+                            }
+                            out
+                        }
                         Err(e) => json!({"status":"failed","error":e.to_string()}),
                     }
                 };
@@ -391,11 +397,12 @@ impl ChatMemoryService {
     pub(super) fn validate_v3_prepare_response(
         &self,
         response: &CallToolResult,
+        state: &PersistedMemoryState,
     ) -> Option<CallToolResult> {
         let body = response.structured_content.as_ref()?;
         let compatibility = body["remember"]["result"].get("source").is_some()
             && body["recall"]["result"].get("request_id").is_some();
-        if body.get("source").is_none() && !compatibility {
+        if (body.get("source").is_none() || body.get("recall").is_none()) && !compatibility {
             return None;
         }
         let source = if compatibility {
@@ -405,10 +412,10 @@ impl ChatMemoryService {
         };
         let source_id = source["source_id"].as_str();
         let live = source_id.is_none()
-            || self.store.read().ok().is_some_and(|s| {
-                s.sources
-                    .values()
-                    .any(|src| Some(src.id.as_str()) == source_id && src.request.is_some())
+            || state.sources.values().any(|src| {
+                Some(src.id.as_str()) == source_id
+                    && src.request.is_some()
+                    && src.enrichment != "deleted"
             });
         let recall = if compatibility {
             &body["recall"]["result"]
@@ -420,11 +427,25 @@ impl ChatMemoryService {
         } else {
             recall["request"]["request_id"].as_str()
         };
-        let valid = id.is_none_or(|id| self.recall_runtime.retained(&self.store, id).is_ok());
-        if live && valid {
-            return Some(response.clone());
-        }
+        let valid = id.is_none_or(|id| {
+            self.recall_runtime
+                .retained_in_state(&self.store, state, id)
+                .is_ok()
+        });
         let mut body = body.clone();
+        if body.get("global_context").is_some() {
+            body["global_context"] = match self.global_context_from_state(state) {
+                Ok(context) => {
+                    json!({"status":"available","source":"local_snapshot","result":context})
+                }
+                Err(_) => json!({"status":"unavailable"}),
+            };
+        }
+        if live && valid {
+            let mut checked = CallToolResult::structured(body);
+            checked.is_error = response.is_error;
+            return Some(checked);
+        }
         if !live {
             let receipt = if compatibility {
                 &mut body["remember"]["result"]
@@ -436,6 +457,84 @@ impl ChatMemoryService {
         }
         body["recall"] = json!({"status":"not_requested","reason":"state_changed_after_prepare"});
         Some(CallToolResult::structured(body))
+    }
+
+    /// MCP 最终发布只对新召回执行安全重读；普通工具保留已完成的业务回执和辅助读取降级。
+    pub fn publish_shared_response<T>(
+        shared: &std::sync::Mutex<Self>,
+        name: &str,
+        arguments: &Value,
+        response: CallToolResult,
+        publish: impl FnOnce(CallToolResult) -> T,
+    ) -> PersistenceResult<T> {
+        let operation = {
+            let service = shared.lock().map_err(|_| "memory service lock poisoned")?;
+            service
+                .uses_recall_runtime(name, arguments)
+                .unwrap_or(false)
+                .then(|| service.operation())
+        };
+        match operation {
+            Some(operation) => operation.connect()?.publish_response(response, publish),
+            None => Ok(publish(response)),
+        }
+    }
+
+    /// 只在新召回最终发布的短边界持有 SQLite 写锁；不覆盖模型等待。
+    pub fn publish_response<T>(
+        &self,
+        response: CallToolResult,
+        publish: impl FnOnce(CallToolResult) -> T,
+    ) -> PersistenceResult<T> {
+        self.store.read_for_publication(|state| {
+            if let Some(checked) = self.validate_v3_prepare_response(&response, state) {
+                return Ok(publish(checked));
+            }
+            let mut response = response;
+            let body = response.structured_content.as_ref();
+            let new_recall = self.config.recall_pipeline == RecallPipeline::RecallV3
+                || body.is_some_and(|b| {
+                    b["recall"]["request"]["request_id"].is_string()
+                        || b["request"]["request_id"].is_string()
+                        || b["request_id"].is_string()
+                        || b["error"].as_str().is_some_and(|e| e.starts_with("recall_"))
+                });
+            if let Some(body) = response.structured_content.as_mut()
+                && new_recall
+                && body.get("global_context").is_some()
+            {
+                body["global_context"] = match self.global_context_from_state(state) {
+                    Ok(context) => {
+                        json!({"status":"available","source":"local_snapshot","result":context})
+                    }
+                    Err(_) => json!({"status":"unavailable"}),
+                };
+                let is_error = response.is_error;
+                response = CallToolResult::structured(body.clone());
+                response.is_error = is_error;
+            }
+            let body = response.structured_content.as_ref();
+            let id = body.and_then(|b| {
+                b["recall"]["request"]["request_id"]
+                    .as_str()
+                    .or_else(|| b["request"]["request_id"].as_str())
+                    .or_else(|| b["request_id"].as_str())
+            });
+            if id.is_some_and(|id| {
+                self.recall_runtime
+                    .retained_in_state(&self.store, state, id)
+                    .is_err()
+            }) {
+                return Ok(publish(CallToolResult::structured_error(
+                    json!({"error":"recall_snapshot_changed",
+                    "global_context":match self.global_context_from_state(state) {
+                        Ok(context) => json!({"status":"available","source":"local_snapshot","result":context}),
+                        Err(_) => json!({"status":"unavailable"}),
+                    }}),
+                )));
+            }
+            Ok(publish(response))
+        })
     }
 
     #[cfg(test)]

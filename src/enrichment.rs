@@ -539,6 +539,14 @@ fn source_texts(
 
 pub fn receipt(store: &SqliteMemoryStore, key: &str) -> PersistenceResult<serde_json::Value> {
     let state = store.read()?;
+    receipt_from_state(&state, key)
+}
+
+/// 同一次 R3 读取的回执；不再另外读取正在推进的后台状态。
+pub(crate) fn receipt_from_state(
+    state: &crate::PersistedMemoryState,
+    key: &str,
+) -> PersistenceResult<serde_json::Value> {
     let source = state.sources.get(key).ok_or("source missing")?;
     let requests = visible_requests(source)?;
     let retention_pending = requests.iter().any(|r| r["status"] == "retention_pending");

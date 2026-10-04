@@ -1501,12 +1501,9 @@ impl ChatMemoryService {
         {
             let operation = service.operation();
             drop(service);
-            return Ok(operation.connect()?.call_with_operation(
-                name,
-                arguments,
-                cancelled,
-                operation_id,
-            ));
+            let mut service = operation.connect()?;
+            let response = service.call_with_operation(name, arguments, cancelled, operation_id);
+            return service.publish_response(response, |response| response);
         }
         Ok(service.call_with_operation(name, arguments, cancelled, operation_id))
     }
@@ -1713,6 +1710,13 @@ impl ChatMemoryService {
         // ponytail: rebuild from a local snapshot on each call; cache by a DB revision only if profiles become large.
         // Do not cache per MCP process: one process can serve multiple chats, and other clients can edit memory.
         let state = self.store.read()?;
+        self.global_context_from_state(&state)
+    }
+
+    fn global_context_from_state(
+        &self,
+        state: &PersistedMemoryState,
+    ) -> PersistenceResult<RetrievalResult> {
         let owner = self.store.owner().clone();
         let now = self
             .config
@@ -1759,8 +1763,17 @@ impl ChatMemoryService {
         arguments: &Value,
         response: CallToolResult,
     ) -> CallToolResult {
-        if let Some(checked) = self.validate_v3_prepare_response(&response) {
-            return checked;
+        match self
+            .store
+            .read_for_publication(|state| Ok(self.validate_v3_prepare_response(&response, state)))
+        {
+            Ok(Some(checked)) => return checked,
+            Err(_) => {
+                return CallToolResult::structured_error(
+                    json!({"error":"could not validate the completed prepare against current storage", "recall":{"status":"not_requested","reason":"current_state_unavailable"},"global_context":{"status":"unavailable"}}),
+                );
+            }
+            Ok(None) => (),
         }
         if response.is_error == Some(true) {
             return response;
@@ -3739,7 +3752,7 @@ fn tool<T: JsonSchema>(
         .expect("tool arguments are objects")
         .clone();
     let contract = if matches!(name, "memory_recall" | "memory_prepare") {
-        "When recall.v3 is selected (recall_version=recall.v3, or recall_pipeline=recall_v3 with no version override), one authoritative recall.v3 replaces the old answer_contract; do not apply the legacy safe_answer gate to it. Provide a stable request_id for recall; prepare derives one from session/turn if omitted. MCP online recall.v3 runs on an independent operation connection; offline=true and bootstrap=true skip recall model calls. Snapshot changes fail explicitly without an automatic retry. MCP read-only recall wraps the frozen object at recall; prepare returns source/enrichment/recall directly. Organize answers from facts/computed/history/conflicts, preserve all qualifiers, grade/update/unknown markers, and cite only their exact evidence; skipped/failed semantics cannot turn records/raw into current conclusions. Validation of recall.v3 only uses a retained result for the same request_id/query/context/task_id/at and current snapshot, never a third model request; simple unchanged unqualified facts may be approved, other drafts need semantic review. New-process/missing-result validation fails without retry. Otherwise, question recalls include answer_contract v1 (version=1), computed locally without another model request. Prepare places it at recall.result.answer_contract on success, or recall.answer_contract on runtime failure; in_progress/not_requested provide no answer permission. Match query/context/task_id to the intended question. read_revision/source_revision bind the evidence snapshot, not permanent permission. Unknown/missing versions or statuses cannot approve an answer. Use its safe_answer verbatim for its query/context, followed only by the source quotes and IDs in its sources array. Show these as readable source text, never invent a source URL. Empty safe_source_ids/sources means cite nothing, even when other fields contain candidate or historical records. source_linked_fact and source_linked_exact_identity approve only their exact safe_answer value and listed sources; other statuses do not authorize factual citations. not_applicable with safe_answer=null covers bootstrap and nonquestions; it does not approve a factual answer. To rewrite or extend a memory-based answer, submit the complete draft and original question to memory_validate_answer. Do not call validation again just to repeat an unchanged safe_answer. These constraints apply to this question only; a narrower lookup cannot approve a broader conclusion. "
+        "When recall.v3 is selected (recall_version=recall.v3, or recall_pipeline=recall_v3 with no version override), one authoritative recall.v3 replaces the old answer_contract; do not apply the legacy safe_answer gate to it. Provide a stable request_id for recall; prepare derives one from session/turn if omitted. MCP online recall.v3 runs on an independent operation connection; offline=true and bootstrap=true skip recall model calls. Ordinary background progress/commits return the original R3 read snapshot; deletion, input, scope or control changes fail without retry. queued means raw text was received and awaits enrichment; Prepare enrichment reflects the R3 observation, not delivery-time progress. MCP read-only recall wraps the frozen object at recall; prepare returns source/enrichment/recall directly. Organize answers from facts/computed/history/conflicts, preserve all qualifiers, grade/update/unknown markers, and cite only their exact evidence; skipped/failed semantics cannot turn records/raw into current conclusions. Validation of recall.v3 only uses a retained result for the same request_id/query/context/task_id/at and a still-authorized read snapshot, never a third model request; simple unchanged unqualified facts may be approved, other drafts need semantic review. New-process/missing-result validation fails without retry. Otherwise, question recalls include answer_contract v1 (version=1), computed locally without another model request. Prepare places it at recall.result.answer_contract on success, or recall.answer_contract on runtime failure; in_progress/not_requested provide no answer permission. Match query/context/task_id to the intended question. read_revision/source_revision bind the evidence snapshot, not permanent permission. Unknown/missing versions or statuses cannot approve an answer. Use its safe_answer verbatim for its query/context, followed only by the source quotes and IDs in its sources array. Show these as readable source text, never invent a source URL. Empty safe_source_ids/sources means cite nothing, even when other fields contain candidate or historical records. source_linked_fact and source_linked_exact_identity approve only their exact safe_answer value and listed sources; other statuses do not authorize factual citations. not_applicable with safe_answer=null covers bootstrap and nonquestions; it does not approve a factual answer. To rewrite or extend a memory-based answer, submit the complete draft and original question to memory_validate_answer. Do not call validation again just to repeat an unchanged safe_answer. These constraints apply to this question only; a narrower lookup cannot approve a broader conclusion. "
     } else {
         ""
     };

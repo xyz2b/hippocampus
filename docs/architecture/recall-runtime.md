@@ -8,7 +8,13 @@
 
 `Request` 的归属、任务、主体范围、said_on 和时区均由运行时提供。输出的 request 复制稳定 request_id、原始 query/context/task_id/at；R1 Plan 的原问题、上下文及可信范围必须与请求相同，否则拒绝组装。跨调用同 ID 的参数一致性与首次 at 由④的摘要回执绑定，正文与完整结果只留内存，见下文。
 
-records、raw、relations 和 completeness 在同一个 SQLite 读事务内产生，FTS 也使用该事务。snapshot 保存该次 read_revision/source_revision。返回前重读并核对这两个版本及来源整理状态、MemoryRequest 控制回执的内存绑定：状态/限制改变不一定增加正文索引的 source_revision。发现变化返回 `recall_snapshot_changed`，不返回旧包，不自动重新执行语义判断。此错误为库级错误，不新增 MCP 输出或冻结失败码。
+records、raw、relations、completeness 和新 Prepare 的顶层 source/enrichment 回执在同一个 R3 SQLite 读事务内产生，FTS 也使用该事务。snapshot 保存该次 read_revision/source_revision；R1 前的诊断 stamp 不是证据版本。R1 等待期间检查既有输入/目录的完整性，随后只装配一次 R3，不重复模型调用。
+
+AB2：**有效快照 = 绑定完整且内容仍获准可见，不等于最新**。整理状态推进、普通事实提交、关系/update 推进及读快照后新增来源不使结果失效；事实、等级、状态和完整性保持原读快照，不拼入最新进度。新 request_id 重新读取新版本；同参重放与 Validate 使用仍有效的原结果，不隐式重试。queued 表示原文已收到、整理待执行；enrichment 为 R3 读取时观察到的进度，不保证交付时仍处于该状态。request.at 是提问时间，不是数据库读取时刻。
+
+返回前仍检查来源或记忆删除（含无来源 legacy）、正文/历史/时间锚点、归属/主体/任务范围、目录绑定、本轮或证据范围内的控制限制，以及回执执行身份。任一不符拒绝或丢弃整个结果，沿用 recall_snapshot_changed / recall_cached_snapshot_stale 等已有错误，不新增冻结失败码。当前保守绑定可信任务内的既有来源和可见记录；普通追加证据允许，但原有依据被删除或改写不允许。来源请求和控制绑定仅以内存指纹保存，不持久保存只读 query/context 或模型输出。
+
+最后一次安全核验、完成回执与完整结果入缓存共用短 SQLite 写事务；重放/Validate 和 MCP prepare 发布/交付也共用安全检查。SQLite 发布事务阻止其他连接在检查与缓存/续等发布之间提交删除，无模型调用或等待后台。已交付内容无法撤回；删除后新的交付、重放和晚到结果不得再次输出已删内容。Prepare 失效时移除 recall，当前来源已删则返回 deleted 并清空整理片段；辅助 global_context 重新取当前获准视图，避免旧副本残留。W5 的快照、租约和顺序屏障不变。
 
 ## 可信范围与检索
 
@@ -119,17 +125,17 @@ medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单�
 
 Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12），final 26/40（dev20/28、holdout6/12）。补入8条旧引用，原8次 record_basis 失败全部通过；5次 operands 核验失败与9次字段评分失败仍保留。请求指纹全部有效，详见[补入后报告](../../tests/eval/recall_stage/r4-old-basis-review.md)。这是同一批响应的机械组装收益，没有新模型测量，也不代替语义人工复核。
 
-回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
+回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、R3 快照版本及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
 同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
 第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate 的新路径及其 v1 输出适配。legacy 召回与其他工具仍串行；新写入 inline 只保存 T1 并唤醒后台，legacy inline 仍同步。
 
-共享缓存与进行中表均按数据库规范路径、owner、请求身份隔离。短锁不覆盖数据库事务或模型等待；同 ID 同参的跨线程并发调用等待已有执行，完成后按原有回执/快照规则重放，R1/R4 各发送一次；异参立即拒绝。同线程递归调用保留原有明确拒绝，避免等待自己。等待者只保留完成状态，不另留正文副本。执行异常退出也会唤醒等待者，持久回执仍阻止未获授权的重试。`memory_forget` 沿用原删除事务的来源清洗，实际删除后清空该 owner 的完整结果（含 R4 原始审计），并标记进行中的结果不得重新入缓存；其他 owner/数据库不受影响。其他连接/进程直接修改数据库时仍由现有快照核对拒绝旧结果，不隐式刷新或重新调用模型。
+共享缓存与进行中表均按数据库规范路径、owner、请求身份隔离。缓存短锁仅覆盖最终发布/重放所需的短事务，不覆盖模型等待；同 ID 同参的跨线程并发调用等待已有执行，完成后按原有回执/快照规则重放，R1/R4 各发送一次；异参立即拒绝。同线程递归调用保留原有明确拒绝，避免等待自己。等待者只保留完成状态，不另留正文副本。执行异常退出也会唤醒等待者，持久回执仍阻止未获授权的重试。`memory_forget` 沿用原删除事务的来源清洗，实际删除后清空该 owner 的完整结果（含 R4 原始审计），并标记进行中的结果不得重新入缓存；其他 owner/数据库不受影响。其他连接/进程的删除或输入/权限改变同样使结果失效；普通提交和进度推进允许按原快照返回，不隐式刷新或重新调用模型。
 
 R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_audit` 经相同身份与快照检查返回同一对审计；原 `run` 的冻结输出接口不变。两份审计均不写数据库，不改变模型请求格式或指纹算法。来源失效时不能返回迟到审计，重开无结果时同样不重调。
 
-重放及结束事务核对业务/来源版本和来源整理/限制摘要，失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；第4项③/④已为新召回与新后台模型调用拆开服务锁；legacy 路径仍保持串行。
+重放及结束事务核对 R3 输入、范围/控制绑定和执行身份；原输出版本保持不变，不要求等于当前全局版本。安全失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；第4项③/④已为新召回与新后台模型调用拆开服务锁；legacy 路径仍保持串行。
 
 以上新失败说明仅是库级错误，不增加冻结状态枚举或新的 MCP 输出。⑤需要在授权范围内决定宿主如何呈现缓存不可用，不能将其当作自动重调许可。
 
@@ -165,11 +171,11 @@ pmr-mcp --db /tmp/recall-demo.sqlite3 --owner demo \
 
 同样支持 `--call memory_prepare` 和 `--call memory_validate_answer`，其参数文件按 tools/list schema 提交。CLI 工具调用要求显式 db/owner，不能与批量整理参数混用。模型 ID 只用于 API 路由及阶段绑定，不放进模型可见 payload；预算仍为每请求 R1/R4 各一次、共最多两次，无自动重试。
 
-**MCP 在线新召回已接通。** R1/R4 在独立操作连接上执行，不持服务全局锁、SQLite 事务或共享缓存锁；等待模型时其他 MCP 操作可完成。同 ID 同参共用一次执行，各阶段最多一次发送；同 ID 异参拒绝，快照变化明确失败（不隐式重试），删除清除该 owner 的完整缓存并阻止晚到结果入缓存。只读请求取消在发送前、阶段之间及保留结果前检查；已发出的阻塞 HTTP 等待既有超时或响应，取消后不继续 R4、不保留结果、不重试，取消等待者不取消同 ID 的执行者。模型超时沿用 degraded/failed 语义及已占用预算。
+**MCP 在线新召回已接通。** R1/R4 在独立操作连接上执行，不持服务全局锁、SQLite 事务或共享缓存锁；等待模型时其他 MCP 操作可完成。同 ID 同参共用一次执行，各阶段最多一次发送；同 ID 异参拒绝，安全绑定变化明确失败，普通提交/进度变化返回原读快照（不隐式重试），删除清除该 owner 的完整缓存并阻止晚到结果入缓存。只读请求取消在发送前、阶段之间及保留结果前检查；已发出的阻塞 HTTP 等待既有超时或响应，取消后不继续 R4、不保留结果、不重试，取消等待者不取消同 ID 的执行者。模型超时沿用 degraded/failed 语义及已占用预算。
 
 Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或45秒等待超时，通过完全相同参数续等，续等表的键只保留参数摘要，发布结果前与交付前都核对来源和召回快照；删除清除新版已完成的续等副本，发布与删除清理共用短锁，避免晚到副本重新入表。写入新路径 inline 在 T1 后立即唤醒后台，Prepare 不等待整理。`offline=true` 与 bootstrap 不调用召回模型；`PMR_MODEL_NETWORK=offline` 仍允许字面 loopback 测试端点，因此仅设该环境变量并不保证完全零调用。Validate 仅读共享缓存，不调用模型；跨操作连接可用，跨进程缺结果仍明确失败。
 
-**新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和当前快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
+**新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和仍获准可见的原读快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
 迁移客户端须先适配单一 recall.v3、prepare 三段和上述校验边界；未迁移客户端显式选择 answer_contract.v1 或保留 legacy 默认。当前未开始默认切换或旧契约退出，也未证明生产整链路 P95≤15秒。
 
@@ -177,6 +183,6 @@ Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或
 
 MCP 新写入 inline/deferred 以单个独立连接 worker 整理已绑定 w4_runtime_v1 的来源，启动恢复与周期租约扫描见 [w4-code-side 第10节](w4-code-side.md#10-mcp-后台执行与恢复第4项④)。T1 保存即唤醒，不等待前台 R1/R4 返回；本轮和其他可信范围内的未整理原文沿用 R3 raw 可见性与截断门控。
 
-[联合配置](../../examples/background-recall.json) 显式给前台2次、后台3次，使用同一总授权；没有新增额度。事件屏障测试要求前台在后台 W1 释放前完成并带新 raw，不能输出无条件旧当前值。后台阶段保存、整理状态改变或业务提交落在召回读快照与最终核验之间时，现有 read_revision/source_revision/来源控制摘要检查明确报 recall_snapshot_changed，零自动重试。受控的“R4等待期间后台完成提交”重复3次，实测3/3明确快照失败；未释放后台的独立前台请求实测成功。这里只证明触发条件，不推断实际频率，⑤再评估是否另行授权处理变化。
+[联合配置](../../examples/background-recall.json) 显式给前台2次、后台3次，使用同一总授权；没有新增额度。事件屏障测试要求前台在后台 W1 释放前完成并带新 raw，不能输出无条件旧当前值。AB2 前，后台进度/提交落在快照与核验之间会明确报 recall_snapshot_changed；此前受控交错3/3失败与⑤节奏86/120失败促成策略修正。现在普通推进保留原读快照，只有安全绑定变化失效，零自动重试；新的节奏与真实 Prepare 入口结果见 visibility-cadence.md。
 
-第4项⑤的七类 MCP 可见性验证与无屏障快照变化实验见 [w4-code-side 第11节](w4-code-side.md#11-26-七类可见性验收第4项⑤) 及 [visibility-cadence.md](visibility-cadence.md)。快照失效继续明确报 recall_snapshot_changed；同参重放不自动重试。
+第4项⑤的七类 MCP 可见性验证与无屏障快照变化实验见 [w4-code-side 第11节](w4-code-side.md#11-26-七类可见性验收第4项⑤) 及 [visibility-cadence.md](visibility-cadence.md)。安全绑定失效继续明确报 recall_snapshot_changed；普通推进不失效，同参重放不自动重试。

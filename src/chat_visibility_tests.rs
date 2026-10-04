@@ -538,26 +538,19 @@ fn visibility_normal_cadence_snapshot_change_frequency() {
                 let error = out.structured_content.unwrap().to_string();
                 if error.contains("recall_snapshot_changed") {
                     changed += 1;
-                    let initial = stamps.lock().unwrap().last().unwrap().clone();
-                    let latest = db.open().read().unwrap();
-                    if latest.revision > initial["revision"].as_u64().unwrap() {
-                        commit_overlap += 1;
-                    } else {
-                        assert_eq!(
-                            latest.source_revision,
-                            initial["source_revision"].as_u64().unwrap()
-                        );
-                        assert_ne!(
-                            crate::openai::recall_models::fingerprint(&json!(
-                                crate::recall::source_metadata(&latest).unwrap()
-                            )),
-                            initial["source_metadata"]
-                        );
-                        status_only += 1;
-                    }
                 } else {
                     other += 1;
                 }
+            }
+            let initial = stamps.lock().unwrap().last().unwrap().clone();
+            let latest = db.open().read().unwrap();
+            if latest.revision > initial["revision"].as_u64().unwrap() {
+                commit_overlap += 1;
+            } else if crate::openai::recall_models::fingerprint(&json!(
+                crate::recall::source_metadata(&latest).unwrap()
+            )) != initial["source_metadata"]
+            {
+                status_only += 1;
             }
             settled(&db, &turn, "committed"); // next turn starts after the previous conversation completes.
         }
@@ -567,7 +560,107 @@ fn visibility_normal_cadence_snapshot_change_frequency() {
             db.calls()
         );
         assert_eq!(other, 0);
-        assert_eq!(changed, commit_overlap + status_only);
+        assert_eq!(
+            changed, 0,
+            "ordinary background progress must not invalidate recall"
+        );
+        assert!(db.calls() <= 152, "unexpected implicit retry");
+    }
+}
+
+#[test]
+fn visibility_real_prepare_immediate_recall_success_frequency() {
+    for (label, background_ms, foreground_ms) in
+        [("prepare-fast-write", 8, 20), ("prepare-slow-write", 25, 5)]
+    {
+        let db = Db::new();
+        let mut service = service(&db);
+        seed(&db, &mut service);
+        let (mut client, _) = visible_client();
+        let transport = client.transport.take().unwrap();
+        client.transport = Some(Arc::new(move |request| {
+            let body: Json =
+                serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+            let background = body["text"]["format"]["name"]
+                .as_str()
+                .unwrap()
+                .starts_with('w');
+            std::thread::sleep(Duration::from_millis(if background {
+                background_ms
+            } else {
+                foreground_ms
+            }));
+            transport(request)
+        }));
+        service.inject_model_client(client);
+        let worker = service.start_background().unwrap().unwrap();
+        let shared = Mutex::new(service);
+        let mut success = 0;
+        let mut failed = 0;
+        for n in 0..30 {
+            let turn = format!("prepare-cadence-{n}");
+            let text = if n % 2 == 0 {
+                "我已搬到苏州。"
+            } else {
+                NANJING
+            };
+            let args = json!({"user_turn":{"text":text,"session_id":"visibility",
+                "turn_id":turn,"observed_at":AT,"capture_source":true}});
+            // Actual prepare performs T1 and immediately starts R1/R3/R4; no separate remember.
+            let response = ChatMemoryService::call_shared(
+                &shared,
+                "memory_prepare",
+                args.clone(),
+                || false,
+                "prepare-cadence",
+            )
+            .unwrap();
+            let body = response.structured_content.as_ref().unwrap();
+            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v3" {
+                success += 1;
+                assert_eq!(body["source"]["status"], "stored");
+                assert_eq!(body["recall"]["status"], "answered", "{body}");
+                assert_eq!(body["recall"]["facts"][0]["statement"], text);
+                let id = &body["source"]["source_id"];
+                if let Some(raw) = body["recall"]["raw"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|r| &r["source_id"] == id)
+                {
+                    assert_eq!(body["enrichment"]["status"], raw["enrichment"]);
+                }
+                // Delivery/replay after the worker commits keep the same R3 observation.
+                settled(&db, &turn, "committed");
+                let operation = shared.lock().unwrap().operation();
+                let checked = operation
+                    .connect()
+                    .unwrap()
+                    .validate_prepare_response(&args, response.clone());
+                assert_eq!(
+                    checked.structured_content.as_ref().unwrap()["recall"],
+                    body["recall"]
+                );
+                assert_eq!(
+                    checked.structured_content.as_ref().unwrap()["enrichment"],
+                    body["enrichment"]
+                );
+                let replay = shared_call(&shared, "memory_prepare", args);
+                assert_eq!(replay["recall"], body["recall"]);
+                assert_eq!(replay["enrichment"], body["enrichment"]);
+            } else {
+                failed += 1;
+                eprintln!("PREPARE_FAILED {label}/{n}: {body}");
+                settled(&db, &turn, "committed");
+            }
+        }
+        worker.stop_and_join().unwrap();
+        eprintln!(
+            "PREPARE_CADENCE {label}: success={success}/30 failed={failed} bg_stage_ms={background_ms} fg_stage_ms={foreground_ms} calls={}",
+            db.calls()
+        );
+        assert_eq!(failed, 0);
+        assert_eq!(success, 30);
         assert!(db.calls() <= 152, "unexpected implicit retry");
     }
 }

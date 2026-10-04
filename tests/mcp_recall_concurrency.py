@@ -142,7 +142,7 @@ def main():
                     try:
                         assert entered.wait(10)
                         if action == "change":
-                            client.finish_call(client.start_call("memory_remember", {
+                            saved = client.finish_call(client.start_call("memory_remember", {
                                 "session_id": "concurrent", "turn_id": f"change-{stage}", "text": "我有一把绿伞。",
                                 "capture_source": True, "observed_at": AT}), timeout=5)
                         elif action == "delete":
@@ -154,6 +154,14 @@ def main():
                         while_held(client)
                     finally:
                         release.set()
+                    if action == "change":
+                        original = client.finish_call(first)
+                        replayed = client.call("memory_recall", args)
+                        assert replayed == original, (original, replayed)
+                        # R3 includes arrivals during R1, but not arrivals during R4.
+                        assert (json.dumps(saved["source"]["source_id"]) in json.dumps(original)) == (stage == "r1_v1"), original
+                        assert len(HeldFixture.requests) == before + 2
+                        continue
                     # The cancelled RPC may have no response; repeating its exact request joins/checks the same execution.
                     failed = client.call("memory_recall", args, error=True)
                     if action != "cancel":

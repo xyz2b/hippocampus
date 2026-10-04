@@ -506,6 +506,9 @@ fn request_binding(
 #[derive(Clone)]
 struct CachedResult {
     output: RecallOutput,
+    safety: recall::SafetySnapshot,
+    binding: String,
+    attempt: String,
     // 原始输出与组装结果共同保留；沿用64项缓存与快照失效，不落库。
     r4: Option<crate::r4::OutputAudit>,
 }
@@ -538,21 +541,77 @@ impl RecallRuntime {
             store.owner().0.clone(),
             operation.clone(),
         );
-        let state = store.read()?;
-        let receipt = state
-            .receipts
-            .get(&operation)
-            .ok_or("recall_result_not_retained:no_model_retry")?;
-        let current_stamp = stamp(&state)?;
+        store.read_for_publication(|state| {
+            self.cached_in_state(store, state, &key).map(|c| c.output)
+        })
+    }
+
+    fn cached_in_state(
+        &self,
+        store: &SqliteMemoryStore,
+        state: &crate::PersistedMemoryState,
+        key: &CacheKey,
+    ) -> PersistenceResult<CachedResult> {
         let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
-        if receipt.result["state"] != "finished" || receipt.result["stamp"] != current_stamp {
-            cache.remove(&key);
+        let Some(receipt) = state.receipts.get(&key.2) else {
+            cache.remove(key);
+            return Err("recall_result_not_retained:no_model_retry".into());
+        };
+        if receipt.result["state"] == "invalidated" {
+            cache.remove(key);
             return Err("recall_cached_snapshot_stale".into());
         }
-        cache
-            .get(&key)
-            .map(|c| c.output.clone())
-            .ok_or_else(|| "recall_result_not_retained:no_model_retry".into())
+        if receipt.result["state"] != "finished" {
+            return Err("recall_result_not_retained:no_model_retry".into());
+        }
+        let cached = cache
+            .get(key)
+            .ok_or("recall_result_not_retained:no_model_retry")?;
+        if cached.safety.check(store.owner(), state).is_err()
+            || receipt.request["fingerprint"] != cached.binding
+            || receipt.result["attempt_id"] != cached.attempt
+            || receipt.result["stamp"]["revision"] != cached.output.snapshot.read_revision
+            || receipt.result["stamp"]["source_revision"] != cached.output.snapshot.source_revision
+        {
+            cache.remove(key);
+            return Err("recall_cached_snapshot_stale".into());
+        }
+        Ok(cached.clone())
+    }
+
+    pub(crate) fn retained_in_state(
+        &self,
+        store: &SqliteMemoryStore,
+        state: &crate::PersistedMemoryState,
+        request_id: &str,
+    ) -> PersistenceResult<RecallOutput> {
+        let key = (
+            store.path().to_owned(),
+            store.owner().0.clone(),
+            json!(["recall.v3", fingerprint(&json!(request_id))]).to_string(),
+        );
+        self.cached_in_state(store, state, &key).map(|c| c.output)
+    }
+
+    pub(crate) fn prepared_receipt(
+        &self,
+        store: &SqliteMemoryStore,
+        request_id: &str,
+        source_key: &str,
+    ) -> PersistenceResult<Value> {
+        let key = (
+            store.path().to_owned(),
+            store.owner().0.clone(),
+            json!(["recall.v3", fingerprint(&json!(request_id))]).to_string(),
+        );
+        store.read_for_publication(|state| {
+            self.cached_in_state(store, state, &key)?
+                .safety
+                .prepared
+                .get(source_key)
+                .cloned()
+                .ok_or_else(|| "recall_snapshot_changed".into())
+        })
     }
 
     /// 同进程复用完整结果；重开只保留摘要/尝试状态，无结果时明确失败且不重新调用。
@@ -607,6 +666,7 @@ impl RecallRuntime {
         request: &Request,
         budget: Budget,
         output: RecallOutput,
+        safety: recall::SafetySnapshot,
     ) -> PersistenceResult<RecallOutput> {
         if !request.bootstrap
             || output.request != request.binding
@@ -619,8 +679,16 @@ impl RecallRuntime {
         {
             return Err("invalid_bootstrap_output".into());
         }
-        self.run_inner(store, request, budget, None, Some(output), false, &|| false)
-            .map(|(out, _)| out)
+        self.run_inner(
+            store,
+            request,
+            budget,
+            None,
+            Some((output, safety)),
+            false,
+            &|| false,
+        )
+        .map(|(out, _)| out)
     }
 
     fn run_inner(
@@ -629,7 +697,7 @@ impl RecallRuntime {
         request: &Request,
         budget: Budget,
         provider: Option<&RecallModelProvider>,
-        bootstrap: Option<RecallOutput>,
+        bootstrap: Option<(RecallOutput, recall::SafetySnapshot)>,
         implicit_at: bool,
         cancelled: &dyn Fn() -> bool,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
@@ -705,7 +773,7 @@ impl RecallRuntime {
                 return Err("recall_result_not_retained:no_model_retry".into());
             }
             flight.wait(cancelled)?;
-            // 共用既有回执/快照/缓存检查，等待期间删除或状态变化也不能返回旧正文。
+            // 共用回执/安全快照/缓存检查；等待期间删除阻断，普通进度沿用读快照。
             return self.execute(store, request, budget, provider, bootstrap, cancelled);
         }
         let guard = FlightGuard {
@@ -729,7 +797,7 @@ impl RecallRuntime {
         request: &Request,
         budget: Budget,
         provider: Option<&RecallModelProvider>,
-        bootstrap: Option<RecallOutput>,
+        bootstrap: Option<(RecallOutput, recall::SafetySnapshot)>,
         cancelled: &dyn Fn() -> bool,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         check_cancelled(cancelled)?;
@@ -788,35 +856,22 @@ impl RecallRuntime {
             });
             Ok(None)
         })?;
-        if let Some(old) = existing {
+        if existing.is_some() {
             check_cancelled(cancelled)?;
-            if old["state"] == "invalidated" || old["stamp"] != initial {
-                self.cache
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner())
-                    .remove(&cache_key);
-                return Err("recall_cached_snapshot_stale".into());
-            }
-            if let Some(output) = self
-                .cache
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
-                .get(&cache_key)
-            {
-                return Ok((output.output.clone(), output.r4.clone()));
-            }
-            // 重启、崩溃或内存裁剪不提供新的授权，不能把已尝试的阶段重新发送。
-            return Err("recall_result_not_retained:no_model_retry".into());
+            return store.read_for_publication(|state| {
+                self.cached_in_state(store, state, &cache_key)
+                    .map(|c| (c.output, c.r4))
+            });
         }
+        // R1 不读事实，但在等待期间不能丢失已接收来源的删除/输入限制。
+        let before_r1 = recall::SafetySnapshot::capture(&state, request)?;
+        let mut safety = None;
         let mut r4_audit = None;
         let result: PersistenceResult<RecallOutput> = (|| {
             check_cancelled(cancelled)?;
-            if let Some(output) = bootstrap {
-                if output.snapshot.read_revision != state.revision
-                    || output.snapshot.source_revision != state.source_revision
-                {
-                    return Err("recall_snapshot_changed".into());
-                }
+            if let Some((output, binding)) = bootstrap {
+                binding.check(store.owner(), &state)?;
+                safety = Some(binding);
                 return Ok(output);
             }
             let offline = request.bootstrap || provider.is_none_or(|p| !p.client.network_allowed);
@@ -850,10 +905,24 @@ impl RecallRuntime {
                 }
             }
             check_cancelled(cancelled)?;
-            if stamp(&store.read()?)? != initial {
-                return Err("recall_snapshot_changed".into());
-            }
+            before_r1.check(store.owner(), &store.read()?)?;
             let assembly = recall::assemble(store, request, &plan, budget)?;
+            safety = Some(assembly.safety.clone());
+            // 执行身份不变；来源绑定与观察版本取自真正交给 R4 的 R3 读快照。
+            store.transaction(|state| {
+                assembly.safety.check(&request.owner, state)?;
+                let receipt = state
+                    .receipts
+                    .get_mut(&operation)
+                    .ok_or("recall_claim_lost")?;
+                if receipt.result["attempt_id"] != attempt || receipt.result["state"] != "running" {
+                    return Err("recall_claim_lost".into());
+                }
+                receipt.result["stamp"] = json!({"revision":assembly.snapshot.read_revision,
+                    "source_revision":assembly.snapshot.source_revision});
+                receipt.result["source_ids"] = json!(assembly.safety.source_ids());
+                Ok(())
+            })?;
             let mut output = if plan.need() == R1Need::ContextOnly {
                 assembly.finish_skipped(store, SkipReason::ContextOnly)?
             } else if offline {
@@ -907,44 +976,74 @@ impl RecallRuntime {
             check_cancelled(cancelled)?;
             Ok(output)
         })();
-        // 保存只含状态的回执；同事务重查来源/快照和执行身份，迟到删除绝不保存结果。
-        store.transaction(|s| {
-            let latest = stamp(s)?;
-            let receipt = s.receipts.get_mut(&operation).ok_or("recall_claim_lost")?;
+        // 完成回执、最后一次安全核验与入缓存同处短 SQLite 写事务；其他连接的
+        // 删除不能插在检查与入缓存之间。此处无模型调用，也不等待后台。
+        let finished = store.transaction(|state| {
+            let receipt = state.receipts.get(&operation).ok_or("recall_claim_lost")?;
             if receipt.result["attempt_id"] != attempt || receipt.result["state"] != "running" {
                 return Err("recall_claim_lost".into());
             }
-            if latest != initial {
-                receipt.result = json!({"state":"invalidated"});
-                return Ok(());
+            // R1 期间取消尚未装配 R3；用已有输入绑定核验，不能将未装配当作失效。
+            let valid = safety
+                .as_ref()
+                .unwrap_or(&before_r1)
+                .check(&request.owner, state)
+                .is_ok();
+            let receipt = state.receipts.get_mut(&operation).unwrap();
+            receipt.result["state"] = json!(if !valid {
+                "invalidated"
+            } else if result.is_ok() {
+                "finished"
+            } else {
+                "failed"
+            });
+            if let Ok(output) = &result {
+                receipt.result["stamp"] = json!({"revision":output.snapshot.read_revision,
+                    "source_revision":output.snapshot.source_revision});
+                receipt.result["source_ids"] = json!(safety.as_ref().unwrap().source_ids());
+                if !valid {
+                    return Ok(false);
+                }
+                check_cancelled(cancelled)?;
+                let flights = self.in_flight.lock().unwrap_or_else(|e| e.into_inner());
+                if flights
+                    .get(&cache_key)
+                    .is_some_and(|f| f.invalidated.load(Ordering::SeqCst))
+                {
+                    return Err("recall_snapshot_changed".into());
+                }
+                let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
+                if cache.len() >= 64 {
+                    cache.pop_first();
+                }
+                cache.insert(
+                    cache_key.clone(),
+                    CachedResult {
+                        output: output.clone(),
+                        safety: safety.as_ref().unwrap().clone(),
+                        binding: binding.clone(),
+                        attempt: attempt.clone(),
+                        r4: r4_audit.clone(),
+                    },
+                );
             }
-            receipt.result["state"] = json!(if result.is_ok() { "finished" } else { "failed" });
-            Ok(())
-        })?;
+            Ok(valid)
+        });
+        let valid = match finished {
+            Ok(valid) => valid,
+            Err(e) => {
+                self.cache
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .remove(&cache_key);
+                return Err(e);
+            }
+        };
         let output = result?;
-        check_cancelled(cancelled)?;
-        if stamp(&store.read()?)? != initial {
+        if !valid {
             return Err("recall_snapshot_changed".into());
         }
-        // 与删除清洗采用同一锁顺序；锁内只检查进行中标记并更新缓存，不读数据库。
-        let flights = self.in_flight.lock().unwrap_or_else(|e| e.into_inner());
-        if flights
-            .get(&cache_key)
-            .is_some_and(|f| f.invalidated.load(Ordering::SeqCst))
-        {
-            return Err("recall_snapshot_changed".into());
-        }
-        let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
-        if cache.len() >= 64 {
-            cache.pop_first();
-        }
-        cache.insert(
-            cache_key,
-            CachedResult {
-                output: output.clone(),
-                r4: r4_audit.clone(),
-            },
-        );
+
         Ok((output, r4_audit))
     }
 }

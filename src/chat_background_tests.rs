@@ -160,6 +160,134 @@ fn query(id: &str) -> Json {
 }
 
 #[test]
+fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable() {
+    for recall_pipeline in ["legacy", "recall_v3"] {
+        let db = Db::new();
+        let config = serde_json::from_value(json!({"recall_pipeline":recall_pipeline,
+            "model_budget":{"group_id":"global-context-fixture","max_calls":4}}))
+        .unwrap();
+        let mut service = ChatMemoryService::new(
+            SqliteMemoryStore::open(&db.0, OWNER.into()).unwrap(),
+            config,
+        )
+        .unwrap();
+        let (mut c, sent) = client();
+        let requests = Arc::clone(&sent);
+        c.transport = Some(Arc::new(move |request| {
+            let body: Json =
+                serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+            requests.lock().unwrap().push(body.clone());
+            let input: Json = serde_json::from_str(body["input"].as_str().unwrap()).unwrap();
+            let out = if body["text"]["format"]["name"] == "personal_memory_source_support_v1" {
+                json!({"review_binding":input["review_binding"],"omission_supported":false,
+                    "coverage":{"status":"complete","missing_user_spans":[]},
+                    "reviews":[{"candidate_index":0,"issues":[],
+                        "current_user_quote":input["current_user_turn"],
+                        "checks":{"subject":"supported","relation":"supported","value":"supported",
+                            "polarity":"supported","scope":"supported","temporal":"supported",
+                            "intent":"supported","source":"supported","metadata":"supported"},
+                        "evidence":[{"turn_index":0,"quote":input["current_user_turn"]}]}]})
+            } else {
+                json!({"candidates":[{"subject_id":"self","unresolved_subject":null,
+                    "memory_type":"constraint","predicate":"response_language",
+                    "value":{"kind":"text","text":"中文","integer":null,"boolean":null,"entity_id":null},
+                    "polarity":null,"strength":null,"scope":{"domain":null,"conditions":{
+                        "companion_roles":[],"companion_entity_ids":[],"geography":null,"country":null,
+                        "city":null,"date":null,"time_of_day":null,"activities":[],"task_id":null}},
+                    "retention_tier":"durable","valid_from":null,"valid_to":null,"expires_at":null,
+                    "temporal_expression":null,"extraction_confidence":"high","certainty":"high",
+                    "source":"user_statement","intent":{"kind":"assert","target_memory_id":null,"reason":null},
+                    "explicit_memory_request":true,"cross_turn_useful":true,"tags":[]}]})
+            };
+            Ok(envelope(out))
+        }));
+        service.inject_model_client(c);
+        let shared = Mutex::new(service);
+        let remember = |session: &str| {
+            let arguments = json!({"text":"以后无论聊什么，回答都必须使用中文。",
+                "session_id":session,"turn_id":"one"});
+            let response = ChatMemoryService::call_shared(
+                &shared,
+                "memory_remember",
+                arguments.clone(),
+                || false,
+                &diagnostics::new_id(),
+            )
+            .unwrap();
+            (arguments, response)
+        };
+        let (_, first) = remember("direct-save");
+        assert_ne!(first.is_error, Some(true));
+        assert_eq!(
+            first.structured_content.unwrap()["global_context"]["status"],
+            "available"
+        );
+        let recall_arguments = json!({"recall_version":"recall.v3","request_id":"retained",
+            "query":"全局回答要求","offline":true,"bootstrap":true});
+        let recalled = ChatMemoryService::call_shared(
+            &shared,
+            "memory_recall",
+            recall_arguments.clone(),
+            || false,
+            &diagnostics::new_id(),
+        )
+        .unwrap();
+        assert_ne!(recalled.is_error, Some(true));
+        db.open()
+            .connection
+            .execute_batch(
+                "CREATE TRIGGER break_context AFTER UPDATE ON memory_profiles BEGIN
+             UPDATE memory_profiles SET state_json='invalid-json' WHERE owner_id=NEW.owner_id; END",
+            )
+            .unwrap();
+        let (arguments, committed) = remember("context-failure");
+        assert_ne!(committed.is_error, Some(true));
+        let body = committed.structured_content.as_ref().unwrap();
+        assert_eq!(body["replayed"], false);
+        assert_eq!(
+            body["outcomes"][0]["Ingested"]["Applied"]["action"],
+            "Reinforce"
+        );
+        assert_eq!(body["global_context"]["status"], "unavailable");
+        assert!(shared.lock().unwrap().operation().connect().is_err());
+        let published = ChatMemoryService::publish_shared_response(
+            &shared,
+            "memory_remember",
+            &arguments,
+            committed.clone(),
+            |value| value,
+        )
+        .unwrap();
+        assert_eq!(published, committed);
+        assert!(
+            ChatMemoryService::publish_shared_response(
+                &shared,
+                "memory_recall",
+                &recall_arguments,
+                recalled,
+                |_| panic!("unreadable storage must block recall publication"),
+            )
+            .is_err()
+        );
+        assert_eq!(sent.lock().unwrap().len(), 4);
+        // Inspect SQL directly: an operation connection intentionally rejects the corrupt profile.
+        let connection = rusqlite::Connection::open(&db.0).unwrap();
+        let calls: i64 = connection
+            .query_row("SELECT count(*) FROM model_calls", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(calls, 4);
+        let state: String = connection
+            .query_row(
+                "SELECT state_json FROM memory_profiles WHERE owner_id=?1",
+                [OWNER],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(state, "invalid-json");
+    }
+}
+
+#[test]
 fn background_config_keeps_default_inert_and_joint_allowance_explicit() {
     let db = Db::new();
     let mut legacy = ChatMemoryService::new(
@@ -632,7 +760,7 @@ fn background_held_model_allows_online_foreground_recall_and_new_raw_before_rele
 }
 
 #[test]
-fn background_commit_during_foreground_r4_fails_snapshot_in_three_controlled_runs() {
+fn background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled_runs() {
     for repeat in 0..3 {
         let db = Db::new();
         let mut service = db.service(10);
@@ -675,13 +803,19 @@ fn background_commit_during_foreground_r4_fails_snapshot_in_three_controlled_run
             );
             release_r4.send(()).unwrap();
             let result = foreground.join().unwrap().unwrap();
-            assert!(result.is_error.unwrap_or(false));
+            assert!(!result.is_error.unwrap_or(false));
+            let recall = &result.structured_content.as_ref().unwrap()["recall"];
+            assert_eq!(recall["version"], "recall.v3");
             assert!(
-                result
-                    .structured_content
+                recall["snapshot"]["read_revision"].as_u64().unwrap()
+                    < db.open().read().unwrap().revision
+            );
+            assert!(
+                recall["raw"]
+                    .as_array()
                     .unwrap()
-                    .to_string()
-                    .contains("recall_snapshot_changed")
+                    .iter()
+                    .any(|raw| raw["enrichment"] == "running")
             );
         });
         assert_eq!(db.calls(), 7); // old 2 + foreground 2 + new 3, no automatic repeat.

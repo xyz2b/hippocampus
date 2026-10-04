@@ -111,13 +111,23 @@ impl Server {
                         };
                         // Serialize publication with forget's cache purge; no HTTP runs under these locks.
                         let _jobs = prepares.lock().map_err(|_| "prepare queue lock poisoned")?;
-                        let value = value.map(|value| match validation {
-                            Some(service) => {
-                                service.validate_prepare_response(&worker_arguments, value)
+                        match value {
+                            Ok(value) => match validation {
+                                Some(service) => {
+                                    service
+                                        .publish_response(value, |checked| {
+                                            publisher.send_replace(Some(Ok(checked)))
+                                        })
+                                        .map_err(|e| e.to_string())?;
+                                }
+                                None => {
+                                    publisher.send_replace(Some(Ok(value)));
+                                }
+                            },
+                            Err(error) => {
+                                publisher.send_replace(Some(Err(error)));
                             }
-                            None => value,
-                        });
-                        publisher.send_replace(Some(value));
+                        }
                         Ok::<_, String>(())
                     })
                     .await
@@ -228,10 +238,11 @@ impl ServerHandler for Server {
         let service = self.service.clone();
         let prepares = self.prepares.clone();
         let result = tokio::task::spawn_blocking(move || {
+            let arguments = Value::Object(request.arguments.unwrap_or_default());
             let value = ChatMemoryService::call_shared(
                 &service,
                 &request.name,
-                Value::Object(request.arguments.unwrap_or_default()),
+                arguments.clone(),
                 || context.ct.is_cancelled(),
                 &hippocampus::diagnostics::new_id(),
             )
@@ -245,7 +256,14 @@ impl ServerHandler for Server {
                 let mut jobs = prepares.lock().map_err(|_| "prepare queue lock poisoned")?;
                 clear_recall_prepares(&mut jobs);
             }
-            Ok::<_, String>(value)
+            ChatMemoryService::publish_shared_response(
+                &service,
+                &request.name,
+                &arguments,
+                value,
+                |value| value,
+            )
+            .map_err(|e| e.to_string())
         })
         .await
         .map_err(|_| ErrorData::internal_error("memory worker failed", None))?;
@@ -271,7 +289,7 @@ fn main() -> PersistenceResult<()> {
         match arg.as_str() {
             "--help" | "-h" => {
                 eprintln!(
-                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\n--call memory_remember|memory_recall|memory_prepare|memory_validate_answer --arguments JSON_FILE runs one CLI tool call (explicit --db/--owner). recall_pipeline: legacy (default)/recall_v3; request recall_version=recall.v3 or answer_contract.v1. recall.v3 needs a stable request_id; prepare defaults to session/turn. offline=true and bootstrap make no recall model calls. MCP online recall.v3 uses independent operation connections and shared request replay; snapshot changes fail without automatic retry. Recall and write pipelines are independent.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires capture_source=true; new inline/deferred queue immediately after raw capture and run in the MCP background. The new pipeline supports these CLI batch commands. Existing sources keep their bound version.\nLegacy inline stays synchronous. New inline and deferred capture return after raw storage; one MCP worker scans/reclaims durable new-version tasks outside the service lock. CLI --call does not start a worker; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. background_operation_limit (1..3) explicitly separates the background operation cap from max_operation_calls; both use the same total model_budget. No automatic model retries."
+                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\n--call memory_remember|memory_recall|memory_prepare|memory_validate_answer --arguments JSON_FILE runs one CLI tool call (explicit --db/--owner). recall_pipeline: legacy (default)/recall_v3; request recall_version=recall.v3 or answer_contract.v1. recall.v3 needs a stable request_id; prepare defaults to session/turn. offline=true and bootstrap make no recall model calls. MCP online recall.v3 uses independent operation connections and shared request replay; ordinary background progress/commits preserve the R3 read snapshot; safety-binding changes fail without automatic retry. Recall and write pipelines are independent.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires capture_source=true; new inline/deferred queue immediately after raw capture and run in the MCP background. The new pipeline supports these CLI batch commands. Existing sources keep their bound version.\nLegacy inline stays synchronous. New inline and deferred capture return after raw storage; one MCP worker scans/reclaims durable new-version tasks outside the service lock. CLI --call does not start a worker; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. background_operation_limit (1..3) explicitly separates the background operation cap from max_operation_calls; both use the same total model_budget. No automatic model retries."
                 );
                 return Ok(());
             }

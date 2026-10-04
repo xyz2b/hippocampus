@@ -418,10 +418,10 @@ fn same_id_rejects_changed_query_context_clock_scope_and_budget() {
     assert_eq!(db.calls(), 0);
 }
 #[test]
-fn replay_checks_source_control_metadata_even_when_revisions_did_not_change() {
+fn replay_preserves_observed_enrichment_when_only_progress_changes() {
     let db = Db::new();
     let mut rt = RecallRuntime::default();
-    run(&mut rt, &db, "stale", None).unwrap();
+    let first = run(&mut rt, &db, "stale", None).unwrap();
     let before = db.open().read().unwrap().source_revision;
     db.open()
         .transaction(|s| {
@@ -430,11 +430,11 @@ fn replay_checks_source_control_metadata_even_when_revisions_did_not_change() {
         })
         .unwrap();
     assert_eq!(db.open().read().unwrap().source_revision, before);
-    assert!(
-        run(&mut rt, &db, "stale", None)
-            .unwrap_err()
-            .to_string()
-            .contains("snapshot_stale")
+    assert_eq!(run(&mut rt, &db, "stale", None).unwrap(), first);
+    assert_eq!(rt.retained(&db.open(), "stale").unwrap(), first);
+    assert_eq!(
+        run(&mut rt, &db, "fresh", None).unwrap().raw[0].enrichment,
+        EnrichmentStatus::NeedsRejudge
     );
     assert_eq!(db.calls(), 0);
 }
@@ -1523,7 +1523,7 @@ fn mcp_online_r1_and_r4_wait_outside_lock_and_same_id_sends_once() {
 }
 
 #[test]
-fn mcp_online_delete_or_snapshot_change_invalidates_both_model_stages_without_retry() {
+fn mcp_online_delete_invalidates_but_new_sources_preserve_both_model_stages_without_retry() {
     for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
         for delete in [true, false] {
             let db = Db::new();
@@ -1552,21 +1552,37 @@ fn mcp_online_delete_or_snapshot_change_invalidates_both_model_stages_without_re
                     Some(true)
                 );
                 release.send(()).unwrap();
-                for result in [first.join().unwrap(), duplicate.join().unwrap()] {
-                    assert_eq!(result.is_error, Some(true));
-                    let body = result.structured_content.unwrap();
-                    assert!(
-                        body["error"].as_str().unwrap().contains(if delete {
-                            "recall_claim_lost"
-                        } else {
-                            "recall_snapshot_changed"
-                        }),
-                        "{body}"
-                    );
-                    assert!(!body.to_string().contains(TEXT));
+                let results = [first.join().unwrap(), duplicate.join().unwrap()];
+                if delete {
+                    for result in results {
+                        assert_eq!(result.is_error, Some(true));
+                        let body = result.structured_content.unwrap();
+                        assert!(
+                            body["error"].as_str().unwrap().contains(if delete {
+                                "recall_claim_lost"
+                            } else {
+                                "recall_snapshot_changed"
+                            }),
+                            "{body}"
+                        );
+                        assert!(!body.to_string().contains(TEXT));
+                    }
+                } else {
+                    assert_eq!(results[0].structured_content, results[1].structured_content);
+                    for result in results {
+                        assert_ne!(result.is_error, Some(true));
+                        assert_eq!(
+                            result.structured_content.unwrap()["recall"]["status"],
+                            "answered"
+                        );
+                    }
                 }
             });
-            assert!(runtime.cache.lock().unwrap().is_empty());
+            if delete {
+                assert!(runtime.cache.lock().unwrap().is_empty());
+            } else {
+                assert!(!runtime.cache.lock().unwrap().is_empty());
+            }
             assert!(runtime.in_flight.lock().unwrap().is_empty());
             let state = db.open().read().unwrap();
             assert!(
@@ -1577,11 +1593,19 @@ fn mcp_online_delete_or_snapshot_change_invalidates_both_model_stages_without_re
             if delete {
                 assert!(!serde_json::to_string(&state).unwrap().contains(TEXT));
             }
-            assert_eq!(
-                mcp_call(&service, "memory_recall", mcp_query("changed"), || false).is_error,
-                Some(true)
-            );
-            let expected = if stage == "r1-route-sentinel" { 1 } else { 2 };
+            let expected = if delete {
+                assert_eq!(
+                    mcp_call(&service, "memory_recall", mcp_query("changed"), || false).is_error,
+                    Some(true)
+                );
+                if stage == "r1-route-sentinel" { 1 } else { 2 }
+            } else {
+                assert_ne!(
+                    mcp_call(&service, "memory_recall", mcp_query("changed"), || false).is_error,
+                    Some(true)
+                );
+                2
+            };
             assert_eq!(sent.lock().unwrap().len(), expected);
             assert_eq!(db.calls(), expected as i64);
         }
@@ -1622,6 +1646,106 @@ fn mcp_online_executor_cancellation_discards_late_output_and_never_retries() {
         let expected = if stage == "r1-route-sentinel" { 1 } else { 2 };
         assert_eq!(sent.lock().unwrap().len(), expected);
         assert_eq!(db.calls(), expected as i64);
+    }
+}
+
+#[test]
+fn mcp_online_cancel_replay_after_prior_delete_does_not_mark_snapshot_stale() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
+        for prior_delete in [false, true] {
+            let db = Db::new();
+            let (p, sent, entered, release) = held_model(&db, stage);
+            let service = mcp_service(&db, p);
+            let runtime = service.lock().unwrap().shared_recall_runtime();
+            let source_id = if prior_delete {
+                assert_ne!(
+                    mcp_call(
+                        &service,
+                        "memory_forget",
+                        json!({"source_id":"s-purple"}),
+                        || false
+                    )
+                    .is_error,
+                    Some(true)
+                );
+                let saved = mcp_call(
+                    &service,
+                    "memory_remember",
+                    json!({
+                        "text":TEXT,"session_id":"mcp","turn_id":"reseed",
+                        "capture_source":true,"observed_at":AT
+                    }),
+                    || false,
+                );
+                assert_ne!(saved.is_error, Some(true));
+                saved.structured_content.unwrap()["source"]["source_id"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned()
+            } else {
+                "s-purple".to_owned()
+            };
+            let cancelled = AtomicBool::new(false);
+            std::thread::scope(|scope| {
+                let first = scope.spawn(|| {
+                    mcp_call(
+                        &service,
+                        "memory_recall",
+                        mcp_query("cancel-replay"),
+                        || cancelled.load(Ordering::SeqCst),
+                    )
+                });
+                entered
+                    .recv_timeout(std::time::Duration::from_secs(5))
+                    .unwrap();
+                let state = db.open().read().unwrap();
+                let receipt = state
+                    .receipts
+                    .values()
+                    .find(|r| r.request["form"] == "recall_metadata_v1")
+                    .unwrap();
+                let ids = receipt.result["source_ids"].as_array().unwrap();
+                assert!(ids.contains(&json!(source_id)));
+                if prior_delete {
+                    assert!(!ids.contains(&json!("s-purple")));
+                }
+                cancelled.store(true, Ordering::SeqCst);
+                release.send(()).unwrap();
+                let result = first.join().unwrap();
+                assert_eq!(result.is_error, Some(true));
+                let body = result.structured_content.unwrap();
+                assert!(
+                    body["error"].as_str().unwrap().contains("cancelled"),
+                    "{body}"
+                );
+                assert!(!body.to_string().contains(TEXT));
+            });
+            let replay = mcp_call(
+                &service,
+                "memory_recall",
+                mcp_query("cancel-replay"),
+                || false,
+            );
+            assert_eq!(replay.is_error, Some(true));
+            let body = replay.structured_content.unwrap();
+            assert!(
+                body["error"].as_str().unwrap().contains("not_retained"),
+                "stage={stage}, prior_delete={prior_delete}: {body}"
+            );
+            assert!(!body.to_string().contains(TEXT));
+            let state = db.open().read().unwrap();
+            let receipt = state
+                .receipts
+                .values()
+                .find(|r| r.request["form"] == "recall_metadata_v1")
+                .unwrap();
+            assert_eq!(receipt.result["state"], "failed");
+            assert!(runtime.cache.lock().unwrap().is_empty());
+            assert!(runtime.in_flight.lock().unwrap().is_empty());
+            let expected = if stage == "r1-route-sentinel" { 1 } else { 2 };
+            assert_eq!(sent.lock().unwrap().len(), expected);
+            assert_eq!(db.calls(), expected as i64);
+        }
     }
 }
 
@@ -1838,5 +1962,537 @@ fn omitted_clock_concurrent_before_receipt_freezes_first_day_without_weakening_e
             output
         );
     });
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
+fn input_and_control_changes_during_either_model_stage_fail_without_retry() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
+        for change in ["text", "history", "date", "task", "control", "entity"] {
+            let db = Db::new();
+            let (p, sent, entered, release) = held_model(&db, stage);
+            let rt = RecallRuntime::default();
+            std::thread::scope(|scope| {
+                let run = scope.spawn(|| {
+                    rt.run(
+                        &mut db.open(),
+                        &request("binding"),
+                        Budget::default(),
+                        Some(&p),
+                    )
+                });
+                entered
+                    .recv_timeout(std::time::Duration::from_secs(5))
+                    .unwrap();
+                db.open().transaction(|state| {
+                    if change == "entity" {
+                        let mut e = state.entities.get(&EntityId::from("self")).unwrap().clone();
+                        e.owner_id = "other".into();
+                        state.entities.upsert(e);
+                    } else {
+                        let source = state.sources.get_mut("s-purple").unwrap();
+                        match change {
+                            "text" => source.request.as_mut().unwrap()["text"] = json!("修改后的灯色原文。"),
+                            "history" => source.request.as_mut().unwrap()["history"] = json!(["不同的前文。"]),
+                            "date" => source.observed_at += 86400,
+                            "task" => source.request.as_mut().unwrap()["task_id"] = json!("other-task"),
+                            "control" => source.result = Some(json!({"w4_controls":[{
+                                "kind":"forget","quote":{"text":TEXT},"target":{"object":"source","candidate_indices":[],"quote":null},
+                                "deadline":null,"status":"awaiting_confirmation"}]})),
+                            _ => unreachable!(),
+                        }
+                    }
+                    Ok(())
+                }).unwrap();
+                release.send(()).unwrap();
+                assert!(
+                    run.join()
+                        .unwrap()
+                        .unwrap_err()
+                        .to_string()
+                        .contains("recall_snapshot_changed"),
+                    "{stage}/{change}"
+                );
+            });
+            assert!(rt.cache.lock().unwrap().is_empty());
+            assert_eq!(
+                sent.lock().unwrap().len(),
+                if stage.starts_with("r1") { 1 } else { 2 }
+            );
+        }
+    }
+}
+
+fn add_legacy(db: &Db, text: &str) -> MemoryId {
+    db.open()
+        .transaction(|state| {
+            let evidence = Evidence::new(
+                "source-less-evidence".into(),
+                "source-less".into(),
+                "legacy-turn".into(),
+                text,
+            );
+            let c = CandidateMemory::new(
+                OWNER.into(),
+                "self".into(),
+                MemoryType::Fact,
+                "fact".into(),
+                MemoryValue::Text(text.into()),
+                Timestamp(AT),
+                evidence,
+            );
+            let id = MemoryId(
+                state
+                    .repository
+                    .list_by_owner(&OWNER.into())?
+                    .iter()
+                    .map(|m| m.id.0)
+                    .max()
+                    .unwrap_or(0)
+                    + 1,
+            );
+            state
+                .repository
+                .insert(Memory::from_candidate(id, &c, None))?;
+            Ok(id)
+        })
+        .unwrap()
+}
+
+#[test]
+fn ordinary_commits_during_models_and_after_completion_keep_read_snapshot_and_replay() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
+        let db = Db::new();
+        let (p, sent, entered, release) = held_model(&db, stage);
+        let rt = RecallRuntime::default();
+        let initial = db.open().read().unwrap().revision;
+        let out = std::thread::scope(|scope| {
+            let run = scope.spawn(|| {
+                rt.run(
+                    &mut db.open(),
+                    &request("commit"),
+                    Budget::default(),
+                    Some(&p),
+                )
+            });
+            entered
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap();
+            add_legacy(&db, "独立的已提交背景。 ");
+            db.open()
+                .transaction(|s| {
+                    s.sources.get_mut("s-purple").unwrap().enrichment = "running".into();
+                    Ok(())
+                })
+                .unwrap();
+            release.send(()).unwrap();
+            run.join().unwrap().unwrap()
+        });
+        assert_eq!(out.status, RecallStatus::Answered);
+        assert_eq!(
+            out.snapshot.read_revision,
+            if stage.starts_with("r1") {
+                initial + 1
+            } else {
+                initial
+            }
+        );
+        let received = out.raw[0].enrichment;
+        assert_eq!(
+            received,
+            if stage.starts_with("r1") {
+                EnrichmentStatus::Running
+            } else {
+                EnrichmentStatus::Failed
+            }
+        );
+        add_legacy(&db, "完成以后新增的背景。 ");
+        assert_eq!(rt.retained(&db.open(), "commit").unwrap(), out);
+        assert_eq!(
+            rt.run(
+                &mut db.open(),
+                &request("commit"),
+                Budget::default(),
+                Some(&p)
+            )
+            .unwrap(),
+            out
+        );
+        let fresh = rt
+            .run(&mut db.open(), &request("fresh"), Budget::default(), None)
+            .unwrap();
+        assert!(fresh.snapshot.read_revision > out.snapshot.read_revision);
+        assert_eq!(sent.lock().unwrap().len(), 2);
+        assert_eq!(db.calls(), 2);
+    }
+}
+
+#[test]
+fn mcp_validation_and_delivery_preserve_snapshot_after_version_progress_but_reject_delete() {
+    let db = Db::new();
+    let legacy = add_legacy(&db, "离线附加状态。");
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let service = mcp_service(&db, p);
+    let first = mcp_call(
+        &service,
+        "memory_recall",
+        mcp_query("validated-snapshot"),
+        || false,
+    );
+    assert_ne!(first.is_error, Some(true));
+    let original = first.structured_content.as_ref().unwrap()["recall"].clone();
+    db.open()
+        .transaction(|state| {
+            let mut memory = state.repository.get(legacy)?.unwrap();
+            // 普通版本终止与有效期推导不改收到原话的时间锚点。
+            memory.status = MemoryStatus::Superseded;
+            memory.temporal.valid_from = Some(DatedValue {
+                at: Timestamp(AT),
+                source: TemporalSource::Explicit,
+            });
+            memory.temporal.valid_to = Some(DatedValue {
+                at: Timestamp(AT + 1),
+                source: TemporalSource::Explicit,
+            });
+            state.repository.update(memory)?;
+            Ok(())
+        })
+        .unwrap();
+    let validation = json!({"query":original["request"]["query"],"request_id":"validated-snapshot",
+        "draft_answer":TEXT,"source_ids":["s-purple"],"at":AT});
+    let checked = mcp_call(
+        &service,
+        "memory_validate_answer",
+        validation.clone(),
+        || false,
+    );
+    assert_ne!(checked.is_error, Some(true));
+    let checked = checked.structured_content.unwrap();
+    assert_eq!(checked["approved"], true);
+    assert_eq!(checked["snapshot"], original["snapshot"]);
+    assert_eq!(
+        mcp_call(
+            &service,
+            "memory_recall",
+            mcp_query("validated-snapshot"),
+            || false
+        )
+        .structured_content
+        .unwrap()["recall"],
+        original
+    );
+    let mut fresh = mcp_query("fresh-version");
+    fresh["offline"] = json!(true);
+    let fresh = mcp_call(&service, "memory_recall", fresh, || false);
+    assert!(
+        fresh.structured_content.unwrap()["recall"]["snapshot"]["read_revision"]
+            .as_u64()
+            .unwrap()
+            > original["snapshot"]["read_revision"].as_u64().unwrap()
+    );
+    db.open()
+        .transaction(|state| crate::forget::forget(state, &OWNER.into(), Some(legacy), None, None))
+        .unwrap();
+    let deleted = mcp_call(&service, "memory_validate_answer", validation, || false);
+    assert_eq!(deleted.is_error, Some(true));
+    assert!(!serde_json::to_string(&deleted).unwrap().contains(TEXT));
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
+
+#[test]
+fn source_less_legacy_deletion_invalidates_models_and_completed_cache() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel", "finished"] {
+        let db = Db::new();
+        let id = add_legacy(&db, "没有来源记录的私密旧值。 ");
+        let rt = RecallRuntime::default();
+        if stage == "finished" {
+            rt.run(
+                &mut db.open(),
+                &request("legacy-delete"),
+                Budget::default(),
+                None,
+            )
+            .unwrap();
+            db.open()
+                .transaction(|s| crate::forget::forget(s, &OWNER.into(), Some(id), None, None))
+                .unwrap();
+            assert!(rt.retained(&db.open(), "legacy-delete").is_err());
+            assert!(
+                rt.run(
+                    &mut db.open(),
+                    &request("legacy-delete"),
+                    Budget::default(),
+                    None
+                )
+                .is_err()
+            );
+        } else {
+            let (p, sent, entered, release) = held_model(&db, stage);
+            std::thread::scope(|scope| {
+                let run = scope.spawn(|| {
+                    rt.run(
+                        &mut db.open(),
+                        &request("legacy-delete"),
+                        Budget::default(),
+                        Some(&p),
+                    )
+                });
+                entered
+                    .recv_timeout(std::time::Duration::from_secs(5))
+                    .unwrap();
+                db.open()
+                    .transaction(|s| crate::forget::forget(s, &OWNER.into(), Some(id), None, None))
+                    .unwrap();
+                release.send(()).unwrap();
+                assert!(run.join().unwrap().is_err());
+            });
+            assert_eq!(
+                sent.lock().unwrap().len(),
+                if stage.starts_with("r1") { 1 } else { 2 }
+            );
+        }
+        assert!(rt.cache.lock().unwrap().is_empty());
+    }
+}
+
+#[test]
+fn delete_cannot_commit_between_final_check_and_cache_insertion() {
+    let db = Db::new();
+    let (p, _, entered, release) = held_model(&db, "r4-route-sentinel");
+    let rt = RecallRuntime::default();
+    std::thread::scope(|scope| {
+        let run = scope.spawn(|| {
+            rt.run(
+                &mut db.open(),
+                &request("cache-window"),
+                Budget::default(),
+                Some(&p),
+            )
+        });
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let cache = rt.cache.lock().unwrap();
+        release.send(()).unwrap();
+        let until = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        loop {
+            if rt.in_flight.try_lock().is_err() {
+                break;
+            }
+            assert!(
+                std::time::Instant::now() < until,
+                "executor never reached publication"
+            );
+            std::thread::yield_now();
+        }
+        let mut other = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        other
+            .connection
+            .busy_timeout(std::time::Duration::ZERO)
+            .unwrap();
+        assert!(
+            other
+                .transaction(|s| crate::forget::forget(
+                    s,
+                    &OWNER.into(),
+                    None,
+                    None,
+                    Some("s-purple")
+                ))
+                .is_err()
+        );
+        drop(cache);
+        run.join().unwrap().unwrap();
+        other
+            .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some("s-purple")))
+            .unwrap();
+        assert!(rt.retained(&other, "cache-window").is_err());
+    });
+    assert!(rt.cache.lock().unwrap().is_empty());
+}
+
+#[test]
+fn prepare_publication_blocks_delete_then_delayed_delivery_discards_all_copies() {
+    let db = Db::new();
+    let (p, _) = mocked(&db, vec![]);
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(p);
+    let args = json!({"user_turn":{"text":"待交付的私密原文。","session_id":"publish","turn_id":"window","capture_source":true,"observed_at":AT},"offline":true});
+    let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
+    let id = response.structured_content.as_ref().unwrap()["source"]["source_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let mut deleting = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+    deleting
+        .connection
+        .busy_timeout(std::time::Duration::ZERO)
+        .unwrap();
+    let published = service
+        .publish_response(response, |out| {
+            assert!(
+                deleting
+                    .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some(&id)))
+                    .is_err()
+            );
+            out
+        })
+        .unwrap();
+    deleting
+        .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some(&id)))
+        .unwrap();
+    let checked = service.validate_prepare_response(&args, published);
+    let body = checked.structured_content.unwrap();
+    assert_eq!(body["source"]["status"], "deleted");
+    assert_eq!(body["recall"]["status"], "not_requested");
+    assert!(!body.to_string().contains("待交付的私密原文"));
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
+fn sources_received_during_r1_bind_the_r3_receipt_and_later_deletion() {
+    let db = Db::new();
+    let (p, _, entered, release) = held_r1(&db);
+    let rt = RecallRuntime::default();
+    std::thread::scope(|scope| {
+        let run = scope.spawn(|| {
+            rt.run(
+                &mut db.open(),
+                &request("r3-sources"),
+                Budget::default(),
+                Some(&p),
+            )
+        });
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        db.open()
+            .transaction(|state| {
+                let mut source = state.sources["s-purple"].clone();
+                source.id = "after-r1".into();
+                source.turn_id = "after-r1".into();
+                source.received_sequence = 2;
+                source.request.as_mut().unwrap()["text"] = json!("R1 等待期间新接收的原文。 ");
+                state.sources.insert("after-r1".into(), source);
+                Ok(())
+            })
+            .unwrap();
+        release.send(()).unwrap();
+        let out = run.join().unwrap().unwrap();
+        assert!(out.raw.iter().any(|r| r.source_id == "after-r1"));
+    });
+    let state = db.open().read().unwrap();
+    let receipt = state
+        .receipts
+        .values()
+        .find(|r| r.request["form"] == "recall_metadata_v1")
+        .unwrap();
+    assert!(
+        receipt.result["source_ids"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("after-r1"))
+    );
+    db.open()
+        .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some("after-r1")))
+        .unwrap();
+    assert!(rt.retained(&db.open(), "r3-sources").is_err());
+    assert!(
+        rt.run(
+            &mut db.open(),
+            &request("r3-sources"),
+            Budget::default(),
+            Some(&p)
+        )
+        .is_err()
+    );
+    assert!(rt.cache.lock().unwrap().is_empty());
+    assert_eq!(db.calls(), 2);
+}
+
+#[test]
+fn completed_cache_rejects_controls_and_changed_receipt_identity() {
+    for change in ["control", "attempt", "binding", "stamp"] {
+        let db = Db::new();
+        let rt = RecallRuntime::default();
+        rt.run(
+            &mut db.open(),
+            &request("identity-guard"),
+            Budget::default(),
+            None,
+        )
+        .unwrap();
+        db.open().transaction(|s| {
+            if change == "control" {
+                s.sources.get_mut("s-purple").unwrap().result = Some(json!({"w4_controls":[{
+                    "kind":"forget","quote":{"text":TEXT},"target":{"object":"source","candidate_indices":[],"quote":null},
+                    "deadline":null,"status":"awaiting_confirmation"}]}));
+            } else {
+                let receipt = s.receipts.values_mut().find(|r| r.request["form"] == "recall_metadata_v1").unwrap();
+                match change {
+                    "attempt" => receipt.result["attempt_id"] = json!("new-claim"),
+                    "binding" => receipt.request["fingerprint"] = json!("different-request"),
+                    "stamp" => receipt.result["stamp"]["revision"] = json!(99999),
+                    _ => unreachable!(),
+                }
+            }
+            Ok(())
+        }).unwrap();
+        assert!(
+            rt.retained(&db.open(), "identity-guard").is_err(),
+            "{change}"
+        );
+        assert!(
+            rt.run(
+                &mut db.open(),
+                &request("identity-guard"),
+                Budget::default(),
+                None
+            )
+            .is_err(),
+            "{change}"
+        );
+        assert!(rt.cache.lock().unwrap().is_empty());
+        assert_eq!(db.calls(), 0);
+    }
+}
+
+#[test]
+fn remember_acknowledgment_is_progress_but_retention_control_is_safety() {
+    let db = Db::new();
+    let rt = RecallRuntime::default();
+    let first = rt
+        .run(
+            &mut db.open(),
+            &request("requests"),
+            Budget::default(),
+            None,
+        )
+        .unwrap();
+    let control = |kind| {
+        json!({"w4_controls":[{"kind":kind,"quote":{"text":TEXT},
+        "target":{"object":"source","candidate_indices":[],"quote":null},"deadline":null,"status":"supported"}]})
+    };
+    db.open()
+        .transaction(|s| {
+            s.sources.get_mut("s-purple").unwrap().result = Some(control("remember"));
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(rt.retained(&db.open(), "requests").unwrap(), first);
+    db.open()
+        .transaction(|s| {
+            s.sources.get_mut("s-purple").unwrap().result = Some(control("retention"));
+            Ok(())
+        })
+        .unwrap();
+    assert!(rt.retained(&db.open(), "requests").is_err());
+    assert!(rt.cache.lock().unwrap().is_empty());
     assert_eq!(db.calls(), 0);
 }

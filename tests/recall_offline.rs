@@ -819,7 +819,7 @@ fn deletion_before_recall_and_after_assembly_never_returns_deleted_source() {
 }
 
 #[test]
-fn changed_enrichment_metadata_rejects_old_package_even_at_same_revisions() {
+fn changed_enrichment_progress_returns_the_original_read_snapshot() {
     let db = Db::new();
     source(&db, "raw", "未完成的记录。", None, "queued");
     let req = request("记录", None, None);
@@ -835,13 +835,11 @@ fn changed_enrichment_metadata_rejects_old_package_even_at_same_revisions() {
     let state = db.state();
     assert_eq!(state.revision, snapshot.read_revision);
     assert_eq!(state.source_revision, snapshot.source_revision);
-    assert_eq!(
-        assembly
-            .finish_skipped(&db.open(), SkipReason::Offline)
-            .unwrap_err()
-            .to_string(),
-        "recall_snapshot_changed"
-    );
+    let out = assembly
+        .finish_skipped(&db.open(), SkipReason::Offline)
+        .unwrap();
+    assert_eq!(out.snapshot, snapshot);
+    assert_eq!(out.raw[0].enrichment, EnrichmentStatus::Queued);
     assert_eq!(
         run(&db, &req, None, Budget::default()).raw[0].enrichment,
         EnrichmentStatus::Failed

@@ -1,4 +1,6 @@
-# 新 inline 的快照变化评估（第4项⑤）
+# 新 inline 的快照策略与节奏评估（第4项⑤、AB2）
+
+AB2 已将召回有效性改为“输入绑定完整且仍获准可见”，普通后台提交/整理进度不再要求全局版本相等。以下先保留修正前的测量，再给出修正后同节奏与真正 Prepare 的数据；历史数据不代表当前策略。
 
 ## 方法与边界
 
@@ -35,12 +37,58 @@ PMR_MODEL_NETWORK=offline cargo test --lib visibility_normal_cadence_snapshot_ch
 
 相关测试首轮（同时运行23项后台回归）各组为6/30、21/30、30/30、30/30，合计87/120；伴随提交11、仅状态变化76、其他失败0，原始日志 `/private/tmp/visibility-background-checked.log`。运行调度会改变窗口暴露，不能将这些比例外推为生产概率。
 
-## 判断与建议
+## 修正前的问题与 AB2 决定
 
 - `recall::Assembly::check_snapshot` 与在线 `RecallRuntime` 的 stamp 都包含来源整理状态；queued→running 在原文、业务 revision 未变时也可能使 R1 结果失效。事件屏障测试先等到 running 再召回，能证明前台不等待后台，却不能揭示接收后立即召回的这一窗口。
-- 当前机制保证失效结果不泄露旧证据，安全门控保持；但在本实验的连续更新、立即召回节奏下，状态变化导致的失效明显影响可用性。不能仅凭最小并发测试通过就启用默认后台，也不建议宿主通过睡眠或普通同参重试规避。
-- 建议另开方案讨论：将事实/原文/删除快照与仅整理进度的变化区分，允许后台进度推进而证据未变的请求完成，并明确回执的状态观察时刻；真正业务提交仍需快照一致性检查。若选择预算内显式重判，须重新明确请求ID与授权；不能暗中重复R1/R4。优先评审 R1 后按最新原文/事实状态重新组装证据而不重发 R1，R4 期间继续核对证据/业务/删除快照；R1 输入只包含问题、上下文与目录，但目录变化仍必须拦截。该策略需 Claude 审核，涉及冻结契约或新失败码时交用户决定。本段只评估、不实施、不改失败码。
+- 旧机制在连续更新、立即召回节奏下出现普通状态失效，不能靠宿主睡眠或同参重试规避。AB2 采用读快照语义：R1 后只装配一次 R3；整理、提交、关系/update 推进和随后新增来源均允许完成，输出仍是该次 R3 版本。新 request_id 才读新版本。没有重复 R1/R4，也没有新增失败码或改冻结契约。
+- 来源/记忆删除（含无来源 legacy）、正文/历史/接收时间、归属/主体/任务、控制限制及执行身份仍严格核对。最后核验与入缓存同处短事务；重放、Validate、MCP 发布/交付共用检查。删除不能插入检查到发布之间。已发布内容不能撤回，后续交付必须丢弃失效副本。Prepare 顶层整理回执与 recall 共用 R3 观察点；queued 表示原文已收到、读取时整理待执行，而非未接收。
 - MCP+HTTP 七类端到端、真实模型质量/耗时和完整P95负载验收分别报告；本实验不能替代它们。
+
+## AB2 修正后的测量
+
+2026-10-05，本地 macOS 沙箱，无事件屏障的独立串行测量，真实 SQLite、注入模型响应、零真实调用。仍为每组30次的原120次召回。现在对所有请求统计 R1 开始到返回之间的变化，而非只统计失败请求；因此“伴随提交/仅状态变化”的计数不能直接与旧表比较。它们说明这些变化已穿过成功路径，不是失败原因。
+
+| 保存后停顿 | 后台/前台单阶段等待 | 快照失效 | 伴随业务提交 | 仅整理状态变化 | 其他失败 | 合成调用 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 150 ms | 2 / 5 ms | 0/30 | 15 | 0 | 0 | 152 |
+| 35 ms | 2 / 5 ms | 0/30 | 5 | 15 | 0 | 152 |
+| 立即召回 | 8 / 20 ms | 0/30 | 0 | 30 | 0 | 152 |
+| 立即召回 | 25 / 5 ms | 0/30 | 0 | 30 | 0 | 152 |
+
+120次召回全部成功；95次观察到版本/进度推进，另25次没有观察到变化。总608次合成调用（含每组2次初始化调用），高于旧失败策略的527次，因为成功请求会完成 R4；**预算和阶段上限没有增加**：每个前台请求最多2次、每个后台来源最多3次，无自动重试。
+
+新增 `visibility_real_prepare_immediate_recall_success_frequency` 直接调用实际 `memory_prepare`：本轮原话在同一工具内保存并立即召回，而非先 Remember 再 Recall。检查 source=stored、recall=answered、事实精确引用本轮原话、顶层与 raw 的整理状态一致；后台完成后延迟交付、同参重放仍保持原 recall/整理回执，重放零调用。
+
+| Prepare 节奏 | 后台/前台单阶段等待 | 成功 | 失败 | 合成调用 |
+| --- | --- | --- | --- | --- |
+| 立即召回，较快后台 | 8 / 20 ms | 30/30 | 0 | 152 |
+| 立即召回，较慢后台 | 25 / 5 ms | 30/30 | 0 | 152 |
+
+原始输出 `/private/tmp/snapshot-cadence.log`；上述测量所在串行测试运行11项、11通过，耗时319.88秒。重跑命令：
+
+```sh
+PMR_MODEL_NETWORK=offline cargo test --lib visibility -- --nocapture --test-threads=1
+```
+
+这些合成等待仅验证并发语义及预算，不是生产延迟或 P95 数据。
+
+## 授权调整的旧断言
+
+- `tests/recall_offline.rs::changed_enrichment_progress_returns_the_original_read_snapshot`：queued→failed 不再拒绝；原组装仍为 queued，新组装为 failed。
+- `src/recall_models_tests.rs::replay_preserves_observed_enrichment_when_only_progress_changes`：failed→needs_rejudge 后，同参重放/保留结果沿用原快照；新 ID 观察 needs_rejudge。
+- 同文件 `mcp_online_delete_invalidates_but_new_sources_preserve_both_model_stages_without_retry`：仅普通新增来源分支改为执行者、等待者、重放成功；各阶段仍最多一次。删除分支原失败码、正文清除、空缓存和发送次数断言原样保留。
+- `src/chat_background_tests.rs::background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled_runs`：三轮后台提交后前台成功，版本和 raw 的 running 状态仍是旧 R3；原7次调用断言不变。
+- `src/chat_visibility_tests.rs::visibility_normal_cadence_snapshot_change_frequency`：进度/提交重叠改为统计全部请求，另明确断言120次快照失效为0；原调用上限不变。
+
+新增回归覆盖输入/控制/执行身份改变、R1/R4/完成后的无来源 legacy 删除、R3 新来源的后续删除、最后检查到入缓存窗口、Prepare 发布到延迟交付窗口，以及普通版本推进后的实际 MCP Validate。原删除测试没有放宽。
+
+## AB2 最终检查
+
+- `PMR_MODEL_NETWORK=offline cargo test --all --no-fail-fast` 加29个已确认端口项的 `--skip`：workspace **807通过 / 0失败 / 33忽略**（根 crate 800通过、inspector 7通过），退出码0。命令参数 `/private/tmp/snapshot-noport-command.json`，日志 `/private/tmp/snapshot-noport-final-2.log`；两组频率测试在全套中再次通过。没有跳过其他测试。
+- 未过滤首轮：804通过 / 30失败 / 33忽略。29项均为 loopback bind 的 Operation not permitted；另一项为构建时尚未调整的“后台提交必须失败”旧断言，已按 AB2 修改并通过最终全套。首轮日志 `/private/tmp/snapshot-full.log`，端口清单 `/private/tmp/snapshot-port-failures.txt`。29项端口业务断言及沙箱外复跑：**未执行**。
+- 最终全套前发现旧 S4 诊断字段因无条件刷新辅助 global_context 而改变；已将刷新限定到新召回响应，旧测试和断言原样保留。`cargo test --test mcp_stdio s4_local_mcp_and_frozen_development_cases -- --nocapture` 复跑1/0，最终全套也通过；日志 `/private/tmp/snapshot-s4-final.log`。
+- 变更 Rust 文件/区域的 rustfmt 与 `git diff --check` 通过。`cargo fmt --all -- --check` 仍只报告 HEAD 已有的8个文件差异（与第⑤段同一组）；没有扩大格式修改范围。记录 `/private/tmp/snapshot-fmt-all.log`、`/private/tmp/snapshot-format/scope-result.log`。
+- 零真实模型调用，不提交 git；不升库、不改 contracts.md、不放宽 W5。当前安全绑定保守覆盖可信任务内既有来源/可见记录；这里只验证合成并发和预算，未验证生产 P95。
 
 ## 七类场景对照
 
@@ -56,7 +104,7 @@ PMR_MODEL_NETWORK=offline cargo test --lib visibility_normal_cadence_snapshot_ch
 
 本机无端口七项已通过，a/f 还使用实际物理请求核对 Python HTTP mock 的输出与注入输出相同。MCP+HTTP 七项尝试运行时均因 `PermissionError: Operation not permitted` 不能绑定 loopback 端口，尚未执行业务断言；须沙箱外复跑，不计为端到端通过。
 
-## 本轮检查
+## 第⑤段历史检查
 
 - `PMR_MODEL_NETWORK=offline cargo test --lib background_tests -- --nocapture`：23/0/0。
 - 最终排除已确认29个端口阻断项的全套：workspace **797通过 / 0失败 / 33忽略**，命令参数 `/private/tmp/visibility-noport-command.json`，日志 `/private/tmp/visibility-noport-final.log`。未跳过其他测试；新增 a 测试允许 T1 后被扫描认领的 queued/running 合法竞态，继续验证前台先于后台模型释放完成。

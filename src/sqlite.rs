@@ -374,6 +374,20 @@ impl SqliteMemoryStore {
         Self::load(&self.connection, &self.owner)
     }
 
+    /// 短发布边界：加载与发布期间阻止其他连接提交删除；不保存或推进任何版本。
+    /// 回调内不得调用模型、等待工作者或开启另一个写事务。
+    pub(crate) fn read_for_publication<T>(
+        &self,
+        publish: impl FnOnce(&PersistedMemoryState) -> PersistenceResult<T>,
+    ) -> PersistenceResult<T> {
+        let tx =
+            rusqlite::Transaction::new_unchecked(&self.connection, TransactionBehavior::Immediate)?;
+        let state = Self::load(&tx, &self.owner)?;
+        let result = publish(&state)?;
+        tx.commit()?;
+        Ok(result)
+    }
+
     // Only snapshots read from the local database may restore staged source approval.
     fn decode_trusted_state(json: &str) -> PersistenceResult<PersistedMemoryState> {
         let mut state: PersistedMemoryState = serde_json::from_str(json)?;
