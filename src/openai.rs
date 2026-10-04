@@ -46,6 +46,39 @@ use crate::{
 /// Ark inference endpoint shared by memory extraction and query understanding.
 pub const DEEPSEEK_MODEL: &str = "ep-20260923215039-vxgxg";
 
+/// Responses wire values; endpoint/model support is checked by the provider.
+/// `omit` removes the reasoning option, leaving the remote model's own default.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningEffort {
+    Omit,
+    None,
+    Minimal,
+    Low,
+    #[default]
+    Medium,
+    High,
+    Xhigh,
+    Max,
+}
+
+impl ReasoningEffort {
+    pub fn apply(self, request: &mut Value) {
+        if self == Self::Omit {
+            request.as_object_mut().unwrap().remove("reasoning");
+        } else {
+            request["reasoning"] = json!({"effort": self});
+        }
+    }
+
+    pub(crate) fn bind(self, binding: &mut Value) {
+        // Absent means medium in existing checkpoints; keep those bytes unchanged.
+        if self != Self::Medium {
+            binding["reasoning_effort"] = json!(self);
+        }
+    }
+}
+
 /// Production Responses request construction, also used by offline stage evaluations.
 pub fn structured_request(
     stage: ModelStage,
@@ -509,6 +542,27 @@ impl OpenAiClient {
         input: Value,
         schema: Value,
     ) -> Result<String, OpenAiAdapterError> {
+        self.structured_output_for_model_with_effort(
+            model,
+            ReasoningEffort::Medium,
+            stage,
+            schema_name,
+            instructions,
+            input,
+            schema,
+        )
+    }
+
+    fn structured_output_for_model_with_effort(
+        &self,
+        model: &str,
+        effort: ReasoningEffort,
+        stage: ModelStage,
+        schema_name: &str,
+        instructions: &str,
+        input: Value,
+        schema: Value,
+    ) -> Result<String, OpenAiAdapterError> {
         if !self.network_allowed {
             return Err(OpenAiAdapterError::NetworkDisabled);
         }
@@ -524,6 +578,7 @@ impl OpenAiClient {
             &budget.config,
         );
         request["model"] = json!(model);
+        effort.apply(&mut request);
         self.send_response(stage, schema_name, request, true)
     }
 

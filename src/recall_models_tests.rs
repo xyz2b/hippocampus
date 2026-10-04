@@ -7,6 +7,67 @@ use std::sync::{Arc, Mutex};
 const OWNER: &str = "recall-provider-owner";
 const TEXT: &str = "我的灯是紫色。";
 const AT: i64 = 1_791_000_000;
+
+#[test]
+fn role_reasoning_is_sent_and_bound_and_changed_effort_cannot_replay() {
+    let db = Db::new();
+    let models: RecallModels =
+        serde_json::from_value(json!({"reasoning_effort":{"r1":"low","r4":"high"}})).unwrap();
+    models.validate().unwrap();
+    assert_eq!(models.r1, DEEPSEEK_MODEL);
+    assert_eq!(
+        RecallModels::default().effort("r1"),
+        ReasoningEffort::Medium
+    );
+    let invalid: RecallModels =
+        serde_json::from_value(json!({"reasoning_effort":{"r3":"low"}})).unwrap();
+    assert!(invalid.validate().is_err());
+    assert!(
+        serde_json::from_value::<RecallModels>(json!({"reasoning_effort":{"r1":"unknown"}}))
+            .is_err()
+    );
+    let (mut p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    p.recall_models = models;
+    let rt = RecallRuntime::default();
+    let req = request("effort-identity");
+    let output = rt
+        .run(&mut db.open(), &req, Budget::default(), Some(&p))
+        .unwrap();
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(sent.lock().unwrap()[0]["reasoning"]["effort"], "low");
+    assert_eq!(sent.lock().unwrap()[1]["reasoning"]["effort"], "high");
+    let state = db.open().read().unwrap();
+    let receipt = state
+        .receipts
+        .values()
+        .find(|r| r.request["form"] == "recall_metadata_v1")
+        .unwrap();
+    assert_eq!(
+        receipt.request["models"]["reasoning_effort"],
+        json!({"r1":"low","r4":"high"})
+    );
+    assert_eq!(
+        rt.run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap(),
+        output
+    );
+    p.recall_models
+        .reasoning_effort
+        .insert("r1".into(), ReasoningEffort::Medium);
+    assert!(
+        rt.run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("recall_request_mismatch")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert!(
+        RecallRuntime::default()
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .is_err()
+    );
+    assert_eq!(db.calls(), 2);
+}
 struct Db(PathBuf);
 impl Db {
     fn new() -> Self {
@@ -125,6 +186,7 @@ fn provider(c: OpenAiClient, db: &Db) -> RecallModelProvider {
     .with_models(RecallModels {
         r1: "r1-route-sentinel".into(),
         r4: "r4-route-sentinel".into(),
+        ..Default::default()
     })
     .unwrap()
 }
@@ -513,7 +575,8 @@ fn role_configuration_defaults_and_fingerprint_keep_model_outside_payload() {
     assert!(
         RecallModels {
             r1: " ".into(),
-            r4: "x".into()
+            r4: "x".into(),
+            ..Default::default()
         }
         .validate()
         .is_err()

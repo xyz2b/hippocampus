@@ -9,6 +9,107 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 #[test]
+fn role_reasoning_configuration_is_strict_and_changes_requests_and_bindings() {
+    let config: ChatConfig = serde_json::from_value(json!({"write_models":{
+        "reasoning_effort":{"w1":"low","w3":"high","w4":"omit"}}}))
+    .unwrap();
+    let models = config.write_models.unwrap();
+    assert_eq!(models.w1, DEEPSEEK_MODEL);
+    for invalid in [
+        json!({"w2":"low"}),
+        json!({"w1":"unknown"}),
+        json!({"w1":null}),
+    ] {
+        assert!(
+            serde_json::from_value::<ChatConfig>(
+                json!({"write_models":{"reasoning_effort":invalid}})
+            )
+            .is_err()
+        );
+    }
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let provider = provider.with_models(models).unwrap();
+    assert_eq!(
+        run_all(&db, &key, &provider)["enrichment"]["status"],
+        "committed"
+    );
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    for (index, (role, effort)) in [("w1", "low"), ("w3", "high"), ("w4", "omit")]
+        .iter()
+        .enumerate()
+    {
+        let request = &sent.lock().unwrap()[index];
+        if *effort == "omit" {
+            assert!(request.get("reasoning").is_none());
+        } else {
+            assert_eq!(request["reasoning"]["effort"], *effort);
+        }
+        assert_eq!(stages[role]["binding"]["reasoning_effort"], *effort);
+        let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        assert!(input.get("reasoning_effort").is_none());
+    }
+}
+
+#[test]
+fn changed_write_reasoning_never_reuses_saved_stages_or_frozen_candidates() {
+    for role in ["w1", "w3", "w4"] {
+        let db = Db::new();
+        let (key, upstream, output) = w4_case(&db, false);
+        let (first, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+                Ok(envelope(&output.to_string())),
+            ],
+        );
+        let (claim, ctx, input, sources) = ready_w4(&db, &key, &first);
+        first
+            .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+            .unwrap();
+        let (mut changed, sent) = mocked(&db, vec![]);
+        changed
+            .models
+            .reasoning_effort
+            .insert(role.into(), ReasoningEffort::Low);
+        let error = if role == "w4" {
+            changed
+                .judge(&mut db.open(), &claim, &ctx, &input, &sources)
+                .unwrap_err()
+        } else {
+            let (_, source) = inputs(&db.open(), &key, &claim);
+            changed
+                .provide(&mut db.open(), &claim, &ctx, &source)
+                .unwrap_err()
+        };
+        assert!(
+            error.to_string().contains("needs_rejudge"),
+            "{role}: {error}"
+        );
+        assert!(sent.lock().unwrap().is_empty());
+        if role == "w1" {
+            w4_fail_attempt(&mut db.open(), &claim, "before plan").unwrap();
+            w4_start_round(&mut db.open(), &key, "new-effort", true).unwrap();
+            assert_eq!(
+                run_all(&db, &key, &changed)["enrichment"]["status"],
+                "needs_rejudge"
+            );
+            assert!(sent.lock().unwrap().is_empty());
+        }
+    }
+}
+
+#[test]
 fn write_role_configuration_is_strict_and_defaults_to_the_legacy_model() {
     let default: ChatConfig = serde_json::from_value(json!({})).unwrap();
     assert!(default.write_models.is_none());
@@ -96,6 +197,7 @@ fn write_model_ids_stay_out_of_payloads_but_remain_in_stage_bindings() {
         w1: "routing-only-w1".into(),
         w3: "routing-only-w3".into(),
         w4: "routing-only-w4".into(),
+        ..Default::default()
     };
     let (provider, sent) = mocked(
         &db,

@@ -83,13 +83,13 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 `recall_models::RecallRuntime::run(store, request, evidence_budget, provider)` 串联 R1 → assemble → R4 → finish。provider=None、客户端网络关闭或 bootstrap 跳过两次调用；context_only 或 query_only 且无 records/raw 时只跳过 R4。R1 无效或失败按 judge/unknown 宽泛检索，保留 r1_not_understood 和具体失败原因；R4 超时/HTTP失败/无效输出按③的整份降级规则处理。预算不足标 semantic_judgment_skipped:budget 与 budget_exhausted，没有隐式重试。
 
-角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；本段仅提供配置类型与 with_models，尚未接配置文件或 CLI/MCP。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；生产与评测共用 r1_input/r4_payload。
+角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，如 `{"r1":"low","r4":"low"}`，角色缺省仍发送 medium。本段仅提供配置类型与 with_models，尚未接配置文件或 CLI/MCP。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload，默认请求内容与既有 medium 录制一致。
 
 新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1/R4 输出上限分别沿用 ModelBudgetConfig.query_output_tokens/review_output_tokens（缺省4096），输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置，尚无真实模型质量或延迟结论。
 
 回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
-同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap 与证据预算须相同；不同参数拒绝。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
+同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
 重放及结束事务核对业务/来源版本和来源整理/限制摘要，失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；这不代表旧 MCP 服务全局锁问题已经解决。
 

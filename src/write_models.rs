@@ -4,7 +4,7 @@ use serde_json::{Value as Json, json};
 use std::collections::BTreeMap;
 use time::{OffsetDateTime, UtcOffset};
 
-use super::{ModelStage, OpenAiAdapterContext, OpenAiAdapterError, OpenAiClient};
+use super::{ModelStage, OpenAiAdapterContext, OpenAiAdapterError, OpenAiClient, ReasoningEffort};
 use crate::contract::{W1Output, W3Output, W4Input, W4Output};
 use crate::enrichment::{ProviderContext, SourceInput, UpstreamBatch};
 use crate::{PersistenceResult, SqliteMemoryStore, W4Claim, w2};
@@ -176,6 +176,8 @@ pub struct WriteModels {
     pub w1: String,
     pub w3: String,
     pub w4: String,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub reasoning_effort: BTreeMap<String, ReasoningEffort>,
 }
 
 impl Default for WriteModels {
@@ -184,18 +186,30 @@ impl Default for WriteModels {
             w1: super::DEEPSEEK_MODEL.into(),
             w3: super::DEEPSEEK_MODEL.into(),
             w4: super::DEEPSEEK_MODEL.into(),
+            reasoning_effort: BTreeMap::new(),
         }
     }
 }
 
 impl WriteModels {
     pub fn validate(&self) -> PersistenceResult<()> {
+        if self
+            .reasoning_effort
+            .keys()
+            .any(|r| !["w1", "w3", "w4"].contains(&r.as_str()))
+        {
+            return Err("write_models.reasoning_effort has an unknown role".into());
+        }
         for (role, model) in [("w1", &self.w1), ("w3", &self.w3), ("w4", &self.w4)] {
             if model.trim().is_empty() {
                 return Err(format!("write_models.{role} must be nonempty").into());
             }
         }
         Ok(())
+    }
+
+    pub fn effort(&self, role: &str) -> ReasoningEffort {
+        self.reasoning_effort.get(role).copied().unwrap_or_default()
     }
 }
 
@@ -256,7 +270,8 @@ impl WriteModelProvider {
             "said_on":said_on,"utc_offset_seconds":self.context.utc_offset_seconds,"task_id":ctx.task_id,
         });
         let client = self.operation_client(store, ctx)?;
-        let w1_binding = json!({"contract":"w1.v1","model":self.models.w1,"input":input});
+        let mut w1_binding = json!({"contract":"w1.v1","model":self.models.w1,"input":input});
+        self.models.effort("w1").bind(&mut w1_binding);
         // Even when the full batch exists, compare the stage binding before reusing it.
         let saved_w1 = crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?;
         if let Some(output) = &saved_w1 {
@@ -273,6 +288,19 @@ impl WriteModelProvider {
                 .unwrap_or(super::DEEPSEEK_MODEL);
             if prior_model != self.models.w1 {
                 return Err("needs_rejudge: frozen W1 model changed".into());
+            }
+            let prior_effort: ReasoningEffort = serde_json::from_value(
+                state.sources[&ctx.source_key]
+                    .result
+                    .as_ref()
+                    .and_then(|r| {
+                        r["w4_model_stages"]["w1"]["binding"]["reasoning_effort"].as_str()
+                    })
+                    .map(|s| json!(s))
+                    .unwrap_or(json!("medium")),
+            )?;
+            if prior_effort != self.models.effort("w1") {
+                return Err("needs_rejudge: frozen W1 reasoning effort changed".into());
             }
             W1Output {
                 candidates: previous
@@ -292,8 +320,9 @@ impl WriteModelProvider {
                 None => {
                     no_missing_result(&client, ModelStage::W1)?;
                     let text = client
-                        .structured_output_for_model(
+                        .structured_output_for_model_with_effort(
                             &self.models.w1,
+                            self.models.effort("w1"),
                             ModelStage::W1,
                             "w1_v1",
                             W1_PROMPT,
@@ -341,8 +370,9 @@ impl WriteModelProvider {
                 review: None,
             });
         }
-        let w3_binding =
+        let mut w3_binding =
             json!({"contract":"w3.v1","model":self.models.w3,"input":input,"final_w2":batch});
+        self.models.effort("w3").bind(&mut w3_binding);
         let output = match crate::commit::w4_load_model_stage(store, claim, "w3", &w3_binding)? {
             Some(output) => W3Output::decode(&output.to_string())?,
             None => {
@@ -357,8 +387,9 @@ impl WriteModelProvider {
                 )?;
                 input["memory_requests"] = serde_json::to_value(&batch.memory_requests)?;
                 let text = client
-                    .structured_output_for_model(
+                    .structured_output_for_model_with_effort(
                         &self.models.w3,
+                        self.models.effort("w3"),
                         ModelStage::W3,
                         "w3_v1",
                         W3_PROMPT,
@@ -399,6 +430,7 @@ impl WriteModelProvider {
         // 模型 ID 只绑定阶段结果，不能进入模型可见输入；保留现有检查点结构。
         let mut stage_binding = payload.clone();
         stage_binding["model"] = json!(self.models.w4);
+        self.models.effort("w4").bind(&mut stage_binding);
         let failed_binding = |operation: &str| {
             let mut binding = stage_binding.clone();
             binding["invalid_operation_id"] = json!(operation);
@@ -423,8 +455,9 @@ impl WriteModelProvider {
             None => {
                 no_missing_result(&client, ModelStage::W4)?;
                 let text = client
-                    .structured_output_for_model(
+                    .structured_output_for_model_with_effort(
                         &self.models.w4,
+                        self.models.effort("w4"),
                         ModelStage::W4,
                         "w4_v2",
                         W4_PROMPT,

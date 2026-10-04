@@ -6,8 +6,8 @@ mod adapter;
 mod recall_adapter;
 
 use hippocampus::{
-    EntityId, MemoryType, ModelBudgetConfig, ModelStage, contract::*, structured_request, w2, w4,
-    write_models,
+    EntityId, MemoryType, ModelBudgetConfig, ModelStage, ReasoningEffort, contract::*,
+    structured_request, w2, w4, write_models,
 };
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -976,6 +976,7 @@ struct EvalModel {
     label: String,
     model: Option<String>,
     base: Option<String>,
+    effort: ReasoningEffort,
 }
 impl EvalModel {
     fn default_model() -> Self {
@@ -983,6 +984,7 @@ impl EvalModel {
             label: MODEL.into(),
             model: None,
             base: None,
+            effort: ReasoningEffort::Medium,
         }
     }
     fn from_env() -> Result<Self, String> {
@@ -993,6 +995,11 @@ impl EvalModel {
                 .ok()
                 .or_else(|| std::env::var("DEEPSEEK_BASE_URL").ok())
                 .map(|s| s.trim_end_matches('/').to_owned()),
+            effort: match std::env::var("EVAL_REASONING_EFFORT").ok() {
+                None => ReasoningEffort::Medium,
+                Some(s) => serde_json::from_value(json!(s))
+                    .map_err(|_| "invalid EVAL_REASONING_EFFORT".to_owned())?,
+            },
         };
         model.validate()?;
         Ok(model)
@@ -1042,6 +1049,7 @@ struct Case {
     path: PathBuf,
     file: Value,
     replay: Replay,
+    record: Value,
     model: EvalModel,
     repeat: usize,
 }
@@ -1068,9 +1076,19 @@ fn plan_repeated(
     let mut cases = Vec::new();
     for case in selected {
         for repeat in 1..=repeats {
+            let mut dir = root.join(&model.label);
+            if model.effort != ReasoningEffort::Medium {
+                dir = dir.join(format!(
+                    "reasoning-{}",
+                    serde_json::to_value(model.effort)
+                        .unwrap()
+                        .as_str()
+                        .unwrap()
+                ));
+            }
             cases.extend(plan_once(
                 vec![case.clone()],
-                &root.join(&model.label).join(format!("repeat-{repeat}")),
+                &dir.join(format!("repeat-{repeat}")),
                 model,
                 repeat,
             )?);
@@ -1092,6 +1110,7 @@ fn plan_once(
             if let Some(id) = &model.model {
                 request["model"] = json!(id);
             }
+            model.effort.apply(&mut request);
             let path = root.join(format!("{}.json", sample["id"].as_str().unwrap()));
             let file: Value = match std::fs::read_to_string(&path) {
                 Ok(text) => {
@@ -1109,7 +1128,7 @@ fn plan_once(
                 .iter()
                 .filter(|r| r["model"] == model.label)
                 .collect();
-            let replay = if let Some(r) = current.iter().rev().find(|r| {
+            let record = current.iter().rev().find(|r| {
                 r["request"] == fingerprint(&request)
                     && r["schema"] == request["text"]["format"]["name"]
                     && r["max_output_tokens"] == request["max_output_tokens"]
@@ -1117,7 +1136,8 @@ fn plan_once(
                     && r["repeat"] == repeat
                     && r["endpoint"] == request["model"]
                     && r["recording_version"] == 2
-            }) {
+            });
+            let replay = if let Some(r) = record {
                 if r.get("error").is_some() {
                     Replay::Failed((*r).clone())
                 } else if let Some(text) = r["output_text"].as_str() {
@@ -1133,6 +1153,7 @@ fn plan_once(
             } else {
                 Replay::Stale
             };
+            let record = record.map(|r| (*r).clone()).unwrap_or(Value::Null);
             Ok(Case {
                 stage,
                 sample,
@@ -1140,6 +1161,7 @@ fn plan_once(
                 path,
                 file,
                 replay,
+                record,
                 model: model.clone(),
                 repeat,
             })
@@ -1200,9 +1222,20 @@ fn save_recording(
     text: Option<&str>,
     error: Option<&str>,
 ) -> Result<(), String> {
+    save_recording_timed(case, envelope, text, error, None)
+}
+
+fn save_recording_timed(
+    case: &Case,
+    envelope: &Value,
+    text: Option<&str>,
+    error: Option<&str>,
+    elapsed_ms: Option<u64>,
+) -> Result<(), String> {
     let mut file = case.file.clone();
     let mut recorded = items(&file["recorded"]).to_vec();
     let mut record = json!({"recording_version":2,"model":case.model.label,"repeat":case.repeat,
+        "reasoning_effort":case.model.effort,"elapsed_ms":elapsed_ms,
         "schema":case.request["text"]["format"]["name"],"endpoint":case.request["model"],
         "base_url":case.model.base,"max_output_tokens":case.request["max_output_tokens"],
         "request":fingerprint(&case.request),"response":{
@@ -1248,21 +1281,31 @@ fn evaluate(
     let mut sent = 0;
     let mut results = Vec::new();
     for case in cases {
+        let mut metrics = case.record.clone();
         let mut result = match &case.replay {
             Replay::Output(text) => score(&case.stage, &case.sample, Some(text)),
             Replay::Failed(record) => failed_score(case, record),
             _ if limit.is_some() => {
                 sent += 1;
+                let started = std::time::Instant::now();
                 let response = send(&case.request);
+                let elapsed_ms = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
                 let envelope = response.as_ref().ok().cloned().unwrap_or(Value::Null);
+                metrics = json!({"elapsed_ms":elapsed_ms,"usage":envelope["usage"]});
                 let text = response.and_then(|e| completed_text(&e));
                 match text {
                     Ok(text) => {
-                        save_recording(case, &envelope, Some(&text), None)?;
+                        save_recording_timed(case, &envelope, Some(&text), None, Some(elapsed_ms))?;
                         score(&case.stage, &case.sample, Some(&text))
                     }
                     Err(error) => {
-                        save_recording(case, &envelope, None, Some(&error))?;
+                        save_recording_timed(
+                            case,
+                            &envelope,
+                            None,
+                            Some(&error),
+                            Some(elapsed_ms),
+                        )?;
                         failed_score(
                             case,
                             &json!({"error":error,"response":{
@@ -1279,6 +1322,13 @@ fn evaluate(
             }
         };
         result["model"] = json!(case.model.label);
+        result["reasoning_effort"] = json!(case.model.effort);
+        result["elapsed_ms"] = metrics["elapsed_ms"].clone();
+        result["usage"] = metrics
+            .get("usage")
+            .filter(|u| !u.is_null())
+            .cloned()
+            .unwrap_or_else(|| metrics["response"]["usage"].clone());
         result["repeat"] = json!(case.repeat);
         result["max_output_tokens"] = case.request["max_output_tokens"].clone();
         result["request"] = fingerprint(&case.request);
@@ -1295,8 +1345,26 @@ fn evaluate(
     }).collect();
     Ok(
         json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
+            "reasoning_effort":cases.first().map(|c|c.model.effort),"metrics":stage_metrics(&results),
             "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
     )
+}
+
+fn stage_metrics(results: &[Value]) -> Vec<Value> {
+    ["w1", "w3", "w4", "r1", "r4"].into_iter()
+        .filter(|s|results.iter().any(|r|r["stage"]==*s)).map(|stage| {
+            let rows:Vec<_>=results.iter().filter(|r|r["stage"]==stage).collect();
+            let mut elapsed:Vec<_>=rows.iter().filter_map(|r|r["elapsed_ms"].as_u64()).collect();
+            elapsed.sort_unstable();
+            // Nearest-rank percentiles; historical recordings without timers remain null.
+            let percentile=|p:usize| (!elapsed.is_empty()).then(||elapsed[(elapsed.len()*p).div_ceil(100)-1]);
+            let mean=|path:&str| {
+                let tokens:Vec<_>=rows.iter().filter_map(|r|r.pointer(path).and_then(Value::as_u64)).collect();
+                json!({"count":tokens.len(),"mean":(!tokens.is_empty()).then(||tokens.iter().map(|n|*n as f64).sum::<f64>()/tokens.len() as f64)})
+            };
+            json!({"stage":stage,"elapsed_ms":{"count":elapsed.len(),"p50":percentile(50),"p90":percentile(90),"max":elapsed.last()},
+                "output_tokens":mean("/usage/output_tokens"),"reasoning_tokens":mean("/usage/output_tokens_details/reasoning_tokens")})
+        }).collect()
 }
 
 fn split_reports(results: &[Value]) -> Vec<Value> {
@@ -1972,9 +2040,19 @@ fn dry_run_plan() {
     let stages = std::env::var("EVAL_STAGES").unwrap_or_else(|_| "w1,w3,w4".into());
     let prefix = std::env::var("EVAL_CASES").unwrap_or_default();
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
-    let cases = plan(selected(&stages, &prefix).unwrap(), &root).unwrap();
+    let model = EvalModel::from_env().unwrap();
+    let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
+    let cases = plan_repeated(selected(&stages, &prefix).unwrap(), &root, &model, repeats).unwrap();
     let mut total = 0;
     println!("分阶段评测干跑计划（不发送请求）");
+    println!(
+        "模型: {}，推理强度: {}",
+        model.label,
+        serde_json::to_value(model.effort)
+            .unwrap()
+            .as_str()
+            .unwrap()
+    );
     for stage in ["w1", "w3", "w4", "r1", "r4"] {
         if !stages.split(',').any(|s| s.trim() == stage) {
             continue;
@@ -2835,4 +2913,174 @@ fn recall_stage_recording_replay_splits_and_clock_fingerprints_are_complete() {
     input["request"]["at"] = json!(0);
     request["input"] = json!(input.to_string());
     assert_ne!(original, fingerprint(&request));
+}
+
+#[test]
+fn reasoning_effort_changes_all_stage_requests_fingerprints_and_recording_paths() {
+    let temp = TempRecords::new();
+    for (stage, sample) in selected("w1,w3,w4,r1,r4", "w1_01,w3_01,w4_01,r1_01,r4_01").unwrap() {
+        let original = stage_request(&stage, &sample).unwrap();
+        let mut default = original.clone();
+        ReasoningEffort::default().apply(&mut default);
+        assert_eq!(default.to_string(), original.to_string());
+        for effort in [
+            ReasoningEffort::Low,
+            ReasoningEffort::High,
+            ReasoningEffort::Minimal,
+            ReasoningEffort::Omit,
+        ] {
+            let mut request = original.clone();
+            effort.apply(&mut request);
+            assert_ne!(fingerprint(&request), fingerprint(&original));
+            assert_eq!(request["input"], original["input"]);
+            assert_eq!(request["instructions"], original["instructions"]);
+            if effort == ReasoningEffort::Omit {
+                assert!(request.get("reasoning").is_none());
+            } else {
+                assert_eq!(request["reasoning"]["effort"], json!(effort));
+            }
+        }
+    }
+    let chosen = selected("r1,r4", "").unwrap();
+    let medium = EvalModel::default_model();
+    let low = EvalModel {
+        effort: ReasoningEffort::Low,
+        ..medium.clone()
+    };
+    let original = plan_repeated(chosen.clone(), &temp.0, &medium, 2).unwrap();
+    let changed = plan_repeated(chosen, &temp.0, &low, 2).unwrap();
+    assert_eq!(changed.len(), 80);
+    assert_eq!(
+        changed
+            .iter()
+            .filter(|c| c.sample["split"] == "dev")
+            .count(),
+        56
+    );
+    assert!(!original[0].path.to_string_lossy().contains("reasoning-"));
+    assert!(changed[0].path.to_string_lossy().contains("reasoning-low"));
+    assert_ne!(original[0].path, changed[0].path);
+    assert_eq!(preflight(&changed, Some(80)).unwrap(), 80);
+    assert!(preflight(&changed, Some(79)).is_err());
+}
+
+#[test]
+fn existing_medium_recall_recordings_remain_bound_without_sends() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
+    for (label, endpoint) in [
+        (MODEL, hippocampus::DEEPSEEK_MODEL),
+        ("DeepSeek-V4-Pro", "ep-20261003130756-trhj6"),
+    ] {
+        let model = EvalModel {
+            label: label.into(),
+            model: Some(endpoint.into()),
+            base: Some("https://ark.cn-beijing.volces.com/api/v3".into()),
+            effort: ReasoningEffort::Medium,
+        };
+        let cases = plan_repeated(selected("r1,r4", "").unwrap(), &root, &model, 2).unwrap();
+        assert_eq!(cases.len(), 80);
+        assert_eq!(preflight(&cases, Some(0)).unwrap(), 0);
+        assert!(
+            cases
+                .iter()
+                .all(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+        );
+        let report = evaluate(&cases, None, &mut |_| panic!("offline sender invoked")).unwrap();
+        assert_eq!(report["sent_calls"], 0);
+        for metrics in items(&report["metrics"]) {
+            assert_eq!(metrics["elapsed_ms"]["count"], 0);
+            assert!(metrics["elapsed_ms"]["p50"].is_null());
+        }
+    }
+}
+
+#[test]
+fn measured_success_and_failure_are_recorded_and_replayed_with_usage() {
+    let temp = TempRecords::new();
+    let chosen = selected("r1,r4", "r1_01,r4_01").unwrap();
+    let cases = plan(chosen.clone(), &temp.0).unwrap();
+    let mut calls = 0;
+    let report = evaluate(&cases, Some(2), &mut |_| {
+        calls += 1;
+        if calls == 1 {
+            Ok(fake_envelope(fake_r1(&cases[0].sample)))
+        } else {
+            Err("HTTP 503".into())
+        }
+    })
+    .unwrap();
+    let replay_cases = plan(chosen, &temp.0).unwrap();
+    for case in &replay_cases {
+        assert!(case.record["elapsed_ms"].is_u64());
+        assert_eq!(case.record["reasoning_effort"], "medium");
+    }
+    let replay = evaluate(&replay_cases, None, &mut |_| {
+        panic!("replayed failure sent again")
+    })
+    .unwrap();
+    assert_eq!(report["results"], replay["results"]);
+    assert_eq!(report["metrics"], replay["metrics"]);
+    assert_eq!(replay["sent_calls"], 0);
+    assert!(
+        items(&report["metrics"])
+            .iter()
+            .all(|r| r["elapsed_ms"]["count"] == 1)
+    );
+    assert_eq!(report["results"][0]["usage"]["output_tokens"], 7);
+    assert!(report["results"][1]["usage"].is_null());
+    let rows:Vec<_>=[10,20,30,40,1000].into_iter().map(|elapsed|json!({"stage":"r1","status":"调用失败",
+        "elapsed_ms":elapsed,"usage":{"output_tokens":20,"output_tokens_details":{"reasoning_tokens":15}}})).collect();
+    let metric = &stage_metrics(&rows)[0];
+    assert_eq!(
+        metric["elapsed_ms"],
+        json!({"count":5,"p50":30,"p90":1000,"max":1000})
+    );
+    assert_eq!(metric["output_tokens"], json!({"count":5,"mean":20.0}));
+    assert_eq!(metric["reasoning_tokens"], json!({"count":5,"mean":15.0}));
+}
+
+#[test]
+fn z8_r1_condition_subset_and_unlabelled_time_keep_required_semantics() {
+    let sample = json!({"id":"synthetic-r1","split":"dev","label_status":"reviewed",
+        "input":{"message":"去年我在家练习素描时戴耳机。","context":[],"said_on":"2026-10-04",
+            "entities":[{"id":"self","names":["我"]}],"relations":["fact"]},
+        "expect":{"need":"judge","current_evidence":"assertion_present","type":"single","subject":"self",
+            "conditions":[["在家","我在家"]],"time":null,"plan.op":"lookup","plan.filter.relation":"fact"}});
+    let mut output = fake_r1(&sample);
+    output["conditions"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"quote":{"text":"练习素描时"},"resolved":true}));
+    output["time"] = json!({"role":"event","quote":{"text":"去年"},"interp":{"kind":"relative","unit":"year","offset":-1},"anchor":"said_on"});
+    let report = score("r1", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "通过", "{report}");
+    assert!(
+        !items(&report["fields"])
+            .iter()
+            .any(|f| f["field"] == "time")
+    );
+    let mut bad = output.clone();
+    bad["conditions"].as_array_mut().unwrap().remove(0);
+    assert_eq!(
+        score("r1", &sample, Some(&bad.to_string()))["status"],
+        "失败"
+    );
+    let mut labelled = sample.clone();
+    // Set inclusion does not require duplicating a Quote for overlapping label alternatives.
+    labelled["expect"]["conditions"] = json!(["在家", ["在家", "我在家"]]);
+    assert_eq!(
+        score("r1", &labelled, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    labelled["expect"]["time"] =
+        json!({"quote":"去年","interp":{"kind":"relative","unit":"year","offset":0}});
+    assert_eq!(
+        score("r1", &labelled, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output["time"]["quote"]["text"] = json!("不存在的时间");
+    assert_eq!(
+        score("r1", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
 }

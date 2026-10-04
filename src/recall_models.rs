@@ -5,7 +5,10 @@ use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use super::{DEEPSEEK_MODEL, ModelStage, OpenAiAdapterContext, OpenAiAdapterError, OpenAiClient};
+use super::{
+    DEEPSEEK_MODEL, ModelStage, OpenAiAdapterContext, OpenAiAdapterError, OpenAiClient,
+    ReasoningEffort,
+};
 use crate::contract::*;
 use crate::recall::{self, Assembly, Budget, JudgmentFailure, Request, SkipReason};
 use crate::write_models::{
@@ -100,23 +103,36 @@ results, guessed quantities, fabricated dates, new relations, model metadata or 
 pub struct RecallModels {
     pub r1: String,
     pub r4: String,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub reasoning_effort: BTreeMap<String, ReasoningEffort>,
 }
 impl Default for RecallModels {
     fn default() -> Self {
         Self {
             r1: DEEPSEEK_MODEL.into(),
             r4: DEEPSEEK_MODEL.into(),
+            reasoning_effort: BTreeMap::new(),
         }
     }
 }
 impl RecallModels {
     pub fn validate(&self) -> PersistenceResult<()> {
+        if self
+            .reasoning_effort
+            .keys()
+            .any(|r| !["r1", "r4"].contains(&r.as_str()))
+        {
+            return Err("recall_models.reasoning_effort has an unknown role".into());
+        }
         for (role, model) in [("r1", &self.r1), ("r4", &self.r4)] {
             if model.trim().is_empty() {
                 return Err(format!("recall_models.{role} must be nonempty").into());
             }
         }
         Ok(())
+    }
+    pub fn effort(&self, role: &str) -> ReasoningEffort {
+        self.reasoning_effort.get(role).copied().unwrap_or_default()
     }
 }
 
@@ -371,7 +387,7 @@ impl RecallRuntime {
             request.owner.0.clone(),
             operation.clone(),
         );
-        let binding = fingerprint(&json!([
+        let mut binding = fingerprint(&json!([
             request.binding,
             request.subject_ids,
             request.said_on,
@@ -382,6 +398,14 @@ impl RecallRuntime {
             budget.relations,
             budget.stored_bytes
         ]));
+        if let Some(p) = provider
+            && ["r1", "r4"]
+                .iter()
+                .any(|r| p.recall_models.effort(r) != ReasoningEffort::Medium)
+        {
+            binding = fingerprint(&json!([binding, {"r1":p.recall_models.effort("r1"),
+                "r4":p.recall_models.effort("r4")} ]));
+        }
         let attempt = crate::diagnostics::new_id();
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
@@ -426,8 +450,9 @@ impl RecallRuntime {
             };
             let mut r1_failure = None;
             if let Some(client) = &client {
-                let response = client.structured_output_for_model(
+                let response = client.structured_output_for_model_with_effort(
                     &provider.unwrap().recall_models.r1,
+                    provider.unwrap().recall_models.effort("r1"),
                     ModelStage::R1,
                     "r1_v1",
                     R1_PROMPT,
@@ -459,8 +484,9 @@ impl RecallRuntime {
             } else if let Some(client) = &client {
                 // 最后一次短快照检查，不在模型调用期间持有 SQLite 事务。
                 assembly.check_snapshot(store)?;
-                let response = client.structured_output_for_model(
+                let response = client.structured_output_for_model_with_effort(
                     &provider.unwrap().recall_models.r4,
+                    provider.unwrap().recall_models.effort("r4"),
                     ModelStage::R4,
                     "r4_v3",
                     R4_PROMPT,

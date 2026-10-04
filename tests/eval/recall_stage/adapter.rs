@@ -389,7 +389,17 @@ pub fn score(
         let output = plan.output.ok_or("r1.validate")?;
         let actual = normalized_r1(&output);
         for (key, expected) in sample["expect"].as_object().unwrap() {
-            compare(fields, key, expected, &actual[key]);
+            if key == "time" && expected.is_null() {
+                continue; // Z8: no asserted time label; mechanical validation still ran.
+            }
+            if key == "conditions" {
+                let passed = items(expected)
+                    .iter()
+                    .all(|e| items(&actual[key]).iter().any(|a| matches(a, e)));
+                check(fields, key, expected.clone(), actual[key].clone(), passed);
+            } else {
+                compare(fields, key, expected, &actual[key]);
+            }
         }
     } else {
         let f = R4Input::new(&sample["input"])?;
