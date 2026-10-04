@@ -43,7 +43,9 @@ impl Drop for BackgroundWorker {
 impl ChatMemoryService {
     /// Start once, before wrapping the service in its mutex. Off/default legacy modes stay inert.
     pub fn start_background(&mut self) -> PersistenceResult<Option<BackgroundWorker>> {
-        if self.config.enrichment_mode != EnrichmentMode::Deferred
+        if !(self.config.enrichment_mode == EnrichmentMode::Deferred
+            || (self.config.enrichment_mode == EnrichmentMode::Inline
+                && self.config.write_pipeline == WritePipeline::W4RuntimeV1))
             || self.config.model_budget.is_none()
         {
             return Ok(None);
@@ -97,7 +99,9 @@ impl ChatMemoryService {
 
     /// One durable new-path task; explicit CLI retry and legacy drain keep their own selection.
     pub fn run_background_once(&mut self) -> PersistenceResult<bool> {
-        if self.config.enrichment_mode != EnrichmentMode::Deferred
+        if !(self.config.enrichment_mode == EnrichmentMode::Deferred
+            || (self.config.enrichment_mode == EnrichmentMode::Inline
+                && self.config.write_pipeline == WritePipeline::W4RuntimeV1))
             || self.config.model_budget.is_none()
         {
             return Ok(false);
@@ -110,7 +114,10 @@ impl ChatMemoryService {
             .filter(|(_, source)| {
                 source.request.is_some()
                     && source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION)
-                    && source.task.accepted_mode.as_deref() == Some("deferred")
+                    && matches!(
+                        source.task.accepted_mode.as_deref(),
+                        Some("deferred" | "inline")
+                    )
                     && matches!(
                         source.enrichment.as_str(),
                         "queued" | "running" | "stale_requires_review"

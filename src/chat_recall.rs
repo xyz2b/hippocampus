@@ -242,7 +242,10 @@ impl ChatMemoryService {
                         crate::openai::recall_models::fingerprint(&json!(key))
                     )
                 })))?;
-                if input.offline && self.config.enrichment_mode == EnrichmentMode::Inline {
+                if input.offline
+                    && self.config.enrichment_mode == EnrichmentMode::Inline
+                    && self.config.write_pipeline == WritePipeline::Legacy
+                {
                     return Err("offline prepare requires enrichment_mode off/deferred".into());
                 }
                 let query = input.user_turn.text.clone();

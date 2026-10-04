@@ -778,3 +778,6 @@ fn background_late_model_response_cannot_restore_a_deleted_source() {
     );
     assert_eq!(db.calls(), 1);
 }
+
+#[path = "chat_visibility_tests.rs"]
+mod visibility;

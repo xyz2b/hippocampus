@@ -276,11 +276,6 @@ impl ChatConfig {
         if let Some(models) = &self.write_models {
             models.validate()?;
         }
-        if self.write_pipeline == WritePipeline::W4RuntimeV1
-            && self.enrichment_mode == EnrichmentMode::Inline
-        {
-            return Err("w4_runtime_v1 requires enrichment_mode off/deferred: J6 inline remains deferred to the next implementation stage".into());
-        }
         self.local_recall_budget.validate()?;
         if let Some(budget) = &self.model_budget {
             budget.validate()?;
@@ -394,7 +389,7 @@ struct Prepare {
     /// Stable recall identity; prepare defaults to its session/turn identity.
     #[serde(default)]
     request_id: Option<String>,
-    /// Skip recall models. Offline prepare requires off/deferred enrichment.
+    /// Skip recall models. Offline prepare allows off/deferred or new-path inline queueing.
     #[serde(default)]
     offline: bool,
     #[serde(default = "default_limit")]
@@ -2294,8 +2289,10 @@ impl ChatMemoryService {
     }
 
     fn process_w4_source(&mut self, key: &str) -> PersistenceResult<Value> {
-        if self.config.enrichment_mode == EnrichmentMode::Inline {
-            return Err("unsupported_processing_version: w4_runtime_v1 requires off/deferred processing (J6); inline is not enabled".into());
+        if self.config.enrichment_mode == EnrichmentMode::Inline
+            && self.config.write_pipeline == WritePipeline::Legacy
+        {
+            return Err("unsupported_processing_version: legacy inline cannot process w4_runtime_v1 sources; select w4_runtime_v1 or off/deferred".into());
         }
         let state = self.store.read()?;
         let source = state.sources.get(key).ok_or("source missing")?;
@@ -2481,13 +2478,19 @@ impl ChatMemoryService {
                 .unwrap_or_else(|| json!("inline"));
             return Ok(result);
         }
-        if matches!(
+        if (matches!(
             self.config.enrichment_mode,
             EnrichmentMode::Off | EnrichmentMode::Deferred
-        ) && !input.capture_source
+        ) || self.config.write_pipeline == WritePipeline::W4RuntimeV1)
+            && !input.capture_source
         {
+            let error = if self.config.write_pipeline == WritePipeline::W4RuntimeV1 {
+                "capture_source_required: w4_runtime_v1 requires authorized source capture"
+            } else {
+                "capture_source_required: off/deferred enrichment requires authorized source capture"
+            };
             return Err(Box::new(CaptureError(json!({
-                "error":"capture_source_required: off/deferred enrichment requires authorized source capture",
+                "error":error,
                 "source":{"status":"rejected"},"index":{"status":"not_requested"},
                 "enrichment":{"status":"not_requested"},"enrichment_mode":self.config.enrichment_mode
             }))));
@@ -2511,6 +2514,9 @@ impl ChatMemoryService {
         }
         let enrichment_off = self.config.enrichment_mode == EnrichmentMode::Off;
         let enrichment_deferred = self.config.enrichment_mode == EnrichmentMode::Deferred;
+        let enrichment_background = enrichment_deferred
+            || (self.config.write_pipeline == WritePipeline::W4RuntimeV1
+                && self.config.enrichment_mode == EnrichmentMode::Inline);
         // T1 owns only raw reception. A later model or fact-transaction failure cannot undo it.
         if input.capture_source {
             let mut created = false;
@@ -2529,9 +2535,9 @@ impl ChatMemoryService {
                 let mut source = SourceRecord {
                     id:crate::diagnostics::new_id(), session_id:input.session_id.clone(),
                     turn_id:input.turn_id.clone(), observed_at:context.now.0,
-                    request:Some(request.clone()), enrichment:if enrichment_off {"not_requested"} else if enrichment_deferred {"queued"} else {"pending"}.into(), error:None,
+                    request:Some(request.clone()), enrichment:if enrichment_off {"not_requested"} else if enrichment_background {"queued"} else {"pending"}.into(), error:None,
                     result:if enrichment_off {Some(json!({"status":"completed","enrichment_mode":"off","outcomes":[]}))}
-                        else if enrichment_deferred {Some(json!({"enrichment_mode":"deferred"}))} else {None},
+                        else if enrichment_background {Some(json!({"enrichment_mode":self.config.enrichment_mode}))} else {None},
                     base_revision:read_revision, received_sequence, index:Value::Null,
                     task: Default::default(),
                 };
@@ -2554,11 +2560,11 @@ impl ChatMemoryService {
                         .get(&key)
                         .ok_or("source receipt missing after capture")?;
                     crate::diagnostics::record("source_receipt", || source.status());
-                    if !created || enrichment_off || enrichment_deferred {
+                    if !created || enrichment_off || enrichment_background {
                         // Read the T1 receipt before waking the worker; the capture outcome is stable.
                         let receipt = self.source_receipt(&key, !created);
                         if created
-                            && enrichment_deferred
+                            && enrichment_background
                             && let Some(wake) = &self.background_wake
                         {
                             let _ = wake.try_send(());
@@ -3757,7 +3763,7 @@ pub fn memory_tools() -> Vec<Tool> {
         ),
         tool::<Remember>(
             "memory_remember",
-            "Before answering each turn, save cross-chat useful assertions even when embedded in a question, shopping advice or follow-up: household members, living arrangements, home details, equipment already bought, user-authorized personal or family health background, stable preferences, requirements and corrections. Using facts in this answer, recalling or listing them does not save them. Submit the entire current USER message verbatim and only the preceding user history needed to resolve references; the extractor separates supported facts from questions and contemplated purchases. An explicit remember request is unnecessary. Skip pure one-off tasks, fiction, quotations, guesses, secrets and messages the user says not to save. Use unique session/turn IDs; identical retries replay the original result. For personal assertions within the user-authorized raw-retention scope, set capture_source=true on the FIRST call. The entire message and necessary USER history must be authorized. Raw text is saved before fact selection and model processing; uncertainty about useful facts or model success does not disable authorized capture. Omitted/false requests legacy fact-only processing without independent raw protection. Server enrichment_mode=off only stores authorized source evidence and requires capture_source=true; enrichment=not_requested is normal completion with no queued work. Inline structured enrichment requires the model API and an explicit model budget. Check source and enrichment independently; stored raw text is not a committed fact. Failed/pending source receipts replay without automatically retrying enrichment. Pending, rejected and conflict are not successful fact saves.",
+            "Before answering each turn, save cross-chat useful assertions even when embedded in a question, shopping advice or follow-up: household members, living arrangements, home details, equipment already bought, user-authorized personal or family health background, stable preferences, requirements and corrections. Using facts in this answer, recalling or listing them does not save them. Submit the entire current USER message verbatim and only the preceding user history needed to resolve references; the extractor separates supported facts from questions and contemplated purchases. An explicit remember request is unnecessary. Skip pure one-off tasks, fiction, quotations, guesses, secrets and messages the user says not to save. Use unique session/turn IDs; identical retries replay the original result. For personal assertions within the user-authorized raw-retention scope, set capture_source=true on the FIRST call. The entire message and necessary USER history must be authorized. Raw text is saved before fact selection and model processing; uncertainty about useful facts or model success does not disable authorized capture. Omitted/false requests legacy fact-only processing without independent raw protection. Server enrichment_mode=off only stores authorized source evidence and requires capture_source=true; enrichment=not_requested is normal completion with no queued work. Legacy inline structured enrichment requires the model API and an explicit model budget. With write_pipeline=w4_runtime_v1, inline/deferred accept authorized raw capture and queue background enrichment; MCP does not wait for write models. Background calls require an explicit shared model budget. Check source and enrichment independently; stored raw text is not a committed fact. Failed/pending source receipts replay without automatically retrying enrichment. Pending, rejected and conflict are not successful fact saves.",
             true,
             true,
             true,

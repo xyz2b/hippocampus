@@ -73,20 +73,13 @@ fn write_pipeline_defaults_and_strict_configuration() {
         )
         .is_err()
     );
-    for mode in ["off", "deferred"] {
+    for mode in ["off", "deferred", "inline"] {
         config("w4_runtime_v1", mode).validate().unwrap();
     }
-    assert!(
-        config("w4_runtime_v1", "inline")
-            .validate()
-            .unwrap_err()
-            .to_string()
-            .contains("J6")
-    );
 }
 
 #[test]
-fn write_pipeline_cli_rejects_inline_before_opening_database() {
+fn write_pipeline_cli_inline_captures_and_queues_without_starting_worker() {
     let db = Db::new();
     let settings = db.0.with_extension("json");
     std::fs::create_dir_all(settings.parent().unwrap()).unwrap();
@@ -95,18 +88,36 @@ fn write_pipeline_cli_rejects_inline_before_opening_database() {
         r#"{"write_pipeline":"w4_runtime_v1","enrichment_mode":"inline"}"#,
     )
     .unwrap();
+    let arguments = db.0.with_extension("turn.json");
+    std::fs::write(&arguments, turn("inline-cli").to_string()).unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
         .args([
             "--db",
             db.0.to_str().unwrap(),
+            "--owner",
+            "alice",
             "--config",
             settings.to_str().unwrap(),
+            "--call",
+            "memory_remember",
+            "--arguments",
+            arguments.to_str().unwrap(),
         ])
         .output()
         .unwrap();
-    assert!(!output.status.success());
-    assert!(String::from_utf8_lossy(&output.stderr).contains("J6"));
-    assert!(!db.0.exists());
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    frozen(&serde_json::from_slice(&output.stdout).unwrap(), "queued");
+    let (_, source) = db.source("inline-cli");
+    assert_eq!(source.task.accepted_mode.as_deref(), Some("inline"));
+    assert_eq!(
+        source.task.processing_version.as_deref(),
+        Some(W4_PROCESSING_VERSION)
+    );
+    assert_eq!(source.task.round, None);
 }
 
 #[test]

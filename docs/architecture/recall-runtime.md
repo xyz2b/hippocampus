@@ -123,7 +123,7 @@ Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12）�
 
 同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
-第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate 的新路径及其 v1 输出适配。legacy 召回与其他工具仍串行，写入 inline 的 J6 拒绝保留。
+第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate 的新路径及其 v1 输出适配。legacy 召回与其他工具仍串行；新写入 inline 只保存 T1 并唤醒后台，legacy inline 仍同步。
 
 共享缓存与进行中表均按数据库规范路径、owner、请求身份隔离。短锁不覆盖数据库事务或模型等待；同 ID 同参的跨线程并发调用等待已有执行，完成后按原有回执/快照规则重放，R1/R4 各发送一次；异参立即拒绝。同线程递归调用保留原有明确拒绝，避免等待自己。等待者只保留完成状态，不另留正文副本。执行异常退出也会唤醒等待者，持久回执仍阻止未获授权的重试。`memory_forget` 沿用原删除事务的来源清洗，实际删除后清空该 owner 的完整结果（含 R4 原始审计），并标记进行中的结果不得重新入缓存；其他 owner/数据库不受影响。其他连接/进程直接修改数据库时仍由现有快照核对拒绝旧结果，不隐式刷新或重新调用模型。
 
@@ -147,7 +147,7 @@ R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_a
 
 使用新流水线（包括请求旧回执）须提交稳定 `request_id`，保持 query/context/task_id/limit/离线选择不变。`at` 可省略：首次取服务器时钟，重放读取已绑定的首次 at（bootstrap 也共用绑定和缓存）；显式 at 须为过去时刻并与首次绑定一致。Prepare 请求旧回执时保留 remember/recall.result 包络，其中旧 recall.result 含机械生成的 answer_contract 和 request_id/快照元数据；未指定 request_id 时从 session_id/turn_id 摘要派生，不把用户原话用于身份。只读 query/context 不保存为原文；模型预算和只读回执仍保留不含正文的元数据。跨进程结果不保留，CLI 重跑已完成 request_id 或验证上一 CLI 进程的结果会明确失败，零重调；需要新尝试须显式新请求及预算，不能把重试改成隐式付费。
 
-`offline=true` 强制跳过新召回模型；缺凭据或网络门关闭也走离线路径。新离线 Prepare 需 `enrichment_mode=off/deferred`，避免旧 inline 写入发起模型请求。bootstrap 无论网络配置如何均零调用，仅读取全局规则，current_message=null、raw=[]、facts=[]，语义标 skipped。普通离线保留本轮消息、记录和未完成原文，facts=[]、computed=null，不能包装为确定当前结论。
+`offline=true` 强制跳过新召回模型；缺凭据或网络门关闭也走离线路径。新离线 Prepare 允许 `enrichment_mode=off/deferred` 或 `w4_runtime_v1 + inline`，后者只入队，不在前台执行写入模型。legacy inline 仍拒绝离线 Prepare，避免旧写入模型请求；已启动的新后台 worker 不受单次 offline=true 约束（该参数只禁用 R1/R4）。bootstrap 无论网络配置如何均零调用，仅读取全局规则，current_message=null、raw=[]、facts=[]，语义标 skipped。普通离线保留本轮消息、记录和未完成原文，facts=[]、computed=null，不能包装为确定当前结论。
 
 CLI 在 MCP 服务锁建立前运行一次工具：
 
@@ -167,7 +167,7 @@ pmr-mcp --db /tmp/recall-demo.sqlite3 --owner demo \
 
 **MCP 在线新召回已接通。** R1/R4 在独立操作连接上执行，不持服务全局锁、SQLite 事务或共享缓存锁；等待模型时其他 MCP 操作可完成。同 ID 同参共用一次执行，各阶段最多一次发送；同 ID 异参拒绝，快照变化明确失败（不隐式重试），删除清除该 owner 的完整缓存并阻止晚到结果入缓存。只读请求取消在发送前、阶段之间及保留结果前检查；已发出的阻塞 HTTP 等待既有超时或响应，取消后不继续 R4、不保留结果、不重试，取消等待者不取消同 ID 的执行者。模型超时沿用 degraded/failed 语义及已占用预算。
 
-Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或45秒等待超时，通过完全相同参数续等，续等表的键只保留参数摘要，发布结果前与交付前都核对来源和召回快照；删除清除新版已完成的续等副本，发布与删除清理共用短锁，避免晚到副本重新入表。写入新路径 inline 的 J6 限制尚未解除。`offline=true` 与 bootstrap 不调用召回模型；`PMR_MODEL_NETWORK=offline` 仍允许字面 loopback 测试端点，因此仅设该环境变量并不保证完全零调用。Validate 仅读共享缓存，不调用模型；跨操作连接可用，跨进程缺结果仍明确失败。
+Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或45秒等待超时，通过完全相同参数续等，续等表的键只保留参数摘要，发布结果前与交付前都核对来源和召回快照；删除清除新版已完成的续等副本，发布与删除清理共用短锁，避免晚到副本重新入表。写入新路径 inline 在 T1 后立即唤醒后台，Prepare 不等待整理。`offline=true` 与 bootstrap 不调用召回模型；`PMR_MODEL_NETWORK=offline` 仍允许字面 loopback 测试端点，因此仅设该环境变量并不保证完全零调用。Validate 仅读共享缓存，不调用模型；跨操作连接可用，跨进程缺结果仍明确失败。
 
 **新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和当前快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
@@ -175,6 +175,8 @@ Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或
 
 ## 第4项④：与后台整理并发
 
-MCP deferred 以单个独立连接 worker 整理已绑定 w4_runtime_v1 的来源，启动恢复与周期租约扫描见 [w4-code-side 第10节](w4-code-side.md#10-mcp-后台执行与恢复第4项④)。T1 保存即唤醒，不等待前台 R1/R4 返回；本轮和其他可信范围内的未整理原文沿用 R3 raw 可见性与截断门控。
+MCP 新写入 inline/deferred 以单个独立连接 worker 整理已绑定 w4_runtime_v1 的来源，启动恢复与周期租约扫描见 [w4-code-side 第10节](w4-code-side.md#10-mcp-后台执行与恢复第4项④)。T1 保存即唤醒，不等待前台 R1/R4 返回；本轮和其他可信范围内的未整理原文沿用 R3 raw 可见性与截断门控。
 
 [联合配置](../../examples/background-recall.json) 显式给前台2次、后台3次，使用同一总授权；没有新增额度。事件屏障测试要求前台在后台 W1 释放前完成并带新 raw，不能输出无条件旧当前值。后台阶段保存、整理状态改变或业务提交落在召回读快照与最终核验之间时，现有 read_revision/source_revision/来源控制摘要检查明确报 recall_snapshot_changed，零自动重试。受控的“R4等待期间后台完成提交”重复3次，实测3/3明确快照失败；未释放后台的独立前台请求实测成功。这里只证明触发条件，不推断实际频率，⑤再评估是否另行授权处理变化。
+
+第4项⑤的七类 MCP 可见性验证与无屏障快照变化实验见 [w4-code-side 第11节](w4-code-side.md#11-26-七类可见性验收第4项⑤) 及 [visibility-cadence.md](visibility-cadence.md)。快照失效继续明确报 recall_snapshot_changed；同参重放不自动重试。
