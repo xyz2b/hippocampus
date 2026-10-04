@@ -54,6 +54,12 @@ CLI/MCP 与配置分发仍留⑤，MCP 在线锁改造另项处理。④只提�
 
 `r4::decode/evaluate` 检查冻结字段、枚举、必填可空项和非空文本。FactView/ComputeItem 的每条依据必须落在本包的来源与连续片段中，复用 locate_quote 的空白归一并恢复原文，不拼接不同片段。query_only 的本轮文本不能成为事实或计算依据。record_ids/supersedes_record_ids 除在输入内，还必须有该条记录的依据；supersedes 必须同时有旧条目与新方依据。legacy 没有可核准来源时不能形成事实；有获准原文时可重新判断原文，不补造旧限定语。
 
+Z18 在解码与完整核验之间共用 `r4::assemble_old_basis`：仅对模型明确列出的包内 supersedes 目标，按证据包记录顺序补入缺失的已核准旧引用。引用须为 stored 来源，来源未删除且 Quote 逐字存在于可信来源正文；不以记录自带 Quote 自证。生产从 SQLite 取得正文并沿用返回前的快照屏障，离线适配器仅从样本 input 展开正文。已有可核准的短片段或空白等价依据不重复；原引用或 record_ids 依据无效、缺新方依据时不补。不推断替代目标、不补新方依据或计算操作数，补入后照常执行全部核验和 R5 派生。补引用只证明旧片段真实存在，不证明替代语义、条件归属或唯一当前值正确。
+
+来源正文回查及记录原来源/依据授权检查按 SourceRecord.id 查找；sources 的 map key 是会话/轮次键，不等于引用里的 source_id。沿用原有任务/主体/所有者边界，不因标识修正放宽权限。
+
+`finish_r4_with_audit` 保留原始文本 raw 与组装结果 final；核验成功时 final 为恢复原文后的规范结果，核验失败时保留组装结果，解码失败时 final=null。冻结 RecallOutput 的失败行为不变，不交出部分有效事实。原 `finish_r4` 共用此边界并只返回冻结结果。
+
 不确定性、条件、TimeInterp 及 anchor_quote 都检查对应依据来源；输出完整保留 polarity、strength、uncertainty、conditions、times、current、applies。来源接收日与时区在同一读快照中取得，不接受模型自报时钟；来源时刻改变会推进 source_revision，已有快照屏障拒绝旧日期锚点。时间换算与日历字面核验统一复用 W2：整句 Quote 中的明确日期、月份、年份也检查区间与精度，不把月/年补成具体日，完整日期区间不降为单个端点。支持数字日期、ISO 日期/月份、中文月名与既有日期区间；多个日历片段至少须有一个完整片段吻合，不机械判定它与断言的语义归属。Anchored/Recurring/Unknown 沿用 W2 的 unknown，所需端点无法确定时计算不足。代码不证明概括、主体、条件适用性、事件同一性及时间自然语言解释的语义正确性，这些由 R4 样本评测验证。
 
 任一结构/引用失效整份输出变为 degraded、semantic_judgment=failed、facts=[]、computed=null；既有记录与原文继续交出，不保留部分有效模型事实。使用冻结 model_invalid_output/model_timeout 原因。合法输出因身份、覆盖、单位、精度或算术容量不足而不能计算时，保留事实，computed=null，附 compute_insufficient，并按状态优先级得到 insufficient 等状态。
@@ -103,9 +109,13 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单次物理调用实测。minimal 未产生推理 token，R1 质量接近 medium。R4 第2版已重测40次：18/40、核验失败13，p50 4.5s / p90 6.3s；收尾日期核验修复后离线评分不变，13次分别为缺同条旧方依据8次、缺操作数5次，详见[收尾分析](../../tests/eval/recall_stage/r4-closeout-review.md)。首次 minimal 冷启动为16.6s；两阶段常见耗时支持该推荐，但单阶段分位数不能相加证明全流程 P95≤15s，宿主接线后的生产预算、检索和冷启动仍需验证。
 
+Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12），final 26/40（dev20/28、holdout6/12）。补入8条旧引用，原8次 record_basis 失败全部通过；5次 operands 核验失败与9次字段评分失败仍保留。请求指纹全部有效，详见[补入后报告](../../tests/eval/recall_stage/r4-old-basis-review.md)。这是同一批响应的机械组装收益，没有新模型测量，也不代替语义人工复核。
+
 回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
 同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
+
+R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_audit` 经相同身份与快照检查返回同一对审计；原 `run` 的冻结输出接口不变。两份审计均不写数据库，不改变模型请求格式或指纹算法。来源失效时不能返回迟到审计，重开无结果时同样不重调。
 
 重放及结束事务核对业务/来源版本和来源整理/限制摘要，失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；这不代表旧 MCP 服务全局锁问题已经解决。
 

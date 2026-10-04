@@ -253,6 +253,56 @@ fn same_flow_sends_each_role_once_and_replays_without_retaining_readonly_text() 
     assert!(cache.contains("r1-route-sentinel") && cache.contains("sha256:"));
     assert_eq!(state.sources.len(), 1);
 }
+
+#[test]
+fn raw_final_audit_replays_together_and_is_not_retained_after_reopen_or_deletion() {
+    let db = Db::new();
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let rt = RecallRuntime::default();
+    let req = request("audit");
+    let first = rt
+        .run_with_audit(&mut db.open(), &req, Budget::default(), Some(&p))
+        .unwrap();
+    assert_eq!(first.0.status, RecallStatus::Answered);
+    let audit = first.1.as_ref().unwrap();
+    assert_eq!(audit.raw_output, r4_out().to_string());
+    assert_eq!(
+        serde_json::to_value(audit.final_output.as_ref().unwrap()).unwrap(),
+        r4_out()
+    );
+    assert_eq!(
+        rt.run_with_audit(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap(),
+        first
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+    let receipts = serde_json::to_string(&db.open().read().unwrap().receipts).unwrap();
+    assert!(
+        !receipts.contains(TEXT)
+            && !receipts.contains("raw_output")
+            && !receipts.contains("final_output")
+    );
+    assert!(
+        RecallRuntime::default()
+            .run_with_audit(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("result_not_retained:no_model_retry")
+    );
+    db.open()
+        .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some("s-purple")))
+        .unwrap();
+    assert!(
+        rt.run_with_audit(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("snapshot_stale")
+    );
+    assert!(rt.cache.lock().unwrap().is_empty());
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
 #[test]
 fn context_only_no_evidence_offline_and_bootstrap_have_exact_call_counts() {
     for (need, raw, offline, bootstrap, expected, reason) in [

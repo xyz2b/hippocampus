@@ -389,7 +389,13 @@ fn stamp(state: &crate::PersistedMemoryState) -> PersistenceResult<Value> {
 #[derive(Default)]
 pub struct RecallRuntime {
     // ponytail: 完整只读结果最多留64个；需跨进程完整重放时先取得专门的保存授权。
-    cache: Mutex<BTreeMap<(String, String, String), RecallOutput>>,
+    cache: Mutex<BTreeMap<(String, String, String), CachedResult>>,
+}
+#[derive(Clone)]
+struct CachedResult {
+    output: RecallOutput,
+    // 原始输出与组装结果共同保留；沿用64项缓存与快照失效，不落库。
+    r4: Option<crate::r4::OutputAudit>,
 }
 impl RecallRuntime {
     /// 同进程复用完整结果；重开只保留摘要/尝试状态，无结果时明确失败且不重新调用。
@@ -400,6 +406,18 @@ impl RecallRuntime {
         budget: Budget,
         provider: Option<&RecallModelProvider>,
     ) -> PersistenceResult<RecallOutput> {
+        self.run_with_audit(store, request, budget, provider)
+            .map(|(out, _)| out)
+    }
+
+    /// 审计与输出共用身份/快照检查；重放返回同一对结果，不触发模型重试。
+    pub fn run_with_audit(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        provider: Option<&RecallModelProvider>,
+    ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         if store.owner() != &request.owner {
             return Err("recall_owner_mismatch".into());
         }
@@ -493,11 +511,12 @@ impl RecallRuntime {
                 .unwrap_or_else(|e| e.into_inner())
                 .get(&cache_key)
             {
-                return Ok(output.clone());
+                return Ok((output.output.clone(), output.r4.clone()));
             }
             // 重启、崩溃或内存裁剪不提供新的授权，不能把已尝试的阶段重新发送。
             return Err("recall_result_not_retained:no_model_retry".into());
         }
+        let mut r4_audit = None;
         let result: PersistenceResult<RecallOutput> = (|| {
             let offline = request.bootstrap || provider.is_none_or(|p| !p.client.network_allowed);
             let client = if offline {
@@ -551,7 +570,11 @@ impl RecallRuntime {
                     r4_schema(),
                 );
                 match response {
-                    Ok(text) => assembly.finish_r4(store, Ok(&text))?,
+                    Ok(text) => {
+                        let (out, audit) = assembly.finish_r4_with_audit(store, Ok(&text))?;
+                        r4_audit = audit;
+                        out
+                    }
                     Err(OpenAiAdapterError::Budget(_)) => {
                         let mut out = assembly.finish_skipped(store, SkipReason::Budget)?;
                         out.degraded_reasons.push("budget_exhausted".into());
@@ -600,8 +623,14 @@ impl RecallRuntime {
         if cache.len() >= 64 {
             cache.pop_first();
         }
-        cache.insert(cache_key, output.clone());
-        Ok(output)
+        cache.insert(
+            cache_key,
+            CachedResult {
+                output: output.clone(),
+                r4: r4_audit.clone(),
+            },
+        );
+        Ok((output, r4_audit))
     }
 }
 fn error_code(error: &OpenAiAdapterError) -> &'static str {

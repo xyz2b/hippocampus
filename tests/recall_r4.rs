@@ -467,6 +467,257 @@ fn insufficient(result: RecallOutput) {
     );
 }
 
+fn missing_old_basis(f: &Fixture) -> R4Output {
+    let raw = &f.input["raw"][0];
+    let mut view = fact(
+        raw["text"].as_str().unwrap(),
+        vec![stored(
+            raw["source"].as_str().unwrap(),
+            raw["text"].as_str().unwrap(),
+        )],
+        vec![],
+        "yes",
+    );
+    view["supersedes_record_ids"] = json!([f.ids[&4]]);
+    r4::decode(&output(vec![view], None).to_string()).unwrap()
+}
+
+#[test]
+fn old_basis_assembly_checks_real_sources_and_preserves_missing_new_basis_errors() {
+    let f = Fixture::sample("r4_04_");
+    let assembly = f.assembly();
+    let dates = BTreeMap::new();
+    let ctx = r4::Context {
+        evidence: &assembly.evidence,
+        plan: &assembly.plan,
+        request: &assembly.request,
+        utc_offset_seconds: 28_800,
+        source_dates: &dates,
+    };
+    let state = f.db.state();
+    let text_of = |id: &str| {
+        state
+            .sources
+            .get(id)
+            .filter(|s| s.enrichment != "deleted")
+            .and_then(|s| s.request.as_ref()?["text"].as_str().map(str::to_owned))
+    };
+    let raw = missing_old_basis(&f);
+    let assembled = r4::assemble_old_basis(&raw, &ctx, &text_of);
+    assert_eq!(raw.facts[0].evidence.len(), 1);
+    assert_eq!(assembled.facts[0].evidence.len(), 2);
+    assert!(r4::evaluate(assembled.clone(), &ctx).is_ok());
+    assert_eq!(
+        r4::assemble_old_basis(&assembled, &ctx, &text_of),
+        assembled
+    );
+
+    // 同来源的已核准短片段/空白变体已足够，无须再复制整句。
+    let mut equivalent = raw.clone();
+    equivalent.facts[0]
+        .evidence
+        .push(stored("s-4", "住在上 海"));
+    assert_eq!(
+        r4::assemble_old_basis(&equivalent, &ctx, &text_of),
+        equivalent
+    );
+    assert!(r4::evaluate(equivalent, &ctx).is_ok());
+
+    // 目标不在本包、旧来源已删/丢失、Quote 不在真实正文：均不能以记录 Quote 自证。
+    let mut outside = raw.clone();
+    outside.facts[0].supersedes_record_ids = vec![MemoryId(90000)];
+    assert_eq!(r4::assemble_old_basis(&outside, &ctx, &text_of), outside);
+    assert_eq!(r4::evaluate(outside, &ctx).err().unwrap().0, "record_id");
+    for old_body in [
+        None,
+        Some("另一段不含旧引用的正文".to_owned()),
+        Some("我住在上 海。".to_owned()),
+    ] {
+        let assembled = r4::assemble_old_basis(&raw, &ctx, &|id| {
+            if id == "s-4" {
+                old_body.clone()
+            } else {
+                text_of(id)
+            }
+        });
+        assert_eq!(assembled, raw);
+        assert_eq!(
+            r4::evaluate(assembled, &ctx).err().unwrap().0,
+            "record_basis"
+        );
+    }
+    let mut only_old = raw.clone();
+    only_old.facts[0].evidence = vec![stored("s-4", "我住在上海。")];
+    assert_eq!(r4::assemble_old_basis(&only_old, &ctx, &text_of), only_old);
+    assert_eq!(r4::evaluate(only_old, &ctx).err().unwrap().0, "new_basis");
+    let mut bad_record = raw.clone();
+    bad_record.facts[0].record_ids = vec![f.ids[&4]];
+    assert_eq!(
+        r4::assemble_old_basis(&bad_record, &ctx, &text_of),
+        bad_record
+    );
+    assert_eq!(
+        r4::evaluate(bad_record, &ctx).err().unwrap().0,
+        "record_basis"
+    );
+}
+
+#[test]
+fn old_basis_audit_uses_sqlite_snapshot_and_never_persists_readonly_outputs() {
+    let f = Fixture::sample("r4_04_");
+    let raw = format!(
+        " \n{}\n ",
+        serde_json::to_string(&missing_old_basis(&f)).unwrap()
+    );
+    let before = serde_json::to_value(f.db.state()).unwrap();
+    let (result, audit) = f
+        .assembly()
+        .finish_r4_with_audit(&f.db.open(), Ok(&raw))
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Answered);
+    let audit = audit.unwrap();
+    assert_eq!(audit.raw_output, raw);
+    assert_eq!(
+        audit.final_output.unwrap().facts[0].evidence,
+        result.facts[0].evidence
+    );
+    assert_eq!(
+        r4::decode(&audit.raw_output).unwrap().facts[0]
+            .evidence
+            .len(),
+        1
+    );
+    assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
+
+    let assembly = f.assembly();
+    f.db.open()
+        .transaction(|s| {
+            s.sources.get_mut("s-4").unwrap().enrichment = "deleted".into();
+            Ok(())
+        })
+        .unwrap();
+    assert!(
+        assembly
+            .finish_r4_with_audit(&f.db.open(), Ok(&raw))
+            .unwrap_err()
+            .to_string()
+            .contains("snapshot_changed")
+    );
+    // 即使删除标记保留正文，新快照也不能补旧依据。
+    let (result, audit) = f
+        .assembly()
+        .finish_r4_with_audit(&f.db.open(), Ok(&raw))
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Degraded);
+    assert!(result.facts.is_empty());
+    assert_eq!(
+        audit.unwrap().final_output.unwrap().facts[0].evidence.len(),
+        1
+    );
+}
+
+#[test]
+fn old_basis_uses_source_identity_when_sqlite_map_keys_are_session_turn_keys() {
+    let mut f = Fixture::sample("r4_04_");
+    // 与真实接收一致：sources 的 key 是会话/轮次键，Stored 引用的是独立来源 ID。
+    // 首次种入新库；已存在来源的键和身份不能被更改。
+    let mut seed = f.db.state();
+    seed.sources = seed
+        .sources
+        .into_values()
+        .map(|source| {
+            (
+                json!([source.session_id, source.turn_id]).to_string(),
+                source,
+            )
+        })
+        .collect();
+    let db = Db::new();
+    db.open()
+        .transaction(|s| {
+            *s = seed;
+            Ok(())
+        })
+        .unwrap();
+    f.db = db;
+    let before = serde_json::to_value(f.db.state()).unwrap();
+    let assembly = f.assembly();
+    assert!(
+        assembly
+            .evidence
+            .records
+            .iter()
+            .any(|r| r.id() == f.ids[&4])
+    );
+    let raw = serde_json::to_string(&missing_old_basis(&f)).unwrap();
+    let (result, audit) = assembly
+        .finish_r4_with_audit(&f.db.open(), Ok(&raw))
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Answered);
+    let final_output = audit.unwrap().final_output.unwrap();
+    assert_eq!(final_output.facts[0].evidence.len(), 2);
+    assert_eq!(
+        final_output.facts[0].evidence[1].source,
+        stored("s-4", "").source
+    );
+    assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
+    f.db.open()
+        .transaction(|s| {
+            s.sources
+                .values_mut()
+                .find(|source| source.id == "s-4")
+                .unwrap()
+                .enrichment = "deleted".into();
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(
+        f.finish(serde_json::from_str(&raw).unwrap()).status,
+        RecallStatus::Degraded
+    );
+}
+
+#[test]
+fn old_basis_assembly_does_not_repair_invalid_quotes_qualifiers_or_operands() {
+    let f = Fixture::sample("r4_04_");
+    for (field, value, expected_evidence) in [
+        ("quote", json!({"text":"正文里没有这个片段"}), 1),
+        (
+            "conditions",
+            json!([{"quote":{"text":"不存在的条件"},"resolved":true}]),
+            2,
+        ),
+        (
+            "compute",
+            compute("elapsed", vec![], vec![], Some("day"), "complete"),
+            2,
+        ),
+    ] {
+        let mut raw = serde_json::to_value(missing_old_basis(&f)).unwrap();
+        match field {
+            "quote" => raw["facts"][0]["evidence"][0]["quote"] = value,
+            "conditions" => raw["facts"][0]["conditions"] = value,
+            _ => raw["compute"] = value,
+        }
+        let mut plan = f.plan_json();
+        if field == "compute" {
+            plan["type"] = json!("temporal");
+            plan["plan"]["op"] = json!("elapsed");
+        }
+        let assembly = f.assembly_with(&f.request(), plan, Budget::default());
+        let (result, audit) = assembly
+            .finish_r4_with_audit(&f.db.open(), Ok(&raw.to_string()))
+            .unwrap();
+        assert_eq!(result.status, RecallStatus::Degraded, "{field}");
+        assert!(result.facts.is_empty() && result.computed.is_none());
+        let final_output = audit.unwrap().final_output.unwrap();
+        assert_eq!(final_output.facts[0].evidence.len(), expected_evidence);
+        if field == "compute" {
+            assert!(final_output.compute.unwrap().operands.is_empty());
+        }
+    }
+}
+
 #[test]
 fn sqlite_reopen_supported_qualifiers_and_snapshot_without_writes() {
     let f = Fixture::sample("r4_02_");
@@ -581,13 +832,14 @@ fn r4_04_raw_update_has_uncommitted_grade_and_dual_basis_supersession() {
     assert!(result.history.is_empty() && result.conflicts.is_empty());
     let mut only_new = new.clone();
     only_new["evidence"].as_array_mut().unwrap().remove(1);
+    let repaired = finish(output(vec![only_new], None));
+    assert_eq!(repaired.status, RecallStatus::Answered);
+    assert_eq!(repaired.facts[0].evidence.len(), 2);
     let mut only_old = new;
     only_old["evidence"].as_array_mut().unwrap().remove(0);
-    for bad in [only_new, only_old] {
-        let result = finish(output(vec![bad], None));
-        assert_eq!(result.status, RecallStatus::Degraded);
-        assert!(result.facts.is_empty());
-    }
+    let result = finish(output(vec![only_old], None));
+    assert_eq!(result.status, RecallStatus::Degraded);
+    assert!(result.facts.is_empty());
 }
 
 #[test]

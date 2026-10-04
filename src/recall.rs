@@ -94,9 +94,22 @@ impl Assembly {
         store: &SqliteMemoryStore,
         response: Result<&str, JudgmentFailure>,
     ) -> PersistenceResult<RecallOutput> {
+        self.finish_r4_with_audit(store, response)
+            .map(|(output, _)| output)
+    }
+
+    /// 与模型运行时共用补入/核验边界；审计只在内存保留。
+    pub fn finish_r4_with_audit(
+        self,
+        store: &SqliteMemoryStore,
+        response: Result<&str, JudgmentFailure>,
+    ) -> PersistenceResult<(RecallOutput, Option<r4::OutputAudit>)> {
         if self.plan.need() == R1Need::ContextOnly {
-            return self.finish_skipped(store, SkipReason::ContextOnly);
+            return self
+                .finish_skipped(store, SkipReason::ContextOnly)
+                .map(|out| (out, None));
         }
+        let source_state = store.read()?;
         let context = r4::Context {
             evidence: &self.evidence,
             plan: &self.plan,
@@ -104,10 +117,26 @@ impl Assembly {
             utc_offset_seconds: self.utc_offset_seconds,
             source_dates: &self.source_dates,
         };
+        let mut audit = response.ok().map(|text| r4::OutputAudit {
+            raw_output: text.into(),
+            final_output: None,
+        });
         let result = response.and_then(|text| {
-            r4::decode(text)
-                .and_then(|output| r4::evaluate(output, &context))
-                .map_err(|_| JudgmentFailure::InvalidOutput)
+            let raw = r4::decode(text).map_err(|_| JudgmentFailure::InvalidOutput)?;
+            let final_output = r4::assemble_old_basis(&raw, &context, &|id| {
+                source_state
+                    .sources
+                    .values()
+                    .find(|source| source.id == id)
+                    .filter(|source| source.enrichment != "deleted")
+                    .and_then(crate::lexical::body)
+                    .map(str::to_owned)
+            });
+            audit.as_mut().unwrap().final_output = Some(final_output.clone());
+            let evaluated =
+                r4::evaluate(final_output, &context).map_err(|_| JudgmentFailure::InvalidOutput)?;
+            audit.as_mut().unwrap().final_output = Some(evaluated.output.clone());
+            Ok(evaluated)
         });
         let mut reasons: Vec<String> = self
             .plan
@@ -173,23 +202,26 @@ impl Assembly {
         };
         // 包含计算/判断所用来源日期与终止元数据的快照也必须仍有效。
         self.check_snapshot(store)?;
-        Ok(RecallOutput {
-            version: "recall.v3".into(),
-            request: self.request,
-            status,
-            current_message: self.evidence.current_message,
-            records: self.evidence.records,
-            raw: self.evidence.raw,
-            facts,
-            computed,
-            history,
-            conflicts,
-            clarification,
-            semantic_judgment: semantic,
-            completeness: self.evidence.completeness,
-            degraded_reasons: reasons,
-            snapshot: self.snapshot,
-        })
+        Ok((
+            RecallOutput {
+                version: "recall.v3".into(),
+                request: self.request,
+                status,
+                current_message: self.evidence.current_message,
+                records: self.evidence.records,
+                raw: self.evidence.raw,
+                facts,
+                computed,
+                history,
+                conflicts,
+                clarification,
+                semantic_judgment: semantic,
+                completeness: self.evidence.completeness,
+                degraded_reasons: reasons,
+                snapshot: self.snapshot,
+            },
+            audit,
+        ))
     }
 
     fn fact(&self, f: FactView) -> RecallFact {
@@ -517,7 +549,8 @@ fn record_in_scope(state: &PersistedMemoryState, memory: &Memory, request: &Requ
         crate::w5_record_contract(state, memory.id).is_none_or(|c| match c.source {
             SourceRef::Stored { source_id } => state
                 .sources
-                .get(&source_id)
+                .values()
+                .find(|source| source.id == source_id)
                 .is_some_and(|s| source_in_task(s, request)),
             SourceRef::Current {} => false,
         });
@@ -799,11 +832,18 @@ pub fn assemble(
         .filter_map(|id| projection(&state, id))
         .collect();
     let valid_evidence = |e: &EvidenceRef| match &e.source {
-        SourceRef::Stored { source_id } => state.sources.get(source_id).is_some_and(|s| {
-            source_in_task(s, request)
-                && crate::contract::locate_quote(crate::lexical::body(s).unwrap(), &e.quote.text)
+        SourceRef::Stored { source_id } => state
+            .sources
+            .values()
+            .find(|source| source.id == *source_id)
+            .is_some_and(|s| {
+                source_in_task(s, request)
+                    && crate::contract::locate_quote(
+                        crate::lexical::body(s).unwrap(),
+                        &e.quote.text,
+                    )
                     .is_some()
-        }),
+            }),
         SourceRef::Current {} => false,
     };
     for view in &mut views {

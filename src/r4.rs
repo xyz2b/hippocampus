@@ -45,6 +45,15 @@ pub struct Evaluated {
     pub compute_insufficient: bool,
 }
 
+/// 仅留在进程内与显式评测报告中；不向冻结回执增加字段，也不保存查询原文到数据库。
+#[derive(Clone, Debug, PartialEq)]
+pub struct OutputAudit {
+    /// 模型返回的原始字节文本，包括无法解码的输出。
+    pub raw_output: String,
+    /// 解码后组装结果；核验成功时为恢复原文后的规范结果，否则保留待核验结果。
+    pub final_output: Option<R4Output>,
+}
+
 fn nonblank(value: &serde_json::Value) -> bool {
     match value {
         serde_json::Value::String(s) => !s.trim().is_empty(),
@@ -83,6 +92,66 @@ pub(crate) fn supports_record(evidence: &EvidenceRef, record: &RecordView) -> bo
     record_evidence(record).iter().any(|e| {
         e.source == evidence.source && locate_quote(&e.quote.text, &evidence.quote.text).is_some()
     })
+}
+
+/// Z18：只补模型明确选定、包内旧记录的真实引用；核验本身仍保持严格。
+/// text_of 由调用方提供仍存在且获准访问的来源正文，不以记录自带 Quote 证明自身。
+pub fn assemble_old_basis(
+    output: &R4Output,
+    ctx: &Context<'_>,
+    text_of: &dyn Fn(&str) -> Option<String>,
+) -> R4Output {
+    let mut assembled = output.clone();
+    for fact in &mut assembled.facts {
+        if fact.supersedes_record_ids.is_empty() {
+            continue;
+        }
+        let targets: Option<Vec<_>> = fact
+            .supersedes_record_ids
+            .iter()
+            .map(|id| {
+                ctx.evidence
+                    .records
+                    .iter()
+                    .find(|record| record.id() == *id)
+            })
+            .collect();
+        let Some(targets) = targets else { continue };
+        let mut original = fact.evidence.clone();
+        // 不借补入修复无效原引用、其他记录依据缺失，或缺失的新方依据。
+        if ctx.refs(&mut original, "evidence").is_err()
+            || fact.record_ids.iter().any(|id| {
+                ctx.evidence
+                    .records
+                    .iter()
+                    .find(|r| r.id() == *id)
+                    .is_none_or(|r| !original.iter().any(|e| supports_record(e, r)))
+            })
+            || !original
+                .iter()
+                .any(|e| !targets.iter().any(|r| supports_record(e, r)))
+        {
+            continue;
+        }
+        for record in &ctx.evidence.records {
+            if !fact.supersedes_record_ids.contains(&record.id())
+                || original.iter().any(|e| supports_record(e, record))
+            {
+                continue;
+            }
+            if let Some(evidence) = record_evidence(record).iter().find(|e| {
+                let SourceRef::Stored { source_id } = &e.source else {
+                    return false;
+                };
+                !e.quote.text.trim().is_empty()
+                    && text_of(source_id).is_some_and(|text| text.contains(&e.quote.text))
+            }) {
+                fact.evidence.push(evidence.clone());
+                original.push(evidence.clone());
+            }
+        }
+    }
+    assembled
 }
 
 impl Context<'_> {

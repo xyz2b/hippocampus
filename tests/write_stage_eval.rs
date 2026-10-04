@@ -680,7 +680,7 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         "w1" => score_w1(sample, text, &mut fields),
         "w3" => score_w3(sample, text, &mut fields).map(|_| Value::Null),
         "w4" => score_w4(sample, text, &mut fields).map(|_| Value::Null),
-        "r1" | "r4" => recall_adapter::score(stage, sample, text, &mut fields).map(|_| Value::Null),
+        "r1" | "r4" => recall_adapter::score(stage, sample, text, &mut fields),
         _ => unreachable!(),
     });
     if let Some(Err(error)) = &result {
@@ -715,7 +715,11 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         report["raw"] = text
             .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
             .unwrap_or(Value::Null);
-        report["w2_final"] = result.and_then(Result::ok).unwrap_or(Value::Null);
+        report["w2_final"] = result
+            .as_ref()
+            .and_then(|r| r.as_ref().ok())
+            .cloned()
+            .unwrap_or(Value::Null);
     }
     if matches!(stage, "r1" | "r4") {
         report["raw_output"] = text
@@ -723,24 +727,37 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             .unwrap_or(Value::Null);
         report["manual_review"] = json!({"must_not":"pending","unlabelled_semantics":"pending"});
     }
+    if stage == "r4" {
+        report["validated_output"] = result
+            .as_ref()
+            .and_then(|r| r.as_ref().ok())
+            .cloned()
+            .unwrap_or(Value::Null);
+    }
     report
 }
 
 fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     let raw = score_raw(stage, sample, text);
-    if stage != "w4" || text.is_none() {
+    if !matches!(stage, "w4" | "r4") || text.is_none() {
         return raw;
     }
-    let assembled = serde_json::from_str::<W4Output>(text.unwrap())
-        .map_err(|e| e.to_string())
-        .and_then(|output| {
-            let input: W4Input =
-                serde_json::from_value(sample["input"].clone()).map_err(|e| e.to_string())?;
-            w4::assemble_new_basis(&input, &output, &|id| {
-                sample["sources"][id]["text"].as_str().map(str::to_owned)
-            })
+    let assembled = if stage == "r4" {
+        recall_adapter::assemble_r4(sample, text.unwrap())
+            .and_then(|output| serde_json::to_value(output).map_err(|e| e.to_string()))
+    } else {
+        serde_json::from_str::<W4Output>(text.unwrap())
             .map_err(|e| e.to_string())
-        });
+            .and_then(|output| {
+                let input: W4Input =
+                    serde_json::from_value(sample["input"].clone()).map_err(|e| e.to_string())?;
+                w4::assemble_new_basis(&input, &output, &|id| {
+                    sample["sources"][id]["text"].as_str().map(str::to_owned)
+                })
+                .map_err(|e| e.to_string())
+            })
+            .and_then(|output| serde_json::to_value(output).map_err(|e| e.to_string()))
+    };
     let mut report = match &assembled {
         Ok(output) => score_raw(stage, sample, Some(&serde_json::to_string(output).unwrap())),
         Err(error) => {
@@ -748,17 +765,23 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             let fields = report["fields"].as_array_mut().unwrap();
             check(fields, "assembly", json!(true), json!(error), false);
             report["categories"] = categories(fields);
-            report["status"] = json!("失败");
+            if report["status"] != "输入无效" {
+                report["status"] = json!("失败");
+            }
             report
         }
     };
     report["final_result"] = json!({"status":report["status"],"fields":report["fields"],"categories":report["categories"]});
     report["raw_result"] = raw;
     report["raw_output"] = serde_json::from_str(text.unwrap()).unwrap_or(json!(text.unwrap()));
-    report["final_output"] = assembled
-        .ok()
-        .map(|o| serde_json::to_value(o).unwrap())
-        .unwrap_or(Value::Null);
+    report["final_output"] = if stage == "r4" && !report["validated_output"].is_null() {
+        report["validated_output"].clone()
+    } else {
+        assembled.unwrap_or(Value::Null)
+    };
+    if stage == "r4" {
+        report["raw_output_text"] = json!(text.unwrap());
+    }
     report
 }
 
@@ -1338,7 +1361,29 @@ fn evaluate(
         result["request"] = fingerprint(&case.request);
         results.push(result);
     }
-    let summary: Vec<_> = ["w1", "w3", "w4", "r1", "r4"].into_iter()
+    let summary = stage_summaries(&results, cases);
+    let raw_results: Vec<_> = results
+        .iter()
+        .map(|r| {
+            let mut row = r.clone();
+            if let Some(raw) = r.get("raw_result") {
+                for key in ["status", "fields", "categories"] {
+                    row[key] = raw[key].clone();
+                }
+            }
+            row
+        })
+        .collect();
+    Ok(
+        json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
+            "reasoning_effort":cases.first().map(|c|c.model.effort),"metrics":stage_metrics(&results),
+            "raw_summary":stage_summaries(&raw_results,cases),"raw_splits":split_reports(&raw_results),
+            "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
+    )
+}
+
+fn stage_summaries(results: &[Value], cases: &[Case]) -> Vec<Value> {
+    ["w1", "w3", "w4", "r1", "r4"].into_iter()
         .filter(|stage| !stage.starts_with('r') || cases.iter().any(|c|c.stage==*stage)).map(|stage| {
         let rows: Vec<_> = results.iter().filter(|r| r["stage"] == stage).collect();
         let count = |status| rows.iter().filter(|r| r["status"] == status).count();
@@ -1346,12 +1391,7 @@ fn evaluate(
             "evaluated": count("通过") + count("失败"), "failed": count("失败") + count("调用失败"),
             "missing": count("未录制"), "stale": count("录制过期"), "invalid_input": count("输入无效"),
             "draft": rows.iter().filter(|r| r["label_status"] == "draft").count()})
-    }).collect();
-    Ok(
-        json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
-            "reasoning_effort":cases.first().map(|c|c.model.effort),"metrics":stage_metrics(&results),
-            "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
-    )
+    }).collect()
 }
 
 fn stage_metrics(results: &[Value]) -> Vec<Value> {
@@ -2976,6 +3016,86 @@ fn r4_reports_validation_rules_and_fields_without_changing_production_errors() {
         report["fields"][0]["actual"],
         json!({"code":"model_invalid_output","rule":"record_basis","field":"facts[0].supersedes_record_ids[0]","cause":null})
     );
+}
+
+#[test]
+fn r4_assembly_reports_strict_raw_and_final_scores_and_replays_identically() {
+    let sample = samples("r4")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("r4_04_"))
+        .unwrap();
+    let mut missing = fake_r4(&sample);
+    missing["facts"][0]["supersedes_record_ids"] = json!([4]);
+    let raw = format!(" \n{}\n ", missing);
+    let row = score("r4", &sample, Some(&raw));
+    assert_eq!(row["raw_result"]["status"], "失败");
+    assert_eq!(
+        row["raw_result"]["fields"][0]["actual"]["rule"],
+        "record_basis"
+    );
+    assert_eq!(row["final_result"]["status"], "通过");
+    assert_eq!(row["raw_output_text"], raw);
+    assert_eq!(
+        row["raw_output"]["facts"][0]["evidence"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        row["final_output"]["facts"][0]["evidence"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    for (pointer, value, count, rule) in [
+        (
+            "/facts/0/evidence/0/quote/text",
+            json!("不在原文的引用"),
+            1,
+            "quote_or_source",
+        ),
+        (
+            "/facts/0/conditions",
+            json!([{"quote":{"text":"不在原文的条件"},"resolved":true}]),
+            2,
+            "qualifier_source",
+        ),
+    ] {
+        let mut bad = missing.clone();
+        *bad.pointer_mut(pointer).unwrap() = value;
+        let row = score("r4", &sample, Some(&bad.to_string()));
+        assert_eq!(row["final_result"]["status"], "失败");
+        assert_eq!(row["final_result"]["fields"][0]["actual"]["rule"], rule);
+        assert_eq!(
+            row["final_output"]["facts"][0]["evidence"]
+                .as_array()
+                .unwrap()
+                .len(),
+            count
+        );
+    }
+    let dir = TempRecords::new();
+    let cases = plan(vec![("r4".into(), sample.clone())], &dir.0).unwrap();
+    let first = evaluate(&cases, Some(1), &mut |_| Ok(fake_envelope(missing.clone()))).unwrap();
+    assert_eq!(
+        first["raw_summary"].as_array().unwrap().last().unwrap()["passed"],
+        0
+    );
+    assert_eq!(
+        first["summary"].as_array().unwrap().last().unwrap()["passed"],
+        1
+    );
+    let replay = plan(vec![("r4".into(), sample)], &dir.0).unwrap();
+    let replay = evaluate(&replay, None, &mut |_| {
+        panic!("offline replay must not send")
+    })
+    .unwrap();
+    assert_eq!(replay["sent_calls"], 0);
+    for key in ["raw_summary", "summary", "raw_splits", "splits", "results"] {
+        assert_eq!(first[key], replay[key], "{key}");
+    }
 }
 
 #[test]

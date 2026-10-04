@@ -125,6 +125,7 @@ pub struct R4Input {
     pub plan: r1::Plan,
     pub evidence: RecallEvidence,
     pub source_dates: BTreeMap<String, String>,
+    pub source_texts: BTreeMap<String, String>,
 }
 impl R4Input {
     pub fn new(input: &Value) -> Result<Self, String> {
@@ -164,6 +165,7 @@ impl R4Input {
             return Err("sample_input_rejected: R1 plan".into());
         }
         let mut source_dates = BTreeMap::new();
+        let mut source_texts = BTreeMap::new();
         let mut records = vec![];
         for r in items(&input["records"]) {
             let id = MemoryId(r["id"].as_u64().ok_or("record id")?);
@@ -174,6 +176,7 @@ impl R4Input {
                 .as_str()
                 .map(|id| {
                     source_dates.insert(id.into(), said_on.clone());
+                    source_texts.insert(id.into(), text.into());
                     vec![EvidenceRef {
                         source: SourceRef::Stored {
                             source_id: id.into(),
@@ -285,6 +288,10 @@ impl R4Input {
                 let said_on = r["said_on"].as_str().ok_or("raw date")?.to_owned();
                 day_at(&said_on)?;
                 source_dates.insert(source_id.clone(), said_on.clone());
+                source_texts.insert(
+                    source_id.clone(),
+                    r["text"].as_str().ok_or("raw text")?.into(),
+                );
                 Ok(RawEvidence {
                     source_id,
                     quote: Quote {
@@ -363,8 +370,29 @@ impl R4Input {
             plan,
             evidence,
             source_dates,
+            source_texts,
         })
     }
+}
+
+pub fn assemble_r4(sample: &Value, text: &str) -> Result<R4Output, String> {
+    let f = R4Input::new(&sample["input"])?;
+    let output = r4::decode_detailed(text).map_err(diagnostic)?;
+    Ok(r4::assemble_old_basis(
+        &output,
+        &r4::Context {
+            evidence: &f.evidence,
+            plan: &f.plan,
+            request: &f.request,
+            utc_offset_seconds: 28_800,
+            source_dates: &f.source_dates,
+        },
+        &|id| f.source_texts.get(id).cloned(),
+    ))
+}
+
+fn diagnostic(d: r4::ValidationDiagnostic) -> String {
+    json!({"code":d.error.to_string(),"rule":d.error.0,"field":d.field,"cause":d.cause}).to_string()
 }
 
 pub fn score(
@@ -372,7 +400,7 @@ pub fn score(
     sample: &Value,
     text: &str,
     fields: &mut Vec<Value>,
-) -> Result<(), String> {
+) -> Result<Value, String> {
     if stage == "r1" {
         let input = &sample["input"];
         let entities = entities(input);
@@ -401,14 +429,11 @@ pub fn score(
                 compare(fields, key, expected, &actual[key]);
             }
         }
+        Ok(Value::Null)
     } else {
         let f = R4Input::new(&sample["input"])?;
-        let invalid = |d: r4::ValidationDiagnostic| {
-            json!({"code":d.error.to_string(),"rule":d.error.0,"field":d.field,"cause":d.cause})
-                .to_string()
-        };
         let evaluated = r4::evaluate_detailed(
-            r4::decode_detailed(text).map_err(invalid)?,
+            r4::decode_detailed(text).map_err(diagnostic)?,
             &r4::Context {
                 evidence: &f.evidence,
                 plan: &f.plan,
@@ -417,7 +442,7 @@ pub fn score(
                 source_dates: &f.source_dates,
             },
         )
-        .map_err(invalid)?;
+        .map_err(diagnostic)?;
         let actual = serde_json::to_value(&evaluated.output).unwrap();
         compare(
             fields,
@@ -527,6 +552,6 @@ pub fn score(
                 }
             }
         }
+        Ok(actual)
     }
-    Ok(())
 }
