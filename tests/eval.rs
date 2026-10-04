@@ -63,6 +63,9 @@ const QUICK: &[&str] = &[
 /// `observed_at` per message and `at` per question (Unix seconds).
 const CLOCK: i64 = 1_790_568_000;
 
+#[path = "eval/v3.rs"]
+mod v3;
+
 #[derive(Default)]
 struct Replay {
     /// Loopback address; each case calls `http://{address}/v1/case/{case_id}`.
@@ -112,6 +115,11 @@ struct Row {
 
 #[test]
 fn resident_eval_suite() {
+    match std::env::var("EVAL_PIPELINE").as_deref() {
+        Ok("v3") => return v3::run(),
+        Ok("legacy") | Err(_) => {}
+        Ok(other) => panic!("unknown EVAL_PIPELINE: {other}"),
+    }
     let replay = serve_replay();
     // EVAL_CASES=s6_,lme_0862 runs only case files whose names start with one of the prefixes;
     // EVAL_CASES=quick runs the QUICK tier.
