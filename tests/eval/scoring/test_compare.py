@@ -1,5 +1,10 @@
 """Report tests use labelled adapter fixtures, never claim they are model recordings."""
 import copy
+import json
+import pathlib
+import subprocess
+import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -96,6 +101,44 @@ class EndToEndReport(unittest.TestCase):
         self.assertEqual(metrics["stages"]["R4"]["diagnostics"],[])
         self.assertEqual(metrics["runtime_diagnostics"][0]["error"],"attempt_failed")
         self.assertIn("max_output_tokens",compare.render(report))
+
+    def test_interrupted_send_log_reports_counts_without_completed_run(self):
+        with tempfile.TemporaryDirectory(prefix="eval-send-report-") as directory:
+            root=pathlib.Path(directory)
+            (root/"runs").mkdir()
+            path=root/"runs"/"run-a.json"
+            attempts=[{"id":i,"case":"case","operation":"write:m1","position":i,
+                       "stage":"w1_v1","state":"started","request":f"fp-{i}"} for i in range(2)]
+            log={"version":"eval.e2e.sends@1","run_id":"run-a","attempts":attempts,
+                 "proxy_errors":[{"case":"case","error":"response write failed"}]}
+            path.write_text(json.dumps(log))
+            # First recording reached disk; its journal completion did not. The second
+            # row belongs to another send, so it cannot close this run's in-flight entry.
+            (root/"case.json").write_text(json.dumps({"operations":{"write:m1":[
+                {"request":"fp-0","send_run":"run-a","send_index":0},
+                {"request":"fp-1","send_run":"another-run","send_index":1}]}}))
+            recovered=compare.load_send_log(path)
+            self.assertEqual([a["state"] for a in recovered["attempts"]],["recorded","started"])
+            self.assertEqual(json.loads(path.read_text())["attempts"][0]["state"],"started")
+            prefix=root/"report"
+            cli=subprocess.run([sys.executable,str(pathlib.Path(compare.__file__)),"--send-log",str(path),
+                                "--output",str(prefix)],capture_output=True,text=True)
+            self.assertEqual(cli.returncode,0,cli.stderr)
+            report=json.loads(prefix.with_suffix(".json").read_text())
+            self.assertEqual(report["execution"]["real_calls"],2)
+            self.assertEqual(report["execution"]["recorded_calls"],1)
+            self.assertEqual(len(report["execution"]["uncompleted_calls"]),1)
+            self.assertEqual(report["absolute_summary"]["not_recorded"],63)
+            text=prefix.with_suffix(".md").read_text()
+            self.assertIn("未完成或未落盘 1",text)
+            self.assertIn("response write failed",text)
+            self.assertIn("不能证明远端收到",text)
+            run_path=root/"run.json"
+            run_path.write_text(json.dumps({"run_id":"another-run","cases":[]}))
+            wrong=subprocess.run([sys.executable,str(pathlib.Path(compare.__file__)),"--run",str(run_path),
+                                  "--send-log",str(path),"--output",str(prefix)],capture_output=True,text=True)
+            self.assertNotEqual(wrong.returncode,0)
+            self.assertIn("不是同一次运行",wrong.stderr)
 
 
 if __name__ == "__main__":

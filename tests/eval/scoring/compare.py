@@ -21,6 +21,26 @@ CLOCK = 1_790_568_000
 STAGES = ("W1", "W3", "W4", "R1", "R4")
 
 
+def load_send_log(path):
+    """Recover counts without run.json completion; recordings close the final fsync window."""
+    log = trial._load(path)
+    if log.get("version") != "eval.e2e.sends@1":
+        raise ValueError("unknown send log version")
+    for attempt in log["attempts"]:
+        if attempt["state"] != "started":
+            continue
+        recording_path = path.parent.parent / (attempt["case"] + ".json")
+        try:
+            doc = trial._load(recording_path)
+            row = doc["operations"][attempt["operation"]][attempt["position"]]
+            if (row.get("send_run") == log["run_id"] and row.get("send_index") == attempt["id"]
+                    and row.get("request") == attempt["request"]):
+                attempt["state"] = "recorded"
+        except (OSError, ValueError, KeyError, IndexError, TypeError):
+            pass
+    return log
+
+
 def trusted_question(question):
     q = copy.deepcopy(question)
     if q.get("at") is None:
@@ -93,8 +113,15 @@ def execution(document):
                                 "degraded_reasons": body.get("degraded_reasons")})
         cases.append({"case": case["case"], "elapsed_ms": case.get("elapsed_ms"),
                       "stages": stages, "runtime_diagnostics": runtime})
+    log = document.get("send_accounting")
+    attempts = log["attempts"] if log else []
     return {"jobs": document.get("jobs"), "elapsed_ms": document.get("elapsed_ms"),
-            "real_calls": document.get("real_calls", 0), "cases": cases}
+            "real_calls": len(attempts) if log else document.get("real_calls", 0),
+            "recorded_calls": sum(a["state"] == "recorded" for a in attempts) if log else None,
+            "uncompleted_calls": [a for a in attempts if a["state"] != "recorded"],
+            "send_log_available": log is not None,
+            "send_log": document.get("send_log"),
+            "proxy_errors": log.get("proxy_errors", []) if log else [], "cases": cases}
 
 
 def reference(questions, ledger):
@@ -190,8 +217,15 @@ def render(report):
         lines.append(f"| {row['question']} | {row['absolute']} | {count} | {detail} |")
     metrics = report["execution"]
     lines += ["", "## 调用与耗时", "", f"EVAL_JOBS={metrics['jobs']}；本轮真实发送 {metrics['real_calls']}；批次墙钟 {metrics['elapsed_ms']} ms。", "",
-              "当前耗时为本轮处理时间；历史录制耗时在回放时仍保留，两者分列。回放 usage 是历史账单，不是本轮费用。", "",
-              "| 用例 | 用例墙钟 ms | 阶段 | 请求/发送/回放/未录制 | 当前耗时 ms | 历史录制耗时 ms | usage 输入/输出 | 失败诊断 |", "|---|---|---|---|---|---|---|---|"]
+              (f"已落盘调用 {metrics['recorded_calls']}；未完成或未落盘 {len(metrics['uncompleted_calls'])}。发送日志：{metrics['send_log']}。"
+               if metrics["send_log_available"] else "没有发送日志；未完成调用数未知。"), "",
+              "发送前持久化计数；中断时的未完成项保守计入，可能在途或已计费，不能证明远端收到或具体账单。", "",
+              "当前耗时为本轮处理时间；历史录制耗时在回放时仍保留，两者分列。回放 usage 是历史账单，不是本轮费用。", ""]
+    for attempt in metrics["uncompleted_calls"]:
+        lines.append(f"- 未完成/未落盘：{attempt['case']} / {attempt['operation']} / {attempt['stage']} / 发送编号 {attempt['id']}")
+    for diagnostic in metrics["proxy_errors"]:
+        lines.append(f"- 代理诊断：{json.dumps(diagnostic, ensure_ascii=False)}")
+    lines += ["", "| 用例 | 用例墙钟 ms | 阶段 | 请求/发送/回放/未录制 | 当前耗时 ms | 历史录制耗时 ms | usage 输入/输出 | 失败诊断 |", "|---|---|---|---|---|---|---|---|"]
     for case in metrics["cases"]:
         for stage, stats in case["stages"].items():
             usage = stats["usage"]
@@ -217,9 +251,20 @@ def render(report):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run", type=pathlib.Path, help="不存在的文件明确报告未录制")
+    parser.add_argument("--send-log", type=pathlib.Path, help="指定本次发送日志，含中断时的未完成调用")
     parser.add_argument("--output", type=pathlib.Path, required=True)
     args = parser.parse_args()
-    report = run(trial._load(args.run) if args.run and args.run.exists() else None)
+    document = trial._load(args.run) if args.run and args.run.exists() else {"cases": []}
+    log_path = args.send_log or (pathlib.Path(document["send_log"]) if document.get("send_log") else None)
+    if log_path and log_path.exists():
+        log = load_send_log(log_path)
+        if document.get("run_id") and document["run_id"] != log["run_id"]:
+            parser.error("run.json 与发送日志不是同一次运行；省略 --run 可仅核对发送数")
+        document["send_accounting"] = log
+        document["send_log"] = str(log_path)
+    elif args.send_log:
+        parser.error("发送日志不存在")
+    report = run(document)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.with_suffix(".json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     args.output.with_suffix(".md").write_text(render(report))

@@ -19,7 +19,8 @@ python3 tests/eval/scoring/compare.py \
   --output /tmp/eval-v3-common
 
 # 相关离线测试（端口测试需支持本机 loopback 的环境）。
-cargo test --test eval v3_ -- --skip v3_production_http_roundtrip_uses_all_five_stages
+cargo test --test eval v3_ -- --skip v3_production_http_roundtrip_uses_all_five_stages \
+  --skip v3_nonblocking_listener_reads_delayed_request_without_panicking
 python3 -m unittest discover -s tests/eval/scoring -v
 ```
 
@@ -37,9 +38,12 @@ W1 → W2 → W3 → assemble → 条件性 W4 → validate/plan/commit/finish�
 
 录制单独存入 `tests/eval/end_to_end/ac1-pro-medium-flash-medium-pro-minimal/<case>.json`。
 `EVAL_V3_DIR` 可指定其他配置目录，`EVAL_V3_OUTPUT` 可指定运行输出（缺省该目录/run.json）。
+每次真实调用完成（含 HTTP/传输失败）立即原子写入 `<case>.json`，文件同步后才向生产客户端返回。
 每个用例完成即独立原子写入 `<输出名>.cases/<case>.json`（缺省 `run.cases/`），
 所有用例结束后写汇总；迟到响应收齐后仅补齐诊断，不改生产运行当时的结果。
-录制仍按用例写入 `<case>.json`，不同用例不共用临时文件或运行时。
+录制文件按用例聚合，逐调用写入；不同用例不共用临时文件或运行时。
+监听端口非阻塞以支持停止，accept 的连接显式改为阻塞；代理解析、读写与落盘错误返回 503，
+同时写入发送日志的 proxy_errors。客户端断开不撤回已落盘响应。
 目录内 configuration 必须匹配，不能混用配置标签。原 cases/*.json 永不写入。
 请求指纹是完整生产请求的 SHA-256，包含提示词、schema、时钟、预算、模型路由和推理强度；
 唯一规范化项是结构中的运行时来源 ID ↔ 稳定消息 ID。原文/值/引用文字绝不替换，
@@ -59,6 +63,22 @@ EVAL_PIPELINE=v3 EVAL_JOBS=8 EVAL_RECORD=703 cargo test --test eval resident_eva
 预检不扣除已有录制，因为请求与分支只有运行时才能严格核对；实际仅缺失/过期请求消耗额度。
 额度为所有线程共享的全局计数器，每次发送前在锁内预留一次；耗尽即拒绝本次发送并记录原因，
 失败也占额度，回放不占额度。不对各用例分别授予完整 `EVAL_RECORD`。
+每次运行打印独立的 `runs/<run_id>.json` 路径；每次发送前把 started 记录原子写入并同步，
+计数落盘失败则不发送。响应录制成功后标为 recorded。启动时先写 run.json 入口，
+因此即使用例尚未完成就中断，也能生成调用报告。日志不存密钥或认证头。
+中断后使用相同录制目录重跑：严格按原请求指纹复用已落盘响应，不重复发送；
+只为缺失/过期响应消耗本次新额度，不自动重试已录制失败。重跑真实调用仍须批准额度。
+已发送但未完成/未落盘的项单列；本地落盘与远端接收不能原子完成，started 项保守计入，
+可能在途或已计费，不能据此证明远端收到或具体费用。
+
+```sh
+# 中断后：run.json 自动定位本次发送日志；未完成题仍为未录制。
+python3 tests/eval/scoring/compare.py --run <run.json> --output /tmp/eval-interrupted
+# run.json 缺失时，指定启动时打印的日志；不要混用其他运行的问答结果。
+python3 tests/eval/scoring/compare.py --send-log <runs/run_id.json> --output /tmp/eval-interrupted
+```
+
+报告还会核对单次录制的 send_run/send_index/请求指纹，恢复“响应已落盘、日志终态未写”的窗口。
 W1≤204、W3≤204、W4≤169、R1≤63、R4≤63，合计≤703（首条消息的空库不需要W4）。
 W4/R4“预计”是有效候选且需要判定的容量规划情景，不是从标签推断的质量/分支预测；实际可能为零。
 W1/W3/W4缺独立耗时，只以历史混合批次均值作代理；R1/R4用minimal p50。

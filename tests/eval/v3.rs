@@ -192,13 +192,20 @@ fn ids(value: &mut Value, mapping: &BTreeMap<String, String>) {
     }
 }
 
-fn normalized(request: &Value, mapping: &BTreeMap<String, String>) -> Value {
+fn normalized(request: &Value, mapping: &BTreeMap<String, String>) -> Result<Value, String> {
+    if !request.is_object() {
+        return Err("proxy request must be an object".into());
+    }
     let mut value = request.clone();
-    let mut input: Value =
-        serde_json::from_str(value["input"].as_str().expect("production JSON input")).unwrap();
+    let mut input: Value = serde_json::from_str(
+        value["input"]
+            .as_str()
+            .ok_or("proxy input must be JSON text")?,
+    )
+    .map_err(|e| format!("proxy input: {e}"))?;
     ids(&mut input, mapping);
     value["input"] = input;
-    value
+    Ok(value)
 }
 
 fn response_ids(body: &str, mapping: &BTreeMap<String, String>) -> String {
@@ -241,6 +248,8 @@ struct Recorder {
     operations: Mutex<HashMap<String, Operation>>,
     documents: Mutex<HashMap<String, Value>>,
     observations: Mutex<HashMap<String, Vec<Value>>>,
+    run_id: String,
+    send_log: Mutex<Value>,
     sent: AtomicUsize,
 }
 
@@ -248,6 +257,7 @@ impl Recorder {
     fn new(dir: PathBuf, limit: Option<u64>, live: Option<(String, String)>) -> Self {
         let mut cfg = config("configuration", "", 1);
         cfg.model_budget = None;
+        let run_id = diagnostics::new_id();
         Self {
             dir,
             configuration: serde_json::to_value(cfg).unwrap(),
@@ -256,6 +266,9 @@ impl Recorder {
             operations: Mutex::default(),
             documents: Mutex::default(),
             observations: Mutex::default(),
+            send_log: Mutex::new(json!({"version":"eval.e2e.sends@1","run_id":run_id,
+                "limit":limit,"attempts":[],"proxy_errors":[]})),
+            run_id,
             sent: AtomicUsize::new(0),
         }
     }
@@ -297,6 +310,58 @@ impl Recorder {
             .cloned()
             .unwrap_or_default()
     }
+    fn send_log_path(&self) -> PathBuf {
+        self.dir.join("runs").join(format!("{}.json", self.run_id))
+    }
+    // Persist BEFORE entering the physical send. An interrupted `started` entry is a
+    // possibly billed attempt, not proof the remote endpoint received it.
+    fn start_send(&self, mut attempt: Value) -> Result<usize, String> {
+        let mut log = self.send_log.lock().map_err(|_| "send log lock poisoned")?;
+        let mut next = log.clone();
+        let attempts = next["attempts"].as_array_mut().ok_or("invalid send log")?;
+        let id = attempts.len();
+        attempt["id"] = json!(id);
+        attempt["state"] = json!("started");
+        attempts.push(attempt);
+        try_write_json(&self.send_log_path(), &next)?;
+        *log = next;
+        self.sent.fetch_add(1, Ordering::Relaxed);
+        Ok(id)
+    }
+    fn finish_send(&self, id: usize, recording: &Value) -> Result<(), String> {
+        let mut log = self.send_log.lock().map_err(|_| "send log lock poisoned")?;
+        let mut next = log.clone();
+        let attempt = next["attempts"].get_mut(id).ok_or("send entry missing")?;
+        attempt["state"] = json!("recorded");
+        for key in [
+            "http_status",
+            "status",
+            "usage",
+            "elapsed_ms",
+            "incomplete_details",
+            "transport_error",
+        ] {
+            attempt[key] = recording[key].clone();
+        }
+        try_write_json(&self.send_log_path(), &next)?;
+        *log = next;
+        Ok(())
+    }
+    fn proxy_error(&self, case: Option<&str>, error: String) -> (u16, String) {
+        eprintln!("EVAL_PROXY_ERROR: {error}");
+        if let Ok(mut log) = self.send_log.lock() {
+            if let Some(errors) = log["proxy_errors"].as_array_mut() {
+                errors.push(json!({"case":case,"error":error}));
+            }
+            if let Err(e) = try_write_json(&self.send_log_path(), &log) {
+                eprintln!("EVAL_PROXY_DIAGNOSTIC_WRITE_FAILED: {e}");
+            }
+        }
+        (
+            503,
+            json!({"error":"eval_proxy_failed","detail":error}).to_string(),
+        )
+    }
     fn observe(
         &self,
         case: &str,
@@ -323,12 +388,14 @@ impl Recorder {
             .as_str()
             .and_then(|s| serde_json::from_str(s).ok())
             .unwrap_or_default();
-        self.observations.lock().unwrap().entry(case.into()).or_default().push(json!({
+        if let Ok(mut observations) = self.observations.lock() {
+            observations.entry(case.into()).or_default().push(json!({
             "operation":operation,"stage":stage,"origin":origin,"sends":usize::from(origin=="live"),
             "elapsed_ms":elapsed.as_millis(),"recorded_elapsed_ms":recording["elapsed_ms"],
             "http_status":recording["http_status"],"response_status":body["status"],"usage":body["usage"],
             "incomplete_details":body["incomplete_details"],"transport_error":recording["transport_error"],
             "error":body["error"],"reason":reason}));
+        }
     }
     /// Inject the *send* only in harness unit tests; production requests are never constructed here.
     fn respond(
@@ -337,23 +404,56 @@ impl Recorder {
         request: &Value,
         send: impl FnOnce() -> Result<(u16, String), String>,
     ) -> (u16, String) {
+        match self.try_respond(case, request, send) {
+            Ok(response) => response,
+            Err(error) => {
+                if let Ok(mut ops) = self.operations.lock()
+                    && let Some(op) = ops.get_mut(case)
+                {
+                    op.missing = Some(format!("代理错误：{error}"));
+                }
+                self.proxy_error(Some(case), error)
+            }
+        }
+    }
+    fn try_respond(
+        &self,
+        case: &str,
+        request: &Value,
+        send: impl FnOnce() -> Result<(u16, String), String>,
+    ) -> Result<(u16, String), String> {
         let handling = Instant::now();
         let (operation, position, mapping) = {
-            let mut ops = self.operations.lock().unwrap();
-            let op = ops.get_mut(case).unwrap();
+            let mut ops = self
+                .operations
+                .lock()
+                .map_err(|_| "operation lock poisoned")?;
+            let op = ops
+                .get_mut(case)
+                .ok_or("proxy case has no active operation")?;
             let result = (op.id.clone(), op.position, op.ids.clone());
             op.position += 1;
             result
         };
-        let canonical = normalized(request, &mapping);
+        let canonical = normalized(request, &mapping)?;
         let fp = recall_models::fingerprint(&canonical);
         let reverse = mapping
             .iter()
             .map(|(a, b)| (b.clone(), a.clone()))
             .collect();
-        let saved =
-            self.documents.lock().unwrap()[case]["operations"][&operation][position].clone();
+        let saved = self
+            .documents
+            .lock()
+            .map_err(|_| "recording lock poisoned")?
+            .get(case)
+            .ok_or("proxy case has no recording document")?["operations"][&operation][position]
+            .clone();
         if saved["request"] == fp {
+            let status = saved["http_status"]
+                .as_u64()
+                .and_then(|s| u16::try_from(s).ok())
+                .ok_or("invalid recorded HTTP status")?;
+            let body = saved["body"].as_str().ok_or("invalid recorded body")?;
             self.observe(
                 case,
                 &operation,
@@ -363,25 +463,27 @@ impl Recorder {
                 handling.elapsed(),
                 None,
             );
-            return (
-                saved["http_status"].as_u64().unwrap() as u16,
-                response_ids(saved["body"].as_str().unwrap(), &reverse),
-            );
+            return Ok((status, response_ids(body, &reverse)));
         }
         // One global reservation, made under the lock BEFORE invoking the send closure.
         // Replays never reserve. Even concurrent failures consume their reserved attempt.
-        let (allowed, exhausted) = {
-            let mut limit = self.allowance.lock().unwrap();
+        let (send_id, exhausted) = {
+            let mut limit = self
+                .allowance
+                .lock()
+                .map_err(|_| "allowance lock poisoned")?;
             match limit.as_mut() {
                 Some(n) if *n > 0 => {
+                    let id = self.start_send(json!({"case":case,"operation":operation,"position":position,
+                        "stage":request.pointer("/text/format/name"),"request":fp,"endpoint":request["model"]}))?;
                     *n -= 1;
-                    (true, false)
+                    (Some(id), false)
                 }
-                Some(_) => (false, true),
-                None => (false, false),
+                Some(_) => (None, true),
+                None => (None, false),
             }
         };
-        if !allowed {
+        let Some(send_id) = send_id else {
             let reason = if exhausted {
                 "额度耗尽（EVAL_RECORD）"
             } else if saved.is_null() {
@@ -391,9 +493,9 @@ impl Recorder {
             };
             self.operations
                 .lock()
-                .unwrap()
+                .map_err(|_| "operation lock poisoned")?
                 .get_mut(case)
-                .unwrap()
+                .ok_or("proxy case has no active operation")?
                 .missing = Some(reason.into());
             self.observe(
                 case,
@@ -404,9 +506,8 @@ impl Recorder {
                 handling.elapsed(),
                 Some(reason),
             );
-            return (503, json!({"error":reason}).to_string());
-        }
-        self.sent.fetch_add(1, Ordering::Relaxed);
+            return Ok((503, json!({"error":reason}).to_string()));
+        };
         let started = Instant::now();
         let (status, body, failure) = match send() {
             Ok((s, b)) => (s, b, None),
@@ -418,6 +519,7 @@ impl Recorder {
         };
         let envelope: Value = serde_json::from_str(&body).unwrap_or_default();
         let recording = json!({"schema":request.pointer("/text/format/name"),"endpoint":request["model"],
+            "send_run":self.run_id,"send_index":send_id,
             "request":fp,"request_content":canonical,"http_status":status,"body":response_ids(&body,&mapping),
             "usage":envelope["usage"],"elapsed_ms":started.elapsed().as_millis(),
             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"transport_error":failure});
@@ -430,21 +532,117 @@ impl Recorder {
             handling.elapsed(),
             None,
         );
-        let mut docs = self.documents.lock().unwrap();
-        let doc = docs.get_mut(case).unwrap();
-        let ops = doc["operations"].as_object_mut().unwrap();
+        let mut docs = self
+            .documents
+            .lock()
+            .map_err(|_| "recording lock poisoned")?;
+        let mut doc = docs.get(case).ok_or("recording document missing")?.clone();
+        let ops = doc["operations"]
+            .as_object_mut()
+            .ok_or("invalid recording operations")?;
         let list = ops
             .entry(operation)
             .or_insert(json!([]))
             .as_array_mut()
-            .unwrap();
+            .ok_or("invalid recorded operation")?;
         // A changed prefix invalidates subsequent stages; never reuse their old output by index.
         list.truncate(position);
-        list.push(recording);
+        list.push(recording.clone());
         let target = self.dir.join(format!("{case}.json"));
-        write_json(&target, doc);
-        (status, body)
+        // A response is durable before returning it to production, not at case completion.
+        try_write_json(&target, &doc)?;
+        docs.insert(case.into(), doc);
+        drop(docs);
+        if let Err(e) = self.finish_send(send_id, &recording) {
+            // The per-call recording is already durable; reports reconcile this window.
+            self.proxy_error(Some(case), e);
+        }
+        Ok((status, body))
     }
+}
+
+fn read_proxy_request(reader: &mut impl BufRead) -> Result<(String, Value), String> {
+    let mut line = String::new();
+    reader
+        .read_line(&mut line)
+        .map_err(|e| format!("proxy request line: {e}"))?;
+    let mut words = line.split_ascii_whitespace();
+    if words.next() != Some("POST") {
+        return Err("proxy expects POST".into());
+    }
+    let case = words
+        .next()
+        .and_then(|p| p.strip_prefix("/v1/case/"))
+        .and_then(|p| p.strip_suffix("/responses"))
+        .filter(|s| {
+            !s.is_empty()
+                && s.bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
+        })
+        .ok_or("invalid proxy case path")?
+        .to_owned();
+    let mut length = None;
+    loop {
+        line.clear();
+        if reader
+            .read_line(&mut line)
+            .map_err(|e| format!("proxy headers: {e}"))?
+            == 0
+        {
+            return Err("proxy headers ended early".into());
+        }
+        if line == "\r\n" {
+            break;
+        }
+        if let Some((k, v)) = line.split_once(':')
+            && k.eq_ignore_ascii_case("content-length")
+        {
+            length = Some(
+                v.trim()
+                    .parse::<usize>()
+                    .map_err(|e| format!("proxy content length: {e}"))?,
+            );
+        }
+    }
+    let length = length
+        .filter(|&n| n <= 16 * 1024 * 1024)
+        .ok_or("missing or oversized proxy content length")?;
+    let mut body = vec![0; length];
+    reader
+        .read_exact(&mut body)
+        .map_err(|e| format!("proxy body: {e}"))?;
+    let request = serde_json::from_slice(&body).map_err(|e| format!("proxy request JSON: {e}"))?;
+    Ok((case, request))
+}
+
+fn proxy_exchange(
+    stream: &mut (impl Read + Write),
+    recorder: &Recorder,
+    send: impl FnOnce(&Value) -> Result<(u16, String), String>,
+) {
+    let response = match read_proxy_request(&mut BufReader::new(&mut *stream)) {
+        Ok((case, request)) => recorder.respond(&case, &request, || send(&request)),
+        Err(e) => recorder.proxy_error(None, e),
+    };
+    if let Err(e) = proxy_reply(stream, response) {
+        recorder.proxy_error(None, format!("proxy response write: {e}"));
+    }
+}
+
+fn proxy_reply(stream: &mut impl Write, (status, body): (u16, String)) -> std::io::Result<()> {
+    write!(
+        stream,
+        "HTTP/1.1 {status} Eval\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    )?;
+    stream.flush()
+}
+
+fn configure_connection(stream: &TcpStream) -> std::io::Result<()> {
+    // macOS accepted sockets inherit the listener's O_NONBLOCK flag.
+    stream.set_nonblocking(false)?;
+    stream.set_read_timeout(Some(Duration::from_secs(30)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(30)))
 }
 
 /// Loopback transport, one worker per physical send. Recording never calls legacy forward()
@@ -452,19 +650,22 @@ impl Recorder {
 fn server(
     recorder: Arc<Recorder>,
     fixture: Option<fn(&Value) -> Value>,
-) -> (String, Arc<AtomicBool>, std::thread::JoinHandle<()>) {
-    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-    let address = listener.local_addr().unwrap().to_string();
-    listener.set_nonblocking(true).unwrap();
+) -> Result<(String, Arc<AtomicBool>, std::thread::JoinHandle<()>), String> {
+    let listener = TcpListener::bind("127.0.0.1:0").map_err(|e| format!("proxy bind: {e}"))?;
+    let address = listener
+        .local_addr()
+        .map_err(|e| e.to_string())?
+        .to_string();
+    listener.set_nonblocking(true).map_err(|e| e.to_string())?;
+    let http = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(600))
+        .redirect(reqwest::redirect::Policy::none())
+        .retry(reqwest::retry::never())
+        .build()
+        .map_err(|e| format!("proxy HTTP client: {e}"))?;
     let stop = Arc::new(AtomicBool::new(false));
     let stopping = stop.clone();
     let handle = std::thread::spawn(move || {
-        let http = reqwest::blocking::Client::builder()
-            .timeout(Duration::from_secs(600))
-            .redirect(reqwest::redirect::Policy::none())
-            .retry(reqwest::retry::never())
-            .build()
-            .unwrap();
         let mut workers = Vec::new();
         while !stopping.load(Ordering::SeqCst) {
             match listener.accept() {
@@ -472,42 +673,41 @@ fn server(
                     let recorder = recorder.clone();
                     let http = http.clone();
                     workers.push(std::thread::spawn(move || {
-                        stream.set_read_timeout(Some(Duration::from_secs(30))).unwrap();
-                        let mut reader = BufReader::new(stream.try_clone().unwrap());
-                        let mut line = String::new(); reader.read_line(&mut line).unwrap();
-                        let case = line.split(' ').nth(1).unwrap().split('/').nth(3).unwrap().to_owned();
-                        let mut length = 0;
-                        loop {
-                            line.clear(); reader.read_line(&mut line).unwrap();
-                            if line == "\r\n" || line.is_empty() { break; }
-                            if let Some((k,v)) = line.split_once(':') && k.eq_ignore_ascii_case("content-length") { length = v.trim().parse().unwrap(); }
+                        if let Err(e) = configure_connection(&stream) {
+                            let response = recorder.proxy_error(None, format!("proxy connection setup: {e}"));
+                            if let Err(e) = proxy_reply(&mut stream, response) {
+                                recorder.proxy_error(None, format!("proxy response write: {e}"));
+                            }
+                            return;
                         }
-                        let mut body = vec![0; length]; reader.read_exact(&mut body).unwrap();
-                        let request: Value = serde_json::from_slice(&body).unwrap();
-                        let (status,body) = recorder.respond(&case,&request, || {
+                        proxy_exchange(&mut stream, &recorder, |request| {
                             if let Some(fixture) = fixture {
                                 return Ok((200,json!({"status":"completed","usage":{"input_tokens":10,"output_tokens":20},
                                     "output":[{"type":"message","content":[{"type":"output_text","text":fixture(&request).to_string()}]}]}).to_string()));
                             }
-                            let (url,key) = recorder.live.as_ref().expect("preflight authorized live transport");
+                            let (url,key) = recorder.live.as_ref().ok_or("live transport unavailable")?;
                             let response = http.post(url).bearer_auth(key).json(&request).send().map_err(|e| e.to_string())?;
                             let status = response.status().as_u16();
                             Ok((status,response.text().map_err(|e| e.to_string())?))
                         });
-                        let _ = write!(stream,"HTTP/1.1 {status} Eval\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",body.len());
                     }));
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                     std::thread::sleep(Duration::from_millis(10))
                 }
-                Err(e) => panic!("eval listener: {e}"),
+                Err(e) => {
+                    recorder.proxy_error(None, format!("eval listener: {e}"));
+                    break;
+                }
             }
         }
         for worker in workers {
-            worker.join().unwrap();
+            if worker.join().is_err() {
+                recorder.proxy_error(None, "proxy worker panicked".into());
+            }
         }
     });
-    (address, stop, handle)
+    Ok((address, stop, handle))
 }
 
 fn run_case(case: &Value, recorder: &Recorder, address: &str) -> Value {
@@ -598,15 +798,25 @@ fn run_case(case: &Value, recorder: &Recorder, address: &str) -> Value {
     json!({"case":case_id,"steps":steps})
 }
 
-fn write_json(path: &Path, value: &Value) {
-    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+fn try_write_json(path: &Path, value: &Value) -> Result<(), String> {
+    let parent = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    std::fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
     let temporary = path.with_extension("json.tmp");
-    std::fs::write(
-        &temporary,
-        serde_json::to_string_pretty(value).unwrap() + "\n",
-    )
-    .unwrap();
-    std::fs::rename(temporary, path).unwrap();
+    let mut file = std::fs::File::create(&temporary).map_err(|e| e.to_string())?;
+    serde_json::to_writer_pretty(&mut file, value).map_err(|e| e.to_string())?;
+    file.write_all(b"\n").map_err(|e| e.to_string())?;
+    file.sync_all().map_err(|e| e.to_string())?;
+    std::fs::rename(&temporary, path).map_err(|e| format!("record {}: {e}", path.display()))?;
+    std::fs::File::open(parent)
+        .and_then(|dir| dir.sync_all())
+        .map_err(|e| e.to_string())
+}
+
+fn write_json(path: &Path, value: &Value) {
+    try_write_json(path, value).unwrap();
 }
 
 fn parallel_cases(
@@ -661,11 +871,22 @@ pub(super) fn run() {
         )
     });
     let recorder = Arc::new(Recorder::new(dir.clone(), limit, live));
+    println!(
+        "逐次发送日志 {}（发送前落盘，started 项可能在途或已计费）",
+        recorder.send_log_path().display()
+    );
     let output = std::env::var_os("EVAL_V3_OUTPUT")
         .map(PathBuf::from)
         .unwrap_or_else(|| dir.join("run.json"));
     let case_dir = output.with_extension("cases");
     let started = Instant::now();
+    // Leave a report entry point even if this process is killed before any case finishes.
+    write_json(
+        &output,
+        &json!({"pipeline":"v3","label":LABEL,"run_id":recorder.run_id,
+        "configuration":recorder.configuration,"cases":[],"real_calls":0,"jobs":jobs,
+        "send_log":recorder.send_log_path()}),
+    );
     let empty = limit.is_none()
         && cases.iter().all(|c| {
             !dir.join(format!("{}.json", c["id"].as_str().unwrap()))
@@ -675,7 +896,7 @@ pub(super) fn run() {
         cases.iter().map(|c| json!({"case":c["id"],"steps":c["questions"].as_array().unwrap().iter().map(|q|
             json!({"step":"question","question":q["id"],"state":"not_recorded","reason":"未录制"})).collect::<Vec<_>>()})).collect::<Vec<_>>()
     } else {
-        let (address, stop, handle) = server(recorder.clone(), None);
+        let (address, stop, handle) = server(recorder.clone(), None).unwrap();
         // Only this suite mutates provider environment, before constructing production clients.
         unsafe {
             std::env::set_var("PMR_MODEL_NETWORK", "offline");
@@ -705,8 +926,9 @@ pub(super) fn run() {
     }
     write_json(
         &output,
-        &json!({"pipeline":"v3","label":LABEL,
+        &json!({"pipeline":"v3","label":LABEL,"run_id":recorder.run_id,
         "configuration":recorder.configuration,"cases":results,"real_calls":recorder.sent.load(Ordering::Relaxed),
+        "send_log":recorder.send_log_path(),
         "jobs":jobs,"elapsed_ms":started.elapsed().as_millis()}),
     );
     println!(
@@ -714,6 +936,250 @@ pub(super) fn run() {
         recorder.sent.load(Ordering::Relaxed),
         output.display()
     );
+}
+
+#[test]
+fn v3_proxy_invalid_input_is_reported_without_panicking() {
+    let dir = std::env::temp_dir().join(format!("eval-v3-invalid-{}", diagnostics::new_id()));
+    let recorder = Recorder::new(dir.clone(), Some(1), None);
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    let request = json!({"model":PRO,"input":"invalid-json"});
+    let response = std::panic::catch_unwind(|| {
+        recorder.respond("case", &request, || panic!("invalid input must not send"))
+    });
+    assert!(
+        response.is_ok(),
+        "proxy must return a diagnostic, not panic"
+    );
+    assert_eq!(response.unwrap().0, 503);
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 0);
+    if dir.exists() {
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn v3_proxy_read_and_write_errors_are_durable_without_panicking() {
+    struct Io {
+        input: std::io::Cursor<Vec<u8>>,
+        output: Vec<u8>,
+        read_error: bool,
+        write_error: bool,
+    }
+    impl Read for Io {
+        fn read(&mut self, bytes: &mut [u8]) -> std::io::Result<usize> {
+            if self.read_error {
+                return Err(std::io::ErrorKind::WouldBlock.into());
+            }
+            self.input.read(bytes)
+        }
+    }
+    impl Write for Io {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            if self.write_error {
+                return Err(std::io::ErrorKind::BrokenPipe.into());
+            }
+            self.output.write(bytes)
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let dir = std::env::temp_dir().join(format!("eval-v3-io-{}", diagnostics::new_id()));
+    let recorder = Recorder::new(dir.clone(), Some(3), None);
+    for (input, read_error, write_error) in [
+        ("", true, false),
+        (
+            "POST /v1/case/case/responses HTTP/1.1\r\nContent-Length: nope\r\n\r\n",
+            false,
+            false,
+        ),
+        (
+            "POST /v1/case/case/responses HTTP/1.1\r\nContent-Length: 3\r\n\r\n{",
+            false,
+            false,
+        ),
+        ("invalid\r\n", false, true),
+    ] {
+        let mut io = Io {
+            input: std::io::Cursor::new(input.as_bytes().to_vec()),
+            output: vec![],
+            read_error,
+            write_error,
+        };
+        proxy_exchange(&mut io, &recorder, |_| {
+            panic!("invalid request must not send")
+        });
+        if !write_error {
+            assert!(
+                String::from_utf8(io.output)
+                    .unwrap()
+                    .starts_with("HTTP/1.1 503")
+            );
+        }
+    }
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    let body = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}}).to_string();
+    let wire = format!(
+        "POST /v1/case/case/responses HTTP/1.1\r\nContent-Length: {}\r\n\r\n{body}",
+        body.len()
+    );
+    let mut io = Io {
+        input: std::io::Cursor::new(wire.into_bytes()),
+        output: vec![],
+        read_error: false,
+        write_error: true,
+    };
+    proxy_exchange(&mut io, &recorder, |_| {
+        Ok((200, json!({"status":"completed"}).to_string()))
+    });
+    let saved: Value =
+        serde_json::from_slice(&std::fs::read(dir.join("case.json")).unwrap()).unwrap();
+    assert_eq!(saved["operations"]["write:m1"][0]["status"], "completed");
+    let log: Value =
+        serde_json::from_slice(&std::fs::read(recorder.send_log_path()).unwrap()).unwrap();
+    assert_eq!(log["proxy_errors"].as_array().unwrap().len(), 6);
+    assert_eq!(log["attempts"][0]["state"], "recorded");
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 1);
+    let replay = Recorder::new(dir.clone(), None, None);
+    replay.begin("case", "write:m1", &BTreeMap::new());
+    let request: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(
+        replay
+            .respond("case", &request, || panic!(
+                "broken client must not lose recording"
+            ))
+            .0,
+        200
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn v3_interrupted_run_preserves_calls_and_replays_without_duplicate_sends() {
+    let dir = std::env::temp_dir().join(format!("eval-v3-interrupt-{}", diagnostics::new_id()));
+    let recorder = Recorder::new(dir.clone(), Some(2), None);
+    let log_path = recorder.send_log_path();
+    let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    let first = recorder.respond("case", &request, || {
+        let log: Value = serde_json::from_slice(&std::fs::read(&log_path).unwrap()).unwrap();
+        assert_eq!(log["attempts"][0]["state"], "started");
+        Ok((200, json!({"status":"completed"}).to_string()))
+    });
+    // No case-result file has been written: the first physical response is already durable.
+    assert!(dir.join("case.json").exists());
+    assert!(!dir.join("run.cases").exists());
+    let interrupted = std::panic::catch_unwind(|| {
+        recorder.respond("case", &request, || {
+            panic!("simulate process interruption at send")
+        })
+    });
+    assert!(interrupted.is_err());
+    let log: Value = serde_json::from_slice(&std::fs::read(&log_path).unwrap()).unwrap();
+    assert_eq!(log["attempts"].as_array().unwrap().len(), 2);
+    assert_eq!(log["attempts"][0]["state"], "recorded");
+    assert_eq!(log["attempts"][1]["state"], "started");
+    drop(recorder);
+    let replay = Recorder::new(dir.clone(), Some(1), None);
+    replay.begin("case", "write:m1", &BTreeMap::new());
+    assert_eq!(
+        replay.respond("case", &request, || panic!("durable call must not resend")),
+        first
+    );
+    assert_eq!(replay.sent.load(Ordering::Relaxed), 0);
+    assert_eq!(*replay.allowance.lock().unwrap(), Some(1));
+    assert_eq!(
+        replay
+            .respond("case", &request, || Ok((200, "{}".into())))
+            .0,
+        200
+    );
+    assert_eq!(replay.sent.load(Ordering::Relaxed), 1);
+    assert_eq!(*replay.allowance.lock().unwrap(), Some(0));
+    // A fully saved prefix, reopened again, requires no physical send at all.
+    let final_replay = Recorder::new(dir.clone(), None, None);
+    final_replay.begin("case", "write:m1", &BTreeMap::new());
+    for _ in 0..2 {
+        assert_eq!(
+            final_replay
+                .respond("case", &request, || panic!("no duplicate send"))
+                .0,
+            200
+        );
+    }
+    assert_eq!(final_replay.sent.load(Ordering::Relaxed), 0);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn v3_failed_send_log_prevents_send_and_recording_error_keeps_started_count() {
+    let dir = std::env::temp_dir().join(format!("eval-v3-disk-{}", diagnostics::new_id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("runs"), "not a directory").unwrap();
+    let recorder = Recorder::new(dir.clone(), Some(1), None);
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    let request = json!({"model":PRO,"input":"{}"});
+    assert_eq!(
+        recorder
+            .respond("case", &request, || panic!("no durable counter, no send"))
+            .0,
+        503
+    );
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 0);
+    assert_eq!(*recorder.allowance.lock().unwrap(), Some(1));
+    std::fs::remove_file(dir.join("runs")).unwrap();
+    std::fs::create_dir(dir.join("case.json.tmp")).unwrap();
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    assert_eq!(
+        recorder
+            .respond("case", &request, || Ok((200, "{}".into())))
+            .0,
+        503
+    );
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 1);
+    let log: Value =
+        serde_json::from_slice(&std::fs::read(recorder.send_log_path()).unwrap()).unwrap();
+    assert_eq!(log["attempts"][0]["state"], "started");
+    assert_eq!(log["proxy_errors"].as_array().unwrap().len(), 2);
+    assert!(recorder.documents.lock().unwrap()["case"]["operations"]["write:m1"].is_null());
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn v3_nonblocking_listener_reads_delayed_request_without_panicking() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let address = listener.local_addr().unwrap();
+    let dir = std::env::temp_dir().join(format!("eval-v3-socket-{}", diagnostics::new_id()));
+    let recorder = Recorder::new(dir.clone(), Some(1), None);
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    let (tx, rx) = std::sync::mpsc::channel();
+    let client = std::thread::spawn(move || {
+        let mut stream = TcpStream::connect(address).unwrap();
+        tx.send(()).unwrap();
+        std::thread::sleep(Duration::from_millis(100));
+        let body = json!({"input":"{}","model":PRO}).to_string();
+        write!(
+            stream,
+            "POST /v1/case/case/responses HTTP/1.1\r\nContent-Length: {}\r\n\r\n{body}",
+            body.len()
+        )
+        .unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert!(response.starts_with("HTTP/1.1 200"), "{response}");
+    });
+    rx.recv().unwrap();
+    let (mut stream, _) = listener.accept().unwrap();
+    // Force the inherited macOS flag on every platform, then exercise the actual fix.
+    stream.set_nonblocking(true).unwrap();
+    configure_connection(&stream).unwrap();
+    proxy_exchange(&mut stream, &recorder, |_| Ok((200, "{}".into())));
+    drop(stream);
+    client.join().unwrap();
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 1);
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]
@@ -828,7 +1294,18 @@ fn v3_concurrent_reservations_never_exceed_global_allowance() {
             .count(),
         57
     );
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 7);
+    assert_eq!(
+        std::fs::read_dir(&dir)
+            .unwrap()
+            .filter(|p| p
+                .as_ref()
+                .unwrap()
+                .path()
+                .extension()
+                .is_some_and(|s| s == "json"))
+            .count(),
+        7
+    );
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -839,7 +1316,7 @@ fn v3_source_ids_preserve_text_and_strict_request_binding() {
         "source":{"kind":"stored","source_id":"random"},"quote":{"text":"random"}}).to_string(),
         "instructions":"production","reasoning":{"effort":"medium"},"max_output_tokens":32768});
     let map = BTreeMap::from([("random".into(), "m1".into())]);
-    let canonical = normalized(&request, &map);
+    let canonical = normalized(&request, &map).unwrap();
     assert_eq!(canonical["input"]["source_snapshot"][0], "m1");
     assert_eq!(canonical["input"]["sources"]["m1"]["text"], "random");
     assert_eq!(canonical["input"]["current_user_message"], "random");
@@ -852,7 +1329,7 @@ fn v3_source_ids_preserve_text_and_strict_request_binding() {
     next["input"] = json!(input.to_string());
     assert_eq!(
         canonical,
-        normalized(&next, &BTreeMap::from([("next".into(), "m1".into())]))
+        normalized(&next, &BTreeMap::from([("next".into(), "m1".into())])).unwrap()
     );
     for key in ["model", "instructions", "max_output_tokens", "reasoning"] {
         let mut changed = canonical.clone();
@@ -997,7 +1474,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         "questions":[{"id":"q","after":2,"query":"我正在研究什么？","context":[]}]});
     let dir = std::env::temp_dir().join(format!("eval-v3-roundtrip-{}", diagnostics::new_id()));
     let recorder = Arc::new(Recorder::new(dir.clone(), Some(7), None));
-    let (address, stop, handle) = server(recorder.clone(), Some(fixture));
+    let (address, stop, handle) = server(recorder.clone(), Some(fixture)).unwrap();
     unsafe {
         std::env::set_var("PMR_MODEL_NETWORK", "offline");
         std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
@@ -1020,7 +1497,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         assert!(names.contains(&stage));
     }
     let replay = Arc::new(Recorder::new(dir.clone(), None, None));
-    let (address, stop, handle) = server(replay.clone(), None);
+    let (address, stop, handle) = server(replay.clone(), None).unwrap();
     let second = run_case(&case, &replay, &address);
     stop.store(true, Ordering::SeqCst);
     handle.join().unwrap();
