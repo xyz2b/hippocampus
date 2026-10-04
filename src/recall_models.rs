@@ -1,6 +1,10 @@
 //! r1.v1 / r4.v3 单次提供者；只读正文仅留内存，持久回执只保存摘要与执行状态。
 use std::collections::BTreeMap;
-use std::sync::Mutex;
+use std::path::PathBuf;
+use std::sync::{
+    Arc, Condvar, Mutex,
+    atomic::{AtomicBool, Ordering},
+};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -394,8 +398,89 @@ fn stamp(state: &crate::PersistedMemoryState) -> PersistenceResult<Value> {
 #[derive(Default)]
 pub struct RecallRuntime {
     // ponytail: 完整只读结果最多留64个；需跨进程完整重放时先取得专门的保存授权。
-    cache: Mutex<BTreeMap<(String, String, String), CachedResult>>,
+    cache: Mutex<BTreeMap<CacheKey, CachedResult>>,
+    in_flight: Mutex<BTreeMap<CacheKey, Arc<InFlight>>>,
 }
+type CacheKey = (PathBuf, String, String);
+
+struct InFlight {
+    binding: String,
+    executor: std::thread::ThreadId,
+    // 等待者仅保留完成状态；完整结果只在既有的有界缓存内。
+    result: Mutex<Option<Result<(), String>>>,
+    ready: Condvar,
+    invalidated: AtomicBool,
+    #[cfg(test)]
+    waiters: std::sync::atomic::AtomicUsize,
+}
+
+impl InFlight {
+    fn wait(&self) -> PersistenceResult<()> {
+        let mut result = self.result.lock().unwrap_or_else(|e| e.into_inner());
+        #[cfg(test)]
+        {
+            self.waiters.fetch_add(1, Ordering::SeqCst);
+            self.ready.notify_all();
+        }
+        while result.is_none() {
+            result = self.ready.wait(result).unwrap_or_else(|e| e.into_inner());
+        }
+        result.as_ref().unwrap().clone().map_err(Into::into)
+    }
+}
+
+struct FlightGuard<'a> {
+    runtime: &'a RecallRuntime,
+    key: CacheKey,
+    flight: Arc<InFlight>,
+}
+
+impl Drop for FlightGuard<'_> {
+    fn drop(&mut self) {
+        self.runtime
+            .in_flight
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .remove(&self.key);
+        let mut result = self.flight.result.lock().unwrap_or_else(|e| e.into_inner());
+        if result.is_none() {
+            *result = Some(Err("recall_execution_aborted:no_model_retry".into()));
+        }
+        self.flight.ready.notify_all();
+    }
+}
+
+fn request_binding(
+    request: &Request,
+    budget: Budget,
+    provider: Option<&RecallModelProvider>,
+    bootstrap: bool,
+) -> String {
+    let mut binding = fingerprint(&json!([
+        request.binding,
+        request.subject_ids,
+        request.said_on,
+        request.utc_offset_seconds,
+        request.bootstrap,
+        budget.records,
+        budget.raw,
+        budget.relations,
+        budget.stored_bytes
+    ]));
+    if bootstrap {
+        binding = fingerprint(&json!([binding, "global_bootstrap"]));
+    }
+    if let Some(p) = provider
+        && ["r1", "r4"]
+            .iter()
+            .any(|r| p.recall_models.effort(r) != ReasoningEffort::Medium)
+    {
+        binding = fingerprint(&json!([binding, {"r1":p.recall_models.effort("r1"),
+            "r4":p.recall_models.effort("r4")} ]));
+    }
+    binding
+}
+
 #[derive(Clone)]
 struct CachedResult {
     output: RecallOutput,
@@ -403,6 +488,22 @@ struct CachedResult {
     r4: Option<crate::r4::OutputAudit>,
 }
 impl RecallRuntime {
+    /// 删除改变整个 owner 的证据快照；清除完整结果并阻止进行中的旧结果重新入缓存。
+    pub(crate) fn invalidate_owner(&self, store: &SqliteMemoryStore) {
+        let path = store.path();
+        let owner = &store.owner().0;
+        let flights = self.in_flight.lock().unwrap_or_else(|e| e.into_inner());
+        for ((db, user, _), flight) in flights.iter() {
+            if db == path && user == owner {
+                flight.invalidated.store(true, Ordering::SeqCst);
+            }
+        }
+        self.cache
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .retain(|(db, user, _), _| db != path || user != owner);
+    }
+
     /// 宿主核验只读取同进程保留结果；缺失/失效不启动新模型尝试。
     pub fn retained(
         &self,
@@ -411,7 +512,7 @@ impl RecallRuntime {
     ) -> PersistenceResult<RecallOutput> {
         let operation = json!(["recall.v3", fingerprint(&json!(request_id))]).to_string();
         let key = (
-            store.path().canonicalize()?.to_string_lossy().into_owned(),
+            store.path().to_owned(),
             store.owner().0.clone(),
             operation.clone(),
         );
@@ -420,8 +521,9 @@ impl RecallRuntime {
             .receipts
             .get(&operation)
             .ok_or("recall_result_not_retained:no_model_retry")?;
+        let current_stamp = stamp(&state)?;
         let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
-        if receipt.result["state"] != "finished" || receipt.result["stamp"] != stamp(&state)? {
+        if receipt.result["state"] != "finished" || receipt.result["stamp"] != current_stamp {
             cache.remove(&key);
             return Err("recall_cached_snapshot_stale".into());
         }
@@ -491,6 +593,65 @@ impl RecallRuntime {
         if request.binding.request_id.trim().is_empty() || request.binding.request_id.len() > 512 {
             return Err("invalid_recall_request_id".into());
         }
+        let key = (
+            store.path().to_owned(),
+            store.owner().0.clone(),
+            json!(["recall.v3", fingerprint(&json!(request.binding.request_id))]).to_string(),
+        );
+        let binding = request_binding(request, budget, provider, bootstrap.is_some());
+        let (flight, start) = {
+            let mut flights = self.in_flight.lock().unwrap_or_else(|e| e.into_inner());
+            if let Some(flight) = flights.get(&key) {
+                if flight.binding != binding {
+                    return Err("recall_request_mismatch".into());
+                }
+                (Arc::clone(flight), false)
+            } else {
+                let flight = Arc::new(InFlight {
+                    binding,
+                    executor: std::thread::current().id(),
+                    result: Mutex::new(None),
+                    ready: Condvar::new(),
+                    invalidated: AtomicBool::new(false),
+                    #[cfg(test)]
+                    waiters: Default::default(),
+                });
+                flights.insert(key.clone(), Arc::clone(&flight));
+                (flight, true)
+            }
+        };
+        if !start {
+            // 同线程递归不能等待自己完成；沿用旧的零重试拒绝，跨线程才续等。
+            if flight.executor == std::thread::current().id() {
+                return Err("recall_result_not_retained:no_model_retry".into());
+            }
+            flight.wait()?;
+            // 共用既有回执/快照/缓存检查，等待期间删除或状态变化也不能返回旧正文。
+            return self.execute(store, request, budget, provider, bootstrap);
+        }
+        let guard = FlightGuard {
+            runtime: self,
+            key,
+            flight,
+        };
+        let result = self.execute(store, request, budget, provider, bootstrap);
+        *guard
+            .flight
+            .result
+            .lock()
+            .unwrap_or_else(|e| e.into_inner()) =
+            Some(result.as_ref().map(|_| ()).map_err(ToString::to_string));
+        result
+    }
+
+    fn execute(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        provider: Option<&RecallModelProvider>,
+        bootstrap: Option<RecallOutput>,
+    ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         let state = store.read()?;
         let entities = state.entities.list_by_owner(&request.owner);
         let relations = match provider {
@@ -525,32 +686,11 @@ impl RecallRuntime {
         let operation =
             json!(["recall.v3", fingerprint(&json!(request.binding.request_id))]).to_string();
         let cache_key = (
-            store.path().canonicalize()?.to_string_lossy().into_owned(),
+            store.path().to_owned(),
             request.owner.0.clone(),
             operation.clone(),
         );
-        let mut binding = fingerprint(&json!([
-            request.binding,
-            request.subject_ids,
-            request.said_on,
-            request.utc_offset_seconds,
-            request.bootstrap,
-            budget.records,
-            budget.raw,
-            budget.relations,
-            budget.stored_bytes
-        ]));
-        if bootstrap.is_some() {
-            binding = fingerprint(&json!([binding, "global_bootstrap"]));
-        }
-        if let Some(p) = provider
-            && ["r1", "r4"]
-                .iter()
-                .any(|r| p.recall_models.effort(r) != ReasoningEffort::Medium)
-        {
-            binding = fingerprint(&json!([binding, {"r1":p.recall_models.effort("r1"),
-                "r4":p.recall_models.effort("r4")} ]));
-        }
+        let binding = request_binding(request, budget, provider, bootstrap.is_some());
         let attempt = crate::diagnostics::new_id();
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
@@ -695,6 +835,14 @@ impl RecallRuntime {
         })?;
         let output = result?;
         if stamp(&store.read()?)? != initial {
+            return Err("recall_snapshot_changed".into());
+        }
+        // 与删除清洗采用同一锁顺序；锁内只检查进行中标记并更新缓存，不读数据库。
+        let flights = self.in_flight.lock().unwrap_or_else(|e| e.into_inner());
+        if flights
+            .get(&cache_key)
+            .is_some_and(|f| f.invalidated.load(Ordering::SeqCst))
+        {
             return Err("recall_snapshot_changed".into());
         }
         let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());

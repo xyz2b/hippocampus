@@ -1120,3 +1120,310 @@ fn host_validator_rejects_r5_visibility_gate_without_another_model_send() {
     assert_eq!(sent.lock().unwrap().len(), 2);
     assert_eq!(db.calls(), 2);
 }
+
+#[test]
+fn shared_operation_services_replay_validate_and_forget_without_extra_sends() {
+    let db = Db::new();
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(p);
+    let operation = service.operation();
+    drop(service);
+    let mut first = operation.connect().unwrap();
+    let args = json!({"query":"请核对我的灯色。","request_id":"shared-operation","at":AT});
+    let result = first.call("memory_recall", args.clone(), || false).unwrap();
+    assert_eq!(result["status"], "answered");
+    drop(first);
+    let mut second = operation.connect().unwrap();
+    assert_eq!(
+        second
+            .call("memory_recall", args.clone(), || false)
+            .unwrap(),
+        result
+    );
+    let validation = second
+        .call(
+            "memory_validate_answer",
+            json!({
+                "query":"请核对我的灯色。","request_id":"shared-operation",
+                "draft_answer":TEXT,"source_ids":["s-purple"]
+            }),
+            || false,
+        )
+        .unwrap();
+    assert_eq!(validation["approved"], true);
+    let absent = second
+        .call("memory_forget", json!({"staged_id":999999}), || false)
+        .unwrap();
+    assert_eq!(absent["removed"], false);
+    assert_eq!(
+        second
+            .call("memory_recall", args.clone(), || false)
+            .unwrap(),
+        result
+    );
+    second
+        .call("memory_forget", json!({"source_id":"s-purple"}), || false)
+        .unwrap();
+    assert!(
+        operation
+            .connect()
+            .unwrap()
+            .call("memory_recall", args, || false)
+            .unwrap_err()
+            .to_string()
+            .contains("snapshot_stale")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
+
+// 在 R1 的物理发送处保持未完成；无端口、无真实请求、无固定 sleep。
+fn held_r1(
+    db: &Db,
+) -> (
+    RecallModelProvider,
+    Arc<Mutex<Vec<Value>>>,
+    std::sync::mpsc::Receiver<()>,
+    std::sync::mpsc::Sender<()>,
+) {
+    let (mut p, sent) = mocked(db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let transport = p.client.transport.take().unwrap();
+    let (entered, receiver) = std::sync::mpsc::channel();
+    let (release, released) = std::sync::mpsc::channel();
+    let released = Mutex::new(released);
+    p.client.transport = Some(Arc::new(move |request| {
+        let body: Value =
+            serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+        if body["model"] == "r1-route-sentinel" {
+            entered.send(()).unwrap();
+            released
+                .lock()
+                .unwrap()
+                .recv_timeout(std::time::Duration::from_secs(15))
+                .unwrap();
+        }
+        transport(request)
+    }));
+    (p, sent, receiver, release)
+}
+
+fn wait_for_same_request(rt: &RecallRuntime) {
+    let flight = Arc::clone(rt.in_flight.lock().unwrap().values().next().unwrap());
+    let mut result = flight.result.lock().unwrap();
+    while flight.waiters.load(Ordering::SeqCst) == 0 {
+        let (next, timeout) = flight
+            .ready
+            .wait_timeout(result, std::time::Duration::from_secs(5))
+            .unwrap();
+        result = next;
+        assert!(
+            !timeout.timed_out(),
+            "second request did not join the in-flight result"
+        );
+    }
+}
+
+#[test]
+fn shared_runtime_same_id_waits_once_rejects_other_args_and_does_not_lock_model_wait() {
+    let db = Db::new();
+    let (p, sent, entered, release) = held_r1(&db);
+    let rt = Arc::new(RecallRuntime::default());
+    std::thread::scope(|scope| {
+        let mut first = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        let runtime = Arc::clone(&rt);
+        let input = request("concurrent");
+        let provider = p.clone();
+        let original = scope.spawn(move || {
+            runtime.run_with_audit(&mut first, &input, Budget::default(), Some(&provider))
+        });
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let mut second = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        let runtime = Arc::clone(&rt);
+        let input = request("concurrent");
+        let provider = p.clone();
+        let waiter = scope.spawn(move || {
+            runtime.run_with_audit(&mut second, &input, Budget::default(), Some(&provider))
+        });
+        wait_for_same_request(&rt);
+        let mut changed = request("concurrent");
+        changed.binding.query.push('!');
+        let mut other = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        assert!(
+            rt.run(&mut other, &changed, Budget::default(), Some(&p))
+                .unwrap_err()
+                .to_string()
+                .contains("request_mismatch")
+        );
+        // A distinct offline request finishes before the held R1 is released.
+        assert!(
+            rt.run(&mut other, &request("other"), Budget::default(), None)
+                .is_ok()
+        );
+        release.send(()).unwrap();
+        let result = original.join().unwrap().unwrap();
+        assert_eq!(waiter.join().unwrap().unwrap(), result);
+        assert_eq!(result.0.status, RecallStatus::Answered);
+        assert!(result.1.is_some());
+    });
+    assert!(rt.in_flight.lock().unwrap().is_empty());
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
+
+#[test]
+fn shared_runtime_deletion_wakes_waiters_without_retaining_late_source_text() {
+    let db = Db::new();
+    let (p, sent, entered, release) = held_r1(&db);
+    let rt = Arc::new(RecallRuntime::default());
+    std::thread::scope(|scope| {
+        let mut first = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        let runtime = Arc::clone(&rt);
+        let input = request("concurrent-delete");
+        let provider = p.clone();
+        let original = scope
+            .spawn(move || runtime.run(&mut first, &input, Budget::default(), Some(&provider)));
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let mut second = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        let runtime = Arc::clone(&rt);
+        let input = request("concurrent-delete");
+        let provider = p.clone();
+        let waiter = scope
+            .spawn(move || runtime.run(&mut second, &input, Budget::default(), Some(&provider)));
+        wait_for_same_request(&rt);
+        let mut deleting = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        deleting
+            .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some("s-purple")))
+            .unwrap();
+        rt.invalidate_owner(&deleting);
+        release.send(()).unwrap();
+        let error = original.join().unwrap().unwrap_err().to_string();
+        // Existing deletion cleaning invalidates the persistent claim as well as the snapshot.
+        assert_eq!(error, "recall_claim_lost");
+        assert_eq!(waiter.join().unwrap().unwrap_err().to_string(), error);
+    });
+    assert!(rt.cache.lock().unwrap().is_empty());
+    assert!(rt.in_flight.lock().unwrap().is_empty());
+    assert_eq!(sent.lock().unwrap().len(), 1);
+    assert_eq!(db.calls(), 1);
+    assert!(
+        !serde_json::to_string(&db.open().read().unwrap())
+            .unwrap()
+            .contains(TEXT)
+    );
+}
+
+#[test]
+fn shared_runtime_owner_and_database_namespaces_isolate_results_and_deletion() {
+    let db = Db::new();
+    let other_db = Db::new();
+    let rt = Arc::new(RecallRuntime::default());
+    let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let req = request("same-id");
+    rt.run(&mut db.open(), &req, Budget::default(), Some(&p))
+        .unwrap();
+    let mut bob = SqliteMemoryStore::open(&db.0, "bob".into()).unwrap();
+    assert!(rt.retained(&bob, "same-id").is_err());
+    let mut bob_request = request("same-id");
+    bob_request.owner = "bob".into();
+    let bob_result = rt
+        .run(&mut bob, &bob_request, Budget::default(), None)
+        .unwrap();
+    assert!(
+        bob_result.raw.is_empty() && bob_result.records.is_empty() && bob_result.facts.is_empty()
+    );
+    assert!(
+        rt.run(&mut bob, &req, Budget::default(), None)
+            .unwrap_err()
+            .to_string()
+            .contains("owner_mismatch")
+    );
+    assert!(rt.retained(&other_db.open(), "same-id").is_err());
+    let other_result = rt
+        .run(&mut other_db.open(), &req, Budget::default(), None)
+        .unwrap();
+    let mut deleting = db.open();
+    deleting
+        .transaction(|s| crate::forget::forget(s, &OWNER.into(), None, None, Some("s-purple")))
+        .unwrap();
+    rt.invalidate_owner(&deleting);
+    assert_eq!(rt.cache.lock().unwrap().len(), 2);
+    assert_eq!(rt.retained(&bob, "same-id").unwrap(), bob_result);
+    assert_eq!(
+        rt.retained(&other_db.open(), "same-id").unwrap(),
+        other_result
+    );
+    assert!(rt.cache.lock().unwrap().values().all(|c| c.r4.is_none()));
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn shared_runtime_executor_panic_wakes_waiter_and_never_reissues_a_reserved_send() {
+    let db = Db::new();
+    let (mut p, _, entered, release) = held_r1(&db);
+    let held = p.client.transport.take().unwrap();
+    p.client.transport = Some(Arc::new(move |request| {
+        let _ = held(request);
+        panic!("controlled executor loss");
+    }));
+    let rt = Arc::new(RecallRuntime::default());
+    std::thread::scope(|scope| {
+        let mut first = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        let runtime = Arc::clone(&rt);
+        let provider = p.clone();
+        let original = scope.spawn(move || {
+            runtime.run(
+                &mut first,
+                &request("panic-waiter"),
+                Budget::default(),
+                Some(&provider),
+            )
+        });
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let mut second = SqliteMemoryStore::open_operation(&db.0, OWNER.into()).unwrap();
+        let runtime = Arc::clone(&rt);
+        let provider = p.clone();
+        let waiter = scope.spawn(move || {
+            runtime.run(
+                &mut second,
+                &request("panic-waiter"),
+                Budget::default(),
+                Some(&provider),
+            )
+        });
+        wait_for_same_request(&rt);
+        release.send(()).unwrap();
+        assert!(original.join().is_err());
+        assert_eq!(
+            waiter.join().unwrap().unwrap_err().to_string(),
+            "recall_execution_aborted:no_model_retry"
+        );
+    });
+    assert!(rt.in_flight.lock().unwrap().is_empty());
+    assert!(rt.cache.lock().unwrap().is_empty());
+    let (p, sent) = mocked(&db, vec![]);
+    assert!(
+        rt.run(
+            &mut db.open(),
+            &request("panic-waiter"),
+            Budget::default(),
+            Some(&p)
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("result_not_retained:no_model_retry")
+    );
+    assert_eq!(db.calls(), 1);
+    assert!(sent.lock().unwrap().is_empty());
+}

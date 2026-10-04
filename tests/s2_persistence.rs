@@ -430,6 +430,86 @@ fn concurrent_source_commits_preserve_each_other_and_isolate_owners() {
 }
 
 #[test]
+fn operation_connections_read_committed_snapshots_and_preserve_each_others_writes() {
+    let db = TestDb::new();
+    drop(db.open("alice"));
+    let mut first = SqliteMemoryStore::open_operation(&db.0, "alice".into()).unwrap();
+    let mut second = SqliteMemoryStore::open_operation(&db.0, "alice".into()).unwrap();
+    let snapshot = second.read().unwrap();
+    first
+        .transaction(|state| {
+            state.sources.insert("one".into(), source("one"));
+            // WAL permits another operation to read while this write is uncommitted.
+            assert!(second.read()?.sources.is_empty());
+            Ok(())
+        })
+        .unwrap();
+    assert!(snapshot.sources.is_empty());
+    second
+        .transaction(|state| {
+            assert!(state.sources.contains_key("one"));
+            state.sources.insert("two".into(), source("two"));
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(first.read().unwrap().sources.len(), 2);
+    assert_eq!(second.read().unwrap().sources.len(), 2);
+}
+
+#[test]
+fn operation_connection_and_service_handle_do_not_initialize_under_a_writer() {
+    use hippocampus::chat::{ChatConfig, ChatMemoryService};
+    let db = TestDb::new();
+    let config: ChatConfig = serde_json::from_value(json!({
+        "write_pipeline":"w4_runtime_v1", "recall_pipeline":"recall_v3",
+        "enrichment_mode":"off", "fact_index_enabled":true
+    }))
+    .unwrap();
+    let service = ChatMemoryService::new(db.open("alice"), config).unwrap();
+    let operation = service.operation();
+    drop(service);
+    let mut writer = Connection::open(&db.0).unwrap();
+    let tx = writer
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let before = SqliteMemoryStore::open_read_only(&db.0, "alice".into())
+        .unwrap()
+        .read()
+        .unwrap();
+    let store = SqliteMemoryStore::open_operation(&db.0, "alice".into()).unwrap();
+    assert_eq!(
+        serde_json::to_value(store.read().unwrap()).unwrap(),
+        serde_json::to_value(before).unwrap()
+    );
+    // ChatMemoryService::new would take a write lock and refresh the enabled fact index.
+    drop(operation.connect().unwrap());
+    let version: i64 = tx
+        .pragma_query_value(None, "user_version", |r| r.get(0))
+        .unwrap();
+    assert_eq!(version, 9);
+}
+
+#[test]
+fn operation_connection_never_creates_or_migrates_a_database() {
+    let missing = TestDb::new();
+    assert!(SqliteMemoryStore::open_operation(&missing.0, "alice".into()).is_err());
+    assert!(!missing.0.exists());
+    for version in [0, 8, 10] {
+        let db = TestDb::new();
+        drop(db.open("alice"));
+        let connection = Connection::open(&db.0).unwrap();
+        connection
+            .pragma_update(None, "user_version", version)
+            .unwrap();
+        assert!(SqliteMemoryStore::open_operation(&db.0, "alice".into()).is_err());
+        let after: i64 = connection
+            .pragma_query_value(None, "user_version", |r| r.get(0))
+            .unwrap();
+        assert_eq!(after, version);
+    }
+}
+
+#[test]
 fn revision_overflow_rolls_back_all_changes() {
     let db = TestDb::new();
     let mut store = db.open("alice");

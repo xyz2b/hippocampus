@@ -311,6 +311,38 @@ impl SqliteMemoryStore {
         &self.path
     }
 
+    /// A foreground operation connects only to an initialized database; no migration or index repair.
+    pub fn open_operation(path: impl AsRef<Path>, owner: UserId) -> PersistenceResult<Self> {
+        if owner.0.trim().is_empty() {
+            return Err("owner must not be empty".into());
+        }
+        let path = path.as_ref();
+        let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)?;
+        connection.busy_timeout(Duration::from_secs(5))?;
+        let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
+        if version != 9 {
+            return Err(format!(
+                "operation connection requires initialized database version 9; found {version}"
+            )
+            .into());
+        }
+        let journal: String =
+            connection.pragma_query_value(None, "journal_mode", |row| row.get(0))?;
+        if journal != "wal" {
+            return Err("operation connection requires initialized WAL database".into());
+        }
+        connection.pragma_update(None, "synchronous", "FULL")?;
+        let store = Self {
+            connection,
+            owner,
+            source_search_enabled: true,
+            fact_index_enabled: false,
+            path: std::fs::canonicalize(path)?,
+        };
+        store.read()?;
+        Ok(store)
+    }
+
     /// Internal search/inspection never migrates, backfills or repairs a database.
     pub fn open_read_only(path: impl AsRef<Path>, owner: UserId) -> PersistenceResult<Self> {
         if owner.0.trim().is_empty() {

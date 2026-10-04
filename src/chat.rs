@@ -2,6 +2,8 @@
 
 use std::{
     collections::BTreeSet,
+    path::PathBuf,
+    sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -1422,9 +1424,36 @@ fn validated_single_relation<'a>(
 pub struct ChatMemoryService {
     store: SqliteMemoryStore,
     config: ChatConfig,
-    recall_runtime: crate::openai::recall_models::RecallRuntime,
+    recall_runtime: Arc<crate::openai::recall_models::RecallRuntime>,
     #[cfg(test)]
     recall_provider: Option<crate::openai::recall_models::RecallModelProvider>,
+}
+
+/// Copy under the service lock, then connect outside it. Startup initialization is not repeated.
+#[derive(Clone)]
+pub struct ChatOperation {
+    path: PathBuf,
+    owner: UserId,
+    config: ChatConfig,
+    source_search_enabled: bool,
+    recall_runtime: Arc<crate::openai::recall_models::RecallRuntime>,
+    #[cfg(test)]
+    recall_provider: Option<crate::openai::recall_models::RecallModelProvider>,
+}
+
+impl ChatOperation {
+    pub fn connect(&self) -> PersistenceResult<ChatMemoryService> {
+        let mut store = SqliteMemoryStore::open_operation(&self.path, self.owner.clone())?;
+        store.source_search_enabled = self.source_search_enabled;
+        store.set_fact_index_enabled(self.config.fact_index_enabled);
+        Ok(ChatMemoryService {
+            store,
+            config: self.config.clone(),
+            recall_runtime: Arc::clone(&self.recall_runtime),
+            #[cfg(test)]
+            recall_provider: self.recall_provider.clone(),
+        })
+    }
 }
 
 fn bootstrap_runtime(owner: UserId, now: Timestamp, limit: usize) -> RuntimeContext {
@@ -1439,6 +1468,19 @@ fn bootstrap_runtime(owner: UserId, now: Timestamp, limit: usize) -> RuntimeCont
 }
 
 impl ChatMemoryService {
+    /// New-path callers use one independent connection per operation, sharing only recall state.
+    pub fn operation(&self) -> ChatOperation {
+        ChatOperation {
+            path: self.store.path().to_owned(),
+            owner: self.store.owner().clone(),
+            config: self.config.clone(),
+            source_search_enabled: self.store.source_search_enabled,
+            recall_runtime: Arc::clone(&self.recall_runtime),
+            #[cfg(test)]
+            recall_provider: self.recall_provider.clone(),
+        }
+    }
+
     pub fn new(mut store: SqliteMemoryStore, config: ChatConfig) -> PersistenceResult<Self> {
         config.validate()?;
         store.set_fact_index_enabled(config.fact_index_enabled);
@@ -3586,7 +3628,7 @@ impl ChatMemoryService {
                 {
                     return Err("provide exactly one of memory_id, staged_id or source_id".into());
                 }
-                self.store.transaction(|state| {
+                let result = self.store.transaction(|state| {
                     check_cancelled(&cancelled)?;
                     crate::forget::forget(
                         state,
@@ -3595,7 +3637,11 @@ impl ChatMemoryService {
                         input.staged_id,
                         input.source_id.as_deref(),
                     )
-                })
+                })?;
+                if result["removed"] == true {
+                    self.recall_runtime.invalidate_owner(&self.store);
+                }
+                Ok(result)
             }
             _ => Err("unknown memory tool".into()),
         }
