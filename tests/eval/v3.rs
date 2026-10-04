@@ -73,7 +73,37 @@ fn preflight(limit: Option<u64>, ceiling: u64) -> Result<(), String> {
     Ok(())
 }
 
-fn plan(cases: &[Value]) -> u64 {
+fn jobs(value: Option<&str>) -> usize {
+    value.map_or(8, |value| {
+        value
+            .parse()
+            .ok()
+            .filter(|&n| n > 0)
+            .expect("EVAL_JOBS must be a positive integer")
+    })
+}
+
+fn estimated_seconds(case: &Value) -> f64 {
+    let n = counts(case);
+    (n[0] + n[2]) as f64 * (3782.19 / 82.0)
+        + n[1] as f64 * (2189.09 / 61.0)
+        + n[3] as f64 * 2.5
+        + n[4] as f64 * 4.5
+}
+
+fn estimated_wall_seconds(cases: &[Value], jobs: usize) -> f64 {
+    // Simulate the same FIFO case queue with these estimated case durations.
+    let mut workers = vec![0.0f64; jobs.min(cases.len())];
+    for case in cases {
+        let next = (0..workers.len())
+            .min_by(|&a, &b| workers[a].total_cmp(&workers[b]))
+            .unwrap();
+        workers[next] += estimated_seconds(case);
+    }
+    workers.into_iter().fold(0.0, f64::max)
+}
+
+fn plan(cases: &[Value], jobs: usize) -> u64 {
     println!(
         "配置 {LABEL}；write=w4_runtime_v1，recall=recall_v3；逐消息显式 enrich_source，无重试。"
     );
@@ -107,17 +137,21 @@ fn plan(cases: &[Value]) -> u64 {
     );
     // Historical recordings lack separate W1/W3/W4 elapsed times. These pooled averages
     // are explicitly proxies, not stage medians or a wall-clock upper bound.
-    let seconds = (total[0] + total[2]) as f64 * (3782.19 / 82.0)
-        + total[1] as f64 * (2189.09 / 61.0)
-        + total[3] as f64 * 2.5
-        + total[4] as f64 * 4.5;
+    let seconds: f64 = cases.iter().map(estimated_seconds).sum();
+    let wall = estimated_wall_seconds(cases, jobs);
     println!(
         "耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈35.9s（Flash 混合61次/2189.09s，代理估计）；R1≈2.5s、R4≈4.5s（minimal p50）。"
     );
     println!(
-        "上述情景串行约 {seconds:.0}s / {:.1}分钟 / {:.2}小时；无独立 W3 时延，非可靠上界。新模式逐用例串行，EVAL_JOBS 不适用。",
+        "上述情景串行约 {seconds:.0}s / {:.1}分钟 / {:.2}小时。",
         seconds / 60.0,
         seconds / 3600.0
+    );
+    println!(
+        "EVAL_JOBS={jobs}（有效 {}）：FIFO 用例队列预计墙钟 {wall:.0}s / {:.1}分钟 / {:.2}小时；用例内严格串行。无独立 W3 时延，未计并发限流与排队，非可靠上界。",
+        jobs.min(cases.len()),
+        wall / 60.0,
+        wall / 3600.0
     );
     ceiling
 }
@@ -206,6 +240,7 @@ struct Recorder {
     live: Option<(String, String)>,
     operations: Mutex<HashMap<String, Operation>>,
     documents: Mutex<HashMap<String, Value>>,
+    observations: Mutex<HashMap<String, Vec<Value>>>,
     sent: AtomicUsize,
 }
 
@@ -220,6 +255,7 @@ impl Recorder {
             live,
             operations: Mutex::default(),
             documents: Mutex::default(),
+            observations: Mutex::default(),
             sent: AtomicUsize::new(0),
         }
     }
@@ -253,6 +289,47 @@ impl Recorder {
     fn missing(&self, case: &str) -> Option<String> {
         self.operations.lock().unwrap()[case].missing.clone()
     }
+    fn calls(&self, case: &str) -> Vec<Value> {
+        self.observations
+            .lock()
+            .unwrap()
+            .get(case)
+            .cloned()
+            .unwrap_or_default()
+    }
+    fn observe(
+        &self,
+        case: &str,
+        operation: &str,
+        request: &Value,
+        recording: &Value,
+        origin: &str,
+        elapsed: Duration,
+        reason: Option<&str>,
+    ) {
+        let schema = request
+            .pointer("/text/format/name")
+            .and_then(Value::as_str)
+            .unwrap_or("unknown");
+        let stage = match schema {
+            "w1_v1" => "W1",
+            "w3_v1" => "W3",
+            "w4_v2" => "W4",
+            "r1_v1" => "R1",
+            "r4_v3" => "R4",
+            other => other,
+        };
+        let body: Value = recording["body"]
+            .as_str()
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_default();
+        self.observations.lock().unwrap().entry(case.into()).or_default().push(json!({
+            "operation":operation,"stage":stage,"origin":origin,"sends":usize::from(origin=="live"),
+            "elapsed_ms":elapsed.as_millis(),"recorded_elapsed_ms":recording["elapsed_ms"],
+            "http_status":recording["http_status"],"response_status":body["status"],"usage":body["usage"],
+            "incomplete_details":body["incomplete_details"],"transport_error":recording["transport_error"],
+            "error":body["error"],"reason":reason}));
+    }
     /// Inject the *send* only in harness unit tests; production requests are never constructed here.
     fn respond(
         &self,
@@ -260,6 +337,7 @@ impl Recorder {
         request: &Value,
         send: impl FnOnce() -> Result<(u16, String), String>,
     ) -> (u16, String) {
+        let handling = Instant::now();
         let (operation, position, mapping) = {
             let mut ops = self.operations.lock().unwrap();
             let op = ops.get_mut(case).unwrap();
@@ -276,23 +354,37 @@ impl Recorder {
         let saved =
             self.documents.lock().unwrap()[case]["operations"][&operation][position].clone();
         if saved["request"] == fp {
+            self.observe(
+                case,
+                &operation,
+                request,
+                &saved,
+                "replay",
+                handling.elapsed(),
+                None,
+            );
             return (
                 saved["http_status"].as_u64().unwrap() as u16,
                 response_ids(saved["body"].as_str().unwrap(), &reverse),
             );
         }
-        let allowed = {
+        // One global reservation, made under the lock BEFORE invoking the send closure.
+        // Replays never reserve. Even concurrent failures consume their reserved attempt.
+        let (allowed, exhausted) = {
             let mut limit = self.allowance.lock().unwrap();
             match limit.as_mut() {
                 Some(n) if *n > 0 => {
                     *n -= 1;
-                    true
+                    (true, false)
                 }
-                _ => false,
+                Some(_) => (false, true),
+                None => (false, false),
             }
         };
         if !allowed {
-            let reason = if saved.is_null() {
+            let reason = if exhausted {
+                "额度耗尽（EVAL_RECORD）"
+            } else if saved.is_null() {
                 "未录制"
             } else {
                 "录制过期（请求指纹不符）"
@@ -303,6 +395,15 @@ impl Recorder {
                 .get_mut(case)
                 .unwrap()
                 .missing = Some(reason.into());
+            self.observe(
+                case,
+                &operation,
+                request,
+                &Value::Null,
+                "not_recorded",
+                handling.elapsed(),
+                Some(reason),
+            );
             return (503, json!({"error":reason}).to_string());
         }
         self.sent.fetch_add(1, Ordering::Relaxed);
@@ -320,6 +421,15 @@ impl Recorder {
             "request":fp,"request_content":canonical,"http_status":status,"body":response_ids(&body,&mapping),
             "usage":envelope["usage"],"elapsed_ms":started.elapsed().as_millis(),
             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"transport_error":failure});
+        self.observe(
+            case,
+            &operation,
+            request,
+            &recording,
+            "live",
+            handling.elapsed(),
+            None,
+        );
         let mut docs = self.documents.lock().unwrap();
         let doc = docs.get_mut(case).unwrap();
         let ops = doc["operations"].as_object_mut().unwrap();
@@ -331,15 +441,8 @@ impl Recorder {
         // A changed prefix invalidates subsequent stages; never reuse their old output by index.
         list.truncate(position);
         list.push(recording);
-        std::fs::create_dir_all(&self.dir).unwrap();
         let target = self.dir.join(format!("{case}.json"));
-        let temporary = target.with_extension("json.tmp");
-        std::fs::write(
-            &temporary,
-            serde_json::to_string_pretty(doc).unwrap() + "\n",
-        )
-        .unwrap();
-        std::fs::rename(temporary, target).unwrap();
+        write_json(&target, doc);
         (status, body)
     }
 }
@@ -495,9 +598,45 @@ fn run_case(case: &Value, recorder: &Recorder, address: &str) -> Value {
     json!({"case":case_id,"steps":steps})
 }
 
+fn write_json(path: &Path, value: &Value) {
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let temporary = path.with_extension("json.tmp");
+    std::fs::write(
+        &temporary,
+        serde_json::to_string_pretty(value).unwrap() + "\n",
+    )
+    .unwrap();
+    std::fs::rename(temporary, path).unwrap();
+}
+
+fn parallel_cases(
+    cases: &[Value],
+    jobs: usize,
+    run: impl Fn(&Value) -> Value + Sync,
+) -> Vec<Value> {
+    let next = AtomicUsize::new(0);
+    let results: Vec<Mutex<Option<Value>>> = cases.iter().map(|_| Mutex::new(None)).collect();
+    std::thread::scope(|scope| {
+        for _ in 0..jobs.min(cases.len()) {
+            scope.spawn(|| {
+                loop {
+                    let index = next.fetch_add(1, Ordering::Relaxed);
+                    let Some(case) = cases.get(index) else { break };
+                    *results[index].lock().unwrap() = Some(run(case));
+                }
+            });
+        }
+    });
+    results
+        .into_iter()
+        .map(|result| result.into_inner().unwrap().unwrap())
+        .collect()
+}
+
 pub(super) fn run() {
     let cases = cases();
-    let ceiling = plan(&cases);
+    let jobs = jobs(std::env::var("EVAL_JOBS").ok().as_deref());
+    let ceiling = plan(&cases, jobs);
     let limit = std::env::var("EVAL_RECORD")
         .ok()
         .map(|s| s.parse::<u64>().expect("EVAL_RECORD must be an integer"));
@@ -522,12 +661,17 @@ pub(super) fn run() {
         )
     });
     let recorder = Arc::new(Recorder::new(dir.clone(), limit, live));
+    let output = std::env::var_os("EVAL_V3_OUTPUT")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| dir.join("run.json"));
+    let case_dir = output.with_extension("cases");
+    let started = Instant::now();
     let empty = limit.is_none()
         && cases.iter().all(|c| {
             !dir.join(format!("{}.json", c["id"].as_str().unwrap()))
                 .exists()
         });
-    let results = if empty {
+    let mut results = if empty {
         cases.iter().map(|c| json!({"case":c["id"],"steps":c["questions"].as_array().unwrap().iter().map(|q|
             json!({"step":"question","question":q["id"],"state":"not_recorded","reason":"未录制"})).collect::<Vec<_>>()})).collect::<Vec<_>>()
     } else {
@@ -537,20 +681,34 @@ pub(super) fn run() {
             std::env::set_var("PMR_MODEL_NETWORK", "offline");
             std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
         }
-        let results = cases
-            .iter()
-            .map(|c| run_case(c, &recorder, &address))
-            .collect();
+        let results = parallel_cases(&cases, jobs, |case| {
+            let started = Instant::now();
+            let mut result = run_case(case, &recorder, &address);
+            result["elapsed_ms"] = json!(started.elapsed().as_millis());
+            result["calls"] = json!(recorder.calls(case["id"].as_str().unwrap()));
+            write_json(
+                &case_dir.join(format!("{}.json", case["id"].as_str().unwrap())),
+                &result,
+            );
+            result
+        });
         stop.store(true, Ordering::SeqCst);
         handle.join().unwrap();
         results
     };
-    let output = std::env::var_os("EVAL_V3_OUTPUT")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| dir.join("run.json"));
-    std::fs::create_dir_all(output.parent().unwrap()).unwrap();
-    std::fs::write(&output,serde_json::to_string_pretty(&json!({"pipeline":"v3","label":LABEL,
-        "configuration":recorder.configuration,"cases":results,"real_calls":recorder.sent.load(Ordering::Relaxed)})).unwrap()+"\n").unwrap();
+    // The server joins late responses before finalizing per-case diagnostics. This changes
+    // neither the result returned at the production deadline nor its scoring state.
+    for result in &mut results {
+        let case = result["case"].as_str().unwrap().to_owned();
+        result["calls"] = json!(recorder.calls(&case));
+        write_json(&case_dir.join(format!("{case}.json")), result);
+    }
+    write_json(
+        &output,
+        &json!({"pipeline":"v3","label":LABEL,
+        "configuration":recorder.configuration,"cases":results,"real_calls":recorder.sent.load(Ordering::Relaxed),
+        "jobs":jobs,"elapsed_ms":started.elapsed().as_millis()}),
+    );
     println!(
         "真实调用 {}；运行输出 {}；空录制记为未录制，不计通过。",
         recorder.sent.load(Ordering::Relaxed),
@@ -574,12 +732,104 @@ fn v3_full_plan_and_preflight_are_offline() {
         assert!(preflight(Some(702), 703).is_err());
         assert!(preflight(Some(703), 703).is_ok());
         assert!(preflight(None, 703).is_ok());
+        let serial: f64 = cases.iter().map(estimated_seconds).sum();
+        assert!((estimated_wall_seconds(&cases, 1) - serial).abs() < 0.001);
+        assert!((estimated_wall_seconds(&cases, 8) - 3264.0306217513).abs() < 0.001);
     }
     let cfg = config("test", "local", 9);
     assert_eq!(cfg.write_models.as_ref().unwrap().w1, PRO);
     assert_eq!(cfg.write_models.as_ref().unwrap().w3, FLASH);
     assert_eq!(cfg.recall_models.as_ref().unwrap().r4, PRO);
     assert_eq!(cfg.background_operation_limit, Some(3));
+    assert_eq!(jobs(None), 8);
+    assert_eq!(jobs(Some("1")), 1);
+    assert!(std::panic::catch_unwind(|| jobs(Some("0"))).is_err());
+}
+
+#[test]
+fn v3_parallel_cases_keep_recordings_and_reports_isolated_and_ordered() {
+    let dir = std::env::temp_dir().join(format!("eval-v3-parallel-{}", diagnostics::new_id()));
+    let recorder = Recorder::new(dir.clone(), Some(24 * 3), None);
+    let cases: Vec<_> = (0..24).map(|i| json!({"id":format!("case-{i}")})).collect();
+    let barrier = std::sync::Barrier::new(8);
+    let results = parallel_cases(&cases, 8, |case| {
+        let id = case["id"].as_str().unwrap();
+        barrier.wait();
+        let mut steps = Vec::new();
+        for (index, stage) in ["w1_v1", "w3_v1", "r1_v1"].iter().enumerate() {
+            recorder.begin(id, &format!("step:{index}"), &BTreeMap::new());
+            let request = json!({"model":PRO,"input":json!({"case":id,"index":index}).to_string(),"text":{"format":{"name":stage}}});
+            assert_eq!(
+                recorder
+                    .respond(id, &request, || Ok((
+                        200,
+                        json!({"status":"completed","case":id,"index":index}).to_string()
+                    )))
+                    .0,
+                200
+            );
+            steps.push(index);
+        }
+        let result = json!({"case":id,"steps":steps,"calls":recorder.calls(id)});
+        write_json(&dir.join("run.cases").join(format!("{id}.json")), &result);
+        result
+    });
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 72);
+    for (case, result) in cases.iter().zip(results.iter()) {
+        let id = case["id"].as_str().unwrap();
+        assert_eq!(result["case"], case["id"]);
+        assert_eq!(result["steps"], json!([0, 1, 2]));
+        let saved: Value =
+            serde_json::from_slice(&std::fs::read(dir.join(format!("{id}.json"))).unwrap())
+                .unwrap();
+        for index in 0..3 {
+            let row = &saved["operations"][format!("step:{index}")][0];
+            assert_eq!(row["request_content"]["input"]["case"], id);
+            let body: Value = serde_json::from_str(row["body"].as_str().unwrap()).unwrap();
+            assert_eq!(body["case"], id);
+            assert_eq!(body["index"], index);
+        }
+        let report: Value = serde_json::from_slice(
+            &std::fs::read(dir.join("run.cases").join(format!("{id}.json"))).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(&report, result);
+        assert_eq!(report["calls"].as_array().unwrap().len(), 3);
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn v3_concurrent_reservations_never_exceed_global_allowance() {
+    let dir = std::env::temp_dir().join(format!("eval-v3-limit-{}", diagnostics::new_id()));
+    let recorder = Recorder::new(dir.clone(), Some(7), None);
+    let cases: Vec<_> = (0..64).map(|i| json!({"id":format!("case-{i}")})).collect();
+    let barrier = std::sync::Barrier::new(16);
+    let sends = AtomicUsize::new(0);
+    let results = parallel_cases(&cases, 16, |case| {
+        let id = case["id"].as_str().unwrap();
+        recorder.begin(id, "write:m1", &BTreeMap::new());
+        barrier.wait();
+        let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+        let (status, _) = recorder.respond(id, &request, || {
+            sends.fetch_add(1, Ordering::SeqCst);
+            Ok((200, json!({"status":"completed"}).to_string()))
+        });
+        json!({"case":id,"status":status,"reason":recorder.missing(id)})
+    });
+    assert_eq!(sends.load(Ordering::SeqCst), 7);
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 7);
+    assert_eq!(*recorder.allowance.lock().unwrap(), Some(0));
+    assert_eq!(results.iter().filter(|r| r["status"] == 200).count(), 7);
+    assert_eq!(
+        results
+            .iter()
+            .filter(|r| r["reason"] == "额度耗尽（EVAL_RECORD）")
+            .count(),
+        57
+    );
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 7);
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]

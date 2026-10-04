@@ -16,7 +16,7 @@ python3 tests/eval/scoring/compare.py --run <v3-run.json> --output /tmp/eval-v3-
 | `ledger.py` | 复核台账键（第 6 节各组成部分的哈希）与最终结果；只有 `confirmed` 条目计入通过 |
 | `trial.py` | 四题试跑、反例、新旧转移与退步、报告 |
 | `baseline.py` | 全部 63 题只跑旧版：原始评分（eval.rs 口径的移植）、共同评分与覆盖缺口并列 |
-| `compare.py` | 实际新路径运行输出对照 0517000；复用适配/判分/转移规则，缺录制报告“未录制” |
+| `compare.py` | expect_common 新路径绝对评分为主，按用例/阶段列调用、耗时、诊断；0517000 对照在附录，缺录制报告“未录制” |
 | `review_ledger.json` | 复核台账。`proposed` 为草拟，改为 `confirmed`（填 reviewer）或改判后才生效 |
 | `fixtures/recall_v3/` | 四题的手写 recall.v3 正确输出夹具（不是实现的运行结果） |
 | `fixtures/counterexamples/` | 反例（真实原始格式）；`pairs.json` 为旧版弃答 / 新版给错的成对反例 |
@@ -28,5 +28,6 @@ python3 tests/eval/scoring/compare.py --run <v3-run.json> --output /tmp/eval-v3-
 
 新路径运行/干跑/录制说明见 [README-v3.md](../README-v3.md)。比较工具只读取实际运行输出，
 不把四题手写夹具当作全量真实结果；缺录制不计新版通过，语义待复核仍须台账确认。
+按 AD1，旧基线与新旧转移只作参考，不是新路径验收门槛；缺旧参考仍产出绝对评分。
 
 复核流程：跑 `trial.py`，报告中“待复核”项带台账键；在 `review_ledger.json` 中按键写入或确认结论。标注、问题、输出、额外结论或语义状态任一变化，键随之改变，旧结论不再适用；`test_ledger_covers_every_pending_item` 会指出失效的键。
