@@ -88,6 +88,94 @@
         },
         "total_tokens": 3751
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 4733,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [],
+          "op": "elapsed",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我2026年7月1日搬到成都了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-23"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              23
+            ],
+            "statement": "用户于2026年7月1日搬到成都。",
+            "strength": "strong",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2026-07-01",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2026年7月1日"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"complete\",\n    \"items\": [\n    ],\n    \"op\": \"elapsed\",\n    \"operands\": [\n    ],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我2026年7月1日搬到成都了。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-23\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    23\n    ],\n    \"statement\": \"用户于2026年7月1日搬到成都。\",\n    \"strength\": \"strong\",\n    \"supersedes_record_ids\": [\n    ],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"date\": \"2026-07-01\",\n    \"kind\": \"date\"\n    },\n    \"quote\": {\n    \"text\": \"2026年7月1日\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:5fd5fe664759e895e90118df7a004d369878016529db6ff6f3f5e3faa507d4a4",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4381,
+          "input_tokens_details": {
+            "cached_tokens": 3840
+          },
+          "output_tokens": 287,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4668
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4381,
+        "input_tokens_details": {
+          "cached_tokens": 3840
+        },
+        "output_tokens": 287,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4668
+      }
     }
   ]
 }
