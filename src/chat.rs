@@ -59,8 +59,11 @@ enum RecallVersion {
     V3,
 }
 
+#[path = "chat_background.rs"]
+mod background;
 #[path = "chat_recall.rs"]
 mod recall_dispatch;
+pub use background::BackgroundWorker;
 
 const ENRICHMENT_VERSION: &str = "s5_enrichment_v1";
 const ENRICHMENT_LEASE_SECONDS: i64 = 900;
@@ -102,6 +105,9 @@ pub struct ChatConfig {
     pub fact_index_enabled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub model_budget: Option<ModelBudgetConfig>,
+    /// Explicit background allowance; all clients retain the same total budget group.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub background_operation_limit: Option<u64>,
     pub local_recall_budget: LocalRecallBudget,
     pub utc_offset_seconds: i32,
     pub predicates: Vec<PredicateDefinition>,
@@ -127,6 +133,7 @@ impl Default for ChatConfig {
             write_models: None,
             fact_index_enabled: false,
             model_budget: None,
+            background_operation_limit: None,
             local_recall_budget: LocalRecallBudget::default(),
             utc_offset_seconds: 28_800,
             predicates: [
@@ -225,6 +232,7 @@ impl<'de> Deserialize<'de> for ChatConfig {
                 }
                 "fact_index_enabled" => read!(fact_index_enabled),
                 "model_budget" => read!(model_budget),
+                "background_operation_limit" => read!(background_operation_limit),
                 "local_recall_budget" => read!(local_recall_budget),
                 "utc_offset_seconds" => read!(utc_offset_seconds),
                 "predicates" => read!(predicates),
@@ -271,11 +279,16 @@ impl ChatConfig {
         if self.write_pipeline == WritePipeline::W4RuntimeV1
             && self.enrichment_mode == EnrichmentMode::Inline
         {
-            return Err("w4_runtime_v1 requires enrichment_mode off/deferred: J6 defers inline and MCP background execution until model calls can run outside the service global lock".into());
+            return Err("w4_runtime_v1 requires enrichment_mode off/deferred: J6 inline remains deferred to the next implementation stage".into());
         }
         self.local_recall_budget.validate()?;
         if let Some(budget) = &self.model_budget {
             budget.validate()?;
+        }
+        if let Some(limit) = self.background_operation_limit
+            && (!(1..=3).contains(&limit) || self.model_budget.is_none())
+        {
+            return Err("background_operation_limit requires model_budget and must be 1..3".into());
         }
         Ok(())
     }
@@ -1425,6 +1438,9 @@ pub struct ChatMemoryService {
     store: SqliteMemoryStore,
     config: ChatConfig,
     recall_runtime: Arc<crate::openai::recall_models::RecallRuntime>,
+    background_wake: Option<std::sync::mpsc::SyncSender<()>>,
+    #[cfg(test)]
+    model_client_override: Option<OpenAiClient>,
     #[cfg(test)]
     recall_provider: Option<crate::openai::recall_models::RecallModelProvider>,
 }
@@ -1437,6 +1453,9 @@ pub struct ChatOperation {
     config: ChatConfig,
     source_search_enabled: bool,
     recall_runtime: Arc<crate::openai::recall_models::RecallRuntime>,
+    background_wake: Option<std::sync::mpsc::SyncSender<()>>,
+    #[cfg(test)]
+    model_client_override: Option<OpenAiClient>,
     #[cfg(test)]
     recall_provider: Option<crate::openai::recall_models::RecallModelProvider>,
 }
@@ -1450,6 +1469,9 @@ impl ChatOperation {
             store,
             config: self.config.clone(),
             recall_runtime: Arc::clone(&self.recall_runtime),
+            background_wake: self.background_wake.clone(),
+            #[cfg(test)]
+            model_client_override: self.model_client_override.clone(),
             #[cfg(test)]
             recall_provider: self.recall_provider.clone(),
         })
@@ -1502,6 +1524,9 @@ impl ChatMemoryService {
             config: self.config.clone(),
             source_search_enabled: self.store.source_search_enabled,
             recall_runtime: Arc::clone(&self.recall_runtime),
+            background_wake: self.background_wake.clone(),
+            #[cfg(test)]
+            model_client_override: self.model_client_override.clone(),
             #[cfg(test)]
             recall_provider: self.recall_provider.clone(),
         }
@@ -1534,6 +1559,9 @@ impl ChatMemoryService {
             store,
             config,
             recall_runtime: Default::default(),
+            background_wake: None,
+            #[cfg(test)]
+            model_client_override: None,
             #[cfg(test)]
             recall_provider: None,
         })
@@ -2267,7 +2295,7 @@ impl ChatMemoryService {
 
     fn process_w4_source(&mut self, key: &str) -> PersistenceResult<Value> {
         if self.config.enrichment_mode == EnrichmentMode::Inline {
-            return Err("unsupported_processing_version: w4_runtime_v1 requires off/deferred processing (J6); inline and MCP background execution are not enabled".into());
+            return Err("unsupported_processing_version: w4_runtime_v1 requires off/deferred processing (J6); inline is not enabled".into());
         }
         let state = self.store.read()?;
         let source = state.sources.get(key).ok_or("source missing")?;
@@ -2527,7 +2555,15 @@ impl ChatMemoryService {
                         .ok_or("source receipt missing after capture")?;
                     crate::diagnostics::record("source_receipt", || source.status());
                     if !created || enrichment_off || enrichment_deferred {
-                        return self.source_receipt(&key, !created);
+                        // Read the T1 receipt before waking the worker; the capture outcome is stable.
+                        let receipt = self.source_receipt(&key, !created);
+                        if created
+                            && enrichment_deferred
+                            && let Some(wake) = &self.background_wake
+                        {
+                            let _ = wake.try_send(());
+                        }
+                        return receipt;
                     }
                 }
                 Err(error) => {
@@ -2825,23 +2861,36 @@ impl ChatMemoryService {
 
     fn model_client(&self, operation_id: &str) -> PersistenceResult<OpenAiClient> {
         // MCP authorization belongs to this config, owner and operation, never ambient budget IDs.
-        let base_url = match &self.config.model_base_url {
-            Some(url) => url.clone(),
-            None => std::env::var("DEEPSEEK_BASE_URL")
-                .map_err(|_| OpenAiAdapterError::MissingBaseUrl)?,
+        #[cfg(test)]
+        let injected = self.model_client_override.clone();
+        #[cfg(not(test))]
+        let injected: Option<OpenAiClient> = None;
+        let client = if let Some(client) = injected {
+            client
+        } else {
+            let base_url = match &self.config.model_base_url {
+                Some(url) => url.clone(),
+                None => std::env::var("DEEPSEEK_BASE_URL")
+                    .map_err(|_| OpenAiAdapterError::MissingBaseUrl)?,
+            };
+            let api_key =
+                std::env::var("DEEPSEEK_API_KEY").map_err(|_| OpenAiAdapterError::MissingApiKey)?;
+            let client = OpenAiClient::new(base_url, api_key)?;
+            client
         };
-        let api_key =
-            std::env::var("DEEPSEEK_API_KEY").map_err(|_| OpenAiAdapterError::MissingApiKey)?;
-        let client = OpenAiClient::new(base_url, api_key)?;
-        match &self.config.model_budget {
-            Some(budget) => Ok(client.with_budget(
+        let client = match &self.config.model_budget {
+            Some(budget) => client.with_budget(
                 self.store.path(),
                 self.store.owner().0.clone(),
                 budget.clone(),
                 operation_id,
-            )?),
-            None => Ok(client),
-        }
+            )?,
+            None => client,
+        };
+        Ok(match self.config.background_operation_limit {
+            Some(limit) => client.with_background_operation_limit(limit)?,
+            None => client,
+        })
     }
 
     fn call_in_operation(

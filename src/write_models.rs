@@ -318,6 +318,7 @@ impl WriteModelProvider {
             match saved_w1 {
                 Some(output) => w2::decode(&output.to_string())?,
                 None => {
+                    crate::commit::w4_renew_claim(store, claim)?;
                     no_missing_result(&client, ModelStage::W1)?;
                     let text = client
                         .structured_output_for_model_with_effort(
@@ -376,6 +377,7 @@ impl WriteModelProvider {
         let output = match crate::commit::w4_load_model_stage(store, claim, "w3", &w3_binding)? {
             Some(output) => W3Output::decode(&output.to_string())?,
             None => {
+                crate::commit::w4_renew_claim(store, claim)?;
                 no_missing_result(&client, ModelStage::W3)?;
                 let mut input = input;
                 input["candidates"] = serde_json::to_value(
@@ -453,6 +455,7 @@ impl WriteModelProvider {
         let raw = match &saved {
             Some(output) => output.get("raw_output").unwrap_or(output).clone(),
             None => {
+                crate::commit::w4_renew_claim(store, claim)?;
                 no_missing_result(&client, ModelStage::W4)?;
                 let text = client
                     .structured_output_for_model_with_effort(
@@ -780,3 +783,7 @@ pub fn w4_schema() -> Json {
 #[cfg(test)]
 #[path = "write_models_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "chat_background_tests.rs"]
+mod background_tests;

@@ -271,7 +271,7 @@ fn main() -> PersistenceResult<()> {
         match arg.as_str() {
             "--help" | "-h" => {
                 eprintln!(
-                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\n--call memory_recall|memory_prepare|memory_validate_answer --arguments JSON_FILE runs one CLI tool call (explicit --db/--owner). recall_pipeline: legacy (default)/recall_v3; request recall_version=recall.v3 or answer_contract.v1. recall.v3 needs a stable request_id; prepare defaults to session/turn. offline=true and bootstrap make no recall model calls. MCP online recall.v3 uses independent operation connections and shared request replay; snapshot changes fail without automatic retry. Recall and write pipelines are independent.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires off/deferred and capture_source=true, and runs only through these CLI batch commands. Existing sources keep their bound version.\nDeferred capture queues authorized sources without model calls; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. No automatic model retries."
+                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3\nDefault owner: local-user. Default timezone: UTC+08:00.\n--print-default-config prints the editable config and exits.\nretrieval_mode: legacy/local/assisted; enrichment_mode: inline/deferred/off.\n--call memory_remember|memory_recall|memory_prepare|memory_validate_answer --arguments JSON_FILE runs one CLI tool call (explicit --db/--owner). recall_pipeline: legacy (default)/recall_v3; request recall_version=recall.v3 or answer_contract.v1. recall.v3 needs a stable request_id; prepare defaults to session/turn. offline=true and bootstrap make no recall model calls. MCP online recall.v3 uses independent operation connections and shared request replay; snapshot changes fail without automatic retry. Recall and write pipelines are independent.\nwrite_pipeline: legacy (default)/w4_runtime_v1. New sources bind their version at capture; w4_runtime_v1 requires off/deferred and capture_source=true, runs automatically in MCP deferred mode, and supports these CLI batch commands. Existing sources keep their bound version.\nDeferred capture returns after raw storage; one MCP worker scans/reclaims durable new-version tasks outside the service lock. CLI --call does not start a worker; drain runs only in deferred mode. Explicit source processing can handle an off/failed source even when the current mode is off. Both batch commands require --db, --owner, --config, and a finite model_budget.\nlocal recall and bootstrap are offline; assisted makes at most one budgeted model request and falls back to local. local+off prepare requires capture_source=true and no model credentials.\nModel calls require DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, an explicit persistent model_budget, and the network gate. PMR_MODEL_NETWORK=offline (default) permits literal loopback fixtures only; live enables provider calls. background_operation_limit (1..3) explicitly separates the background operation cap from max_operation_calls; both use the same total model_budget. No automatic model retries."
                 );
                 return Ok(());
             }
@@ -294,10 +294,13 @@ fn main() -> PersistenceResult<()> {
                 let name = args.next().ok_or("--call requires a tool name")?;
                 if !matches!(
                     name.as_str(),
-                    "memory_recall" | "memory_prepare" | "memory_validate_answer"
+                    "memory_remember"
+                        | "memory_recall"
+                        | "memory_prepare"
+                        | "memory_validate_answer"
                 ) {
                     return Err(
-                        "--call supports memory_recall/memory_prepare/memory_validate_answer"
+                        "--call supports memory_remember/memory_recall/memory_prepare/memory_validate_answer"
                             .into(),
                     );
                 }
@@ -381,6 +384,7 @@ fn main() -> PersistenceResult<()> {
         .enable_all()
         .build()?
         .block_on(async {
+            let _background = service.start_background()?;
             let server = Server {
                 service: Arc::new(Mutex::new(service)),
                 prepares: Arc::new(Mutex::new(HashMap::new())),

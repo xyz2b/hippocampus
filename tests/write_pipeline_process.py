@@ -102,6 +102,17 @@ def save(binary, db, env, config, request):
         client.close()
 
 
+def save_cli(binary, db, env, config, request):
+    arguments = Path(str(db) + ".turn.json")
+    arguments.write_text(json.dumps(request, ensure_ascii=False))
+    process = subprocess.run([str(binary), "--db", str(db), "--owner", OWNER,
+                              "--config", str(config), "--call", "memory_remember",
+                              "--arguments", str(arguments)], env=env, text=True,
+                             capture_output=True, timeout=35)
+    assert process.returncode == 0, (process.stdout, process.stderr)
+    return json.loads(process.stdout)
+
+
 def batch(binary, db, env, config, *args):
     process = subprocess.run([str(binary), "--db", str(db), "--owner", OWNER,
                               "--config", str(config), *args], env=env, text=True,
@@ -162,12 +173,12 @@ def main():
             expected = []
             for name, config, text in [("old1", legacy, LEGACY_TEXT), ("new1", new, TEXT),
                                        ("old2", legacy, LEGACY_TEXT), ("new2", new, TEXT)]:
-                result = save(args.binary, db, env, config, turn(name, text))
+                result = save_cli(args.binary, db, env, config, turn(name, text))
                 expected.append(result["source"]["source_id"])
             assert Fixture.requests == [] and calls(db) == 0
             before = state(db)
-            assert save(args.binary, db, env, new, turn("old1", LEGACY_TEXT))["replayed"] is True
-            frozen(save(args.binary, db, env, legacy, turn("new1")), "queued", mcp=True)
+            assert save_cli(args.binary, db, env, new, turn("old1", LEGACY_TEXT))["replayed"] is True
+            frozen(save_cli(args.binary, db, env, legacy, turn("new1")), "queued")
             assert state(db) == before and Fixture.requests == []
             drained = batch(args.binary, db, env, legacy, "--drain-enrichment", "--max-jobs", "4")
             assert set(drained) == {"max_jobs", "attempted", "results"}, drained

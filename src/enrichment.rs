@@ -467,8 +467,10 @@ fn run_claimed(
         w4_save_plan(store, claim, &candidates, &plan)?;
     }
     for group in w4_progress(store, key)?.remaining {
+        crate::commit::w4_renew_claim(store, claim)?;
         w4_commit_group(store, claim, &group)?;
     }
+    crate::commit::w4_renew_claim(store, claim)?;
     w4_finish_round(store, claim)?;
     Ok(())
 }
