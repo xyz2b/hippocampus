@@ -1,0 +1,106 @@
+{
+  "id": "r4_15_sum_quantities",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 4926,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "sum",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "九月我买咖啡豆花了120元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-21"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              21
+            ],
+            "statement": "九月我买咖啡豆花了120元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "九月下旬又买了一袋，80元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-22"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              22
+            ],
+            "statement": "九月下旬又买了一袋，80元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"sum\",\n    \"operands\": [],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"九月我买咖啡豆花了120元。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-21\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    21\n    ],\n    \"statement\": \"九月我买咖啡豆花了120元。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"九月下旬又买了一袋，80元。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-22\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    22\n    ],\n    \"statement\": \"九月下旬又买了一袋，80元。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:4de3ece5e953186bfc6c3962a637bcdd4eaed1aa00b68cbb5b5a55d65b486999",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3669,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 352,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4021
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3669,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 352,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4021
+      }
+    }
+  ]
+}

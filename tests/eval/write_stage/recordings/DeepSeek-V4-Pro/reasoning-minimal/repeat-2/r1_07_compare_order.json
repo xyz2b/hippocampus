@@ -1,0 +1,63 @@
+{
+  "id": "r1_07_compare_order",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2315,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "compare",
+          "unit": null
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "comparison"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n    \"relation\": null,\n    \"time\": null\n    },\n    \"op\": \"compare\",\n    \"unit\": null\n  },\n  \"relation\": \"fact\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"comparison\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:5682202f63682eeb382ef1c02e77d51ab220f78681ec05843754e02450636ac9",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2365,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 100,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2465
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2365,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 100,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2465
+      }
+    }
+  ]
+}

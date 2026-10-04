@@ -1,0 +1,85 @@
+{
+  "id": "r1_05_sum_with_time",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3584,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": -1,
+                "unit": "month"
+              },
+              "quote": {
+                "text": "上个月"
+              },
+              "role": "event"
+            }
+          },
+          "op": "sum",
+          "unit": "元"
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": -1,
+            "unit": "month"
+          },
+          "quote": {
+            "text": "上个月"
+          },
+          "role": "event"
+        },
+        "type": "aggregate"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n    \"relation\": null,\n    \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -1,\n    \"unit\": \"month\"\n    },\n    \"quote\": {\n    \"text\": \"上个月\"\n    },\n    \"role\": \"event\"\n    }\n    },\n    \"op\": \"sum\",\n    \"unit\": \"元\"\n  },\n  \"relation\": \"fact\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -1,\n    \"unit\": \"month\"\n    },\n    \"quote\": {\n    \"text\": \"上个月\"\n    },\n    \"role\": \"event\"\n  },\n  \"type\": \"aggregate\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:64d32ca1a6c579fb6f92e26d197b4b8113485504ec8b582cd05e4809f90ae869",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2364,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 221,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2585
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2364,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 221,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2585
+      }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "id": "r4_17_elapsed_month_precision",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3893,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "elapsed",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-24"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              24
+            ],
+            "statement": "我七月搬到成都的。",
+            "strength": "moderate",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 7,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"elapsed\",\n    \"operands\": [],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我七月搬到成都的。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-24\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    24\n    ],\n    \"statement\": \"我七月搬到成都的。\",\n    \"strength\": \"moderate\",\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 7,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"我七月搬到成都的。\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:6c9463a2f9daa6ff837a8c4f5240f0c6468bb32adc75f22dfe9433003ca645f8",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3441,
+          "input_tokens_details": {
+            "cached_tokens": 2816
+          },
+          "output_tokens": 273,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3714
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3441,
+        "input_tokens_details": {
+          "cached_tokens": 2816
+        },
+        "output_tokens": 273,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3714
+      }
+    }
+  ]
+}
