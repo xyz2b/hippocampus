@@ -688,7 +688,11 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             &mut fields,
             "decode/validate",
             json!(true),
-            json!(error),
+            if stage == "r4" {
+                serde_json::from_str(error).unwrap_or_else(|_| json!(error))
+            } else {
+                json!(error)
+            },
             false,
         );
     }
@@ -2879,6 +2883,101 @@ fn recall_stage_wrong_fields_and_missing_sources_fail_without_lenient_semantics(
         "失败"
     );
 }
+
+#[test]
+fn r4_reports_validation_rules_and_fields_without_changing_production_errors() {
+    use hippocampus::r4;
+    let sample = &samples("r4")[0];
+    let good = fake_r4(sample);
+    let f = recall_adapter::R4Input::new(&sample["input"]).unwrap();
+    let ctx = r4::Context {
+        evidence: &f.evidence,
+        plan: &f.plan,
+        request: &f.request,
+        utc_offset_seconds: 28_800,
+        source_dates: &f.source_dates,
+    };
+    for (pointer, value, rule, field, cause) in [
+        (
+            "/facts/0/record_ids",
+            json!([999]),
+            "record_id",
+            "facts[0].record_ids[0]",
+            None,
+        ),
+        (
+            "/facts/0/evidence",
+            json!([]),
+            "empty_evidence",
+            "facts[0].evidence",
+            None,
+        ),
+        (
+            "/facts/0/evidence/0/quote/text",
+            json!("not in any source"),
+            "quote_or_source",
+            "facts[0].evidence[0]",
+            None,
+        ),
+        (
+            "/facts/0/uncertainty",
+            json!({"quote":{"text":"not in any source"},"resolved":false}),
+            "qualifier_source",
+            "facts[0].uncertainty.quote",
+            None,
+        ),
+        (
+            "/facts/0/times",
+            json!([{"role":"event","quote":{"text":"not in any source"},"interp":{"kind":"unknown"},"anchor":"said_on"}]),
+            "fact_time",
+            "facts[0].times[0]",
+            Some("quote_or_source"),
+        ),
+    ] {
+        let mut bad = good.clone();
+        *bad.pointer_mut(pointer).unwrap() = value;
+        let raw = bad.to_string();
+        let report = score_raw("r4", sample, Some(&raw));
+        let diagnostic = &report["fields"][0]["actual"];
+        assert_eq!(
+            diagnostic,
+            &json!({"code":"model_invalid_output","rule":rule,"field":field,"cause":cause})
+        );
+        let decoded = r4::decode(&raw).unwrap();
+        let detailed = r4::evaluate_detailed(decoded.clone(), &ctx).err().unwrap();
+        assert_eq!(r4::evaluate(decoded, &ctx).err(), Some(detailed.error));
+        assert_eq!(detailed.error.to_string(), "model_invalid_output");
+    }
+    let schema = score_raw("r4", sample, Some("{}"));
+    assert_eq!(
+        schema["fields"][0]["actual"],
+        json!({"code":"model_invalid_output","rule":"schema","field":"$","cause":null})
+    );
+    let sample = samples("r4")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("r4_16_"))
+        .unwrap();
+    let mut bad = fake_r4(&sample);
+    bad["compute"]["operands"] = json!([]);
+    let report = score_raw("r4", &sample, Some(&bad.to_string()));
+    assert_eq!(
+        report["fields"][0]["actual"],
+        json!({"code":"model_invalid_output","rule":"operands","field":"compute.operands","cause":null})
+    );
+    let sample = samples("r4")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("r4_04_"))
+        .unwrap();
+    let mut bad = fake_r4(&sample);
+    // 另一条事实携带旧方依据，不满足替代事实自身的新旧依据要求。
+    bad["facts"][0]["supersedes_record_ids"] = json!([4]);
+    let report = score_raw("r4", &sample, Some(&bad.to_string()));
+    assert_eq!(
+        report["fields"][0]["actual"],
+        json!({"code":"model_invalid_output","rule":"record_basis","field":"facts[0].supersedes_record_ids[0]","cause":null})
+    );
+}
+
 #[test]
 fn recall_stage_recording_replay_splits_and_clock_fingerprints_are_complete() {
     let temp = TempRecords::new();

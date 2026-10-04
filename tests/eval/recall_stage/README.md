@@ -27,6 +27,7 @@ HTTP/未完成/无效响应均保留原始尝试、usage 与 incomplete_details.
 
 - R1 严格解码并运行 R1 核验；比较 need、current_evidence、type、subject、conditions、time、plan.op、filter.relation，以及标签明确给出的 unit。标量的标签数组是允许集合，结构数组无序一一匹配，嵌套的条件候选数组表示该片段的允许集合。Z8：conditions 要求期望为实际的子集，额外检索提示不扣分，必需条件缺失仍失败；time 标签为 null 时不做语义评分，标签非 null 时继续比较明确的 Quote/interp 字段。模型额外给出的条件/时间仍须通过全部结构、原文引用及时间换算核验，不能靠无效额外内容通过。
 - R4 先严格解码、核对全部引用/限定语/记录 ID，并由代码执行计算；比较 verdict。标签 facts 每行要求唯一匹配：record_ids 集合相同，来源包含标签要求的来源（允许更新双方依据），必须属性逐项比较。标签未指定的附加事实与 statement 含义不做自动语义裁定，原始输出留人工检查；facts=[] 表示没有要求匹配的事实行，不额外创造“模型必须不返回任何事实”的规则。
+- R4 核验失败的 `fields[].field=decode/validate` 对应 `actual={code,rule,field,cause}`：code 保持 `model_invalid_output`，rule 给出生产核验规则，field 定位条目/属性，cause 可选地记录内层时间失败原因。解码错误定位根 `$`；每次只报告首个错误。生产回执不增加字段，诊断不含原文。核验实现与生产共用，不改变录制请求或指纹。
 - compute=null 要求实际为空；其余按标签核对 op、items 个数、operands 个数/端点与条目绑定、数量集合/单位、distinct_groups、coverage。expected_value 由生产代码运算核对，模型不得直接输出最终数值；insufficient_ok 允许空 compute 或有效但无法计算的粗精度计划，不能接受无效引用/日期。未规定的项目不猜标签。
 - must_not 全部留人工，报告明确附带；不能把字段评分“通过”解释为完成了语义人工验收。尤其额外 facts、唯一当前值、statement 限定语、纠错与历史仍需复核。这是现有样本的评分覆盖边界，新增更严要求应先补经复核的标签。
 

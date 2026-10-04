@@ -528,8 +528,67 @@ pub fn resolve_time_interp(
     })
 }
 
-/// 只比较整段明确数字日期，不解释“昨天”等自然语言，也不从一句话中的日期推断归属。
+/// 核对 Quote 中明确日历片段；不解释相对时间，也不推断多个日期的语义归属。
 fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precision) -> bool {
+    let text: String = quote.chars().filter(|ch| !ch.is_whitespace()).collect();
+    if let Some(matches) = literal_calendar_matches(&text, start, end, precision) {
+        return matches;
+    }
+    // 取连续日历片段而非所有子串，防止把完整日期降为月份或把区间降为端点。
+    let joint = |ch: char| matches!(ch, '至' | '到' | '~' | '～' | '—' | '－' | '-');
+    let calendar = |ch: char| {
+        ch.is_ascii_digit()
+            || matches!(
+                ch,
+                '年' | '月'
+                    | '日'
+                    | '号'
+                    | '一'
+                    | '二'
+                    | '三'
+                    | '四'
+                    | '五'
+                    | '六'
+                    | '七'
+                    | '八'
+                    | '九'
+                    | '十'
+            )
+            || joint(ch)
+    };
+    let mut recognized = false;
+    for segment in text.split(|ch| !calendar(ch)) {
+        let segment = segment
+            .trim_matches(joint)
+            .trim_start_matches(['年', '月', '日', '号']);
+        if let Some(matches) = literal_calendar_matches(segment, start, end, precision) {
+            if matches {
+                return true;
+            }
+            recognized = true;
+        }
+    }
+    // 未识别的自然语言仍由模型解释；有明确日期时，至少须有一个完整片段吻合。
+    !recognized
+}
+
+/// None 表示不是支持的明确日历表达；Some(false) 包括非法日期及精度矛盾。
+fn literal_calendar_matches(
+    text: &str,
+    start: Date,
+    end: Date,
+    precision: Precision,
+) -> Option<bool> {
+    fn month_number(text: &str) -> Option<u8> {
+        text.parse().ok().or_else(|| {
+            [
+                "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二",
+            ]
+            .iter()
+            .position(|month| *month == text)
+            .map(|i| i as u8 + 1)
+        })
+    }
     // 保留非法数字日期的形状，不能把“2月30日”悄悄接受成模型改写的“2月28日”。
     fn numeric_date(text: &str, year: i32) -> Option<(Option<Date>, &str)> {
         if let Some(prefix) = text.get(..10)
@@ -548,7 +607,9 @@ fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precisio
             Some(_) => return None,
             None => (year, head),
         };
-        if month.is_empty() || !month.bytes().all(|b| b.is_ascii_digit()) {
+        if month.is_empty()
+            || !(month.bytes().all(|b| b.is_ascii_digit()) || month_number(month).is_some())
+        {
             return None;
         }
         let at = rest.find(['日', '号'])?;
@@ -556,10 +617,7 @@ fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precisio
         if day.is_empty() || !day.bytes().all(|b| b.is_ascii_digit()) {
             return None;
         }
-        let month = month
-            .parse::<u8>()
-            .ok()
-            .and_then(|m| Month::try_from(m).ok());
+        let month = month_number(month).and_then(|m| Month::try_from(m).ok());
         let day = day.parse::<u8>().ok();
         let rest = &rest[at + rest[at..].chars().next()?.len_utf8()..];
         Some((
@@ -569,10 +627,9 @@ fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precisio
             rest,
         ))
     }
-    let text: String = quote.chars().filter(|ch| !ch.is_whitespace()).collect();
-    if let Some((first, rest)) = numeric_date(&text, start.year()) {
+    if let Some((first, rest)) = numeric_date(text, start.year()) {
         if rest.is_empty() {
-            return first == Some(start) && first.and_then(Date::next_day) == Some(end);
+            return Some(first == Some(start) && first.and_then(Date::next_day) == Some(end));
         }
         if let Some(tail) = ["至", "到", "~", "～", "—", "－", "-"]
             .iter()
@@ -592,7 +649,7 @@ fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precisio
             if let Some((last, rest)) = last
                 && matches!(rest, "" | "（含首尾两日）" | "(含首尾两日)")
             {
-                return first == Some(start) && last.and_then(Date::next_day) == Some(end);
+                return Some(first == Some(start) && last.and_then(Date::next_day) == Some(end));
             }
         }
     }
@@ -600,34 +657,40 @@ fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precisio
     let numeric_month = text
         .strip_suffix('月')
         .and_then(|text| text.split_once('年'))
-        .and_then(|(year, month)| Some((year.parse::<i32>().ok()?, month.parse::<u8>().ok()?)))
+        .filter(|(year, _)| year.len() == 4 && year.bytes().all(|b| b.is_ascii_digit()))
+        .and_then(|(year, month)| Some((year.parse::<i32>().ok()?, month_number(month)?)))
         .or_else(|| {
             (text.len() == 7 && text.as_bytes()[4] == b'-')
                 .then(|| Some((text[..4].parse().ok()?, text[5..].parse().ok()?)))
                 .flatten()
-        });
+        })
+        .or_else(|| Some((start.year(), month_number(text.strip_suffix('月')?)?)));
     if let Some((year, month)) = numeric_month {
-        return precision == Precision::Month
-            && start.year() == year
-            && start.month() as u8 == month
-            && start.day() == 1
-            && end
-                .previous_day()
-                .is_some_and(|last| last.year() == year && last.month() as u8 == month)
-            && end.day() == 1;
+        return Some(
+            precision == Precision::Month
+                && start.year() == year
+                && start.month() as u8 == month
+                && start.day() == 1
+                && end
+                    .previous_day()
+                    .is_some_and(|last| last.year() == year && last.month() as u8 == month)
+                && end.day() == 1,
+        );
     }
     if let Some(year) = text
         .strip_suffix('年')
         .filter(|year| year.len() == 4)
         .and_then(|year| year.parse::<i32>().ok())
     {
-        return precision == Precision::Year
-            && start.year() == year
-            && start.month() == Month::January
-            && start.day() == 1
-            && year.checked_add(1) == Some(end.year())
-            && end.month() == Month::January
-            && end.day() == 1;
+        return Some(
+            precision == Precision::Year
+                && start.year() == year
+                && start.month() == Month::January
+                && start.day() == 1
+                && year.checked_add(1) == Some(end.year())
+                && end.month() == Month::January
+                && end.day() == 1,
+        );
     }
-    true
+    None
 }

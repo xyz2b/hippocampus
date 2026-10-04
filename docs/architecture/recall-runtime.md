@@ -54,9 +54,11 @@ CLI/MCP 与配置分发仍留⑤，MCP 在线锁改造另项处理。④只提�
 
 `r4::decode/evaluate` 检查冻结字段、枚举、必填可空项和非空文本。FactView/ComputeItem 的每条依据必须落在本包的来源与连续片段中，复用 locate_quote 的空白归一并恢复原文，不拼接不同片段。query_only 的本轮文本不能成为事实或计算依据。record_ids/supersedes_record_ids 除在输入内，还必须有该条记录的依据；supersedes 必须同时有旧条目与新方依据。legacy 没有可核准来源时不能形成事实；有获准原文时可重新判断原文，不补造旧限定语。
 
-不确定性、条件、TimeInterp 及 anchor_quote 都检查对应依据来源；输出完整保留 polarity、strength、uncertainty、conditions、times、current、applies。来源接收日与时区在同一读快照中取得，不接受模型自报时钟；来源时刻改变会推进 source_revision，已有快照屏障拒绝旧日期锚点。时间换算复用 W2，并补核对纯月名不得补为日精度；Anchored/Recurring/Unknown 沿用 W2 的 unknown，所需端点无法确定时计算不足。代码不证明概括、主体、条件适用性、事件同一性及时间自然语言解释的语义正确性，这些由 R4 样本评测验证。
+不确定性、条件、TimeInterp 及 anchor_quote 都检查对应依据来源；输出完整保留 polarity、strength、uncertainty、conditions、times、current、applies。来源接收日与时区在同一读快照中取得，不接受模型自报时钟；来源时刻改变会推进 source_revision，已有快照屏障拒绝旧日期锚点。时间换算与日历字面核验统一复用 W2：整句 Quote 中的明确日期、月份、年份也检查区间与精度，不把月/年补成具体日，完整日期区间不降为单个端点。支持数字日期、ISO 日期/月份、中文月名与既有日期区间；多个日历片段至少须有一个完整片段吻合，不机械判定它与断言的语义归属。Anchored/Recurring/Unknown 沿用 W2 的 unknown，所需端点无法确定时计算不足。代码不证明概括、主体、条件适用性、事件同一性及时间自然语言解释的语义正确性，这些由 R4 样本评测验证。
 
 任一结构/引用失效整份输出变为 degraded、semantic_judgment=failed、facts=[]、computed=null；既有记录与原文继续交出，不保留部分有效模型事实。使用冻结 model_invalid_output/model_timeout 原因。合法输出因身份、覆盖、单位、精度或算术容量不足而不能计算时，保留事实，computed=null，附 compute_insufficient，并按状态优先级得到 insufficient 等状态。
+
+离线评测使用 `r4::decode_detailed/evaluate_detailed` 定位失败规则与字段，生产 `decode/evaluate` 复用同一核验并继续返回冻结总码。诊断只包含规则码、字段路径和可选内层原因，不携带原文；一次报告首个核验错误，不代表其余字段均有效。结构解码错误定位为根 `$`。
 
 - count：按非空 event_group 去重，null 不视作独立事件；只计已确认组，存在未知身份或范围缺口时只能给 at_least；没有已确认组时不足。完整且明确的空集可精确计零，同一来源允许多个条目。
 - sum：同组重复数量归一后相等只计一次，矛盾、身份未知或数量缺失时不足。coverage=complete 还须满足代码范围完整、无裁剪/待判记录/整理缺口，相关 raw 已由条目覆盖；模型自报不能覆盖这些已知缺口。冻结形状没有证明遗漏部分非负的字段，因此不完整 sum 保守返回不足，不把已见正数的部分和当下限。
@@ -99,7 +101,7 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 | low | 21/40 | 19/40 | 35s / 64s | 40s / 96s |
 | minimal | 23/40（holdout 11/12） | 14/40 | 2.5s / 3.5s | 3.9s / 5.2s |
 
-medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单次物理调用实测。minimal 未产生推理 token，R1 质量接近 medium；R4 的16次核验失败另行用第2版提示词处理，尚未真实重测。首次 minimal 冷启动为16.6s；两阶段常见耗时支持该推荐，但单阶段分位数不能相加证明全流程 P95≤15s，宿主接线后的生产预算、检索和冷启动仍需验证。
+medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单次物理调用实测。minimal 未产生推理 token，R1 质量接近 medium。R4 第2版已重测40次：18/40、核验失败13，p50 4.5s / p90 6.3s；收尾日期核验修复后离线评分不变，13次分别为缺同条旧方依据8次、缺操作数5次，详见[收尾分析](../../tests/eval/recall_stage/r4-closeout-review.md)。首次 minimal 冷启动为16.6s；两阶段常见耗时支持该推荐，但单阶段分位数不能相加证明全流程 P95≤15s，宿主接线后的生产预算、检索和冷启动仍需验证。
 
 回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 

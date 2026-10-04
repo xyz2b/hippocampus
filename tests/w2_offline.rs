@@ -840,6 +840,142 @@ fn coarse_numeric_month_and_year_keep_their_precision() {
 }
 
 #[test]
+fn whole_sentence_time_quotes_cannot_invent_calendar_precision() {
+    for (quote, interp) in [
+        (
+            "我于2022年8月参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+        ),
+        (
+            "我于2022年参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+        ),
+        (
+            "我于2022-08参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+        ),
+        (
+            "我八月参加展会。",
+            json!({"kind":"date","date":"2026-08-12"}),
+        ),
+        (
+            "我于2022年八月参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+        ),
+        (
+            "我8月参加展会。",
+            json!({"kind":"date","date":"2026-08-12"}),
+        ),
+        (
+            "我于2022年8月12日参加展会。",
+            json!({"kind":"date","date":"2022-08-13"}),
+        ),
+        (
+            "我于2022年2月30日参加展会。",
+            json!({"kind":"date","date":"2022-02-28"}),
+        ),
+        (
+            "展期2022年8月12日至14日。",
+            json!({"kind":"date","date":"2022-08-12"}),
+        ),
+        (
+            "我于2022年8月参加展会。",
+            json!({"kind":"month","year_offset":-4,"month":9}),
+        ),
+        (
+            "我于2022年参加展会。",
+            json!({"kind":"relative","unit":"year","offset":-3}),
+        ),
+    ] {
+        let t = serde_json::from_value(time(quote, interp)).unwrap();
+        assert!(
+            w2::resolve_time_interp(&t, "2026-04-15", 28_800).is_err(),
+            "whole quote accepted invented precision: {quote}"
+        );
+    }
+}
+
+#[test]
+fn whole_sentence_calendar_quotes_keep_valid_dates_ranges_and_coarse_precision() {
+    for (quote, interp, precision) in [
+        (
+            "我于2022年8月12日参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+            Precision::Day,
+        ),
+        (
+            "我于2022年八月12日参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+            Precision::Day,
+        ),
+        (
+            "我于2022-08-12参加展会。",
+            json!({"kind":"date","date":"2022-08-12"}),
+            Precision::Day,
+        ),
+        (
+            "我于2022年8月参加展会。",
+            json!({"kind":"month","year_offset":-4,"month":8}),
+            Precision::Month,
+        ),
+        (
+            "我于2022-08参加展会。",
+            json!({"kind":"month","year_offset":-4,"month":8}),
+            Precision::Month,
+        ),
+        (
+            "我于2022年参加展会。",
+            json!({"kind":"relative","unit":"year","offset":-4}),
+            Precision::Year,
+        ),
+        (
+            "我八月参加展会。",
+            json!({"kind":"month","year_offset":0,"month":8}),
+            Precision::Month,
+        ),
+        (
+            "我去年8月参加展会。",
+            json!({"kind":"month","year_offset":-1,"month":8}),
+            Precision::Month,
+        ),
+        (
+            "展期2022年8月12日至14日。",
+            json!({"kind":"range","start":"2022-08-12","end_inclusive":"2022-08-14"}),
+            Precision::Day,
+        ),
+        (
+            "展期2022-08-12到2022-08-14（含首尾两日）。",
+            json!({"kind":"range","start":"2022-08-12","end_inclusive":"2022-08-14"}),
+            Precision::Day,
+        ),
+        (
+            "我于2022 年 8 月 12 日到北京。",
+            json!({"kind":"date","date":"2022-08-12"}),
+            Precision::Day,
+        ),
+        (
+            "我2021年首次参展，2022年8月12日再次参展。",
+            json!({"kind":"date","date":"2022-08-12"}),
+            Precision::Day,
+        ),
+        (
+            "我昨天参加展会。",
+            json!({"kind":"relative","unit":"day","offset":-1}),
+            Precision::Day,
+        ),
+    ] {
+        let t = serde_json::from_value(time(quote, interp)).unwrap();
+        assert_eq!(
+            w2::resolve_time_interp(&t, "2026-04-15", 28_800)
+                .unwrap()
+                .precision,
+            precision,
+            "{quote}"
+        );
+    }
+}
+
+#[test]
 fn requests_restore_quotes_and_keep_unknown_retention_deadlines() {
     let source = "记 住 这条，只保留一阵子。";
     let mut r = request("remember", "记住这条", &[0]);

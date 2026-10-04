@@ -403,8 +403,12 @@ pub fn score(
         }
     } else {
         let f = R4Input::new(&sample["input"])?;
-        let evaluated = r4::evaluate(
-            r4::decode(text).map_err(|e| e.to_string())?,
+        let invalid = |d: r4::ValidationDiagnostic| {
+            json!({"code":d.error.to_string(),"rule":d.error.0,"field":d.field,"cause":d.cause})
+                .to_string()
+        };
+        let evaluated = r4::evaluate_detailed(
+            r4::decode_detailed(text).map_err(invalid)?,
             &r4::Context {
                 evidence: &f.evidence,
                 plan: &f.plan,
@@ -413,7 +417,7 @@ pub fn score(
                 source_dates: &f.source_dates,
             },
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(invalid)?;
         let actual = serde_json::to_value(&evaluated.output).unwrap();
         compare(
             fields,

@@ -13,6 +13,23 @@ impl std::fmt::Display for InvalidOutput {
 }
 impl std::error::Error for InvalidOutput {}
 
+/// 只读诊断定位；生产仍返回 InvalidOutput 的冻结总码，不包含原文。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ValidationDiagnostic {
+    pub error: InvalidOutput,
+    pub field: String,
+    pub cause: Option<&'static str>,
+}
+impl InvalidOutput {
+    fn at(self, field: impl Into<String>) -> ValidationDiagnostic {
+        ValidationDiagnostic {
+            error: self,
+            field: field.into(),
+            cause: None,
+        }
+    }
+}
+
 pub struct Context<'a> {
     pub evidence: &'a RecallEvidence,
     pub plan: &'a r1::Plan,
@@ -41,6 +58,10 @@ pub fn decode(text: &str) -> Result<R4Output, InvalidOutput> {
     let output = serde_json::from_str(text).map_err(|_| InvalidOutput("schema"))?;
     shape(&output)?;
     Ok(output)
+}
+
+pub fn decode_detailed(text: &str) -> Result<R4Output, ValidationDiagnostic> {
+    decode(text).map_err(|e| e.at("$"))
 }
 
 fn shape(output: &R4Output) -> Result<(), InvalidOutput> {
@@ -110,12 +131,13 @@ impl Context<'_> {
         Err(InvalidOutput("quote_or_source"))
     }
 
-    fn refs(&self, evidence: &mut [EvidenceRef]) -> Result<(), InvalidOutput> {
+    fn refs(&self, evidence: &mut [EvidenceRef], field: &str) -> Result<(), ValidationDiagnostic> {
         if evidence.is_empty() {
-            return Err(InvalidOutput("empty_evidence"));
+            return Err(InvalidOutput("empty_evidence").at(field));
         }
-        for e in evidence {
-            self.restore(&mut e.quote, &e.source)?;
+        for (i, e) in evidence.iter_mut().enumerate() {
+            self.restore(&mut e.quote, &e.source)
+                .map_err(|e| e.at(format!("{field}[{i}]")))?;
         }
         Ok(())
     }
@@ -152,28 +174,12 @@ impl Context<'_> {
                 .get(source_id)
                 .ok_or(InvalidOutput("source_date_missing"))?,
         };
-        let resolution = crate::w2::resolve_time_interp(time, said_on, self.utc_offset_seconds)
-            .map_err(|_| InvalidOutput("time"))?;
-        // W2 检查完整数字年月；补核对无年份的数字/中文月名，不能补成某一日。
-        if let Some(month) = bare_month(&time.quote.text) {
-            if resolution.status == ResolutionStatus::Resolved {
-                let offset = time::UtcOffset::from_whole_seconds(self.utc_offset_seconds)
-                    .map_err(|_| InvalidOutput("timezone"))?;
-                let start = time::OffsetDateTime::from_unix_timestamp(
-                    resolution.start.ok_or(InvalidOutput("time"))?,
-                )
-                .map_err(|_| InvalidOutput("time"))?
-                .to_offset(offset);
-                if resolution.precision != Precision::Month || start.month() as u8 != month {
-                    return Err(InvalidOutput("time_precision"));
-                }
-            }
-        }
-        Ok(resolution)
+        crate::w2::resolve_time_interp(time, said_on, self.utc_offset_seconds)
+            .map_err(|_| InvalidOutput("time"))
     }
 
-    fn fact(&self, fact: &mut FactView) -> Result<(), InvalidOutput> {
-        self.refs(&mut fact.evidence)?;
+    fn fact(&self, fact: &mut FactView, index: usize) -> Result<(), ValidationDiagnostic> {
+        self.refs(&mut fact.evidence, &format!("facts[{index}].evidence"))?;
         let record = |id: &MemoryId| {
             self.evidence
                 .records
@@ -181,10 +187,17 @@ impl Context<'_> {
                 .find(|r| r.id() == *id)
                 .ok_or(InvalidOutput("record_id"))
         };
-        for id in fact.record_ids.iter().chain(&fact.supersedes_record_ids) {
-            let r = record(id)?;
-            if !fact.evidence.iter().any(|e| supports_record(e, r)) {
-                return Err(InvalidOutput("record_basis"));
+        for (field, ids) in [
+            ("record_ids", &fact.record_ids),
+            ("supersedes_record_ids", &fact.supersedes_record_ids),
+        ] {
+            for (i, id) in ids.iter().enumerate() {
+                let r = record(id).map_err(|e| e.at(format!("facts[{index}].{field}[{i}]")))?;
+                if !fact.evidence.iter().any(|e| supports_record(e, r)) {
+                    return Err(
+                        InvalidOutput("record_basis").at(format!("facts[{index}].{field}[{i}]"))
+                    );
+                }
             }
         }
         if !fact.supersedes_record_ids.is_empty() {
@@ -192,59 +205,63 @@ impl Context<'_> {
                 .supersedes_record_ids
                 .iter()
                 .map(record)
-                .collect::<Result<_, _>>()?;
+                .collect::<Result<_, _>>()
+                .map_err(|e| e.at(format!("facts[{index}].supersedes_record_ids")))?;
             if !fact
                 .evidence
                 .iter()
                 .any(|e| !old.iter().any(|r| supports_record(e, r)))
             {
-                return Err(InvalidOutput("new_basis"));
+                return Err(InvalidOutput("new_basis").at(format!("facts[{index}].evidence")));
             }
         }
         if let Some(q) = &mut fact.uncertainty {
-            self.qualifier(&mut q.quote, &fact.evidence)?;
+            self.qualifier(&mut q.quote, &fact.evidence)
+                .map_err(|e| e.at(format!("facts[{index}].uncertainty.quote")))?;
         }
-        for q in &mut fact.conditions {
-            self.qualifier(&mut q.quote, &fact.evidence)?;
+        for (i, q) in fact.conditions.iter_mut().enumerate() {
+            self.qualifier(&mut q.quote, &fact.evidence)
+                .map_err(|e| e.at(format!("facts[{index}].conditions[{i}].quote")))?;
         }
-        for t in &mut fact.times {
+        for (i, t) in fact.times.iter_mut().enumerate() {
             let mut checked = None;
+            let mut cause = "quote_or_source";
             for e in &fact.evidence {
                 let mut copy = t.clone();
-                if self.time(&mut copy, &e.source).is_ok() {
-                    checked = Some(copy);
-                    break;
+                match self.time(&mut copy, &e.source) {
+                    Ok(_) => {
+                        checked = Some(copy);
+                        break;
+                    }
+                    // 其他来源找不到此 Quote 不掩盖已定位来源的时间错误。
+                    Err(e) if e.0 != "quote_or_source" => cause = e.0,
+                    Err(_) => (),
                 }
             }
-            *t = checked.ok_or(InvalidOutput("fact_time"))?;
+            *t = checked.ok_or_else(|| {
+                let mut diagnostic =
+                    InvalidOutput("fact_time").at(format!("facts[{index}].times[{i}]"));
+                diagnostic.cause = Some(cause);
+                diagnostic
+            })?;
         }
         Ok(())
     }
 }
 
-fn bare_month(text: &str) -> Option<u8> {
-    let text: String = text.chars().filter(|c| !c.is_whitespace()).collect();
-    let month = text.strip_suffix('月')?;
-    let month = month.rsplit_once('年').map_or(month, |(_, m)| m);
-    month
-        .parse::<u8>()
-        .ok()
-        .filter(|m| (1..=12).contains(m))
-        .or_else(|| {
-            [
-                "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二",
-            ]
-            .iter()
-            .position(|m| *m == month)
-            .map(|i| i as u8 + 1)
-        })
+/// 先完整核验再计算；任何字段非法都不留下部分事实或部分数字。
+pub fn evaluate(output: R4Output, ctx: &Context<'_>) -> Result<Evaluated, InvalidOutput> {
+    evaluate_detailed(output, ctx).map_err(|d| d.error)
 }
 
-/// 先完整核验再计算；任何字段非法都不留下部分事实或部分数字。
-pub fn evaluate(mut output: R4Output, ctx: &Context<'_>) -> Result<Evaluated, InvalidOutput> {
-    shape(&output)?;
-    for fact in &mut output.facts {
-        ctx.fact(fact)?;
+/// 与生产 evaluate 共用完整核验与计算，只增加失败字段定位。
+pub fn evaluate_detailed(
+    mut output: R4Output,
+    ctx: &Context<'_>,
+) -> Result<Evaluated, ValidationDiagnostic> {
+    shape(&output).map_err(|e| e.at("$"))?;
+    for (i, fact) in output.facts.iter_mut().enumerate() {
+        ctx.fact(fact, i)?;
     }
     let Some(plan) = &mut output.compute else {
         return Ok(Evaluated {
@@ -257,62 +274,78 @@ pub fn evaluate(mut output: R4Output, ctx: &Context<'_>) -> Result<Evaluated, In
         .plan
         .output
         .as_ref()
-        .ok_or(InvalidOutput("unapproved_compute"))?;
+        .ok_or_else(|| InvalidOutput("unapproved_compute").at("compute.op"))?;
     let op = match plan.op {
         ComputeOp::Count => R1Op::Count,
         ComputeOp::Sum => R1Op::Sum,
         ComputeOp::Elapsed => R1Op::Elapsed,
         ComputeOp::Compare => R1Op::Compare,
     };
-    if allowed.plan.op != op
-        || allowed
-            .plan
-            .unit
-            .as_ref()
-            .is_some_and(|u| Some(u) != plan.unit.as_ref())
+    if allowed.plan.op != op {
+        return Err(InvalidOutput("unapproved_compute").at("compute.op"));
+    }
+    if allowed
+        .plan
+        .unit
+        .as_ref()
+        .is_some_and(|u| Some(u) != plan.unit.as_ref())
     {
-        return Err(InvalidOutput("unapproved_compute"));
+        return Err(InvalidOutput("unapproved_compute").at("compute.unit"));
     }
     let mut ids = BTreeSet::new();
     let mut dates = BTreeMap::new();
-    for item in &mut plan.items {
+    for (i, item) in plan.items.iter_mut().enumerate() {
         if item.id.starts_with('@') || !ids.insert(item.id.clone()) {
-            return Err(InvalidOutput("item_id"));
+            return Err(InvalidOutput("item_id").at(format!("compute.items[{i}].id")));
         }
-        ctx.refs(&mut item.evidence)?;
+        ctx.refs(&mut item.evidence, &format!("compute.items[{i}].evidence"))?;
         if let Some(q) = &item.quantity {
-            decimal_text(&q.amount).ok_or(InvalidOutput("quantity"))?;
+            decimal_text(&q.amount).ok_or_else(|| {
+                InvalidOutput("quantity").at(format!("compute.items[{i}].quantity.amount"))
+            })?;
             if !item
                 .evidence
                 .iter()
                 .any(|e| quantity_basis(q, &e.quote.text))
             {
-                return Err(InvalidOutput("quantity_basis"));
+                return Err(
+                    InvalidOutput("quantity_basis").at(format!("compute.items[{i}].quantity"))
+                );
             }
         }
         match (&mut item.date, &item.date_source) {
             (Some(date), Some(source)) if item.evidence.iter().any(|e| e.source == *source) => {
-                dates.insert(item.id.clone(), ctx.time(date, source)?);
+                dates.insert(
+                    item.id.clone(),
+                    ctx.time(date, source)
+                        .map_err(|e| e.at(format!("compute.items[{i}].date")))?,
+                );
             }
             (None, None) => (),
-            _ => return Err(InvalidOutput("date_source")),
+            _ => {
+                return Err(
+                    InvalidOutput("date_source").at(format!("compute.items[{i}].date_source"))
+                );
+            }
         }
     }
     match plan.op {
         ComputeOp::Count | ComputeOp::Sum if !plan.operands.is_empty() => {
-            return Err(InvalidOutput("operands"));
+            return Err(InvalidOutput("operands").at("compute.operands"));
         }
         ComputeOp::Elapsed | ComputeOp::Compare => {
             if plan.operands.len() != 2 {
-                return Err(InvalidOutput("operands"));
+                return Err(InvalidOutput("operands").at("compute.operands"));
             }
             for (i, operand) in plan.operands.iter().enumerate() {
                 if operand == "@request.at" {
                     if plan.op != ComputeOp::Elapsed || i != 0 {
-                        return Err(InvalidOutput("request_operand"));
+                        return Err(
+                            InvalidOutput("request_operand").at(format!("compute.operands[{i}]"))
+                        );
                     }
                 } else if !ids.contains(operand) {
-                    return Err(InvalidOutput("operand_id"));
+                    return Err(InvalidOutput("operand_id").at(format!("compute.operands[{i}]")));
                 }
             }
         }

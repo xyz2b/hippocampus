@@ -997,6 +997,51 @@ fn elapsed_month_precision_is_insufficient_and_false_precision_is_invalid() {
 }
 
 #[test]
+fn whole_sentence_month_precision_is_checked_in_facts_and_compute_items() {
+    let f = Fixture::sample("r4_17_");
+    let quote = f.input["records"][0]["sentence"].as_str().unwrap();
+    let mut item = dated_item(
+        &f,
+        24,
+        quote,
+        json!({"kind":"month","year_offset":0,"month":7}),
+    );
+    insufficient(f.finish(output(
+        vec![],
+        Some(compute(
+            "elapsed",
+            vec![item.clone()],
+            vec!["@request.at", "24"],
+            Some("day"),
+            "complete",
+        )),
+    )));
+    let mut view = f.fact(24, "yes");
+    view["times"] = json!([item["date"].clone()]);
+    assert_eq!(
+        f.finish(output(vec![view], None)).status,
+        RecallStatus::Answered
+    );
+    item["date"]["interp"] = json!({"kind":"date","date":"2026-07-12"});
+    invalid(
+        &f,
+        output(
+            vec![],
+            Some(compute(
+                "elapsed",
+                vec![item.clone()],
+                vec!["@request.at", "24"],
+                Some("day"),
+                "complete",
+            )),
+        ),
+    );
+    let mut view = f.fact(24, "yes");
+    view["times"] = json!([item["date"]]);
+    invalid(&f, output(vec![view], None));
+}
+
+#[test]
 fn x3_compare_disjoint_date_intervals_and_overlapping_precision() {
     let f = Fixture::sample("r4_18_");
     let a = dated_item(
