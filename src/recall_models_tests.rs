@@ -872,7 +872,7 @@ fn unresolved_subject_without_judgment_evidence_keeps_r1_clarification_and_skips
 }
 
 #[test]
-fn host_dispatch_online_replay_validator_and_mcp_guard_share_one_result() {
+fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let db = Db::new();
     let (p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
     let mut service = crate::chat::ChatMemoryService::new(
@@ -884,23 +884,13 @@ fn host_dispatch_online_replay_validator_and_mcp_guard_share_one_result() {
     service.inject_recall_provider(p);
     let args = json!({"query":"我的灯色是什么，临时标记 Q9？","context":["当前查询不授权保存。"],
         "request_id":"host-online","at":AT});
-    let blocked = service.call_with_global_context("memory_recall", args.clone(), || false);
-    assert_eq!(blocked.is_error, Some(true));
-    assert!(
-        blocked.structured_content.unwrap()["error"]
-            .as_str()
-            .unwrap()
-            .contains("recall_v3_mcp_online_disabled")
-    );
-    assert_eq!(sent.lock().unwrap().len(), 0);
-    let prepare = json!({"user_turn":{"text":"新陈述不会在拒绝后保存。","session_id":"host","turn_id":"blocked","capture_source":true}});
+    let online = service.call_with_global_context("memory_recall", args.clone(), || false);
+    assert_ne!(online.is_error, Some(true));
     assert_eq!(
-        service
-            .call_with_global_context("memory_prepare", prepare, || false)
-            .is_error,
-        Some(true)
+        online.structured_content.unwrap()["recall"]["status"],
+        "answered"
     );
-    assert_eq!(db.open().read().unwrap().sources.len(), 1);
+    assert_eq!(sent.lock().unwrap().len(), 2);
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
@@ -1192,6 +1182,18 @@ fn held_r1(
     std::sync::mpsc::Receiver<()>,
     std::sync::mpsc::Sender<()>,
 ) {
+    held_model(db, "r1-route-sentinel")
+}
+
+fn held_model(
+    db: &Db,
+    model: &'static str,
+) -> (
+    RecallModelProvider,
+    Arc<Mutex<Vec<Value>>>,
+    std::sync::mpsc::Receiver<()>,
+    std::sync::mpsc::Sender<()>,
+) {
     let (mut p, sent) = mocked(db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
     let transport = p.client.transport.take().unwrap();
     let (entered, receiver) = std::sync::mpsc::channel();
@@ -1200,7 +1202,7 @@ fn held_r1(
     p.client.transport = Some(Arc::new(move |request| {
         let body: Value =
             serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-        if body["model"] == "r1-route-sentinel" {
+        if body["model"] == model {
             entered.send(()).unwrap();
             released
                 .lock()
@@ -1426,4 +1428,415 @@ fn shared_runtime_executor_panic_wakes_waiter_and_never_reissues_a_reserved_send
     );
     assert_eq!(db.calls(), 1);
     assert!(sent.lock().unwrap().is_empty());
+}
+
+fn mcp_service(db: &Db, provider: RecallModelProvider) -> Mutex<crate::chat::ChatMemoryService> {
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"recall_pipeline":"recall_v3","enrichment_mode":"off"}))
+            .unwrap(),
+    )
+    .unwrap();
+    service.inject_recall_provider(provider);
+    Mutex::new(service)
+}
+
+fn mcp_call(
+    service: &Mutex<crate::chat::ChatMemoryService>,
+    name: &str,
+    args: Value,
+    cancelled: impl Fn() -> bool,
+) -> rmcp::model::CallToolResult {
+    crate::chat::ChatMemoryService::call_shared(
+        service,
+        name,
+        args,
+        cancelled,
+        &diagnostics::new_id(),
+    )
+    .unwrap()
+}
+
+fn mcp_query(id: &str) -> Value {
+    json!({"query":"请核对我的灯色。","request_id":id,"at":AT})
+}
+
+#[test]
+fn mcp_online_r1_and_r4_wait_outside_lock_and_same_id_sends_once() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
+        let db = Db::new();
+        let (p, sent, entered, release) = held_model(&db, stage);
+        let service = mcp_service(&db, p);
+        let runtime = service.lock().unwrap().shared_recall_runtime();
+        std::thread::scope(|scope| {
+            let first =
+                scope.spawn(|| mcp_call(&service, "memory_recall", mcp_query("same"), || false));
+            entered
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap();
+            let duplicate =
+                scope.spawn(|| mcp_call(&service, "memory_recall", mcp_query("same"), || false));
+            wait_for_same_request(&runtime);
+            let (done, received) = std::sync::mpsc::channel();
+            let service = &service;
+            scope.spawn(move || {
+                done.send(mcp_call(&service, "memory_list", json!({}), || false))
+                    .unwrap()
+            });
+            assert_ne!(
+                received
+                    .recv_timeout(std::time::Duration::from_secs(5))
+                    .unwrap()
+                    .is_error,
+                Some(true)
+            );
+            let mut mismatched = mcp_query("same");
+            mismatched["query"] = json!("另一问题");
+            let rejected = mcp_call(&service, "memory_recall", mismatched, || false);
+            assert!(
+                rejected.structured_content.unwrap()["error"]
+                    .as_str()
+                    .unwrap()
+                    .contains("request_mismatch")
+            );
+            let mut offline = mcp_query("other");
+            offline["offline"] = json!(true);
+            assert_ne!(
+                mcp_call(&service, "memory_recall", offline, || false).is_error,
+                Some(true)
+            );
+            release.send(()).unwrap();
+            let result = first.join().unwrap();
+            assert_ne!(result.is_error, Some(true), "{result:?}");
+            assert_eq!(
+                result.structured_content.as_ref().unwrap()["recall"]["status"],
+                "answered"
+            );
+            assert_eq!(
+                duplicate.join().unwrap().structured_content,
+                result.structured_content
+            );
+        });
+        assert_eq!(sent.lock().unwrap().len(), 2);
+        assert_eq!(db.calls(), 2);
+    }
+}
+
+#[test]
+fn mcp_online_delete_or_snapshot_change_invalidates_both_model_stages_without_retry() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
+        for delete in [true, false] {
+            let db = Db::new();
+            let (p, sent, entered, release) = held_model(&db, stage);
+            let service = mcp_service(&db, p);
+            let runtime = service.lock().unwrap().shared_recall_runtime();
+            std::thread::scope(|scope| {
+                let first = scope
+                    .spawn(|| mcp_call(&service, "memory_recall", mcp_query("changed"), || false));
+                entered
+                    .recv_timeout(std::time::Duration::from_secs(5))
+                    .unwrap();
+                let duplicate = scope
+                    .spawn(|| mcp_call(&service, "memory_recall", mcp_query("changed"), || false));
+                wait_for_same_request(&runtime);
+                let (tool, args) = if delete {
+                    ("memory_forget", json!({"source_id":"s-purple"}))
+                } else {
+                    (
+                        "memory_remember",
+                        json!({"text":"我有一把绿伞。","session_id":"mcp","turn_id":"change","capture_source":true,"observed_at":AT}),
+                    )
+                };
+                assert_ne!(
+                    mcp_call(&service, tool, args, || false).is_error,
+                    Some(true)
+                );
+                release.send(()).unwrap();
+                for result in [first.join().unwrap(), duplicate.join().unwrap()] {
+                    assert_eq!(result.is_error, Some(true));
+                    let body = result.structured_content.unwrap();
+                    assert!(
+                        body["error"].as_str().unwrap().contains(if delete {
+                            "recall_claim_lost"
+                        } else {
+                            "recall_snapshot_changed"
+                        }),
+                        "{body}"
+                    );
+                    assert!(!body.to_string().contains(TEXT));
+                }
+            });
+            assert!(runtime.cache.lock().unwrap().is_empty());
+            assert!(runtime.in_flight.lock().unwrap().is_empty());
+            let state = db.open().read().unwrap();
+            assert!(
+                !serde_json::to_string(&state.receipts)
+                    .unwrap()
+                    .contains(TEXT)
+            );
+            if delete {
+                assert!(!serde_json::to_string(&state).unwrap().contains(TEXT));
+            }
+            assert_eq!(
+                mcp_call(&service, "memory_recall", mcp_query("changed"), || false).is_error,
+                Some(true)
+            );
+            let expected = if stage == "r1-route-sentinel" { 1 } else { 2 };
+            assert_eq!(sent.lock().unwrap().len(), expected);
+            assert_eq!(db.calls(), expected as i64);
+        }
+    }
+}
+
+#[test]
+fn mcp_online_executor_cancellation_discards_late_output_and_never_retries() {
+    for stage in ["r1-route-sentinel", "r4-route-sentinel"] {
+        let db = Db::new();
+        let (p, sent, entered, release) = held_model(&db, stage);
+        let service = mcp_service(&db, p);
+        let runtime = service.lock().unwrap().shared_recall_runtime();
+        let cancelled = AtomicBool::new(false);
+        std::thread::scope(|scope| {
+            let first = scope.spawn(|| {
+                mcp_call(&service, "memory_recall", mcp_query("cancelled"), || {
+                    cancelled.load(Ordering::SeqCst)
+                })
+            });
+            entered
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap();
+            cancelled.store(true, Ordering::SeqCst);
+            release.send(()).unwrap();
+            let result = first.join().unwrap();
+            assert_eq!(result.is_error, Some(true));
+            let body = result.structured_content.unwrap();
+            assert!(body["error"].as_str().unwrap().contains("cancelled"));
+            assert!(!body.to_string().contains(TEXT));
+        });
+        assert!(runtime.cache.lock().unwrap().is_empty());
+        assert!(runtime.in_flight.lock().unwrap().is_empty());
+        assert_eq!(
+            mcp_call(&service, "memory_recall", mcp_query("cancelled"), || false).is_error,
+            Some(true)
+        );
+        let expected = if stage == "r1-route-sentinel" { 1 } else { 2 };
+        assert_eq!(sent.lock().unwrap().len(), expected);
+        assert_eq!(db.calls(), expected as i64);
+    }
+}
+
+#[test]
+fn mcp_online_cancelled_duplicate_leaves_executor_and_budget_unchanged() {
+    let db = Db::new();
+    let (p, sent, entered, release) = held_r1(&db);
+    let service = mcp_service(&db, p);
+    let runtime = service.lock().unwrap().shared_recall_runtime();
+    let cancelled = AtomicBool::new(false);
+    std::thread::scope(|scope| {
+        let first = scope.spawn(|| {
+            mcp_call(
+                &service,
+                "memory_recall",
+                mcp_query("cancel-waiter"),
+                || false,
+            )
+        });
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let (done, received) = std::sync::mpsc::channel();
+        let service = &service;
+        let cancelled = &cancelled;
+        scope.spawn(move || {
+            done.send(mcp_call(
+                &service,
+                "memory_recall",
+                mcp_query("cancel-waiter"),
+                || cancelled.load(Ordering::SeqCst),
+            ))
+            .unwrap()
+        });
+        wait_for_same_request(&runtime);
+        cancelled.store(true, Ordering::SeqCst);
+        let result = received
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        assert_eq!(result.is_error, Some(true));
+        assert!(
+            result.structured_content.unwrap()["error"]
+                .as_str()
+                .unwrap()
+                .contains("cancelled")
+        );
+        release.send(()).unwrap();
+        assert_ne!(first.join().unwrap().is_error, Some(true));
+    });
+    assert_ne!(
+        mcp_call(
+            &service,
+            "memory_recall",
+            mcp_query("cancel-waiter"),
+            || false
+        )
+        .is_error,
+        Some(true)
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
+
+#[test]
+fn mcp_online_prepare_saves_before_model_wait_and_revalidates_shared_result() {
+    let db = Db::new();
+    let (p, sent, entered, release) = held_r1(&db);
+    let service = mcp_service(&db, p);
+    let args = json!({"user_turn":{"text":TEXT,"session_id":"mcp","turn_id":"prepared","capture_source":true,"observed_at":AT}});
+    let result = std::thread::scope(|scope| {
+        let first = scope.spawn(|| mcp_call(&service, "memory_prepare", args.clone(), || false));
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        assert_eq!(db.open().read().unwrap().sources.len(), 2);
+        assert_ne!(
+            mcp_call(&service, "memory_list", json!({}), || false).is_error,
+            Some(true)
+        );
+        release.send(()).unwrap();
+        first.join().unwrap()
+    });
+    let body = result.structured_content.as_ref().unwrap();
+    assert_eq!(body["source"]["status"], "stored");
+    assert_eq!(body["recall"]["status"], "answered");
+    assert_eq!(
+        mcp_call(&service, "memory_prepare", args.clone(), || false).structured_content,
+        result.structured_content
+    );
+    mcp_call(
+        &service,
+        "memory_forget",
+        json!({"source_id":"s-purple"}),
+        || false,
+    );
+    let checked = service
+        .lock()
+        .unwrap()
+        .validate_prepare_response(&args, result);
+    assert_eq!(
+        checked.structured_content.unwrap()["recall"]["status"],
+        "not_requested"
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn mcp_online_timeout_replays_degraded_without_a_new_send_and_precancel_sends_zero() {
+    let db = Db::new();
+    let (p, sent) = mocked(
+        &db,
+        vec![
+            envelope(r1_out("judge")),
+            Err(OpenAiAdapterError::Http("timed out".into())),
+        ],
+    );
+    let service = mcp_service(&db, p);
+    let before = mcp_call(&service, "memory_recall", mcp_query("not-started"), || true);
+    assert_eq!(before.is_error, Some(true));
+    assert_eq!(sent.lock().unwrap().len(), 0);
+    assert!(db.open().read().unwrap().receipts.is_empty());
+    let first = mcp_call(&service, "memory_recall", mcp_query("timeout"), || false);
+    assert_ne!(first.is_error, Some(true));
+    let body = first.structured_content.as_ref().unwrap();
+    assert_eq!(body["recall"]["status"], "degraded");
+    assert_eq!(body["recall"]["semantic_judgment"], "failed");
+    assert!(
+        body["recall"]["degraded_reasons"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v == "model_timeout")
+    );
+    assert_eq!(
+        mcp_call(&service, "memory_recall", mcp_query("timeout"), || false).structured_content,
+        first.structured_content
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2);
+}
+
+#[test]
+fn omitted_clock_concurrent_before_receipt_freezes_first_day_without_weakening_explicit_at() {
+    let db = Db::new();
+    let runtime = RecallRuntime::default();
+    let (entered, waiting) = std::sync::mpsc::channel();
+    let (release, released) = std::sync::mpsc::channel();
+    let released = Mutex::new(released);
+    let checks = std::sync::atomic::AtomicUsize::new(0);
+    std::thread::scope(|scope| {
+        let first = scope.spawn(|| {
+            runtime.run_cancellable(
+                &mut db.open(),
+                &request("omitted-at"),
+                Budget::default(),
+                None,
+                true,
+                &|| {
+                    if checks.fetch_add(1, Ordering::SeqCst) == 1 {
+                        entered.send(()).unwrap();
+                        released
+                            .lock()
+                            .unwrap()
+                            .recv_timeout(std::time::Duration::from_secs(15))
+                            .unwrap();
+                    }
+                    false
+                },
+            )
+        });
+        waiting
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        assert!(db.open().read().unwrap().receipts.is_empty());
+        let second = scope.spawn(|| {
+            let mut later = request("omitted-at");
+            freeze_clock(&mut later, AT + 86_400).unwrap();
+            runtime.run_cancellable(
+                &mut db.open(),
+                &later,
+                Budget::default(),
+                None,
+                true,
+                &|| false,
+            )
+        });
+        wait_for_same_request(&runtime);
+        let mut explicit = request("omitted-at");
+        freeze_clock(&mut explicit, AT + 86_400).unwrap();
+        assert!(
+            runtime
+                .run(&mut db.open(), &explicit, Budget::default(), None)
+                .unwrap_err()
+                .to_string()
+                .contains("request_mismatch")
+        );
+        release.send(()).unwrap();
+        let output = first.join().unwrap().unwrap();
+        assert_eq!(output.request.at, AT);
+        assert_eq!(second.join().unwrap().unwrap(), output);
+        let mut later = request("omitted-at");
+        freeze_clock(&mut later, AT + 86_400).unwrap();
+        assert_eq!(
+            runtime
+                .run_cancellable(
+                    &mut db.open(),
+                    &later,
+                    Budget::default(),
+                    None,
+                    true,
+                    &|| false
+                )
+                .unwrap(),
+            output
+        );
+    });
+    assert_eq!(db.calls(), 0);
 }

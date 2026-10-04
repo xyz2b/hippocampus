@@ -329,10 +329,6 @@ pub struct RecallModelProvider {
     pub recall_models: RecallModels,
 }
 impl RecallModelProvider {
-    pub(crate) fn network_allowed(&self) -> bool {
-        self.client.network_allowed()
-    }
-
     pub fn new(client: OpenAiClient, context: OpenAiAdapterContext) -> Self {
         Self {
             client,
@@ -405,6 +401,7 @@ type CacheKey = (PathBuf, String, String);
 
 struct InFlight {
     binding: String,
+    at: i64,
     executor: std::thread::ThreadId,
     // 等待者仅保留完成状态；完整结果只在既有的有界缓存内。
     result: Mutex<Option<Result<(), String>>>,
@@ -415,7 +412,7 @@ struct InFlight {
 }
 
 impl InFlight {
-    fn wait(&self) -> PersistenceResult<()> {
+    fn wait(&self, cancelled: &dyn Fn() -> bool) -> PersistenceResult<()> {
         let mut result = self.result.lock().unwrap_or_else(|e| e.into_inner());
         #[cfg(test)]
         {
@@ -423,10 +420,35 @@ impl InFlight {
             self.ready.notify_all();
         }
         while result.is_none() {
-            result = self.ready.wait(result).unwrap_or_else(|e| e.into_inner());
+            check_cancelled(cancelled)?;
+            // Cancellation must also release a duplicate caller while the executor is still in HTTP.
+            result = self
+                .ready
+                .wait_timeout(result, std::time::Duration::from_millis(100))
+                .unwrap_or_else(|e| e.into_inner())
+                .0;
         }
+        check_cancelled(cancelled)?;
         result.as_ref().unwrap().clone().map_err(Into::into)
     }
+}
+
+fn check_cancelled(cancelled: &dyn Fn() -> bool) -> PersistenceResult<()> {
+    if cancelled() {
+        return Err("request cancelled before commit".into());
+    }
+    Ok(())
+}
+
+fn freeze_clock(request: &mut Request, at: i64) -> PersistenceResult<()> {
+    request.binding.at = at;
+    request.said_on = time::OffsetDateTime::from_unix_timestamp(at)?
+        .to_offset(time::UtcOffset::from_whole_seconds(
+            request.utc_offset_seconds,
+        )?)
+        .date()
+        .to_string();
+    Ok(())
 }
 
 struct FlightGuard<'a> {
@@ -545,6 +567,28 @@ impl RecallRuntime {
             .map(|(out, _)| out)
     }
 
+    /// MCP cancellation is checked between sends and before retaining a result; attempts never retry.
+    pub(crate) fn run_cancellable(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        provider: Option<&RecallModelProvider>,
+        implicit_at: bool,
+        cancelled: &dyn Fn() -> bool,
+    ) -> PersistenceResult<RecallOutput> {
+        self.run_inner(
+            store,
+            request,
+            budget,
+            provider,
+            None,
+            implicit_at,
+            cancelled,
+        )
+        .map(|(out, _)| out)
+    }
+
     /// 审计与输出共用身份/快照检查；重放返回同一对结果，不触发模型重试。
     pub fn run_with_audit(
         &self,
@@ -553,7 +597,7 @@ impl RecallRuntime {
         budget: Budget,
         provider: Option<&RecallModelProvider>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
-        self.run_inner(store, request, budget, provider, None)
+        self.run_inner(store, request, budget, provider, None, false, &|| false)
     }
 
     /// 启动的全局视图由宿主离线生成；仍共用请求绑定、缓存和删除检查。
@@ -575,7 +619,7 @@ impl RecallRuntime {
         {
             return Err("invalid_bootstrap_output".into());
         }
-        self.run_inner(store, request, budget, None, Some(output))
+        self.run_inner(store, request, budget, None, Some(output), false, &|| false)
             .map(|(out, _)| out)
     }
 
@@ -586,7 +630,10 @@ impl RecallRuntime {
         budget: Budget,
         provider: Option<&RecallModelProvider>,
         bootstrap: Option<RecallOutput>,
+        implicit_at: bool,
+        cancelled: &dyn Fn() -> bool,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
+        check_cancelled(cancelled)?;
         if store.owner() != &request.owner {
             return Err("recall_owner_mismatch".into());
         }
@@ -598,9 +645,39 @@ impl RecallRuntime {
             store.owner().0.clone(),
             json!(["recall.v3", fingerprint(&json!(request.binding.request_id))]).to_string(),
         );
-        let binding = request_binding(request, budget, provider, bootstrap.is_some());
+        let mut effective = Request {
+            binding: request.binding.clone(),
+            owner: request.owner.clone(),
+            subject_ids: request.subject_ids.clone(),
+            said_on: request.said_on.clone(),
+            utc_offset_seconds: request.utc_offset_seconds,
+            bootstrap: request.bootstrap,
+        };
+        if implicit_at
+            && let Some(at) = store
+                .read()?
+                .receipts
+                .get(&key.2)
+                .and_then(|r| r.request["at"].as_i64())
+        {
+            freeze_clock(&mut effective, at)?;
+        }
         let (flight, start) = {
             let mut flights = self.in_flight.lock().unwrap_or_else(|e| e.into_inner());
+            // The first flight freezes omitted clocks even before its receipt is written.
+            if implicit_at {
+                let at = flights.get(&key).map(|flight| flight.at).or_else(|| {
+                    self.cache
+                        .lock()
+                        .unwrap_or_else(|e| e.into_inner())
+                        .get(&key)
+                        .map(|cached| cached.output.request.at)
+                });
+                if let Some(at) = at {
+                    freeze_clock(&mut effective, at)?;
+                }
+            }
+            let binding = request_binding(&effective, budget, provider, bootstrap.is_some());
             if let Some(flight) = flights.get(&key) {
                 if flight.binding != binding {
                     return Err("recall_request_mismatch".into());
@@ -609,6 +686,7 @@ impl RecallRuntime {
             } else {
                 let flight = Arc::new(InFlight {
                     binding,
+                    at: effective.binding.at,
                     executor: std::thread::current().id(),
                     result: Mutex::new(None),
                     ready: Condvar::new(),
@@ -620,21 +698,22 @@ impl RecallRuntime {
                 (flight, true)
             }
         };
+        let request = &effective;
         if !start {
             // 同线程递归不能等待自己完成；沿用旧的零重试拒绝，跨线程才续等。
             if flight.executor == std::thread::current().id() {
                 return Err("recall_result_not_retained:no_model_retry".into());
             }
-            flight.wait()?;
+            flight.wait(cancelled)?;
             // 共用既有回执/快照/缓存检查，等待期间删除或状态变化也不能返回旧正文。
-            return self.execute(store, request, budget, provider, bootstrap);
+            return self.execute(store, request, budget, provider, bootstrap, cancelled);
         }
         let guard = FlightGuard {
             runtime: self,
             key,
             flight,
         };
-        let result = self.execute(store, request, budget, provider, bootstrap);
+        let result = self.execute(store, request, budget, provider, bootstrap, cancelled);
         *guard
             .flight
             .result
@@ -651,7 +730,9 @@ impl RecallRuntime {
         budget: Budget,
         provider: Option<&RecallModelProvider>,
         bootstrap: Option<RecallOutput>,
+        cancelled: &dyn Fn() -> bool,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
+        check_cancelled(cancelled)?;
         let state = store.read()?;
         let entities = state.entities.list_by_owner(&request.owner);
         let relations = match provider {
@@ -708,6 +789,7 @@ impl RecallRuntime {
             Ok(None)
         })?;
         if let Some(old) = existing {
+            check_cancelled(cancelled)?;
             if old["state"] == "invalidated" || old["stamp"] != initial {
                 self.cache
                     .lock()
@@ -728,6 +810,7 @@ impl RecallRuntime {
         }
         let mut r4_audit = None;
         let result: PersistenceResult<RecallOutput> = (|| {
+            check_cancelled(cancelled)?;
             if let Some(output) = bootstrap {
                 if output.snapshot.read_revision != state.revision
                     || output.snapshot.source_revision != state.source_revision
@@ -744,6 +827,7 @@ impl RecallRuntime {
             };
             let mut r1_failure = None;
             if let Some(client) = &client {
+                check_cancelled(cancelled)?;
                 let response = client.structured_output_for_model_with_effort(
                     &provider.unwrap().recall_models.r1,
                     provider.unwrap().recall_models.effort("r1"),
@@ -765,6 +849,7 @@ impl RecallRuntime {
                     Err(e) => r1_failure = Some(error_code(&e)),
                 }
             }
+            check_cancelled(cancelled)?;
             if stamp(&store.read()?)? != initial {
                 return Err("recall_snapshot_changed".into());
             }
@@ -778,6 +863,7 @@ impl RecallRuntime {
             } else if let Some(client) = &client {
                 // 最后一次短快照检查，不在模型调用期间持有 SQLite 事务。
                 assembly.check_snapshot(store)?;
+                check_cancelled(cancelled)?;
                 let response = client.structured_output_for_model_with_effort(
                     &provider.unwrap().recall_models.r4,
                     provider.unwrap().recall_models.effort("r4"),
@@ -787,6 +873,7 @@ impl RecallRuntime {
                     r4_input(&assembly, request.utc_offset_seconds),
                     r4_schema(),
                 );
+                check_cancelled(cancelled)?;
                 match response {
                     Ok(text) => {
                         let (out, audit) = assembly.finish_r4_with_audit(store, Ok(&text))?;
@@ -817,6 +904,7 @@ impl RecallRuntime {
                     output.degraded_reasons.push(reason.into());
                 }
             }
+            check_cancelled(cancelled)?;
             Ok(output)
         })();
         // 保存只含状态的回执；同事务重查来源/快照和执行身份，迟到删除绝不保存结果。
@@ -834,6 +922,7 @@ impl RecallRuntime {
             Ok(())
         })?;
         let output = result?;
+        check_cancelled(cancelled)?;
         if stamp(&store.read()?)? != initial {
             return Err("recall_snapshot_changed".into());
         }

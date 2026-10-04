@@ -37,27 +37,6 @@ impl ChatMemoryService {
         })
     }
 
-    /// MCP 持全局服务锁，在线新召回明确拒绝，不静默更换权威版本。
-    pub(super) fn mcp_recall_guard(&self, name: &str, arguments: &Value) -> PersistenceResult<()> {
-        if !self.uses_recall_runtime(name, arguments)?
-            || name == "memory_validate_answer"
-            || arguments["bootstrap"] == true
-            || arguments["offline"] == true
-        {
-            return Ok(());
-        }
-        if self
-            .recall_provider("mcp-preflight", false)?
-            .is_some_and(|p| p.network_allowed())
-        {
-            return Err(
-                "recall_v3_mcp_online_disabled: W8; use CLI or offline=true (bootstrap is offline)"
-                    .into(),
-            );
-        }
-        Ok(())
-    }
-
     fn recall_provider(
         &self,
         operation: &str,
@@ -129,13 +108,19 @@ impl ChatMemoryService {
         Ok(at.or(first).unwrap_or(unix_seconds()?))
     }
 
-    fn recall_v3(&mut self, input: Recall, operation: &str) -> PersistenceResult<Value> {
+    fn recall_v3(
+        &mut self,
+        input: Recall,
+        operation: &str,
+        cancelled: &impl Fn() -> bool,
+    ) -> PersistenceResult<Value> {
         validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
         check_limit(input.limit)?;
         if input.bootstrap && input.task_id.is_some() {
             return Err("bootstrap loads global requirements; omit task_id".into());
         }
         let id = Self::recall_id(input.request_id)?;
+        let implicit_at = input.at.is_none();
         let at = self.recall_at(&id, input.at)?;
         let local = time::OffsetDateTime::from_unix_timestamp(at)?
             .to_offset(time::UtcOffset::from_whole_seconds(
@@ -217,7 +202,7 @@ impl ChatMemoryService {
             return format_recall_output(output, legacy_output);
         }
         let provider = self.recall_provider(operation, input.offline)?;
-        let result = self.recall_runtime.run(
+        let result = self.recall_runtime.run_cancellable(
             &mut self.store,
             &request,
             crate::recall::Budget {
@@ -225,6 +210,8 @@ impl ChatMemoryService {
                 ..Default::default()
             },
             provider.as_ref(),
+            implicit_at,
+            cancelled,
         )?;
         format_recall_output(result, legacy_output)
     }
@@ -237,7 +224,9 @@ impl ChatMemoryService {
         operation: &str,
     ) -> PersistenceResult<Value> {
         match name {
-            "memory_recall" => self.recall_v3(serde_json::from_value(arguments)?, operation),
+            "memory_recall" => {
+                self.recall_v3(serde_json::from_value(arguments)?, operation, &cancelled)
+            }
             "memory_prepare" => {
                 let input: Prepare = serde_json::from_value(arguments)?;
                 check_limit(input.limit)?;
@@ -285,6 +274,7 @@ impl ChatMemoryService {
                             request_id: Some(id),
                         },
                         operation,
+                        &cancelled,
                     ) {
                         Ok(out) => out,
                         Err(e) => json!({"status":"failed","error":e.to_string()}),
@@ -448,6 +438,11 @@ impl ChatMemoryService {
     #[cfg(test)]
     pub(crate) fn inject_recall_provider(&mut self, provider: RecallModelProvider) {
         self.recall_provider = Some(provider);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn shared_recall_runtime(&self) -> Arc<crate::openai::recall_models::RecallRuntime> {
+        Arc::clone(&self.recall_runtime)
     }
 }
 

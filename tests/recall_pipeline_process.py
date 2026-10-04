@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""召回⑤：仅本地合成 HTTP，CLI 两阶段、MCP 在线拒绝与离线分发。"""
+"""召回⑤：仅本地合成 HTTP，CLI 两阶段、MCP 在线与离线分发。"""
 import argparse
 import contextlib
 import http.server
@@ -73,9 +73,11 @@ def main():
             saved = client.call("memory_remember",{"session_id":"http","turn_id":"saved","text":TEXT,"capture_source":True,"observed_at":AT})
             Fixture.source_id = saved["source"]["source_id"]
             args = {"query":"我的灯是什么颜色？","request_id":"online","at":AT}
-            blocked = client.call("memory_recall",args,error=True)
-            assert "recall_v3_mcp_online_disabled" in blocked["error"],blocked
-            assert Fixture.requests == []
+            online_args = dict(args, request_id="mcp-online")
+            online = client.call("memory_recall",online_args)
+            assert online["recall"]["status"] == "answered", online
+            assert client.call("memory_recall",online_args) == online
+            assert len(Fixture.requests) == 2
             offline = client.call("memory_recall",dict(args,request_id="offline",offline=True))
             assert offline["recall"]["semantic_judgment"] == "skipped"
             assert "answer_contract" not in offline and "answer_contract" not in offline["recall"]
@@ -85,13 +87,13 @@ def main():
         assert result["version"] == "recall.v3" and result["status"] == "answered",result
         assert result["facts"][0]["statement"] == TEXT
         assert "answer_contract" not in result
-        assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["r1_v1","r4_v3"]
+        assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["r1_v1","r4_v3"] * 2
         # 新 CLI 进程无完整保留结果，不以核验为名再次调用。
         failure = cli(binary,db,config,root,env,"memory_validate_answer",dict(query=args["query"],request_id="online",draft_answer=TEXT,source_ids=[Fixture.source_id]),success=False)
         assert "not_retained" in failure
-        assert len(Fixture.requests) == 2
+        assert len(Fixture.requests) == 4
         with sqlite3.connect(db) as c:
-            assert c.execute("SELECT count(*) FROM model_calls").fetchone()[0] == 2
-        print("recall CLI R1/R4=2; MCP online rejected, offline=0; reopen validation=0 sends")
+            assert c.execute("SELECT count(*) FROM model_calls").fetchone()[0] == 4
+        print("recall CLI R1/R4=2; MCP online R1/R4=2 + replay=0, offline=0; reopen validation=0 sends")
 if __name__ == "__main__":
     main()

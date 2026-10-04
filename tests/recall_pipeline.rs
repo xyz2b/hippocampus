@@ -335,3 +335,21 @@ fn recall_pipeline_prepare_keeps_authorized_source_when_recall_context_exceeds_b
     );
     assert_eq!(calls(&db), 0);
 }
+
+#[test]
+fn mcp_online_recall_http_concurrency_barriers() {
+    let out = Command::new("python3")
+        .args([
+            "tests/mcp_recall_concurrency.py",
+            "--binary",
+            env!("CARGO_BIN_EXE_pmr-mcp"),
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}\n{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+}

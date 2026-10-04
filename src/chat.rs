@@ -1468,6 +1468,32 @@ fn bootstrap_runtime(owner: UserId, now: Timestamp, limit: usize) -> RuntimeCont
 }
 
 impl ChatMemoryService {
+    /// MCP keeps legacy tools serialized; recall.v3 uses an operation connection outside the lock.
+    pub fn call_shared(
+        shared: &std::sync::Mutex<Self>,
+        name: &str,
+        arguments: Value,
+        cancelled: impl Fn() -> bool,
+        operation_id: &str,
+    ) -> PersistenceResult<CallToolResult> {
+        let mut service = shared.lock().map_err(|_| "memory service lock poisoned")?;
+        // Invalid requests still use the usual tool-error envelope and validation.
+        if service
+            .uses_recall_runtime(name, &arguments)
+            .unwrap_or(false)
+        {
+            let operation = service.operation();
+            drop(service);
+            return Ok(operation.connect()?.call_with_operation(
+                name,
+                arguments,
+                cancelled,
+                operation_id,
+            ));
+        }
+        Ok(service.call_with_operation(name, arguments, cancelled, operation_id))
+    }
+
     /// New-path callers use one independent connection per operation, sharing only recall state.
     pub fn operation(&self) -> ChatOperation {
         ChatOperation {
@@ -1578,9 +1604,7 @@ impl ChatMemoryService {
             );
         }
         let bootstrap = name == "memory_recall" && arguments["bootstrap"] == true;
-        let mut operation = self
-            .mcp_recall_guard(name, &arguments)
-            .and_then(|()| self.call_in_operation(name, arguments, cancelled, operation_id, false));
+        let mut operation = self.call_in_operation(name, arguments, cancelled, operation_id, false);
         let context_started = std::time::Instant::now();
         let local_context = operation.as_mut().ok().and_then(|value| {
             if name == "memory_recall"
@@ -3660,7 +3684,7 @@ fn tool<T: JsonSchema>(
         .expect("tool arguments are objects")
         .clone();
     let contract = if matches!(name, "memory_recall" | "memory_prepare") {
-        "When recall.v3 is selected (recall_version=recall.v3, or recall_pipeline=recall_v3 with no version override), one authoritative recall.v3 replaces the old answer_contract; do not apply the legacy safe_answer gate to it. Provide a stable request_id for recall; prepare derives one from session/turn if omitted. MCP online recall.v3 is rejected until W8 lock work; use offline=true or bootstrap=true, or the CLI. MCP read-only recall wraps the frozen object at recall; prepare returns source/enrichment/recall directly. Organize answers from facts/computed/history/conflicts, preserve all qualifiers, grade/update/unknown markers, and cite only their exact evidence; skipped/failed semantics cannot turn records/raw into current conclusions. Validation of recall.v3 only uses a retained result for the same request_id/query/context/task_id/at and current snapshot, never a third model request; simple unchanged unqualified facts may be approved, other drafts need semantic review. New-process/missing-result validation fails without retry. Otherwise, question recalls include answer_contract v1 (version=1), computed locally without another model request. Prepare places it at recall.result.answer_contract on success, or recall.answer_contract on runtime failure; in_progress/not_requested provide no answer permission. Match query/context/task_id to the intended question. read_revision/source_revision bind the evidence snapshot, not permanent permission. Unknown/missing versions or statuses cannot approve an answer. Use its safe_answer verbatim for its query/context, followed only by the source quotes and IDs in its sources array. Show these as readable source text, never invent a source URL. Empty safe_source_ids/sources means cite nothing, even when other fields contain candidate or historical records. source_linked_fact and source_linked_exact_identity approve only their exact safe_answer value and listed sources; other statuses do not authorize factual citations. not_applicable with safe_answer=null covers bootstrap and nonquestions; it does not approve a factual answer. To rewrite or extend a memory-based answer, submit the complete draft and original question to memory_validate_answer. Do not call validation again just to repeat an unchanged safe_answer. These constraints apply to this question only; a narrower lookup cannot approve a broader conclusion. "
+        "When recall.v3 is selected (recall_version=recall.v3, or recall_pipeline=recall_v3 with no version override), one authoritative recall.v3 replaces the old answer_contract; do not apply the legacy safe_answer gate to it. Provide a stable request_id for recall; prepare derives one from session/turn if omitted. MCP online recall.v3 runs on an independent operation connection; offline=true and bootstrap=true skip recall model calls. Snapshot changes fail explicitly without an automatic retry. MCP read-only recall wraps the frozen object at recall; prepare returns source/enrichment/recall directly. Organize answers from facts/computed/history/conflicts, preserve all qualifiers, grade/update/unknown markers, and cite only their exact evidence; skipped/failed semantics cannot turn records/raw into current conclusions. Validation of recall.v3 only uses a retained result for the same request_id/query/context/task_id/at and current snapshot, never a third model request; simple unchanged unqualified facts may be approved, other drafts need semantic review. New-process/missing-result validation fails without retry. Otherwise, question recalls include answer_contract v1 (version=1), computed locally without another model request. Prepare places it at recall.result.answer_contract on success, or recall.answer_contract on runtime failure; in_progress/not_requested provide no answer permission. Match query/context/task_id to the intended question. read_revision/source_revision bind the evidence snapshot, not permanent permission. Unknown/missing versions or statuses cannot approve an answer. Use its safe_answer verbatim for its query/context, followed only by the source quotes and IDs in its sources array. Show these as readable source text, never invent a source URL. Empty safe_source_ids/sources means cite nothing, even when other fields contain candidate or historical records. source_linked_fact and source_linked_exact_identity approve only their exact safe_answer value and listed sources; other statuses do not authorize factual citations. not_applicable with safe_answer=null covers bootstrap and nonquestions; it does not approve a factual answer. To rewrite or extend a memory-based answer, submit the complete draft and original question to memory_validate_answer. Do not call validation again just to repeat an unchanged safe_answer. These constraints apply to this question only; a narrower lookup cannot approve a broader conclusion. "
     } else {
         ""
     };

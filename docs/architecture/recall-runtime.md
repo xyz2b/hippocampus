@@ -121,9 +121,9 @@ Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12）�
 
 回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
-同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
+同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
-第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。MCP 分发尚未使用此接口，J6/W8 限制仍保留，legacy 调用路径不变。
+第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate 的新路径及其 v1 输出适配。legacy 召回与其他工具仍串行，写入 inline 的 J6 拒绝保留。
 
 共享缓存与进行中表均按数据库规范路径、owner、请求身份隔离。短锁不覆盖数据库事务或模型等待；同 ID 同参的跨线程并发调用等待已有执行，完成后按原有回执/快照规则重放，R1/R4 各发送一次；异参立即拒绝。同线程递归调用保留原有明确拒绝，避免等待自己。等待者只保留完成状态，不另留正文副本。执行异常退出也会唤醒等待者，持久回执仍阻止未获授权的重试。`memory_forget` 沿用原删除事务的来源清洗，实际删除后清空该 owner 的完整结果（含 R4 原始审计），并标记进行中的结果不得重新入缓存；其他 owner/数据库不受影响。其他连接/进程直接修改数据库时仍由现有快照核对拒绝旧结果，不隐式刷新或重新调用模型。
 
@@ -165,7 +165,9 @@ pmr-mcp --db /tmp/recall-demo.sqlite3 --owner demo \
 
 同样支持 `--call memory_prepare` 和 `--call memory_validate_answer`，其参数文件按 tools/list schema 提交。CLI 工具调用要求显式 db/owner，不能与批量整理参数混用。模型 ID 只用于 API 路由及阶段绑定，不放进模型可见 payload；预算仍为每请求 R1/R4 各一次、共最多两次，无自动重试。
 
-**MCP 在线选择明确报错。** 因现有全局锁尚未拆分（W8），当新召回可联网时返回 `recall_v3_mcp_online_disabled`，Prepare 在保存前拒绝。选择报错而不静默回落，是为了保持客户端选中的唯一权威版本。可用 `offline=true`、bootstrap 或关闭网络门安全运行 MCP 离线分发；`PMR_MODEL_NETWORK=offline` 仍允许字面 loopback 测试端点，因此仅设该环境变量并不保证完全零调用。新 validate_answer 仅读缓存，不调用模型，可在 MCP 使用。
+**MCP 在线新召回已接通。** R1/R4 在独立操作连接上执行，不持服务全局锁、SQLite 事务或共享缓存锁；等待模型时其他 MCP 操作可完成。同 ID 同参共用一次执行，各阶段最多一次发送；同 ID 异参拒绝，快照变化明确失败（不隐式重试），删除清除该 owner 的完整缓存并阻止晚到结果入缓存。只读请求取消在发送前、阶段之间及保留结果前检查；已发出的阻塞 HTTP 等待既有超时或响应，取消后不继续 R4、不保留结果、不重试，取消等待者不取消同 ID 的执行者。模型超时沿用 degraded/failed 语义及已占用预算。
+
+Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或45秒等待超时，通过完全相同参数续等，续等表的键只保留参数摘要，发布结果前与交付前都核对来源和召回快照；删除清除新版已完成的续等副本，发布与删除清理共用短锁，避免晚到副本重新入表。写入新路径 inline 的 J6 限制尚未解除。`offline=true` 与 bootstrap 不调用召回模型；`PMR_MODEL_NETWORK=offline` 仍允许字面 loopback 测试端点，因此仅设该环境变量并不保证完全零调用。Validate 仅读共享缓存，不调用模型；跨操作连接可用，跨进程缺结果仍明确失败。
 
 **新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和当前快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
