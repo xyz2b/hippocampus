@@ -591,6 +591,23 @@ fn role_configuration_defaults_and_fingerprint_keep_model_outside_payload() {
     );
 }
 #[test]
+fn recommended_recall_config_is_valid_without_changing_defaults() {
+    let recommended: RecallModels =
+        serde_json::from_str(include_str!("../examples/recall-models.json")).unwrap();
+    recommended.validate().unwrap();
+    for role in ["r1", "r4"] {
+        assert_eq!(recommended.effort(role), ReasoningEffort::Minimal);
+        assert_eq!(
+            RecallModels::default().effort(role),
+            ReasoningEffort::Medium
+        );
+    }
+    assert_eq!(recommended.r1, "ep-20261003130756-trhj6");
+    assert_eq!(recommended.r4, recommended.r1);
+    assert_eq!(RecallModels::default().r1, DEEPSEEK_MODEL);
+    assert_eq!(RecallModels::default().r4, DEEPSEEK_MODEL);
+}
+#[test]
 fn recall_prompts_do_not_contain_any_write_or_recall_sample_text_ids_or_labels() {
     fn strings(v: &Value, out: &mut Vec<String>) {
         match v {

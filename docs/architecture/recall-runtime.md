@@ -83,9 +83,23 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 `recall_models::RecallRuntime::run(store, request, evidence_budget, provider)` 串联 R1 → assemble → R4 → finish。provider=None、客户端网络关闭或 bootstrap 跳过两次调用；context_only 或 query_only 且无 records/raw 时只跳过 R4。R1 无效或失败按 judge/unknown 宽泛检索，保留 r1_not_understood 和具体失败原因；R4 超时/HTTP失败/无效输出按③的整份降级规则处理。预算不足标 semantic_judgment_skipped:budget 与 budget_exhausted，没有隐式重试。
 
-角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，如 `{"r1":"low","r4":"low"}`，角色缺省仍发送 medium。本段仅提供配置类型与 with_models，尚未接配置文件或 CLI/MCP。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload，默认请求内容与既有 medium 录制一致。
+角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，角色缺省仍发送 medium。本段仅提供配置类型与 with_models，尚未接配置文件或 CLI/MCP。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；除下述已测配置外，端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload。R4 提示词第 2 版改变真实请求，已有 R4 录制须按完整指纹过期；R1 提示词与请求不变，既有 R1 录制继续有效。
 
-新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1/R4 输出上限分别沿用 ModelBudgetConfig.query_output_tokens/review_output_tokens（缺省4096），输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置，尚无真实模型质量或延迟结论。
+新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1/R4 输出上限分别沿用 ModelBudgetConfig.query_output_tokens/review_output_tokens（缺省4096），输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置；下述单阶段评测使用输出上限16384，不能代替生产预算下的整链路验收。
+
+### 推荐配置与实测边界
+
+用户已选 R1、R4 均使用 DeepSeek-V4-Pro（`ep-20261003130756-trhj6`）+ `reasoning_effort=minimal`。代码缺省值和新路径启用状态不变。[示例配置](../../examples/recall-models.json) 是可反序列化为 `RecallModels` 并传给 `with_models` 的库级配置，尚不能直接传给 `pmr-mcp --config`；配置分发在⑤接通。
+
+2026-10-04 三档结果，每阶段20个已复核样本、各重复2次；使用相同 R1/R4 第1版提示词及 Z8 评分规则：
+
+| Pro 推理强度 | R1 通过 | R4 通过 | R1 p50 / p90 | R4 p50 / p90 |
+| --- | --- | --- | --- | --- |
+| medium | 24/40 | 19/40 | 约68s / 133s | 约84s / 132s |
+| low | 21/40 | 19/40 | 35s / 64s | 40s / 96s |
+| minimal | 23/40（holdout 11/12） | 14/40 | 2.5s / 3.5s | 3.9s / 5.2s |
+
+medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单次物理调用实测。minimal 未产生推理 token，R1 质量接近 medium；R4 的16次核验失败另行用第2版提示词处理，尚未真实重测。首次 minimal 冷启动为16.6s；两阶段常见耗时支持该推荐，但单阶段分位数不能相加证明全流程 P95≤15s，宿主接线后的生产预算、检索和冷启动仍需验证。
 
 回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、快照/来源控制摘要及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 

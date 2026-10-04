@@ -2058,8 +2058,12 @@ fn dry_run_plan() {
             continue;
         }
         let count = cases.iter().filter(|c| c.stage == stage).count();
+        let needed = cases
+            .iter()
+            .filter(|c| c.stage == stage && matches!(c.replay, Replay::Missing | Replay::Stale))
+            .count();
         total += count;
-        println!("{stage}: {count} 次潜在真实调用");
+        println!("{stage}: {count} 次潜在真实调用，需录制 {needed}");
         if stage.starts_with('r') {
             for split in ["dev", "holdout"] {
                 let n = cases
@@ -2965,20 +2969,30 @@ fn reasoning_effort_changes_all_stage_requests_fingerprints_and_recording_paths(
 }
 
 #[test]
-fn existing_medium_recall_recordings_remain_bound_without_sends() {
+fn existing_r1_recordings_remain_bound_without_sends() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
-    for (label, endpoint) in [
-        (MODEL, hippocampus::DEEPSEEK_MODEL),
-        ("DeepSeek-V4-Pro", "ep-20261003130756-trhj6"),
+    for (label, endpoint, effort) in [
+        (MODEL, hippocampus::DEEPSEEK_MODEL, ReasoningEffort::Medium),
+        (
+            "DeepSeek-V4-Pro",
+            "ep-20261003130756-trhj6",
+            ReasoningEffort::Medium,
+        ),
+        (
+            "DeepSeek-V4-Pro",
+            "ep-20261003130756-trhj6",
+            ReasoningEffort::Minimal,
+        ),
     ] {
         let model = EvalModel {
             label: label.into(),
             model: Some(endpoint.into()),
             base: Some("https://ark.cn-beijing.volces.com/api/v3".into()),
-            effort: ReasoningEffort::Medium,
+            effort,
         };
-        let cases = plan_repeated(selected("r1,r4", "").unwrap(), &root, &model, 2).unwrap();
-        assert_eq!(cases.len(), 80);
+        // R4 提示词 v2 改了真实请求，旧录制须过期；R1 仍逐条核对完整指纹。
+        let cases = plan_repeated(selected("r1", "").unwrap(), &root, &model, 2).unwrap();
+        assert_eq!(cases.len(), 40);
         assert_eq!(preflight(&cases, Some(0)).unwrap(), 0);
         assert!(
             cases
@@ -2987,9 +3001,11 @@ fn existing_medium_recall_recordings_remain_bound_without_sends() {
         );
         let report = evaluate(&cases, None, &mut |_| panic!("offline sender invoked")).unwrap();
         assert_eq!(report["sent_calls"], 0);
-        for metrics in items(&report["metrics"]) {
-            assert_eq!(metrics["elapsed_ms"]["count"], 0);
-            assert!(metrics["elapsed_ms"]["p50"].is_null());
+        if effort == ReasoningEffort::Medium {
+            for metrics in items(&report["metrics"]) {
+                assert_eq!(metrics["elapsed_ms"]["count"], 0);
+                assert!(metrics["elapsed_ms"]["p50"].is_null());
+            }
         }
     }
 }
