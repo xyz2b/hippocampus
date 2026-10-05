@@ -3405,80 +3405,96 @@
       "side": "new",
       "item": "facts[0].value",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "给出 7 件衬衫（AF3：前提未证实时如实保留即算对）。"
+      "note": "给出 7 件衬衫（AF3：前提未证实时如实保留即算对）。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:1d35ade345f110eadb04229040b750f47675fc119542ba5e6cc83594811fa8e8": {
       "question": "lme_af8d2e46/q",
       "side": "new",
       "item": "facts[0].semantic",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "说明是“上次哥斯达黎加旅行”，未把它说成 5 天旅行，applies=unknown 如实保留（AF3）。"
+      "note": "说明是“上次哥斯达黎加旅行”，未把它说成 5 天旅行，applies=unknown 如实保留（AF3）。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:6b98c2d2cef0ab2ca921bde33acb37105b32f6d75662411c549e07de42c37136": {
       "question": "lme_af8d2e46/q",
       "side": "new",
       "item": "forbidden[0]",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "未把 3 作为带了几件的答案。"
+      "note": "未把 3 作为带了几件的答案。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:b4e0140c820ec5eab1ece8b1b74b46ccf6bfd03b1b7274866ef93a1e3518ce54": {
       "question": "lme_b6019101/q",
       "side": "new",
       "item": "facts[0].value",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "给出最新的 5 部（AF3）。"
+      "note": "给出最新的 5 部（AF3）。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:c3d382300fb1f8a4c3a93bfb4f02682949064aba85210546e5c2004bba5fd1c0": {
       "question": "lme_b6019101/q",
       "side": "new",
       "item": "facts[0].semantic",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "写明是 5/25 报告的前三个月，并说明更新了旧值 4；对 6/6 的滚动窗口保守判断，属如实保留（AF3）。"
+      "note": "写明是 5/25 报告的前三个月，并说明更新了旧值 4；对 6/6 的滚动窗口保守判断，属如实保留（AF3）。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:5a9fbc1caedeadedaba19ca472fb1b98d19ebbe6b87ffd7c58dcf7f18d146c74": {
       "question": "lme_b6019101/q",
       "side": "new",
       "item": "forbidden[1]",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "未把全部电影 12 部当作 MCU 数。"
+      "note": "未把全部电影 12 部当作 MCU 数。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:35ea332fe48a234684e965b31a0ddfcc909c72f738fef22e3a07da45ca4ef3f3": {
       "question": "lme_f4f1d8a4_abs/q",
       "side": "new",
       "item": "forbidden[0]",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "未把厨师机说成爸爸送的。"
+      "note": "未把厨师机说成爸爸送的。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     },
     "sha256:8fc8191093b82198747d9573ffd4b1e2f389f87479129433eb5df8f55d04f524": {
       "question": "lme_f4f1d8a4_abs/q",
       "side": "new",
       "item": "extra:facts[0]",
       "verdict": "pass",
-      "status": "proposed",
+      "status": "confirmed",
       "drafted_by": "claude",
       "contract": "recall.v3",
-      "note": "如实说明厨师机是姐姐/妹妹送的，并标 applies=no。"
+      "note": "如实说明厨师机是姐姐/妹妹送的，并标 applies=no。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-05"
     }
   }
 }
