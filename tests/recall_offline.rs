@@ -1164,3 +1164,200 @@ fn lookup_completed_sources_keep_legacy_relevance_and_do_not_become_pending_raw(
     assert_eq!(result.completeness.pending_related_sources, 0);
     assert!(ids(&result).contains(&related) && !ids(&result).contains(&unrelated));
 }
+
+#[test]
+fn recorded_r1_relation_filters_cannot_hide_stronger_or_only_authorized_evidence() {
+    fn output(row: &Json) -> Json {
+        let body: Json = serde_json::from_str(row["body"].as_str().unwrap()).unwrap();
+        let text = body["output"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|m| m["content"].as_array().into_iter().flatten())
+            .filter(|c| c["type"] == "output_text")
+            .map(|c| c["text"].as_str().unwrap())
+            .collect::<String>();
+        serde_json::from_str(&text).unwrap()
+    }
+    let root = "tests/eval/end_to_end/ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low";
+    for (file, cid, qid, mid, relation_id) in [
+        ("lme_5831f84d.json", "lme_5831f84d", "q", "s2_t1", "fact"),
+        (
+            "s6_task_isolation.json",
+            "task_isolation",
+            "task_q2",
+            "task_s2",
+            "response_language",
+        ),
+    ] {
+        let case: Json =
+            serde_json::from_slice(&std::fs::read(format!("tests/eval/cases/{file}")).unwrap())
+                .unwrap();
+        let trace: Json =
+            serde_json::from_slice(&std::fs::read(format!("{root}/{cid}.json")).unwrap()).unwrap();
+        let question = case["questions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|q| q["id"] == qid)
+            .unwrap();
+        let message = case["messages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|m| m["id"] == mid)
+            .unwrap();
+        let understanding = output(&trace["operations"][format!("recall:{qid}")][0]);
+        let proposed = output(&trace["operations"][format!("write:{mid}")][0]);
+        let c: Candidate = serde_json::from_value(
+            proposed["candidates"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|c| c["relation"] == relation_id)
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
+        let Subject::Entity(subject) = &c.subject else {
+            panic!("recorded entity")
+        };
+        let subject = subject.entity_id.clone();
+        let db = Db::new();
+        db.open()
+            .transaction(|s| {
+                s.entities.upsert(Entity {
+                    id: subject.as_str().into(),
+                    owner_id: OWNER.into(),
+                    entity_type: EntityType::Person,
+                    canonical_name: subject.clone(),
+                    aliases: vec![],
+                });
+                Ok(())
+            })
+            .unwrap();
+        let task = question["task_id"].as_str();
+        source(&db, mid, message["text"].as_str().unwrap(), task, "running");
+        let mut wanted = candidate(mid, message["text"].as_str().unwrap(), &subject);
+        wanted.candidate = c;
+        let input = W4Input {
+            candidates: vec![wanted],
+            records: vec![],
+            relations: vec![],
+            coverage: W4Coverage {
+                complete: true,
+                omitted: 0,
+            },
+        };
+        let target = commit(
+            &db,
+            mid,
+            task,
+            input,
+            W4Decision {
+                candidate: 0,
+                status: DecisionStatus::Decided,
+                action: Some(Action::New),
+                targets: vec![],
+                resolves_relations: vec![],
+                basis: vec![stored(mid, message["text"].as_str().unwrap())],
+                effective: None,
+                relation_scope: None,
+                pending_reason: None,
+            },
+        );
+        if cid == "lme_5831f84d" {
+            let distractor = seed(
+                &db,
+                "unrelated",
+                "I use Kaggle and Reddit.",
+                &subject,
+                None,
+                true,
+            );
+            db.open()
+                .transaction(|s| {
+                    let mut m = s.repository.get(distractor)?.unwrap();
+                    m.predicate = "uses".into();
+                    s.repository.update(m)?;
+                    Ok(())
+                })
+                .unwrap();
+        }
+        let outside = seed(
+            &db,
+            "outside",
+            "Other task's response language.",
+            &subject,
+            Some("other-task"),
+            true,
+        );
+        let req = request(
+            question["query"].as_str().unwrap(),
+            task,
+            Some(vec![subject.as_str().into()]),
+        );
+        let entities = [EntityId::from(subject.as_str())];
+        let relations: Vec<_> = ["fact", "uses", "response_language"]
+            .into_iter()
+            .map(|id| w2::Relation {
+                id: id.into(),
+                memory_types: vec![MemoryType::Fact, MemoryType::Constraint],
+            })
+            .collect();
+        let task_id = task.map(TaskId::from);
+        let ctx = r1::Context {
+            query: &req.binding.query,
+            context: &req.binding.context,
+            entities: &entities,
+            relations: &relations,
+            subject_ids: req.subject_ids.as_deref(),
+            task_id: task_id.as_ref(),
+            said_on: &req.said_on,
+            utc_offset_seconds: req.utc_offset_seconds,
+            supported_units: &["day", "week", "month", "year"],
+        };
+        let understood =
+            r1::validate(r1::decode(&understanding.to_string()).unwrap(), &ctx).unwrap();
+        assert!(understood.output.is_some());
+        assert_ne!(
+            understood
+                .output
+                .as_ref()
+                .unwrap()
+                .plan
+                .filter
+                .relation
+                .as_deref(),
+            Some(relation_id),
+            "the captured R1 filter excludes the correct record"
+        );
+        let assembly = recall::assemble(&db.open(), &req, &understood, Budget::default()).unwrap();
+        let ids: BTreeSet<_> = assembly
+            .evidence
+            .records
+            .iter()
+            .map(RecordView::id)
+            .collect();
+        assert!(
+            ids.contains(&target),
+            "{cid}: captured filter must not hide the answer evidence"
+        );
+        assert!(
+            !ids.contains(&outside),
+            "fallback must retain task authorization"
+        );
+        assert!(assembly.evidence.completeness.plan_complete);
+        let tight = recall::assemble(
+            &db.open(),
+            &req,
+            &understood,
+            Budget {
+                records: 0,
+                ..Budget::default()
+            },
+        )
+        .unwrap();
+        assert!(!tight.evidence.completeness.plan_complete);
+    }
+}

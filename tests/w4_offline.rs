@@ -423,7 +423,7 @@ fn fact_filters_apply_before_full_text_hits_are_truncated() {
 }
 
 #[test]
-fn a_completed_full_text_search_can_have_no_record_hits() {
+fn a_completed_full_text_search_can_have_no_record_hits_in_an_over_budget_scope() {
     let db = Db::new();
     seed_fact(&db, "older", "coffee tea", "coffee tea");
     claim_source(&db, "query", "mocha");
@@ -432,7 +432,10 @@ fn a_completed_full_text_search_can_have_no_record_hits() {
         "query",
         None,
         &fact_pending("query", "mocha"),
-        BUDGET,
+        W4Budget {
+            facts: 0,
+            records: 64,
+        },
     )
     .unwrap();
     assert_eq!(assembly.fact_retrieval[&0], FactRetrieval::FullText);
@@ -441,7 +444,7 @@ fn a_completed_full_text_search_can_have_no_record_hits() {
         assembly.input.coverage,
         W4Coverage {
             complete: false,
-            omitted: 0
+            omitted: 1
         }
     );
     assert!(!assembly.call_w4);
@@ -500,6 +503,7 @@ fn unavailable_full_text_search_reports_its_fallback_without_repairing_the_index
     ] {
         let db = Db::new();
         let existing = seed_fact(&db, "older", "coffee tea", "coffee tea");
+        seed_fact(&db, "unmatched", "a blue scarf", "a blue scarf");
         claim_source(&db, "query", "coffee tea");
         let mut store = db.open();
         match reason {
@@ -522,8 +526,17 @@ fn unavailable_full_text_search_reports_its_fallback_without_repairing_the_index
         }
         let before = serde_json::to_value(store.read().unwrap()).unwrap();
         let pending = fact_pending("query", "coffee tea");
-        let (_, assembly) =
-            hippocampus::w4::assemble(&store, "query", None, &pending, BUDGET).unwrap();
+        let (_, assembly) = hippocampus::w4::assemble(
+            &store,
+            "query",
+            None,
+            &pending,
+            W4Budget {
+                facts: 1,
+                records: 64,
+            },
+        )
+        .unwrap();
         assert_eq!(
             assembly.fact_retrieval[&0],
             FactRetrieval::Fallback(reason.into())
@@ -537,12 +550,12 @@ fn unavailable_full_text_search_reports_its_fallback_without_repairing_the_index
             None,
             &pending,
             W4Budget {
-                facts: 8,
+                facts: 1,
                 records: 0,
             },
         )
         .unwrap();
-        assert_eq!(zero.input.coverage.omitted, 1);
+        assert_eq!(zero.input.coverage.omitted, 2);
         assert!(zero.input.records.is_empty());
         assert_eq!(zero.fact_retrieval, assembly.fact_retrieval);
         assert_eq!(serde_json::to_value(store.read().unwrap()).unwrap(), before);
@@ -829,17 +842,21 @@ fn run_with(sample: Json, output: Option<Json>) -> Run {
             true,
         )
     } else {
+        // Archived v2 fixtures intentionally exercise incomplete scopes. AF1 only changes
+        // their assembly coverage; keep their explicit false input for validation/commit.
+        let mut expected = sample["input"].clone();
+        expected["coverage"] = serde_json::to_value(&assembly.input.coverage).unwrap();
         assert_eq!(
             sorted_records(serde_json::to_value(&assembly.input).unwrap()),
-            sorted_records(sample["input"].clone()),
-            "{id}: assembled input"
+            sorted_records(expected),
+            "{id}: assembled records and closure"
         );
         assert_eq!(assembly.call_w4, sample["call_w4"], "{id}: call_w4");
         if assembly.call_w4 {
             let output: W4Output = serde_json::from_value(fixture(id)).unwrap();
-            (assembly.input.clone(), output, true)
+            (input.clone(), output, true)
         } else {
-            (assembly.input.clone(), assembly.skipped.clone(), false)
+            (input.clone(), assembly.skipped.clone(), false)
         }
     };
     let plan = plan(&rt, &w4_input, &output).unwrap_or_else(|e| panic!("{id}: {e}"));
@@ -2494,4 +2511,123 @@ fn a_retraction_may_carry_an_end_time_and_other_actions_only_record_it() {
         .find(|m| m["id"] == 31)
         .unwrap();
     assert!(item["qualifiers_unmapped"]["end"].is_null(), "{item}");
+}
+
+#[test]
+fn authorized_fact_scope_is_complete_only_after_actual_enumeration() {
+    let db = Db::new();
+    let first = seed_fact(&db, "first", "coffee tea", "coffee tea");
+    let second = seed_fact(&db, "second", "a red umbrella", "a red umbrella");
+    let outside = clone_record(&db, first.0, "self", Some("other-task"));
+    claim_source(&db, "query", "coffee tea");
+    let pending = fact_pending("query", "coffee tea");
+    let before = serde_json::to_value(db.state()).unwrap();
+    let (_, full) = hippocampus::w4::assemble(&db.open(), "query", None, &pending, BUDGET).unwrap();
+    assert_eq!(ids(&full.input).0, [first.0, second.0]);
+    assert!(!ids(&full.input).0.contains(&outside.0));
+    assert_eq!(
+        full.input.coverage,
+        W4Coverage {
+            complete: true,
+            omitted: 0
+        }
+    );
+    assert_eq!(full.fact_retrieval[&0], FactRetrieval::Enumerated);
+    assert_eq!(
+        serde_json::to_value(db.state()).unwrap(),
+        before,
+        "existing pending is not rewritten"
+    );
+    assert_eq!(
+        db.state().record_updates[&first].status,
+        UpdateStatus::Pending
+    );
+    let (_, tight) = hippocampus::w4::assemble(
+        &db.open(),
+        "query",
+        None,
+        &pending,
+        W4Budget {
+            facts: 1,
+            records: 64,
+        },
+    )
+    .unwrap();
+    assert_eq!(ids(&tight.input).0, [first.0]);
+    assert_eq!(
+        tight.input.coverage,
+        W4Coverage {
+            complete: false,
+            omitted: 1
+        },
+        "one FTS hit without truncation does not cover the other authorized fact"
+    );
+    let (state, full) =
+        hippocampus::w4::assemble(&db.open(), "query", None, &pending, BUDGET).unwrap();
+    let p = plan(
+        &runtime(&state, "query", 1, None),
+        &full.input,
+        &rejudged_new(&full.input),
+    )
+    .unwrap();
+    let receipt = match commit_group(&mut db.open(), &claim("query"), &p.groups[0]).unwrap() {
+        W5Outcome::Committed(r) => r,
+        other => panic!("{other:?}"),
+    };
+    assert_eq!(receipt.updates[&0].status, UpdateStatus::Judged);
+    assert_eq!(
+        db.state().record_updates[&first].status,
+        UpdateStatus::Pending,
+        "committing a new complete decision does not rejudge an old pending record"
+    );
+}
+
+#[test]
+fn enumerated_fact_scope_includes_history_and_transitive_relations() {
+    let previous = run("w4_14_rejudge_committed");
+    let db = &previous.db;
+    claim_source(db, "next", "an unrelated new fact");
+    let (_, full) = hippocampus::w4::assemble(
+        &db.open(),
+        "next",
+        None,
+        &fact_pending("next", "an unrelated new fact"),
+        BUDGET,
+    )
+    .unwrap();
+    assert!(full.input.coverage.complete);
+    assert_eq!(
+        ids(&full.input).0,
+        [55, 70],
+        "active fact and its superseded predecessor"
+    );
+    // An open relation reached through another relation is included in full.
+    let first = seed_fact(&db, "closure-a", "orange juice", "orange juice");
+    let second = seed_fact(&db, "closure-b", "purple scarf", "purple scarf");
+    let third = seed_fact(&db, "closure-c", "blue coat", "blue coat");
+    open_relation(&db, "closure-1", &[first, second]);
+    open_relation(&db, "closure-2", &[second, third]);
+    claim_source(&db, "closure-query", "orange juice");
+    let (_, full) = hippocampus::w4::assemble(
+        &db.open(),
+        "closure-query",
+        None,
+        &fact_pending("closure-query", "orange juice"),
+        BUDGET,
+    )
+    .unwrap();
+    assert!(full.input.coverage.complete);
+    assert!(full.input.relations.iter().any(|r| r.id == "closure-2"));
+    let (_, tight) = hippocampus::w4::assemble(
+        &db.open(),
+        "closure-query",
+        None,
+        &fact_pending("closure-query", "orange juice"),
+        W4Budget {
+            facts: 8,
+            records: 1,
+        },
+    )
+    .unwrap();
+    assert!(!tight.input.coverage.complete);
 }

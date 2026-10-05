@@ -52,7 +52,7 @@ class BackgroundFixture(Fixture):
             candidate["relation"] = "lives_in"
             candidate["value"] = {"kind": "text", "text": city, "quote": {"text": city}}
             return result
-        if stage == "w4_v2":
+        if stage == "w4_v3":
             w4 = json.loads(body["input"])["w4_input"]
             old = next(record for record in w4["records"] if record["format"] == "current")
             return {"decisions": [{"candidate": candidate["index"], "status": "decided",

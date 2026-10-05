@@ -89,7 +89,7 @@ fn output(request: &Json) -> Json {
         "w3_v1" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
             json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
             "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
-        "w4_v2" => {
+        "w4_v3" => {
             let records = input["w4_input"]["records"].as_array().unwrap();
             json!({"decisions": input["w4_input"]["candidates"].as_array().unwrap().iter().map(|c| {
                 let mut basis = vec![json!({"source":c["source"],"quote":c["candidate"]["sentence"]})];

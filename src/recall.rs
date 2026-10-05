@@ -901,7 +901,7 @@ pub fn assemble(
         o.query_type == R1Type::Aggregate
             || matches!(o.plan.op, R1Op::Count | R1Op::Sum | R1Op::List)
     });
-    let relation = plan
+    let mut relation = plan
         .output
         .as_ref()
         .and_then(|o| o.plan.filter.relation.as_deref());
@@ -909,10 +909,38 @@ pub fn assemble(
         R1Subject::Entity(s) => Some(s.entity_id.as_str()),
         _ => None,
     });
-    let matches_plan = |m: &&Memory| {
-        relation.is_none_or(|r| m.predicate.0 == r) && subject.is_none_or(|id| m.subject_id.0 == id)
+    let scoped: Vec<_> = eligible
+        .values()
+        .copied()
+        .filter(|m| subject.is_none_or(|id| m.subject_id.0 == id))
+        .collect();
+    let relevance = |m: &Memory| {
+        let text = m
+            .evidence
+            .iter()
+            .map(|e| e.quote.as_str())
+            .collect::<Vec<_>>()
+            .join(" ");
+        phrase_score(&text, &phrases)
     };
-    let candidates: Vec<_> = eligible.values().copied().filter(matches_plan).collect();
+    if let Some(r) = relation {
+        let matching: Vec<_> = scoped.iter().filter(|m| m.predicate.0 == r).collect();
+        let best = matching.iter().map(|m| relevance(m)).max().unwrap_or(0);
+        // 关系是模型的检索提示，不是授权边界。空结果或更强的范围内原文命中说明过滤不可靠。
+        if matching.is_empty()
+            || scoped
+                .iter()
+                .any(|m| m.predicate.0 != r && relevance(m) > best)
+        {
+            relation = None;
+        }
+    }
+    let candidates: Vec<_> = scoped
+        .into_iter()
+        .filter(|m| relation.is_none_or(|r| m.predicate.0 == r))
+        .collect();
+    // 小范围实际穷举；大范围仍按词法取候选，不能据 FTS 未截断宣称完整。
+    let enumerate = enumerate || (relation.is_none() && candidates.len() <= budget.records);
     // FTS 只是候选提示；旧来源无索引时用同一快照的完整值/片段兜底，不据此认证语义。
     let hits = if enumerate {
         BTreeSet::new()
@@ -956,6 +984,13 @@ pub fn assemble(
                 None => Vec::new(),
             })
             .collect();
+        if parents.iter().any(|id| {
+            all.iter()
+                .any(|m| m.id == *id && m.status != MemoryStatus::Deleted)
+                && !eligible.contains_key(id)
+        }) {
+            complete = false;
+        }
         selected.extend(parents.into_iter().filter(|id| eligible.contains_key(id)));
         let links: Vec<_> = state
             .relations

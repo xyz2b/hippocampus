@@ -65,7 +65,7 @@ fn recorded_full_e2e_replay_never_sends() {
                 request_body
                     .pointer("/text/format/name")
                     .and_then(Value::as_str),
-                Some("w1_v1" | "w3_v1" | "w4_v2")
+                Some("w1_v1" | "w3_v1" | "w4_v3")
             ) {
                 assert_eq!(request.timeout().copied(), Some(Duration::from_secs(360)));
             }

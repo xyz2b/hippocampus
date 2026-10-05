@@ -104,6 +104,19 @@ def local_calls(case):
     return outcomes
 
 
+def failure_category(call):
+    if call.get("origin") == "not_recorded":
+        return "not_recorded"
+    if ((call.get("http_status") or 0) >= 400 or call.get("transport_error")
+            or call.get("error") or call.get("local_outcome") == "timeout"):
+        return "call_failure"
+    if call.get("local_outcome") in ("decode_failed", "validation_failed", "output_limit"):
+        return "model_invalid_output"
+    if call.get("response_status") == "incomplete":
+        return "incomplete_response"
+    return None
+
+
 def execution(document):
     cases = []
     for case in document.get("cases", []):
@@ -118,6 +131,7 @@ def execution(document):
             call.update(matches.pop(0) if matches else {"local_outcome": "unknown"})
             if call["origin"] == "not_recorded":
                 call["local_outcome"] = "not_recorded"
+            call["failure_category"] = failure_category(call)
             call_rows.append(call)
             s = stages[call["stage"]]
             s["requests"] += 1
@@ -137,7 +151,7 @@ def execution(document):
                     or call["local_outcome"] not in ("completed", "unknown")):
                 s["diagnostics"].append({k: call.get(k) for k in
                     ("operation", "origin", "http_status", "response_status", "incomplete_details",
-                     "transport_error", "error", "reason", "usage", "local_outcome", "local_error", "phase")})
+                     "transport_error", "error", "reason", "usage", "local_outcome", "local_error", "phase", "failure_category")})
         runtime = []
         for step in case.get("steps", []):
             result = step.get("result") or {}
@@ -156,7 +170,8 @@ def execution(document):
     origins = {call["origin"] for case in cases for call in case["calls"]}
     mode = document.get("execution_mode") or ("replay" if origins and origins <= {"replay", "not_recorded"}
                                                else "live_or_mixed" if "live" in origins else "unknown")
-    return {"mode": mode, "jobs": document.get("jobs"), "elapsed_ms": document.get("elapsed_ms"),
+    failures = collections.Counter(c["failure_category"] for case in cases for c in case["calls"] if c["failure_category"])
+    return {"mode": mode, "failure_counts": dict(failures), "jobs": document.get("jobs"), "elapsed_ms": document.get("elapsed_ms"),
             "real_calls": len(attempts) if log else document.get("real_calls", 0),
             "recorded_calls": sum(a["state"] == "recorded" for a in attempts) if log else None,
             "uncompleted_calls": [a for a in attempts if a["state"] != "recorded"],
@@ -257,6 +272,7 @@ def render(report):
         detail = row["reason"] if not new else f"缺口 {len(row['new']['gaps'])}；待复核 {len(row['new']['pending_review'])}；判错 {'、'.join(row['new']['failed'])}"
         lines.append(f"| {row['question']} | {row['absolute']} | {count} | {detail} |")
     metrics = report["execution"]
+    lines += ["", f"调用失败（非模型）：{metrics['failure_counts'].get('call_failure', 0)}；模型解码/核验/输出上限失败：{metrics['failure_counts'].get('model_invalid_output', 0)}；未完成响应：{metrics['failure_counts'].get('incomplete_response', 0)}。"]
     lines += ["", "## 调用与耗时", "", f"EVAL_JOBS={metrics['jobs']}；本轮真实发送 {metrics['real_calls']}；批次墙钟 {metrics['elapsed_ms']} ms。", "",
               (f"已落盘调用 {metrics['recorded_calls']}；未完成或未落盘 {len(metrics['uncompleted_calls'])}。发送日志：{metrics['send_log']}。"
                if metrics["send_log_available"] else "没有发送日志；未完成调用数未知。"), "",
@@ -284,7 +300,8 @@ def render(report):
     for case in metrics["cases"]:
         for call in case["calls"]:
             remote = f"{call.get('response_status')} / {json.dumps(call.get('incomplete_details'), ensure_ascii=False)}"
-            local = f"{call['local_outcome']} / {call.get('local_error') or ''}"
+            remote = f"HTTP {call.get('http_status')} / {remote} / {call.get('error') or call.get('transport_error') or ''}"
+            local = f"{call['local_outcome']} / {call.get('local_error') or ''} / {call['failure_category'] or ''}"
             lines.append(f"| {case['case']} / {call['operation']} | {call['stage']} | {call['origin']} | {remote} | {local.replace('|', chr(92)+'|')} | {call.get('local_elapsed_ms', '未知')} / {call.get('timeout_ms', '未知')} | {call['elapsed_ms']} / {call.get('recorded_elapsed_ms')} |")
     ref = report["reference"]
     lines += ["", "## 附录：0517000 旧基线参考", "", "旧基线与转移仅作参考，不作为新路径验收门槛。", ""]

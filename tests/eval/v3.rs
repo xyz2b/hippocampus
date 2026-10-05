@@ -976,7 +976,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
             "w3_v1" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
-            "w4_v2" => {
+            "w4_v3" => {
                 let c = &input["w4_input"]["candidates"][0];
                 let r = &input["w4_input"]["records"][0];
                 json!({"decisions":[{"candidate":c["index"],"status":"decided","action":"reinforce","targets":[r["id"]],
@@ -1021,7 +1021,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         .flat_map(|v| v.as_array().unwrap())
         .map(|r| r["schema"].as_str().unwrap())
         .collect();
-    for stage in ["w1_v1", "w3_v1", "w4_v2", "r1_v1", "r4_v3"] {
+    for stage in ["w1_v1", "w3_v1", "w4_v3", "r1_v1", "r4_v3"] {
         assert!(names.contains(&stage));
     }
     let replay = Arc::new(Recorder::new(dir.clone(), None, None));

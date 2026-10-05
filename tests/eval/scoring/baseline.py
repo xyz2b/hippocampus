@@ -60,6 +60,8 @@ def category(expect: dict) -> str:
     if expect.get("computed"):
         return "日期计算"
     st = expect["status"]
+    if isinstance(st, list):
+        st = st[0]
     if st == "insufficient":
         return "证据不足"
     if st == "clarify":

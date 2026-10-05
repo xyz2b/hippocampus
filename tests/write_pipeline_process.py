@@ -50,7 +50,7 @@ class Fixture(Responses):
             return {"reviews": [{"candidate": c["index"], "verdict": "supported", "problems": [],
                                  "episode_value": "not_applicable"} for c in payload["candidates"]],
                     "coverage": {"status": "complete", "missing": []}, "request_reviews": []}
-        if name == "w4_v2":
+        if name == "w4_v3":
             decisions = []
             for candidate in payload["w4_input"]["candidates"]:
                 matching = next((r for r in payload["w4_input"]["records"]
@@ -159,7 +159,7 @@ def main():
             second = save(args.binary, db, env, new, turn("second"))
             processed = batch(args.binary, db, env, legacy, "--enrich-source", second["source"]["source_id"])
             frozen(processed, "committed")
-            assert [r["text"]["format"]["name"] for r in Fixture.requests][-3:] == ["w1_v1", "w3_v1", "w4_v2"]
+            assert [r["text"]["format"]["name"] for r in Fixture.requests][-3:] == ["w1_v1", "w3_v1", "w4_v3"]
             assert processed["enrichment"]["candidates"][0]["memory_id"] is not None
             assert len(state(db)["repository"]["memories"]) == 1
             before, sends, paid = state(db), len(Fixture.requests), calls(db)
@@ -195,7 +195,7 @@ def main():
                     assert old["model_calls"] and "w4_checkpoint" not in json.dumps(old), old
             names = [r["text"]["format"]["name"] for r in Fixture.requests]
             assert len(names) == calls(db) == 9, names
-            assert names[2:4] == ["w1_v1", "w3_v1"] and names[-3:] == ["w1_v1", "w3_v1", "w4_v2"], names
+            assert names[2:4] == ["w1_v1", "w3_v1"] and names[-3:] == ["w1_v1", "w3_v1", "w4_v3"], names
             before, sends = state(db), len(Fixture.requests)
             assert batch(args.binary, db, env, new, "--drain-enrichment", "--max-jobs", "4")["attempted"] == 0
             assert state(db) == before and len(Fixture.requests) == sends

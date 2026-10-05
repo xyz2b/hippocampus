@@ -47,7 +47,7 @@ fn visible_output(body: &Json) -> Json {
             }
             out
         }
-        "w4_v2" => {
+        "w4_v3" => {
             let w4 = &input["w4_input"];
             let old = w4["records"]
                 .as_array()

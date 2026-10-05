@@ -1472,9 +1472,21 @@ fn w4_fixture_closes_the_model_pipeline_with_three_sends_and_reopen() {
         json!(memories[0].id)
     );
     let request = &sent.lock().unwrap()[2];
-    assert_eq!(request["text"]["format"]["name"], "w4_v2");
+    assert_eq!(request["text"]["format"]["name"], "w4_v3");
     assert_eq!(request["text"]["format"]["strict"], true);
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+    assert_eq!(input["contract"], "w4.v3");
+    let mut old = request.clone();
+    old["text"]["format"]["name"] = json!("w4_v2");
+    let mut old_input = input.clone();
+    old_input["contract"] = json!("w4.v2");
+    old["input"] = json!(old_input.to_string());
+    assert_ne!(
+        crate::openai::recall_models::fingerprint(request),
+        crate::openai::recall_models::fingerprint(&old),
+        "v2 recordings naturally expire"
+    );
+
     let stage = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"]["w4"];
     let mut binding_input = stage["binding"].clone();
     assert_eq!(
@@ -2364,7 +2376,7 @@ fn w4_unrelated_source_and_audit_survive_source_deletion() {
     let old = state.sources[&old_key].id.clone();
     let id = &state.sources[&key].id;
     let text = crate::lexical::body(&state.sources[&key]).unwrap();
-    let binding = json!({"contract":"w4.v2","sources":{id:{"text":text,"history":[]}}});
+    let binding = json!({"contract":"w4.v3","sources":{id:{"text":text,"history":[]}}});
     let decision = json!({"decisions":[{
         "candidate":0,"status":"decided","action":"new","targets":[],"resolves_relations":[],
         "basis":[{"source":{"kind":"stored","source_id":id},"quote":{"text":text}}],

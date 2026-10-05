@@ -412,7 +412,7 @@ fn unknown_retraction_and_mixed_results_stay_pending() {
         assert!(pending["memory_id"].is_null());
         assert_eq!(
             pending["update"]["reasons"],
-            json!(["update_scope_incomplete", "update_target_unknown"])
+            json!(["update_target_unknown"])
         );
         if mixed {
             assert_eq!(result["enrichment"]["candidates"][1]["status"], "committed");
@@ -573,6 +573,8 @@ fn new_output(input: &W4Input) -> W4Output {
 fn reinforce_keeps_its_own_pending_update_not_the_targets_judged_state() {
     let db = Db::new();
     let id = seed(&db, "old", "我喜欢喝咖啡。", "fact");
+    // AF1：明确超过穷举预算，继续验证本候选的 pending 不借用目标的 judged。
+    seed(&db, "unmatched", "蓝色雨伞在门边。", "fact");
     db.open()
         .transaction(|state| {
             state
@@ -582,10 +584,12 @@ fn reinforce_keeps_its_own_pending_update_not_the_targets_judged_state() {
         })
         .unwrap();
     let key = db.start("repeat", "我还是喜欢喝咖啡。");
+    let mut budget = RuntimeInputBudget::default();
+    budget.w4.facts = 1;
     let result = run_source(
         &mut db.open(),
         &key,
-        RuntimeInputBudget::default(),
+        budget,
         |ctx, input| Ok(vec![supported(ctx, &input.text, 0)]),
         |_, input, _| Ok(Some(reinforce(input))),
     )

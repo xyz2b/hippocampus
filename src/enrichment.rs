@@ -404,6 +404,7 @@ fn run_claimed(
                 (
                     *i,
                     match r {
+                        w4::FactRetrieval::Enumerated => "enumerated",
                         w4::FactRetrieval::FullText => "full_text",
                         w4::FactRetrieval::Fallback(_) => "fallback",
                     },

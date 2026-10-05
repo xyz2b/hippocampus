@@ -1,4 +1,4 @@
-//! W4 更新判定的代码侧（contracts 2.4 `w4.v2`、2.5）：模型输出的机械校验，以及把已校验的决定
+//! W4 更新判定的代码侧（contracts 2.4 `w4.v3`、2.5）：模型输出的机械校验，以及把已校验的决定
 //! 转换成 W5 依赖组。不调用模型，不判断语义：动作是否正确由 W4 负责，这里只保证输出合规、
 //! 依据真实、目标与关系在输入范围内，再交给 W5 在事务里重查快照并执行。
 
@@ -898,6 +898,8 @@ pub struct Assembly {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FactRetrieval {
+    /// 授权范围内的 fact 及必要历史、关系闭包已实际穷举。
+    Enumerated,
     FullText,
     /// 索引不可用时沿用旧词元规则，原因与成功但零命中区分。
     Fallback(String),
@@ -954,11 +956,13 @@ fn expand(
     seeds: &BTreeSet<MemoryId>,
     committed: &BTreeSet<MemoryId>,
     lineage: &BTreeSet<MemoryId>,
+    include_history: bool,
 ) -> Expansion {
     let mut records = seeds.clone();
     let mut relations: BTreeSet<String> = BTreeSet::new();
     let mut blocked: BTreeMap<String, usize> = BTreeMap::new();
     let mut ancestors: BTreeMap<MemoryId, Vec<MemoryId>> = BTreeMap::new();
+    let mut withheld_history = BTreeSet::new();
     loop {
         let mut changed = false;
         // 已选记录、重判记录，以及它们的全部前身：前身所在的 open 关系仍未解决。
@@ -971,6 +975,18 @@ fn expand(
                     .iter()
                     .copied(),
             );
+        }
+        if include_history {
+            for id in &reach {
+                if committed.contains(id) && !records.contains(id) {
+                    continue;
+                }
+                if in_scope(*id) {
+                    changed |= records.insert(*id);
+                } else {
+                    withheld_history.insert(*id);
+                }
+            }
         }
         for relation in state.relations.values() {
             if relations.contains(&relation.id) || blocked.contains_key(&relation.id) {
@@ -1015,14 +1031,15 @@ fn expand(
     Expansion {
         records,
         relations,
-        withheld: blocked.values().sum(),
+        withheld: blocked.values().sum::<usize>() + withheld_history.len(),
     }
 }
 
 /// 在同一 SQLite 读事务中取得全文命中并组装 W4 输入（contracts 2.4）。
 /// 返回状态快照供 plan 复用；模型调用后不能重新取状态补造旧判断的快照。
 /// - 专用关系：同主体、同关系的全部有效记录，不受相似度截断。
-/// - 通用 `fact`：检索命中的同主体记录，每个候选最多 `budget.facts` 条；范围恒不完整。
+/// - 通用 `fact`：先实际穷举同主体授权记录及历史/关系闭包；预算内才可完整。
+///   放不下时回落全文检索，每个候选最多 `budget.facts` 条，范围不完整。
 /// - 重判（committed_id）：产生该记录的决定替代或列出过的前身，及其所在关系的最新状态。
 /// - 已选记录及其前身所在 open 关系的全部成员与关系本身，展开到不再增加。
 /// - 以上除 fact 命中外都是必须送入的；合计超过 `budget.records` 时不调用 W4，整批待定。
@@ -1081,9 +1098,12 @@ pub fn assemble(
         }
     }
     let mut fact_candidates: Vec<Vec<MemoryId>> = Vec::new();
+    let mut fact_scope: BTreeSet<MemoryId> = BTreeSet::new();
     let mut fact_retrieval = BTreeMap::new();
+    let mut include_history = false;
     for candidate in candidates {
         let Subject::Entity(subject) = &candidate.contract.candidate.subject else {
+            complete = false;
             continue;
         };
         let relation = candidate.contract.candidate.relation.as_str();
@@ -1097,11 +1117,21 @@ pub fn assemble(
             })
             .collect();
         if relation == "fact" {
-            complete = false;
             let facts: Vec<&crate::Memory> = same_subject
                 .into_iter()
                 .filter(|memory| memory.predicate.0 == "fact")
                 .collect();
+            let ids: BTreeSet<_> = facts.iter().map(|m| m.id).collect();
+            fact_scope.extend(ids.iter().copied());
+            let seeds = required.union(&ids).copied().collect();
+            let full = expand(state, &in_scope, &seeds, &committed, &lineage, true);
+            if ids.len() <= budget.facts && full.records.len() <= budget.records {
+                required.extend(ids);
+                include_history = true;
+                fact_retrieval.insert(candidate.index, FactRetrieval::Enumerated);
+                continue;
+            }
+            complete = false;
             let sentence = &candidate.contract.candidate.sentence.text;
             let (hits, retrieval) = match store.search_w4_facts(&tx, state, sentence, &facts) {
                 Ok(hits) => (hits, FactRetrieval::FullText),
@@ -1121,7 +1151,14 @@ pub fn assemble(
             );
         }
     }
-    let mut chosen = expand(state, &in_scope, &required, &committed, &lineage);
+    let mut chosen = expand(
+        state,
+        &in_scope,
+        &required,
+        &committed,
+        &lineage,
+        include_history,
+    );
     let overflow = chosen.records.len() > budget.records;
     let mut omitted_facts = BTreeSet::new();
     if !overflow {
@@ -1135,7 +1172,14 @@ pub fn assemble(
                 }
                 let mut trial = seeds.clone();
                 trial.insert(*hit);
-                let expansion = expand(state, &in_scope, &trial, &committed, &lineage);
+                let expansion = expand(
+                    state,
+                    &in_scope,
+                    &trial,
+                    &committed,
+                    &lineage,
+                    include_history,
+                );
                 if taken < budget.facts && expansion.records.len() <= budget.records {
                     seeds = trial;
                     chosen = expansion;
@@ -1147,7 +1191,12 @@ pub fn assemble(
         }
     }
     // 同一记录可被多个候选命中，也可稍后随关系带入；只计最终未送入的唯一命中记录。
+    // 穷举得到的授权范围已知：未命中的记录也不能被当作不存在。
+    omitted_facts.extend(fact_scope);
     omitted += omitted_facts.difference(&chosen.records).count();
+    if omitted > 0 {
+        complete = false;
+    }
     if chosen.withheld > 0 {
         complete = false;
         omitted += chosen.withheld;

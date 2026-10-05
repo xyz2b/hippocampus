@@ -148,7 +148,8 @@ def _fact_items(ctx, i, f, a):
         elif cur is None:
             out.append(_item(f"{p}.current", REVIEW, "旧答案非整串值，当前资格需复核", c, srcs))
         else:
-            out.append(_item(f"{p}.current", PASS if cur == f["current"] else FAIL,
+            want = f["current"] if isinstance(f["current"], list) else [f["current"]]
+            out.append(_item(f"{p}.current", PASS if cur in want else FAIL,
                              f"输出 {cur}，要求 {f['current']}", c, srcs))
     if "conditions" in f:
         exp = f["conditions"]
@@ -478,9 +479,12 @@ def _forbidden_items(ctx, forbidden, fact_match, facts):
 
 def score(expect: dict, query_meta: dict, view: dict, source_texts: dict | None = None) -> dict:
     ctx = _Ctx(expect, query_meta, view)
+    accepted = expect["status"] if isinstance(expect["status"], list) else [expect["status"]]
+    if not accepted or any(s not in ("answer", "insufficient", "clarify", "conflict") for s in accepted):
+        raise ValueError("expect_common.status 必须是状态或非空可接受状态集合")
     items = [_item("binding", FAIL if view["binding"] else PASS,
                    "；".join(view["binding"]) or "输出版本与问题、上下文、任务、提问时间绑定一致"),
-             _item("status", PASS if view["status"] == expect["status"] else FAIL,
+             _item("status", PASS if view["status"] in accepted else FAIL,
                    f"输出 {view['status']}（{view['status_raw']}），要求 {expect['status']}")]
     facts = expect.get("facts") or []
     fact_match = match_facts(ctx, facts, view["assertions"])

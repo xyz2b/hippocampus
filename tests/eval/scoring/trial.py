@@ -126,7 +126,8 @@ def transitions(old, new, expect_status):
     """Per-item old -> new transitions and regressions (common-scoring-view.md 5)."""
     rows, regressions, incomplete = [], [], []
     new_items = {i["id"]: i for i in new["items"]}
-    abstain = old_abstained(old) and expect_status not in ("insufficient", "clarify")
+    accepted = expect_status if isinstance(expect_status, list) else [expect_status]
+    abstain = old_abstained(old) and not set(accepted) & {"insufficient", "clarify"}
     for oi in old["items"]:
         ni = new_items[oi["id"]]
         if abstain:

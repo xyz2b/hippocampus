@@ -1,5 +1,6 @@
 //! Shared test-only strict recorder and production case driver; no live transport here.
 use super::*;
+use std::collections::BTreeSet;
 
 pub(super) const LABEL: &str = "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low";
 pub(super) const PRO: &str = "ep-20261003130756-trhj6";
@@ -25,6 +26,12 @@ pub(super) fn config(case: &str, address: &str, calls: u64) -> ChatConfig {
 }
 
 pub(super) fn cases() -> Vec<Value> {
+    let questions = std::env::var("EVAL_QUESTIONS").unwrap_or_default();
+    let requested: BTreeSet<_> = questions
+        .split(',')
+        .filter(|s| !s.trim().is_empty())
+        .map(|s| s.trim().to_owned())
+        .collect();
     let only = std::env::var("EVAL_CASES").unwrap_or_default();
     let only = if only == "quick" {
         QUICK.join(",")
@@ -47,10 +54,37 @@ pub(super) fn cases() -> Vec<Value> {
         .collect();
     paths.sort();
     assert!(!paths.is_empty(), "no eval cases");
-    paths
+    let mut cases: Vec<Value> = paths
         .iter()
         .map(|p| serde_json::from_slice(&std::fs::read(p).unwrap()).unwrap())
-        .collect()
+        .collect();
+    if !requested.is_empty() {
+        let mut found = BTreeSet::new();
+        for case in &mut cases {
+            let id = case["id"].as_str().unwrap().to_owned();
+            case["questions"].as_array_mut().unwrap().retain(|q| {
+                let key = format!("{id}/{}", q["id"].as_str().unwrap());
+                requested.contains(&key) && {
+                    found.insert(key);
+                    true
+                }
+            });
+            let end = case["questions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter_map(|q| q["after"].as_u64())
+                .max()
+                .unwrap_or(0) as usize;
+            case["messages"].as_array_mut().unwrap().truncate(end);
+        }
+        assert_eq!(
+            found, requested,
+            "EVAL_QUESTIONS contains unavailable questions"
+        );
+        cases.retain(|c| !c["questions"].as_array().unwrap().is_empty());
+    }
+    cases
 }
 
 pub(super) fn counts(case: &Value) -> [u64; 5] {
@@ -286,7 +320,7 @@ impl Recorder {
         let stage = match schema {
             "w1_v1" => "W1",
             "w3_v1" => "W3",
-            "w4_v2" => "W4",
+            "w4_v2" | "w4_v3" => "W4",
             "r1_v1" => "R1",
             "r4_v3" => "R4",
             other => other,

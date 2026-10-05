@@ -1440,7 +1440,7 @@
         "kind": "insufficient_evidence"
       },
       "expect_common": {
-        "annotator_note": "原文的厨师机是姐姐/妹妹送的生日礼物，不是爸爸。",
+        "annotator_note": "原文的厨师机是姐姐/妹妹送的生日礼物，不是爸爸。 AF2：未编造答案时，insufficient 或 needs_clarification 均接受。",
         "computed": null,
         "forbidden": [
           {
@@ -1455,7 +1455,10 @@
         "label_status": "reviewed",
         "not_measurable": [],
         "scoring_version": "common.v1",
-        "status": "insufficient"
+        "status": [
+          "insufficient",
+          "clarify"
+        ]
       },
       "id": "q",
       "query": "What did my dad gave me as a birthday gift?",

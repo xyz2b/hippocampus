@@ -962,10 +962,10 @@ fn stage_request_with_output_tokens(
                 .collect();
             (
                 ModelStage::W4,
-                "w4_v2",
+                "w4_v3",
                 write_models::W4_PROMPT,
                 write_models::w4_schema(),
-                json!({"contract": "w4.v2", "w4_input": input, "sources": sources}),
+                json!({"contract": "w4.v3", "w4_input": input, "sources": sources}),
             )
         }
         "r1" | "r4" => recall_adapter::request(stage, sample)?,

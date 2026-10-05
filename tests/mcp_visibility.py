@@ -64,7 +64,7 @@ class VisibilityFixture(Fixture):
                 result["candidates"][0]["times"] = [{"role": "event", "quote": {"text": "昨天"},
                     "interp": {"kind": "relative", "unit": "day", "offset": -1}, "anchor": "said_on"}]
             return result
-        if stage == "w4_v2":
+        if stage == "w4_v3":
             w4 = payload["w4_input"]
             old = next((r for r in w4["records"] if r["format"] == "current" and r["stored_status"] == "active"), None)
             return {"decisions": [{"candidate": c["index"], "status": "decided",

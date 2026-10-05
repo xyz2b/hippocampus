@@ -13,6 +13,17 @@ import trial
 
 
 class EndToEndReport(unittest.TestCase):
+    def test_http_account_error_is_not_a_model_validation_failure(self):
+        doc = self.document()
+        case = doc["cases"][0]
+        case["calls"] = [{"operation": "recall:q", "stage": "R4", "origin": "replay",
+            "sends": 0, "elapsed_ms": 1, "http_status": 403,
+            "error": "AccountOverdueError", "response_status": None}]
+        report = compare.run(doc)
+        self.assertEqual(report["execution"]["failure_counts"], {"call_failure": 1})
+        self.assertEqual(report["execution"]["cases"][0]["calls"][0]["failure_category"], "call_failure")
+        self.assertIn("调用失败（非模型）：1", compare.render(report))
+        self.assertIn("AccountOverdueError", compare.render(report))
     def test_empty_is_not_recorded_not_pass_or_model_failure(self):
         report = compare.run()
         self.assertEqual(report["not_recorded"], 63)
@@ -204,6 +215,39 @@ class EndToEndReport(unittest.TestCase):
                                   "--send-log",str(path),"--output",str(prefix)],capture_output=True,text=True)
             self.assertNotEqual(wrong.returncode,0)
             self.assertIn("不是同一次运行",wrong.stderr)
+
+
+
+
+class TargetedPlan(unittest.TestCase):
+    def test_targeted_cases_preserve_upstream_messages_and_drop_other_questions(self):
+        import importlib.util
+        path = pathlib.Path(__file__).resolve().parent.parent / 'targeted_plan.py'
+        spec = importlib.util.spec_from_file_location('targeted_plan', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        cases = module.selected_cases(['explicit_correction/correction_q1'])
+        self.assertEqual(len(cases), 1)
+        self.assertEqual(len(cases[0]['messages']), 1)
+        self.assertEqual([q['id'] for q in cases[0]['questions']], ['correction_q1'])
+        with self.assertRaises(ValueError):
+            module.selected_cases(['explicit_correction/missing'])
+
+
+    def test_targeted_capacity_estimates_failed_usage_including_low_r4(self):
+        import importlib.util
+        root = pathlib.Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location('targeted_plan', root / 'targeted_plan.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        directory = root / 'end_to_end/ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low'
+        run = json.loads((directory / 'run.json').read_text())
+        result = module.plan(run, module.GROUPS['account'], directory)
+        self.assertEqual(result['failed']['R1'], 4)
+        self.assertEqual(result['rerecord_capacity']['W1'], 2)
+        self.assertEqual(result['rerecord_capacity']['W3'], 4)
+        self.assertGreater(result['estimate']['W1'][1], 0)
+        self.assertGreater(result['estimate']['R4'][1], 8000)
 
 
 if __name__ == "__main__":

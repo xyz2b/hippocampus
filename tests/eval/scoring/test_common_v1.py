@@ -37,6 +37,25 @@ def _key(res, item_id):
 
 
 class AdapterBoundary(unittest.TestCase):
+    def test_accepted_status_set_does_not_relax_facts_or_binding(self):
+        case, q, meta, expect, view = trial.run_new("person_sketch_pen", "person_q4",
+                                                  trial.new_fixture("person_sketch_pen", "person_q4"))
+        expect = copy.deepcopy(expect)
+        expect["status"] = ["answer", "insufficient"]
+        for status in expect["status"]:
+            view["status"] = status
+            items = {i["id"]: i for i in score(expect, meta, view, trial.source_texts(case, q))["items"]}
+            self.assertEqual(items["status"]["result"], PASS)
+        view["status"] = "conflict"
+        self.assertEqual(score(expect, meta, view)["items"][1]["result"], FAIL)
+        expect["facts"][0]["polarity"] = "negate"
+        items = {i["id"]: i for i in score(expect, meta, view)["items"]}
+        self.assertEqual(items["facts[0].polarity"]["result"], FAIL)
+        view["binding"] = ["wrong request"]
+        self.assertEqual(score(expect, meta, view)["items"][0]["result"], FAIL)
+        expect["status"] = []
+        with self.assertRaises(ValueError):
+            score(expect, meta, view)
     def test_adapters_take_no_labels(self):
         for fn in (adapters.adapt_old, adapters.adapt_recall):
             params = inspect.signature(fn).parameters
