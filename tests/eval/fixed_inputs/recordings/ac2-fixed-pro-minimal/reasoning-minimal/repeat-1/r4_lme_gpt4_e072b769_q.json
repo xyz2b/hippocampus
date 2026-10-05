@@ -1,0 +1,75 @@
+{
+  "id": "r4_lme_gpt4_e072b769_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3570,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "The user downloaded Ibotta, a cashback app that gives rebates on certain grocery items.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s1_t1\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    1\n    ],\n    \"statement\": \"The user downloaded Ibotta, a cashback app that gives rebates on certain grocery items.\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:43c4c420703ff64b9709befe6369438d80b6198bfa449e6fabd8d1138c2d3172",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5251,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 207,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5458
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5251,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 207,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5458
+      }
+    }
+  ]
+}

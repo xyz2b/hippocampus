@@ -1,0 +1,92 @@
+{
+  "id": "r4_lme_7a87bd0c_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 4854,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "elapsed",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been sticking to my daily tidying routine for 4 weeks now"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s2_t1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "The user has been sticking to a daily tidying routine for 4 weeks as of 2023-09-30.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -4,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "4 weeks"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"elapsed\",\n    \"operands\": [\n    ],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"I've been sticking to my daily tidying routine for 4 weeks now\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s2_t1\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    ],\n    \"statement\": \"The user has been sticking to a daily tidying routine for 4 weeks as of 2023-09-30.\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [\n    ],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -4,\n    \"unit\": \"week\"\n    },\n    \"quote\": {\n    \"text\": \"4 weeks\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:936fbdf0e656994ccef0d8ec1b0355807fd1dba37a18ea8c6c7701378538851c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 7030,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 297,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 7327
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 7030,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 297,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7327
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "id": "r4_device_default_paper_device_q5",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2959,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "不改纸张设置时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "device_s1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "雾岚打印机的默认纸张规格是A4。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n  \"applies\": \"yes\",\n  \"conditions\": [\n    {\n  \"quote\": {\n    \"text\": \"不改纸张设置时\"\n  },\n  \"resolved\": true\n}\n  ],\n  \"current\": \"yes\",\n  \"evidence\": [\n    {\n  \"quote\": {\n    \"text\": \"雾岚打印机的默认纸张规格是A4。\"\n  },\n  \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"device_s1\"\n  }\n}\n  ],\n  \"polarity\": \"affirm\",\n  \"record_ids\": [\n    1\n  ],\n  \"statement\": \"雾岚打印机的默认纸张规格是A4。\",\n  \"strength\": null,\n  \"supersedes_record_ids\": [],\n  \"times\": [],\n  \"uncertainty\": null\n}\n  ],\n  \"verdict\": \"supported\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:e545e7029993ae6b55f381d2253f77d93e6476e93c41cd0dea0af9788ad993ee",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4640,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 200,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4840
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4640,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 200,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4840
+      }
+    }
+  ]
+}

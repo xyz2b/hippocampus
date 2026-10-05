@@ -1,0 +1,108 @@
+{
+  "id": "r4_lme_603deb26_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 5601,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "count",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t3"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              4
+            ],
+            "statement": "The user tried making a Negroni at home 5 times since Emma taught them how to make it.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s2_t6"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              6
+            ],
+            "statement": "The user tried making a Negroni at home 10 times since Emma showed them how to make it.",
+            "strength": null,
+            "supersedes_record_ids": [
+              4
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"count\",\n    \"operands\": [],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right.\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s1_t3\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    4\n    ],\n    \"statement\": \"The user tried making a Negroni at home 5 times since Emma taught them how to make it.\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it.\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s2_t6\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    6\n    ],\n    \"statement\": \"The user tried making a Negroni at home 10 times since Emma showed them how to make it.\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [\n    4\n    ],\n    \"times\": [],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:3dac22b19552a5177848f81b3b9c19c9ea11dbafcfc23c0ae82c831eff132a69",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 6896,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 422,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 7318
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 6896,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 422,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7318
+      }
+    }
+  ]
+}

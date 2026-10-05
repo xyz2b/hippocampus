@@ -1,0 +1,91 @@
+{
+  "id": "w3_lme_7a87bd0c_s1_t5",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3204,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "speech",
+                "quote": {
+                  "text": "I'm thinking of turning that space into a little workstation for my daily tidying routine."
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 2,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 3,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "time",
+                "quote": {
+                  "text": "now that I've been doing it for 3 weeks"
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"speech\",\"quote\":{\"text\":\"I'm thinking of turning that space into a little workstation for my daily tidying routine.\"}}],\"verdict\":\"insufficient\"},{\"candidate\":1,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"},{\"candidate\":2,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"},{\"candidate\":3,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"time\",\"quote\":{\"text\":\"now that I've been doing it for 3 weeks\"}}],\"verdict\":\"insufficient\"}]}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:6f2212c46a1b61a5a23b54572e8594afb5b3ac6b60dc627c12c197aa9048a120",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3073,
+          "input_tokens_details": {
+            "cached_tokens": 1280
+          },
+          "output_tokens": 171,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3244
+        }
+      },
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 3073,
+        "input_tokens_details": {
+          "cached_tokens": 1280
+        },
+        "output_tokens": 171,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3244
+      }
+    }
+  ]
+}

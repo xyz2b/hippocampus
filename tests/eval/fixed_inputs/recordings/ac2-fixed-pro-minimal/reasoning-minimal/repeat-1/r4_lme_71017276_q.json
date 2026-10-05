@@ -1,0 +1,69 @@
+{
+  "id": "r4_lme_71017276_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3427,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [],
+          "op": "elapsed",
+          "operands": [],
+          "unit": "week"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"complete\",\n    \"items\": [\n    ],\n    \"op\": \"elapsed\",\n    \"operands\": [\n    ],\n    \"unit\": \"week\"\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    ],\n    \"statement\": \"\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [\n    ],\n    \"times\": [\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:8e9692773198dfc51992f92094f96c805a46e49ef0af1ad9f579b85e93d49a5c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5886,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 151,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 6037
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5886,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 151,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6037
+      }
+    }
+  ]
+}

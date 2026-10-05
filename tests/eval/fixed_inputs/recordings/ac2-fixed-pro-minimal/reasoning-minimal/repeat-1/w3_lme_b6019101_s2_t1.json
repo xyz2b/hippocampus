@@ -1,0 +1,72 @@
+{
+  "id": "w3_lme_b6019101_s2_t1",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2685,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "speech",
+                "quote": {
+                  "text": "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood."
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          }
+        ]
+      },
+      "output_text": "{\n  \"coverage\": {\n    \"missing\": [],\n    \"status\": \"complete\"\n  },\n  \"request_reviews\": [],\n  \"reviews\": [\n    {\n    \"candidate\": 0,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [\n    {\n    \"aspect\": \"speech\",\n    \"quote\": {\n    \"text\": \"I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood.\"\n    }\n    }\n    ],\n    \"verdict\": \"insufficient\"\n    },\n    {\n    \"candidate\": 1,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [],\n    \"verdict\": \"supported\"\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:2a4f3c570b154b66f1472a760023379371e09b8575c5ecb24f4de48a59116eca",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2915,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 164,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3079
+        }
+      },
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 2915,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 164,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3079
+      }
+    }
+  ]
+}

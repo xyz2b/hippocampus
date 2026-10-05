@@ -1,0 +1,72 @@
+{
+  "id": "w3_lme_bcbe585f_s1_t1",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2759,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "unknown",
+            "problems": [
+              {
+                "aspect": "speech",
+                "quote": {
+                  "text": "I'm planning a trip"
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "unknown",
+            "problems": [],
+            "verdict": "supported"
+          }
+        ]
+      },
+      "output_text": "{\n  \"coverage\": {\n    \"missing\": [],\n    \"status\": \"complete\"\n  },\n  \"request_reviews\": [],\n  \"reviews\": [\n    {\n    \"candidate\": 0,\n    \"episode_value\": \"unknown\",\n    \"problems\": [\n    {\n    \"aspect\": \"speech\",\n    \"quote\": {\n    \"text\": \"I'm planning a trip\"\n    }\n    }\n    ],\n    \"verdict\": \"insufficient\"\n    },\n    {\n    \"candidate\": 1,\n    \"episode_value\": \"unknown\",\n    \"problems\": [],\n    \"verdict\": \"supported\"\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:f5d9ebfde1e56010bb1f2a17d9b071b15b4335eb317d1d92d22d80ebe361b2a5",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2262,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 138,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2400
+        }
+      },
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 2262,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 138,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2400
+      }
+    }
+  ]
+}
