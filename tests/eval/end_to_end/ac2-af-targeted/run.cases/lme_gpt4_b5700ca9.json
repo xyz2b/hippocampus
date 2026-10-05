@@ -1,0 +1,2019 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 5,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 39941,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3770,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2758,
+        "output_tokens_details": {
+          "reasoning_tokens": 2427
+        },
+        "total_tokens": 6528
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 3158,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2237,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 149,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2386
+      }
+    },
+    {
+      "elapsed_ms": 3,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 98475,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3866,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6474,
+        "output_tokens_details": {
+          "reasoning_tokens": 6143
+        },
+        "total_tokens": 10340
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2495,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2326,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 111,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2437
+      }
+    },
+    {
+      "elapsed_ms": 109774,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 109761,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3311,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5978,
+        "output_tokens_details": {
+          "reasoning_tokens": 5740
+        },
+        "total_tokens": 9289
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 35484,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3980,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2125,
+        "output_tokens_details": {
+          "reasoning_tokens": 2001
+        },
+        "total_tokens": 6105
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2569,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2192,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2266
+      }
+    },
+    {
+      "elapsed_ms": 27594,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 27577,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3057,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1670,
+        "output_tokens_details": {
+          "reasoning_tokens": 1576
+        },
+        "total_tokens": 4727
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 218493,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4122,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 14942,
+        "output_tokens_details": {
+          "reasoning_tokens": 14495
+        },
+        "total_tokens": 19064
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 3124,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2753,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 156,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2909
+      }
+    },
+    {
+      "elapsed_ms": 77822,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 77803,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4008,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5105,
+        "output_tokens_details": {
+          "reasoning_tokens": 4693
+        },
+        "total_tokens": 9113
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 91806,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4200,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6073,
+        "output_tokens_details": {
+          "reasoning_tokens": 5952
+        },
+        "total_tokens": 10273
+      }
+    },
+    {
+      "elapsed_ms": 2177,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2160,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2408,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 80,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2488
+      }
+    },
+    {
+      "elapsed_ms": 51099,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 51079,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3985,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3345,
+        "output_tokens_details": {
+          "reasoning_tokens": 3244
+        },
+        "total_tokens": 7330
+      }
+    },
+    {
+      "elapsed_ms": 89828,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 89805,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4319,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5933,
+        "output_tokens_details": {
+          "reasoning_tokens": 5780
+        },
+        "total_tokens": 10252
+      }
+    },
+    {
+      "elapsed_ms": 3086,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3065,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2363,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 100,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2463
+      }
+    },
+    {
+      "elapsed_ms": 39523,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 39498,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 6820,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 2412,
+        "output_tokens_details": {
+          "reasoning_tokens": 2024
+        },
+        "total_tokens": 9232
+      }
+    }
+  ],
+  "case": "lme_gpt4_b5700ca9",
+  "elapsed_ms": 405589,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377733501000-59",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377733501000-59",
+            "duration_ms": 17,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377754457000-69",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377754457000-69",
+            "duration_ms": 5,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377686348000-41",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212377686348000-41",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377855029000-97",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377855029000-97",
+            "duration_ms": 15,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377883099000-106",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377883099000-106",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377977286000-112",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377977286000-112",
+            "duration_ms": 110000,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377815252000-84",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 3,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212377815252000-84",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212488113775000-232",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212488113775000-232",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212488149519000-233",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212488149519000-233",
+            "duration_ms": 3,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212488208646000-234",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212488208646000-234",
+            "duration_ms": 27850,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212488054724000-230",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212488054724000-230",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212516227702000-244",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212516227702000-244",
+            "duration_ms": 20,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212516277214000-245",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212516277214000-245",
+            "duration_ms": 17,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212516372912000-246",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212516372912000-246",
+            "duration_ms": 78093,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212516147507000-242",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 7,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212516147507000-242",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212594808825000-273",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212594808825000-273",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212594868557000-274",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212594868557000-274",
+            "duration_ms": 2438,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212597422831000-275",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212597422831000-275",
+            "duration_ms": 51385,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212594678277000-271",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212594678277000-271",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212649416344000-296",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212649416344000-296",
+            "duration_ms": 90149,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212648941522000-294",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "candidate_rejected:subject_not_found"
+                ],
+                "status": "rejected",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212648941522000-294",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1681083780,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212739799745000-331",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212739799745000-331",
+            "duration_ms": 3410,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743285911000-336",
+            "stage": "r4_v3",
+            "timeout_ms": 240000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743285911000-336",
+            "duration_ms": 39888,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 3,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": {
+          "approximate": false,
+          "bound": "exact",
+          "exact_days": 4,
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2023-04-06",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "55832-1791212516147507000-242"
+              },
+              "event_group": "maundy_thursday_service_at_episcopal_church_2023",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "55832-1791212516147507000-242"
+                  }
+                }
+              ],
+              "id": "attendance_maundy_thursday_2023-04-06",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "attendance_maundy_thursday_2023-04-06"
+          ],
+          "request_time": {
+            "at": 1681083780,
+            "local_date": "2023-04-10",
+            "precision": "day",
+            "tz_offset_seconds": 28800
+          },
+          "rounding": "calendar_days",
+          "unit": "day",
+          "value": "4"
+        },
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-04-10",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212516147507000-242"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              6
+            ],
+            "statement": "The user attended the Maundy Thursday service at the Episcopal Church on 2023-04-06.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2023-04-06",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm looking for some information on local volunteer opportunities. I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
+            },
+            "said_on": "2023-04-06",
+            "sequence": 1,
+            "source_id": "55832-1791212377686348000-41"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'd like to ask, are there any opportunities to volunteer with a group from my church or community? I'd love to invite some friends to join me in volunteering at the food bank."
+            },
+            "said_on": "2023-04-06",
+            "sequence": 5,
+            "source_id": "55832-1791212594678277000-271"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event? We're looking for ways to make a more significant impact and contribute to the food bank's mission."
+            },
+            "said_on": "2023-04-06",
+            "sequence": 6,
+            "source_id": "55832-1791212648941522000-294"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "visited",
+              "sentence": {
+                "text": "By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "date": "2023-04-06",
+                    "kind": "date"
+                  },
+                  "quote": {
+                    "text": "today"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the Episcopal Church"
+                },
+                "text": "the Episcopal Church"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212516147507000-242"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1680796800,
+                "precision": "day",
+                "start": 1680710400,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "date": "2023-04-06",
+                    "kind": "date"
+                  },
+                  "quote": {
+                    "text": "today"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the Maundy Thursday service at the Episcopal Church"
+                },
+                "text": "the Maundy Thursday service at the Episcopal Church"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212516147507000-242"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 7,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1680796800,
+                "precision": "day",
+                "start": 1680710400,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'm looking forward to volunteering at the food bank and making a difference in my community."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "volunteering at the food bank and making a difference in my community"
+                },
+                "text": "volunteering at the food bank and making a difference in my community"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm looking forward to volunteering at the food bank and making a difference in my community."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212516147507000-242"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [
+              4
+            ],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged."
+              },
+              "speech": "user_statement",
+              "strength": "moderate",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": {
+                "quote": {
+                  "text": "I think"
+                },
+                "resolved": true
+              },
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "something related to community service or helping the underprivileged"
+                },
+                "text": "something related to community service or helping the underprivileged"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm open to various causes, but I think I'd prefer something related to community service or helping the underprivileged."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377815252000-84"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": -1,
+                    "unit": "week"
+                  },
+                  "quote": {
+                    "text": "last week"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
+                },
+                "text": "I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I just helped out at an Easter Egg Hunt event last week and I'm interested in finding more ways to give back to the community."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686348000-41"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1680192000,
+                "precision": "day",
+                "start": 1680105600,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I think the Food Bank Volunteer opportunity sounds interesting."
+              },
+              "speech": "user_statement",
+              "strength": "weak",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": {
+                "quote": {
+                  "text": "I think"
+                },
+                "resolved": true
+              },
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the Food Bank Volunteer opportunity"
+                },
+                "text": "the Food Bank Volunteer opportunity"
+              }
+            },
+            "ended": "end_unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I think the Food Bank Volunteer opportunity sounds interesting."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212488054724000-230"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "superseded",
+            "termination_reason": "PreferenceChanged",
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "constraint",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "weekdays, preferably in the evenings"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
+                },
+                "text": "I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm available on weekdays, preferably in the evenings, and I don't mind committing to a regular schedule."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377815252000-84"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-04-06",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1681083780,
+          "context": [],
+          "query": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?",
+          "request_id": "eval-lme_gpt4_b5700ca9-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 8,
+          "source_revision": 6
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "55832-1791212377686348000-41",
+        "s1_t2": "55832-1791212377815252000-84",
+        "s1_t3": "55832-1791212488054724000-230",
+        "s1_t4": "55832-1791212516147507000-242",
+        "s1_t5": "55832-1791212594678277000-271",
+        "s1_t6": "55832-1791212648941522000-294"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}
