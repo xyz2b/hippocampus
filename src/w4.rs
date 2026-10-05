@@ -134,6 +134,7 @@ pub fn validate(
     }
 
     let mut normalized = output.clone();
+    let mut ended_targets = BTreeSet::new();
     for decision in &mut normalized.decisions {
         let tag = format!("决定 {}", decision.candidate);
         let candidate = input
@@ -212,6 +213,13 @@ pub fn validate(
         // 候选类别与动作一致：撤回表达只能撤回，断言不能当撤回用。
         if (candidate.candidate.kind == CandidateKind::Retraction) != (action == Action::Retract) {
             return invalid(format!("{tag}：候选类别与动作不一致"));
+        }
+        if terminal(action) {
+            for target in &decision.targets {
+                if !ended_targets.insert(*target) {
+                    return invalid(format!("{tag}：重复结束目标 {}", target.0));
+                }
+            }
         }
         if !cited.contains(own_source) {
             return invalid(format!("{tag}：依据须包含新候选的原文"));

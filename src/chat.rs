@@ -1159,8 +1159,14 @@ fn computed_elapsed(recall: &Value) -> Option<(&str, &str, &str)> {
     let source_id = answer["source_id"].as_str()?;
     (answer["status"] == "computed_elapsed"
         && !source_id.is_empty()
-        && answer["quote"].as_str()?.contains(answer["time_text"].as_str()?))
-    .then_some((answer["value"].as_str()?, answer["event_date"].as_str()?, source_id))
+        && answer["quote"]
+            .as_str()?
+            .contains(answer["time_text"].as_str()?))
+    .then_some((
+        answer["value"].as_str()?,
+        answer["event_date"].as_str()?,
+        source_id,
+    ))
 }
 
 fn elapsed_text(count: i64, unit: crate::openai::ElapsedUnit, query: &str) -> String {
@@ -1171,7 +1177,10 @@ fn elapsed_text(count: i64, unit: crate::openai::ElapsedUnit, query: &str) -> St
         Month => ("month", "个月"),
         Year => ("year", "年"),
     };
-    if query.chars().any(|c| ('\u{4e00}'..='\u{9fff}').contains(&c)) {
+    if query
+        .chars()
+        .any(|c| ('\u{4e00}'..='\u{9fff}').contains(&c))
+    {
         format!("{count}{chinese}前")
     } else {
         format!("{count} {english}{} ago", if count == 1 { "" } else { "s" })
@@ -1916,8 +1925,15 @@ impl ChatMemoryService {
             if source.request.is_none() {
                 return Err("source_deleted".into());
             }
-            if source.task.processing_version.as_deref().is_some_and(|v| v != ENRICHMENT_VERSION) {
-                return Err("unsupported_processing_version: this entry cannot claim the source".into());
+            if source
+                .task
+                .processing_version
+                .as_deref()
+                .is_some_and(|v| v != ENRICHMENT_VERSION)
+            {
+                return Err(
+                    "unsupported_processing_version: this entry cannot claim the source".into(),
+                );
             }
             if matches!(
                 source.enrichment.as_str(),
@@ -2700,12 +2716,19 @@ impl ChatMemoryService {
             .filter(|name| !name.is_empty())
             .collect();
         let local_date = |at: i64| {
-            let offset = time::UtcOffset::from_whole_seconds(self.config.utc_offset_seconds).ok()?;
-            Some(time::OffsetDateTime::from_unix_timestamp(at).ok()?.to_offset(offset).date())
+            let offset =
+                time::UtcOffset::from_whole_seconds(self.config.utc_offset_seconds).ok()?;
+            Some(
+                time::OffsetDateTime::from_unix_timestamp(at)
+                    .ok()?
+                    .to_offset(offset)
+                    .date(),
+            )
         };
         let said_on = |at: i64| local_date(at).map(|date| date.to_string());
-        let in_task =
-            |source: &&crate::SourceRecord| task.is_none_or(|id| crate::lexical::task(source) == Some(id));
+        let in_task = |source: &&crate::SourceRecord| {
+            task.is_none_or(|id| crate::lexical::task(source) == Some(id))
+        };
         let newest = |mut list: Vec<(u64, Value)>, limit: usize| {
             list.sort_by_key(|(sequence, _)| *sequence);
             let skip = list.len().saturating_sub(limit);
@@ -2759,10 +2782,15 @@ impl ChatMemoryService {
             .repository
             .list_by_owner(self.store.owner())?
             .into_iter()
-            .filter(|memory| memory.status == MemoryStatus::Active && memory.subject_id == subject.id)
+            .filter(|memory| {
+                memory.status == MemoryStatus::Active && memory.subject_id == subject.id
+            })
             .flat_map(|memory| {
                 let id = memory.id;
-                memory.evidence.into_iter().map(move |evidence| (id, evidence))
+                memory
+                    .evidence
+                    .into_iter()
+                    .map(move |evidence| (id, evidence))
             })
             .filter_map(|(memory_id, evidence)| {
                 let source = state.sources.values().filter(in_task).find(|source| {
@@ -2772,9 +2800,12 @@ impl ChatMemoryService {
                 })?;
                 seen.insert(source.id.clone()).then(|| {
                     let quote: String = evidence.quote.chars().take(1000).collect();
-                    (source.received_sequence, json!({"source_id":source.id,
+                    (
+                        source.received_sequence,
+                        json!({"source_id":source.id,
                         "memory_id":memory_id,"quote":quote,"committed":true,
-                        "said_on":said_on(source.observed_at)}))
+                        "said_on":said_on(source.observed_at)}),
+                    )
                 })
             })
             .collect();
@@ -2790,8 +2821,11 @@ impl ChatMemoryService {
                     && (subject.id.0 == "self" || names.iter().any(|name| body.contains(name))))
                 .then(|| {
                     let quote: String = body.chars().take(1000).collect();
-                    (source.received_sequence, json!({"source_id":source.id,"quote":quote,
-                        "committed":false,"said_on":said_on(source.observed_at)}))
+                    (
+                        source.received_sequence,
+                        json!({"source_id":source.id,"quote":quote,
+                        "committed":false,"said_on":said_on(source.observed_at)}),
+                    )
                 })
             })
             .collect();
@@ -2828,7 +2862,11 @@ impl ChatMemoryService {
                         "value":proposal.answer_text,"source_id":candidate["source_id"],
                         "memory_id":candidate["memory_id"],"quote":candidate["quote"],
                         "evidence_grade":grade(candidate)});
-                    mark_pending(&mut answer, candidate, proposal.answer_text.as_deref().unwrap_or(""));
+                    mark_pending(
+                        &mut answer,
+                        candidate,
+                        proposal.answer_text.as_deref().unwrap_or(""),
+                    );
                     answer
                 }
                 crate::openai::AnswerVerdict::Elapsed => {
@@ -2839,7 +2877,9 @@ impl ChatMemoryService {
                         .as_deref()
                         .and_then(crate::temporal::parse_iso_date)
                         .zip(local_date(at.0))
-                        .and_then(|(event, asked)| crate::openai::elapsed_count(event, asked, unit));
+                        .and_then(|(event, asked)| {
+                            crate::openai::elapsed_count(event, asked, unit)
+                        });
                     match count {
                         Some(count) => {
                             let mut answer = json!({"status":"computed_elapsed",
@@ -2849,7 +2889,11 @@ impl ChatMemoryService {
                             "source_id":candidate["source_id"],
                             "memory_id":candidate["memory_id"],"quote":candidate["quote"],
                             "evidence_grade":grade(candidate)});
-                            mark_pending(&mut answer, candidate, proposal.answer_text.as_deref().unwrap_or(""));
+                            mark_pending(
+                                &mut answer,
+                                candidate,
+                                proposal.answer_text.as_deref().unwrap_or(""),
+                            );
                             answer
                         }
                         None => json!({"status":"elapsed_after_question"}),
@@ -3829,8 +3873,8 @@ pub fn memory_tools() -> Vec<Tool> {
 #[cfg(test)]
 mod tests {
     use super::{
-        ChatConfig, ChatMemoryService, RetrievalMode, ValidateAnswer, final_answer_gate,
-        past_time, unix_seconds, validated_single_relation,
+        ChatConfig, ChatMemoryService, RetrievalMode, ValidateAnswer, final_answer_gate, past_time,
+        unix_seconds, validated_single_relation,
     };
     use crate::local_recall::SingleRelationEvidenceHint;
     use crate::openai::SingleRelationProposal;

@@ -894,8 +894,10 @@ impl RecallRuntime {
                 );
                 match response {
                     Ok(text) => {
-                        plan = r1::decode(&text)
-                            .and_then(|o| r1::validate(o, &ctx))
+                        plan = crate::diagnostics::checked("R1", "decode", r1::decode(&text))
+                            .and_then(|o| {
+                                crate::diagnostics::checked("R1", "validate", r1::validate(o, &ctx))
+                            })
                             .unwrap_or(plan);
                         if plan.output.is_none() {
                             r1_failure = Some("model_invalid_output");

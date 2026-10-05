@@ -128,7 +128,11 @@ impl ModelStage {
         }
     }
     pub(crate) fn timeout(self, config: &ModelBudgetConfig) -> Duration {
-        Duration::from_secs(if matches!(self, Self::Query) {
+        Duration::from_secs(if matches!(self, Self::W1 | Self::W3 | Self::W4) {
+            // Background stages renew a 900s lease before each call. The recorded
+            // 242s maximum needs headroom without extending the foreground budget.
+            360
+        } else if matches!(self, Self::Query) {
             15
         } else if matches!(self, Self::Assistance | Self::Answer) {
             180
@@ -476,6 +480,18 @@ impl ModelReservation {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+
+    #[test]
+    fn write_stage_deadlines_fit_the_claim_lease_and_recorded_latency() {
+        let config = ModelBudgetConfig::default();
+        for stage in [ModelStage::W1, ModelStage::W3, ModelStage::W4] {
+            assert_eq!(stage.timeout(&config), Duration::from_secs(360));
+            assert!(stage.timeout(&config) > Duration::from_secs(242));
+            assert!(stage.timeout(&config) < Duration::from_secs(900));
+        }
+        assert_eq!(ModelStage::R1.timeout(&config), Duration::from_secs(180));
+        assert_eq!(ModelStage::R4.timeout(&config), Duration::from_secs(180));
+    }
     use crate::OpenAiClient;
 
     pub(crate) struct TestLedger {

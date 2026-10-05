@@ -10,7 +10,7 @@ R1/R4 Pro minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型
 # 干跑：不读取凭据、不绑定端口、不创建录制；全部35例/63题。
 EVAL_PIPELINE=v3 EVAL_JOBS=8 EVAL_DRY_RUN=1 cargo test --test eval resident_eval_suite -- --exact --nocapture
 
-# 空录制回放：产生 run.json；缺录制为“未录制”，不计通过、不判模型失败。
+# 空录制回放：产生 run-replay.json；缺录制为“未录制”，不计通过、不判模型失败。
 EVAL_PIPELINE=v3 cargo test --test eval resident_eval_suite -- --exact --nocapture
 
 # 新路径绝对评分；旧基线在附录。不存在的 run 文件明确报告未录制。
@@ -37,9 +37,9 @@ W1 → W2 → W3 → assemble → 条件性 W4 → validate/plan/commit/finish�
 评分器独立核对可信时间，不能以模型输出或导出文件中的时间重定义问题。
 
 录制单独存入 `tests/eval/end_to_end/ac1-pro-medium-flash-medium-pro-minimal/<case>.json`。
-`EVAL_V3_DIR` 可指定其他配置目录，`EVAL_V3_OUTPUT` 可指定运行输出（缺省该目录/run.json）。
+`EVAL_V3_DIR` 可指定其他配置目录，`EVAL_V3_OUTPUT` 可指定运行输出（真实模式缺省该目录/run.json，零调用回放缺省 run-replay.json）。
 每次真实调用完成（含 HTTP/传输失败）立即原子写入 `<case>.json`，文件同步后才向生产客户端返回。
-每个用例完成即独立原子写入 `<输出名>.cases/<case>.json`（缺省 `run.cases/`），
+每个用例完成即独立原子写入 `<输出名>.cases/<case>.json`（真实模式缺省 `run.cases/`，回放为 `run-replay.cases/`），
 所有用例结束后写汇总；迟到响应收齐后仅补齐诊断，不改生产运行当时的结果。
 录制文件按用例聚合，逐调用写入；不同用例不共用临时文件或运行时。
 监听端口非阻塞以支持停止，accept 的连接显式改为阻塞；代理解析、读写与落盘错误返回 503，
@@ -95,3 +95,18 @@ W1/W3/W4缺独立耗时，只以历史混合批次均值作代理；R1/R4用mini
 旧基线、逐项转移与退步移入附录，旧参考缺失也不阻断绝对评分。
 新版不套用旧入库标签（如冲突成员禁止入库的旧规则）；27个LongMemEval用例缺逐条入库标注，
 报告不能回答漏提/错误更新质量。语义待复核不计最终通过，评分报告不替代用户验收。
+
+## 全量验收 A：回放与逐次诊断
+
+保留原 live run.json、发送日志和报告。回放默认另存 run-replay.json；显式输出路径也不得覆盖 real_calls>0 的 live 文件。报告标题标注“回放”，回放处理耗时不代表在线延迟，历史 usage 不表示本轮费用。
+
+生产调用旁只采集诊断元数据（阶段、物理调用 ID、本地超时、结果、解码/核验阶段与具体失败规则），不改变业务回执或冻结契约。报告逐次同时展示远端 completed/incomplete/HTTP 与本地 completed/timeout/decode_failed/validation_failed/output_limit 等结果。代理等待并收齐迟到响应后，仍保留调用方当时的 timeout。旧 live 文件没有本地诊断时显示 unknown，不凭远端 completed 推定本地成功。显式回放拒绝绑定含真实发送项的发送日志，避免混用旧账单。
+
+端口受限环境可用库测试的现有注入传输，复用同一个 v3_core.rs 的生产用例驱动、录制加载和严格指纹检查：
+
+```sh
+EVAL_V3_UNIT_OUTPUT=/tmp/eval-A-replay.json cargo test --lib recorded_full_e2e_replay_never_sends -- --nocapture
+python3 tests/eval/scoring/compare.py --run /tmp/eval-A-replay.json --output /tmp/eval-A-report
+```
+
+该入口只编译到测试，生产不读夹具；真实 SQLite、五阶段请求与 HTTP 回放走相同业务路径。传输只返回指纹完全匹配的现有响应，缺失/过期请求记 not_recorded，发送闭包一旦被调用测试立即失败。上游修复使数据库和下游输入变化时，不能借用旧输出评分；需另行批准重录。这项回放不模拟历史等待时间：超时修正另核对实际 HTTP 请求的 360 秒超时与历史耗时（最长242秒）。不能代替真实 HTTP/MCP 端到端测试。

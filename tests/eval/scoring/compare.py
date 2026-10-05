@@ -75,13 +75,50 @@ def absolute_state(scored):
     return "fail"
 
 
+def local_calls(case):
+    """Actual caller outcomes, independent of late proxy responses and replay speed."""
+    outcomes = {}
+    for step in case.get("steps", []):
+        operation = ("write:" + step["message"] if step["step"] == "message"
+                     else "recall:" + step["question"])
+        calls, latest = {}, {}
+        for event in step.get("model_diagnostics", []):
+            data = event["data"]
+            if event["kind"] == "model_start":
+                stage = data["stage"].split("_", 1)[0].upper()
+                row = {"stage": stage, "local_outcome": "unknown",
+                       "timeout_ms": data.get("timeout_ms"), "checks": []}
+                calls[data["call_id"]] = row
+                latest[stage] = row
+                outcomes.setdefault((operation, stage), []).append(row)
+            elif event["kind"] == "model_end" and data["call_id"] in calls:
+                calls[data["call_id"]].update(local_outcome=data.get("local_outcome", "unknown"),
+                    local_error=data.get("error"), local_elapsed_ms=data.get("duration_ms"))
+            elif event["kind"] == "model_check" and data["stage"] in latest:
+                row = latest[data["stage"]]
+                row["checks"].append(data)
+                if data["status"] == "failed" and row["local_outcome"] == "completed":
+                    row.update(local_outcome=("decode_failed" if data["phase"] == "decode"
+                                              else "validation_failed"),
+                               local_error=data.get("error"), phase=data["phase"])
+    return outcomes
+
+
 def execution(document):
     cases = []
     for case in document.get("cases", []):
         stages = {s: {"requests": 0, "sends": 0, "replays": 0, "not_recorded": 0,
                       "elapsed_ms": 0, "recorded_elapsed_ms": None, "usage": {}, "diagnostics": []}
                   for s in STAGES}
-        for call in case.get("calls", []):
+        local = local_calls(case)
+        call_rows = []
+        for recorded in case.get("calls", []):
+            call = dict(recorded)
+            matches = local.get((call["operation"], call["stage"]), [])
+            call.update(matches.pop(0) if matches else {"local_outcome": "unknown"})
+            if call["origin"] == "not_recorded":
+                call["local_outcome"] = "not_recorded"
+            call_rows.append(call)
             s = stages[call["stage"]]
             s["requests"] += 1
             s["sends"] += call["sends"]
@@ -96,10 +133,11 @@ def execution(document):
                     s["usage"][token] = s["usage"].get(token, 0) + value
             if (call.get("reason") or call.get("transport_error") or call.get("error")
                     or (call.get("http_status") or 0) >= 400
-                    or call.get("response_status") != "completed"):
+                    or call.get("response_status") != "completed"
+                    or call["local_outcome"] not in ("completed", "unknown")):
                 s["diagnostics"].append({k: call.get(k) for k in
                     ("operation", "origin", "http_status", "response_status", "incomplete_details",
-                     "transport_error", "error", "reason", "usage")})
+                     "transport_error", "error", "reason", "usage", "local_outcome", "local_error", "phase")})
         runtime = []
         for step in case.get("steps", []):
             result = step.get("result") or {}
@@ -112,10 +150,13 @@ def execution(document):
                                 "enrichment": body.get("enrichment"),
                                 "degraded_reasons": body.get("degraded_reasons")})
         cases.append({"case": case["case"], "elapsed_ms": case.get("elapsed_ms"),
-                      "stages": stages, "runtime_diagnostics": runtime})
+                      "stages": stages, "calls": call_rows, "runtime_diagnostics": runtime})
     log = document.get("send_accounting")
     attempts = log["attempts"] if log else []
-    return {"jobs": document.get("jobs"), "elapsed_ms": document.get("elapsed_ms"),
+    origins = {call["origin"] for case in cases for call in case["calls"]}
+    mode = document.get("execution_mode") or ("replay" if origins and origins <= {"replay", "not_recorded"}
+                                               else "live_or_mixed" if "live" in origins else "unknown")
+    return {"mode": mode, "jobs": document.get("jobs"), "elapsed_ms": document.get("elapsed_ms"),
             "real_calls": len(attempts) if log else document.get("real_calls", 0),
             "recorded_calls": sum(a["state"] == "recorded" for a in attempts) if log else None,
             "uncompleted_calls": [a for a in attempts if a["state"] != "recorded"],
@@ -200,7 +241,7 @@ def run(document=None):
 
 def render(report):
     new, absolute = report["new_summary"], report["absolute_summary"]
-    lines = ["# 新路径端到端绝对评分（expect_common / common.v1）", "", f"配置：{report['label'] or '未录制'}。", "",
+    lines = ["# 新路径端到端绝对评分（expect_common / common.v1）" + ("【回放】" if report["execution"]["mode"] == "replay" else ""), "", f"配置：{report['label'] or '未录制'}。", "",
              f"通过 {absolute['pass']} / 失败 {absolute['fail']} / 待复核 {absolute['pending_review']} / 未录制 {absolute['not_recorded']}（共 {absolute['questions']} 题）。", "",
              f"已评分 {new['questions']} / {len(report['questions'])}；未录制 {report['not_recorded']}。", "",
              "已知失败或缺失必需项归为失败；没有已知失败但仍需语义确认的题归为待复核。未录制不计通过，待复核不计最终通过。", "",
@@ -221,6 +262,9 @@ def render(report):
                if metrics["send_log_available"] else "没有发送日志；未完成调用数未知。"), "",
               "发送前持久化计数；中断时的未完成项保守计入，可能在途或已计费，不能证明远端收到或具体账单。", "",
               "当前耗时为本轮处理时间；历史录制耗时在回放时仍保留，两者分列。回放 usage 是历史账单，不是本轮费用。", ""]
+    if metrics["mode"] == "replay":
+        lines += ["回放：分数只表示现有录制经当前代码的结果；不是线上成功率。当前处理耗时不表示模型在线延迟。", ""]
+    lines += ["逐次诊断分开远端响应与本地接收/解码/核验；旧 live 数据未采集本地诊断时记 unknown，不从远端 completed 推定本地成功。", ""]
     for attempt in metrics["uncompleted_calls"]:
         lines.append(f"- 未完成/未落盘：{attempt['case']} / {attempt['operation']} / {attempt['stage']} / 发送编号 {attempt['id']}")
     for diagnostic in metrics["proxy_errors"]:
@@ -234,6 +278,14 @@ def render(report):
     for case in metrics["cases"]:
         for diagnostic in case["runtime_diagnostics"]:
             lines.append(f"\n{case['case']} 运行时诊断：{json.dumps(diagnostic, ensure_ascii=False)}\n")
+    lines += ["", "## 逐次远端 / 本地结果", "",
+              "| 用例 / 操作 | 阶段 | 来源 | 远端状态 / 原因 | 本地结果 / 规则 | 本地耗时 / 超时 ms | 当前代理 / 历史远端耗时 ms |",
+              "|---|---|---|---|---|---|---|"]
+    for case in metrics["cases"]:
+        for call in case["calls"]:
+            remote = f"{call.get('response_status')} / {json.dumps(call.get('incomplete_details'), ensure_ascii=False)}"
+            local = f"{call['local_outcome']} / {call.get('local_error') or ''}"
+            lines.append(f"| {case['case']} / {call['operation']} | {call['stage']} | {call['origin']} | {remote} | {local.replace('|', chr(92)+'|')} | {call.get('local_elapsed_ms', '未知')} / {call.get('timeout_ms', '未知')} | {call['elapsed_ms']} / {call.get('recorded_elapsed_ms')} |")
     ref = report["reference"]
     lines += ["", "## 附录：0517000 旧基线参考", "", "旧基线与转移仅作参考，不作为新路径验收门槛。", ""]
     if ref["state"] != "available":
@@ -258,6 +310,8 @@ def main():
     log_path = args.send_log or (pathlib.Path(document["send_log"]) if document.get("send_log") else None)
     if log_path and log_path.exists():
         log = load_send_log(log_path)
+        if document.get("execution_mode") == "replay" and log["attempts"]:
+            parser.error("回放不得绑定真实发送日志；请分别报告 live 与回放")
         if document.get("run_id") and document["run_id"] != log["run_id"]:
             parser.error("run.json 与发送日志不是同一次运行；省略 --run 可仅核对发送数")
         document["send_accounting"] = log
@@ -265,8 +319,13 @@ def main():
     elif args.send_log:
         parser.error("发送日志不存在")
     report = run(document)
+    output_json = args.output.with_suffix(".json")
+    if report["execution"]["mode"] == "replay" and output_json.exists():
+        previous = trial._load(output_json)
+        if previous.get("execution", {}).get("real_calls", 0) > 0:
+            parser.error("回放不得覆盖 live 报告；请指定新的 --output")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.with_suffix(".json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    output_json.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     args.output.with_suffix(".md").write_text(render(report))
     absolute = report["absolute_summary"]
     print(f"expect_common：通过 {absolute['pass']} / 失败 {absolute['fail']} / 待复核 {absolute['pending_review']} / 未录制 {absolute['not_recorded']}；报告 {args.output}")

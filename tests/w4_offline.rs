@@ -1422,6 +1422,60 @@ fn rejected(id: &str, edit: impl FnOnce(&mut Json, &mut Json)) -> String {
 }
 
 #[test]
+fn w4_rejects_two_terminal_decisions_for_the_same_target() {
+    for first in [
+        Action::StateChange,
+        Action::Correction,
+        Action::Refine,
+        Action::Retract,
+    ] {
+        for second in [
+            Action::StateChange,
+            Action::Correction,
+            Action::Refine,
+            Action::Retract,
+        ] {
+            let s = sample("w4_01_state_change");
+            let mut input: W4Input = serde_json::from_value(s["input"].clone()).unwrap();
+            let mut output: W4Output =
+                serde_json::from_value(fixture("w4_01_state_change")).unwrap();
+            let mut candidate = input.candidates[0].clone();
+            candidate.index = 1000;
+            input.candidates[0].candidate.kind = if first == Action::Retract {
+                CandidateKind::Retraction
+            } else {
+                CandidateKind::Assertion
+            };
+            candidate.candidate.kind = if second == Action::Retract {
+                CandidateKind::Retraction
+            } else {
+                CandidateKind::Assertion
+            };
+            input.candidates.push(candidate);
+            output.decisions[0].action = Some(first);
+            let mut decision = output.decisions[0].clone();
+            decision.candidate = 1000;
+            decision.action = Some(second);
+            output.decisions.push(decision);
+            let text_of = |id: &str| s["sources"][id]["text"].as_str().map(str::to_owned);
+            let error = validate(&input, &output, &text_of).unwrap_err();
+            assert!(
+                error.0.contains("重复结束目标"),
+                "{first:?}/{second:?}: {error}"
+            );
+            let pending = output.decisions.last_mut().unwrap();
+            pending.status = DecisionStatus::Pending;
+            pending.action = None;
+            pending.pending_reason = Some(PendingReason::UnclearRelation);
+            pending.effective = None;
+            pending.relation_scope = None;
+            pending.resolves_relations.clear();
+            validate(&input, &output, &text_of).unwrap();
+        }
+    }
+}
+
+#[test]
 fn invalid_outputs_are_rejected_as_a_whole() {
     let cases: Vec<(&str, &str, Box<dyn FnOnce(&mut Json, &mut Json)>, &str)> = vec![
         (

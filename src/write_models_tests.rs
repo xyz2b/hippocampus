@@ -586,6 +586,53 @@ fn empty_w1_sends_once_and_nonempty_sends_twice_through_runtime() {
 }
 
 #[test]
+fn runtime_model_diagnostics_distinguish_transport_decode_and_validation_failures() {
+    let cases = [
+        (Err(OpenAiAdapterError::Http("request timed out".into())), "timeout", None),
+        (Ok((200, json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"usage":{"output_tokens":16384}}).to_string())), "output_limit", None),
+        (Ok((200, json!({"status":"incomplete","incomplete_details":{"reason":"length"},"usage":{"output_tokens":16384}}).to_string())), "output_limit", None),
+        (Ok(envelope("not JSON")), "completed", Some("decode")),
+        (Ok(envelope(&json!({"reviews":[],"coverage":{"status":"complete","missing":[]},"request_reviews":[]}).to_string())), "completed", Some("validate")),
+        (Ok(envelope(&w3().to_string())), "completed", None),
+    ];
+    for (response, local_outcome, failed_phase) in cases {
+        let db = Db::new();
+        let text = "我喜欢咖啡。";
+        let key = db.start(text);
+        let (provider, sent) = mocked(&db, vec![Ok(envelope(&w1(text).to_string())), response]);
+        let (result, events) = diagnostics::capture_model_events(|| run(&db, &key, &provider));
+        assert_eq!(sent.lock().unwrap().len(), 2, "no automatic retry");
+        let end = events
+            .iter()
+            .filter(|e| e["kind"] == "model_end")
+            .last()
+            .unwrap();
+        assert_eq!(end["data"]["local_outcome"], local_outcome);
+        let failed: Vec<_> = events
+            .iter()
+            .filter(|e| e["kind"] == "model_check" && e["data"]["status"] == "failed")
+            .collect();
+        assert_eq!(
+            failed.first().and_then(|e| e["data"]["phase"].as_str()),
+            failed_phase
+        );
+        assert_eq!(
+            result["enrichment"]["status"],
+            if local_outcome == "completed" && failed_phase.is_none() {
+                "committed"
+            } else {
+                "failed"
+            }
+        );
+        assert!(
+            events
+                .iter()
+                .all(|e| e["data"].get("request").is_none() && e["data"].get("response").is_none())
+        );
+    }
+}
+
+#[test]
 fn timeout_invalid_json_schema_and_http_failures_consume_without_retry() {
     let cases = vec![
         (

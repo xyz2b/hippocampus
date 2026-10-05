@@ -124,7 +124,11 @@ fn resident_eval_suite() {
     // EVAL_CASES=s6_,lme_0862 runs only case files whose names start with one of the prefixes;
     // EVAL_CASES=quick runs the QUICK tier.
     let only = std::env::var("EVAL_CASES").unwrap_or_default();
-    let only = if only == "quick" { QUICK.join(",") } else { only };
+    let only = if only == "quick" {
+        QUICK.join(",")
+    } else {
+        only
+    };
     let mut paths: Vec<_> =
         std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval/cases"))
             .unwrap()
@@ -132,7 +136,10 @@ fn resident_eval_suite() {
             .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
             .filter(|path| {
                 let name = path.file_name().unwrap().to_string_lossy();
-                only.is_empty() || only.split(',').any(|prefix| name.starts_with(prefix.trim()))
+                only.is_empty()
+                    || only
+                        .split(',')
+                        .any(|prefix| name.starts_with(prefix.trim()))
             })
             .collect();
     paths.sort();
@@ -441,7 +448,9 @@ fn validation_corpus() {
                     Err(error) => {
                         *rejected.entry(reason(&error)).or_default() += 1;
                         let value = &candidate["value"];
-                        let value = value["text"].as_str().map_or_else(|| value.to_string(), str::to_owned);
+                        let value = value["text"]
+                            .as_str()
+                            .map_or_else(|| value.to_string(), str::to_owned);
                         rejections.push(format!(
                             "REJECTED {case_id}/{id}#{index} [{}] {}={value:?}",
                             reason(&error),
@@ -960,12 +969,12 @@ fn call(
     };
     // Each model configuration keeps its own frozen set side by side; only the current model's
     // recordings are replayed. Unlabelled recordings predate the label and belong to it.
-    let (mine, others): (Vec<Value>, Vec<Value>) =
-        recorded.as_array().unwrap().iter().cloned().partition(|recording| {
-            recording
-                .get("model")
-                .is_none_or(|model| model == MODEL)
-        });
+    let (mine, others): (Vec<Value>, Vec<Value>) = recorded
+        .as_array()
+        .unwrap()
+        .iter()
+        .cloned()
+        .partition(|recording| recording.get("model").is_none_or(|model| model == MODEL));
     replay.lock().unwrap().cases.insert(
         case_id.to_owned(),
         Queue {
@@ -1156,9 +1165,7 @@ fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blockin
                     match output {
                         Some(text) => {
                             let output = serde_json::from_str(&text).unwrap_or(Value::String(text));
-                            replay
-                                .served
-                                .push(json!({"schema":schema,"model":MODEL,
+                            replay.served.push(json!({"schema":schema,"model":MODEL,
                                 "endpoint":request["model"],"request":fingerprint,
                                 "output":output,"usage":usage}));
                             replay.captured = true;
@@ -1166,10 +1173,8 @@ fn handle(mut stream: TcpStream, shared: &Mutex<Replay>, http: &reqwest::blockin
                         None => {
                             // Keep what an unfinished (e.g. runaway) output said, to see why.
                             let partial = partial_text(&envelope);
-                            let saved = std::env::temp_dir().join(format!(
-                                "eval-incomplete-{case}-{}.txt",
-                                std::process::id()
-                            ));
+                            let saved = std::env::temp_dir()
+                                .join(format!("eval-incomplete-{case}-{}.txt", std::process::id()));
                             let _ = std::fs::write(&saved, &partial);
                             let tail: String = partial
                                 .chars()
@@ -1287,7 +1292,9 @@ fn request_fingerprint(request: &Value) -> Value {
     }
     let mut request = request.clone();
     // An output allowance does not change what the model is asked; completed outputs fit it.
-    request.as_object_mut().map(|fields| fields.remove("max_output_tokens"));
+    request
+        .as_object_mut()
+        .map(|fields| fields.remove("max_output_tokens"));
     if let Some(input) = request["input"].as_str()
         && let Ok(parsed) = serde_json::from_str::<Value>(input)
     {
@@ -1295,9 +1302,12 @@ fn request_fingerprint(request: &Value) -> Value {
     }
     strip(&mut request);
     // serde_json maps are sorted, so this serialization is canonical.
-    let hash = request.to_string().bytes().fold(0xcbf29ce484222325u64, |hash, byte| {
-        (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3)
-    });
+    let hash = request
+        .to_string()
+        .bytes()
+        .fold(0xcbf29ce484222325u64, |hash, byte| {
+            (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3)
+        });
     json!(format!("fnv1a64:{hash:016x}"))
 }
 

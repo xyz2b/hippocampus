@@ -34,7 +34,7 @@ CurrentRecordView 复制 W4 完整候选、限定语、换算结果、更新状�
 
 只读 current_message 固定保留完整 query，与检索和存储证据预算无关；source_id/sequence=null，enrichment=not_stored，memory_requests=[]。bootstrap 无本轮消息时为 null。R1 current_evidence=query_only 的送审资格通过 Assembly.review_current_message() 保持为 false；标记不扩展冻结 JSON。仅有 query_only 的问题文本不算判断证据。
 
-相关关系在 R3.relations 和跳过输出的 conflicts 中保留 open/resolved/invalidated 及可见依据。这是已有关系的审计呈现，不生成本轮冲突判断。跳过时 facts=[]、computed=null、history=[]；need=context_only 时 status=context_only。no_evidence 下 R1 已识别的未解析/歧义主体保留 needs_clarification 与代码澄清模板，其他跳过均 degraded、clarification=null，semantic_judgment=skipped，并写入 semantic_judgment_skipped:context_only/no_evidence/offline/budget。
+相关关系在 R3.relations 和跳过输出的 conflicts 中保留 open/resolved/invalidated 及可见依据。这是已有关系的审计呈现，不生成本轮冲突判断。跳过时 facts=[]、computed=null、history=[]；need=context_only 时 status=context_only。no_evidence 下 R1 已识别的未解析/歧义主体保留 needs_clarification 与代码澄清模板，主体无歧义、完整检索且无证据时 status=insufficient、clarification=null；检索不完整或其他跳过原因仍为 degraded。跳过均 semantic_judgment=skipped，并写入 semantic_judgment_skipped:context_only/no_evidence/offline/budget。
 
 ## 预算与完整性
 

@@ -254,7 +254,8 @@ impl Assembly {
             final_output: None,
         });
         let result = response.and_then(|text| {
-            let raw = r4::decode(text).map_err(|_| JudgmentFailure::InvalidOutput)?;
+            let raw = crate::diagnostics::checked("R4", "decode", r4::decode(text))
+                .map_err(|_| JudgmentFailure::InvalidOutput)?;
             let final_output = r4::assemble_old_basis(&raw, &context, &|id| {
                 source_state
                     .sources
@@ -266,7 +267,8 @@ impl Assembly {
             });
             audit.as_mut().unwrap().final_output = Some(final_output.clone());
             let evaluated =
-                r4::evaluate(final_output, &context).map_err(|_| JudgmentFailure::InvalidOutput)?;
+                crate::diagnostics::checked("R4", "validate", r4::evaluate(final_output, &context))
+                    .map_err(|_| JudgmentFailure::InvalidOutput)?;
             audit.as_mut().unwrap().final_output = Some(evaluated.output.clone());
             Ok(evaluated)
         });
@@ -612,6 +614,11 @@ impl Assembly {
                 RecallStatus::ContextOnly
             } else if clarification.is_some() {
                 RecallStatus::NeedsClarification
+            } else if reason == SkipReason::NoEvidence
+                && self.evidence.completeness.plan_complete
+                && !self.evidence.completeness.retrieval_truncated
+            {
+                RecallStatus::Insufficient
             } else {
                 RecallStatus::Degraded
             },

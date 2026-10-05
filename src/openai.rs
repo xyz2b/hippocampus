@@ -30,6 +30,10 @@ pub mod write_models;
 pub mod recall_models;
 
 #[cfg(test)]
+#[path = "eval_replay_tests.rs"]
+mod eval_replay_tests;
+
+#[cfg(test)]
 type TestTransport =
     dyn Fn(reqwest::blocking::Request) -> Result<(u16, String), OpenAiAdapterError> + Send + Sync;
 
@@ -964,6 +968,14 @@ impl OpenAiClient {
             .push(accounting.clone());
         crate::diagnostics::record("model_end", || {
             json!({"call_id":attempt_id,"status":outcome,
+            "local_outcome":match &result {
+                Ok(_) => "completed",
+                Err(OpenAiAdapterError::Incomplete(reason)) if matches!(reason.as_str(), "max_output_tokens" | "length") => "output_limit",
+                Err(OpenAiAdapterError::Incomplete(_)) => "incomplete",
+                Err(OpenAiAdapterError::Http(message)) if message.contains("timeout") || message.contains("timed out") => "timeout",
+                Err(OpenAiAdapterError::InvalidResponse(_)) => "decode_failed",
+                Err(_) => "transport_failed",
+            },
             "http_status":http_status,"response":diagnostic_response,"accounting":accounting,
             "parsed_result":if expects_json {result.as_ref().ok().and_then(|text| serde_json::from_str::<Value>(text).ok())} else {None},
             "parsing_status":if expects_json {match &result {Ok(text) if serde_json::from_str::<Value>(text).is_ok() => "valid_json",Ok(_) => "invalid_json",Err(_) => "not_run"}} else {"not_applicable"},
@@ -1126,9 +1138,12 @@ fn decode_answer_proposal(
     output: &str,
     candidates: &[Value],
 ) -> Result<AnswerProposal, OpenAiAdapterError> {
-    let mut proposal: AnswerProposal = serde_json::from_str(output)
-        .map_err(|error| invalid(format!("answer JSON: {error}")))?;
-    if !matches!(proposal.verdict, AnswerVerdict::Answer | AnswerVerdict::Elapsed) {
+    let mut proposal: AnswerProposal =
+        serde_json::from_str(output).map_err(|error| invalid(format!("answer JSON: {error}")))?;
+    if !matches!(
+        proposal.verdict,
+        AnswerVerdict::Answer | AnswerVerdict::Elapsed
+    ) {
         proposal.candidate_index = None;
         proposal.answer_text = None;
         proposal.event_date = None;
@@ -1143,7 +1158,9 @@ fn decode_answer_proposal(
     if text.is_empty()
         || text.chars().count() > 100
         || text.chars().any(char::is_control)
-        || !candidate["quote"].as_str().is_some_and(|quote| quote.contains(text))
+        || !candidate["quote"]
+            .as_str()
+            .is_some_and(|quote| quote.contains(text))
     {
         return Err(invalid("answer is not an exact span of a candidate quote"));
     }
@@ -1707,9 +1724,10 @@ impl OpenAiAdapterContext {
             .filter_map(|result| {
                 result
                     .inspect_err(|error| {
-                        crate::diagnostics::record("candidate_decode_dropped", || {
-                            json!({"reason":error.to_string()})
-                        })
+                        crate::diagnostics::record(
+                            "candidate_decode_dropped",
+                            || json!({"reason":error.to_string()}),
+                        )
                     })
                     .ok()
             })
@@ -1881,9 +1899,10 @@ impl OpenAiAdapterContext {
                     &self.known_entities,
                     self.utc_offset_seconds,
                 ) {
-                    crate::diagnostics::record("temporal_grounding_rejected", || {
-                        json!({"candidate_index":entry.candidate_index,"reason":reason})
-                    });
+                    crate::diagnostics::record(
+                        "temporal_grounding_rejected",
+                        || json!({"candidate_index":entry.candidate_index,"reason":reason}),
+                    );
                     continue;
                 }
                 supported.push(entry.candidate_index);
@@ -1898,9 +1917,10 @@ impl OpenAiAdapterContext {
             return Err(OpenAiAdapterError::SourceCoverageIncomplete);
         }
         if !complete {
-            crate::diagnostics::record("source_coverage_partial", || {
-                json!({"missing_user_spans":missing,"committed_candidates":supported})
-            });
+            crate::diagnostics::record(
+                "source_coverage_partial",
+                || json!({"missing_user_spans":missing,"committed_candidates":supported}),
+            );
         }
         for index in supported {
             candidates[index].bind_source_support();
@@ -2565,9 +2585,10 @@ impl RawCandidate {
                 if unverified {
                     // Keep the memory the USER asked for, without a deadline nobody can check;
                     // the tag makes the missing deadline visible.
-                    crate::diagnostics::record("retention_deadline_unverified", || {
-                        json!({"expression":self.expiry_expression})
-                    });
+                    crate::diagnostics::record(
+                        "retention_deadline_unverified",
+                        || json!({"expression":self.expiry_expression}),
+                    );
                     self.tags.push(RETENTION_UNVERIFIED_TAG.to_owned());
                 } else {
                     self.explicit_memory_request = Some(false);
@@ -2627,9 +2648,10 @@ impl RawCandidate {
         }
         // A bad secondary field costs only that field, never the candidate.
         if memory_type != MemoryType::Preference && self.strength.is_some() {
-            crate::diagnostics::record("field_dropped", || {
-                json!({"field":"strength","reason":"strength is only valid for Preference"})
-            });
+            crate::diagnostics::record(
+                "field_dropped",
+                || json!({"field":"strength","reason":"strength is only valid for Preference"}),
+            );
             self.strength = None;
         }
         // 必须在任何 Scope/情境转换前校验，不能因清空表达式绕过 schema 互斥约束。
@@ -2688,7 +2710,10 @@ impl RawCandidate {
         // make a sound fact fail. Dedicated predicates keep their structured scope.
         if self.predicate == "fact" {
             scope.conditions.retain(|condition| {
-                !matches!(condition, ScopeCondition::Location(_) | ScopeCondition::Time(_))
+                !matches!(
+                    condition,
+                    ScopeCondition::Location(_) | ScopeCondition::Time(_)
+                )
             });
         }
         let expiry_expression = optional_non_empty(self.expiry_expression, "expiry_expression")?;
@@ -3486,9 +3511,10 @@ impl RawScopeCondition {
                 }
                 // An unknown companion costs only this condition, never the candidate.
                 (Some(id), None) => {
-                    crate::diagnostics::record("field_dropped", || {
-                        json!({"field":"companion","reason":"unknown companion entity id","id":id})
-                    });
+                    crate::diagnostics::record(
+                        "field_dropped",
+                        || json!({"field":"companion","reason":"unknown companion entity id","id":id}),
+                    );
                     Ok(Vec::new())
                 }
                 (None, Some(role)) => Ok(vec![ScopeCondition::Companion(EntityOrRole::Role(
@@ -4841,7 +4867,9 @@ mod tests {
         raw["temporal_date"] = Value::Null;
         // Without the model's date the runtime never fills one in: the time is dropped.
         let undated = decode(&raw).expect("a missing date costs only the time");
-        assert!(undated[0].temporal.valid_from.is_none() && undated[0].temporal.reference.is_none());
+        assert!(
+            undated[0].temporal.valid_from.is_none() && undated[0].temporal.reference.is_none()
+        );
     }
 
     #[test]
@@ -4859,7 +4887,10 @@ mod tests {
             assert!(candidate.temporal.expires_at.is_none(), "{expression}");
             assert!(candidate.explicit_memory_request, "{expression}");
             assert!(
-                candidate.tags.iter().any(|tag| tag == RETENTION_UNVERIFIED_TAG),
+                candidate
+                    .tags
+                    .iter()
+                    .any(|tag| tag == RETENTION_UNVERIFIED_TAG),
                 "{expression}"
             );
         }
@@ -5313,8 +5344,7 @@ mod tests {
         ] {
             // Beside a valid candidate, a bad one is dropped on its own; a wire-schema
             // violation still rejects the whole output.
-            let mixed =
-                json!({"omission_reason":null,"candidates":[candidate_json(),raw.clone()]});
+            let mixed = json!({"omission_reason":null,"candidates":[candidate_json(),raw.clone()]});
             let kept = ctx.decode_extraction(
                 &mixed.to_string(),
                 "昨天说过早餐不喝咖啡，这条保留到明天。",
@@ -7123,7 +7153,10 @@ mod tests {
         let unknown_end = decode(raw).unwrap();
         assert!(
             unknown_end.temporal.expires_at.is_none()
-                && unknown_end.tags.iter().any(|tag| tag == RETENTION_UNVERIFIED_TAG),
+                && unknown_end
+                    .tags
+                    .iter()
+                    .any(|tag| tag == RETENTION_UNVERIFIED_TAG),
             "未知事件结束时间不能生成自动过期时间，只能标出"
         );
     }
@@ -7498,7 +7531,11 @@ mod tests {
     #[test]
     fn user_corrections_are_explicit_memory_requests() {
         let ctx = context();
-        for (reason, explicit) in [("correction", true), ("user_retracted", true), ("state_changed", false)] {
+        for (reason, explicit) in [
+            ("correction", true),
+            ("user_retracted", true),
+            ("state_changed", false),
+        ] {
             let mut raw = candidate_json();
             raw["intent"] = json!({"kind":"supersede","target_memory_id":null,"reason":reason});
             let decoded = ctx
@@ -7520,9 +7557,7 @@ mod tests {
             json!({"quote":"另一份资料写8英寸。","committed":false}),
         ];
         let decode = |output: Value| decode_answer_proposal(&output.to_string(), &candidates);
-        let answer = |index: usize, text: &str| {
-            json!({"verdict":"answer","candidate_index":index,"answer_text":text})
-        };
+        let answer = |index: usize, text: &str| json!({"verdict":"answer","candidate_index":index,"answer_text":text});
         assert_eq!(
             decode(answer(0, " 7英寸 ")).unwrap().answer_text.as_deref(),
             Some("7英寸")
@@ -7536,8 +7571,9 @@ mod tests {
             assert!(decode(rejected).is_err());
         }
         // A refusal never carries a citable span.
-        let conflict = decode(json!({"verdict":"conflict","candidate_index":0,"answer_text":"7英寸"}))
-            .unwrap();
+        let conflict =
+            decode(json!({"verdict":"conflict","candidate_index":0,"answer_text":"7英寸"}))
+                .unwrap();
         assert_eq!(conflict.verdict, AnswerVerdict::Conflict);
         assert!(conflict.candidate_index.is_none() && conflict.answer_text.is_none());
     }
@@ -7601,12 +7637,27 @@ mod tests {
         assert!(decode("sale", "2022-11-18").is_err());
         let date = |text: &str| crate::temporal::parse_iso_date(text).unwrap();
         let count = |from: &str, to: &str, unit| elapsed_count(date(from), date(to), unit);
-        assert_eq!(count("2022-11-17", "2022-12-01", ElapsedUnit::Week), Some(2));
-        assert_eq!(count("2023-04-16", "2023-05-06", ElapsedUnit::Week), Some(3));
+        assert_eq!(
+            count("2022-11-17", "2022-12-01", ElapsedUnit::Week),
+            Some(2)
+        );
+        assert_eq!(
+            count("2023-04-16", "2023-05-06", ElapsedUnit::Week),
+            Some(3)
+        );
         assert_eq!(count("2023-04-06", "2023-04-10", ElapsedUnit::Day), Some(4));
-        assert_eq!(count("2021-06-01", "2021-10-02", ElapsedUnit::Month), Some(4));
-        assert_eq!(count("2023-11-01", "2024-02-01", ElapsedUnit::Month), Some(3));
-        assert_eq!(count("2023-11-02", "2024-02-01", ElapsedUnit::Month), Some(2));
+        assert_eq!(
+            count("2021-06-01", "2021-10-02", ElapsedUnit::Month),
+            Some(4)
+        );
+        assert_eq!(
+            count("2023-11-01", "2024-02-01", ElapsedUnit::Month),
+            Some(3)
+        );
+        assert_eq!(
+            count("2023-11-02", "2024-02-01", ElapsedUnit::Month),
+            Some(2)
+        );
         assert_eq!(count("2024-02-01", "2023-11-01", ElapsedUnit::Day), None);
     }
 

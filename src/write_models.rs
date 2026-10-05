@@ -275,7 +275,7 @@ impl WriteModelProvider {
         // Even when the full batch exists, compare the stage binding before reusing it.
         let saved_w1 = crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?;
         if let Some(output) = &saved_w1 {
-            w2::decode(&output.to_string())?;
+            crate::diagnostics::checked("W1", "decode", w2::decode(&output.to_string()))?;
             crate::commit::w4_save_model_stage(store, claim, "w1", &w1_binding, output)?;
         }
         let output = if let Some(previous) = &ctx.previous_w2 {
@@ -316,7 +316,9 @@ impl WriteModelProvider {
             }
         } else {
             match saved_w1 {
-                Some(output) => w2::decode(&output.to_string())?,
+                Some(output) => {
+                    crate::diagnostics::checked("W1", "decode", w2::decode(&output.to_string()))?
+                }
                 None => {
                     crate::commit::w4_renew_claim(store, claim)?;
                     no_missing_result(&client, ModelStage::W1)?;
@@ -331,7 +333,7 @@ impl WriteModelProvider {
                             w1_schema(),
                         )
                         .map_err(provider_error)?;
-                    let output = w2::decode(&text)?;
+                    let output = crate::diagnostics::checked("W1", "decode", w2::decode(&text))?;
                     crate::commit::w4_save_model_stage(
                         store,
                         claim,
@@ -343,16 +345,20 @@ impl WriteModelProvider {
                 }
             }
         };
-        let batch = w2::validate(
-            output,
-            &w2::Context {
-                text: &source.text,
-                entities: &entities,
-                relations: &relations,
-                said_on: &said_on,
-                utc_offset_seconds: self.context.utc_offset_seconds,
-                task_id: ctx.task_id.as_ref(),
-            },
+        let batch = crate::diagnostics::checked(
+            "W1",
+            "validate",
+            w2::validate(
+                output,
+                &w2::Context {
+                    text: &source.text,
+                    entities: &entities,
+                    relations: &relations,
+                    said_on: &said_on,
+                    utc_offset_seconds: self.context.utc_offset_seconds,
+                    task_id: ctx.task_id.as_ref(),
+                },
+            ),
         )?;
         if ctx
             .previous_w2
@@ -375,7 +381,9 @@ impl WriteModelProvider {
             json!({"contract":"w3.v1","model":self.models.w3,"input":input,"final_w2":batch});
         self.models.effort("w3").bind(&mut w3_binding);
         let output = match crate::commit::w4_load_model_stage(store, claim, "w3", &w3_binding)? {
-            Some(output) => W3Output::decode(&output.to_string())?,
+            Some(output) => {
+                crate::diagnostics::checked("W3", "decode", W3Output::decode(&output.to_string()))?
+            }
             None => {
                 crate::commit::w4_renew_claim(store, claim)?;
                 no_missing_result(&client, ModelStage::W3)?;
@@ -399,10 +407,14 @@ impl WriteModelProvider {
                         w3_schema(),
                     )
                     .map_err(provider_error)?;
-                W3Output::decode(&text)?
+                crate::diagnostics::checked("W3", "decode", W3Output::decode(&text))?
             }
         };
-        let review = output.validate(&batch, &ctx.source_binding, &source.text)?;
+        let review = crate::diagnostics::checked(
+            "W3",
+            "validate",
+            output.validate(&batch, &ctx.source_binding, &source.text),
+        )?;
         crate::commit::w4_save_model_stage(
             store,
             claim,
@@ -478,15 +490,23 @@ impl WriteModelProvider {
             let live = crate::lexical::body(source)?;
             (live == provided.text).then(|| live.to_owned())
         };
-        let assembled = serde_json::from_value::<W4Output>(raw.clone())
-            .map_err(|_| "w4_invalid_output".to_owned())
-            .and_then(|output| {
-                crate::w4::assemble_new_basis(input, &output, &text_of)
-                    .map_err(|error| error.to_string())
-            });
-        let checked = assembled.as_ref().map_err(Clone::clone).and_then(|output| {
-            crate::w4::validate(input, output, &text_of).map_err(|e| e.to_string())
+        let assembled = crate::diagnostics::checked(
+            "W4",
+            "decode",
+            serde_json::from_value::<W4Output>(raw.clone())
+                .map_err(|_| "w4_invalid_output".to_owned()),
+        )
+        .and_then(|output| {
+            crate::w4::assemble_new_basis(input, &output, &text_of)
+                .map_err(|error| error.to_string())
         });
+        let checked = crate::diagnostics::checked(
+            "W4",
+            "validate",
+            assembled.as_ref().map_err(Clone::clone).and_then(|output| {
+                crate::w4::validate(input, output, &text_of).map_err(|e| e.to_string())
+            }),
+        );
         let final_output = checked
             .as_ref()
             .ok()

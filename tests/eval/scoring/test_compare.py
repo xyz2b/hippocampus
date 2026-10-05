@@ -102,6 +102,71 @@ class EndToEndReport(unittest.TestCase):
         self.assertEqual(metrics["runtime_diagnostics"][0]["error"],"attempt_failed")
         self.assertIn("max_output_tokens",compare.render(report))
 
+    def test_local_outcomes_do_not_follow_remote_completed_or_replay_latency(self):
+        doc = self.document()
+        doc["execution_mode"] = "replay"
+        case = doc["cases"][0]
+        case["calls"] = []
+        for index, outcome in enumerate(("timeout", "output_limit", "decode_failed", "validation_failed", "completed")):
+            mid = f"m{index}"
+            call_id = str(index)
+            events = [{"kind": "model_start", "data": {"stage": "w3_v1", "call_id": call_id, "timeout_ms": 360000}},
+                      {"kind": "model_end", "data": {"call_id": call_id,
+                       "local_outcome": outcome if index < 2 else "completed", "duration_ms": 1}}]
+            if index in (2, 3):
+                events.append({"kind": "model_check", "data": {"stage": "W3", "status": "failed",
+                               "phase": "decode" if index == 2 else "validate", "error": "specific rule"}})
+            case["steps"].append({"step": "message", "message": mid, "model_diagnostics": events})
+            case["calls"].append({"operation": f"write:{mid}", "stage": "W3", "origin": "replay",
+                "sends": 0, "elapsed_ms": 1, "recorded_elapsed_ms": 242154,
+                "http_status": 200, "response_status": "completed"})
+        report = compare.run(doc)
+        calls = report["execution"]["cases"][0]["calls"]
+        self.assertEqual([c["local_outcome"] for c in calls],
+                         ["timeout", "output_limit", "decode_failed", "validation_failed", "completed"])
+        self.assertEqual(len(report["execution"]["cases"][0]["stages"]["W3"]["diagnostics"]), 4)
+        text = compare.render(report)
+        self.assertIn("【回放】", text)
+        self.assertIn("不是线上成功率", text)
+        self.assertIn("specific rule", text)
+        self.assertIn("timeout", text)
+        case["steps"] = case["steps"][:1]
+        self.assertEqual(compare.execution(doc)["cases"][0]["calls"][0]["local_outcome"], "unknown")
+
+    def test_replay_cannot_overwrite_a_live_report(self):
+        with tempfile.TemporaryDirectory(prefix="eval-live-report-") as directory:
+            root = pathlib.Path(directory)
+            doc = self.document()
+            doc["execution_mode"] = "replay"
+            run_path = root / "run-replay.json"
+            run_path.write_text(json.dumps(doc))
+            prefix = root / "live-report"
+            before = json.dumps({"execution": {"real_calls": 552}})
+            prefix.with_suffix(".json").write_text(before)
+            prefix.with_suffix(".md").write_text("original live report")
+            cli = subprocess.run([sys.executable, str(pathlib.Path(compare.__file__)), "--run", str(run_path),
+                                  "--output", str(prefix)], capture_output=True, text=True)
+            self.assertNotEqual(cli.returncode, 0)
+            self.assertIn("不得覆盖 live", cli.stderr)
+            self.assertEqual(prefix.with_suffix(".json").read_text(), before)
+            self.assertEqual(prefix.with_suffix(".md").read_text(), "original live report")
+
+    def test_replay_cannot_attach_historical_send_counts(self):
+        with tempfile.TemporaryDirectory(prefix="eval-replay-binding-") as directory:
+            root = pathlib.Path(directory)
+            run_path = root / "run-replay.json"
+            doc = self.document()
+            doc["execution_mode"] = "replay"
+            run_path.write_text(json.dumps(doc))
+            log = root / "sends.json"
+            log.write_text(json.dumps({"version":"eval.e2e.sends@1", "run_id":"old-live",
+                "attempts":[{"id":0,"state":"recorded"}]}))
+            cli = subprocess.run([sys.executable, str(pathlib.Path(compare.__file__)), "--run", str(run_path),
+                                  "--send-log", str(log), "--output", str(root / "report")], capture_output=True, text=True)
+            self.assertNotEqual(cli.returncode, 0)
+            self.assertIn("回放不得绑定真实发送日志", cli.stderr)
+            self.assertFalse((root / "report.json").exists())
+
     def test_interrupted_send_log_reports_counts_without_completed_run(self):
         with tempfile.TemporaryDirectory(prefix="eval-send-report-") as directory:
             root=pathlib.Path(directory)

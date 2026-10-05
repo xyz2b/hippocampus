@@ -33,6 +33,7 @@
 - decided 必须有动作、没有待定原因；pending 的动作为 null、有待定原因，且不解决关系、不带生效时间和冲突范围。
 - 目标数量：new / coexist 没有目标；reinforce 恰好一个；其余至少一个。
 - 候选类别与动作一致：撤回表达只能 retract，断言不能当撤回用。
+- 同一份输出的 decided 结束动作（state_change / correction / refine / retract）不能重复结束同一目标，包括来自不同候选的决定；validate 整批拒收，不自动择一。pending 不结束目标。
 - **依据**
   - 只能引用输入里提供的已保存来源。
   - 片段用 `locate_quote` 在原文里定位，并还原为原文写法后才进入 W5。
@@ -200,3 +201,7 @@ EVAL_HISTORY=1 cargo test --test write_stage_eval write_stage_eval_suite -- --ex
 `tests/mcp_visibility.rs` / `tests/mcp_visibility.py` 用 MCP stdio + loopback 合成模型验证 a～g：新原文立即可判、假设不更新、整理失败仍可召回、相关新原文截断门控、乱序更新屏障、跨日时间、前后台删除检查。对应无端口注入测试为 `src/chat_visibility_tests.rs`（同一 MCP call_shared 分发、真实 SQLite/物理调用预算）。无端口测试不能代替 MCP 协议与 HTTP 端到端，端口受限时须分别报告。
 
 乱序用单 worker 保持旧任务未完成，另行显式 CLI 先提交较新来源；旧任务返回 needs_rejudge，不覆盖当前版本，不扩大恢复权限。删除场景同时保持后台 W1 和前台 R4 未返回，删除后释放晚到结果，前台报失效且后台不得恢复内容。relative 时间核对保存的 W2 时间区间与模型接收日。截断使用超过默认32条 raw 的待整理来源，只改变检索完整性与当前门控，不伪报模型 budget_exhausted。
+
+## 全量验收 A：后台超时
+
+W1/W3/W4 的单次本地 HTTP 超时统一为 360 秒。本轮录制最长约 242 秒，预留约 118 秒余量；每次调用前续租的 W4 执行租约为 900 秒，仍大于阶段超时，避免正常执行先失去认领。R1/R4 与前台总预算不变。远端迟到 completed 不等于本地阶段成功；没有自动重试，超时仍保留失败回执与已占用调用预算。

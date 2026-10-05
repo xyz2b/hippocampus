@@ -31,3 +31,5 @@ python3 tests/eval/scoring/compare.py --run <v3-run.json> --output /tmp/eval-v3-
 按 AD1，旧基线与新旧转移只作参考，不是新路径验收门槛；缺旧参考仍产出绝对评分。
 
 复核流程：跑 `trial.py`，报告中“待复核”项带台账键；在 `review_ledger.json` 中按键写入或确认结论。标注、问题、输出、额外结论或语义状态任一变化，键随之改变，旧结论不再适用；`test_ledger_covers_every_pending_item` 会指出失效的键。
+
+全量验收 A 的逐次诊断见报告“逐次远端 / 本地结果”：远端状态与本地 timeout、解码/核验失败、输出超限分列。回放明确标注，不表示线上质量或延迟；旧 live 缺本地诊断时显示 unknown。新回放默认另存 run-replay.json，保留 live run.json 和原报告。

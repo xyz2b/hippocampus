@@ -14,6 +14,51 @@ const OWNER: &str = "recall-owner";
 const SAID_ON: &str = "2026-04-15";
 const AT: i64 = 1_776_249_600;
 
+#[test]
+fn complete_empty_retrieval_is_insufficient_without_fabricating_a_judgment() {
+    let db = Db::new();
+    let req = request("我用哪种墨盒？", None, None);
+    let understood = plan(&req, Some(understanding()));
+    let assembly = recall::assemble(&db.open(), &req, &understood, Budget::default()).unwrap();
+    assert!(assembly.evidence.completeness.plan_complete);
+    assert!(!assembly.has_judgment_evidence());
+    let result = assembly
+        .finish_skipped(&db.open(), SkipReason::NoEvidence)
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Insufficient);
+    assert_eq!(result.semantic_judgment, SemanticJudgment::Skipped);
+    assert_eq!(
+        result.degraded_reasons,
+        ["semantic_judgment_skipped:no_evidence"]
+    );
+    assert!(result.facts.is_empty() && result.computed.is_none());
+}
+
+#[test]
+fn empty_truncated_retrieval_stays_degraded() {
+    let db = Db::new();
+    source(&db, "unprocessed", "尚待整理的原文。", None, "queued");
+    let req = request("墨盒？", None, None);
+    let understood = plan(&req, Some(understanding()));
+    let assembly = recall::assemble(
+        &db.open(),
+        &req,
+        &understood,
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    )
+    .unwrap();
+    assert!(!assembly.has_judgment_evidence());
+    assert!(assembly.evidence.completeness.retrieval_truncated);
+    let result = assembly
+        .finish_skipped(&db.open(), SkipReason::NoEvidence)
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Degraded);
+    assert_eq!(result.semantic_judgment, SemanticJudgment::Skipped);
+}
+
 struct Db(PathBuf);
 impl Db {
     fn new() -> Self {

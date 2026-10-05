@@ -15,6 +15,22 @@ static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 static FAILED: AtomicBool = AtomicBool::new(false);
 static WRITER: OnceLock<Mutex<Option<File>>> = OnceLock::new();
 thread_local! { static RUN: RefCell<Option<String>> = const { RefCell::new(None) }; }
+thread_local! { static MODEL_EVENTS: RefCell<Option<Vec<Value>>> = const { RefCell::new(None) }; }
+
+/// Collect model outcome metadata on this thread without enabling file traces.
+/// Requests, responses and personal text are excluded; business results are unchanged.
+pub fn capture_model_events<T>(run: impl FnOnce() -> T) -> (T, Vec<Value>) {
+    struct Restore(Option<Vec<Value>>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            MODEL_EVENTS.with(|events| events.replace(self.0.take()));
+        }
+    }
+    let _restore = Restore(MODEL_EVENTS.with(|events| events.replace(Some(Vec::new()))));
+    let result = run();
+    let events = MODEL_EVENTS.with(|events| events.borrow_mut().take().unwrap());
+    (result, events)
+}
 
 pub fn new_id() -> String {
     format!(
@@ -172,14 +188,57 @@ pub fn record_for(run_id: &str, kind: &str, data: impl FnOnce() -> Value) {
 }
 
 pub(crate) fn record(kind: &str, data: impl FnOnce() -> Value) {
-    if !enabled() {
+    let collect = MODEL_EVENTS.with(|events| events.borrow().is_some())
+        && matches!(kind, "model_start" | "model_end" | "model_check");
+    if !enabled() && !collect {
         return;
+    }
+    let mut data = data();
+    if collect {
+        let keys = [
+            "call_id",
+            "stage",
+            "phase",
+            "status",
+            "local_outcome",
+            "error",
+            "timeout_ms",
+            "duration_ms",
+            "parsing_status",
+        ];
+        let mut metadata = json!({});
+        for key in keys {
+            if let Some(value) = data.get(key) {
+                metadata[key] = value.clone();
+            }
+        }
+        scrub(&mut metadata);
+        MODEL_EVENTS.with(|events| {
+            events
+                .borrow_mut()
+                .as_mut()
+                .unwrap()
+                .push(json!({"kind":kind,"data":metadata}))
+        });
     }
     RUN.with(|run| {
         if let Some(id) = run.borrow().as_ref() {
-            record_for(id, kind, data);
+            record_for(id, kind, || std::mem::take(&mut data));
         }
     });
+}
+
+pub(crate) fn checked<T, E: std::fmt::Display>(
+    stage: &str,
+    phase: &str,
+    result: Result<T, E>,
+) -> Result<T, E> {
+    record("model_check", || {
+        json!({"stage":stage,"phase":phase,
+        "status":if result.is_ok() {"completed"} else {"failed"},
+        "error":result.as_ref().err().map(ToString::to_string)})
+    });
+    result
 }
 
 pub(crate) fn validation<T: Serialize, E: std::fmt::Display>(
@@ -200,6 +259,18 @@ pub(crate) fn validation<T: Serialize, E: std::fmt::Display>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn model_capture_is_scoped_and_restored_after_panics() {
+        let (_, outer) = capture_model_events(|| {
+            assert!(std::panic::catch_unwind(|| capture_model_events(|| panic!("test"))).is_err());
+            let _ = checked("W3", "decode", Err::<(), _>("bad JSON"));
+            record("unrelated", || json!({"text":"excluded"}));
+        });
+        assert_eq!(outer.len(), 1);
+        assert_eq!(outer[0]["data"]["phase"], "decode");
+        assert!(MODEL_EVENTS.with(|events| events.borrow().is_none()));
+    }
 
     #[test]
     fn redaction_preserves_nonsecret_request_bytes() {
