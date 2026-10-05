@@ -1,0 +1,78 @@
+{
+  "id": "w1_02_uncertainty",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2904,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "allergic_to",
+            "sentence": {
+              "text": "我可能对花生过敏。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": {
+              "quote": {
+                "text": "可能"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "花生"
+              },
+              "text": "花生"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"allergic_to\",\"sentence\":{\"text\":\"我可能对花生过敏。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":{\"quote\":{\"text\":\"可能\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"花生\"},\"text\":\"花生\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:c0f68c6addb465dd",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3638,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 110,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3748
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3638,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 110,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3748
+      }
+    }
+  ]
+}

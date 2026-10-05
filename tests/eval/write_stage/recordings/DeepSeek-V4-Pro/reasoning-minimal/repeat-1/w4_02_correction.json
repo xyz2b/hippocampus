@@ -1,0 +1,80 @@
+{
+  "id": "w4_02_correction",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3358,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "correction",
+            "basis": [
+              {
+                "quote": {
+                  "text": "之前说错了，我住在杭州，不是苏州。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-230"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在苏州。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-102"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              21
+            ]
+          }
+        ]
+      },
+      "output_text": "{\n  \"decisions\": [\n    {\n    \"action\": \"correction\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"之前说错了，我住在杭州，不是苏州。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-230\"\n    }\n    },\n    {\n    \"quote\": {\n    \"text\": \"我住在苏州。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-102\"\n    }\n    }\n    ],\n    \"candidate\": 0,\n    \"effective\": null,\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [],\n    \"status\": \"decided\",\n    \"targets\": [\n    21\n    ]\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:817e5dd86daf7f5e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2634,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 185,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2819
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2634,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 185,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2819
+      }
+    }
+  ]
+}

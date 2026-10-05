@@ -1,0 +1,59 @@
+{
+  "id": "w3_14_episode_low_value",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 1663,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "low_value",
+            "problems": [],
+            "verdict": "supported"
+          }
+        ]
+      },
+      "output_text": "{\n  \"coverage\": {\n    \"missing\": [],\n    \"status\": \"complete\"\n  },\n  \"request_reviews\": [],\n  \"reviews\": [\n    {\n    \"candidate\": 0,\n    \"episode_value\": \"low_value\",\n    \"problems\": [],\n    \"verdict\": \"supported\"\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:98386b3c0bf69e82",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1399,
+          "input_tokens_details": {
+            "cached_tokens": 1024
+          },
+          "output_tokens": 72,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 1471
+        }
+      },
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 1399,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 72,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1471
+      }
+    }
+  ]
+}

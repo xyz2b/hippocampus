@@ -1,0 +1,48 @@
+{
+  "id": "w1_18_pure_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 1267,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:60c5a10e0d8d7ac5",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3637,
+          "input_tokens_details": {
+            "cached_tokens": 3072
+          },
+          "output_tokens": 15,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3652
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3637,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 15,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3652
+      }
+    }
+  ]
+}

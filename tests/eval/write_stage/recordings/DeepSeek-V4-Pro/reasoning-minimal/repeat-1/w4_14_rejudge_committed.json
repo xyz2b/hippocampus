@@ -1,0 +1,89 @@
+{
+  "id": "w4_14_rejudge_committed",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 4005,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在每天喝两杯咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-360"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我每天喝一杯咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-112"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "现在"
+              },
+              "role": "validity"
+            },
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              55
+            ]
+          }
+        ]
+      },
+      "output_text": "{\n  \"decisions\": [\n    {\n    \"action\": \"state_change\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"我现在每天喝两杯咖啡。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-360\"\n    }\n    },\n    {\n    \"quote\": {\n    \"text\": \"我每天喝一杯咖啡。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-112\"\n    }\n    }\n    ],\n    \"candidate\": 0,\n    \"effective\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"unknown\"\n    },\n    \"quote\": {\n    \"text\": \"现在\"\n    },\n    \"role\": \"validity\"\n    },\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [],\n    \"status\": \"decided\",\n    \"targets\": [\n    55\n    ]\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:c9c36ad2858f3ec1",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2782,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 229,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3011
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2782,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 229,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3011
+      }
+    }
+  ]
+}

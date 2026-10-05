@@ -1,0 +1,86 @@
+{
+  "id": "w1_13_history_disambiguates",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3573,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "他上周辞职了。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "e-laowang"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "上周"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "辞职了"
+              },
+              "text": "辞职了"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n    \"conditions\": [],\n    \"kind\": \"assertion\",\n    \"memory_type\": \"fact\",\n    \"polarity\": \"affirm\",\n    \"relation\": \"fact\",\n    \"sentence\": {\n    \"text\": \"他上周辞职了。\"\n    },\n    \"speech\": \"user_statement\",\n    \"strength\": null,\n    \"subject\": {\n    \"entity_id\": \"e-laowang\"\n    },\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -1,\n    \"unit\": \"week\"\n    },\n    \"quote\": {\n    \"text\": \"上周\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null,\n    \"value\": {\n    \"kind\": \"text\",\n    \"quote\": {\n    \"text\": \"辞职了\"\n    },\n    \"text\": \"辞职了\"\n    }\n    }\n  ],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:824e12163bad943e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3644,
+          "input_tokens_details": {
+            "cached_tokens": 3072
+          },
+          "output_tokens": 226,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3870
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3644,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 226,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3870
+      }
+    }
+  ]
+}

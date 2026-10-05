@@ -1,0 +1,73 @@
+{
+  "id": "w1_15_negation",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3028,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "constraint",
+            "polarity": "affirm",
+            "relation": "avoids",
+            "sentence": {
+              "text": "我不吃香菜。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "entity_id": "香菜",
+              "kind": "entity",
+              "quote": {
+                "text": "香菜"
+              }
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n    \"conditions\": [],\n    \"kind\": \"assertion\",\n    \"memory_type\": \"constraint\",\n    \"polarity\": \"affirm\",\n    \"relation\": \"avoids\",\n    \"sentence\": {\n    \"text\": \"我不吃香菜。\"\n    },\n    \"speech\": \"user_statement\",\n    \"strength\": null,\n    \"subject\": {\n    \"entity_id\": \"self\"\n    },\n    \"times\": [],\n    \"uncertainty\": null,\n    \"value\": {\n    \"entity_id\": \"香菜\",\n    \"kind\": \"entity\",\n    \"quote\": {\n    \"text\": \"香菜\"\n    }\n    }\n    }\n  ],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:d698918dd215ff6f",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3635,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 159,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3794
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3635,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 159,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3794
+      }
+    }
+  ]
+}

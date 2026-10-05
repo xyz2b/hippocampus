@@ -1,0 +1,86 @@
+{
+  "id": "w1_04_question_with_statement",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3919,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "上个月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "成都"
+              },
+              "text": "成都"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n    \"conditions\": [],\n    \"kind\": \"assertion\",\n    \"memory_type\": \"fact\",\n    \"polarity\": \"affirm\",\n    \"relation\": \"lives_in\",\n    \"sentence\": {\n    \"text\": \"我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？\"\n    },\n    \"speech\": \"user_statement\",\n    \"strength\": null,\n    \"subject\": {\n    \"entity_id\": \"self\"\n    },\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -1,\n    \"unit\": \"month\"\n    },\n    \"quote\": {\n    \"text\": \"上个月\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null,\n    \"value\": {\n    \"kind\": \"text\",\n    \"quote\": {\n    \"text\": \"成都\"\n    },\n    \"text\": \"成都\"\n    }\n    }\n  ],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:de2043ed512921d1",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3648,
+          "input_tokens_details": {
+            "cached_tokens": 3072
+          },
+          "output_tokens": 234,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3882
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3648,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 234,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3882
+      }
+    }
+  ]
+}

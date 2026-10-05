@@ -1,0 +1,88 @@
+{
+  "id": "w1_12_unresolved_subject",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3852,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "episode",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "他上周辞职了。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "unresolved": {
+                "text": "他"
+              }
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "上周"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "辞职了"
+              },
+              "text": "辞职了"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n    \"conditions\": [],\n    \"kind\": \"assertion\",\n    \"memory_type\": \"episode\",\n    \"polarity\": \"affirm\",\n    \"relation\": \"fact\",\n    \"sentence\": {\n    \"text\": \"他上周辞职了。\"\n    },\n    \"speech\": \"user_statement\",\n    \"strength\": null,\n    \"subject\": {\n    \"unresolved\": {\n    \"text\": \"他\"\n    }\n    },\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -1,\n    \"unit\": \"week\"\n    },\n    \"quote\": {\n    \"text\": \"上周\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null,\n    \"value\": {\n    \"kind\": \"text\",\n    \"quote\": {\n    \"text\": \"辞职了\"\n    },\n    \"text\": \"辞职了\"\n    }\n    }\n  ],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:953933335232035a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3638,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 232,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3870
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3638,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 232,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3870
+      }
+    }
+  ]
+}
