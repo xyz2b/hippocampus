@@ -1,0 +1,1532 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 44404,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:person_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 44221,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3782,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2855,
+        "output_tokens_details": {
+          "reasoning_tokens": 2728
+        },
+        "total_tokens": 6637
+      }
+    },
+    {
+      "elapsed_ms": 20476,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:person_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 20249,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1399,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3330,
+        "output_tokens_details": {
+          "reasoning_tokens": 3281
+        },
+        "total_tokens": 4729
+      }
+    },
+    {
+      "elapsed_ms": 24153,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:person_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 24025,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3804,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1500,
+        "output_tokens_details": {
+          "reasoning_tokens": 1378
+        },
+        "total_tokens": 5304
+      }
+    },
+    {
+      "elapsed_ms": 4114,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:person_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3874,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1416,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 565,
+        "output_tokens_details": {
+          "reasoning_tokens": 516
+        },
+        "total_tokens": 1981
+      }
+    },
+    {
+      "elapsed_ms": 2769,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2641,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2312,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 112,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2424
+      }
+    },
+    {
+      "elapsed_ms": 5667,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 5539,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4641,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 403,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5044
+      }
+    },
+    {
+      "elapsed_ms": 2809,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2678,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2319,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 117,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2436
+      }
+    },
+    {
+      "elapsed_ms": 5422,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 5293,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4654,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 409,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5063
+      }
+    },
+    {
+      "elapsed_ms": 2470,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2338,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2318,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 107,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2425
+      }
+    },
+    {
+      "elapsed_ms": 3818,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3584,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4415,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 215,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4630
+      }
+    },
+    {
+      "elapsed_ms": 2655,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2432,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2315,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 105,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2420
+      }
+    },
+    {
+      "elapsed_ms": 4200,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3633,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4407,
+        "input_tokens_details": {
+          "cached_tokens": 3840
+        },
+        "output_tokens": 213,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4620
+      }
+    },
+    {
+      "elapsed_ms": 2596,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2372,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2314,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 106,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2420
+      }
+    },
+    {
+      "elapsed_ms": 3711,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3572,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4413,
+        "input_tokens_details": {
+          "cached_tokens": 3840
+        },
+        "output_tokens": 212,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4625
+      }
+    },
+    {
+      "elapsed_ms": 2583,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:person_q6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2447,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2313,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 64,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2377
+      }
+    }
+  ],
+  "case": "person_sketch_pen",
+  "elapsed_ms": 137738,
+  "steps": [
+    {
+      "message": "person_s1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158173776214000-1236",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158173776214000-1236",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "person_s2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158239418907000-1281",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158239418907000-1281",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "question": "person_q1",
+      "reason": null,
+      "result": {
+        "clarification": {
+          "evidence": [
+            {
+              "quote": {
+                "text": "画速写时"
+              },
+              "source": {
+                "kind": "current"
+              }
+            }
+          ],
+          "question": "“画速写时”指的是谁？"
+        },
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "画速写时固定用哪种笔？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯序宁画速写时固定使用钢笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158239418907000-1281"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "冯序宁画速写时固定使用钢笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "冯砚川画速写时固定使用炭笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯序宁画速写时固定使用钢笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_xuning"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "钢笔"
+                },
+                "text": "钢笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯序宁画速写时固定使用钢笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158239418907000-1281"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯砚川画速写时固定使用炭笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_yanchuan"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "炭笔"
+                },
+                "text": "炭笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "画速写时固定用哪种笔？",
+          "request_id": "eval-person_sketch_pen-person_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "needs_clarification",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "person_s1": "80856-1791158173776214000-1236",
+        "person_s2": "80856-1791158239418907000-1281"
+      },
+      "source_state": {
+        "person_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "person_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "person_q2",
+      "reason": null,
+      "result": {
+        "clarification": {
+          "evidence": [
+            {
+              "quote": {
+                "text": "画速写时固定用哪种笔？"
+              },
+              "source": {
+                "kind": "current"
+              }
+            }
+          ],
+          "question": "你指的是冯序宁、冯砚川中的哪一位？"
+        },
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "画速写时固定用哪种笔？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯序宁画速写时固定使用钢笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158239418907000-1281"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "冯序宁画速写时固定使用钢笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "冯砚川画速写时固定使用炭笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯序宁画速写时固定使用钢笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_xuning"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "钢笔"
+                },
+                "text": "钢笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯序宁画速写时固定使用钢笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158239418907000-1281"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯砚川画速写时固定使用炭笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_yanchuan"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "炭笔"
+                },
+                "text": "炭笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我问的是姓冯的那位。"
+          ],
+          "query": "画速写时固定用哪种笔？",
+          "request_id": "eval-person_sketch_pen-person_q2",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "needs_clarification",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "person_s1": "80856-1791158173776214000-1236",
+        "person_s2": "80856-1791158239418907000-1281"
+      },
+      "source_state": {
+        "person_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "person_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "person_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "画速写时固定用哪种笔？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "冯砚川画速写时固定使用炭笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯砚川画速写时固定使用炭笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_yanchuan"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "炭笔"
+                },
+                "text": "炭笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我问的是冯砚川。"
+          ],
+          "query": "画速写时固定用哪种笔？",
+          "request_id": "eval-person_sketch_pen-person_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "person_s1": "80856-1791158173776214000-1236",
+        "person_s2": "80856-1791158239418907000-1281"
+      },
+      "source_state": {
+        "person_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "person_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "person_q4",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "冯序宁画速写时固定用哪种笔？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯序宁画速写时固定使用钢笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158239418907000-1281"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "冯序宁画速写时固定使用钢笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯序宁画速写时固定使用钢笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_xuning"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "钢笔"
+                },
+                "text": "钢笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯序宁画速写时固定使用钢笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158239418907000-1281"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "冯序宁画速写时固定用哪种笔？",
+          "request_id": "eval-person_sketch_pen-person_q4",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "person_s1": "80856-1791158173776214000-1236",
+        "person_s2": "80856-1791158239418907000-1281"
+      },
+      "source_state": {
+        "person_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "person_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "person_q5",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "冯砚川画速写拿的是哪种笔？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "冯砚川画速写时固定使用炭笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "画速写时"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "冯砚川画速写时固定使用炭笔。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "person_feng_yanchuan"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "炭笔"
+                },
+                "text": "炭笔"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "冯砚川画速写时固定使用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158173776214000-1236"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "冯砚川画速写拿的是哪种笔？",
+          "request_id": "eval-person_sketch_pen-person_q5",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "person_s1": "80856-1791158173776214000-1236",
+        "person_s2": "80856-1791158239418907000-1281"
+      },
+      "source_state": {
+        "person_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "person_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "person_q6",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "冯序宁画速写通常花多长时间？"
+        },
+        "degraded_reasons": [
+          "semantic_judgment_skipped:no_evidence"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [],
+        "records": [],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "冯序宁画速写通常花多长时间？",
+          "request_id": "eval-person_sketch_pen-person_q6",
+          "task_id": null
+        },
+        "semantic_judgment": "skipped",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "person_s1": "80856-1791158173776214000-1236",
+        "person_s2": "80856-1791158239418907000-1281"
+      },
+      "source_state": {
+        "person_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "person_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

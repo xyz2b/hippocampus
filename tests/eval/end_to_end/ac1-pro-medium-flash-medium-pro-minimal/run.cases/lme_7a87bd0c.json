@@ -1,0 +1,1780 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 94480,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 94433,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3809,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6320,
+        "output_tokens_details": {
+          "reasoning_tokens": 6074
+        },
+        "total_tokens": 10129
+      }
+    },
+    {
+      "elapsed_ms": 18972,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 18927,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1590,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3180,
+        "output_tokens_details": {
+          "reasoning_tokens": 3131
+        },
+        "total_tokens": 4770
+      }
+    },
+    {
+      "elapsed_ms": 8253,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 8206,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3897,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 470,
+        "output_tokens_details": {
+          "reasoning_tokens": 457
+        },
+        "total_tokens": 4367
+      }
+    },
+    {
+      "elapsed_ms": 212935,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 212886,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4025,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 14693,
+        "output_tokens_details": {
+          "reasoning_tokens": 13927
+        },
+        "total_tokens": 18718
+      }
+    },
+    {
+      "elapsed_ms": 57770,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 57716,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2385,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 10209,
+        "output_tokens_details": {
+          "reasoning_tokens": 9988
+        },
+        "total_tokens": 12594
+      }
+    },
+    {
+      "elapsed_ms": 27073,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 27008,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3637,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1805,
+        "output_tokens_details": {
+          "reasoning_tokens": 1507
+        },
+        "total_tokens": 5442
+      }
+    },
+    {
+      "elapsed_ms": 204888,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 204828,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4149,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 13918,
+        "output_tokens_details": {
+          "reasoning_tokens": 13469
+        },
+        "total_tokens": 18067
+      }
+    },
+    {
+      "elapsed_ms": 90431,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 90368,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2154,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18538
+      }
+    },
+    {
+      "elapsed_ms": 201883,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 201814,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4313,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 13807,
+        "output_tokens_details": {
+          "reasoning_tokens": 13212
+        },
+        "total_tokens": 18120
+      }
+    },
+    {
+      "elapsed_ms": 92122,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 92054,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2483,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18867
+      }
+    },
+    {
+      "elapsed_ms": 242685,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 242611,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4603,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 17363,
+        "output_tokens_details": {
+          "reasoning_tokens": 16339
+        },
+        "total_tokens": 21966
+      }
+    },
+    {
+      "elapsed_ms": 86663,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 86585,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3140,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 15344,
+        "output_tokens_details": {
+          "reasoning_tokens": 15140
+        },
+        "total_tokens": 18484
+      }
+    },
+    {
+      "elapsed_ms": 124321,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 124238,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4769,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8195,
+        "output_tokens_details": {
+          "reasoning_tokens": 7687
+        },
+        "total_tokens": 12964
+      }
+    },
+    {
+      "elapsed_ms": 167872,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 167784,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4743,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 12031,
+        "output_tokens_details": {
+          "reasoning_tokens": 11456
+        },
+        "total_tokens": 16774
+      }
+    },
+    {
+      "elapsed_ms": 65099,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 65008,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2904,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11910,
+        "output_tokens_details": {
+          "reasoning_tokens": 11777
+        },
+        "total_tokens": 14814
+      }
+    },
+    {
+      "elapsed_ms": 31372,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 31278,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4118,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1992,
+        "output_tokens_details": {
+          "reasoning_tokens": 1838
+        },
+        "total_tokens": 6110
+      }
+    },
+    {
+      "elapsed_ms": 138632,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 138537,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4861,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9910,
+        "output_tokens_details": {
+          "reasoning_tokens": 9546
+        },
+        "total_tokens": 14771
+      }
+    },
+    {
+      "elapsed_ms": 12161,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 12061,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2737,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2014,
+        "output_tokens_details": {
+          "reasoning_tokens": 1941
+        },
+        "total_tokens": 4751
+      }
+    },
+    {
+      "elapsed_ms": 33947,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 33845,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4354,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2249,
+        "output_tokens_details": {
+          "reasoning_tokens": 2032
+        },
+        "total_tokens": 6603
+      }
+    },
+    {
+      "elapsed_ms": 112295,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 112195,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4969,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7959,
+        "output_tokens_details": {
+          "reasoning_tokens": 7659
+        },
+        "total_tokens": 12928
+      }
+    },
+    {
+      "elapsed_ms": 30410,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 30308,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2678,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5229,
+        "output_tokens_details": {
+          "reasoning_tokens": 5178
+        },
+        "total_tokens": 7907
+      }
+    },
+    {
+      "elapsed_ms": 98811,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 98705,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4210,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6530,
+        "output_tokens_details": {
+          "reasoning_tokens": 6400
+        },
+        "total_tokens": 10740
+      }
+    },
+    {
+      "elapsed_ms": 58522,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 58411,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5044,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3720,
+        "output_tokens_details": {
+          "reasoning_tokens": 3582
+        },
+        "total_tokens": 8764
+      }
+    },
+    {
+      "elapsed_ms": 23888,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 23761,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2672,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4112,
+        "output_tokens_details": {
+          "reasoning_tokens": 4018
+        },
+        "total_tokens": 6784
+      }
+    },
+    {
+      "elapsed_ms": 36225,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 36110,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5168,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2376,
+        "output_tokens_details": {
+          "reasoning_tokens": 2363
+        },
+        "total_tokens": 7544
+      }
+    },
+    {
+      "elapsed_ms": 2720,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2601,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2242,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 101,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2343
+      }
+    },
+    {
+      "elapsed_ms": 4518,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4397,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 6937,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 307,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7244
+      }
+    }
+  ],
+  "case": "lme_7a87bd0c",
+  "elapsed_ms": 2294021,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155822658512000-406",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155822658512000-406",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155936380046000-441",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791155936380046000-441",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155944847068000-445",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": null,
+                "reasons": [
+                  "unresolved_subject",
+                  "review_contradicted"
+                ],
+                "status": "unresolved",
+                "update": null
+              },
+              {
+                "index": 3,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 4,
+                "memory_id": null,
+                "reasons": [
+                  "unresolved_subject",
+                  "review_contradicted"
+                ],
+                "status": "unresolved",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791155944847068000-445",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156243413060000-554",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791156243413060000-554",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156539355947000-654",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791156539355947000-654",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156834077382000-719",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 4,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 5,
+                "memory_id": null,
+                "reasons": [
+                  "candidate_rejected:subject_not_found"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 6,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "coverage_gaps"
+          },
+          "source": {
+            "source_id": "80856-1791156834077382000-719",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157289313040000-857",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157289313040000-857",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157555460193000-938",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157555460193000-938",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157742271357000-998",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "coverage_gaps"
+          },
+          "source": {
+            "source_id": "80856-1791157742271357000-998",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157986107650000-1089",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157986107650000-1089",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158070358864000-1134",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791158070358864000-1134",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1696070160,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 10,
+          "pending_updates": 5,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-09-30",
+          "sequence": null,
+          "source_id": null,
+          "text": "How long have I been sticking to my daily tidying routine?"
+        },
+        "degraded_reasons": [
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "That's really helpful, thanks! I think I'll start with purging and categorizing all the items in my garage. Do you have any tips on how to decide what to keep and what to get rid of?"
+            },
+            "said_on": "2023-06-11",
+            "sequence": 2,
+            "source_id": "80856-1791155936380046000-441"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm feeling pretty good about getting started, thanks for the tips! I think I'll start with the tools and sports equipment, those are the categories that are most cluttered. I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too."
+            },
+            "said_on": "2023-06-11",
+            "sequence": 3,
+            "source_id": "80856-1791155944847068000-445"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space."
+            },
+            "said_on": "2023-06-11",
+            "sequence": 4,
+            "source_id": "80856-1791156243413060000-554"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of turning that space into a little workstation for my daily tidying routine. I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized. Plus, it'll be a great way to stay consistent with my daily routine, now that I've been doing it for 3 weeks."
+            },
+            "said_on": "2023-06-11",
+            "sequence": 5,
+            "source_id": "80856-1791156539355947000-654"
+          },
+          {
+            "enrichment": "coverage_gaps",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?"
+            },
+            "said_on": "2023-06-11",
+            "sequence": 6,
+            "source_id": "80856-1791156834077382000-719"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+            },
+            "said_on": "2023-09-30",
+            "sequence": 7,
+            "source_id": "80856-1791157289313040000-857"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to use some of those tips to organize my garage, especially the one about categorizing and grouping similar items. I've also been thinking about implementing a \"one-touch rule\" when it comes to cleaning, do you have any advice on how to make it a habit?"
+            },
+            "said_on": "2023-09-30",
+            "sequence": 8,
+            "source_id": "80856-1791157555460193000-938"
+          },
+          {
+            "enrichment": "coverage_gaps",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'll definitely try to implement the \"one-touch rule\" when I'm cleaning out the garage this weekend. I've also been thinking about using a label maker to label all the storage bins and shelves, do you have any recommendations for a good label maker?"
+            },
+            "said_on": "2023-09-30",
+            "sequence": 9,
+            "source_id": "80856-1791157742271357000-998"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?"
+            },
+            "said_on": "2023-09-30",
+            "sequence": 10,
+            "source_id": "80856-1791157986107650000-1089"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to use some of those tips to organize my bookshelf, especially the one about categorizing and grouping similar books together. Speaking of categorizing, do you have any advice on how to categorize my cleaning supplies? I've been thinking of organizing them by room or by type of cleaning product."
+            },
+            "said_on": "2023-09-30",
+            "sequence": 11,
+            "source_id": "80856-1791158070358864000-1134"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "daily"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": -3,
+                    "unit": "week"
+                  },
+                  "quote": {
+                    "text": "3 weeks"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                },
+                "text": "Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155822658512000-406"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-06-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              },
+              {
+                "end_exclusive": 1684684800,
+                "precision": "day",
+                "start": 1684598400,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the all-natural brand I started using last week for the bathroom"
+                },
+                "text": "the all-natural brand I started using last week for the bathroom"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156834077382000-719"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-06-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a few specialized tools like a cordless vacuum and a microfiber mop"
+                },
+                "text": "a few specialized tools like a cordless vacuum and a microfiber mop"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156834077382000-719"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-06-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "regularly"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a few specialized tools like a cordless vacuum and a microfiber mop"
+                },
+                "text": "a few specialized tools like a cordless vacuum and a microfiber mop"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156834077382000-719"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-06-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I'm feeling pretty good about getting started, thanks for the tips!"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I'm feeling pretty good about getting started, thanks for the tips!"
+                },
+                "text": "I'm feeling pretty good about getting started, thanks for the tips!"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm feeling pretty good about getting started, thanks for the tips!"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155944847068000-445"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-06-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1696070160,
+          "context": [],
+          "query": "How long have I been sticking to my daily tidying routine?",
+          "request_id": "eval-lme_7a87bd0c-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 6,
+          "source_revision": 11
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791155822658512000-406",
+        "s1_t2": "80856-1791155936380046000-441",
+        "s1_t3": "80856-1791155944847068000-445",
+        "s1_t4": "80856-1791156243413060000-554",
+        "s1_t5": "80856-1791156539355947000-654",
+        "s1_t6": "80856-1791156834077382000-719",
+        "s2_t1": "80856-1791157289313040000-857",
+        "s2_t2": "80856-1791157555460193000-938",
+        "s2_t3": "80856-1791157742271357000-998",
+        "s2_t4": "80856-1791157986107650000-1089",
+        "s2_t5": "80856-1791158070358864000-1134"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t5": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

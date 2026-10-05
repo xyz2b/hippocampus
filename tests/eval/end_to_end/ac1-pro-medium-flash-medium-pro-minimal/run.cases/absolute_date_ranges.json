@@ -1,0 +1,1370 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 38503,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:time_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 38399,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3803,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2820,
+        "output_tokens_details": {
+          "reasoning_tokens": 2389
+        },
+        "total_tokens": 6623
+      }
+    },
+    {
+      "elapsed_ms": 4713,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:time_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4616,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1652,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 776,
+        "output_tokens_details": {
+          "reasoning_tokens": 726
+        },
+        "total_tokens": 2428
+      }
+    },
+    {
+      "elapsed_ms": 33360,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:time_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 33257,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3883,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2390,
+        "output_tokens_details": {
+          "reasoning_tokens": 2081
+        },
+        "total_tokens": 6273
+      }
+    },
+    {
+      "elapsed_ms": 12243,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:time_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 12128,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1727,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1904,
+        "output_tokens_details": {
+          "reasoning_tokens": 1854
+        },
+        "total_tokens": 3631
+      }
+    },
+    {
+      "elapsed_ms": 44911,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:time_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 44741,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3411,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2828,
+        "output_tokens_details": {
+          "reasoning_tokens": 2703
+        },
+        "total_tokens": 6239
+      }
+    },
+    {
+      "elapsed_ms": 2954,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:time_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2848,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2284,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 156,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2440
+      }
+    },
+    {
+      "elapsed_ms": 8158,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:time_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 8052,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5211,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 748,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5959
+      }
+    },
+    {
+      "elapsed_ms": 2899,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:time_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2793,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2284,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 156,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2440
+      }
+    },
+    {
+      "elapsed_ms": 5378,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:time_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 5271,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5211,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 381,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5592
+      }
+    },
+    {
+      "elapsed_ms": 2773,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:time_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2665,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2284,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 156,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2440
+      }
+    },
+    {
+      "elapsed_ms": 8224,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:time_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 8114,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5211,
+        "input_tokens_details": {
+          "cached_tokens": 3840
+        },
+        "output_tokens": 749,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5960
+      }
+    }
+  ],
+  "case": "absolute_date_ranges",
+  "elapsed_ms": 167289,
+  "steps": [
+    {
+      "message": "time_s1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157790961114000-1021",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157790961114000-1021",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "time_s2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157834576343000-1026",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157834576343000-1026",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "question": "time_q1",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "2027年4月14日，岸芷艺术馆几点闭馆？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157790961114000-1021"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "岸芷艺术馆从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "end_inclusive": "2027-04-14",
+                  "kind": "range",
+                  "start": "2027-04-01"
+                },
+                "quote": {
+                  "text": "从2027年4月1日至2027年4月14日（含首尾两日）"
+                },
+                "role": "event"
+              },
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "每天17:30闭馆"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157834576343000-1026"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "岸芷艺术馆从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "end_inclusive": "2027-04-30",
+                  "kind": "range",
+                  "start": "2027-04-15"
+                },
+                "quote": {
+                  "text": "从2027年4月15日至2027年4月30日（含首尾两日）"
+                },
+                "role": "event"
+              },
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "每天19:00"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_anzhi_gallery"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "end_inclusive": "2027-04-14",
+                    "kind": "range",
+                    "start": "2027-04-01"
+                  },
+                  "quote": {
+                    "text": "从2027年4月1日至2027年4月14日（含首尾两日）"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "每天17:30闭馆"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157790961114000-1021"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1807718400,
+                "precision": "day",
+                "start": 1806508800,
+                "status": "resolved"
+              },
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_anzhi_gallery"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "end_inclusive": "2027-04-30",
+                    "kind": "range",
+                    "start": "2027-04-15"
+                  },
+                  "quote": {
+                    "text": "从2027年4月15日至2027年4月30日（含首尾两日）"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "每天19:00"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157834576343000-1026"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1809100800,
+                "precision": "day",
+                "start": 1807718400,
+                "status": "resolved"
+              },
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "2027年4月14日，岸芷艺术馆几点闭馆？",
+          "request_id": "eval-absolute_date_ranges-time_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 4,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "time_s1": "80856-1791157790961114000-1021",
+        "time_s2": "80856-1791157834576343000-1026"
+      },
+      "source_state": {
+        "time_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "time_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "time_q2",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "2027年4月15日，岸芷艺术馆几点闭馆？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157834576343000-1026"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "岸芷艺术馆从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "end_inclusive": "2027-04-30",
+                  "kind": "range",
+                  "start": "2027-04-15"
+                },
+                "quote": {
+                  "text": "从2027年4月15日至2027年4月30日（含首尾两日）"
+                },
+                "role": "event"
+              },
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "每天19:00"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_anzhi_gallery"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "end_inclusive": "2027-04-30",
+                    "kind": "range",
+                    "start": "2027-04-15"
+                  },
+                  "quote": {
+                    "text": "从2027年4月15日至2027年4月30日（含首尾两日）"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "每天19:00"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157834576343000-1026"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1809100800,
+                "precision": "day",
+                "start": 1807718400,
+                "status": "resolved"
+              },
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_anzhi_gallery"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "end_inclusive": "2027-04-14",
+                    "kind": "range",
+                    "start": "2027-04-01"
+                  },
+                  "quote": {
+                    "text": "从2027年4月1日至2027年4月14日（含首尾两日）"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "每天17:30闭馆"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157790961114000-1021"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1807718400,
+                "precision": "day",
+                "start": 1806508800,
+                "status": "resolved"
+              },
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "2027年4月15日，岸芷艺术馆几点闭馆？",
+          "request_id": "eval-absolute_date_ranges-time_q2",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 4,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "time_s1": "80856-1791157790961114000-1021",
+        "time_s2": "80856-1791157834576343000-1026"
+      },
+      "source_state": {
+        "time_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "time_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "time_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "2027年5月1日，岸芷艺术馆几点闭馆？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157790961114000-1021"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "岸芷艺术馆从2027年4月1日至2027年4月14日（含首尾两日）每天17:30闭馆。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "end_inclusive": "2027-04-14",
+                  "kind": "range",
+                  "start": "2027-04-01"
+                },
+                "quote": {
+                  "text": "从2027年4月1日至2027年4月14日（含首尾两日）"
+                },
+                "role": "event"
+              },
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "每天17:30闭馆"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157834576343000-1026"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "岸芷艺术馆从2027年4月15日至2027年4月30日（含首尾两日）每天19:00闭馆。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "end_inclusive": "2027-04-30",
+                  "kind": "range",
+                  "start": "2027-04-15"
+                },
+                "quote": {
+                  "text": "从2027年4月15日至2027年4月30日（含首尾两日）"
+                },
+                "role": "event"
+              },
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "recurring"
+                },
+                "quote": {
+                  "text": "每天19:00"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_anzhi_gallery"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "end_inclusive": "2027-04-14",
+                    "kind": "range",
+                    "start": "2027-04-01"
+                  },
+                  "quote": {
+                    "text": "从2027年4月1日至2027年4月14日（含首尾两日）"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "每天17:30闭馆"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的闭馆时间安排已确定：从2027年4月1日至2027年4月14日（含首尾两日），每天17:30闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157790961114000-1021"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1807718400,
+                "precision": "day",
+                "start": 1806508800,
+                "status": "resolved"
+              },
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_anzhi_gallery"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "end_inclusive": "2027-04-30",
+                    "kind": "range",
+                    "start": "2027-04-15"
+                  },
+                  "quote": {
+                    "text": "从2027年4月15日至2027年4月30日（含首尾两日）"
+                  },
+                  "role": "event"
+                },
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "quote": {
+                    "text": "每天19:00"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "岸芷艺术馆的另一段已确定安排是：从2027年4月15日至2027年4月30日（含首尾两日），每天19:00闭馆。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157834576343000-1026"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1809100800,
+                "precision": "day",
+                "start": 1807718400,
+                "status": "resolved"
+              },
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "2027年5月1日，岸芷艺术馆几点闭馆？",
+          "request_id": "eval-absolute_date_ranges-time_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 4,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "time_s1": "80856-1791157790961114000-1021",
+        "time_s2": "80856-1791157834576343000-1026"
+      },
+      "source_state": {
+        "time_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "time_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

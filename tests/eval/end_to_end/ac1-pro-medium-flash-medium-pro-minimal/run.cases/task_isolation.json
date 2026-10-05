@@ -1,0 +1,709 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 82735,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 82609,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3789,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5415,
+        "output_tokens_details": {
+          "reasoning_tokens": 5264
+        },
+        "total_tokens": 9204
+      }
+    },
+    {
+      "elapsed_ms": 52721,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 52569,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1430,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9425,
+        "output_tokens_details": {
+          "reasoning_tokens": 9361
+        },
+        "total_tokens": 10855
+      }
+    },
+    {
+      "elapsed_ms": 61950,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 61816,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3791,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4127,
+        "output_tokens_details": {
+          "reasoning_tokens": 3922
+        },
+        "total_tokens": 7918
+      }
+    },
+    {
+      "elapsed_ms": 11838,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 11704,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1486,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1792,
+        "output_tokens_details": {
+          "reasoning_tokens": 1743
+        },
+        "total_tokens": 3278
+      }
+    },
+    {
+      "elapsed_ms": 4130,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3990,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2283,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 107,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2390
+      }
+    },
+    {
+      "elapsed_ms": 5217,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 5078,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4264,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 240,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4504
+      }
+    },
+    {
+      "elapsed_ms": 3534,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3396,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2284,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 107,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2391
+      }
+    },
+    {
+      "elapsed_ms": 4219,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4079,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4517,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 249,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4766
+      }
+    },
+    {
+      "elapsed_ms": 3265,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3126,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2298,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 107,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2405
+      }
+    },
+    {
+      "elapsed_ms": 4245,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4106,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4294,
+        "input_tokens_details": {
+          "cached_tokens": 3840
+        },
+        "output_tokens": 213,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4507
+      }
+    }
+  ],
+  "case": "task_isolation",
+  "elapsed_ms": 236865,
+  "steps": [
+    {
+      "message": "task_s1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158222467331000-1272",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791158222467331000-1272",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "task_s2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158358358246000-1346",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158358358246000-1346",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "question": "task_q1",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 1,
+          "pending_updates": 0,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "折页导航终端开机应显示哪种语言？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158222467331000-1272"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "在潮汐展陈任务中，折页导航终端的开机显示语言要求设为西班牙语。",
+            "strength": "moderate",
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": null
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+            },
+            "said_on": "2026-09-28",
+            "sequence": 1,
+            "source_id": "80856-1791158222467331000-1272"
+          }
+        ],
+        "records": [],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "折页导航终端开机应显示哪种语言？",
+          "request_id": "eval-task_isolation-task_q1",
+          "task_id": "s6-tide-exhibit"
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "task_s1": "80856-1791158222467331000-1272",
+        "task_s2": "80856-1791158358358246000-1346"
+      },
+      "source_state": {
+        "task_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "task_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "task_q2",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "折页导航终端开机应显示哪种语言？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "在高原路演任务中"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158358358246000-1346"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "在高原路演任务中，该任务要求同一台折页导航终端的开机显示语言设为意大利语。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "在高原路演任务中"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "constraint",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_zheye_terminal"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                },
+                "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158358358246000-1346"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "折页导航终端开机应显示哪种语言？",
+          "request_id": "eval-task_isolation-task_q2",
+          "task_id": "s6-plateau-demo"
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "task_s1": "80856-1791158222467331000-1272",
+        "task_s2": "80856-1791158358358246000-1346"
+      },
+      "source_state": {
+        "task_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "task_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "task_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 1,
+          "pending_updates": 0,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "继续潮汐展陈任务的展台演示配置：折页导航终端应沿用意大利语作为开机显示语言吗？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158222467331000-1272"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "在潮汐展陈任务中，折页导航终端的展台演示配置要求开机显示语言设为西班牙语。",
+            "strength": "strong",
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": null
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+            },
+            "said_on": "2026-09-28",
+            "sequence": 1,
+            "source_id": "80856-1791158222467331000-1272"
+          }
+        ],
+        "records": [],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "继续潮汐展陈任务的展台演示配置：折页导航终端应沿用意大利语作为开机显示语言吗？",
+          "request_id": "eval-task_isolation-task_q3",
+          "task_id": "s6-tide-exhibit"
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "task_s1": "80856-1791158222467331000-1272",
+        "task_s2": "80856-1791158358358246000-1346"
+      },
+      "source_state": {
+        "task_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "task_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

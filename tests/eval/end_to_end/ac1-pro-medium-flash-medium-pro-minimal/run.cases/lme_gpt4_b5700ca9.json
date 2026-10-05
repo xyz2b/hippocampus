@@ -1,0 +1,849 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 44977,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 44882,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3769,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3094,
+        "output_tokens_details": {
+          "reasoning_tokens": 2764
+        },
+        "total_tokens": 6863
+      }
+    },
+    {
+      "elapsed_ms": 64153,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 64061,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1637,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11356,
+        "output_tokens_details": {
+          "reasoning_tokens": 11284
+        },
+        "total_tokens": 12993
+      }
+    },
+    {
+      "elapsed_ms": 129782,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 129686,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3865,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8832,
+        "output_tokens_details": {
+          "reasoning_tokens": 8352
+        },
+        "total_tokens": 12697
+      }
+    },
+    {
+      "elapsed_ms": 25609,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 25511,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1898,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4590,
+        "output_tokens_details": {
+          "reasoning_tokens": 4493
+        },
+        "total_tokens": 6488
+      }
+    },
+    {
+      "elapsed_ms": 101378,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 101274,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3788,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6665,
+        "output_tokens_details": {
+          "reasoning_tokens": 6325
+        },
+        "total_tokens": 10453
+      }
+    },
+    {
+      "elapsed_ms": 59985,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 59879,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3980,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3934,
+        "output_tokens_details": {
+          "reasoning_tokens": 3740
+        },
+        "total_tokens": 7914
+      }
+    },
+    {
+      "elapsed_ms": 7285,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 7178,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1592,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1054,
+        "output_tokens_details": {
+          "reasoning_tokens": 1005
+        },
+        "total_tokens": 2646
+      }
+    },
+    {
+      "elapsed_ms": 28797,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 28689,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3391,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1940,
+        "output_tokens_details": {
+          "reasoning_tokens": 1845
+        },
+        "total_tokens": 5331
+      }
+    },
+    {
+      "elapsed_ms": 161339,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 161229,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4122,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 11055,
+        "output_tokens_details": {
+          "reasoning_tokens": 10590
+        },
+        "total_tokens": 15177
+      }
+    },
+    {
+      "elapsed_ms": 89237,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 89118,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2159,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16192,
+        "output_tokens_details": {
+          "reasoning_tokens": 16142
+        },
+        "total_tokens": 18351
+      }
+    },
+    {
+      "elapsed_ms": 65121,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 64994,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4200,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4430,
+        "output_tokens_details": {
+          "reasoning_tokens": 4297
+        },
+        "total_tokens": 8630
+      }
+    },
+    {
+      "elapsed_ms": 32530,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 32399,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1823,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5486,
+        "output_tokens_details": {
+          "reasoning_tokens": 5436
+        },
+        "total_tokens": 7309
+      }
+    },
+    {
+      "elapsed_ms": 72996,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 72862,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3911,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4459,
+        "output_tokens_details": {
+          "reasoning_tokens": 4358
+        },
+        "total_tokens": 8370
+      }
+    },
+    {
+      "elapsed_ms": 97516,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 97372,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4320,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6058,
+        "output_tokens_details": {
+          "reasoning_tokens": 5912
+        },
+        "total_tokens": 10378
+      }
+    },
+    {
+      "elapsed_ms": 3572,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3431,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2246,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 177,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2423
+      }
+    },
+    {
+      "elapsed_ms": 4886,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4458,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4567,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 257,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4824
+      }
+    }
+  ],
+  "case": "lme_gpt4_b5700ca9",
+  "elapsed_ms": 996184,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157513361079000-927",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157513361079000-927",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157622886166000-966",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157622886166000-966",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157880924224000-1035",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157880924224000-1035",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157978138613000-1085",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791157978138613000-1085",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158229575818000-1276",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791158229575818000-1276",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158401766284000-1351",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "candidate_rejected:subject_not_found"
+                ],
+                "status": "rejected",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791158401766284000-1351",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1681083780,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 3,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-04-10",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157978138613000-1085"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "The user attended the Maundy Thursday service at the Episcopal Church on 2023-04-06.",
+            "strength": "strong",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2023-04-06",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": null
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "Yes, I'd like to take the next step. Please provide me with the contact information and application form. I'm looking forward to volunteering at the food bank and making a difference in my community. By the way, I'm glad I got to attend the Maundy Thursday service at the Episcopal Church today, it was a beautiful and moving experience."
+            },
+            "said_on": "2023-04-06",
+            "sequence": 4,
+            "source_id": "80856-1791157978138613000-1085"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'd like to ask, are there any opportunities to volunteer with a group from my church or community? I'd love to invite some friends to join me in volunteering at the food bank."
+            },
+            "said_on": "2023-04-06",
+            "sequence": 5,
+            "source_id": "80856-1791158229575818000-1276"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'd like to ask, are there any opportunities for my church group to adopt a specific project or program at the food bank, such as organizing a food drive or helping with a special event? We're looking for ways to make a more significant impact and contribute to the food bank's mission."
+            },
+            "said_on": "2023-04-06",
+            "sequence": 6,
+            "source_id": "80856-1791158401766284000-1351"
+          }
+        ],
+        "records": [],
+        "request": {
+          "at": 1681083780,
+          "context": [],
+          "query": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?",
+          "request_id": "eval-lme_gpt4_b5700ca9-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 7,
+          "source_revision": 6
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791157513361079000-927",
+        "s1_t2": "80856-1791157622886166000-966",
+        "s1_t3": "80856-1791157880924224000-1035",
+        "s1_t4": "80856-1791157978138613000-1085",
+        "s1_t5": "80856-1791158229575818000-1276",
+        "s1_t6": "80856-1791158401766284000-1351"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

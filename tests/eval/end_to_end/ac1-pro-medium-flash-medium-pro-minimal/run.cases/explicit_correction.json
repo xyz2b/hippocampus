@@ -1,0 +1,939 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 46470,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 46349,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3744,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2984,
+        "output_tokens_details": {
+          "reasoning_tokens": 2822
+        },
+        "total_tokens": 6728
+      }
+    },
+    {
+      "elapsed_ms": 18571,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 18453,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1422,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3056,
+        "output_tokens_details": {
+          "reasoning_tokens": 3006
+        },
+        "total_tokens": 4478
+      }
+    },
+    {
+      "elapsed_ms": 2447,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2328,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2275,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 104,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2379
+      }
+    },
+    {
+      "elapsed_ms": 3700,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3580,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4474,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 251,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4725
+      }
+    },
+    {
+      "elapsed_ms": 188848,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 188726,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3800,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 12703,
+        "output_tokens_details": {
+          "reasoning_tokens": 12444
+        },
+        "total_tokens": 16503
+      }
+    },
+    {
+      "elapsed_ms": 13919,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 13789,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1571,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2444,
+        "output_tokens_details": {
+          "reasoning_tokens": 2371
+        },
+        "total_tokens": 4015
+      }
+    },
+    {
+      "elapsed_ms": 3630,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3485,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2275,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 104,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2379
+      }
+    },
+    {
+      "elapsed_ms": 4781,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4638,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4557,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 264,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4821
+      }
+    },
+    {
+      "elapsed_ms": 2817,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2673,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2280,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 105,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2385
+      }
+    },
+    {
+      "elapsed_ms": 3824,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3678,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4567,
+        "input_tokens_details": {
+          "cached_tokens": 3840
+        },
+        "output_tokens": 211,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4778
+      }
+    },
+    {
+      "elapsed_ms": 242288,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 242154,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3100,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 15513,
+        "output_tokens_details": {
+          "reasoning_tokens": 15204
+        },
+        "total_tokens": 18613
+      }
+    }
+  ],
+  "case": "explicit_correction",
+  "elapsed_ms": 472168,
+  "steps": [
+    {
+      "message": "correction_s1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158093954994000-1161",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158093954994000-1161",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568030,
+      "question": "correction_q1",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "墨湾相机使用多大容量的存储卡？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158093954994000-1161"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "墨湾相机目前使用的存储卡容量是64GB。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "目前"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_mowan_camera"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": 0,
+                    "unit": "day"
+                  },
+                  "quote": {
+                    "text": "目前"
+                  },
+                  "role": "validity"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158093954994000-1161"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1790611200,
+                "precision": "day",
+                "start": 1790524800,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568030,
+          "context": [],
+          "query": "墨湾相机使用多大容量的存储卡？",
+          "request_id": "eval-explicit_correction-correction_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 1
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "correction_s1": "80856-1791158093954994000-1161"
+      },
+      "source_state": {
+        "correction_s1": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "message": "correction_s2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158166041570000-1222",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791158166041570000-1222",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "question": "correction_q2",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 1,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "墨湾相机使用多大容量的存储卡？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158166041570000-1222"
+                }
+              },
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158093954994000-1161"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "墨湾相机使用的存储卡容量是128GB。",
+            "strength": "strong",
+            "supersedes_record_ids": [
+              1
+            ],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "更正上一条"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
+            },
+            "said_on": "2026-09-28",
+            "sequence": 2,
+            "source_id": "80856-1791158166041570000-1222"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_mowan_camera"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": 0,
+                    "unit": "day"
+                  },
+                  "quote": {
+                    "text": "目前"
+                  },
+                  "role": "validity"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158093954994000-1161"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1790611200,
+                "precision": "day",
+                "start": 1790524800,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "墨湾相机使用多大容量的存储卡？",
+          "request_id": "eval-explicit_correction-correction_q2",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "correction_s1": "80856-1791158093954994000-1161",
+        "correction_s2": "80856-1791158166041570000-1222"
+      },
+      "source_state": {
+        "correction_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "correction_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "question": "correction_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 1,
+          "pending_updates": 1,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "现在确认墨湾相机的存储卡是64GB还是128GB？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158166041570000-1222"
+                }
+              },
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158093954994000-1161"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。",
+            "strength": "strong",
+            "supersedes_record_ids": [
+              1
+            ],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "更正上一条：墨湾相机使用的存储卡容量是128GB，不是64GB；128GB是这条记录的最终正确值。"
+            },
+            "said_on": "2026-09-28",
+            "sequence": 2,
+            "source_id": "80856-1791158166041570000-1222"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_mowan_camera"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": 0,
+                    "unit": "day"
+                  },
+                  "quote": {
+                    "text": "目前"
+                  },
+                  "role": "validity"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158093954994000-1161"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1790611200,
+                "precision": "day",
+                "start": 1790524800,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "现在确认墨湾相机的存储卡是64GB还是128GB？",
+          "request_id": "eval-explicit_correction-correction_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "correction_s1": "80856-1791158093954994000-1161",
+        "correction_s2": "80856-1791158166041570000-1222"
+      },
+      "source_state": {
+        "correction_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "correction_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

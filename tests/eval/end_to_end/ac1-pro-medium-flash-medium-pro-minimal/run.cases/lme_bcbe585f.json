@@ -1,0 +1,709 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 85182,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 85109,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3809,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6041,
+        "output_tokens_details": {
+          "reasoning_tokens": 5735
+        },
+        "total_tokens": 9850
+      }
+    },
+    {
+      "elapsed_ms": 93276,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 93204,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1672,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18056
+      }
+    },
+    {
+      "elapsed_ms": 132529,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 132452,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3893,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8516,
+        "output_tokens_details": {
+          "reasoning_tokens": 8266
+        },
+        "total_tokens": 12409
+      }
+    },
+    {
+      "elapsed_ms": 65242,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 65165,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1510,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11065,
+        "output_tokens_details": {
+          "reasoning_tokens": 11017
+        },
+        "total_tokens": 12575
+      }
+    },
+    {
+      "elapsed_ms": 93280,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 93200,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4021,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6259,
+        "output_tokens_details": {
+          "reasoning_tokens": 6133
+        },
+        "total_tokens": 10280
+      }
+    },
+    {
+      "elapsed_ms": 56426,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 56345,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1637,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9692,
+        "output_tokens_details": {
+          "reasoning_tokens": 9623
+        },
+        "total_tokens": 11329
+      }
+    },
+    {
+      "elapsed_ms": 101106,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 101010,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4089,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6816,
+        "output_tokens_details": {
+          "reasoning_tokens": 6685
+        },
+        "total_tokens": 10905
+      }
+    },
+    {
+      "elapsed_ms": 43215,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 43130,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1710,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 6900,
+        "output_tokens_details": {
+          "reasoning_tokens": 6851
+        },
+        "total_tokens": 8610
+      }
+    },
+    {
+      "elapsed_ms": 42792,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 42703,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4151,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2867,
+        "output_tokens_details": {
+          "reasoning_tokens": 2688
+        },
+        "total_tokens": 7018
+      }
+    },
+    {
+      "elapsed_ms": 47054,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 46965,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1820,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 8254,
+        "output_tokens_details": {
+          "reasoning_tokens": 8135
+        },
+        "total_tokens": 10074
+      }
+    },
+    {
+      "elapsed_ms": 37151,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 37060,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4259,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2427,
+        "output_tokens_details": {
+          "reasoning_tokens": 2414
+        },
+        "total_tokens": 6686
+      }
+    },
+    {
+      "elapsed_ms": 4112,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4019,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2248,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 260,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2508
+      }
+    },
+    {
+      "elapsed_ms": 3616,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3521,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4773,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 176,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4949
+      }
+    }
+  ],
+  "case": "lme_bcbe585f",
+  "elapsed_ms": 809068,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156704276707000-698",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791156704276707000-698",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156883059692000-747",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "candidate_rejected:subject_not_found"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791156883059692000-747",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157081264849000-794",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157081264849000-794",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157231601055000-839",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157231601055000-839",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157376569456000-890",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157376569456000-890",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157467162386000-910",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791157467162386000-910",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1682894760,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 5,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-01",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many weeks ago did I attend a bird watching workshop at the local Audubon society?"
+        },
+        "degraded_reasons": [
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning a trip to the nearby wildlife refuge this weekend and I'm wondering if you can give me some info on what birds I might see this time of year. By the way, I just got back from a bird watching workshop at the local Audubon society today, which was really informative."
+            },
+            "said_on": "2023-04-01",
+            "sequence": 1,
+            "source_id": "80856-1791156704276707000-698"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "It's located in the southeast region, and it's currently spring. I'm planning to explore the wetlands and forests areas, as I've heard they're good spots for spotting waterfowl and songbirds."
+            },
+            "said_on": "2023-04-01",
+            "sequence": 2,
+            "source_id": "80856-1791156883059692000-747"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I've been meaning to try out the Merlin Bird ID app that Sarah recommended at the workshop today, do you think it would be helpful in identifying warblers?"
+            },
+            "said_on": "2023-04-01",
+            "sequence": 4,
+            "source_id": "80856-1791157231601055000-839"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm wondering if Merlin can also help with bird calls and songs, as I've been trying to improve my skills in identifying birds by their songs."
+            },
+            "said_on": "2023-04-01",
+            "sequence": 5,
+            "source_id": "80856-1791157376569456000-890"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to focus on the wetlands area first, as I've heard that's where the warblers tend to congregate during migration. Do you think the Merlin app would be able to help me identify any warblers I might spot in the wetlands?"
+            },
+            "said_on": "2023-04-01",
+            "sequence": 6,
+            "source_id": "80856-1791157467162386000-910"
+          }
+        ],
+        "records": [],
+        "request": {
+          "at": 1682894760,
+          "context": [],
+          "query": "How many weeks ago did I attend a bird watching workshop at the local Audubon society?",
+          "request_id": "eval-lme_bcbe585f-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 2,
+          "source_revision": 6
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791156704276707000-698",
+        "s1_t2": "80856-1791156883059692000-747",
+        "s1_t3": "80856-1791157081264849000-794",
+        "s1_t4": "80856-1791157231601055000-839",
+        "s1_t5": "80856-1791157376569456000-890",
+        "s1_t6": "80856-1791157467162386000-910"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

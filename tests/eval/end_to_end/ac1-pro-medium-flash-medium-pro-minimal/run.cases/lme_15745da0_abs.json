@@ -1,0 +1,1174 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 51392,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 51380,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3765,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 2227,
+        "output_tokens_details": {
+          "reasoning_tokens": 2105
+        },
+        "total_tokens": 5992
+      }
+    },
+    {
+      "elapsed_ms": 11347,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 11335,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1377,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2126,
+        "output_tokens_details": {
+          "reasoning_tokens": 2076
+        },
+        "total_tokens": 3503
+      }
+    },
+    {
+      "elapsed_ms": 113919,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 113905,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3889,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8146,
+        "output_tokens_details": {
+          "reasoning_tokens": 7205
+        },
+        "total_tokens": 12035
+      }
+    },
+    {
+      "elapsed_ms": 85339,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 85322,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2148,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18532
+      }
+    },
+    {
+      "elapsed_ms": 61830,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 61810,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3975,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3841,
+        "output_tokens_details": {
+          "reasoning_tokens": 3551
+        },
+        "total_tokens": 7816
+      }
+    },
+    {
+      "elapsed_ms": 19062,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 19043,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1796,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3263,
+        "output_tokens_details": {
+          "reasoning_tokens": 3189
+        },
+        "total_tokens": 5059
+      }
+    },
+    {
+      "elapsed_ms": 70436,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 70415,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3210,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4573,
+        "output_tokens_details": {
+          "reasoning_tokens": 4355
+        },
+        "total_tokens": 7783
+      }
+    },
+    {
+      "elapsed_ms": 143127,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 143101,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4089,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9950,
+        "output_tokens_details": {
+          "reasoning_tokens": 9604
+        },
+        "total_tokens": 14039
+      }
+    },
+    {
+      "elapsed_ms": 91950,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 91922,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1947,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16299
+        },
+        "total_tokens": 18331
+      }
+    },
+    {
+      "elapsed_ms": 88417,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 88385,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4215,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 6072,
+        "output_tokens_details": {
+          "reasoning_tokens": 5664
+        },
+        "total_tokens": 10287
+      }
+    },
+    {
+      "elapsed_ms": 15943,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 15912,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2014,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2702,
+        "output_tokens_details": {
+          "reasoning_tokens": 2629
+        },
+        "total_tokens": 4716
+      }
+    },
+    {
+      "elapsed_ms": 50457,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 50422,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3719,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3284,
+        "output_tokens_details": {
+          "reasoning_tokens": 3060
+        },
+        "total_tokens": 7003
+      }
+    },
+    {
+      "elapsed_ms": 188368,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 188333,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4355,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 12781,
+        "output_tokens_details": {
+          "reasoning_tokens": 12513
+        },
+        "total_tokens": 17136
+      }
+    },
+    {
+      "elapsed_ms": 38336,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 38296,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2046,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 6921,
+        "output_tokens_details": {
+          "reasoning_tokens": 6841
+        },
+        "total_tokens": 8967
+      }
+    },
+    {
+      "elapsed_ms": 20792,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 20527,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4473,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1446,
+        "output_tokens_details": {
+          "reasoning_tokens": 1306
+        },
+        "total_tokens": 5919
+      }
+    },
+    {
+      "elapsed_ms": 2422,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2379,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2238,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 101,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2339
+      }
+    },
+    {
+      "elapsed_ms": 1621,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1577,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 6190,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6212
+      }
+    }
+  ],
+  "case": "lme_15745da0_abs",
+  "elapsed_ms": 1060057,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791154720818985000-29",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791154720818985000-29",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791154783857300000-73",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791154783857300000-73",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791154983415111000-132",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791154983415111000-132",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155135430941000-180",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791155135430941000-180",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155371072546000-250",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155371072546000-250",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155527036863000-299",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "coverage_gaps"
+          },
+          "source": {
+            "source_id": "80856-1791155527036863000-299",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1684936440,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 3,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-24",
+          "sequence": null,
+          "source_id": null,
+          "text": "How long have I been collecting vintage films?"
+        },
+        "degraded_reasons": [],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+            },
+            "said_on": "2023-05-23",
+            "sequence": 2,
+            "source_id": "80856-1791154783857300000-73"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely."
+            },
+            "said_on": "2023-05-23",
+            "sequence": 4,
+            "source_id": "80856-1791155135430941000-180"
+          },
+          {
+            "enrichment": "coverage_gaps",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?"
+            },
+            "said_on": "2023-05-23",
+            "sequence": 6,
+            "source_id": "80856-1791155527036863000-299"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "for three months now"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+                },
+                "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791154983415111000-132"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a pretty impressive collection"
+                },
+                "text": "a pretty impressive collection"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791154983415111000-132"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "growing collection of vintage cameras"
+                },
+                "text": "growing collection of vintage cameras"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791154720818985000-29"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I've also been thinking about displaying my vinyl record collection."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "my vinyl record collection"
+                },
+                "text": "my vinyl record collection"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've also been thinking about displaying my vinyl record collection."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155371072546000-250"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
+                },
+                "text": "a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155527036863000-299"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a rare 1978 pressing of Fleetwood Mac's Rumours"
+                },
+                "text": "a rare 1978 pressing of Fleetwood Mac's Rumours"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155371072546000-250"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1684936440,
+          "context": [],
+          "query": "How long have I been collecting vintage films?",
+          "request_id": "eval-lme_15745da0_abs-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 7,
+          "source_revision": 6
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791154720818985000-29",
+        "s1_t2": "80856-1791154783857300000-73",
+        "s1_t3": "80856-1791154983415111000-132",
+        "s1_t4": "80856-1791155135430941000-180",
+        "s1_t5": "80856-1791155371072546000-250",
+        "s1_t6": "80856-1791155527036863000-299"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

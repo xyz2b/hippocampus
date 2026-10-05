@@ -1,0 +1,1287 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 9332,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 9264,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3779,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 502,
+        "output_tokens_details": {
+          "reasoning_tokens": 489
+        },
+        "total_tokens": 4281
+      }
+    },
+    {
+      "elapsed_ms": 80605,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 80543,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3957,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 5665,
+        "output_tokens_details": {
+          "reasoning_tokens": 5124
+        },
+        "total_tokens": 9622
+      }
+    },
+    {
+      "elapsed_ms": 51779,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 51716,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2051,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9313,
+        "output_tokens_details": {
+          "reasoning_tokens": 9197
+        },
+        "total_tokens": 11364
+      }
+    },
+    {
+      "elapsed_ms": 35541,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 35475,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4033,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2547,
+        "output_tokens_details": {
+          "reasoning_tokens": 2534
+        },
+        "total_tokens": 6580
+      }
+    },
+    {
+      "elapsed_ms": 102087,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 102022,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4149,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6905,
+        "output_tokens_details": {
+          "reasoning_tokens": 6692
+        },
+        "total_tokens": 11054
+      }
+    },
+    {
+      "elapsed_ms": 58655,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 58590,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1871,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9875,
+        "output_tokens_details": {
+          "reasoning_tokens": 9778
+        },
+        "total_tokens": 11746
+      }
+    },
+    {
+      "elapsed_ms": 154239,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 154169,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4273,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10419,
+        "output_tokens_details": {
+          "reasoning_tokens": 9957
+        },
+        "total_tokens": 14692
+      }
+    },
+    {
+      "elapsed_ms": 17596,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 17524,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2326,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2893,
+        "output_tokens_details": {
+          "reasoning_tokens": 2797
+        },
+        "total_tokens": 5219
+      }
+    },
+    {
+      "elapsed_ms": 177942,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 177867,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4202,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 11833,
+        "output_tokens_details": {
+          "reasoning_tokens": 11478
+        },
+        "total_tokens": 16035
+      }
+    },
+    {
+      "elapsed_ms": 79723,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 79635,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4431,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5341,
+        "output_tokens_details": {
+          "reasoning_tokens": 4852
+        },
+        "total_tokens": 9772
+      }
+    },
+    {
+      "elapsed_ms": 41132,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 41052,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2462,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 6568,
+        "output_tokens_details": {
+          "reasoning_tokens": 6455
+        },
+        "total_tokens": 9030
+      }
+    },
+    {
+      "elapsed_ms": 65219,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 65137,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4492,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4213,
+        "output_tokens_details": {
+          "reasoning_tokens": 4098
+        },
+        "total_tokens": 8705
+      }
+    },
+    {
+      "elapsed_ms": 2342,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2258,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2240,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 100,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2340
+      }
+    },
+    {
+      "elapsed_ms": 4302,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4209,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 6838,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 263,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7101
+      }
+    }
+  ],
+  "case": "lme_bc8a6e93_abs",
+  "elapsed_ms": 885558,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156350156120000-600",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791156350156120000-600",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156359634238000-612",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791156359634238000-612",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156492453503000-643",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791156492453503000-643",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156528299925000-650",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791156528299925000-650",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156689642640000-682",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 6,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791156689642640000-682",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157040569679000-773",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "unresolved_subject"
+                ],
+                "status": "unresolved",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 7,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157040569679000-773",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1685398980,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 4,
+          "pending_updates": 7,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-30",
+          "sequence": null,
+          "source_id": null,
+          "text": "What did I bake for my uncle's birthday party?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156359634238000-612"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1,
+              2
+            ],
+            "statement": "The user made a lemon blueberry cake for their niece's birthday party.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "recently"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of making some lemon-based desserts for an upcoming dinner party. Do you have any recommendations for a good lemon curd recipe or any tips on using it as a filling for cakes and tarts?"
+            },
+            "said_on": "2023-05-25",
+            "sequence": 1,
+            "source_id": "80856-1791156350156120000-600"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "What are some good ways to incorporate lemon zest into my baking? I've heard it can add a lot of depth to desserts, but I'm not sure how to use it effectively."
+            },
+            "said_on": "2023-05-25",
+            "sequence": 3,
+            "source_id": "80856-1791156492453503000-643"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "That's really helpful, thanks! I've been experimenting with different types of flour lately, and I've been wondering if there's a particular type of flour that's best suited for lemon-based desserts. Would bread flour or all-purpose flour work better for a lemon cake or tart crust?"
+            },
+            "said_on": "2023-05-25",
+            "sequence": 4,
+            "source_id": "80856-1791156528299925000-650"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I've had a lot of success with honey in lemon desserts, and I think it's because of the way the flavors complement each other. The rich, caramel-like flavor of the honey pairs really well with the brightness of the lemon. I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+            },
+            "said_on": "2023-05-25",
+            "sequence": 6,
+            "source_id": "80856-1791157040569679000-773"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                },
+                "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156359634238000-612"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                },
+                "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've actually had a lot of success with lemon-based desserts in the past - I recently made a lemon blueberry cake for my niece's birthday party and it was a huge hit."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156359634238000-612"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+                },
+                "text": "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've also found that using honey in combination with other sweeteners, like granulated sugar, helps to balance out the flavor and texture of the dessert."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157040569679000-773"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 7,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "lately"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "different types of flour"
+                },
+                "text": "different types of flour"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156689642640000-682"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "lately"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "different types of sugar"
+                },
+                "text": "different types of sugar"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been experimenting with different types of flour lately, and I've also been trying out different types of sugar."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156689642640000-682"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well."
+                },
+                "text": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I recently made a batch of lemon curd using a combination of granulated sugar and honey, and it turned out really well."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156689642640000-682"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the combination of the tangy lemon and sweet blueberries"
+                },
+                "text": "the combination of the tangy lemon and sweet blueberries"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I was a bit nervous about how it would turn out, but the combination of the tangy lemon and sweet blueberries was perfect."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156359634238000-612"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-05-25",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1685398980,
+          "context": [],
+          "query": "What did I bake for my uncle's birthday party?",
+          "request_id": "eval-lme_bc8a6e93_abs-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 8,
+          "source_revision": 6
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791156350156120000-600",
+        "s1_t2": "80856-1791156359634238000-612",
+        "s1_t3": "80856-1791156492453503000-643",
+        "s1_t4": "80856-1791156528299925000-650",
+        "s1_t5": "80856-1791156689642640000-682",
+        "s1_t6": "80856-1791157040569679000-773"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

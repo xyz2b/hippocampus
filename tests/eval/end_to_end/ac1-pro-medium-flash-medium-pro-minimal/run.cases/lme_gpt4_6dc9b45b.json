@@ -1,0 +1,1065 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 186665,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 186572,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3839,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 13234,
+        "output_tokens_details": {
+          "reasoning_tokens": 12617
+        },
+        "total_tokens": 17073
+      }
+    },
+    {
+      "elapsed_ms": 90071,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 89978,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2069,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18453
+      }
+    },
+    {
+      "elapsed_ms": 156430,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 156286,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3935,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10791,
+        "output_tokens_details": {
+          "reasoning_tokens": 10398
+        },
+        "total_tokens": 14726
+      }
+    },
+    {
+      "elapsed_ms": 44258,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 44155,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1870,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7984,
+        "output_tokens_details": {
+          "reasoning_tokens": 7889
+        },
+        "total_tokens": 9854
+      }
+    },
+    {
+      "elapsed_ms": 8854,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 8748,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4034,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 495,
+        "output_tokens_details": {
+          "reasoning_tokens": 482
+        },
+        "total_tokens": 4529
+      }
+    },
+    {
+      "elapsed_ms": 48728,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 48623,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4198,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3204,
+        "output_tokens_details": {
+          "reasoning_tokens": 3012
+        },
+        "total_tokens": 7402
+      }
+    },
+    {
+      "elapsed_ms": 36802,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 36567,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1820,
+        "input_tokens_details": {
+          "cached_tokens": 640
+        },
+        "output_tokens": 6362,
+        "output_tokens_details": {
+          "reasoning_tokens": 6314
+        },
+        "total_tokens": 8182
+      }
+    },
+    {
+      "elapsed_ms": 75830,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 75696,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4330,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5139,
+        "output_tokens_details": {
+          "reasoning_tokens": 4859
+        },
+        "total_tokens": 9469
+      }
+    },
+    {
+      "elapsed_ms": 23879,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 23678,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2122,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4094,
+        "output_tokens_details": {
+          "reasoning_tokens": 4022
+        },
+        "total_tokens": 6216
+      }
+    },
+    {
+      "elapsed_ms": 77118,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 76948,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4462,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5399,
+        "output_tokens_details": {
+          "reasoning_tokens": 4978
+        },
+        "total_tokens": 9861
+      }
+    },
+    {
+      "elapsed_ms": 13129,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 13005,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2417,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2390,
+        "output_tokens_details": {
+          "reasoning_tokens": 2295
+        },
+        "total_tokens": 4807
+      }
+    },
+    {
+      "elapsed_ms": 81321,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 81194,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4212,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5649,
+        "output_tokens_details": {
+          "reasoning_tokens": 5222
+        },
+        "total_tokens": 9861
+      }
+    },
+    {
+      "elapsed_ms": 2024,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1863,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2242,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 102,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2344
+      }
+    },
+    {
+      "elapsed_ms": 4712,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4578,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 6069,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 327,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6396
+      }
+    }
+  ],
+  "case": "lme_gpt4_6dc9b45b",
+  "elapsed_ms": 855743,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157441157477000-905",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791157441157477000-905",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157718278609000-992",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "unresolved_subject"
+                ],
+                "status": "unresolved",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157718278609000-992",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157919486367000-1043",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791157919486367000-1043",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157928723940000-1054",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157928723940000-1054",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158015103834000-1098",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158015103834000-1098",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158115722502000-1173",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158115722502000-1173",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1633139040,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 4,
+          "pending_updates": 3,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2021-10-02",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many months ago did I attend the Seattle International Film Festival?"
+        },
+        "degraded_reasons": [
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm looking for some recommendations for romantic comedies. I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing. Anyway, what are some other rom-coms you'd suggest?"
+            },
+            "said_on": "2021-06-01",
+            "sequence": 1,
+            "source_id": "80856-1791157441157477000-905"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also interested in learning more about film distribution and marketing. The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process. Can you explain how independent films usually get distributed and marketed?"
+            },
+            "said_on": "2021-06-01",
+            "sequence": 2,
+            "source_id": "80856-1791157718278609000-992"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'd like to know more about the role of film critics in the distribution and marketing process. How do they influence the success of a film, and what's the current state of film criticism in the age of social media and online reviews?"
+            },
+            "said_on": "2021-06-01",
+            "sequence": 3,
+            "source_id": "80856-1791157919486367000-1043"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'd love to know more about the impact of film festivals on the careers of filmmakers and the industry as a whole. As someone who's attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films. Can you tell me more about how film festivals can help filmmakers get their start, and what role they play in shaping the industry's future?"
+            },
+            "said_on": "2021-06-01",
+            "sequence": 4,
+            "source_id": "80856-1791157928723940000-1054"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry."
+                },
+                "text": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm interested in learning more about the role of film festivals in promoting diversity and inclusion in the industry."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158115722502000-1173"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2021-06-01",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "visited",
+              "sentence": {
+                "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "several festivals, including SIFF"
+                },
+                "text": "several festivals, including SIFF"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158015103834000-1098"
+                }
+              },
+              {
+                "quote": {
+                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158115722502000-1173"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2021-06-01",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+                },
+                "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158015103834000-1098"
+                }
+              },
+              {
+                "quote": {
+                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand the importance of showcasing diverse voices and stories."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158115722502000-1173"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2021-06-01",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'm also interested in learning more about film distribution and marketing."
+              },
+              "speech": "user_statement",
+              "strength": "moderate",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "learning more about film distribution and marketing"
+                },
+                "text": "learning more about film distribution and marketing"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm also interested in learning more about film distribution and marketing."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157718278609000-992"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2021-06-01",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "to know more about the process"
+                },
+                "text": "to know more about the process"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "The panel discussion I attended at SIFF was really informative, and I'd love to know more about the process."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157718278609000-992"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2021-06-01",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1633139040,
+          "context": [],
+          "query": "How many months ago did I attend the Seattle International Film Festival?",
+          "request_id": "eval-lme_gpt4_6dc9b45b-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 8,
+          "source_revision": 6
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791157441157477000-905",
+        "s1_t2": "80856-1791157718278609000-992",
+        "s1_t3": "80856-1791157919486367000-1043",
+        "s1_t4": "80856-1791157928723940000-1054",
+        "s1_t5": "80856-1791158015103834000-1098",
+        "s1_t6": "80856-1791158115722502000-1173"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}
