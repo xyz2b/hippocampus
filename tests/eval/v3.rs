@@ -53,6 +53,7 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
     println!(
         "配置 {LABEL}；write=w4_runtime_v1，recall=recall_v3；逐消息显式 enrich_source，无重试。"
     );
+    println!("模型均 Pro；推理强度 W1/W4=medium，W3/R1/R4=minimal；默认路径不变。");
     println!(
         "预计列是容量规划情景：W1/W3 有效且后续写入/每题均需模型判定；不是模型质量预测。W4/R4 实际可为 0；W3 也可能跳过。"
     );
@@ -86,7 +87,7 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
     let seconds: f64 = cases.iter().map(estimated_seconds).sum();
     let wall = estimated_wall_seconds(cases, jobs);
     println!(
-        "耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈35.9s（Flash 混合61次/2189.09s，代理估计）；R1≈2.5s、R4≈4.5s（minimal p50）。"
+        "旧参数耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈35.9s（Flash medium 混合61次/2189.09s）；R1≈2.5s、R4≈4.5s（minimal p50）。W3 已改 Pro minimal，以下不预测 AC2 时延。"
     );
     println!(
         "上述情景串行约 {seconds:.0}s / {:.1}分钟 / {:.2}小时。",
@@ -649,7 +650,11 @@ fn v3_full_plan_and_preflight_are_offline() {
     }
     let cfg = config("test", "local", 9);
     assert_eq!(cfg.write_models.as_ref().unwrap().w1, PRO);
-    assert_eq!(cfg.write_models.as_ref().unwrap().w3, FLASH);
+    assert_eq!(cfg.write_models.as_ref().unwrap().w3, PRO);
+    assert_eq!(
+        cfg.write_models.as_ref().unwrap().effort("w3"),
+        hippocampus::ReasoningEffort::Minimal
+    );
     assert_eq!(cfg.recall_models.as_ref().unwrap().r4, PRO);
     assert_eq!(cfg.background_operation_limit, Some(3));
     assert_eq!(jobs(None), 8);
@@ -872,10 +877,10 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
             .unwrap()
             .as_str()
             .unwrap();
-        assert_eq!(request["model"], if name == "w3_v1" { FLASH } else { PRO });
+        assert_eq!(request["model"], PRO);
         assert_eq!(
             request["reasoning"]["effort"],
-            if name.starts_with('r') {
+            if name.starts_with('r') || name == "w3_v1" {
                 "minimal"
             } else {
                 "medium"

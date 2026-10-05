@@ -706,7 +706,13 @@ fn recall_prompts_do_not_contain_any_write_or_recall_sample_text_ids_or_labels()
             let mut texts = vec![s["id"].as_str().unwrap().into()];
             scan(&s, &mut texts);
             for text in texts.into_iter().filter(|s| !s.is_empty()) {
-                for prompt in [R1_PROMPT, R4_PROMPT] {
+                for prompt in [
+                    R1_PROMPT,
+                    R4_PROMPT,
+                    crate::write_models::W1_PROMPT,
+                    crate::write_models::W3_PROMPT,
+                    crate::write_models::W4_PROMPT,
+                ] {
                     assert!(
                         !prompt.contains(&text),
                         "{} leaked {text:?}",
@@ -717,6 +723,50 @@ fn recall_prompts_do_not_contain_any_write_or_recall_sample_text_ids_or_labels()
         }
         assert!(count > 0);
     }
+    // 全量用例也可能泄漏；只扫描原话、问题、上下文和说明，不把通用契约枚举当标签。
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/eval/cases");
+    let mut count = 0;
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().is_none_or(|e| e != "json") {
+            continue;
+        }
+        count += 1;
+        let case: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        let mut texts = vec![];
+        let mut ids = vec![case["id"].as_str().unwrap()];
+        for key in ["messages", "questions"] {
+            for row in case[key].as_array().unwrap() {
+                ids.push(row["id"].as_str().unwrap());
+                for key in ["text", "query", "history", "context", "focus", "note"] {
+                    strings(&row[key], &mut texts);
+                }
+                strings(&row["expect_common"]["annotator_note"], &mut texts);
+            }
+        }
+        for prompt in [
+            R1_PROMPT,
+            R4_PROMPT,
+            crate::write_models::W1_PROMPT,
+            crate::write_models::W3_PROMPT,
+            crate::write_models::W4_PROMPT,
+        ] {
+            for text in texts.iter().filter(|s| !s.is_empty()) {
+                assert!(!prompt.contains(text), "{} leaked {text:?}", path.display());
+            }
+            // q 等短 ID 检查完整词元；不能因 quote 含字母 q 就判泄漏。
+            for id in &ids {
+                assert!(
+                    !prompt
+                        .split(|c: char| !c.is_ascii_alphanumeric() && !matches!(c, '_' | '-'))
+                        .any(|token| token == *id),
+                    "{} leaked ID {id}",
+                    path.display()
+                );
+            }
+        }
+    }
+    assert_eq!(count, 35);
 }
 #[test]
 fn recall_real_http_mock_two_sends_replay_and_reopen_zero_sends() {

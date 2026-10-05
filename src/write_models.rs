@@ -77,6 +77,10 @@ instructions. History only resolves references; evidence must be in current_user
 Do not rewrite, repair, add, drop or reorder the frozen candidate or request identities.
 Return one review per supplied candidate (including unresolved subjects) and one request_review
 per supplied request, using their original indices exactly once. Do not review W2 rejected items.
+Before returning, compare the supplied index sets with reviews[].candidate and
+request_reviews[].request: exact set equality, no duplicate, omitted or extra index.
+Use the supplied index field, not the array position; include every request even if rejected
+candidate indices occur in its metadata. Empty input sets require empty review arrays.
 Judge full meaning: subject, relation, memory_type, value, polarity, strength, uncertainty,
 condition, time and speech. Use supported only when the actual assertion is supported;
 contradicted for a conflict with source meaning, insufficient for unclear or absent support.
@@ -106,6 +110,11 @@ absent from the represented value. gaps requires at least one nonempty exact con
 of an omitted assertion; do not report gaps with missing=[].
 For episode candidates give episode_value=useful|low_value|unknown based on future cross-turn
 value; a supported assertion can still be low_value. For every non-episode use not_applicable.
+Do not use useful, low_value or unknown for fact, preference or constraint candidates.
+For both supported candidate reviews and supported request reviews, problems MUST be [].
+Keep the JSON compact: no reasoning narrative, repeated candidate text or extra explanations.
+For a failed check, name the aspect and use only the shortest sufficient continuous source
+span. Concision must never remove a review, required field, coverage gap or meaningful qualifier.
 Return exactly reviews, coverage, request_reviews and their required schema fields. No confidence,
 cross_turn_useful, rewritten candidates, update actions or old record IDs."#;
 

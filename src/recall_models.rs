@@ -39,6 +39,13 @@ current message or necessary USER context. History has no independent date ancho
 time expressed only in history must not become an interpreted query time. Use unknown if needed.
 Choose exactly one plan.op: lookup, list, count, sum, compare or elapsed. For aggregate requests,
 plan describes enumeration of the authorized scope, never a total inferred from top hits.
+Distinguish retrieving an explicitly stated numeric property (lookup) from enumerating distinct
+members to determine their number (count). A question containing a quantity word does not by
+itself require count. Use sum only when evidenced component quantities must be added.
+Preference or favorite questions require preference evidence, not merely possession or use.
+Do not restrict such retrieval to owns or uses because an object is mentioned. Set
+filter.relation=null when the catalogue mapping is uncertain or several relations may carry
+the answer, including a preference described under fact. Keep the request meaning in relation.
 filter.relation is an exact catalogue ID or null; filter.time is TimeInterp or null. unit is
 one of supported_units or null. Operands and numerical answers are not R1 output.
 Preserve query time using TimeInterp, anchored to trusted said_on, never execution time. Roles
@@ -89,6 +96,10 @@ polarity is affirm, negate or unknown, independent of uncertainty. strength is n
 schema enum. uncertainty is null or {"quote":Quote,"resolved":boolean}; conditions is an array
 of the same qualifier shape. All qualifier and time quotes must occur in this fact's evidence
 sources. resolved means the restriction is understood, not that it applies to this query.
+conditions describe restrictions asserted by the evidence source, never conditions introduced
+only by the question. A query situation may guide applies, but cannot become a source qualifier.
+Do not output a statement first and leave evidence empty: if it has no real supporting reference,
+omit that FactView and reflect missing support in verdict. This also applies to historical facts.
 current and applies are independently yes, no or unknown. Active/committed does not prove them.
 Set applies to yes only when the query situation satisfies the restriction; an unstated situation
 stays unknown, not automatically yes. A supported conditional fact can retain applies=unknown
@@ -100,6 +111,10 @@ COMPUTATION INPUTS
 compute is null for lookup/list or when no justified computation can be supplied. Otherwise it
 has exactly op, items, operands, unit, coverage; op matches approved count/sum/elapsed/compare.
 facts and compute.items are separate arrays: facts alone never supply computation inputs.
+Build each computation item completely before referencing it in operands. For sum or numeric
+compare, copy each evidenced amount into quantity; for elapsed or date compare, populate each
+evidenced endpoint's date AND date_source. Mentioning a number/date in facts or evidence alone
+does not populate those fields. Do not silently drop a justified item or leave its value null.
 Populate items with the relevant evidenced inputs, even when coverage or precision is incomplete.
 Never use an empty items array as a shortcut for uncertainty. A genuinely evidenced complete
 empty set can use empty count/sum items; absence of evidence cannot establish an empty set.
@@ -116,6 +131,10 @@ different groups. Different source IDs or similar wording alone do not prove ide
 Preserve the relevant evidence in items and let code deduplicate and calculate.
 count and sum: operands MUST be []. elapsed and compare: operands MUST contain exactly TWO
 references to item IDs. elapsed order is end minus start; compare order is left versus right.
+Both references must resolve to complete evidenced items, except the reserved endpoint below.
+For compare, represent both sides even if each is mentioned in a different source. For elapsed
+between two events, represent both event endpoints. Never return only one operand or an
+operand whose item is missing. Keep incomplete support as insufficiency rather than inventing it.
 Only elapsed's first operand may be @request.at, the trusted request clock supplied by code.
 Use that reserved reference directly for a requested current endpoint; never create a clock
 item, Quote, date or value for it, or substitute said_on/execution time/current-relative-zero.

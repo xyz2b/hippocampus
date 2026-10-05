@@ -1,9 +1,8 @@
 //! Shared test-only strict recorder and production case driver; no live transport here.
 use super::*;
 
-pub(super) const LABEL: &str = "ac1-pro-medium-flash-medium-pro-minimal";
+pub(super) const LABEL: &str = "ac2-pro-medium-pro-minimal-pro-minimal";
 pub(super) const PRO: &str = "ep-20261003130756-trhj6";
-pub(super) const FLASH: &str = "ep-20260923215039-vxgxg";
 pub(super) const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval");
 
 pub(super) fn config(case: &str, address: &str, calls: u64) -> ChatConfig {
@@ -11,8 +10,8 @@ pub(super) fn config(case: &str, address: &str, calls: u64) -> ChatConfig {
         "write_pipeline":"w4_runtime_v1", "recall_pipeline":"recall_v3",
         "enrichment_mode":"deferred", "fact_index_enabled":true,
         "background_operation_limit":3,
-        "write_models":{"w1":PRO,"w3":FLASH,"w4":PRO,
-            "reasoning_effort":{"w1":"medium","w3":"medium","w4":"medium"}},
+        "write_models":{"w1":PRO,"w3":PRO,"w4":PRO,
+            "reasoning_effort":{"w1":"medium","w3":"minimal","w4":"medium"}},
         "recall_models":{"r1":PRO,"r4":PRO,
             "reasoning_effort":{"r1":"minimal","r4":"minimal"}},
         "model_budget":{"group_id":format!("eval-v3-{case}"),

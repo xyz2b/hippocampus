@@ -5,6 +5,9 @@ mod adapter;
 #[path = "eval/recall_stage/adapter.rs"]
 mod recall_adapter;
 
+#[path = "eval/fixed_inputs/adapter.rs"]
+mod fixed_adapter;
+
 use hippocampus::{
     EntityId, MemoryType, ModelBudgetConfig, ModelStage, ReasoningEffort, contract::*,
     structured_request, w2, w4, write_models,
@@ -676,12 +679,18 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
 
 fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     let mut fields = Vec::new();
-    let result = text.map(|text| match stage {
-        "w1" => score_w1(sample, text, &mut fields),
-        "w3" => score_w3(sample, text, &mut fields).map(|_| Value::Null),
-        "w4" => score_w4(sample, text, &mut fields).map(|_| Value::Null),
-        "r1" | "r4" => recall_adapter::score(stage, sample, text, &mut fields),
-        _ => unreachable!(),
+    let result = text.map(|text| {
+        if sample["fixed_input"] == true {
+            fixed_adapter::score(stage, sample, text, &mut fields)
+        } else {
+            match stage {
+                "w1" => score_w1(sample, text, &mut fields),
+                "w3" => score_w3(sample, text, &mut fields).map(|_| Value::Null),
+                "w4" => score_w4(sample, text, &mut fields).map(|_| Value::Null),
+                "r1" | "r4" => recall_adapter::score(stage, sample, text, &mut fields),
+                _ => unreachable!(),
+            }
+        }
     });
     if let Some(Err(error)) = &result {
         check(
@@ -734,6 +743,11 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             .cloned()
             .unwrap_or(Value::Null);
     }
+    if sample["fixed_input"] == true {
+        report["scoring_scope"] = json!("contract_only");
+        report["origin"] = sample["origin"].clone();
+        report["manual_review"] = json!({"unlabelled_semantics":"pending"});
+    }
     report
 }
 
@@ -743,8 +757,12 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         return raw;
     }
     let assembled = if stage == "r4" {
-        recall_adapter::assemble_r4(sample, text.unwrap())
-            .and_then(|output| serde_json::to_value(output).map_err(|e| e.to_string()))
+        (if sample["fixed_input"] == true {
+            fixed_adapter::assemble_r4(sample, text.unwrap())
+        } else {
+            recall_adapter::assemble_r4(sample, text.unwrap())
+        })
+        .and_then(|output| serde_json::to_value(output).map_err(|e| e.to_string()))
     } else {
         serde_json::from_str::<W4Output>(text.unwrap())
             .map_err(|e| e.to_string())
@@ -801,6 +819,9 @@ fn samples(stage: &str) -> Vec<Value> {
 }
 
 fn selected(stages: &str, prefixes: &str) -> Result<Vec<(String, Value)>, String> {
+    if fixed_inputs_enabled() {
+        return fixed_adapter::selected(stages, prefixes);
+    }
     let stages: Vec<_> = stages.split(',').map(str::trim).collect();
     if stages
         .iter()
@@ -856,6 +877,9 @@ fn stage_request_with_output_tokens(
     sample: &Value,
     tokens: u32,
 ) -> Result<Value, String> {
+    if sample["fixed_input"] == true {
+        return fixed_adapter::request(stage, sample, tokens);
+    }
     let (stage, name, prompt, schema, input) = match stage {
         "w1" | "w3" => {
             let input = &sample["input"];
@@ -998,6 +1022,43 @@ fn fingerprint(request: &Value) -> Value {
     json!(format!("fnv1a64:{hash:016x}"))
 }
 
+fn recording_fingerprint(sample: &Value, request: &Value) -> Value {
+    if sample["fixed_input"] != true {
+        return fingerprint(request);
+    }
+    let mut request = request.clone();
+    request["input"] = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+    // 固定集保留完整生产输入（含来源快照/时钟），不沿用旧样本的字段剔除。
+    json!(hippocampus::recall_models::fingerprint(&request))
+}
+
+fn fixed_inputs_enabled() -> bool {
+    match std::env::var("EVAL_FIXED_INPUTS").as_deref() {
+        Err(_) | Ok("0") => false,
+        Ok("1") => true,
+        _ => panic!("EVAL_FIXED_INPUTS only accepts 0 or 1"),
+    }
+}
+
+fn stages_from_env() -> String {
+    std::env::var("EVAL_STAGES").unwrap_or_else(|_| {
+        if fixed_inputs_enabled() {
+            "w3,r4"
+        } else {
+            "w1,w3,w4"
+        }
+        .into()
+    })
+}
+
+fn recording_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join(if fixed_inputs_enabled() {
+        "tests/eval/fixed_inputs/recordings"
+    } else {
+        "tests/eval/write_stage/recordings"
+    })
+}
+
 #[derive(Clone)]
 struct EvalModel {
     label: String,
@@ -1015,7 +1076,7 @@ impl EvalModel {
         }
     }
     fn from_env() -> Result<Self, String> {
-        let model = Self {
+        let mut model = Self {
             label: std::env::var("EVAL_MODEL_LABEL").unwrap_or_else(|_| MODEL.into()),
             model: std::env::var("EVAL_MODEL").ok(),
             base: std::env::var("EVAL_BASE_URL")
@@ -1028,6 +1089,17 @@ impl EvalModel {
                     .map_err(|_| "invalid EVAL_REASONING_EFFORT".to_owned())?,
             },
         };
+        if fixed_inputs_enabled() {
+            if std::env::var_os("EVAL_MODEL_LABEL").is_none() {
+                model.label = "ac2-fixed-pro-minimal".into();
+            }
+            if std::env::var_os("EVAL_MODEL").is_none() {
+                model.model = Some("ep-20261003130756-trhj6".into());
+            }
+            if std::env::var_os("EVAL_REASONING_EFFORT").is_none() {
+                model.effort = ReasoningEffort::Minimal;
+            }
+        }
         model.validate()?;
         Ok(model)
     }
@@ -1156,7 +1228,7 @@ fn plan_once(
                 .filter(|r| r["model"] == model.label)
                 .collect();
             let record = current.iter().rev().find(|r| {
-                r["request"] == fingerprint(&request)
+                r["request"] == recording_fingerprint(&sample, &request)
                     && r["schema"] == request["text"]["format"]["name"]
                     && r["max_output_tokens"] == request["max_output_tokens"]
                     && r["base_url"] == json!(model.base)
@@ -1265,7 +1337,7 @@ fn save_recording_timed(
         "reasoning_effort":case.model.effort,"elapsed_ms":elapsed_ms,
         "schema":case.request["text"]["format"]["name"],"endpoint":case.request["model"],
         "base_url":case.model.base,"max_output_tokens":case.request["max_output_tokens"],
-        "request":fingerprint(&case.request),"response":{
+        "request":recording_fingerprint(&case.sample, &case.request),"response":{
             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}});
     if let Some(text) = text {
         record["output"] = serde_json::from_str(text).unwrap_or(json!(text));
@@ -1358,7 +1430,7 @@ fn evaluate(
             .unwrap_or_else(|| metrics["response"]["usage"].clone());
         result["repeat"] = json!(case.repeat);
         result["max_output_tokens"] = case.request["max_output_tokens"].clone();
-        result["request"] = fingerprint(&case.request);
+        result["request"] = recording_fingerprint(&case.sample, &case.request);
         results.push(result);
     }
     let summary = stage_summaries(&results, cases);
@@ -1508,6 +1580,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var("EVAL_DRY_RUN").as_deref() == Ok("1") {
+        dry_run_plan();
+        return;
+    }
     if std::env::var("EVAL_HISTORY").as_deref() == Ok("1") {
         println!(
             "{}",
@@ -1517,11 +1593,11 @@ fn write_stage_eval_suite() {
     }
     let gate = eval_gate(std::env::var("EVAL_GATE").ok().as_deref()).unwrap();
     let selected = selected(
-        &std::env::var("EVAL_STAGES").unwrap_or_else(|_| "w1,w3,w4".into()),
+        &stages_from_env(),
         &std::env::var("EVAL_CASES").unwrap_or_default(),
     )
     .unwrap();
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
+    let root = recording_root();
     let model = EvalModel::from_env().unwrap();
     let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
     let cases = plan_repeated(selected, &root, &model, repeats).unwrap();
@@ -2081,9 +2157,9 @@ fn stage_and_prefix_filters_skip_non_w4_code_paths() {
 
 #[test]
 fn dry_run_plan() {
-    let stages = std::env::var("EVAL_STAGES").unwrap_or_else(|_| "w1,w3,w4".into());
+    let stages = stages_from_env();
     let prefix = std::env::var("EVAL_CASES").unwrap_or_default();
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
+    let root = recording_root();
     let model = EvalModel::from_env().unwrap();
     let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
     let cases = plan_repeated(selected(&stages, &prefix).unwrap(), &root, &model, repeats).unwrap();
@@ -3188,7 +3264,7 @@ fn reasoning_effort_changes_all_stage_requests_fingerprints_and_recording_paths(
 }
 
 #[test]
-fn existing_r1_recordings_remain_bound_without_sends() {
+fn existing_r1_recordings_become_stale_after_prompt_changes_without_sends() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/write_stage/recordings");
     for (label, endpoint, effort) in [
         (MODEL, hippocampus::DEEPSEEK_MODEL, ReasoningEffort::Medium),
@@ -3209,17 +3285,15 @@ fn existing_r1_recordings_remain_bound_without_sends() {
             base: Some("https://ark.cn-beijing.volces.com/api/v3".into()),
             effort,
         };
-        // R4 提示词 v2 改了真实请求，旧录制须过期；R1 仍逐条核对完整指纹。
+        // B 改了 R1 的真实请求；旧录制不能当新提示词结果，仍逐条核对完整指纹。
         let cases = plan_repeated(selected("r1", "").unwrap(), &root, &model, 2).unwrap();
         assert_eq!(cases.len(), 40);
-        assert_eq!(preflight(&cases, Some(0)).unwrap(), 0);
-        assert!(
-            cases
-                .iter()
-                .all(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
-        );
+        assert!(preflight(&cases, Some(0)).is_err());
+        assert_eq!(preflight(&cases, None).unwrap(), 0);
+        assert!(cases.iter().all(|c| matches!(c.replay, Replay::Stale)));
         let report = evaluate(&cases, None, &mut |_| panic!("offline sender invoked")).unwrap();
         assert_eq!(report["sent_calls"], 0);
+        assert_eq!(report["summary"][3]["stale"], 40);
         if effort == ReasoningEffort::Medium {
             for metrics in items(&report["metrics"]) {
                 assert_eq!(metrics["elapsed_ms"]["count"], 0);

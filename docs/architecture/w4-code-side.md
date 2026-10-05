@@ -127,7 +127,7 @@
 
 ## 7. W4 模型提供者（④-4）
 
-- **入口与约束**：`enrichment::run_source_with_all_models(store, key, budget, provider)` 将同一个 `WriteModelProvider` 接到 W1/W3 上游和 W4 判定位置；保留 `run_source` 与 `run_source_with_models` 的注入接口。`W4_PROMPT` 与 `w4_schema()` 在 `src/write_models.rs`，覆盖 w4.v2 动作、逐候选决定、目标数量、新旧双方依据、legacy 待定、范围缺口、关系解决、生效时间及 QualifierRef 冲突范围；原文和历史没有指令权限。提示词不放样本原文、ID 或说明标签，静态测试扫描 W1/W3/W4 samples 的原文、ID 和说明标签。
+- **入口与约束**：`enrichment::run_source_with_all_models(store, key, budget, provider)` 将同一个 `WriteModelProvider` 接到 W1/W3 上游和 W4 判定位置；保留 `run_source` 与 `run_source_with_models` 的注入接口。`W4_PROMPT` 与 `w4_schema()` 在 `src/write_models.rs`，覆盖 w4.v2 动作、逐候选决定、目标数量、新旧双方依据、legacy 待定、范围缺口、关系解决、生效时间及 QualifierRef 冲突范围；原文和历史没有指令权限。提示词不放样本原文、ID 或说明标签，静态测试扫描 W1/W3/W4 samples 的原文、ID 和说明标签；全量验收 B 另扫描 cases 的消息、问题、上下文和说明，覆盖全部五份提示词。W3 定向修正明确原始索引逐项且唯一、非 episode 的 not_applicable、supported 的空 problems，并要求简洁输出而不删核验项；schema、核验规则与冻结契约不变。
 - **输入与阶段结果**：W4 请求传入 `contract=w4.v2`、实际 `w4_input` 和按来源 ID 去重的 `sources { text, history }`；完整输入 JSON 作为 `result.w4_model_stages.w4.binding`，与已核验输出、operation_id 一起保存，不改数据库版本。记录、关系、coverage 或提供原文/历史变化时，同操作缓存拒绝复用并要求 needs_rejudge。加载和保存均核对认领、租约、轮次及来源绑定。阶段内部 `output` 保存 `{raw_output, final_output, valid, validation_error}`：原始模型 JSON 不被覆盖，最终决定经过同一组装规则和严格校验；组装成功但校验失败仍保留组装后的 final_output；解码或组装失败时为 null，valid=false。失败检查点另绑定 invalid_operation_id：同操作复验失败不重发，显式重判的新操作可再次调用。缓存重开重新组装、校验并核对保存的最终输出，差异拒收、不发送。旧的裸 W4Output 检查点继续复验，但不能冒充已保存过原始模型输出。此内部 JSON 扩展不升数据库版本，不改变外部回执或冻结 schema。
 - **校验与提交**：W4 提供者、注入入口和离线回放共用 `w4::assemble_new_basis`（运行时包装入口为 prepare_output），组装逻辑只有这一处，重复调用幂等。为每条 decided/pending 复制当前输入候选的 source 与 sentence；来源必须仍存在、属于本次提供的输入、原文未变化且候选原句逐字存在。已有等价原句引用不重复；其他原始引用不删改，旧方依据、动作、目标和关系解决均不补。组装后调用原有严格 validate，再交现有 `plan`（再次 validate）、保存计划与 W5 提交。原始输出及最终输出保存到阶段检查点；无效决定仍整份失败、零业务写入，T1 与预算记录保留，错误为 w4_invalid_output 或已有模型错误码，不自动重试。有调用记录无阶段结果的崩溃窗口仍为 failed/model_invalid_output，内部 detail_code=model_result_missing。
 - **预算与恢复**：w4 与 w1/w3 共用后台每消息额度（最多 3），与旧前台计数分开，共享授权 group 总额；同 owner/operation 的后台次数跨 group 统计。W1 空发送一次，无需 W4 发送两次，需要 W4 最多三次。W4 阶段已保存但计划尚未保存时，同输入重开可零发送恢复；计划已经保存时直接续交余组或补来源汇总，不重新 assemble 或调用 W4，目标变化由 W5 快照检查要求重判。
@@ -143,16 +143,17 @@
   "enrichment_mode": "deferred",
   "write_models": {
     "w1": "ep-20261003130756-trhj6",
-    "w3": "ep-20260923215039-vxgxg",
-    "w4": "ep-20261003130756-trhj6"
+    "w3": "ep-20261003130756-trhj6",
+    "w4": "ep-20261003130756-trhj6",
+    "reasoning_effort": { "w1": "medium", "w3": "minimal", "w4": "medium" }
   },
   "model_budget": { "group_id": "my-authorized-batch", "max_calls": 30 }
 }
 ```
 
 - `write_pipeline` 缺省为 `legacy`，只接受 `legacy` / `w4_runtime_v1`，未知值报错。新路径允许 `inline` / `deferred` / `off`。新 inline 的含义是 T1 接收原文后立即排入后台，前台不等待 W1/W3/W4；它与 deferred 均保存 queued 并唤醒 MCP worker，accepted_mode 仍记录实际模式。legacy inline 继续同步提取/核验/提交，默认配置不变。显式 CLI --enrich-source 在新配置 inline 下按绑定版本同步整理；legacy inline 仍拒绝处理已绑定的新来源，保持旧行为；旧版本来源不受影响。原文接收必须 `capture_source=true`；无独立原文的请求明确拒绝。此开关不选择或改写召回路径。
-- `write_models` 选择新写入路径的 W1/W3/W4 模型 ID；推荐 W1/W4 用 DeepSeek-V4-Pro，W3 暂用 V4.1-Flash（端点如上）。配置项或单个角色缺省沿用常量 `DEEPSEEK_MODEL`；不读取同名环境变量，不自动切换现有部署。未知角色、非字符串、null 或空白 ID 报错；模型 ID 为供应商端点标识，离线配置检查不验证远端是否存在。base URL/API key、旧提取核验及召回模型不变。
-- 按角色推理强度另设 `write_models.reasoning_effort`，例如 `{"w1":"low","w3":"medium","w4":"high"}`，角色缺省仍发送 medium；既有角色 ID 的字符串格式不变。接受 low/medium/high/minimal/none/xhigh/max；显式 omit 删除请求的 reasoning 字段，交由供应商默认，不能等同 medium。未知角色、非法值/null 报错。[Responses 文档](https://developers.openai.com/api/docs/guides/reasoning)说明可省略且强度支持取决于模型；本项目 DeepSeek 端点的非 medium 支持尚未真实验证。强度是 API 请求内容，进入预算请求指纹与阶段绑定，不进入 USER payload/提示词。既有检查点缺少强度按 medium 识别，medium 绑定保持原结构；变化不复用旧结果，已冻结 W1 候选也不能冒充不同强度产生的结果。旧路径仍固定 medium，不受新配置影响。
+- `write_models` 选择新写入路径的 W1/W3/W4 模型 ID；AE7 推荐三个角色均用 DeepSeek-V4-Pro，W1/W4 medium、W3 minimal（端点如上）。配置项或单个角色缺省沿用常量 `DEEPSEEK_MODEL`；不读取同名环境变量，不自动切换现有部署。未知角色、非字符串、null 或空白 ID 报错；模型 ID 为供应商端点标识，离线配置检查不验证远端是否存在。base URL/API key、旧提取核验及召回模型不变。
+- 按角色推理强度另设 `write_models.reasoning_effort`，角色缺省仍发送 medium；既有角色 ID 的字符串格式不变。接受 low/medium/high/minimal/none/xhigh/max；显式 omit 删除请求的 reasoning 字段，交由供应商默认，不能等同 medium。未知角色、非法值/null 报错。[Responses 文档](https://developers.openai.com/api/docs/guides/reasoning)说明可省略且强度支持取决于模型；Pro minimal 已按 AE6 实测，其他未测强度仍待验证。强度是 API 请求内容，进入预算请求指纹与阶段绑定，不进入 USER payload/提示词。既有检查点缺少强度按 medium 识别，medium 绑定保持原结构；变化不复用旧结果，已冻结 W1 候选也不能冒充不同强度产生的结果。旧路径仍固定 medium，不受新配置影响。
 - 所选模型 ID 仅用于 API 外层 model 路由及每个阶段的持久输入绑定，不进入模型可见的 payload。W1/W3 已独立构造绑定；W4 将 payload 与 stage_binding 分开，绑定仍保留原有 model、w4_input、sources 结构，失败操作标识也仅保留在绑定中。已有结果时同轮换模型返回 needs_rejudge，零发送；未写出结果的已占用调用也不重发。显式新轮次可重跑变化的 W3/W4，其他相同阶段继续复用。尚未冻结 W2 批次时，显式新轮次可重新提取 W1；已有冻结批次后，换 W1 仍返回 needs_rejudge，不能重提取后按旧候选索引提交或把旧候选标为新模型产物。旧检查点缺少模型字段时同轮也需重判；其冻结 W1 按已知旧默认 Flash 识别。已保存计划仍按既有规则续交，不因换 W4 模型重做已保存决定。数据库版本、schema、回执和冻结契约不变。
 - T1 在 `SourceRecord.task.processing_version` 绑定版本，包括新路径 off 来源；此时 round 仍为空，不调用模型。修改配置不会迁移既有来源或重排队列。同消息键同参数重放只读实际回执，不增加任务、轮次或模型调用；不同参数仍要求新 turn_id。
 - `pmr-mcp --db PATH --owner ID --config CONFIG --drain-enrichment --max-jobs N` 在 deferred 模式整理 queued 来源，按任务排序序号选取新旧版本并分别执行；旧来源继续 `commit_candidates`。旧顺序屏障仍生效，新路径复用 W4/W5 屏障、租约和快照检查。

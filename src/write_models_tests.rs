@@ -1867,6 +1867,37 @@ fn prompts_never_include_evaluation_source_text_ids_or_labels() {
 }
 
 #[test]
+fn recommended_background_config_uses_pro_with_w3_minimal_without_switching_defaults() {
+    let config: crate::chat::ChatConfig =
+        serde_json::from_str(include_str!("../examples/background-recall.json")).unwrap();
+    config.validate().unwrap();
+    let models = config.write_models.unwrap();
+    for role in ["w1", "w3", "w4"] {
+        assert_eq!(
+            serde_json::to_value(&models).unwrap()[role],
+            "ep-20261003130756-trhj6"
+        );
+        assert_eq!(
+            models.effort(role),
+            if role == "w3" {
+                ReasoningEffort::Minimal
+            } else {
+                ReasoningEffort::Medium
+            }
+        );
+        assert_eq!(
+            serde_json::to_value(WriteModels::default()).unwrap()[role],
+            DEEPSEEK_MODEL
+        );
+        assert_eq!(WriteModels::default().effort(role), ReasoningEffort::Medium);
+    }
+    assert_eq!(
+        crate::chat::ChatConfig::default().write_pipeline,
+        crate::chat::WritePipeline::Legacy
+    );
+}
+
+#[test]
 fn second_revision_prompts_cover_value_qualifiers_and_group_decisions() {
     for rule in [
         "Only relation=fact",

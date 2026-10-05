@@ -2,7 +2,7 @@
 
 本段不切默认、不删旧代码；缺省 `tests/eval.rs` 仍走旧路径。按 AD1，新路径以
 `expect_common` 绝对评分验收，0517000 旧基线只作附录参考，不作为上线门槛。
-新模式以 AC1 配置跑生产 `ChatMemoryService`：W1/W4 Pro medium、W3 Flash medium、
+新模式以 AC2 配置跑生产 `ChatMemoryService`：W1/W4 Pro medium、W3 Pro minimal、
 R1/R4 Pro minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型可见 input。
 输出预算 W1=32768、W3/W4=16384（生产阶段常量），R1=4096、R4=16384；禁用模型修复。
 
@@ -15,7 +15,7 @@ EVAL_PIPELINE=v3 cargo test --test eval resident_eval_suite -- --exact --nocaptu
 
 # 新路径绝对评分；旧基线在附录。不存在的 run 文件明确报告未录制。
 python3 tests/eval/scoring/compare.py \
-  --run tests/eval/end_to_end/ac1-pro-medium-flash-medium-pro-minimal/run.json \
+  --run tests/eval/end_to_end/ac2-pro-medium-pro-minimal-pro-minimal/run.json \
   --output /tmp/eval-v3-common
 
 # 相关离线测试（端口测试需支持本机 loopback 的环境）。
@@ -36,7 +36,8 @@ W1 → W2 → W3 → assemble → 条件性 W4 → validate/plan/commit/finish�
 消息时钟为 `CLOCK + index*60`，题目为 `CLOCK + (after-1)*60 + 30`，用例显式时间优先。
 评分器独立核对可信时间，不能以模型输出或导出文件中的时间重定义问题。
 
-录制单独存入 `tests/eval/end_to_end/ac1-pro-medium-flash-medium-pro-minimal/<case>.json`。
+录制单独存入 `tests/eval/end_to_end/ac2-pro-medium-pro-minimal-pro-minimal/<case>.json`。
+首轮 AC1 的录制保留在原目录，不移入 AC2；W3 模型/强度及 W3/R1/R4 提示词变化均使原请求指纹过期。
 `EVAL_V3_DIR` 可指定其他配置目录，`EVAL_V3_OUTPUT` 可指定运行输出（真实模式缺省该目录/run.json，零调用回放缺省 run-replay.json）。
 每次真实调用完成（含 HTTP/传输失败）立即原子写入 `<case>.json`，文件同步后才向生产客户端返回。
 每个用例完成即独立原子写入 `<输出名>.cases/<case>.json`（真实模式缺省 `run.cases/`，回放为 `run-replay.cases/`），
@@ -81,9 +82,10 @@ python3 tests/eval/scoring/compare.py --send-log <runs/run_id.json> --output /tm
 报告还会核对单次录制的 send_run/send_index/请求指纹，恢复“响应已落盘、日志终态未写”的窗口。
 W1≤204、W3≤204、W4≤169、R1≤63、R4≤63，合计≤703（首条消息的空库不需要W4）。
 W4/R4“预计”是有效候选且需要判定的容量规划情景，不是从标签推断的质量/分支预测；实际可能为零。
-W1/W3/W4缺独立耗时，只以历史混合批次均值作代理；R1/R4用minimal p50。
-串行情景约6.94小时；按相同FIFO队列模拟，8个worker预计墙钟约54.4分钟。
-这不是实际耗时上界，未计并发限流、网络排队和模型输出差异。录制的单次 elapsed_ms 供下一轮替代代理估计。
+干跑耗时列暂保留首轮之前的混合批次代理：W1/W4 medium，W3 Flash medium，R1/R4 minimal p50。
+W3 已改 Pro minimal，旧耗时情景不能预测 AC2 的墙钟时间；未计并发限流、排队与输出差异。
+各阶段 token 估算见下述脚本，使用首轮实际 usage（含 incomplete），不是费用或 token 上界。
+W3 的首轮 Flash medium 输出量仅作旧参数参考；另列 AE6 Pro minimal 样本均值，不能冒充同输入测量。
 
 报告复用 `adapters.py`、`trial.evaluate` 与同一复核台账，主报告给出新路径的绝对分：
 通过 / 失败 / 待复核 / 未录制，按用例、逐题展开；已有失败或缺失必需项归为失败，
@@ -109,4 +111,34 @@ EVAL_V3_UNIT_OUTPUT=/tmp/eval-A-replay.json cargo test --lib recorded_full_e2e_r
 python3 tests/eval/scoring/compare.py --run /tmp/eval-A-replay.json --output /tmp/eval-A-report
 ```
 
-该入口只编译到测试，生产不读夹具；真实 SQLite、五阶段请求与 HTTP 回放走相同业务路径。传输只返回指纹完全匹配的现有响应，缺失/过期请求记 not_recorded，发送闭包一旦被调用测试立即失败。上游修复使数据库和下游输入变化时，不能借用旧输出评分；需另行批准重录。这项回放不模拟历史等待时间：超时修正另核对实际 HTTP 请求的 360 秒超时与历史耗时（最长242秒）。不能代替真实 HTTP/MCP 端到端测试。
+该入口只编译到测试，生产不读夹具；真实 SQLite、五阶段请求与 HTTP 回放走相同业务路径。传输只返回指纹完全匹配的现有响应，缺失/过期请求记 not_recorded，发送闭包一旦被调用测试立即失败。上游修复或 AC2 请求变化时，不能借用旧输出评分；需另行批准重录。当前 AC2 尚无录制，该入口验证零发送与未录制处理，不能给出 AC2 质量分。这项回放不模拟历史等待时间；不能代替真实 HTTP/MCP 端到端测试。
+
+## B：失败阶段固定输入小集
+
+`fixed_inputs/inputs.json` 冻结首轮 live 的 W3 失败输入23条、R4失败输入10条，
+由 `fixed_inputs/prepare.py` 按 run.json 失败回执与末次实际阶段提取；每条绑定原录制的完整 SHA-256。
+W3 的14条 incomplete 和9条解码/核验失败、R4的10条核验失败均有无端口回归。
+模型只读取原生产 payload；来源全文仅供 R4 原有旧方依据补入/核验，来源/评分标签及 provenance 不进入请求。
+小集不重新运行写入、检索或 R1；仅验证完成响应、W3逐项核验与 R4结构/引用/计算核验，
+报告 `scoring_scope=contract_only`，未标注语义为 pending。契约通过不能等同端到端答案正确，
+也不能据空 facts 或全 insufficient 推断质量改善；新增语义标签须另行复核。
+
+```sh
+# 33次潜在调用；无需凭据、端口，不写录制。默认仅W3/R4、均Pro minimal。
+EVAL_FIXED_INPUTS=1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 单选 W3=23 或 R4=10；可复用 EVAL_CASES 前缀与 EVAL_REPEAT。
+EVAL_FIXED_INPUTS=1 EVAL_STAGES=r4 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 不设EVAL_RECORD只出离线报告，不发送；缺录制/过期不当作模型失败。
+EVAL_FIXED_INPUTS=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 两份token估算；只读原录制，输出到stdout。
+python3 tests/eval/fixed_inputs/prepare.py
+# 相关回归（不需要端口）。
+cargo test --test write_stage_eval fixed_input
+```
+
+固定集录制存入 `fixed_inputs/recordings/ac2-fixed-pro-minimal/reasoning-minimal/repeat-N/`。
+复用已有阶段录制的每次原子落盘、失败保留、整批额度预检、EVAL_GATE显式判失败及重放。
+固定集的请求指纹使用完整 SHA-256，含快照/时钟/提示词/schema/路由/强度/输出上限；
+不沿用旧阶段样本的时钟字段剔除。旧失败响应只用于回归诊断，不作为新请求录制。
+后续真实录制仍须用户批准；获批后加 `EVAL_RECORD=33` 与既有 `EVAL_BASE_URL`/`EVAL_API_KEY`。
+一次全部固定集33调用，加全量保守上限703调用，合计736；条件跳过或严格命中可减少实际发送。
