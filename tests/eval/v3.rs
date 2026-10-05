@@ -29,12 +29,43 @@ fn jobs(value: Option<&str>) -> usize {
     })
 }
 
+fn r4_low_reference() -> (f64, f64, usize, usize) {
+    let rows: Vec<Value> = std::fs::read_dir(
+        Path::new(ROOT)
+            .join("fixed_inputs/recordings/ac2-fixed-pro-minimal/reasoning-low/repeat-1"),
+    )
+    .unwrap()
+    .map(|p| {
+        let file: Value =
+            serde_json::from_slice(&std::fs::read(p.unwrap().path()).unwrap()).unwrap();
+        file["recorded"].as_array().unwrap().last().unwrap().clone()
+    })
+    .collect();
+    let mut elapsed: Vec<_> = rows
+        .iter()
+        .map(|r| r["elapsed_ms"].as_u64().unwrap())
+        .collect();
+    elapsed.sort_unstable();
+    let n = elapsed.len();
+    let seconds = (elapsed[(n - 1) / 2] + elapsed[n / 2]) as f64 / 2000.0;
+    let outputs: Vec<_> = rows
+        .iter()
+        .filter_map(|r| r["usage"]["output_tokens"].as_u64())
+        .collect();
+    (
+        outputs.iter().sum::<u64>() as f64 / outputs.len() as f64,
+        seconds,
+        n,
+        outputs.len(),
+    )
+}
+
 fn estimated_seconds(case: &Value) -> f64 {
     let n = counts(case);
     (n[0] + n[2]) as f64 * (3782.19 / 82.0)
         + n[1] as f64 * (88.148 / 23.0)
         + n[3] as f64 * 2.5
-        + r4_counts(case)[0] as f64 * 41.7705
+        + r4_counts(case)[0] as f64 * r4_low_reference().1
         + r4_counts(case)[1] as f64 * 4.5
 }
 
@@ -105,11 +136,12 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
         "R4 分流预计：计算类 {} 次 low，非计算类 {} 次 minimal；依据 query_meta.operation 标注。实际只由已核验 R1 plan.op 决定，R1 失败走 minimal，最多仍 {} 次 R4。",
         r4[0], r4[1], total[4]
     );
+    let (low_output, low_seconds, low_calls, known_usage) = r4_low_reference();
     println!(
-        "R4 输出估算：low {:.0} + minimal {:.0} = {:.0} token；分别用 low 40次均值2895.5、首轮 minimal 均值278.10。不是 token 上界。",
-        r4[0] as f64 * 2895.5,
+        "R4 输出估算：low {:.0} + minimal {:.0} = {:.0} token；low 按 AE14 {low_calls}次中 {known_usage}次已知 usage 均值{low_output:.2}，未知 usage 不按零；minimal 用首轮均值278.10。不是 token 上界。",
+        r4[0] as f64 * low_output,
         r4[1] as f64 * (16964.0 / 61.0),
-        r4[0] as f64 * 2895.5 + r4[1] as f64 * (16964.0 / 61.0)
+        r4[0] as f64 * low_output + r4[1] as f64 * (16964.0 / 61.0)
     );
     println!("完整分阶段 token 估算：python3 tests/eval/fixed_inputs/prepare.py（零调用）。");
     // Historical recordings lack separate W1/W3/W4 elapsed times. These pooled averages
@@ -117,7 +149,7 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
     let seconds: f64 = cases.iter().map(estimated_seconds).sum();
     let wall = estimated_wall_seconds(cases, jobs);
     println!(
-        "耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈3.8s（AE9 Pro minimal 固定输入23次/88.148s）；R1≈2.5s，R4 low≈41.8s / minimal≈4.5s（实测 p50）。W1/W4混合均值与W3失败固定输入均为代理，以下仅是容量情景。"
+        "耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈3.8s（AE9 Pro minimal 固定输入23次/88.148s）；R1≈2.5s，R4 low≈{low_seconds:.1}s（AE14 {low_calls}次中位数，含超时）/ minimal≈4.5s。计算类 low 本地超时240s，无重试。W1/W4混合均值与W3失败固定输入均为代理，以下仅是容量情景。"
     );
     println!(
         "上述情景串行约 {seconds:.0}s / {:.1}分钟 / {:.2}小时。",
@@ -676,12 +708,16 @@ fn v3_full_plan_and_preflight_are_offline() {
         assert!(preflight(None, 703).is_ok());
         let serial: f64 = cases.iter().map(estimated_seconds).sum();
         assert!((estimated_wall_seconds(&cases, 1) - serial).abs() < 0.001);
-        assert!((estimated_wall_seconds(&cases, 8) - 2435.8377332979853).abs() < 0.001);
+        assert!((estimated_wall_seconds(&cases, 8) - 2501.403443266172).abs() < 0.001);
         let split = cases
             .iter()
             .map(r4_counts)
             .fold([0; 2], |a, n| [a[0] + n[0], a[1] + n[1]]);
         assert_eq!(split, [7, 56]);
+        let (output, seconds, calls, known) = r4_low_reference();
+        assert_eq!((calls, known), (8, 7));
+        assert!((output - 5164.714285714285).abs() < 0.001);
+        assert!((seconds - 84.3965).abs() < 0.001);
     }
     let cfg = config("test", "local", 9);
     assert_eq!(cfg.write_models.as_ref().unwrap().w1, PRO);

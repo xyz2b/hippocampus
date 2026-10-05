@@ -94,7 +94,7 @@ pub(crate) fn supports_record(evidence: &EvidenceRef, record: &RecordView) -> bo
     })
 }
 
-/// Z18：只补模型明确选定、包内旧记录的真实引用；核验本身仍保持严格。
+/// Z18 / AE15：只补模型明确选定的包内记录引用；核验本身仍保持严格。
 /// text_of 由调用方提供仍存在且获准访问的来源正文，不以记录自带 Quote 证明自身。
 pub fn assemble_old_basis(
     output: &R4Output,
@@ -103,12 +103,10 @@ pub fn assemble_old_basis(
 ) -> R4Output {
     let mut assembled = output.clone();
     for fact in &mut assembled.facts {
-        if fact.supersedes_record_ids.is_empty() {
-            continue;
-        }
         let targets: Option<Vec<_>> = fact
-            .supersedes_record_ids
+            .record_ids
             .iter()
+            .chain(&fact.supersedes_record_ids)
             .map(|id| {
                 ctx.evidence
                     .records
@@ -117,24 +115,32 @@ pub fn assemble_old_basis(
             })
             .collect();
         let Some(targets) = targets else { continue };
+        let old: Vec<_> = targets
+            .iter()
+            .filter(|r| fact.supersedes_record_ids.contains(&r.id()))
+            .collect();
         let mut original = fact.evidence.clone();
-        // 不借补入修复无效原引用、其他记录依据缺失，或缺失的新方依据。
+        // 不借补入修复无效原引用、缺失的新方依据，或把替代目标冒充新记录。
         if ctx.refs(&mut original, "evidence").is_err()
-            || fact.record_ids.iter().any(|id| {
-                ctx.evidence
-                    .records
-                    .iter()
-                    .find(|r| r.id() == *id)
-                    .is_none_or(|r| !original.iter().any(|e| supports_record(e, r)))
+            // 已有引用明确属于另一条未选记录，不能借补入掩盖错误的 record_ids。
+            || (targets.iter().any(|r| {
+                fact.record_ids.contains(&r.id()) && !original.iter().any(|e| supports_record(e, r))
+            }) && ctx.evidence.records.iter().any(|r| {
+                !targets.iter().any(|target| target.id() == r.id())
+                    && original.iter().any(|e| supports_record(e, r))
+            }))
+            || old.iter().any(|r| {
+                fact.record_ids.contains(&r.id()) && !original.iter().any(|e| supports_record(e, r))
             })
-            || !original
-                .iter()
-                .any(|e| !targets.iter().any(|r| supports_record(e, r)))
+            || (!old.is_empty()
+                && !original
+                    .iter()
+                    .any(|e| !old.iter().any(|r| supports_record(e, r))))
         {
             continue;
         }
         for record in &ctx.evidence.records {
-            if !fact.supersedes_record_ids.contains(&record.id())
+            if !targets.iter().any(|r| r.id() == record.id())
                 || original.iter().any(|e| supports_record(e, record))
             {
                 continue;

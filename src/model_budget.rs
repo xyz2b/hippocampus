@@ -227,6 +227,9 @@ impl ModelBudget {
     }
 
     pub(crate) fn timeout(&self, stage: ModelStage) -> Duration {
+        if matches!(stage, ModelStage::R4) && self.r4_compute {
+            return Duration::from_secs(240);
+        }
         let mut config = self.config.clone();
         if matches!(stage, ModelStage::R4) {
             config.review_output_tokens = self.output_tokens(stage);
@@ -1030,6 +1033,19 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn r4_compute_low_timeout_is_240_seconds_without_changing_other_stages() {
+        let ledger = TestLedger::new();
+        let mut budget = ledger.budget("timeout", 4);
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(180));
+        budget.r4_compute = true;
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(240));
+        assert!(budget.timeout(ModelStage::R4) < Duration::from_secs(900));
+        assert_eq!(budget.timeout(ModelStage::R1), Duration::from_secs(180));
+        assert_eq!(budget.timeout(ModelStage::Query), Duration::from_secs(15));
+        assert_eq!(budget.timeout(ModelStage::W3), Duration::from_secs(360));
+    }
+
+    #[test]
     fn r4_compute_limit_records_actual_cap_without_changing_group_policy_or_legacy_limits() {
         let ledger = TestLedger::new();
         let mut budget = ledger.budget("compute", 4);
@@ -1043,7 +1059,7 @@ pub(crate) mod tests {
         budget.r4_compute = true;
         assert_eq!(budget.output_tokens(ModelStage::R4), 16384);
         assert_eq!(budget.output_tokens(ModelStage::QueryReview), 4096);
-        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(180));
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(240));
         budget.reserve(ModelStage::R4, b"r4 request").unwrap();
         let db = Connection::open(&ledger.path).unwrap();
         assert_eq!(
@@ -1074,7 +1090,7 @@ pub(crate) mod tests {
         changed.config.group_id = "new-compute-authorization".into();
         changed.reserve(ModelStage::R1, b"new request").unwrap();
         changed.r4_compute = true;
-        assert_eq!(changed.timeout(ModelStage::R4), Duration::from_secs(360));
+        assert_eq!(changed.timeout(ModelStage::R4), Duration::from_secs(240));
         changed.reserve(ModelStage::R4, b"new r4 request").unwrap();
     }
 

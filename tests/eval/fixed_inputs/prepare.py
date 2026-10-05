@@ -134,6 +134,30 @@ def estimate(data):
                 len(fixed_compute) * low_p50 + sum(records[s["id"]]["elapsed_ms"] for s in fixed_other) / 1000),
             "new_low_serial_seconds": round(len(fixed_compute) * low_p50)},
         "limits": "全量输入量/W1/W4仍是首轮代理，W3换模型/提示词且固定集偏长；p50相加只是情景，未计限流/排队/冷启动。固定集input token用AE9同输入，low输出按不同样本均值估算，不是新测量。"}
+    # AE15：最新 low 小集8次含一次本地超时；未知 usage 不能按零计入均值。
+    latest_low = [json.loads(p.read_text())["recorded"][-1] for p in
+        (ROOT / "fixed_inputs/recordings/ac2-fixed-pro-minimal/reasoning-low/repeat-1").glob("r4_*.json")]
+    known = [r["usage"] for r in latest_low if r.get("usage")]
+    assert len(latest_low) == 8 and len(known) == 7
+    latest_output = statistics.mean(u["output_tokens"] for u in known)
+    latest_seconds = statistics.median(r["elapsed_ms"] for r in latest_low) / 1000
+    latest_full = [dict(row, estimate=dict(row["estimate"]), mean=dict(row["mean"])) for row in full]
+    latest_full[4]["estimate"]["output_tokens"] = round(latest_output * full_compute +
+        full[4]["mean"]["output_tokens"] * (len(questions) - full_compute))
+    latest_full[4]["output_basis"] = "AE14 low已知7次均值 + 首轮minimal均值，按7/56分流"
+    result["ae15"] = {
+        "basis": "AE14固定小集最新low；超时未知usage不计零；输入/W1/W4及minimal仍是代理，非费用或上界",
+        "r4_low": {"observed_calls": len(latest_low), "known_usage_calls": len(known),
+            "unknown_usage_calls": len(latest_low) - len(known),
+            "mean_input_tokens": statistics.mean(u["input_tokens"] for u in known),
+            "mean_output_tokens": latest_output, "median_seconds": latest_seconds,
+            "observed_timeout_seconds": 180, "new_timeout_seconds": 240},
+        "full": {"op_source": "query_meta.operation；实际只取已核验R1计划，失败走minimal",
+            "r4_compute_low": full_compute, "r4_other_minimal": len(questions) - full_compute,
+            "stages": latest_full, "total_estimate": {k: sum(row["estimate"][k] for row in latest_full)
+                for k in ["input_tokens", "output_tokens"]},
+            "r4_serial_seconds": round(full_compute * latest_seconds + (len(questions) - full_compute) * 4.5)},
+        "limits": "low仅8个失败固定输入，1个超时使延迟右截断且缺usage；240秒下完成率/用量未经测量，p50相加不是全量墙钟保证。"}
     return result
 
 

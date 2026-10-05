@@ -226,6 +226,54 @@ fn fixed_inputs_are_exactly_the_33_original_failed_requests() {
 }
 
 #[test]
+fn fixed_input_record_basis_replay_keeps_raw_and_does_not_send_or_change_compute() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/fixed_inputs/recordings");
+    let model = EvalModel {
+        label: "ac2-fixed-pro-minimal".into(),
+        model: Some("ep-20261003130756-trhj6".into()),
+        base: Some("https://ark.cn-beijing.volces.com/api/v3".into()),
+        effort: ReasoningEffort::Minimal,
+    };
+    let cases = plan_repeated(selected("r4", "").unwrap(), &root, &model, 1).unwrap();
+    let report = evaluate(&cases, None, &mut |_| panic!("offline replay sent")).unwrap();
+    assert_eq!(report["sent_calls"], 0);
+    for id in ["r4_lme_603deb26_q", "r4_lme_gpt4_6dc9b45b_q"] {
+        let row = report["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["id"] == id)
+            .unwrap();
+        assert_eq!(row["raw_result"]["status"], "失败");
+        assert_eq!(
+            row["raw_result"]["fields"][0]["actual"]["rule"],
+            "record_basis"
+        );
+        assert_eq!(
+            row["raw_result"]["fields"][0]["actual"]["field"],
+            "facts[0].record_ids[0]"
+        );
+        assert_eq!(row["final_result"]["status"], "通过");
+        assert_eq!(
+            row["final_output"]["facts"][0]["record_ids"],
+            row["raw_output"]["facts"][0]["record_ids"]
+        );
+        assert_eq!(row["final_output"]["compute"], row["raw_output"]["compute"]);
+        assert_eq!(
+            row["final_output"]["facts"][0]["evidence"]
+                .as_array()
+                .unwrap()
+                .len(),
+            row["raw_output"]["facts"][0]["evidence"]
+                .as_array()
+                .unwrap()
+                .len()
+                + 1
+        );
+    }
+}
+
+#[test]
 fn fixed_input_replay_binds_every_field_and_records_each_call() {
     let selected = selected("w3,r4", "").unwrap();
     let dir = TempRecords::new();
@@ -302,14 +350,24 @@ fn fixed_input_replay_binds_every_field_and_records_each_call() {
 
 #[test]
 fn fixed_input_r4_low_preserves_25_strict_recordings_without_sending() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/fixed_inputs/recordings");
+    // AE14 已补齐 low 录制；此回归仍独立模拟“只有 minimal”时的严格复用。
+    let root = TempRecords::new();
+    let minimal = Path::new("ac2-fixed-pro-minimal/reasoning-minimal/repeat-1");
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/eval/fixed_inputs/recordings")
+        .join(minimal);
+    let destination = root.0.join(minimal);
+    std::fs::create_dir_all(&destination).unwrap();
+    for entry in std::fs::read_dir(source).unwrap().map(Result::unwrap) {
+        std::fs::copy(entry.path(), destination.join(entry.file_name())).unwrap();
+    }
     let model = EvalModel {
         label: "ac2-fixed-pro-minimal".into(),
         model: Some("ep-20261003130756-trhj6".into()),
         base: Some("https://ark.cn-beijing.volces.com/api/v3".into()),
         effort: ReasoningEffort::Minimal,
     };
-    let cases = plan_repeated(selected("w3,r4", "").unwrap(), &root, &model, 1).unwrap();
+    let cases = plan_repeated(selected("w3,r4", "").unwrap(), &root.0, &model, 1).unwrap();
     assert_eq!(
         cases
             .iter()

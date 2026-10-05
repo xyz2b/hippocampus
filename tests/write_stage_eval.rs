@@ -1656,6 +1656,7 @@ fn write_stage_eval_suite() {
             .post(url)
             .bearer_auth(key)
             .json(request)
+            .timeout(eval_request_timeout(request))
             .send()
             .map_err(|e| e.to_string())?;
         if !response.status().is_success() {
@@ -1666,6 +1667,50 @@ fn write_stage_eval_suite() {
     .unwrap();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     check_report(&report, gate).expect("stage evaluation failures; see report above");
+}
+
+fn eval_request_timeout(request: &Value) -> std::time::Duration {
+    let input: Value = request["input"]
+        .as_str()
+        .and_then(|text| serde_json::from_str(text).ok())
+        .unwrap_or(Value::Null);
+    let op = serde_json::from_value(input["plan"]["plan"]["op"].clone()).ok();
+    let compute =
+        hippocampus::recall_models::RecallModels::default().r4_effort(op) == ReasoningEffort::Low;
+    std::time::Duration::from_secs(
+        if request["text"]["format"]["name"] == "r4_v3"
+            && request["reasoning"]["effort"] == "low"
+            && compute
+        {
+            240
+        } else {
+            180
+        },
+    )
+}
+
+#[test]
+fn evaluation_timeout_is_240_only_for_r4_compute_low() {
+    for (stage, effort, op, seconds) in [
+        ("r4_v3", "low", "count", 240),
+        ("r4_v3", "low", "sum", 240),
+        ("r4_v3", "low", "elapsed", 240),
+        ("r4_v3", "low", "compare", 240),
+        ("r4_v3", "low", "lookup", 180),
+        ("r4_v3", "low", "list", 180),
+        ("r4_v3", "low", "invalid", 180),
+        ("r4_v3", "minimal", "count", 180),
+        ("r4_v3", "high", "count", 180),
+        ("r1_v1", "low", "count", 180),
+        ("w3_v1", "low", "count", 180),
+    ] {
+        let request = json!({"text":{"format":{"name":stage}},"reasoning":{"effort":effort},
+            "input":json!({"plan":{"plan":{"op":op}}}).to_string()});
+        assert_eq!(
+            eval_request_timeout(&request),
+            std::time::Duration::from_secs(seconds)
+        );
+    }
 }
 
 fn eval_gate(value: Option<&str>) -> Result<bool, String> {

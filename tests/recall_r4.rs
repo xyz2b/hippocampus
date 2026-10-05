@@ -563,6 +563,162 @@ fn old_basis_assembly_checks_real_sources_and_preserves_missing_new_basis_errors
 }
 
 #[test]
+fn record_basis_assembly_requires_package_and_live_exact_source_and_preserves_other_errors() {
+    let f = Fixture::new(json!({
+        "query":"请核对我住在成都的记录。", "at":SAID_ON, "current_evidence":"query_only",
+        "plan":{"type":"single","relation":"居住城市","op":"lookup"},
+        "records":[{"id":11,"source":"s-record","sentence":"我住在成都。","said_on":SAID_ON,
+            "status":"active","update":"judged","termination":null,"end":null}],
+        "raw":[{"source":"s-repeat","text":"我现在住在成都。","said_on":SAID_ON,"enrichment":"failed"}],
+        "relations":[]
+    }));
+    let assembly = f.assembly();
+    let dates = BTreeMap::new();
+    let ctx = r4::Context {
+        evidence: &assembly.evidence,
+        plan: &assembly.plan,
+        request: &assembly.request,
+        utc_offset_seconds: 28_800,
+        source_dates: &dates,
+    };
+    let state = f.db.state();
+    let text_of = |id: &str| {
+        state
+            .sources
+            .get(id)
+            .filter(|s| s.enrichment != "deleted")
+            .and_then(|s| s.request.as_ref()?["text"].as_str().map(str::to_owned))
+    };
+    let mut view = f.fact(11, "yes");
+    view["evidence"] = json!([stored("s-repeat", "我现在住在成都。")]);
+    let raw_text = output(vec![view], None).to_string();
+    let raw = r4::decode(&raw_text).unwrap();
+    assert_eq!(
+        r4::evaluate(raw.clone(), &ctx).err().unwrap().0,
+        "record_basis"
+    );
+    let final_output = r4::assemble_old_basis(&raw, &ctx, &text_of);
+    assert_eq!(final_output.facts[0].evidence.len(), 2);
+    assert!(r4::evaluate(final_output.clone(), &ctx).is_ok());
+    assert_eq!(
+        r4::assemble_old_basis(&final_output, &ctx, &text_of),
+        final_output
+    );
+    let (result, audit) = f
+        .assembly()
+        .finish_r4_with_audit(&f.db.open(), Ok(&raw_text))
+        .unwrap();
+    assert_eq!(result.semantic_judgment, SemanticJudgment::Model);
+    let audit = audit.unwrap();
+    assert_eq!(audit.raw_output, raw_text);
+    assert_eq!(audit.final_output.unwrap().facts[0].evidence.len(), 2);
+    assert_eq!(
+        serde_json::to_value(f.db.state()).unwrap(),
+        serde_json::to_value(&state).unwrap()
+    );
+
+    let mut equivalent = raw.clone();
+    equivalent.facts[0]
+        .evidence
+        .push(stored("s-record", "住在成 都"));
+    assert_eq!(
+        r4::assemble_old_basis(&equivalent, &ctx, &text_of),
+        equivalent
+    );
+    let mut outside = raw.clone();
+    outside.facts[0].record_ids = vec![MemoryId(90000)];
+    assert_eq!(r4::assemble_old_basis(&outside, &ctx, &text_of), outside);
+    assert_eq!(r4::evaluate(outside, &ctx).err().unwrap().0, "record_id");
+    for body in [
+        None,
+        Some("另一段正文".into()),
+        Some("我住在成 都。".into()),
+    ] {
+        let assembled = r4::assemble_old_basis(&raw, &ctx, &|id| {
+            if id == "s-record" {
+                body.clone()
+            } else {
+                text_of(id)
+            }
+        });
+        assert_eq!(assembled, raw);
+        assert_eq!(
+            r4::evaluate(assembled, &ctx).err().unwrap().0,
+            "record_basis"
+        );
+    }
+    for (field, value, count, rule) in [
+        ("evidence", json!([]), 0, "empty_evidence"),
+        (
+            "evidence",
+            json!([stored("s-repeat", "原文没有这个片段")]),
+            1,
+            "quote_or_source",
+        ),
+        (
+            "conditions",
+            json!([{"quote":{"text":"原文没有这个条件"},"resolved":true}]),
+            2,
+            "qualifier_source",
+        ),
+    ] {
+        let mut bad = serde_json::to_value(&raw).unwrap();
+        bad["facts"][0][field] = value;
+        let assembled =
+            r4::assemble_old_basis(&r4::decode(&bad.to_string()).unwrap(), &ctx, &text_of);
+        assert_eq!(assembled.facts[0].evidence.len(), count);
+        assert_eq!(r4::evaluate(assembled, &ctx).err().unwrap().0, rule);
+    }
+    let mut missing_operands = raw.clone();
+    missing_operands.compute = Some(
+        serde_json::from_value(compute("elapsed", vec![], vec![], Some("day"), "complete"))
+            .unwrap(),
+    );
+    let mut temporal = f.plan_json();
+    temporal["type"] = json!("temporal");
+    temporal["plan"]["op"] = json!("elapsed");
+    let (result, audit) = f
+        .assembly_with(&f.request(), temporal, Budget::default())
+        .finish_r4_with_audit(
+            &f.db.open(),
+            Ok(&serde_json::to_string(&missing_operands).unwrap()),
+        )
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Degraded);
+    assert!(
+        audit
+            .unwrap()
+            .final_output
+            .unwrap()
+            .compute
+            .unwrap()
+            .operands
+            .is_empty()
+    );
+
+    f.db.open()
+        .transaction(|s| {
+            s.sources.get_mut("s-record").unwrap().enrichment = "deleted".into();
+            Ok(())
+        })
+        .unwrap();
+    let after_delete = f.db.state();
+    assert_eq!(
+        r4::assemble_old_basis(&raw, &ctx, &|id| after_delete
+            .sources
+            .get(id)
+            .filter(|s| s.enrichment != "deleted")
+            .and_then(|s| s.request.as_ref()?["text"].as_str().map(str::to_owned))),
+        raw
+    );
+    assert!(
+        assembly
+            .finish_r4_with_audit(&f.db.open(), Ok(&raw_text))
+            .is_err()
+    );
+}
+
+#[test]
 fn old_basis_audit_uses_sqlite_snapshot_and_never_persists_readonly_outputs() {
     let f = Fixture::sample("r4_04_");
     let raw = format!(
