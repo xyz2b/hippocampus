@@ -166,3 +166,34 @@ EVAL_PIPELINE=v3 EVAL_QUESTIONS='<case/question,...>' EVAL_DRY_RUN=1 \
 W4 已升为 w4.v3；所有请求仍严格匹配完整指纹。旧 W4 不能复用，新状态的 R4 包也须重建；W1/W3/R1 仅在请求完全一致时可复用。计划列出“不复用上限”和按阶段的重录容量，后者使用历史分支及失败数，不是精确缺录制数。未知 usage 使用同阶段已知均值，不能记零；金额仅按 AC2 约50元和 token 合计比例粗折，不是服务商报价或费用上限。正式额度预检仍按不复用上限，不把估算当授权。
 
 已录制失败默认仍回放，不自动重试。获批后先确认余额充足，将 AC2 录制复制到独立目录，只有在副本中明确删去待重录的失败调用及其后续阶段，才会重新发送该请求；成功前缀完整保留，每次复用仍检查指纹。空目录不具备计划中的复用条件。原失败审计保留不动。全量旧运行输出的离线重算只校准评分，不表示 AF1 新运行时已取得对应质量；修改输入后不得借用旧输出确认完整性或当前值。
+
+## AF5：从 AC2 准备独立续录目录
+
+```sh
+# 零调用；目标目录必须不存在。只取16题、10用例及前置消息。
+python3 tests/eval/targeted_plan.py prepare --output .ai/log/af-targeted
+
+# 零调用；按 AC2 实测均值估算 token，预检本批额度。
+python3 tests/eval/targeted_plan.py dry-run --directory .ai/log/af-targeted --eval-record 58
+EVAL_PIPELINE=v3 EVAL_V3_DIR=.ai/log/af-targeted EVAL_RECORD=58 EVAL_DRY_RUN=1 \
+  cargo test --test eval resident_eval_suite -- --exact --nocapture
+
+# 无端口的严格回放：使用生产请求，缺录制停止当前用例，绝不发送。
+EVAL_V3_DIR=.ai/log/af-targeted EVAL_V3_UNIT_OUTPUT=.ai/log/af-frontier.json \
+  cargo test --lib openai::eval_replay_tests::recorded_full_e2e_replay_never_sends -- --exact --nocapture
+
+# 实际续录另行授权后，去掉 EVAL_DRY_RUN=1，使用同一目录/额度及已授权凭据。
+# 完成后合并63题；新报告路径必须不存在，16题来自新运行，其余47题沿用AC2。
+python3 tests/eval/scoring/compare.py \
+  --run .ai/log/af-targeted/run.json --target-plan .ai/log/af-targeted/target-plan.json \
+  --base-run tests/eval/end_to_end/ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low/run.json \
+  --output .ai/log/af-targeted-merged
+```
+
+生成命令保留94条成功前缀，移除44条录制（含 HTTP 403、超时/解码/核验失败及其后续阶段，全部旧 W4 与选中 R4）；原目录逐字不动。新目录保留原请求指纹，不重写请求或响应；`target-plan.json` 绑定题目、操作、成功前缀指纹和原 AC2 运行摘要。失败是否完成以本地诊断为准，远端晚到的 completed 响应不能掩盖本地超时。
+
+固定预留上限为58：W1=2、W3=4、W4=32、R1=4、R4=16；仅移除确定不会调用的分支（保留 W1 无候选、W3 无 supported、R1 无需 judge）。这是未决模型输出下的发送上限，不能零调用精确预测最终发送数。无端口回放另给当前请求已验证的命中/缺口数，不用旧 W4 输出模拟未来新状态。token 是相应预留阶段的 AC2 已知 usage 均值，未知 usage 不当零；R4 按 low/minimal 各自均值，缺 R1 时仅用 query_meta 作路由容量假设，实际仍由获核验的 R1 决定。
+
+`EVAL_V3_DIR` 内存在定点计划时自动选择其中题目，并在读凭据/开端口前校验全部配置、题目/操作范围、保留前缀及预留上限。`EVAL_RECORD<58` 整批拒绝；额度足够才允许进入运行。每个预留阶段至多新发一次，仍使用发送前落盘与全局硬限额。保留前缀的实际请求指纹改变、出现未预留阶段时拒绝补发并停止后续发送；并发中已开始的调用无法撤销。中断后的新响应按完整指纹续跑复用，失败响应仍不自动重试。
+
+合并报告逐题标出 `targeted/ac2` 与运行文件路径。定点题缺结果记未录制，不回落 AC2；本轮发送计数不累加 AC2 的583次历史调用。合并分数是混合版本的63题视图，不表示全量重测；原 AC2 报告不得覆盖。

@@ -13,6 +13,42 @@ import trial
 
 
 class EndToEndReport(unittest.TestCase):
+    def test_targeted_merge_marks_sources_and_never_falls_back_for_missing_target(self):
+        base = self.document()
+        base["real_calls"] = 583
+        key = "person_sketch_pen/person_q4"
+        fresh = copy.deepcopy(base)
+        fresh["real_calls"] = 2
+        fresh["cases"][0]["steps"][0]["result"]["status"] = "insufficient"
+        merged = compare.merge_runs(base, fresh, [key], "AC2-original", "target-new")
+        report = compare.run(merged)
+        row = next(r for r in report["questions"] if r["question"] == key)
+        self.assertEqual(row["result_source"], {"kind":"targeted", "run":"target-new"})
+        self.assertEqual(row["new_view"]["status"], "insufficient")
+        self.assertEqual(report["execution"]["real_calls"], 2)
+        self.assertIn("1题来自定点运行", compare.render(report))
+        self.assertEqual(sum(v["kind"] == "ac2" for v in merged["result_sources"].values()), 62)
+        missing = compare.run(compare.merge_runs(base, {"cases":[], "real_calls":0}, [key]))
+        self.assertEqual(next(r for r in missing["questions"] if r["question"] == key)["state"], "not_recorded")
+        self.assertEqual(base["cases"][0]["steps"][0]["result"]["status"], "answered")
+        with self.assertRaisesRegex(ValueError, "选择范围之外"):
+            compare.merge_runs(base, fresh, ["person_sketch_pen/person_q1"])
+
+    def test_merged_report_cannot_overwrite_existing_ac2_report(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            base = root / "base.json"
+            base.write_text(json.dumps(self.document()))
+            plan = root / "target-plan.json"
+            plan.write_text(json.dumps({"version":"eval.e2e.targeted@1", "questions":["person_sketch_pen/person_q4"]}))
+            output = root / "AC2-report"
+            output.with_suffix(".md").write_text("original AC2 report")
+            cli = subprocess.run([sys.executable, str(pathlib.Path(compare.__file__)), "--base-run", str(base),
+                "--target-plan", str(plan), "--output", str(output)], capture_output=True, text=True)
+            self.assertNotEqual(cli.returncode, 0)
+            self.assertIn("不覆盖已有报告", cli.stderr)
+            self.assertEqual(output.with_suffix(".md").read_text(), "original AC2 report")
+
     def test_http_account_error_is_not_a_model_validation_failure(self):
         doc = self.document()
         case = doc["cases"][0]
@@ -220,6 +256,67 @@ class EndToEndReport(unittest.TestCase):
 
 
 class TargetedPlan(unittest.TestCase):
+    def test_preparation_keeps_exact_prefixes_and_does_not_change_ac2(self):
+        import importlib.util
+        import hashlib
+        root = pathlib.Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location('targeted_plan', root / 'targeted_plan.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        source = module.SOURCE
+        def snapshot():
+            return {str(p.relative_to(source)):hashlib.sha256(p.read_bytes()).hexdigest()
+                    for p in source.rglob('*') if p.is_file()}
+        before = snapshot()
+        with tempfile.TemporaryDirectory() as temp:
+            destination = pathlib.Path(temp) / 'target'
+            manifest = module.prepare(source, destination)
+            self.assertEqual(manifest['retained'], dict(W1=43,W3=39,W4=0,R1=12,R4=0))
+            self.assertEqual(manifest['removed'], dict(W1=2,W3=2,W4=21,R1=4,R4=15))
+            self.assertEqual(manifest['call_ceiling'], 58)
+            self.assertEqual(len(list(destination.glob('*.json'))), 11)
+            for cid, case in manifest['cases'].items():
+                original = json.loads((source / (cid+'.json')).read_text())
+                prepared = json.loads((destination / (cid+'.json')).read_text())
+                for op, hashes in case['prefixes'].items():
+                    self.assertEqual(prepared['operations'][op], original['operations'][op][:len(hashes)])
+                    self.assertTrue(all(row['http_status']==200 for row in prepared['operations'][op]))
+            module.dry_run(destination, 58)
+            with self.assertRaisesRegex(ValueError, '整批拒绝'):
+                module.dry_run(destination, 57)
+            with self.assertRaisesRegex(ValueError, '新目录'):
+                module.prepare(source, destination)
+        self.assertEqual(snapshot(), before)
+
+    def test_late_completed_local_timeout_removes_dependency_suffix(self):
+        import importlib.util
+        root = pathlib.Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location('targeted_plan', root / 'targeted_plan.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        original = json.loads((module.SOURCE/'explicit_correction.json').read_text())
+        op = 'write:correction_s1'
+        doc = copy.deepcopy(original)
+        doc['operations'] = {op:doc['operations'][op]}
+        tail = copy.deepcopy(doc['operations'][op][-1])
+        tail['schema'] = 'w4_v2'
+        doc['operations'][op].append(tail)
+        with tempfile.TemporaryDirectory() as temp:
+            source = pathlib.Path(temp)/'source'
+            source.mkdir()
+            (source/'explicit_correction.json').write_text(json.dumps(doc))
+            (source/'run.json').write_text(json.dumps({'cases':[{'case':'explicit_correction','steps':[
+                {'step':'message','message':'correction_s1','model_diagnostics':[
+                    {'kind':'model_start','data':{'stage':'w3_v1','call_id':'late'}},
+                    {'kind':'model_end','data':{'call_id':'late','local_outcome':'timeout'}}]}]}]}))
+            destination = pathlib.Path(temp)/'out'
+            result = module.prepare(source,destination,['explicit_correction/correction_q1'])
+            self.assertEqual(result['removed']['W3'],1)
+            self.assertEqual(result['removed']['W4'],1)
+            self.assertEqual(result['removal_reasons']['本地timeout'],2)
+            kept=json.loads((destination/'explicit_correction.json').read_text())['operations'][op]
+            self.assertEqual(kept,original['operations'][op][:1])
+
     def test_targeted_cases_preserve_upstream_messages_and_drop_other_questions(self):
         import importlib.util
         path = pathlib.Path(__file__).resolve().parent.parent / 'targeted_plan.py'

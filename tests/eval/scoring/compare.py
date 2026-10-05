@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import collections
 import copy
+import hashlib
 import json
 import pathlib
 
@@ -202,6 +203,51 @@ def reference(questions, ledger):
         return {"baseline": "0517000", "state": "unavailable", "reason": str(error), "acceptance_gate": False}
 
 
+def merge_runs(base, targeted, questions, base_name="AC2", targeted_name="定点运行"):
+    """Override selected questions even when missing; never disguise AC2 output as a new run."""
+    selected = set(questions)
+    valid = {f"{c['id']}/{q['id']}" for p in trial.CASES.glob("*.json")
+             for c in [trial._load(p)] for q in c["questions"]}
+    if not selected or not selected <= valid:
+        raise ValueError("合并题目集合为空或含未知题目")
+    def question_steps(document):
+        result = {}
+        for case in document.get("cases", []):
+            for step in case.get("steps", []):
+                if step["step"] != "question":
+                    continue
+                key = f"{case['case']}/{step['question']}"
+                if key in result or key not in valid:
+                    raise ValueError("运行包含重复或未知题目：" + key)
+                result[key] = step
+        return result
+    old, new = question_steps(base), question_steps(targeted)
+    if not new.keys() <= selected:
+        raise ValueError("定点运行包含选择范围之外的题目")
+    merged = copy.deepcopy(targeted)
+    merged["cases"] = []
+    merged["result_sources"] = {}
+    fresh_cases = {c["case"]: c for c in targeted.get("cases", [])}
+    for path in sorted(trial.CASES.glob("*.json")):
+        case = trial._load(path)
+        fresh = fresh_cases.get(case["id"], {})
+        steps = copy.deepcopy([s for s in fresh.get("steps", []) if s["step"] == "message"])
+        for question in case["questions"]:
+            key = f"{case['id']}/{question['id']}"
+            chosen = key in selected
+            step = (new if chosen else old).get(key)
+            if step is None:
+                step = {"step": "question", "question": question["id"], "state": "not_recorded",
+                        "reason": "定点运行未产出该题" if chosen else "AC2未产出该题"}
+            steps.append(copy.deepcopy(step))
+            merged["result_sources"][key] = {"kind": "targeted" if chosen else "ac2",
+                                           "run": targeted_name if chosen else base_name}
+        merged["cases"].append(dict(copy.deepcopy(fresh), case=case["id"], steps=steps))
+    merged["base_reference"] = {"run": base_name, "real_calls": base.get("real_calls"),
+                                "note": "AC2历史结果；不加入本轮发送计数"}
+    return merged
+
+
 def run(document=None):
     document = document or {"cases": []}
     ledger = load_ledger(trial.LEDGER)
@@ -214,6 +260,8 @@ def run(document=None):
             name = f"{case['id']}/{question['id']}"
             row = {"question": name, "query": question["query"], "category": baseline.category(question["expect_common"]),
                    "state": "not_recorded", "absolute": "not_recorded", "reason": "未录制", "new": None}
+            if document.get("result_sources"):
+                row["result_source"] = document["result_sources"][name]
             step = steps.get((case["id"], question["id"]))
             if step and step["state"] == "completed":
                 q = trusted_question(question)
@@ -251,6 +299,7 @@ def run(document=None):
             "absolute_summary": absolute, "new_summary": new_summary,
             "not_recorded": sum(r["state"] == "not_recorded" for r in questions),
             "questions": questions, "execution": execution(document), "reference": reference(questions, ledger),
+            "result_sources": document.get("result_sources"), "base_reference": document.get("base_reference"),
             "coverage_note": "仅问答共同评分；27 个 LongMemEval 用例缺逐条入库标注，不能据此评价漏提或错误更新。未录制不计通过、不判模型失败；语义待复核不计最终通过。"}
 
 
@@ -265,12 +314,18 @@ def render(report):
              "| 用例 | 通过 | 失败 | 待复核 | 未录制 |", "|---|---|---|---|---|"]
     for case, scores in absolute["by_case"].items():
         lines.append(f"| {case} | {scores['pass']} | {scores['fail']} | {scores['pending_review']} | {scores['not_recorded']} |")
-    lines += ["", "## 逐题", "", "| 题 | 绝对结果 | 自动/最终/分母 | 缺口/待复核/判错 |", "|---|---|---|---|"]
+    merged = bool(report.get("result_sources"))
+    if merged:
+        origins = collections.Counter(v["kind"] for v in report["result_sources"].values())
+        lines += ["", f"定点合并：{origins['targeted']}题来自定点运行（缺结果仍记未录制），{origins['ac2']}题沿用AC2。不是63题全量重测；下方发送计数仅属本轮。"]
+    lines += ["", "## 逐题", "", "| 题 | " + ("结果来源 | " if merged else "") + "绝对结果 | 自动/最终/分母 | 缺口/待复核/判错 |",
+              "|---|" + ("---|" if merged else "") + "---|---|---|"]
     for row in report["questions"]:
         new = row["new"]["common"] if row["new"] else None
         count = f"{new['auto_pass']}/{new['final_pass']}/{new['denominator']}" if new else "未录制"
         detail = row["reason"] if not new else f"缺口 {len(row['new']['gaps'])}；待复核 {len(row['new']['pending_review'])}；判错 {'、'.join(row['new']['failed'])}"
-        lines.append(f"| {row['question']} | {row['absolute']} | {count} | {detail} |")
+        source = (f"{row['result_source']['kind']}：{row['result_source']['run']} | " if merged else "")
+        lines.append(f"| {row['question']} | {source}{row['absolute']} | {count} | {detail} |")
     metrics = report["execution"]
     lines += ["", f"调用失败（非模型）：{metrics['failure_counts'].get('call_failure', 0)}；模型解码/核验/输出上限失败：{metrics['failure_counts'].get('model_invalid_output', 0)}；未完成响应：{metrics['failure_counts'].get('incomplete_response', 0)}。"]
     lines += ["", "## 调用与耗时", "", f"EVAL_JOBS={metrics['jobs']}；本轮真实发送 {metrics['real_calls']}；批次墙钟 {metrics['elapsed_ms']} ms。", "",
@@ -321,8 +376,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run", type=pathlib.Path, help="不存在的文件明确报告未录制")
     parser.add_argument("--send-log", type=pathlib.Path, help="指定本次发送日志，含中断时的未完成调用")
+    parser.add_argument("--base-run", type=pathlib.Path, help="与AC2其余题合并，不覆盖原报告")
+    parser.add_argument("--target-plan", type=pathlib.Path, help="prepare生成的target-plan.json，确定定点覆盖范围")
     parser.add_argument("--output", type=pathlib.Path, required=True)
     args = parser.parse_args()
+    if bool(args.base_run) != bool(args.target_plan):
+        parser.error("--base-run 与 --target-plan 必须一起使用")
+    if args.base_run and any(args.output.with_suffix(s).exists() for s in (".json", ".md")):
+        parser.error("合并报告必须使用新输出路径，不覆盖已有报告")
     document = trial._load(args.run) if args.run and args.run.exists() else {"cases": []}
     log_path = args.send_log or (pathlib.Path(document["send_log"]) if document.get("send_log") else None)
     if log_path and log_path.exists():
@@ -335,6 +396,14 @@ def main():
         document["send_log"] = str(log_path)
     elif args.send_log:
         parser.error("发送日志不存在")
+    if args.base_run:
+        manifest = trial._load(args.target_plan)
+        if manifest.get("version") != "eval.e2e.targeted@1":
+            parser.error("未知定点计划版本")
+        if hashlib.sha256(args.base_run.read_bytes()).hexdigest() != manifest.get("source_run_sha256"):
+            parser.error("AC2运行与定点计划绑定不符")
+        document = merge_runs(trial._load(args.base_run), document, manifest["questions"],
+                              str(args.base_run), str(args.run))
     report = run(document)
     output_json = args.output.with_suffix(".json")
     if report["execution"]["mode"] == "replay" and output_json.exists():

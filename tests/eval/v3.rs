@@ -339,9 +339,29 @@ fn parallel_cases(
 }
 
 pub(super) fn run() {
+    let dir = std::env::var_os("EVAL_V3_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| Path::new(ROOT).join("end_to_end").join(LABEL));
     let cases = cases();
     let jobs = jobs(std::env::var("EVAL_JOBS").ok().as_deref());
-    let ceiling = plan(&cases, jobs);
+    let ceiling = match target_ceiling(&dir, &cases).unwrap_or_else(|e| panic!("{e}")) {
+        Some(ceiling) => {
+            let p = read_target_plan(&dir).unwrap().unwrap();
+            println!(
+                "定点{}题/{}例；保留成功前缀{}；移除录制{}；按阶段预留{}。",
+                p["questions"].as_array().unwrap().len(),
+                cases.len(),
+                p["retained"],
+                p["removed"],
+                p["reserved"]
+            );
+            println!(
+                "精确预留上限{ceiling}，未来实际发送数未知；保留前缀指纹变化拒绝补发，未预留阶段拒绝发送。"
+            );
+            ceiling
+        }
+        None => plan(&cases, jobs),
+    };
     let limit = std::env::var("EVAL_RECORD")
         .ok()
         .map(|s| s.parse::<u64>().expect("EVAL_RECORD must be an integer"));
@@ -350,9 +370,6 @@ pub(super) fn run() {
         println!("干跑：真实调用 0；未读取凭据、未创建录制。");
         return;
     }
-    let dir = std::env::var_os("EVAL_V3_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| Path::new(ROOT).join("end_to_end").join(LABEL));
     // Dry/preflight precede credential reads and binding a socket, including empty replay.
     let live = limit.map(|_| {
         (
@@ -444,6 +461,74 @@ pub(super) fn run() {
         recorder.sent.load(Ordering::Relaxed),
         output.display()
     );
+}
+
+#[test]
+fn v3_targeted_preflight_and_strict_prefixes_bound_sends() {
+    let dir = std::env::temp_dir().join(format!("eval-targeted-{}", diagnostics::new_id()));
+    let first = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+    let hash = recall_models::fingerprint(&normalized(&first, &BTreeMap::new()).unwrap());
+    let configuration = Recorder::new(dir.clone(), None, None).configuration;
+    write_json(
+        &dir.join("case.json"),
+        &json!({"configuration":configuration,"operations":{"write:m1":[
+        {"request":hash,"http_status":200,"body":"{\"status\":\"completed\"}"}]}}),
+    );
+    write_json(
+        &dir.join("target-plan.json"),
+        &json!({"version":"eval.e2e.targeted@1","questions":["case/q"],
+        "cases":{"case":{"prefixes":{"write:m1":[hash],"recall:q":[]},"slots":{"write:m1":["W3"],"recall:q":["R1","R4"]}}},
+        "reserved":{"W1":0,"W3":1,"W4":0,"R1":1,"R4":1},"call_ceiling":3}),
+    );
+    let case = json!({"id":"case","messages":[{"id":"m1"}],"questions":[{"id":"q"}]});
+    assert_eq!(target_ceiling(&dir, &[case.clone()]).unwrap(), Some(3));
+    assert!(preflight(Some(2), 3).is_err());
+    let recorder = Recorder::new(dir.clone(), Some(3), None);
+    recorder.begin("case", "write:m1", &BTreeMap::new());
+    assert_eq!(
+        recorder
+            .respond("case", &first, || panic!("retained prefix never sends"))
+            .0,
+        200
+    );
+    let third = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w3_v1"}}});
+    assert_eq!(
+        recorder
+            .respond("case", &third, || Ok((200, "{}".into())))
+            .0,
+        200
+    );
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 1);
+    assert_eq!(
+        recorder
+            .respond("case", &third, || panic!(
+                "reserved stage sends at most once"
+            ))
+            .0,
+        503
+    );
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 1);
+    let changed = Recorder::new(dir.clone(), Some(3), None);
+    changed.begin("case", "write:m1", &BTreeMap::new());
+    let mut wrong = first.clone();
+    wrong["max_output_tokens"] = json!(999);
+    assert_eq!(
+        changed
+            .respond("case", &wrong, || panic!("fingerprint drift never sends"))
+            .0,
+        503
+    );
+    assert_eq!(changed.sent.load(Ordering::Relaxed), 0);
+    let mut doc: Value =
+        serde_json::from_slice(&std::fs::read(dir.join("case.json")).unwrap()).unwrap();
+    doc["operations"]["write:m1"][0]["request"] = json!("tampered");
+    write_json(&dir.join("case.json"), &doc);
+    assert!(
+        target_ceiling(&dir, &[case])
+            .unwrap_err()
+            .contains("保留前缀已改变")
+    );
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]

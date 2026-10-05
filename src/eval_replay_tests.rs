@@ -37,14 +37,15 @@ use core::*;
 
 #[test]
 fn recorded_full_e2e_replay_never_sends() {
-    let recorder = Arc::new(Recorder::new(
-        Path::new(ROOT).join("end_to_end").join(LABEL),
-        None,
-        None,
-    ));
+    let dir = std::env::var_os("EVAL_V3_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| Path::new(ROOT).join("end_to_end").join(LABEL));
+    let cases = cases();
+    let ceiling = target_ceiling(&dir, &cases).unwrap();
+    let recorder = Arc::new(Recorder::new(dir, None, None));
     let started = Instant::now();
     let mut results = Vec::new();
-    for case in cases() {
+    for case in cases {
         let case_id = case["id"].as_str().unwrap();
         let db = TempDb(
             std::env::temp_dir().join(format!("eval-no-port-{}.sqlite3", diagnostics::new_id())),
@@ -86,6 +87,26 @@ fn recorded_full_e2e_replay_never_sends() {
         results.push(result);
     }
     assert_eq!(recorder.sent.load(Ordering::Relaxed), 0);
+    if let Some(ceiling) = ceiling {
+        for stage in ["W1", "W3", "W4", "R1", "R4"] {
+            let calls: Vec<_> = results
+                .iter()
+                .flat_map(|c| c["calls"].as_array().unwrap())
+                .filter(|c| c["stage"] == stage)
+                .collect();
+            println!(
+                "严格当前请求 {stage}：复用{}，已知缺口{}",
+                calls.iter().filter(|c| c["origin"] == "replay").count(),
+                calls
+                    .iter()
+                    .filter(|c| c["origin"] == "not_recorded")
+                    .count()
+            );
+        }
+        println!(
+            "真实发送0；未决调用上限{ceiling}，遇首个缺录制后停止该用例；不借旧W4输出推演后续分支。"
+        );
+    }
     if let Some(path) = std::env::var_os("EVAL_V3_UNIT_OUTPUT") {
         let path = PathBuf::from(path);
         if path.exists() {

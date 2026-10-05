@@ -6,6 +6,126 @@ pub(super) const LABEL: &str = "ac2-pro-medium-pro-minimal-pro-minimal-r4-comput
 pub(super) const PRO: &str = "ep-20261003130756-trhj6";
 pub(super) const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval");
 
+pub(super) fn read_target_plan(dir: &Path) -> Result<Option<Value>, String> {
+    let path = dir.join("target-plan.json");
+    if !path.exists() {
+        return Ok(None);
+    }
+    let plan: Value = serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    if plan["version"] != "eval.e2e.targeted@1" {
+        return Err("unknown targeted plan version".into());
+    }
+    Ok(Some(plan))
+}
+
+fn stage_name(request: &Value) -> &str {
+    match request
+        .pointer("/text/format/name")
+        .and_then(Value::as_str)
+        .unwrap_or("unknown")
+    {
+        "w1_v1" => "W1",
+        "w3_v1" => "W3",
+        "w4_v2" | "w4_v3" => "W4",
+        "r1_v1" => "R1",
+        "r4_v3" => "R4",
+        other => other,
+    }
+}
+
+/// Exact reservation ceiling; future model-dependent sends remain unknown.
+pub(super) fn target_ceiling(dir: &Path, cases: &[Value]) -> Result<Option<u64>, String> {
+    let Some(plan) = read_target_plan(dir)? else {
+        return Ok(None);
+    };
+    let wanted: BTreeSet<_> = cases
+        .iter()
+        .flat_map(|c| {
+            c["questions"].as_array().unwrap().iter().map(|q| {
+                format!(
+                    "{}/{}",
+                    c["id"].as_str().unwrap(),
+                    q["id"].as_str().unwrap()
+                )
+            })
+        })
+        .collect();
+    let selected: BTreeSet<_> = plan["questions"]
+        .as_array()
+        .ok_or("invalid selected questions")?
+        .iter()
+        .map(|q| q.as_str().map(String::from).ok_or("invalid question key"))
+        .collect::<Result<_, _>>()?;
+    let planned = plan["cases"].as_object().ok_or("invalid planned cases")?;
+    if wanted != selected || cases.len() != planned.len() {
+        return Err("整批拒绝：定点计划与所选题目不符".into());
+    }
+    let mut total = 0;
+    let mut stages = BTreeMap::from([("W1", 0u64), ("W3", 0), ("W4", 0), ("R1", 0), ("R4", 0)]);
+    let mut cfg = config("configuration", "", 1);
+    cfg.model_budget = None;
+    let configuration = serde_json::to_value(cfg).unwrap();
+    for case in cases {
+        let cid = case["id"].as_str().unwrap();
+        let entry = planned.get(cid).ok_or("case not planned")?;
+        let mut ops: BTreeSet<_> = case["messages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|m| format!("write:{}", m["id"].as_str().unwrap()))
+            .collect();
+        ops.extend(
+            case["questions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|q| format!("recall:{}", q["id"].as_str().unwrap())),
+        );
+        let prefixes = entry["prefixes"]
+            .as_object()
+            .ok_or("invalid planned prefixes")?;
+        let slots = entry["slots"].as_object().ok_or("invalid planned slots")?;
+        if prefixes.keys().cloned().collect::<BTreeSet<_>>() != ops
+            || slots.keys().cloned().collect::<BTreeSet<_>>() != ops
+        {
+            return Err("整批拒绝：计划操作范围不符".into());
+        }
+        let doc: Value = serde_json::from_slice(
+            &std::fs::read(dir.join(format!("{cid}.json"))).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+        if doc["configuration"] != configuration {
+            return Err(format!("整批拒绝：录制配置不符 {cid}"));
+        }
+        for op in ops {
+            let prefix = prefixes[&op].as_array().ok_or("invalid prefix")?;
+            for (i, hash) in prefix.iter().enumerate() {
+                if !hash.is_string() || doc["operations"][&op][i]["request"] != *hash {
+                    return Err(format!("整批拒绝：保留前缀已改变 {cid}/{op}/{i}"));
+                }
+            }
+            let reserved = slots[&op].as_array().ok_or("invalid slots")?;
+            let unique: BTreeSet<_> = reserved.iter().filter_map(Value::as_str).collect();
+            if unique.len() != reserved.len()
+                || unique
+                    .iter()
+                    .any(|s| !["W1", "W3", "W4", "R1", "R4"].contains(s))
+            {
+                return Err("invalid reserved stages".into());
+            }
+            total += reserved.len() as u64;
+            for stage in unique {
+                *stages.get_mut(stage).unwrap() += 1;
+            }
+        }
+    }
+    if plan["call_ceiling"].as_u64() != Some(total) || plan["reserved"] != json!(stages) {
+        return Err("整批拒绝：计划调用上限不符".into());
+    }
+    Ok(Some(total))
+}
+
 pub(super) fn config(case: &str, address: &str, calls: u64) -> ChatConfig {
     let mut config: ChatConfig = serde_json::from_value(json!({
         "write_pipeline":"w4_runtime_v1", "recall_pipeline":"recall_v3",
@@ -26,7 +146,20 @@ pub(super) fn config(case: &str, address: &str, calls: u64) -> ChatConfig {
 }
 
 pub(super) fn cases() -> Vec<Value> {
-    let questions = std::env::var("EVAL_QUESTIONS").unwrap_or_default();
+    let questions = std::env::var("EVAL_QUESTIONS").unwrap_or_else(|_| {
+        std::env::var_os("EVAL_V3_DIR")
+            .and_then(|dir| read_target_plan(Path::new(&dir)).unwrap())
+            .map(|p| {
+                p["questions"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|s| s.as_str().unwrap())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            })
+            .unwrap_or_default()
+    });
     let requested: BTreeSet<_> = questions
         .split(',')
         .filter(|s| !s.trim().is_empty())
@@ -192,10 +325,14 @@ pub(super) struct Recorder {
     pub(super) run_id: String,
     pub(super) send_log: Mutex<Value>,
     pub(super) sent: AtomicUsize,
+    target_plan: Option<Value>,
+    target_refused: std::sync::atomic::AtomicBool,
+    target_used: Mutex<BTreeSet<(String, String, String)>>,
 }
 
 impl Recorder {
     pub(super) fn new(dir: PathBuf, limit: Option<u64>, live: Option<(String, String)>) -> Self {
+        let target_plan = read_target_plan(&dir).unwrap();
         let mut cfg = config("configuration", "", 1);
         cfg.model_budget = None;
         let run_id = diagnostics::new_id();
@@ -211,6 +348,9 @@ impl Recorder {
                 "limit":limit,"attempts":[],"proxy_errors":[]})),
             run_id,
             sent: AtomicUsize::new(0),
+            target_plan,
+            target_refused: std::sync::atomic::AtomicBool::new(false),
+            target_used: Mutex::default(),
         }
     }
     pub(super) fn begin(&self, case: &str, operation: &str, source_ids: &BTreeMap<String, String>) {
@@ -313,18 +453,7 @@ impl Recorder {
         elapsed: Duration,
         reason: Option<&str>,
     ) {
-        let schema = request
-            .pointer("/text/format/name")
-            .and_then(Value::as_str)
-            .unwrap_or("unknown");
-        let stage = match schema {
-            "w1_v1" => "W1",
-            "w3_v1" => "W3",
-            "w4_v2" | "w4_v3" => "W4",
-            "r1_v1" => "R1",
-            "r4_v3" => "R4",
-            other => other,
-        };
+        let stage = stage_name(request);
         let body: Value = recording["body"]
             .as_str()
             .and_then(|s| serde_json::from_str(s).ok())
@@ -389,6 +518,25 @@ impl Recorder {
             .get(case)
             .ok_or("proxy case has no recording document")?["operations"][&operation][position]
             .clone();
+        if let Some(plan) = &self.target_plan {
+            let prefixes = plan["cases"][case]["prefixes"][&operation]
+                .as_array()
+                .ok_or("unplanned operation")?;
+            let slots = plan["cases"][case]["slots"][&operation]
+                .as_array()
+                .ok_or("unplanned operation")?;
+            let mismatch = prefixes
+                .get(position)
+                .is_some_and(|expected| expected != &json!(fp) || saved["request"] != *expected);
+            let unplanned =
+                position >= prefixes.len() && !slots.iter().any(|s| s == stage_name(request));
+            if mismatch || unplanned || self.target_refused.load(Ordering::SeqCst) {
+                self.target_refused.store(true, Ordering::SeqCst);
+                return Err(format!(
+                    "定点计划拒绝：保留前缀指纹改变或未预留阶段 {case}/{operation}/{position}；不补发"
+                ));
+            }
+        }
         if saved["request"] == fp {
             let status = saved["http_status"]
                 .as_u64()
@@ -405,6 +553,21 @@ impl Recorder {
                 None,
             );
             return Ok((status, response_ids(body, &reverse)));
+        }
+        if self.target_plan.is_some()
+            && self
+                .allowance
+                .lock()
+                .map_err(|_| "allowance lock poisoned")?
+                .is_some()
+            && !self
+                .target_used
+                .lock()
+                .map_err(|_| "target slot lock poisoned")?
+                .insert((case.into(), operation.clone(), stage_name(request).into()))
+        {
+            self.target_refused.store(true, Ordering::SeqCst);
+            return Err("定点计划拒绝：同一预留阶段不得重复发送".into());
         }
         // One global reservation, made under the lock BEFORE invoking the send closure.
         // Replays never reserve. Even concurrent failures consume their reserved attempt.
