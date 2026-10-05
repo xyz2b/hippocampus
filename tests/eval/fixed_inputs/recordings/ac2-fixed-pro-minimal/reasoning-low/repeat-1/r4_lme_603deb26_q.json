@@ -1,0 +1,112 @@
+{
+  "id": "r4_lme_603deb26_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 143435,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "at home"
+                },
+                "resolved": true
+              },
+              {
+                "quote": {
+                  "text": "since my friend Emma showed me how to make it"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s2_t6"
+                }
+              },
+              {
+                "quote": {
+                  "text": "I've tried making it at home for 5 times now since Emma teached me how to make it"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t3"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              6
+            ],
+            "statement": "As of 2023-11-30, the user reported having tried making a Negroni at home 10 times since Emma showed them how to make it.",
+            "strength": "moderate",
+            "supersedes_record_ids": [
+              4
+            ],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "now"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[{\"quote\":{\"text\":\"at home\"},\"resolved\":true},{\"quote\":{\"text\":\"since my friend Emma showed me how to make it\"},\"resolved\":true}],\"current\":\"unknown\",\"evidence\":[{\"quote\":{\"text\":\"I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s2_t6\"}},{\"quote\":{\"text\":\"I've tried making it at home for 5 times now since Emma teached me how to make it\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t3\"}}],\"polarity\":\"affirm\",\"record_ids\":[6],\"statement\":\"As of 2023-11-30, the user reported having tried making a Negroni at home 10 times since Emma showed them how to make it.\",\"strength\":\"moderate\",\"supersedes_record_ids\":[4],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"now\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:6368958b221b49f12e4319e27d713f646a7e74fea78fe2e5ee5a10b935caef45",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 6896,
+          "input_tokens_details": {
+            "cached_tokens": 6144
+          },
+          "output_tokens": 8986,
+          "output_tokens_details": {
+            "reasoning_tokens": 8726
+          },
+          "total_tokens": 15882
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 6896,
+        "input_tokens_details": {
+          "cached_tokens": 6144
+        },
+        "output_tokens": 8986,
+        "output_tokens_details": {
+          "reasoning_tokens": 8726
+        },
+        "total_tokens": 15882
+      }
+    }
+  ]
+}

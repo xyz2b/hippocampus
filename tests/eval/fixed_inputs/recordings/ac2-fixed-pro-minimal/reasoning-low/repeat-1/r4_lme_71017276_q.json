@@ -1,0 +1,130 @@
+{
+  "id": "r4_lme_71017276_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 83095,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s1_t1"
+              },
+              "event_group": "chandelier_receipt",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t1"
+                  }
+                }
+              ],
+              "id": "chandelier_receipt",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "chandelier_receipt"
+          ],
+          "unit": "week"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "I got a stunning crystal chandelier from my aunt on the same day as my 2023-03-04 message (referred to as 'today'), and it used to belong to my great-grandmother.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"},\"event_group\":\"chandelier_receipt\",\"evidence\":[{\"quote\":{\"text\":\"By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"id\":\"chandelier_receipt\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"chandelier_receipt\"],\"unit\":\"week\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"polarity\":\"affirm\",\"record_ids\":[2],\"statement\":\"I got a stunning crystal chandelier from my aunt on the same day as my 2023-03-04 message (referred to as 'today'), and it used to belong to my great-grandmother.\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:ad7945d9de35d980409217f2f83493146a145174fad2b818ba6cc87e9a88d4ee",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5886,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 5316,
+          "output_tokens_details": {
+            "reasoning_tokens": 4931
+          },
+          "total_tokens": 11202
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5886,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 5316,
+        "output_tokens_details": {
+          "reasoning_tokens": 4931
+        },
+        "total_tokens": 11202
+      }
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "id": "r4_lme_5e1b23de_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 85698,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s1_t4"
+              },
+              "event_group": "photography_workshop",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I went to a 3-day photography workshop in a nearby city today"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t4"
+                  }
+                }
+              ],
+              "id": "workshop_event",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "workshop_event"
+          ],
+          "unit": "month"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t4"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              4
+            ],
+            "statement": "The user attended a 3-day photography workshop in a nearby city on 2023-11-01, where they learned about different techniques and styles of photography.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s1_t4\"},\"event_group\":\"photography_workshop\",\"evidence\":[{\"quote\":{\"text\":\"I went to a 3-day photography workshop in a nearby city today\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t4\"}}],\"id\":\"workshop_event\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"workshop_event\"],\"unit\":\"month\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t4\"}}],\"polarity\":\"affirm\",\"record_ids\":[4],\"statement\":\"The user attended a 3-day photography workshop in a nearby city on 2023-11-01, where they learned about different techniques and styles of photography.\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:14598ad0ffcfd96ed7219a492846b8f4320005eb2ec1b199de77289b8aed59b2",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4906,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 4385,
+          "output_tokens_details": {
+            "reasoning_tokens": 4063
+          },
+          "total_tokens": 9291
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4906,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 4385,
+        "output_tokens_details": {
+          "reasoning_tokens": 4063
+        },
+        "total_tokens": 9291
+      }
+    }
+  ]
+}

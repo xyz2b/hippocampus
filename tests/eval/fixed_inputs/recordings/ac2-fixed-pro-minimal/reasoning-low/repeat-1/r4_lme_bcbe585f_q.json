@@ -1,0 +1,126 @@
+{
+  "id": "r4_lme_bcbe585f_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 24444,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2023-04-01",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s1_t1"
+              },
+              "event_group": "bird_watching_workshop",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I just got back from a bird watching workshop at the local Audubon society today, which was really informative."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t1"
+                  }
+                }
+              ],
+              "id": "workshop_event",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "workshop_event"
+          ],
+          "unit": "week"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I just got back from a bird watching workshop at the local Audubon society today, which was really informative."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "The user attended a bird watching workshop at the local Audubon society on 2023-04-01.",
+            "strength": "strong",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2023-04-01",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2023-04-01\",\"kind\":\"date\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"},\"event_group\":\"bird_watching_workshop\",\"evidence\":[{\"quote\":{\"text\":\"I just got back from a bird watching workshop at the local Audubon society today, which was really informative.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"id\":\"workshop_event\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"workshop_event\"],\"unit\":\"week\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"no\",\"evidence\":[{\"quote\":{\"text\":\"I just got back from a bird watching workshop at the local Audubon society today, which was really informative.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"polarity\":\"affirm\",\"record_ids\":[],\"statement\":\"The user attended a bird watching workshop at the local Audubon society on 2023-04-01.\",\"strength\":\"strong\",\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2023-04-01\",\"kind\":\"date\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:c28a6be1f995d682b8cd5fd3ef12352bc9c6a3c308de25995dc7e31c472ce940",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4948,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 1566,
+          "output_tokens_details": {
+            "reasoning_tokens": 1244
+          },
+          "total_tokens": 6514
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4948,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 1566,
+        "output_tokens_details": {
+          "reasoning_tokens": 1244
+        },
+        "total_tokens": 6514
+      }
+    }
+  ]
+}
