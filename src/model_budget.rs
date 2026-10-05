@@ -33,6 +33,12 @@ pub struct ModelBudgetConfig {
     pub review_output_tokens: u32,
     #[serde(default = "output_limit")]
     pub query_output_tokens: u32,
+    /// New recall R4 only: verified computation using low reasoning.
+    #[serde(
+        default = "r4_compute_limit",
+        skip_serializing_if = "is_r4_compute_default"
+    )]
+    pub r4_compute_output_tokens: u32,
 }
 
 fn operation_limit() -> u64 {
@@ -43,6 +49,12 @@ fn input_limit() -> usize {
 }
 fn output_limit() -> u32 {
     4096
+}
+fn r4_compute_limit() -> u32 {
+    16384
+}
+fn is_r4_compute_default(value: &u32) -> bool {
+    *value == r4_compute_limit()
 }
 fn is_false(value: &bool) -> bool {
     !value
@@ -60,6 +72,7 @@ impl Default for ModelBudgetConfig {
             extraction_output_tokens: output_limit(),
             review_output_tokens: output_limit(),
             query_output_tokens: output_limit(),
+            r4_compute_output_tokens: r4_compute_limit(),
         }
     }
 }
@@ -77,6 +90,7 @@ impl ModelBudgetConfig {
                 self.extraction_output_tokens,
                 self.review_output_tokens,
                 self.query_output_tokens,
+                self.r4_compute_output_tokens,
             ]
             .iter()
             .any(|v| !(1..=65536).contains(v))
@@ -198,11 +212,28 @@ pub(crate) struct ModelBudget {
     path: PathBuf,
     owner: String,
     pub(crate) config: ModelBudgetConfig,
+    pub(crate) r4_compute: bool,
     operation_id: String,
     max_background_operation_calls: Option<u64>,
 }
 
 impl ModelBudget {
+    pub(crate) fn output_tokens(&self, stage: ModelStage) -> u32 {
+        if matches!(stage, ModelStage::R4) && self.r4_compute {
+            self.config.r4_compute_output_tokens
+        } else {
+            stage.output_tokens(&self.config)
+        }
+    }
+
+    pub(crate) fn timeout(&self, stage: ModelStage) -> Duration {
+        let mut config = self.config.clone();
+        if matches!(stage, ModelStage::R4) {
+            config.review_output_tokens = self.output_tokens(stage);
+        }
+        stage.timeout(&config)
+    }
+
     pub(crate) fn with_background_operation_limit(
         mut self,
         limit: u64,
@@ -270,6 +301,7 @@ impl ModelBudget {
             path,
             owner,
             config,
+            r4_compute: false,
             operation_id,
             max_background_operation_calls: None,
         })
@@ -422,7 +454,7 @@ impl ModelBudget {
             return Err(budget_error("operation stage call limit reached"));
         }
         let id = crate::diagnostics::new_id();
-        let output_tokens = stage.output_tokens(&self.config);
+        let output_tokens = self.output_tokens(stage);
         // Stable, non-cryptographic diagnostic fingerprint; never used for authorization or deduplication.
         let fingerprint = request.iter().fold(0xcbf29ce484222325u64, |hash, byte| {
             (hash ^ u64::from(*byte)).wrapping_mul(0x100000001b3)
@@ -995,6 +1027,55 @@ pub(crate) mod tests {
             })
             .unwrap();
         assert_eq!(stored, old.to_string());
+    }
+
+    #[test]
+    fn r4_compute_limit_records_actual_cap_without_changing_group_policy_or_legacy_limits() {
+        let ledger = TestLedger::new();
+        let mut budget = ledger.budget("compute", 4);
+        assert!(
+            serde_json::to_value(&budget.config)
+                .unwrap()
+                .get("r4_compute_output_tokens")
+                .is_none()
+        );
+        budget.reserve(ModelStage::R1, b"r1 request").unwrap();
+        budget.r4_compute = true;
+        assert_eq!(budget.output_tokens(ModelStage::R4), 16384);
+        assert_eq!(budget.output_tokens(ModelStage::QueryReview), 4096);
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(180));
+        budget.reserve(ModelStage::R4, b"r4 request").unwrap();
+        let db = Connection::open(&ledger.path).unwrap();
+        assert_eq!(
+            db.query_row(
+                "SELECT output_token_limit FROM model_calls WHERE stage='r4'",
+                [],
+                |r| r.get::<_, u32>(0)
+            )
+            .unwrap(),
+            16384
+        );
+        let mut changed = ledger.budget("custom-compute", 4);
+        changed.config.r4_compute_output_tokens = 24576;
+        assert!(
+            changed
+                .reserve(ModelStage::R1, b"new request")
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("policy differs")
+        );
+        assert_eq!(
+            db.query_row("SELECT count(*) FROM model_calls", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            2
+        );
+        changed.config.group_id = "new-compute-authorization".into();
+        changed.reserve(ModelStage::R1, b"new request").unwrap();
+        changed.r4_compute = true;
+        assert_eq!(changed.timeout(ModelStage::R4), Duration::from_secs(360));
+        changed.reserve(ModelStage::R4, b"new r4 request").unwrap();
     }
 
     #[test]

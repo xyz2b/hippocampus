@@ -9,11 +9,225 @@ const TEXT: &str = "我的灯是紫色。";
 const AT: i64 = 1_791_000_000;
 
 #[test]
+fn r4_routes_by_verified_op_and_failed_r1_falls_back_without_extra_calls() {
+    for (op, effort) in [
+        ("count", "low"),
+        ("sum", "low"),
+        ("elapsed", "low"),
+        ("compare", "low"),
+        ("lookup", "minimal"),
+        ("list", "minimal"),
+        ("invalid", "minimal"),
+        ("http_failure", "minimal"),
+        ("unverified_count", "minimal"),
+    ] {
+        let db = Db::new();
+        let mut r1 = r1_out("judge");
+        r1["plan"]["op"] = json!(op);
+        if op == "unverified_count" {
+            r1["plan"]["op"] = json!("count");
+            r1["subject"] = json!({"entity_id":"outside-catalogue"});
+        }
+        let first = if op == "http_failure" {
+            Err(OpenAiAdapterError::Http("fixture failure".into()))
+        } else {
+            envelope(r1)
+        };
+        let (mut p, sent) = mocked(&db, vec![first, envelope(r4_out())]);
+        p.recall_models.reasoning_effort = [
+            ("r1".into(), ReasoningEffort::Minimal),
+            ("r4".into(), ReasoningEffort::Minimal),
+        ]
+        .into();
+        let rt = RecallRuntime::default();
+        let req = request(op);
+        let result = rt
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap();
+        if ["invalid", "http_failure", "unverified_count"].contains(&op) {
+            assert!(
+                result
+                    .degraded_reasons
+                    .iter()
+                    .any(|r| r == "r1_not_understood")
+            );
+        }
+        assert_eq!(sent.lock().unwrap().len(), 2, "{op}");
+        assert_eq!(
+            sent.lock().unwrap()[1]["reasoning"]["effort"],
+            effort,
+            "{op}"
+        );
+        assert_eq!(
+            sent.lock().unwrap()[1]["max_output_tokens"],
+            if effort == "low" { 16384 } else { 4096 },
+            "{op}"
+        );
+        assert_eq!(db.calls(), 2);
+        assert_eq!(
+            rt.run(&mut db.open(), &req, Budget::default(), Some(&p))
+                .unwrap(),
+            result
+        );
+        assert_eq!(db.calls(), 2);
+        p.recall_models.r4_compute_reasoning_effort = ReasoningEffort::High;
+        for runtime in [&rt, &RecallRuntime::default()] {
+            assert!(
+                runtime
+                    .run(&mut db.open(), &req, Budget::default(), Some(&p))
+                    .unwrap_err()
+                    .to_string()
+                    .contains("recall_request_mismatch")
+            );
+        }
+        assert_eq!(sent.lock().unwrap().len(), 2);
+    }
+}
+
+#[test]
+fn r4_compute_output_limit_is_configurable_scoped_and_bound_to_replay() {
+    assert_eq!(ModelBudgetConfig::default().review_output_tokens, 4096);
+    for (op, compute_effort, regular_effort, regular_limit, compute_limit, expected) in [
+        (
+            "count",
+            ReasoningEffort::Low,
+            ReasoningEffort::Minimal,
+            4096,
+            16384,
+            16384,
+        ),
+        (
+            "count",
+            ReasoningEffort::Low,
+            ReasoningEffort::Minimal,
+            4096,
+            24576,
+            24576,
+        ),
+        (
+            "lookup",
+            ReasoningEffort::Low,
+            ReasoningEffort::Low,
+            4096,
+            24576,
+            4096,
+        ),
+        (
+            "count",
+            ReasoningEffort::Minimal,
+            ReasoningEffort::Minimal,
+            6144,
+            24576,
+            6144,
+        ),
+        (
+            "count",
+            ReasoningEffort::High,
+            ReasoningEffort::Minimal,
+            4096,
+            24576,
+            4096,
+        ),
+        (
+            "lookup",
+            ReasoningEffort::Low,
+            ReasoningEffort::Minimal,
+            6144,
+            16384,
+            6144,
+        ),
+    ] {
+        let db = Db::new();
+        let mut r1 = r1_out("judge");
+        r1["plan"]["op"] = json!(op);
+        let (mut p, sent) = mocked(&db, vec![envelope(r1), envelope(r4_out())]);
+        p.client
+            .budget
+            .as_mut()
+            .unwrap()
+            .config
+            .review_output_tokens = regular_limit;
+        p.recall_models.r4_compute_reasoning_effort = compute_effort;
+        p.client
+            .budget
+            .as_mut()
+            .unwrap()
+            .config
+            .r4_compute_output_tokens = compute_limit;
+        p.recall_models
+            .reasoning_effort
+            .insert("r4".into(), regular_effort);
+        let rt = RecallRuntime::default();
+        let req = request("output-limit");
+        let result = rt
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap();
+        assert_eq!(sent.lock().unwrap()[0]["max_output_tokens"], 4096);
+        assert_eq!(sent.lock().unwrap()[1]["max_output_tokens"], expected);
+        assert_eq!(
+            db.open()
+                .connection
+                .query_row(
+                    "SELECT output_token_limit FROM model_calls WHERE stage='r4'",
+                    [],
+                    |r| r.get::<_, u32>(0)
+                )
+                .unwrap(),
+            expected
+        );
+        assert_eq!(
+            p.client
+                .budget
+                .as_ref()
+                .unwrap()
+                .config
+                .review_output_tokens,
+            regular_limit
+        );
+        assert_eq!(
+            rt.run(&mut db.open(), &req, Budget::default(), Some(&p))
+                .unwrap(),
+            result
+        );
+        p.client
+            .budget
+            .as_mut()
+            .unwrap()
+            .config
+            .r4_compute_output_tokens += 1;
+        for runtime in [&rt, &RecallRuntime::default()] {
+            assert!(
+                runtime
+                    .run(&mut db.open(), &req, Budget::default(), Some(&p))
+                    .unwrap_err()
+                    .to_string()
+                    .contains("recall_request_mismatch")
+            );
+        }
+        assert_eq!(sent.lock().unwrap().len(), 2);
+        assert_eq!(db.calls(), 2);
+    }
+    for limit in [0, 65537] {
+        let config: ModelBudgetConfig = serde_json::from_value(json!({
+            "group_id":"limit-validation", "max_calls":2, "r4_compute_output_tokens":limit}))
+        .unwrap();
+        assert!(config.validate().is_err());
+    }
+}
+
+#[test]
 fn role_reasoning_is_sent_and_bound_and_changed_effort_cannot_replay() {
     let db = Db::new();
-    let models: RecallModels =
-        serde_json::from_value(json!({"reasoning_effort":{"r1":"low","r4":"high"}})).unwrap();
+    let models: RecallModels = serde_json::from_value(
+        json!({"reasoning_effort":{"r1":"low","r4":"high"},"r4_compute_reasoning_effort":"high"}),
+    )
+    .unwrap();
     models.validate().unwrap();
+    assert_eq!(models.r4_effort(Some(R1Op::Count)), ReasoningEffort::High);
+    assert!(
+        serde_json::from_value::<RecallModels>(json!({"r4_compute_reasoning_effort":"unknown"}))
+            .is_err()
+    );
     assert_eq!(models.r1, DEEPSEEK_MODEL);
     assert_eq!(
         RecallModels::default().effort("r1"),
@@ -654,6 +868,14 @@ fn recommended_recall_config_is_valid_without_changing_defaults() {
     }
     assert_eq!(recommended.r1, "ep-20261003130756-trhj6");
     assert_eq!(recommended.r4, recommended.r1);
+    assert_eq!(
+        recommended.r4_compute_reasoning_effort,
+        ReasoningEffort::Low
+    );
+    assert_eq!(
+        RecallModels::default().r4_compute_reasoning_effort,
+        ReasoningEffort::Low
+    );
     assert_eq!(RecallModels::default().r1, DEEPSEEK_MODEL);
     assert_eq!(RecallModels::default().r4, DEEPSEEK_MODEL);
 }

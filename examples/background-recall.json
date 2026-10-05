@@ -12,11 +12,13 @@
   "recall_models": {
     "r1": "ep-20261003130756-trhj6",
     "r4": "ep-20261003130756-trhj6",
+    "r4_compute_reasoning_effort": "low",
     "reasoning_effort": { "r1": "minimal", "r4": "minimal" }
   },
   "model_budget": {
     "group_id": "replace-with-your-joint-authorized-budget",
     "max_calls": 5,
-    "max_operation_calls": 2
+    "max_operation_calls": 2,
+    "r4_compute_output_tokens": 16384
   }
 }

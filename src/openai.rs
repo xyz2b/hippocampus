@@ -585,6 +585,7 @@ impl OpenAiClient {
             schema,
             &budget.config,
         );
+        request["max_output_tokens"] = json!(budget.output_tokens(stage));
         request["model"] = json!(model);
         effort.apply(&mut request);
         self.send_response(stage, schema_name, request, true)
@@ -853,7 +854,7 @@ impl OpenAiClient {
         let body = serde_json::to_vec(&request)
             .map_err(|e| OpenAiAdapterError::InvalidContext(e.to_string()))?;
         // Build and validate the HTTP request before consuming authorization; never retry a send.
-        let request_timeout = stage.timeout(&budget.config);
+        let request_timeout = budget.timeout(stage);
         let http_request = self
             .http
             .post(&self.responses_url)

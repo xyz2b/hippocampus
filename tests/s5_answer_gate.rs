@@ -994,6 +994,7 @@ fn assisted_service(db: &Db, base_url: String) -> ChatMemoryService {
                 extraction_output_tokens: 1_024,
                 review_output_tokens: 1_024,
                 query_output_tokens: 1_024,
+                r4_compute_output_tokens: 1_024,
             }),
             model_base_url: Some(base_url),
             ..ChatConfig::default()

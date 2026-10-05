@@ -183,6 +183,7 @@ coverage/verdict justified. Return only the JSON object."#;
 pub struct RecallModels {
     pub r1: String,
     pub r4: String,
+    pub r4_compute_reasoning_effort: ReasoningEffort,
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub reasoning_effort: BTreeMap<String, ReasoningEffort>,
 }
@@ -191,6 +192,7 @@ impl Default for RecallModels {
         Self {
             r1: DEEPSEEK_MODEL.into(),
             r4: DEEPSEEK_MODEL.into(),
+            r4_compute_reasoning_effort: ReasoningEffort::Low,
             reasoning_effort: BTreeMap::new(),
         }
     }
@@ -213,6 +215,25 @@ impl RecallModels {
     }
     pub fn effort(&self, role: &str) -> ReasoningEffort {
         self.reasoning_effort.get(role).copied().unwrap_or_default()
+    }
+
+    /// 运行时只传已核验计划的 op；未理解的 R1 以 None 走常规强度。
+    pub fn r4_effort(&self, op: Option<R1Op>) -> ReasoningEffort {
+        if matches!(
+            op,
+            Some(R1Op::Count | R1Op::Sum | R1Op::Elapsed | R1Op::Compare)
+        ) {
+            self.r4_compute_reasoning_effort
+        } else {
+            self.effort("r4")
+        }
+    }
+
+    fn r4_compute_low(&self, op: Option<R1Op>) -> bool {
+        matches!(
+            op,
+            Some(R1Op::Count | R1Op::Sum | R1Op::Elapsed | R1Op::Compare)
+        ) && self.r4_effort(op) == ReasoningEffort::Low
     }
 }
 
@@ -512,12 +533,19 @@ fn request_binding(
         binding = fingerprint(&json!([binding, "global_bootstrap"]));
     }
     if let Some(p) = provider
-        && ["r1", "r4"]
+        && (["r1", "r4"]
             .iter()
             .any(|r| p.recall_models.effort(r) != ReasoningEffort::Medium)
+            || p.recall_models.r4_compute_reasoning_effort != ReasoningEffort::Low
+            || p.client
+                .budget
+                .as_ref()
+                .is_some_and(|b| b.config.r4_compute_output_tokens != 16384))
     {
         binding = fingerprint(&json!([binding, {"r1":p.recall_models.effort("r1"),
-            "r4":p.recall_models.effort("r4")} ]));
+            "r4":p.recall_models.effort("r4"),
+            "r4_compute":p.recall_models.r4_compute_reasoning_effort,
+            "r4_compute_output_tokens":p.client.budget.as_ref().map(|b| b.config.r4_compute_output_tokens)} ]));
     }
     binding
 }
@@ -954,9 +982,15 @@ impl RecallRuntime {
                 // 最后一次短快照检查，不在模型调用期间持有 SQLite 事务。
                 assembly.check_snapshot(store)?;
                 check_cancelled(cancelled)?;
+                let models = &provider.unwrap().recall_models;
+                let op = plan.output.as_ref().map(|o| o.plan.op);
+                let mut client = client.clone();
+                if let Some(budget) = &mut client.budget {
+                    budget.r4_compute = models.r4_compute_low(op);
+                }
                 let response = client.structured_output_for_model_with_effort(
-                    &provider.unwrap().recall_models.r4,
-                    provider.unwrap().recall_models.effort("r4"),
+                    &models.r4,
+                    models.r4_effort(op),
                     ModelStage::R4,
                     "r4_v3",
                     R4_PROMPT,

@@ -960,6 +960,7 @@ fn call(
             extraction_output_tokens,
             review_output_tokens,
             query_output_tokens: 8_192,
+            r4_compute_output_tokens: 16_384,
         }),
         model_base_url: Some(format!(
             "http://{}/v1/case/{case_id}",

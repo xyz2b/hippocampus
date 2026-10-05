@@ -32,9 +32,22 @@ fn jobs(value: Option<&str>) -> usize {
 fn estimated_seconds(case: &Value) -> f64 {
     let n = counts(case);
     (n[0] + n[2]) as f64 * (3782.19 / 82.0)
-        + n[1] as f64 * (2189.09 / 61.0)
+        + n[1] as f64 * (88.148 / 23.0)
         + n[3] as f64 * 2.5
-        + n[4] as f64 * 4.5
+        + r4_counts(case)[0] as f64 * 41.7705
+        + r4_counts(case)[1] as f64 * 4.5
+}
+
+fn r4_counts(case: &Value) -> [u64; 2] {
+    let models = config("plan", "offline.invalid", 2).recall_models.unwrap();
+    let mut counts = [0; 2];
+    for question in case["questions"].as_array().unwrap() {
+        let op = serde_json::from_value(question["query_meta"]["operation"].clone())
+            .expect("dry-run needs a valid annotated R1 op");
+        let compute = models.r4_effort(Some(op)) == hippocampus::ReasoningEffort::Low;
+        counts[if compute { 0 } else { 1 }] += 1;
+    }
+    counts
 }
 
 fn estimated_wall_seconds(cases: &[Value], jobs: usize) -> f64 {
@@ -53,7 +66,9 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
     println!(
         "配置 {LABEL}；write=w4_runtime_v1，recall=recall_v3；逐消息显式 enrich_source，无重试。"
     );
-    println!("模型均 Pro；推理强度 W1/W4=medium，W3/R1/R4=minimal；默认路径不变。");
+    println!(
+        "模型均 Pro；推理强度 W1/W4=medium，W3/R1=minimal，R4=计算类 low / 其余 minimal；默认路径不变。"
+    );
     println!(
         "预计列是容量规划情景：W1/W3 有效且后续写入/每题均需模型判定；不是模型质量预测。W4/R4 实际可为 0；W3 也可能跳过。"
     );
@@ -82,12 +97,27 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
         "合计 | {} | {} | {} | {} | {} | {} | {} | {ceiling}",
         total[0], total[1], total[2], total[2], total[3], total[4], total[4]
     );
+    let r4 = cases
+        .iter()
+        .map(r4_counts)
+        .fold([0; 2], |a, n| [a[0] + n[0], a[1] + n[1]]);
+    println!(
+        "R4 分流预计：计算类 {} 次 low，非计算类 {} 次 minimal；依据 query_meta.operation 标注。实际只由已核验 R1 plan.op 决定，R1 失败走 minimal，最多仍 {} 次 R4。",
+        r4[0], r4[1], total[4]
+    );
+    println!(
+        "R4 输出估算：low {:.0} + minimal {:.0} = {:.0} token；分别用 low 40次均值2895.5、首轮 minimal 均值278.10。不是 token 上界。",
+        r4[0] as f64 * 2895.5,
+        r4[1] as f64 * (16964.0 / 61.0),
+        r4[0] as f64 * 2895.5 + r4[1] as f64 * (16964.0 / 61.0)
+    );
+    println!("完整分阶段 token 估算：python3 tests/eval/fixed_inputs/prepare.py（零调用）。");
     // Historical recordings lack separate W1/W3/W4 elapsed times. These pooled averages
     // are explicitly proxies, not stage medians or a wall-clock upper bound.
     let seconds: f64 = cases.iter().map(estimated_seconds).sum();
     let wall = estimated_wall_seconds(cases, jobs);
     println!(
-        "旧参数耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈35.9s（Flash medium 混合61次/2189.09s）；R1≈2.5s、R4≈4.5s（minimal p50）。W3 已改 Pro minimal，以下不预测 AC2 时延。"
+        "耗时参考：W1/W4≈46.1s（Pro 混合82次/3782.19s），W3≈3.8s（AE9 Pro minimal 固定输入23次/88.148s）；R1≈2.5s，R4 low≈41.8s / minimal≈4.5s（实测 p50）。W1/W4混合均值与W3失败固定输入均为代理，以下仅是容量情景。"
     );
     println!(
         "上述情景串行约 {seconds:.0}s / {:.1}分钟 / {:.2}小时。",
@@ -95,7 +125,7 @@ fn plan(cases: &[Value], jobs: usize) -> u64 {
         seconds / 3600.0
     );
     println!(
-        "EVAL_JOBS={jobs}（有效 {}）：FIFO 用例队列预计墙钟 {wall:.0}s / {:.1}分钟 / {:.2}小时；用例内严格串行。无独立 W3 时延，未计并发限流与排队，非可靠上界。",
+        "EVAL_JOBS={jobs}（有效 {}）：FIFO 用例队列预计墙钟 {wall:.0}s / {:.1}分钟 / {:.2}小时；用例内严格串行。未计并发限流与排队、输入/输出差异，非可靠上界。",
         jobs.min(cases.len()),
         wall / 60.0,
         wall / 3600.0
@@ -646,7 +676,12 @@ fn v3_full_plan_and_preflight_are_offline() {
         assert!(preflight(None, 703).is_ok());
         let serial: f64 = cases.iter().map(estimated_seconds).sum();
         assert!((estimated_wall_seconds(&cases, 1) - serial).abs() < 0.001);
-        assert!((estimated_wall_seconds(&cases, 8) - 3264.0306217513).abs() < 0.001);
+        assert!((estimated_wall_seconds(&cases, 8) - 2435.8377332979853).abs() < 0.001);
+        let split = cases
+            .iter()
+            .map(r4_counts)
+            .fold([0; 2], |a, n| [a[0] + n[0], a[1] + n[1]]);
+        assert_eq!(split, [7, 56]);
     }
     let cfg = config("test", "local", 9);
     assert_eq!(cfg.write_models.as_ref().unwrap().w1, PRO);
@@ -656,6 +691,13 @@ fn v3_full_plan_and_preflight_are_offline() {
         hippocampus::ReasoningEffort::Minimal
     );
     assert_eq!(cfg.recall_models.as_ref().unwrap().r4, PRO);
+    assert_eq!(
+        cfg.recall_models
+            .as_ref()
+            .unwrap()
+            .r4_compute_reasoning_effort,
+        hippocampus::ReasoningEffort::Low
+    );
     assert_eq!(cfg.background_operation_limit, Some(3));
     assert_eq!(jobs(None), 8);
     assert_eq!(jobs(Some("1")), 1);

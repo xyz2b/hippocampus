@@ -1157,6 +1157,12 @@ fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String
     plan_once(selected, root, &EvalModel::default_model(), 1)
 }
 
+fn fixed_r4_op(sample: &Value) -> Result<R1Op, String> {
+    let output: R1Output = serde_json::from_value(sample["input"]["plan"].clone())
+        .map_err(|e| format!("fixed R1 plan: {e}"))?;
+    Ok(output.plan.op)
+}
+
 fn plan_repeated(
     selected: Vec<(String, Value)>,
     root: &Path,
@@ -1174,12 +1180,21 @@ fn plan_repeated(
     // Interleave repetitions by sample, retaining every attempt independently.
     let mut cases = Vec::new();
     for case in selected {
+        let mut selected_model = model.clone();
+        if case.0 == "r4" && case.1["fixed_input"] == true {
+            // 首轮冻结 payload 中的计划已过 R1 核验；不重新调用 R1，也不读取 R4 答案。
+            let models = hippocampus::recall_models::RecallModels {
+                reasoning_effort: [("r4".into(), model.effort)].into(),
+                ..Default::default()
+            };
+            selected_model.effort = models.r4_effort(Some(fixed_r4_op(&case.1)?));
+        }
         for repeat in 1..=repeats {
-            let mut dir = root.join(&model.label);
-            if model.effort != ReasoningEffort::Medium {
+            let mut dir = root.join(&selected_model.label);
+            if selected_model.effort != ReasoningEffort::Medium {
                 dir = dir.join(format!(
                     "reasoning-{}",
-                    serde_json::to_value(model.effort)
+                    serde_json::to_value(selected_model.effort)
                         .unwrap()
                         .as_str()
                         .unwrap()
@@ -1188,7 +1203,7 @@ fn plan_repeated(
             cases.extend(plan_once(
                 vec![case.clone()],
                 &dir.join(format!("repeat-{repeat}")),
-                model,
+                &selected_model,
                 repeat,
             )?);
         }
@@ -1448,7 +1463,9 @@ fn evaluate(
         .collect();
     Ok(
         json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
-            "reasoning_effort":cases.first().map(|c|c.model.effort),"metrics":stage_metrics(&results),
+            "reasoning_effort":cases.first().filter(|first|cases.iter().all(|c|c.model.effort==first.model.effort)).map(|c|c.model.effort),
+            "reasoning_efforts":cases.iter().map(|c|serde_json::to_value(c.model.effort).unwrap().as_str().unwrap().to_owned()).collect::<std::collections::BTreeSet<_>>(),
+            "metrics":stage_metrics(&results),
             "raw_summary":stage_summaries(&raw_results,cases),"raw_splits":split_reports(&raw_results),
             "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
     )
@@ -2166,7 +2183,7 @@ fn dry_run_plan() {
     let mut total = 0;
     println!("分阶段评测干跑计划（不发送请求）");
     println!(
-        "模型: {}，推理强度: {}",
+        "模型: {}，常规推理强度: {}",
         model.label,
         serde_json::to_value(model.effort)
             .unwrap()
@@ -2195,6 +2212,29 @@ fn dry_run_plan() {
         }
     }
     println!("合计: {total} 次潜在真实调用");
+    if fixed_inputs_enabled() {
+        let classifier = hippocampus::recall_models::RecallModels {
+            reasoning_effort: [("r4".into(), ReasoningEffort::Minimal)].into(),
+            ..Default::default()
+        };
+        let compute = cases
+            .iter()
+            .filter(|c| {
+                c.stage == "r4"
+                    && classifier.r4_effort(Some(fixed_r4_op(&c.sample).unwrap()))
+                        == ReasoningEffort::Low
+            })
+            .count();
+        let other = cases.iter().filter(|c| c.stage == "r4").count() - compute;
+        println!(
+            "R4 分流：计算类 {compute} 次 low，非计算类 {other} 次常规强度；依据冻结输入的已核验 R1 plan.op。"
+        );
+        println!(
+            "R4 输出估算：计算类 {:.0} token（low 40次均值2895.5），其余沿用同输入 minimal 实测；单次延迟参考 low p50≈41.8s、minimal≈4.5s。",
+            compute as f64 * 2895.5
+        );
+        println!("完整 token/延迟估算：python3 tests/eval/fixed_inputs/prepare.py（零调用）。");
+    }
     println!(
         "本次需录制: {}",
         cases

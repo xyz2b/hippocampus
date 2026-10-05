@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import statistics
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,6 +81,59 @@ def estimate(data):
         result["w3_pro_minimal_reference"] = {"samples": len(rows),
             "mean": {k: sum(u[k] for u in rows) / len(rows) for k in ["input_tokens", "output_tokens"]},
             "note": "单阶段标注样本，不同于失败固定输入；不能直接外推复杂长消息"}
+    # AE10：仅从已提交录制读取 usage/延迟，不请求模型或改写录制。
+    low = [json.loads(p.read_text())["recorded"][-1] for p in
+           (ROOT / "write_stage/recordings/DeepSeek-V4-Pro/reasoning-low").glob("repeat-*/r4_*.json")]
+    assert len(low) == 40
+    output_mean = statistics.mean(row["usage"]["output_tokens"] for row in low)
+    low_p50 = statistics.median(row["elapsed_ms"] for row in low) / 1000
+    compute_ops = {"count", "sum", "elapsed", "compare"}
+    questions = [q for p in (ROOT / "cases").glob("*.json")
+                 for q in json.loads(p.read_text())["questions"]]
+    assert all(q["query_meta"]["operation"] in compute_ops | {"lookup", "list"} for q in questions)
+    full_compute = sum(q["query_meta"]["operation"] in compute_ops for q in questions)
+    records = {s["id"]: json.loads((ROOT / "fixed_inputs/recordings/ac2-fixed-pro-minimal"
+               / "reasoning-minimal/repeat-1" / (s["id"] + ".json")).read_text())["recorded"][-1]
+               for s in data["samples"]}
+    fixed_compute = [s for s in data["samples"] if s["stage"] == "r4"
+                     and s["input"]["plan"]["plan"]["op"] in compute_ops]
+    fixed_other = [s for s in data["samples"] if s["stage"] == "r4" and s not in fixed_compute]
+    new_w3 = [records[s["id"]] for s in data["samples"] if s["stage"] == "w3"]
+    # 全量输入量沿用同链路首轮，W3 输出量改用 AE9 Pro minimal 失败固定输入的测量。
+    full = [dict(row, estimate=dict(row["estimate"]), mean=dict(row["mean"])) for row in result["full"]]
+    full[1]["mean"]["output_tokens"] = statistics.mean(r["usage"]["output_tokens"] for r in new_w3)
+    full[1]["output_observed_calls"] = len(new_w3)
+    full[1]["output_basis"] = "AE9固定输入Pro minimal；input/observed_calls仍为首轮代理"
+    full[1]["estimate"]["output_tokens"] = round(statistics.mean(r["usage"]["output_tokens"] for r in new_w3) * 204)
+    full[4]["estimate"]["output_tokens"] = round(output_mean * full_compute +
+        full[4]["mean"]["output_tokens"] * (len(questions) - full_compute))
+    fixed = []
+    for stage in ["w3", "r4"]:
+        samples = [s for s in data["samples"] if s["stage"] == stage]
+        fixed.append({"stage": stage.upper(), "calls": len(samples), "estimate": {
+            "input_tokens": sum(records[s["id"]]["usage"]["input_tokens"] for s in samples),
+            "output_tokens": round(sum(output_mean if s in fixed_compute else
+                records[s["id"]]["usage"]["output_tokens"] for s in samples))}})
+    result["ae10"] = {
+        "basis": "low: 首轮40次均值/p50；minimal: 首轮全量R4与AE9固定集；非费用/上界/质量预测",
+        "r4_low": {"observed_calls": len(low), "mean_input_tokens": statistics.mean(row["usage"]["input_tokens"] for row in low),
+            "mean_output_tokens": output_mean, "p50_seconds": low_p50},
+        "full": {"op_source": "query_meta.operation 标注；实际分支只取已核验R1计划，R1失败minimal",
+            "r4_compute_low": full_compute, "r4_other_minimal": len(questions) - full_compute,
+            "stages": full, "total_estimate": {k: sum(row["estimate"][k] for row in full)
+                for k in ["input_tokens", "output_tokens"]},
+            "r4_serial_seconds": round(full_compute * low_p50 + (len(questions) - full_compute) * 4.5)},
+        "fixed": {"op_source": "冻结生产输入中的已核验 input.plan.plan.op",
+            "r4_compute_low": len(fixed_compute), "r4_other_minimal": len(fixed_other),
+            "stages": fixed, "total_estimate": {k: sum(row["estimate"][k] for row in fixed)
+                for k in ["input_tokens", "output_tokens"]},
+            "new_low_calls": len(fixed_compute),
+            "new_low_estimate": {"input_tokens": sum(records[s["id"]]["usage"]["input_tokens"] for s in fixed_compute),
+                "output_tokens": round(len(fixed_compute) * output_mean)},
+            "serial_seconds": round(sum(r["elapsed_ms"] for r in new_w3) / 1000 +
+                len(fixed_compute) * low_p50 + sum(records[s["id"]]["elapsed_ms"] for s in fixed_other) / 1000),
+            "new_low_serial_seconds": round(len(fixed_compute) * low_p50)},
+        "limits": "全量输入量/W1/W4仍是首轮代理，W3换模型/提示词且固定集偏长；p50相加只是情景，未计限流/排队/冷启动。固定集input token用AE9同输入，low输出按不同样本均值估算，不是新测量。"}
     return result
 
 

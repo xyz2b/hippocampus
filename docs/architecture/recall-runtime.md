@@ -105,13 +105,13 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 `recall_models::RecallRuntime::run(store, request, evidence_budget, provider)` 串联 R1 → assemble → R4 → finish。provider=None、客户端网络关闭或 bootstrap 跳过两次调用；context_only 或 query_only 且无 records/raw 时只跳过 R4。R1 无效或失败按 judge/unknown 宽泛检索，保留 r1_not_understood 和具体失败原因；R4 超时/HTTP失败/无效输出按③的整份降级规则处理。预算不足标 semantic_judgment_skipped:budget 与 budget_exhausted，没有隐式重试。
 
-角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，角色缺省仍发送 medium。本段仅提供配置类型与 with_models，尚未接配置文件或 CLI/MCP。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；除下述已测配置外，端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload。全量验收 B 定向修正 R1/R4 提示词，分别明确数量读取与枚举、关系过滤，以及完整计算条目/操作数、来源限定语和事实依据；两阶段的旧录制均须按完整指纹过期，不借用旧输出评分。固定输入小集与 AC2 配置见 tests/eval/README-v3.md。
+角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，常规角色缺省仍发送 medium；`r4_compute_reasoning_effort` 缺省 low。R4 只按已核验 R1 的 plan.op 分流：count/sum/elapsed/compare 用计算强度，lookup/list 或 R1 未理解用常规 r4 强度。选择复用同一纯函数，实际强度进入阶段绑定与完整请求指纹，两种配置强度都进入请求/缓存绑定；更换强度不能复用旧请求结果。不增加调用或重试。配置由 with_models 与 ChatConfig/CLI/MCP 分发。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；除下述已测配置外，端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload。全量验收 B 定向修正 R1/R4 提示词，分别明确数量读取与枚举、关系过滤，以及完整计算条目/操作数、来源限定语和事实依据；两阶段的旧录制均须按完整指纹过期，不借用旧输出评分。固定输入小集与 AC2 配置见 tests/eval/README-v3.md。
 
-新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1/R4 输出上限分别沿用 ModelBudgetConfig.query_output_tokens/review_output_tokens（缺省4096），输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置；下述单阶段评测使用输出上限16384，不能代替生产预算下的整链路验收。
+新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1 输出上限沿用 ModelBudgetConfig.query_output_tokens（缺省4096）。新路径 R4 的已核验计算类且实际强度为 low 时，使用 ModelBudgetConfig.r4_compute_output_tokens（缺省16384，可配置为1–65536）；其他 R4 调用（含 minimal、非计算类 low 和 R1 未理解）沿用 ModelBudgetConfig.review_output_tokens（缺省4096）。只在本次 R4 客户端副本中选择计算类额度，持久授权配置不变；账本记录实际选用的上限，旧路径默认值不变。上限进入 API max_output_tokens 及完整请求指纹，专用上限也进入参数/缓存绑定。输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置；单阶段评测不能代替生产预算下的整链路验收。
 
 ### 推荐配置与实测边界
 
-用户已选 R1、R4 均使用 DeepSeek-V4-Pro（`ep-20261003130756-trhj6`）+ `reasoning_effort=minimal`。代码缺省值和新路径启用状态不变。[示例配置](../../examples/recall-models.json) 是可反序列化为 `RecallModels` 并传给 `with_models` 的库级配置，可作为完整 ChatConfig 的 `recall_models` 字段；⑤已接通配置分发，完整示例见下文。
+用户已选 R1 使用 DeepSeek-V4-Pro（`ep-20261003130756-trhj6`）+ minimal；R4 同模型，计算类 low，其余 minimal（AE10）。常规角色缺省值和新路径启用状态不变。[示例配置](../../examples/recall-models.json) 是可反序列化为 `RecallModels` 并传给 `with_models` 的库级配置，可作为完整 ChatConfig 的 `recall_models` 字段；⑤已接通配置分发，完整示例见下文。
 
 2026-10-04 三档结果，每阶段20个已复核样本、各重复2次；使用相同 R1/R4 第1版提示词及 Z8 评分规则：
 
@@ -123,11 +123,15 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单次物理调用实测。minimal 未产生推理 token，R1 质量接近 medium。R4 第2版已重测40次：18/40、核验失败13，p50 4.5s / p90 6.3s；收尾日期核验修复后离线评分不变，13次分别为缺同条旧方依据8次、缺操作数5次，详见[收尾分析](../../tests/eval/recall_stage/r4-closeout-review.md)。首次 minimal 冷启动为16.6s；两阶段常见耗时支持该推荐，但单阶段分位数不能相加证明全流程 P95≤15s，宿主接线后的生产预算、检索和冷启动仍需验证。
 
+AE10 的 low 参考来自已提交的首轮40次录制：平均输出2895.5 token，p50 41.8s（约40秒）；minimal 常见约4秒。计算题预期明显变慢，不能声称满足前台15秒目标；沿用 R1/R4 单阶段180秒时限及每请求最多两次调用，不扩大预算。固定输入集按冻结生产 payload 中已核验的 R1 计划分流；全量干跑按 query_meta.operation 标注估算，实际只取核验后的模型计划，R1 失败用常规 minimal。完整指纹过期的录制必须重录，不能靠更换标签复用。
+
+该40次 low 测量的输出上限为16384，最大输出7420 token，8次超过4096；平均值不能证明4096足够。按 AE11，新路径计算类 low 默认上限改为16384，与 AC2 和固定集一致；minimal 及旧路径沿用现有上限。可通过 model_budget.r4_compute_output_tokens 调整专用上限；自定义额度进入持久授权策略，复用已有授权组时不能改变额度。完成率仍待整链路验收。
+
 Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12），final 26/40（dev20/28、holdout6/12）。补入8条旧引用，原8次 record_basis 失败全部通过；5次 operands 核验失败与9次字段评分失败仍保留。请求指纹全部有效，详见[补入后报告](../../tests/eval/recall_stage/r4-old-basis-review.md)。这是同一批响应的机械组装收益，没有新模型测量，也不代替语义人工复核。
 
 回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v3", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、R3 快照版本及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
-同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算与角色推理强度须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省/显式 medium 使用既有参数摘要，非 medium 将规范化的两个角色强度加入摘要，不能复用不同强度的结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
+同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算、角色推理强度与 R4 计算类输出上限须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省常规 medium / 计算 low / 计算上限16384 沿用原参数摘要；任一配置非缺省时，将 R1/R4 常规、R4 计算强度与计算上限一同规范化加入摘要。缺省与显式相同值等效，不同值不能复用结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
 第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate 的新路径及其 v1 输出适配。legacy 召回与其他工具仍串行；新写入 inline 只保存 T1 并唤醒后台，legacy inline 仍同步。
 

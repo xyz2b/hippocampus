@@ -242,7 +242,15 @@ fn fixed_input_replay_binds_every_field_and_records_each_call() {
     let report = evaluate(&cases, Some(33), &mut |request| {
         sends += 1;
         assert_eq!(request["model"], model.model.as_ref().unwrap().as_str());
-        assert_eq!(request["reasoning"]["effort"], "minimal");
+        let input: Value = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        let effort = if input["plan"].is_object()
+            && !["lookup", "list"].contains(&input["plan"]["plan"]["op"].as_str().unwrap())
+        {
+            "low"
+        } else {
+            "minimal"
+        };
+        assert_eq!(request["reasoning"]["effort"], effort);
         Ok(
             json!({"status":"incomplete","incomplete_details":{"reason":"length"},
             "usage":{"input_tokens":12,"output_tokens":16384}}),
@@ -251,6 +259,15 @@ fn fixed_input_replay_binds_every_field_and_records_each_call() {
     .unwrap();
     assert_eq!(sends, 33);
     assert_eq!(report["sent_calls"], 33);
+    assert!(report["reasoning_effort"].is_null());
+    assert_eq!(report["reasoning_efforts"], json!(["low", "minimal"]));
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|c| c.model.effort == ReasoningEffort::Low)
+            .count(),
+        8
+    );
     assert!(
         report["results"]
             .as_array()
@@ -281,6 +298,48 @@ fn fixed_input_replay_binds_every_field_and_records_each_call() {
         changed[key] = value;
         assert_ne!(recording_fingerprint(&case.sample, &changed), original);
     }
+}
+
+#[test]
+fn fixed_input_r4_low_preserves_25_strict_recordings_without_sending() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/fixed_inputs/recordings");
+    let model = EvalModel {
+        label: "ac2-fixed-pro-minimal".into(),
+        model: Some("ep-20261003130756-trhj6".into()),
+        base: Some("https://ark.cn-beijing.volces.com/api/v3".into()),
+        effort: ReasoningEffort::Minimal,
+    };
+    let cases = plan_repeated(selected("w3,r4", "").unwrap(), &root, &model, 1).unwrap();
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+            .count(),
+        25
+    );
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Missing))
+            .count(),
+        8
+    );
+    for case in &cases {
+        if case.model.effort == ReasoningEffort::Low {
+            assert_eq!(case.stage, "r4");
+            assert!(case.path.to_string_lossy().contains("reasoning-low"));
+            let mut old = case.request.clone();
+            ReasoningEffort::Minimal.apply(&mut old);
+            assert_ne!(
+                recording_fingerprint(&case.sample, &case.request),
+                recording_fingerprint(&case.sample, &old)
+            );
+        }
+    }
+    assert!(preflight(&cases, Some(7)).is_err());
+    assert_eq!(preflight(&cases, Some(8)).unwrap(), 8);
+    let report = evaluate(&cases, None, &mut |_| panic!("offline sender invoked")).unwrap();
+    assert_eq!(report["sent_calls"], 0);
 }
 
 #[test]
