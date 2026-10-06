@@ -10,6 +10,10 @@ const RELATIVE: &str = "我昨天搬到南京。";
 fn service(db: &Db) -> ChatMemoryService {
     let config: ChatConfig = serde_json::from_value(json!({
         "write_pipeline":"w4_runtime_v1","recall_pipeline":"recall_v3",
+        "write_models":{"w1":DEEPSEEK_MODEL,"w3":DEEPSEEK_MODEL,"w4":DEEPSEEK_MODEL,
+            "reasoning_effort":{"w1":"medium","w3":"medium","w4":"medium"}},
+        "recall_models":{"r1":DEEPSEEK_MODEL,"r4":DEEPSEEK_MODEL,
+            "reasoning_effort":{"r1":"medium","r4":"medium"}},
         "enrichment_mode":"inline","background_operation_limit":3,
         "model_budget":{"group_id":"joint-fixture","max_calls":500,"max_operation_calls":2}
     }))

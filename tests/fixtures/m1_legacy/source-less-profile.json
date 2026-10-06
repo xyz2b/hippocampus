@@ -1,0 +1,209 @@
+{
+  "repository": {
+    "next_id": 4,
+    "memories": {
+      "1": {
+        "id": 1,
+        "owner_id": "alice",
+        "evidence": [
+          {
+            "id": "ev-legacy-95",
+            "session_id": "legacy-session-7",
+            "turn_id": "legacy-turn-3",
+            "quote": "广州"
+          }
+        ],
+        "subject_id": "self",
+        "memory_type": "Fact",
+        "predicate": "lives_in",
+        "value": {
+          "Text": "广州"
+        },
+        "polarity": null,
+        "strength": null,
+        "scope": {
+          "domain": null,
+          "conditions": []
+        },
+        "retention_tier": "LongTerm",
+        "status": "Active",
+        "temporal": {
+          "observed_at": 1762099200,
+          "valid_from": null,
+          "valid_to": null,
+          "expires_at": null,
+          "reference": null
+        },
+        "extraction_confidence": "High",
+        "certainty": "High",
+        "supersedes": null,
+        "superseded_by": null,
+        "supersede_reason": null,
+        "explicit_memory_request": false,
+        "reinforcement_count": 2,
+        "retrieval_count": 7,
+        "last_reinforced_at": null,
+        "last_retrieved_at": null,
+        "tags": []
+      },
+      "2": {
+        "id": 2,
+        "owner_id": "alice",
+        "evidence": [
+          {
+            "id": "ev-legacy-2",
+            "session_id": "legacy-session-7",
+            "turn_id": "legacy-turn-2",
+            "quote": "中文"
+          }
+        ],
+        "subject_id": "self",
+        "memory_type": "Constraint",
+        "predicate": "response_language",
+        "value": {
+          "Text": "中文"
+        },
+        "polarity": null,
+        "strength": null,
+        "scope": {
+          "domain": null,
+          "conditions": []
+        },
+        "retention_tier": "Durable",
+        "status": "Active",
+        "temporal": {
+          "observed_at": 1762099200,
+          "valid_from": null,
+          "valid_to": null,
+          "expires_at": null,
+          "reference": null
+        },
+        "extraction_confidence": "High",
+        "certainty": "High",
+        "supersedes": null,
+        "superseded_by": null,
+        "supersede_reason": null,
+        "explicit_memory_request": false,
+        "reinforcement_count": 2,
+        "retrieval_count": 7,
+        "last_reinforced_at": null,
+        "last_retrieved_at": null,
+        "tags": []
+      },
+      "3": {
+        "id": 3,
+        "owner_id": "alice",
+        "evidence": [
+          {
+            "id": "ev-legacy-3",
+            "session_id": "legacy-session-7",
+            "turn_id": "legacy-turn-3",
+            "quote": "简洁"
+          }
+        ],
+        "subject_id": "self",
+        "memory_type": "Constraint",
+        "predicate": "response_style",
+        "value": {
+          "Text": "简洁"
+        },
+        "polarity": null,
+        "strength": null,
+        "scope": {
+          "domain": null,
+          "conditions": [
+            {
+              "Activity": "限定场景"
+            }
+          ]
+        },
+        "retention_tier": "Durable",
+        "status": "Active",
+        "temporal": {
+          "observed_at": 1762099200,
+          "valid_from": null,
+          "valid_to": null,
+          "expires_at": null,
+          "reference": null
+        },
+        "extraction_confidence": "High",
+        "certainty": "High",
+        "supersedes": null,
+        "superseded_by": null,
+        "supersede_reason": null,
+        "explicit_memory_request": false,
+        "reinforcement_count": 2,
+        "retrieval_count": 7,
+        "last_reinforced_at": null,
+        "last_retrieved_at": null,
+        "tags": []
+      },
+      "4": {
+        "id": 4,
+        "owner_id": "alice",
+        "evidence": [
+          {
+            "id": "ev-legacy-4",
+            "session_id": "legacy-session-7",
+            "turn_id": "legacy-turn-4",
+            "quote": "旧限定物品"
+          }
+        ],
+        "subject_id": "self",
+        "memory_type": "Constraint",
+        "predicate": "uses",
+        "value": {
+          "Text": "旧限定物品"
+        },
+        "polarity": null,
+        "strength": null,
+        "scope": {
+          "domain": null,
+          "conditions": []
+        },
+        "retention_tier": "ShortTerm",
+        "status": "Active",
+        "temporal": {
+          "observed_at": 1762099200,
+          "valid_from": null,
+          "valid_to": null,
+          "expires_at": 1762099201,
+          "reference": null
+        },
+        "extraction_confidence": "High",
+        "certainty": "High",
+        "supersedes": null,
+        "superseded_by": null,
+        "supersede_reason": null,
+        "explicit_memory_request": false,
+        "reinforcement_count": 2,
+        "retrieval_count": 7,
+        "last_reinforced_at": null,
+        "last_retrieved_at": null,
+        "tags": []
+      }
+    }
+  },
+  "entities": {
+    "entities": {}
+  },
+  "staging": {
+    "next_id": 0,
+    "pending": {}
+  },
+  "receipts": {
+    "historical-turn": {
+      "request": {
+        "session_id": "old-session",
+        "turn_id": "old-turn",
+        "capture_source": false
+      },
+      "result": {
+        "outcomes": [],
+        "source": {
+          "status": "not_requested"
+        }
+      }
+    }
+  }
+}

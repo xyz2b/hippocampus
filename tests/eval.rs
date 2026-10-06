@@ -947,6 +947,8 @@ fn call(
         ),
     };
     let config = ChatConfig {
+        write_pipeline: hippocampus::chat::WritePipeline::Legacy,
+        recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
         retrieval_mode: Some(retrieval),
         enrichment_mode: enrichment,
         fact_index_enabled: true,

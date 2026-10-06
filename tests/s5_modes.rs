@@ -2,7 +2,9 @@
 fn explicit_modes_off_capture_and_bounded_inline_through_mcp() {
     let output = std::process::Command::new("python3")
         .args([
-            "tests/s5_process.py",
+            "tests/m1_host.py",
+            "--check",
+            "modes",
             "--binary",
             env!("CARGO_BIN_EXE_pmr-mcp"),
         ])

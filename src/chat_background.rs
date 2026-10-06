@@ -41,7 +41,7 @@ impl Drop for BackgroundWorker {
 }
 
 impl ChatMemoryService {
-    /// Start once, before wrapping the service in its mutex. Off/default legacy modes stay inert.
+    /// Start once before the service mutex. Off or missing budget keeps the worker inert.
     pub fn start_background(&mut self) -> PersistenceResult<Option<BackgroundWorker>> {
         if !(self.config.enrichment_mode == EnrichmentMode::Deferred
             || (self.config.enrichment_mode == EnrichmentMode::Inline
@@ -77,6 +77,9 @@ impl ChatMemoryService {
                     match service.run_background_once() {
                         Ok(true) => continue,
                         Ok(false) => (),
+                        Err(error) if error.to_string().starts_with("default Pro model is unavailable:") => {
+                            eprintln!("background worker: default Pro model is unavailable; set DEEPSEEK_PRO_MODEL or configure write_models explicitly; no model request was sent");
+                        }
                         Err(_) => eprintln!("background worker: task scan/execution failed"),
                     }
                     #[cfg(test)]

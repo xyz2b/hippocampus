@@ -120,7 +120,7 @@ def run(case, binary):
         stack.callback(server.shutdown)
         stack.callback(lambda: [g[3].set() for g in VisibilityFixture.gates])
         env = {k: v for k, v in os.environ.items() if not k.startswith(("PMR_", "OPENAI_", "DEEPSEEK_"))}
-        env.update(PMR_MODEL_NETWORK="offline", DEEPSEEK_API_KEY="local-fixture-key",
+        env.update(PMR_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
                    DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1")
         config = root / "inline.json"
         config.write_text(json.dumps({"write_pipeline": "w4_runtime_v1", "recall_pipeline": "recall_v3",

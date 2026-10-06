@@ -272,7 +272,7 @@ coverage 不完整时区分两类结论：
 
 ### 2.6 现有记忆的迁移
 
-现有记忆的条件主要是结构化字段，未必保留本契约要求的完整原句、TextQualifier 和 TimeInterp，不能无损适配为本版完整记录。现有 capture_source=false 路径也可提交事实（src/chat.rs），不能假定每条旧记忆都有独立 SourceRecord。第一阶段先盘点完整原文、旧回执、片段及原始保存授权，再决定哪些来源可重建；不把片段拼成整条原文，不因迁移扩大保存授权。
+现有记忆的条件主要是结构化字段，未必保留本契约要求的完整原句、TextQualifier 和 TimeInterp，不能无损适配为本版完整记录。历史 capture_source=false 路径曾可提交事实，不能假定每条旧记忆都有独立 SourceRecord。默认路径切换不以全部旧数据重建为前提；旧数据持续通过 LegacyRecordView 读取。语义重建另行授权、有预算和替代映射，不自动转换旧任务。重建前先盘点完整原文、旧回执、片段及原始保存授权，再决定哪些来源可重建；不把片段拼成整条原文，不因迁移扩大保存授权。
 
 - 对具备可核对完整原文、原始接收时间/顺序及保存授权的部分，按 target-design 1.4 用 w1.v1、w3.v1、w4.v3 重新整理，作为显式、有预算的重建任务；先产生并核验新结果，再切换对应的有效整理版本，不先清空可用记忆。
 - 用户确认、实体登记和删除墓碑等控制记录保留并约束重建；已删除的原文不参与重建。
@@ -430,7 +430,7 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 - history 区分曾经成立与被纠正/撤回的记录；纠错旧值仅作为审计记录保留，不作为历史事实输出。until 可空，日期未知不回填接收日；clarification 可空，非空为 `{ "question": string, "evidence": [EvidenceRef] }`。
 - op 为 elapsed 时，computed 另带代码按 3.3 计算的 `rounding`、`exact_days`（整数天数 d）与 `approximate`；其他 op 这三个字段为 null。模型输出不含这些字段，也不能覆盖它们。
 - computed 的任一操作数为 `@request.at` 时，computed 另带代码生成的 `request_time = { "at": Timestamp, "local_date": LocalDate, "tz_offset_seconds": integer, "precision": "day" }`：at 等于 request.at，local_date 为按 tz_offset_seconds 换算的本地日期；否则 request_time 为 null。它不属于 items，也没有 evidence。
-- 旧 `answer_contract`（其版本字段为 1，与 recall.v3 无关）仅在明确迁移窗口兼容，详见第 7 节；客户端指定契约版本，一次请求只有一个权威输出。附带的兼容输出不能覆盖所选版本的判断。
+- 当前默认且唯一受支持的召回输出为 recall.v3。旧路径未完整投入生产，不设置 answer_contract 兼容窗口；旧版本请求返回 contract_version_unsupported，不静默升级。旧数据读取仍遵循 2.6/3.2，详见第 7 节。
 
 ### 3.5 `memory_prepare` 返回结构
 
@@ -520,17 +520,18 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 | `strength`（偏好强弱） | 第一阶段保留偏好强度及原句 | 当前 same_assertion 依赖此字段；旧记录原样迁移。以后取消枚举须先调整比较/强化规则、保留原话并单独验收 |
 | 未解决关系的存储 | 沿用 owner 快照，新增 RelationLink 集合 | 保存成员、范围、依据和解决状态；与 Memory 生命周期分开，按 2.4 迁移旧快照及处理删除 |
 | `memory_type` | 由 W1 给出，W3 核验，代码检查目录 | 保留排序与准入；Episode 的跨轮价值按 2.3 判断，不盲目设置旧字段默认值 |
-| 现有记忆迁移 | 可重建部分从授权原文重新整理，其余保留 legacy | 按 2.6 盘点、核验和映射后切换；缺字段走兼容分支，不无损适配或丢弃无来源记录 |
-| 旧 `answer_contract` | 仅在一次明确的客户端迁移窗口提供兼容输出 | 客户端选择旧 answer_contract 或 recall.v3，默认值随发布配置明确，不静默改变；单次请求只有一个权威版本 |
+| 现有记忆迁移 | 默认切换与语义重建分开；旧数据持续经 LegacyRecordView 读取 | 重建另行按 2.6 授权、盘点、核验和映射；不自动转换旧任务，不无损适配或丢弃无来源记录 |
+| 旧 `answer_contract` | 不设置兼容窗口；仅支持 recall.v3 | 客户端、宿主说明和 Validate 一并切换；旧版本请求返回 contract_version_unsupported，不静默升级 |
 
-旧 answer_contract 适配从同一次召回及同一快照机械产生，不重跑 legacy/assisted 模型链路，不新增调用。无法安全表达为旧 safe_answer/safe_source_ids 的复杂、未知或未提交结果，旧版保守返回不足；新版保留事实及证据，附带旧版不能否决新版。memory_validate_answer 同样按所选契约版本核对完整原问题、上下文、任务与来源。
+旧路径未完整投入生产，不再维护旧写入、召回行为及输出。默认使用 write_pipeline=w4_runtime_v1、recall_pipeline=recall_v3；memory_validate_answer 只核对同进程保留的 recall.v3 请求及有效证据快照，不新增模型调用。旧数据、控制记录、删除墓碑和记账仍保留。
 
-迁移开始前登记当前受支持客户端及迁移发布里程碑。退出条件为：这些客户端和宿主说明已切换、评测按共同事实/来源口径切换、memory_validate_answer 完成迁移，并在同批契约用例及零模型/降级路径验收通过；满足后在登记的里程碑移除旧 answer_contract 适配及旧配置。若仍有受支持客户端未迁移，先明确更新里程碑，不无限期默认双返回；退出后旧版本请求返回 contract_version_unsupported，不静默升级。
+退出条件为：当前受支持客户端与宿主说明、共同事实/来源评分和 memory_validate_answer 已切换，同批契约用例、零模型/降级、旧库读取、删除及并发检查通过。满足后移除旧 answer_contract 适配及被替代执行路径；不以全部旧数据语义重建为前提。旧版本请求明确返回 contract_version_unsupported，不静默升级。M1 以用户确认的 common.v1 绝对结果为主，0517000 基线仅作参考；已知质量局限留账，不放宽安全阻断项。
 
 ## 8. 版本变更记录
 
 | 日期 | 契约 | 变更 | 原因 |
 | --- | --- | --- | --- |
+| 2026-10-06 | 默认路径与迁移退出条件 | 默认切换为 w4_runtime_v1 / recall_v3；旧 answer_contract 请求不支持；旧数据读取与显式预算重建分开，不设置旧输出兼容窗口 | AD1–AD3、AF21 用户批准；DB v9、现行模型契约与 recall.v3 字段结构不变 |
 | 2026-09-30 | `r4.v1` → `r4.v2` | elapsed 的结束端点可用保留操作数 `@request.at`，由代码按可信 request.at 与用户时区提供；不再接受以 `current` 来源加“相对 0 天”伪装提问时刻 | 共同判分视图四题试跑发现 v1 无法合规表达“距今”端点（common-scoring-view.md 第 8 节） |
 | 2026-09-30 | `recall.v1` → `recall.v2` | computed 增加 `request_time`；version 字段为 `recall.v2` | 随 r4.v2 同步 |
 | 2026-09-30 | `r4.v2` → `r4.v3` | elapsed 的取整口径固定并由代码执行：天为自然日差，周为最近整数周（与旧实现一致），月、年为完整日历月、年；两端点须有日精度，不把月份补成日期 | 取整规则影响计算语义；此前契约未规定，评分器不能自行决定（四题试跑复核） |

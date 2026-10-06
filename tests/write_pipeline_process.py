@@ -15,7 +15,7 @@ from mcp_smoke import Client, Responses
 
 OWNER = "write-pipeline-fixture"
 TEXT = "我正在研究数据库索引。"
-LEGACY_TEXT = "以后所有回答都必须使用中文。"
+SECOND_TEXT = "以后所有回答都必须使用中文。"
 
 
 class Fixture(Responses):
@@ -143,59 +143,53 @@ def main():
         stack.callback(server.server_close)
         stack.callback(server.shutdown)
         env = {k: v for k, v in os.environ.items() if not k.startswith(("PMR_", "OPENAI_", "DEEPSEEK_"))}
-        env.update(PMR_MODEL_NETWORK="offline", DEEPSEEK_API_KEY="local-fixture-key",
+        env.update(PMR_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
                    DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1")
         db = root / "memory.sqlite3"
-        legacy = settings(root, "legacy", "deferred")
+        deferred = settings(root, "w4_runtime_v1", "deferred")
         new = settings(root, "w4_runtime_v1", "off" if args.mode == "explicit" else "deferred")
         if args.mode == "explicit":
             first = save(args.binary, db, env, new, turn("first"))
             frozen(first, "not_requested", mcp=True)
             assert Fixture.requests == []
             first_id = first["source"]["source_id"]
-            processed = batch(args.binary, db, env, legacy, "--enrich-source", first_id)
+            processed = batch(args.binary, db, env, deferred, "--enrich-source", first_id)
             frozen(processed, "committed")
             assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["w1_v1", "w3_v1"]
             second = save(args.binary, db, env, new, turn("second"))
-            processed = batch(args.binary, db, env, legacy, "--enrich-source", second["source"]["source_id"])
+            processed = batch(args.binary, db, env, deferred, "--enrich-source", second["source"]["source_id"])
             frozen(processed, "committed")
             assert [r["text"]["format"]["name"] for r in Fixture.requests][-3:] == ["w1_v1", "w3_v1", "w4_v3"]
             assert processed["enrichment"]["candidates"][0]["memory_id"] is not None
             assert len(state(db)["repository"]["memories"]) == 1
             before, sends, paid = state(db), len(Fixture.requests), calls(db)
-            replay = save(args.binary, db, env, legacy, turn("second"))
+            replay = save(args.binary, db, env, deferred, turn("second"))
             frozen(replay, "committed", mcp=True)
             assert {k: replay[k] for k in ["source", "enrichment"]} == processed
-            assert batch(args.binary, db, env, legacy, "--enrich-source", second["source"]["source_id"]) == processed
+            assert batch(args.binary, db, env, deferred, "--enrich-source", second["source"]["source_id"]) == processed
             assert state(db) == before and len(Fixture.requests) == sends and calls(db) == paid == 5
             assert source(db, "second")["task"]["round"] == 0
         else:
             expected = []
-            for name, config, text in [("old1", legacy, LEGACY_TEXT), ("new1", new, TEXT),
-                                       ("old2", legacy, LEGACY_TEXT), ("new2", new, TEXT)]:
+            for name, config, text in [("old1", deferred, SECOND_TEXT), ("new1", new, TEXT),
+                                       ("old2", deferred, SECOND_TEXT), ("new2", new, TEXT)]:
                 result = save_cli(args.binary, db, env, config, turn(name, text))
                 expected.append(result["source"]["source_id"])
             assert Fixture.requests == [] and calls(db) == 0
             before = state(db)
-            assert save_cli(args.binary, db, env, new, turn("old1", LEGACY_TEXT))["replayed"] is True
-            frozen(save_cli(args.binary, db, env, legacy, turn("new1")), "queued")
+            frozen(save_cli(args.binary, db, env, new, turn("old1", SECOND_TEXT)), "queued")
+            frozen(save_cli(args.binary, db, env, deferred, turn("new1")), "queued")
             assert state(db) == before and Fixture.requests == []
-            drained = batch(args.binary, db, env, legacy, "--drain-enrichment", "--max-jobs", "4")
+            drained = batch(args.binary, db, env, deferred, "--drain-enrichment", "--max-jobs", "4")
             assert set(drained) == {"max_jobs", "attempted", "results"}, drained
             assert drained["attempted"] == 4 and drained["max_jobs"] == 4, drained
             assert [r["source_id"] for r in drained["results"]] == expected, drained
-            for index, result in enumerate(drained["results"]):
+            for result in drained["results"]:
                 assert set(result) == {"source_id", "status", "result"} and result["status"] == "completed", result
-                if index % 2:
-                    frozen(result["result"], "committed")
-                else:
-                    old = result["result"]
-                    assert old["status"] == "completed" and old["enrichment_mode"] == "deferred", old
-                    assert old["index"]["status"] == "ready" and "outcomes" in old, old
-                    assert old["model_calls"] and "w4_checkpoint" not in json.dumps(old), old
+                frozen(result["result"], "committed")
             names = [r["text"]["format"]["name"] for r in Fixture.requests]
-            assert len(names) == calls(db) == 9, names
-            assert names[2:4] == ["w1_v1", "w3_v1"] and names[-3:] == ["w1_v1", "w3_v1", "w4_v3"], names
+            assert len(names) == calls(db) == 11, names
+            assert names == ["w1_v1", "w3_v1"] + ["w1_v1", "w3_v1", "w4_v3"] * 3, names
             before, sends = state(db), len(Fixture.requests)
             assert batch(args.binary, db, env, new, "--drain-enrichment", "--max-jobs", "4")["attempted"] == 0
             assert state(db) == before and len(Fixture.requests) == sends
@@ -203,7 +197,7 @@ def main():
                 assert source(db, name)["task"]["processing_version"] == "w4_runtime_v1"
                 assert source(db, name)["task"]["round"] == 0
             for name in ["old1", "old2"]:
-                assert source(db, name)["task"]["processing_version"] == "s5_enrichment_v1"
+                assert source(db, name)["task"]["processing_version"] == "w4_runtime_v1"
         print(f"write_pipeline {args.mode}: HTTP dispatch, SQLite reopen, frozen receipts and zero-send replay passed")
 
 

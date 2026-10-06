@@ -144,6 +144,8 @@ impl Fixture {
         let service = ChatMemoryService::new(
             store,
             ChatConfig {
+                write_pipeline: hippocampus::chat::WritePipeline::Legacy,
+                recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
                 retrieval_mode: Some(RetrievalMode::Local),
                 ..ChatConfig::default()
             },

@@ -35,10 +35,16 @@ impl Drop for Db {
     }
 }
 fn config(pipeline: &str, mode: &str) -> ChatConfig {
-    serde_json::from_value(json!({"write_pipeline":pipeline,"enrichment_mode":mode,
+    // Only historical-data fixtures construct an old internal executor. File configs reject legacy.
+    let mut config: ChatConfig = serde_json::from_value(json!({"enrichment_mode":mode,
         "model_budget":{"group_id":"write-pipeline-fixture","max_calls":20}}))
-    .unwrap()
+    .unwrap();
+    if pipeline == "legacy" {
+        config.write_pipeline = WritePipeline::Legacy;
+    }
+    config
 }
+
 fn turn(id: &str) -> Value {
     json!({"session_id":"pipeline","turn_id":id,"text":"我正在研究数据库索引。","capture_source":true,"observed_at":1790899200})
 }
@@ -58,13 +64,13 @@ fn frozen(result: &Value, status: &str) {
 #[test]
 fn write_pipeline_defaults_and_strict_configuration() {
     let defaults: ChatConfig = serde_json::from_str("{}").unwrap();
-    assert_eq!(defaults.write_pipeline, WritePipeline::Legacy);
+    assert_eq!(defaults.write_pipeline, WritePipeline::W4RuntimeV1);
     defaults.validate().unwrap();
     assert_eq!(
         serde_json::to_value(defaults).unwrap()["write_pipeline"],
-        "legacy"
+        "w4_runtime_v1"
     );
-    for value in [json!("unknown"), json!(null), json!(true)] {
+    for value in [json!("legacy"), json!("unknown"), json!(null), json!(true)] {
         assert!(serde_json::from_value::<ChatConfig>(json!({"write_pipeline":value})).is_err());
     }
     assert!(
@@ -306,7 +312,7 @@ fn write_pipeline_cli_preserves_the_source_less_order_barrier() {
     let settings = db.0.with_extension("json");
     std::fs::write(
         &settings,
-        serde_json::to_vec(&config("legacy", "deferred")).unwrap(),
+        serde_json::to_vec(&config("w4_runtime_v1", "deferred")).unwrap(),
     )
     .unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
@@ -366,6 +372,86 @@ fn write_pipeline_cli_preserves_the_source_less_order_barrier() {
 }
 
 #[test]
+fn write_pipeline_order_barrier_precedes_unavailable_provider_setup() {
+    for missing in ["credentials", "pro_model"] {
+        let db = Db::new();
+        save(&mut db.service("w4_runtime_v1", "deferred"), "older");
+        db.open()
+            .transaction(|state| {
+                state.entities.upsert(Entity {
+                    id: EntityId::from("later"),
+                    owner_id: UserId::from("alice"),
+                    entity_type: EntityType::Person,
+                    canonical_name: "后续实体".into(),
+                    aliases: vec![],
+                });
+                Ok(())
+            })
+            .unwrap();
+        let settings = db.0.with_extension("json");
+        std::fs::write(
+            &settings,
+            serde_json::to_vec(&config("w4_runtime_v1", "deferred")).unwrap(),
+        )
+        .unwrap();
+        let (_, source) = db.source("older");
+        let mut command = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"));
+        command
+            .args([
+                "--db",
+                db.0.to_str().unwrap(),
+                "--owner",
+                "alice",
+                "--config",
+                settings.to_str().unwrap(),
+                "--enrich-source",
+                &source.id,
+            ])
+            .env("PMR_MODEL_NETWORK", "offline")
+            .env_remove("DEEPSEEK_PRO_MODEL");
+        if missing == "credentials" {
+            command
+                .env_remove("DEEPSEEK_BASE_URL")
+                .env_remove("DEEPSEEK_API_KEY");
+        } else {
+            command
+                .env("DEEPSEEK_BASE_URL", "http://127.0.0.1:1/v1")
+                .env("DEEPSEEK_API_KEY", "synthetic-unused");
+        }
+        let output = command.output().unwrap();
+        assert!(
+            output.status.success(),
+            "{missing}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        frozen(
+            &serde_json::from_slice(&output.stdout).unwrap(),
+            "needs_rejudge",
+        );
+        let state = db.open().read().unwrap();
+        assert!(
+            state
+                .repository
+                .list_by_owner(&UserId::from("alice"))
+                .unwrap()
+                .is_empty()
+        );
+        let (_, source) = db.source("older");
+        assert_eq!(source.task.round, Some(0));
+        assert_eq!(source.error.as_deref(), Some("needs_rejudge"));
+        assert!(source.task.attempt_id.is_none() && source.task.lease_until.is_none());
+        assert_eq!(
+            rusqlite::Connection::open(&db.0)
+                .unwrap()
+                .query_row("SELECT count(*) FROM model_calls", [], |row| row
+                    .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+    }
+}
+
+#[test]
 fn write_pipeline_missing_credentials_do_not_repeat_the_first_job() {
     let db = Db::new();
     save(&mut db.service("w4_runtime_v1", "deferred"), "first");
@@ -373,7 +459,7 @@ fn write_pipeline_missing_credentials_do_not_repeat_the_first_job() {
     let settings = db.0.with_extension("json");
     std::fs::write(
         &settings,
-        serde_json::to_vec(&config("legacy", "deferred")).unwrap(),
+        serde_json::to_vec(&config("w4_runtime_v1", "deferred")).unwrap(),
     )
     .unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
@@ -436,6 +522,47 @@ fn write_pipeline_http_enrich_source_roundtrip() {
     http_cli("explicit");
 }
 #[test]
-fn write_pipeline_http_mixed_drain_roundtrip() {
+fn write_pipeline_http_new_drain_roundtrip() {
     http_cli("drain");
+}
+
+#[test]
+fn write_pipeline_default_preserves_old_queued_sources_without_automatic_conversion() {
+    let db = Db::new();
+    let saved = save(&mut db.service("legacy", "deferred"), "legacy-queued");
+    let before = serde_json::to_value(db.open().read().unwrap()).unwrap();
+    let mut service = db.service("w4_runtime_v1", "deferred");
+    assert_eq!(service.drain_enrichment(2).unwrap()["attempted"], 0);
+    assert!(
+        service
+            .enrich_source(saved["source"]["source_id"].as_str().unwrap())
+            .unwrap_err()
+            .to_string()
+            .contains("unsupported_processing_version")
+    );
+    assert_eq!(
+        serde_json::to_value(db.open().read().unwrap()).unwrap(),
+        before
+    );
+    let out = service
+        .call(
+            "memory_recall",
+            json!({"query":"旧排队原文","request_id":"read-old-queue","offline":true}),
+            || false,
+        )
+        .unwrap();
+    assert!(
+        out["raw"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|s| s["source_id"] == saved["source"]["source_id"])
+    );
+    assert_eq!(
+        rusqlite::Connection::open(&db.0)
+            .unwrap()
+            .query_row::<i64, _, _>("SELECT count(*) FROM model_calls", [], |r| r.get(0))
+            .unwrap(),
+        0
+    );
 }

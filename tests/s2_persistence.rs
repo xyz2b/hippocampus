@@ -542,6 +542,8 @@ fn disabled_capture_and_cancellation_do_not_store_or_start_model_processing() {
 
     let db = TestDb::new();
     let config = ChatConfig {
+        write_pipeline: hippocampus::chat::WritePipeline::Legacy,
+        recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
         source_capture_enabled: false,
         ..ChatConfig::default()
     };
@@ -586,7 +588,15 @@ fn capture_storage_read_failure_stops_prepare_before_models() {
     use hippocampus::chat::{ChatConfig, ChatMemoryService};
 
     let db = TestDb::new();
-    let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
+    let mut service = ChatMemoryService::new(
+        db.open("alice"),
+        ChatConfig {
+            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
+            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
+            ..Default::default()
+        },
+    )
+    .unwrap();
     Connection::open(&db.0)
         .unwrap()
         .execute_batch("DROP TABLE memory_profiles")

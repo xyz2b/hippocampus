@@ -40,10 +40,10 @@ fn calls(db: &Db) -> i64 {
 #[test]
 fn recall_pipeline_strict_defaults_and_independent_write_switch() {
     let defaults: ChatConfig = serde_json::from_str("{}").unwrap();
-    assert_eq!(defaults.recall_pipeline, RecallPipeline::Legacy);
+    assert_eq!(defaults.recall_pipeline, RecallPipeline::RecallV3);
     assert_eq!(
         defaults.write_pipeline,
-        hippocampus::chat::WritePipeline::Legacy
+        hippocampus::chat::WritePipeline::W4RuntimeV1
     );
     for value in [json!(null), json!(true), json!("typo")] {
         assert!(serde_json::from_value::<ChatConfig>(json!({"recall_pipeline":value})).is_err());
@@ -62,22 +62,17 @@ fn recall_pipeline_strict_defaults_and_independent_write_switch() {
         )
         .is_err()
     );
-    for write in ["legacy", "w4_runtime_v1"] {
-        for recall in ["legacy", "recall_v3"] {
-            let c: ChatConfig = serde_json::from_value(
-                json!({"write_pipeline":write,"recall_pipeline":recall,"enrichment_mode":"off"}),
-            )
-            .unwrap();
-            c.validate().unwrap();
-        }
+    for (field, value) in [("write_pipeline", "legacy"), ("recall_pipeline", "legacy")] {
+        assert!(serde_json::from_value::<ChatConfig>(json!({field:value})).is_err());
     }
+    serde_json::from_value::<ChatConfig>(json!({"enrichment_mode":"off"}))
+        .unwrap()
+        .validate()
+        .unwrap();
     let recommended: ChatConfig =
         serde_json::from_str(include_str!("../examples/recall-v3.json")).unwrap();
     recommended.validate().unwrap();
-    assert_eq!(
-        recommended.recall_models.unwrap().effort("r4"),
-        ReasoningEffort::Minimal
-    );
+    assert!(recommended.recall_models.is_none());
 }
 #[test]
 fn recall_pipeline_explicit_version_single_output_and_offline_replay() {
@@ -101,9 +96,13 @@ fn recall_pipeline_explicit_version_single_output_and_offline_replay() {
     let mut legacy = query("old");
     legacy["recall_version"] = json!("answer_contract.v1");
     legacy.as_object_mut().unwrap().remove("offline");
-    let old = service.call("memory_recall", legacy, || false).unwrap();
-    assert_eq!(old["answer_contract"]["version"], 1);
-    assert!(old.get("version").is_none());
+    assert!(
+        service
+            .call("memory_recall", legacy, || false)
+            .unwrap_err()
+            .to_string()
+            .contains("contract_version_unsupported")
+    );
     let mut bad = query("bad");
     bad["recall_version"] = json!("recall.v999");
     assert!(
@@ -129,12 +128,13 @@ fn recall_pipeline_explicit_version_single_output_and_offline_replay() {
     assert_eq!(calls(&db), 0);
 }
 #[test]
-fn recall_pipeline_prepare_three_fragments_both_write_versions() {
-    for write in ["legacy", "w4_runtime_v1"] {
+fn recall_pipeline_prepare_three_fragments_default_and_explicit_new_write() {
+    for settings in [
+        json!({"enrichment_mode":"off"}),
+        json!({"write_pipeline":"w4_runtime_v1","recall_pipeline":"recall_v3","enrichment_mode":"off"}),
+    ] {
         let db = Db::new();
-        let mut service = db.service(
-            json!({"write_pipeline":write,"recall_pipeline":"recall_v3","enrichment_mode":"off"}),
-        );
+        let mut service = db.service(settings);
         let arguments = json!({"user_turn":turn("prepare"),"offline":true});
         let out = service
             .call("memory_prepare", arguments.clone(), || false)
@@ -279,25 +279,13 @@ fn recall_pipeline_http_cli_end_to_end() {
 }
 
 #[test]
-fn recall_pipeline_explicit_legacy_prepare_and_validation_override_new_config() {
+fn recall_pipeline_explicit_legacy_prepare_and_validation_are_rejected_without_writing() {
     let db = Db::new();
-    let mut service = db.service(
-        json!({"recall_pipeline":"recall_v3","retrieval_mode":"local","enrichment_mode":"off"}),
-    );
-    let out = service
-        .call(
-            "memory_prepare",
-            json!({"user_turn":turn("legacy-override"),"recall_version":"answer_contract.v1","request_id":"old-output","offline":true}),
-            || false,
-        )
-        .unwrap();
-    assert!(out.get("remember").is_some());
-    assert_eq!(out["recall"]["status"], "completed", "{out}");
-    assert_eq!(out["recall"]["result"]["answer_contract"]["version"], 1);
-    assert!(out["recall"]["result"].get("version").is_none());
-    let out = service.call("memory_validate_answer",json!({"query":"我在学习陶艺。","draft_answer":"我已成为专家。","recall_version":"answer_contract.v1","request_id":"old-output"}),||false).unwrap();
-    assert_eq!(out["version"], 1);
-    assert_ne!(out["status"], "recall_failed");
+    let mut service = db.service(json!({"enrichment_mode":"off"}));
+    for tool in ["memory_prepare", "memory_validate_answer"] {
+        assert!(service.call(tool,json!({"user_turn":turn("legacy-override"),"recall_version":"answer_contract.v1","request_id":"old-output","offline":true}),||false).unwrap_err().to_string().contains("contract_version_unsupported"));
+    }
+    assert!(db.open().read().unwrap().sources.is_empty());
     assert_eq!(calls(&db), 0);
 }
 

@@ -3,18 +3,6 @@
   "recall_pipeline": "recall_v3",
   "enrichment_mode": "deferred",
   "background_operation_limit": 3,
-  "write_models": {
-    "w1": "ep-20261003130756-trhj6",
-    "w3": "ep-20261003130756-trhj6",
-    "w4": "ep-20261003130756-trhj6",
-    "reasoning_effort": { "w1": "medium", "w3": "minimal", "w4": "medium" }
-  },
-  "recall_models": {
-    "r1": "ep-20261003130756-trhj6",
-    "r4": "ep-20261003130756-trhj6",
-    "r4_compute_reasoning_effort": "low",
-    "reasoning_effort": { "r1": "minimal", "r4": "minimal" }
-  },
   "model_budget": {
     "group_id": "replace-with-your-joint-authorized-budget",
     "max_calls": 5,

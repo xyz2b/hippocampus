@@ -1584,6 +1584,8 @@ fn original_n05_generic_sentences_do_not_license_comparison_sources() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
+            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
+            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Assisted),
             enrichment_mode: EnrichmentMode::Off,
             ..ChatConfig::default()
@@ -2884,6 +2886,8 @@ fn committed_source_with_unapplied_correction_cannot_keep_old_slot_current() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
+            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
+            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Assisted),
             ..ChatConfig::default()
         },

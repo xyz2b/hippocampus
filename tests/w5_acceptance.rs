@@ -4354,7 +4354,10 @@ fn a_a_surviving_record_whose_creating_receipt_was_scrubbed_has_no_full_candidat
 fn call(db: &TestDb, tool: &str, arguments: serde_json::Value) -> serde_json::Value {
     let mut service = hippocampus::chat::ChatMemoryService::new(
         db.open(),
-        hippocampus::chat::ChatConfig::default(),
+        hippocampus::chat::ChatConfig {
+            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
+            ..Default::default()
+        },
     )
     .unwrap();
     service.call(tool, arguments, || false).unwrap()
@@ -4420,6 +4423,7 @@ fn local_service(
     predicates: Vec<PredicateDefinition>,
 ) -> hippocampus::chat::ChatMemoryService {
     let mut config = hippocampus::chat::ChatConfig {
+        recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
         retrieval_mode: Some(hippocampus::chat::RetrievalMode::Local),
         ..hippocampus::chat::ChatConfig::default()
     };

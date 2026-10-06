@@ -9,9 +9,166 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 #[test]
+fn grounding_process_fixtures_pass_new_stages_without_a_port() {
+    let output = std::process::Command::new("python3")
+        .args(["tests/intake_grounding_process.py", "--fixtures-json"])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let cases: Vec<Json> = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(cases.len(), 10);
+    for case in cases {
+        let db = Db::new();
+        let mut ctx = context();
+        for id in ["霜叶31", "青石82"] {
+            ctx.known_entities.push(Entity {
+                id: EntityId::from(id),
+                owner_id: UserId::from("alice"),
+                entity_type: EntityType::Other("fixture".into()),
+                canonical_name: id.into(),
+                aliases: vec![],
+            });
+        }
+        ctx.known_predicates = serde_json::from_value(json!([
+            {"predicate":"fact","cardinality":"Multiple"},
+            {"predicate":"material","cardinality":"Single"},
+            {"predicate":"maintenance_budget","cardinality":"Single"},
+            {"predicate":"owned_by","cardinality":"Single"},
+            {"predicate":"duplex_enabled","cardinality":"Single"}
+        ]))
+        .unwrap();
+        db.open()
+            .transaction(|state| {
+                for entity in &ctx.known_entities {
+                    state.entities.upsert(entity.clone());
+                }
+                Ok(())
+            })
+            .unwrap();
+        let key = db.start_turn(case["text"].as_str().unwrap(), "turn", &[]);
+        let mut responses = vec![Ok(envelope(&case["w1"].to_string()))];
+        let rejected = case["verdict"] == "format_reject";
+        if !rejected {
+            responses.push(if case["verdict"] == "http_error" {
+                Ok((
+                    503,
+                    json!({"error":{"message":"synthetic review unavailable"}}).to_string(),
+                ))
+            } else {
+                Ok(envelope(&case["w3"].to_string()))
+            });
+        }
+        let (mut provider, sent) = mocked(&db, responses);
+        provider.context = ctx;
+        let transport = provider.client.transport.take().unwrap();
+        let path = db.0.clone();
+        provider.client.transport = Some(Arc::new(move |request| {
+            let body: Json =
+                serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+            if body["text"]["format"]["name"] == "w3_v1" {
+                let store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
+                assert!(
+                    store
+                        .read()
+                        .unwrap()
+                        .repository
+                        .list_by_owner(&UserId::from("alice"))
+                        .unwrap()
+                        .is_empty(),
+                    "facts became Active before independent W3 review"
+                );
+            }
+            transport(request)
+        }));
+        provider.models = serde_json::from_value(json!({
+            "w1":"pro-fixture","w3":"pro-fixture","w4":"pro-fixture",
+            "reasoning_effort":{"w1":"medium","w3":"minimal","w4":"medium"}
+        }))
+        .unwrap();
+        let result = run_all(&db, &key, &provider);
+        let supported = case["verdict"] == "supported";
+        let status = if supported {
+            "committed"
+        } else if case["verdict"] == "bad_format" || case["verdict"] == "http_error" {
+            "failed"
+        } else {
+            "pending"
+        };
+        assert_eq!(result["enrichment"]["status"], status, "{case}: {result}");
+        let state = db.open().read().unwrap();
+        let memories = state
+            .repository
+            .list_by_owner(&UserId::from("alice"))
+            .unwrap();
+        assert_eq!(memories.len(), usize::from(supported), "{case}: {result}");
+        if supported {
+            assert_eq!(
+                memories[0].evidence[0].quote,
+                case["text"].as_str().unwrap()
+            );
+        } else if rejected {
+            assert_eq!(
+                result["enrichment"]["candidates"][0]["reasons"],
+                json!(["candidate_rejected:fact_sentence_mismatch"])
+            );
+        } else if case["verdict"] == "contradicted" {
+            assert_eq!(
+                result["enrichment"]["candidates"][0]["reasons"],
+                json!(["review_contradicted"])
+            );
+        }
+        assert_eq!(sent.lock().unwrap().len(), if rejected { 1 } else { 2 });
+        assert_eq!(db.calls(), if rejected { 1 } else { 2 });
+        for request in sent.lock().unwrap().iter() {
+            assert_eq!(request["model"], "pro-fixture");
+            let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+            assert!(input.get("model").is_none());
+            assert_eq!(input["current_user_message"], case["text"]);
+            if request["text"]["format"]["name"] == "w3_v1" {
+                assert_eq!(
+                    input["candidates"][0]["candidate"],
+                    case["w1"]["candidates"][0]
+                );
+            }
+        }
+        // Terminal successful/rejected rounds replay through the host without new sends.
+        if status != "failed" {
+            let source = &state.sources[&key];
+            let before = serde_json::to_value(&state).unwrap();
+            let mut service = ChatMemoryService::new(
+                db.open(),
+                ChatConfig {
+                    model_budget: Some(ModelBudgetConfig {
+                        group_id: "authorized".into(),
+                        max_calls: 100,
+                        max_operation_calls: 3,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            assert_eq!(service.enrich_source(&source.id).unwrap(), result);
+            assert_eq!(
+                serde_json::to_value(db.open().read().unwrap()).unwrap(),
+                before
+            );
+            assert_eq!(db.calls(), if rejected { 1 } else { 2 });
+        }
+    }
+}
+
+#[test]
 fn role_reasoning_configuration_is_strict_and_changes_requests_and_bindings() {
-    let config: ChatConfig = serde_json::from_value(json!({"write_models":{
-        "reasoning_effort":{"w1":"low","w3":"high","w4":"omit"}}}))
+    let config: ChatConfig = serde_json::from_value(
+        json!({"write_models":{"w1":DEEPSEEK_MODEL,"w3":DEEPSEEK_MODEL,"w4":DEEPSEEK_MODEL,
+        "reasoning_effort":{"w1":"low","w3":"high","w4":"omit"}}}),
+    )
     .unwrap();
     let models = config.write_models.unwrap();
     assert_eq!(models.w1, DEEPSEEK_MODEL);
@@ -110,14 +267,14 @@ fn changed_write_reasoning_never_reuses_saved_stages_or_frozen_candidates() {
 }
 
 #[test]
-fn write_role_configuration_is_strict_and_defaults_to_the_legacy_model() {
+fn write_role_configuration_is_strict_and_defers_missing_pro_roles() {
     let default: ChatConfig = serde_json::from_value(json!({})).unwrap();
     assert!(default.write_models.is_none());
     let partial: ChatConfig = serde_json::from_value(json!({"write_models":{"w1":"pro"}})).unwrap();
     let models = partial.write_models.unwrap();
     assert_eq!(models.w1, "pro");
-    assert_eq!(models.w3, DEEPSEEK_MODEL);
-    assert_eq!(models.w4, DEEPSEEK_MODEL);
+    assert_eq!(models.w3, "env:DEEPSEEK_PRO_MODEL");
+    assert_eq!(models.w4, "env:DEEPSEEK_PRO_MODEL");
     for invalid in [
         json!(null),
         json!(["a", "b", "c"]),
@@ -1879,34 +2036,22 @@ fn prompts_never_include_evaluation_source_text_ids_or_labels() {
 }
 
 #[test]
-fn recommended_background_config_uses_pro_with_w3_minimal_without_switching_defaults() {
+fn recommended_background_config_uses_environment_role_defaults() {
     let config: crate::chat::ChatConfig =
         serde_json::from_str(include_str!("../examples/background-recall.json")).unwrap();
     config.validate().unwrap();
-    let models = config.write_models.unwrap();
-    for role in ["w1", "w3", "w4"] {
-        assert_eq!(
-            serde_json::to_value(&models).unwrap()[role],
-            "ep-20261003130756-trhj6"
-        );
-        assert_eq!(
-            models.effort(role),
-            if role == "w3" {
-                ReasoningEffort::Minimal
-            } else {
-                ReasoningEffort::Medium
-            }
-        );
-        assert_eq!(
-            serde_json::to_value(WriteModels::default()).unwrap()[role],
-            DEEPSEEK_MODEL
-        );
-        assert_eq!(WriteModels::default().effort(role), ReasoningEffort::Medium);
-    }
+    assert!(config.write_models.is_none());
+    assert!(config.recall_models.is_none());
     assert_eq!(
-        crate::chat::ChatConfig::default().write_pipeline,
-        crate::chat::WritePipeline::Legacy
+        config.write_pipeline,
+        crate::chat::WritePipeline::W4RuntimeV1
     );
+    assert_eq!(
+        config.recall_pipeline,
+        crate::chat::RecallPipeline::RecallV3
+    );
+    // Stage-only explicit providers keep their historic requests; chat resolves AC2 defaults.
+    assert_eq!(WriteModels::default().w1, DEEPSEEK_MODEL);
 }
 
 #[test]

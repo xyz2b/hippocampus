@@ -10,12 +10,12 @@ A personal memory system for AI assistants that preserves your original words, f
 - **记住关系与变化**：区分人物、物品、事件等主体，处理偏好、约束、事实、经历，以及更正、冲突和有效期限。
 - **按上下文找回**：结合原文搜索与结构化记忆，按主体、时间和适用条件召回相关内容。
 - **来源可追溯**：记忆关联原文证据；提供来源核验与答案校验，在缺少依据或主体不明确时保守处理。
-- **本地保存与控制**：记忆存于本地，可查看、澄清、删除；通过 MCP 接入 AI 助手。
+- **本地保存与控制**：记忆存于本地，可查看、删除；通过 MCP 接入 AI 助手。
 - **过程可检查**：独立的只读 Memory Inspector 展示原文、记忆版本、检索结果和模型调用记录。
 
 ## 当前状态
 
-项目仍在开发中。本地原文保存、检索与双通道召回已完成阶段验证；可选模型整理、辅助查询和最终答案校验仍在 S5 验收中。
+项目仍在开发中。M1 新路径 common.v1 验收结果为 63 题 59 通过 / 4 失败（已知局限留账）。默认写入 w4_runtime_v1、召回 recall_v3；旧入口不再兼容，旧数据读取与删除保留。完整负载 P95 验收尚未完成。
 
 模型可能漏抽、错误理解时间，独立复核也可能漏判。缺少证据时拒答不等于效果验收通过；MCP 工具也无法强制第三方聊天客户端原样采用核准答案。
 
@@ -29,11 +29,10 @@ A personal memory system for AI assistants that preserves your original words, f
 git clone git@github.com:xyz2b/hippocampus.git
 cd hippocampus
 cargo build --workspace --bins
-cargo run --example basic
 ./target/debug/pmr-mcp --help
 ```
 
-`basic` 使用内存示例，展示保存、裁决和召回过程，不调用模型。
+`basic` 等旧引擎示例将在后续清理，当前接入以 MCP 新路径为准。
 
 ### MCP 接入
 
@@ -58,26 +57,25 @@ cargo run --example basic
 
 ```json
 {
-  "retrieval_mode": "local",
   "enrichment_mode": "off"
 }
 ```
 
-此模式不调用模型；保存时仍须明确授权原文留存并传入 `capture_source=true`。原文保存成功与结构化整理成功是两个独立结果。
+配合 `PMR_MODEL_NETWORK=deny` 使用此配置可确保全服务不调用模型；保存时仍须明确授权原文留存并传入 `capture_source=true`。原文保存成功与结构化整理成功是两个独立结果。
 
 完整配置可通过 `pmr-mcp --print-default-config` 查看。调用规则见[客户端接入约定](docs/memory-client-contract.md)与[自动记忆规则](docs/personal-memory-instructions.md)。
 
 ### 可选模型能力
 
-支持 `legacy`／`local`／`assisted` 查询，以及 `inline`／`off`／`deferred` 整理。模型请求须配置服务端身份、端点、凭据和持久调用预算；当前适配使用兼容 Responses 的协议及 `DEEPSEEK_BASE_URL`、`DEEPSEEK_API_KEY`。
+默认 W0 保存原文，W1/W3/W4 后台整理，R1/R4 前台召回。inline/deferred 在 T1 后排队，off 不自动整理。Recall 包括 bootstrap 须稳定 request_id，Prepare 缺省从 session/turn 派生。capture_source=true 必须有整条原文及必要 USER history 的保存授权；省略/false 被拒绝。
 
-- `PMR_MODEL_NETWORK=offline`：默认仅允许本机回环测试端点。
-- `PMR_MODEL_NETWORK=deny`：禁止全部模型 HTTP 请求。
-- `PMR_MODEL_NETWORK=live`：允许显式配置的真实模型请求。
+模型调用仍需 DEEPSEEK_BASE_URL、DEEPSEEK_API_KEY、有限持久 model_budget 和网络门控。缺省角色为 W1/W4 Pro medium、W3/R1/R4 Pro minimal、计算 R4 low；设置 `DEEPSEEK_PRO_MODEL` 为自己的 Pro 接入点/模型 ID，或显式配置角色。缺少默认模型只在需要在线提供者时报错，offline/Bootstrap 可用。在线配置示例见 [background-recall.json](examples/background-recall.json)，其中预算须按用户授权填写，不能自动提高。
 
-预算通过配置中的 `model_budget` 管理，跨重启累计；失败或换入口不会重置额度。没有自动网络重试。
+- PMR_MODEL_NETWORK=offline（默认）：只允许字面本机回环测试端点。
+- PMR_MODEL_NETWORK=deny：禁止所有模型 HTTP。
+- PMR_MODEL_NETWORK=live：允许已配置的真实端点，仍受持久预算限制。
 
-开发版可显式开启 `allow_extraction_repair=true`：可定位的提取错误最多进行一次完整重提取和独立复核。它与漏抽纠正 `allow_coverage_repair` 共用一次机会，启用任一项要求 `max_operation_calls=4`；正常两次、提取错误纠正三次、复核后纠正最多四次。二次校验不通过时保留原文并报告整理未完成。
+前台最多 2 次、每条消息后台最多 3 次，共享总授权。历史策略字段作为授权数据保留；旧 repair 开关不驱动新路径，已有授权组不重置或自动扩大。旧组未授权新阶段额度时需显式新授权。Legacy 配置在打开数据库前拒绝，answer_contract.v1 不支持；旧数据经 LegacyRecordView 读取，不自动模型重建。切换前按 [手工备份步骤](docs/architecture/m1-cutover.md) 操作。
 
 ### Memory Inspector
 
@@ -91,7 +89,7 @@ cargo run --example basic
 
 ```sh
 cargo fmt --all -- --check
-cargo build --workspace --bins
+cargo build --workspace --all-targets
 PMR_MODEL_NETWORK=offline PMR_INSPECTOR_BINARY="$PWD/target/debug/pmr-inspector" cargo test --workspace --all-targets
 cargo clippy --workspace --all-targets -- -D warnings
 ```
@@ -100,4 +98,4 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 仓库包含核心源码、当前文档和必要的合成回归样本。历史运行日志、冻结二进制、原始会话记录和本机部署资料留在开发者本地；部分历史验收脚本需要这些档案，无法仅凭公开源码重放原批次。当前改名也不会重写旧证据的名称或哈希。
 
-领域模型与设计约定见[架构文档](docs/architecture_v1.md)。
+设计与冻结契约见[目标设计](docs/architecture/target-design.md)和[契约](docs/architecture/contracts.md)；旧 architecture_v1 为历史参考。

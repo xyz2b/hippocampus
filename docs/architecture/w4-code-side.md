@@ -1,5 +1,7 @@
 # W4 的代码侧与运行时离线闭环
 
+> 2026-10-06 AF21：默认 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；legacy 配置与 answer_contract.v1 入口已拒绝，旧执行代码留后续清理。缺省角色采用 AC2，Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除和授权账本不变。下文关于旧默认、opt-in 和 v1 适配的内容属于历史实现记录；当前客户端按 docs/memory-client-contract.md。
+
 依据 contracts.md 2.1–2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。W2 在 `src/w2.rs`，W3 类型与机械核验在 `src/contract.rs`，W4 在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，库级入口在 `src/enrichment.rs`。注入提供者实现离线闭环；④-3/④-4 增加显式 W1/W3/W4 模型入口，④-5 接通 opt-in 配置与 CLI 分发。
 
 ## 1. 输入组装（`assemble`）

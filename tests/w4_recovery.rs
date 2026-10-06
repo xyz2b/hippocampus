@@ -755,6 +755,7 @@ fn old_explicit_entry_cannot_claim_the_new_processing_version() {
         serde_json::from_value(json!({"group_id":"offline","max_calls":1,"max_operation_calls":1}))
             .unwrap();
     let config = chat::ChatConfig {
+        write_pipeline: chat::WritePipeline::Legacy,
         model_budget: Some(budget),
         ..Default::default()
     };

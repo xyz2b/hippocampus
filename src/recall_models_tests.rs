@@ -1171,18 +1171,19 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
     assert_eq!(service.call("memory_recall", args, || false).unwrap(), out);
-    let legacy = service
+    let unsupported = service
         .call(
             "memory_recall",
             json!({"query":out["request"]["query"],"context":out["request"]["context"],
         "request_id":"host-online","at":AT,"recall_version":"answer_contract.v1"}),
             || false,
         )
-        .unwrap();
-    assert_eq!(legacy["answer_contract"]["version"], 1);
-    assert_eq!(legacy["answer_contract"]["status"], "insufficient_evidence");
-    assert!(legacy.get("facts").is_none());
-    assert!(legacy.get("version").is_none());
+        .unwrap_err();
+    assert!(
+        unsupported
+            .to_string()
+            .contains("contract_version_unsupported")
+    );
     assert_eq!(sent.lock().unwrap().len(), 2);
     let validation = json!({"query":out["request"]["query"],"context":out["request"]["context"],
         "request_id":"host-online","draft_answer":TEXT,"source_ids":["s-purple"],"at":AT});

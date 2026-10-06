@@ -3,7 +3,7 @@ use super::*;
 use crate::contract::{
     Polarity, Qualification, RecallOutput, RecallRequest, RecallStatus, SemanticJudgment, SourceRef,
 };
-use crate::openai::recall_models::{RecallModelProvider, RecallModels};
+use crate::openai::recall_models::RecallModelProvider;
 
 impl ChatMemoryService {
     pub(super) fn uses_recall_runtime(
@@ -18,8 +18,12 @@ impl ChatMemoryService {
             return Ok(false);
         }
         if let Some(version) = arguments.get("recall_version").filter(|v| !v.is_null()) {
-            serde_json::from_value::<RecallVersion>(version.clone())
-                .map_err(|_| "contract_version_unsupported")?;
+            if serde_json::from_value::<RecallVersion>(version.clone())
+                .map_err(|_| "contract_version_unsupported")?
+                == RecallVersion::Legacy
+            {
+                return Err("contract_version_unsupported".into());
+            }
         }
         let selected = match name {
             "memory_recall" => serde_json::from_value::<Recall>(arguments.clone())?.recall_version,
@@ -77,12 +81,8 @@ impl ChatMemoryService {
             default_limit(),
         )?;
         Ok(Some(
-            RecallModelProvider::new(client, context).with_models(
-                self.config
-                    .recall_models
-                    .clone()
-                    .unwrap_or_else(RecallModels::default),
-            )?,
+            RecallModelProvider::new(client, context)
+                .with_models(self.config.resolved_recall_models()?)?,
         ))
     }
 

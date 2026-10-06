@@ -1,5 +1,7 @@
 # 召回运行时：证据闭环、R4 核验与 R5
 
+> 2026-10-06 AF21：默认 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；legacy 配置与 answer_contract.v1 入口已拒绝，旧执行代码留后续清理。缺省角色采用 AC2，Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除和授权账本不变。下文关于旧默认、opt-in 和 v1 适配的内容属于历史实现记录；当前客户端按 docs/memory-client-contract.md。
+
 本模块实现 contracts 3.1–3.4 的问题理解、证据组装、R4 核验与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。召回④新增可选模型提供者与请求重放；不新增来源、不更新读取计数、不迁移数据库，也不改变旧召回入口。
 
 ## 入口与快照

@@ -159,6 +159,8 @@ impl Db {
         let mut service = ChatMemoryService::new(
             self.open(),
             ChatConfig {
+                // This fixture manually starts the W4 round from an old raw source.
+                write_pipeline: hippocampus::chat::WritePipeline::Legacy,
                 enrichment_mode: EnrichmentMode::Off,
                 ..Default::default()
             },

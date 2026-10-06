@@ -27,6 +27,10 @@ impl Db {
     fn service(&self, max_calls: u64) -> ChatMemoryService {
         let config: ChatConfig = serde_json::from_value(json!({
             "write_pipeline":"w4_runtime_v1","recall_pipeline":"recall_v3",
+        "write_models":{"w1":DEEPSEEK_MODEL,"w3":DEEPSEEK_MODEL,"w4":DEEPSEEK_MODEL,
+            "reasoning_effort":{"w1":"medium","w3":"medium","w4":"medium"}},
+        "recall_models":{"r1":DEEPSEEK_MODEL,"r4":DEEPSEEK_MODEL,
+            "reasoning_effort":{"r1":"medium","r4":"medium"}},
             "enrichment_mode":"deferred","background_operation_limit":3,
             "model_budget":{"group_id":"joint-fixture","max_calls":max_calls,"max_operation_calls":2}
         })).unwrap();
@@ -161,11 +165,21 @@ fn query(id: &str) -> Json {
 
 #[test]
 fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable() {
-    for recall_pipeline in ["legacy", "recall_v3"] {
+    for recall_pipeline in [
+        crate::chat::RecallPipeline::Legacy,
+        crate::chat::RecallPipeline::RecallV3,
+    ] {
         let db = Db::new();
-        let config = serde_json::from_value(json!({"recall_pipeline":recall_pipeline,
-            "model_budget":{"group_id":"global-context-fixture","max_calls":4}}))
-        .unwrap();
+        // Keep this old-engine publication guard until execution cleanup; JSON legacy is rejected.
+        let config = ChatConfig {
+            write_pipeline: crate::chat::WritePipeline::Legacy,
+            recall_pipeline,
+            model_budget: Some(
+                serde_json::from_value(json!({"group_id":"global-context-fixture","max_calls":4}))
+                    .unwrap(),
+            ),
+            ..Default::default()
+        };
         let mut service = ChatMemoryService::new(
             SqliteMemoryStore::open(&db.0, OWNER.into()).unwrap(),
             config,
