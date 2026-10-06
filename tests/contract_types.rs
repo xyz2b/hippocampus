@@ -362,3 +362,22 @@ fn quotes_are_located_as_continuous_source_text() {
     assert_eq!(found("i don't know"), None);
     assert_eq!(found("  "), None);
 }
+
+#[test]
+fn plan_projection_uses_fact_only_and_never_claims_to_be_lossless() {
+    for polarity in ["affirm", "negate"] {
+        let mut c = plain();
+        c["speech"] = json!("plan");
+        c["polarity"] = json!(polarity);
+        let full = contract(c);
+        assert!(!full.project(&context()).unwrap().lossless);
+        assert_eq!(full.candidate.speech, Speech::Plan);
+    }
+    let mut c = plain();
+    c["speech"] = json!("plan");
+    c["memory_type"] = json!("episode");
+    assert_eq!(
+        contract(c).project(&context()).unwrap_err(),
+        Unprojectable::NotUserStatement(Speech::Plan)
+    );
+}

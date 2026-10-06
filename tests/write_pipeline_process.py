@@ -39,18 +39,18 @@ class Fixture(Responses):
     def output(self, body):
         name = body["text"]["format"]["name"]
         payload = json.loads(body["input"])
-        if name == "w1_v1":
+        if name == "w1_v2":
             text = payload["current_user_message"]
             return {"candidates": [{"kind": "assertion", "speech": "user_statement",
                     "subject": {"entity_id": "self"}, "relation": "fact", "memory_type": "fact",
                     "value": {"kind": "text", "text": text, "quote": {"text": text}},
                     "sentence": {"text": text}, "polarity": "affirm", "strength": None,
                     "uncertainty": None, "conditions": [], "times": []}], "memory_requests": []}
-        if name == "w3_v1":
+        if name == "w3_v2":
             return {"reviews": [{"candidate": c["index"], "verdict": "supported", "problems": [],
                                  "episode_value": "not_applicable"} for c in payload["candidates"]],
                     "coverage": {"status": "complete", "missing": []}, "request_reviews": []}
-        if name == "w4_v3":
+        if name == "w4_v4":
             decisions = []
             for candidate in payload["w4_input"]["candidates"]:
                 matching = next((r for r in payload["w4_input"]["records"]
@@ -155,11 +155,11 @@ def main():
             first_id = first["source"]["source_id"]
             processed = batch(args.binary, db, env, deferred, "--enrich-source", first_id)
             frozen(processed, "committed")
-            assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["w1_v1", "w3_v1"]
+            assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["w1_v2", "w3_v2"]
             second = save(args.binary, db, env, new, turn("second"))
             processed = batch(args.binary, db, env, deferred, "--enrich-source", second["source"]["source_id"])
             frozen(processed, "committed")
-            assert [r["text"]["format"]["name"] for r in Fixture.requests][-3:] == ["w1_v1", "w3_v1", "w4_v3"]
+            assert [r["text"]["format"]["name"] for r in Fixture.requests][-3:] == ["w1_v2", "w3_v2", "w4_v4"]
             assert processed["enrichment"]["candidates"][0]["memory_id"] is not None
             assert len(state(db)["repository"]["memories"]) == 1
             before, sends, paid = state(db), len(Fixture.requests), calls(db)
@@ -189,7 +189,7 @@ def main():
                 frozen(result["result"], "committed")
             names = [r["text"]["format"]["name"] for r in Fixture.requests]
             assert len(names) == calls(db) == 11, names
-            assert names == ["w1_v1", "w3_v1"] + ["w1_v1", "w3_v1", "w4_v3"] * 3, names
+            assert names == ["w1_v2", "w3_v2"] + ["w1_v2", "w3_v2", "w4_v4"] * 3, names
             before, sends = state(db), len(Fixture.requests)
             assert batch(args.binary, db, env, new, "--drain-enrichment", "--max-jobs", "4")["attempted"] == 0
             assert state(db) == before and len(Fixture.requests) == sends

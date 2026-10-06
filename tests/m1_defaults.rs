@@ -203,7 +203,7 @@ fn m1_legacy_source_less_recall_bootstrap_lifecycle_and_delete_remain_local() {
             || false,
         )
         .unwrap();
-    assert_eq!(boot["version"], "recall.v3");
+    assert_eq!(boot["version"], "recall.v4");
     assert_eq!(boot["semantic_judgment"], "skipped");
     assert!(boot.to_string().contains("中文"));
     assert!(!boot.to_string().contains("限定场景"));
@@ -304,15 +304,32 @@ fn m1_default_capture_permission_version_rejection_and_immediate_recall() {
         assert!(db.open("alice").read().unwrap().sources.is_empty());
     }
     for name in ["memory_recall", "memory_prepare", "memory_validate_answer"] {
-        assert!(
-            service
-                .call(name, json!({"recall_version":"answer_contract.v1"}), || {
-                    false
-                })
-                .unwrap_err()
-                .to_string()
-                .contains("contract_version_unsupported")
-        );
+        for version in ["answer_contract.v1", "recall.v3"] {
+            let before = serde_json::to_value(db.open("alice").read().unwrap()).unwrap();
+            let arguments = match name {
+                "memory_prepare" => {
+                    json!({"user_turn":{"text":"我有一把蓝伞","session_id":"s","turn_id":"v3-rejected","capture_source":true},"offline":true})
+                }
+                "memory_validate_answer" => {
+                    json!({"query":"旧记录","draft_answer":"旧记录","source_ids":[],"request_id":"v3-rejected"})
+                }
+                _ => json!({"query":"全局回答要求","bootstrap":true,"request_id":"v3-rejected"}),
+            };
+            let mut arguments = arguments;
+            arguments["recall_version"] = json!(version);
+            assert_eq!(
+                service
+                    .call(name, arguments, || false)
+                    .unwrap_err()
+                    .to_string(),
+                "contract_version_unsupported",
+                "{name}/{version}"
+            );
+            assert_eq!(
+                serde_json::to_value(db.open("alice").read().unwrap()).unwrap(),
+                before
+            );
+        }
         assert!(db.open("alice").read().unwrap().sources.is_empty());
     }
     assert!(
@@ -332,7 +349,7 @@ fn m1_default_capture_permission_version_rejection_and_immediate_recall() {
         .unwrap();
     assert_eq!(prepared["source"]["status"], "stored");
     assert_eq!(prepared["enrichment"]["status"], "queued");
-    assert_eq!(prepared["recall"]["version"], "recall.v3");
+    assert_eq!(prepared["recall"]["version"], "recall.v4");
     assert!(prepared["recall"].to_string().contains("我有一把蓝伞"));
     assert_eq!(
         service.call("memory_prepare", input, || false).unwrap(),

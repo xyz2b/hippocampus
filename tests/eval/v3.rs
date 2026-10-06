@@ -486,7 +486,7 @@ fn v3_replay_outputs_and_proxy_errors_leave_recording_directory_unchanged() {
 #[test]
 fn v3_targeted_preflight_and_strict_prefixes_bound_sends() {
     let dir = std::env::temp_dir().join(format!("eval-targeted-{}", diagnostics::new_id()));
-    let first = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+    let first = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v2"}}});
     let hash = recall_models::fingerprint(&normalized(&first, &BTreeMap::new()).unwrap());
     let configuration = Recorder::new(dir.clone(), None, None).configuration;
     write_json(
@@ -511,7 +511,7 @@ fn v3_targeted_preflight_and_strict_prefixes_bound_sends() {
             .0,
         200
     );
-    let third = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w3_v1"}}});
+    let third = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w3_v2"}}});
     assert_eq!(
         recorder
             .respond("case", &third, || Ok((200, "{}".into())))
@@ -632,7 +632,7 @@ fn v3_proxy_read_and_write_errors_are_durable_without_panicking() {
         }
     }
     recorder.begin("case", "write:m1", &BTreeMap::new());
-    let body = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}}).to_string();
+    let body = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v2"}}}).to_string();
     let wire = format!(
         "POST /v1/case/case/responses HTTP/1.1\r\nContent-Length: {}\r\n\r\n{body}",
         body.len()
@@ -673,7 +673,7 @@ fn v3_interrupted_run_preserves_calls_and_replays_without_duplicate_sends() {
     let dir = std::env::temp_dir().join(format!("eval-v3-interrupt-{}", diagnostics::new_id()));
     let recorder = Recorder::new(dir.clone(), Some(2), None);
     let log_path = recorder.send_log_path();
-    let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+    let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v2"}}});
     recorder.begin("case", "write:m1", &BTreeMap::new());
     let first = recorder.respond("case", &request, || {
         let log: Value = serde_json::from_slice(&std::fs::read(&log_path).unwrap()).unwrap();
@@ -855,7 +855,7 @@ fn v3_parallel_cases_keep_recordings_and_reports_isolated_and_ordered() {
         let id = case["id"].as_str().unwrap();
         barrier.wait();
         let mut steps = Vec::new();
-        for (index, stage) in ["w1_v1", "w3_v1", "r1_v1"].iter().enumerate() {
+        for (index, stage) in ["w1_v2", "w3_v2", "r1_v1"].iter().enumerate() {
             recorder.begin(id, &format!("step:{index}"), &BTreeMap::new());
             let request = json!({"model":PRO,"input":json!({"case":id,"index":index}).to_string(),"text":{"format":{"name":stage}}});
             assert_eq!(
@@ -909,7 +909,7 @@ fn v3_concurrent_reservations_never_exceed_global_allowance() {
         let id = case["id"].as_str().unwrap();
         recorder.begin(id, "write:m1", &BTreeMap::new());
         barrier.wait();
-        let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+        let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v2"}}});
         let (status, _) = recorder.respond(id, &request, || {
             sends.fetch_add(1, Ordering::SeqCst);
             Ok((200, json!({"status":"completed"}).to_string()))
@@ -996,7 +996,7 @@ fn v3_source_ids_preserve_text_and_strict_request_binding() {
 fn v3_failed_and_incomplete_responses_are_recorded_once_and_replayed() {
     let dir = std::env::temp_dir().join(format!("eval-v3-recorder-{}", diagnostics::new_id()));
     let recorder = Recorder::new(dir.clone(), Some(3), None);
-    let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v1"}}});
+    let request = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w1_v2"}}});
     for (id,response) in [
         ("incomplete",Ok((200,json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"usage":{"output_tokens":33}}).to_string()))),
         ("http",Ok((429,json!({"error":"limited"}).to_string()))),
@@ -1063,14 +1063,14 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         assert_eq!(request["model"], PRO);
         assert_eq!(
             request["reasoning"]["effort"],
-            if name.starts_with('r') || name == "w3_v1" {
+            if name.starts_with('r') || name == "w3_v2" {
                 "minimal"
             } else {
                 "medium"
             }
         );
         match name {
-            "w1_v1" => {
+            "w1_v2" => {
                 let text = &input["current_user_message"];
                 json!({"candidates":[{
                 "kind":"assertion","speech":"user_statement","subject":{"entity_id":"self"},
@@ -1078,10 +1078,10 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
                 "sentence":{"text":text},"polarity":"affirm","strength":null,"uncertainty":null,
                 "conditions":[],"times":[]}],"memory_requests":[]})
             }
-            "w3_v1" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+            "w3_v2" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
-            "w4_v3" => {
+            "w4_v4" => {
                 let c = &input["w4_input"]["candidates"][0];
                 let r = &input["w4_input"]["records"][0];
                 json!({"decisions":[{"candidate":c["index"],"status":"decided","action":"reinforce","targets":[r["id"]],
@@ -1092,7 +1092,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
                 json!({"need":"judge","current_evidence":"query_only","type":"single","subject":{"entity_id":"self"},
                 "relation":"研究","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})
             }
-            "r4_v3" => {
+            "r4_v4" => {
                 let r = &input["evidence"]["records"][0];
                 json!({"verdict":"supported","facts":[{
                 "statement":r["candidate"]["sentence"]["text"],"evidence":r["evidence"],"record_ids":[r["id"]],
@@ -1126,7 +1126,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         .flat_map(|v| v.as_array().unwrap())
         .map(|r| r["schema"].as_str().unwrap())
         .collect();
-    for stage in ["w1_v1", "w3_v1", "w4_v3", "r1_v1", "r4_v3"] {
+    for stage in ["w1_v2", "w3_v2", "w4_v4", "r1_v1", "r4_v4"] {
         assert!(names.contains(&stage));
     }
     let replay = Arc::new(Recorder::new(dir.clone(), None, None));

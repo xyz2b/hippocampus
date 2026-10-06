@@ -53,9 +53,9 @@ fn host_bootstrap_continues_with_first_turn_prepare_and_concrete_recall() {
         stages,
         vec![
             json!("r1_v1"),
-            json!("r4_v3"),
+            json!("r4_v4"),
             json!("r1_v1"),
-            json!("r4_v3")
+            json!("r4_v4")
         ]
     );
     assert_eq!(db.calls(), 4); // injected physical sends; bootstrap and inspection send none.
@@ -118,7 +118,7 @@ fn fact(
 fn visible_output(body: &Json) -> Json {
     let input: Json = serde_json::from_str(body["input"].as_str().unwrap()).unwrap();
     match body["text"]["format"]["name"].as_str().unwrap() {
-        "w1_v1" => {
+        "w1_v2" => {
             let text = input["current_user_message"].as_str().unwrap();
             if text == HYPOTHESIS {
                 return json!({"candidates":[],"memory_requests":[]});
@@ -133,7 +133,7 @@ fn visible_output(body: &Json) -> Json {
             }
             out
         }
-        "w4_v3" => {
+        "w4_v4" => {
             let w4 = &input["w4_input"];
             let old = w4["records"]
                 .as_array()
@@ -148,7 +148,7 @@ fn visible_output(body: &Json) -> Json {
                     "effective":null,"relation_scope":null,"pending_reason":null,"resolves_relations":[]})
             }).collect::<Vec<_>>()})
         }
-        "r4_v3" => {
+        "r4_v4" => {
             let e = &input["evidence"];
             let records: Vec<_> = e["records"]
                 .as_array()
@@ -283,7 +283,7 @@ fn visibility_a_inline_raw_then_committed_new_version() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, sent) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v1");
+    let (entered, release) = hold(&mut c, "w1_v2");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -372,7 +372,7 @@ fn visibility_d_truncated_related_raw_blocks_old_current_value() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v1");
+    let (entered, release) = hold(&mut c, "w1_v2");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -401,7 +401,7 @@ fn visibility_e_newer_update_commits_first_without_older_overwrite() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v1");
+    let (entered, release) = hold(&mut c, "w1_v2");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -476,7 +476,7 @@ fn visibility_f_cross_day_uses_received_day_for_relative_time() {
         .lock()
         .unwrap()
         .iter()
-        .find(|b| b["text"]["format"]["name"] == "w1_v1")
+        .find(|b| b["text"]["format"]["name"] == "w1_v2")
         .unwrap()
         .clone();
     assert!(w1["input"].as_str().unwrap().contains("2026-10-02"));
@@ -490,8 +490,8 @@ fn visibility_g_deletion_invalidates_foreground_and_late_background() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v1");
-    let (r4_entered, r4_release) = hold(&mut c, "r4_v3");
+    let (entered, release) = hold(&mut c, "w1_v2");
+    let (r4_entered, r4_release) = hold(&mut c, "r4_v4");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -702,7 +702,7 @@ fn visibility_real_prepare_immediate_recall_success_frequency() {
             )
             .unwrap();
             let body = response.structured_content.as_ref().unwrap();
-            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v3" {
+            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v4" {
                 success += 1;
                 assert_eq!(body["source"]["status"], "stored");
                 assert_eq!(body["recall"]["status"], "answered", "{body}");

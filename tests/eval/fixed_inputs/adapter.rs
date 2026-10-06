@@ -172,7 +172,7 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
             batch(&sample["input"])?;
             (
                 ModelStage::W3,
-                "w3_v1",
+                "w3_v2",
                 write_models::W3_PROMPT,
                 write_models::w3_schema(),
             )
@@ -181,18 +181,26 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
             r4_input(sample)?;
             (
                 ModelStage::R4,
-                "r4_v3",
+                "r4_v4",
                 recall_models::R4_PROMPT,
                 recall_models::r4_schema(),
             )
         }
         _ => return Err("invalid fixed input stage".into()),
     };
+    // Preserve the frozen production fields; only the current protocol binding changes.
+    let mut input = sample["input"].clone();
+    input["contract"] = json!(match stage {
+        ModelStage::W3 => "w3.v2",
+        ModelStage::R1 => "r1.v1",
+        ModelStage::R4 => "r4.v4",
+        _ => unreachable!(),
+    });
     let mut request = structured_request(
         stage,
         name,
         prompt,
-        sample["input"].clone(),
+        input,
         schema,
         &ModelBudgetConfig::default(),
     );
@@ -309,9 +317,16 @@ fn af11_exact_inputs_bound_sources_and_seven_call_cap() {
             );
         }
         let request = request(stage, sample, 16384).unwrap();
+        let mut expected = sample["input"].clone();
+        expected["contract"] = json!(match stage.as_str() {
+            "w3" => "w3.v2",
+            "r1" => "r1.v1",
+            "r4" => "r4.v4",
+            _ => unreachable!(),
+        });
         assert_eq!(
             serde_json::from_str::<Value>(request["input"].as_str().unwrap()).unwrap(),
-            sample["input"]
+            expected
         );
         assert!(sample["input"].get("model").is_none());
         assert!(sample["input"].get("origin").is_none());
@@ -392,9 +407,16 @@ fn fixed_inputs_are_exactly_the_33_original_failed_requests() {
         assert_eq!(sample["input"], row["request_content"]["input"]);
         assert_eq!(sample["original_usage"], row["usage"]);
         let request = request(&stage, &sample, 16384).unwrap();
+        let mut expected = sample["input"].clone();
+        expected["contract"] = json!(match stage.as_str() {
+            "w3" => "w3.v2",
+            "r1" => "r1.v1",
+            "r4" => "r4.v4",
+            _ => unreachable!(),
+        });
         assert_eq!(
             serde_json::from_str::<Value>(request["input"].as_str().unwrap()).unwrap(),
-            sample["input"]
+            expected
         );
         assert!(sample["input"].get("model").is_none());
         assert!(sample["input"].get("origin").is_none());
@@ -532,8 +554,9 @@ fn fixed_input_replay_binds_every_field_and_records_each_call() {
 }
 
 #[test]
-fn fixed_input_new_r4_prompt_preserves_w3_and_expires_all_r4_without_sending() {
+fn fixed_input_m15_prompts_expire_w3_and_r4_without_sending() {
     // AE14 已补齐 low 录制；此回归仍独立模拟“只有 minimal”时的严格复用。
+    // M1.5 同时修改 W3/R4 提示词；旧 W3 也必须过期，不能沿用原先的 23 项复用。
     let root = TempRecords::new();
     let minimal = Path::new("ac2-fixed-pro-minimal/reasoning-minimal/repeat-1");
     let source = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -556,7 +579,7 @@ fn fixed_input_new_r4_prompt_preserves_w3_and_expires_all_r4_without_sending() {
             .iter()
             .filter(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
             .count(),
-        23
+        0
     );
     assert_eq!(
         cases
@@ -570,12 +593,11 @@ fn fixed_input_new_r4_prompt_preserves_w3_and_expires_all_r4_without_sending() {
             .iter()
             .filter(|c| matches!(c.replay, Replay::Stale))
             .count(),
-        2
+        25
     );
     assert!(
         cases
             .iter()
-            .filter(|c| c.stage == "r4")
             .all(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
     );
     for case in &cases {
@@ -590,8 +612,8 @@ fn fixed_input_new_r4_prompt_preserves_w3_and_expires_all_r4_without_sending() {
             );
         }
     }
-    assert!(preflight(&cases, Some(9)).is_err());
-    assert_eq!(preflight(&cases, Some(10)).unwrap(), 10);
+    assert!(preflight(&cases, Some(32)).is_err());
+    assert_eq!(preflight(&cases, Some(33)).unwrap(), 33);
     let report = evaluate(&cases, None, &mut |_| panic!("offline sender invoked")).unwrap();
     assert_eq!(report["sent_calls"], 0);
 }

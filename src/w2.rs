@@ -20,7 +20,7 @@ pub struct Context<'a> {
     /// 原文接收日（用户本地日期），不是后台执行日。
     pub said_on: &'a str,
     pub utc_offset_seconds: i32,
-    /// 仅从运行时复制；w1.v1 没有可由模型填写的任务字段。
+    /// 仅从运行时复制；w1.v2 没有可由模型填写的任务字段。
     pub task_id: Option<&'a TaskId>,
 }
 

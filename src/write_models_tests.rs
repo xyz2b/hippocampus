@@ -70,7 +70,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         provider.client.transport = Some(Arc::new(move |request| {
             let body: Json =
                 serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-            if body["text"]["format"]["name"] == "w3_v1" {
+            if body["text"]["format"]["name"] == "w3_v2" {
                 let store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
                 assert!(
                     store
@@ -129,7 +129,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
             let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             assert!(input.get("model").is_none());
             assert_eq!(input["current_user_message"], case["text"]);
-            if request["text"]["format"]["name"] == "w3_v1" {
+            if request["text"]["format"]["name"] == "w3_v2" {
                 assert_eq!(
                     input["candidates"][0]["candidate"],
                     case["w1"]["candidates"][0]
@@ -1397,7 +1397,8 @@ fn w1_w3_schema_fields_are_strict_and_match_frozen_contracts() {
     for prompt in [W1_PROMPT, W3_PROMPT] {
         assert!(prompt.contains("only when the user explicitly asks to save or delete content"));
         assert!(prompt.contains("Event or state times are not storage deadlines"));
-        assert!(prompt.contains("下周三去医院复查"));
+        assert!(!prompt.contains("For example"));
+        assert!(!prompt.contains("下周三去医院复查"));
     }
     assert!(W3_PROMPT.contains("or insufficient, never supported"));
     assert!(
@@ -1629,10 +1630,10 @@ fn w4_fixture_closes_the_model_pipeline_with_three_sends_and_reopen() {
         json!(memories[0].id)
     );
     let request = &sent.lock().unwrap()[2];
-    assert_eq!(request["text"]["format"]["name"], "w4_v3");
+    assert_eq!(request["text"]["format"]["name"], "w4_v4");
     assert_eq!(request["text"]["format"]["strict"], true);
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
-    assert_eq!(input["contract"], "w4.v3");
+    assert_eq!(input["contract"], "w4.v4");
     let mut old = request.clone();
     old["text"]["format"]["name"] = json!("w4_v2");
     let mut old_input = input.clone();
@@ -2521,7 +2522,7 @@ fn w4_unrelated_source_and_audit_survive_source_deletion() {
     let old = state.sources[&old_key].id.clone();
     let id = &state.sources[&key].id;
     let text = crate::lexical::body(&state.sources[&key]).unwrap();
-    let binding = json!({"contract":"w4.v3","sources":{id:{"text":text,"history":[]}}});
+    let binding = json!({"contract":"w4.v4","sources":{id:{"text":text,"history":[]}}});
     let decision = json!({"decisions":[{
         "candidate":0,"status":"decided","action":"new","targets":[],"resolves_relations":[],
         "basis":[{"source":{"kind":"stored","source_id":id},"quote":{"text":text}}],
@@ -2680,5 +2681,86 @@ fn w4_late_old_source_deletion_cannot_restore_raw_audit_or_input_copies() {
             );
             assert_eq!(resumed.client.model_call_count(), 0);
         }
+    }
+}
+
+#[test]
+fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
+    for (prompt, rules) in [
+        (
+            W1_PROMPT,
+            vec![
+                "w1.v2",
+                "speech=plan and memory_type=fact",
+                "completed booking or purchase",
+                "Kinship refers",
+                "Every expressed qualifier",
+                "Passing an event date",
+            ],
+        ),
+        (
+            W3_PROMPT,
+            vec![
+                "w3.v2",
+                "user really",
+                "qualifier present only in sentence",
+                "cannot be supported",
+            ],
+        ),
+        (
+            W4_PROMPT,
+            vec![
+                "w4.v4",
+                "plan change or cancellation",
+                "automatically cancels a booking",
+                "normally uses state_change",
+            ],
+        ),
+    ] {
+        assert!(!prompt.contains("For example"));
+        for rule in rules {
+            assert!(prompt.contains(rule), "missing rule {rule}");
+        }
+    }
+}
+
+#[test]
+fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_in_payload() {
+    let db = Db::new();
+    let text = "我偏爱无糖热茶。";
+    let key = db.start(text);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&w1(text).to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    let result = run_all(&db, &key, &provider);
+    assert_eq!(result["enrichment"]["status"], "committed");
+    let requests = sent.lock().unwrap();
+    assert_eq!(requests.len(), 2);
+    let state = db.open().read().unwrap();
+    for (i, (stage, version, schema, old_schema)) in [
+        ("w1", "w1.v2", "w1_v2", "w1_v1"),
+        ("w3", "w3.v2", "w3_v2", "w3_v1"),
+    ]
+    .iter()
+    .enumerate()
+    {
+        assert_eq!(requests[i]["text"]["format"]["name"], *schema);
+        let input: Json = serde_json::from_str(requests[i]["input"].as_str().unwrap()).unwrap();
+        assert_eq!(input["contract"], *version);
+        assert!(input.get("model").is_none());
+        assert_eq!(
+            state.sources[&key].result.as_ref().unwrap()["w4_model_stages"][stage]["binding"]["contract"],
+            *version
+        );
+        let mut prior = requests[i].clone();
+        prior["text"]["format"]["name"] = json!(old_schema);
+        assert_ne!(
+            crate::recall_models::fingerprint(&requests[i]),
+            crate::recall_models::fingerprint(&prior)
+        );
     }
 }

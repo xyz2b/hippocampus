@@ -907,7 +907,7 @@ fn stage_request_with_output_tokens(
                         .collect::<std::collections::BTreeSet<_>>()
                 )
             };
-            let mut payload = json!({"source_snapshot": {"eval_sample": sample["id"]},
+            let mut payload = json!({"contract": if stage == "w1" { "w1.v2" } else { "w3.v2" }, "source_snapshot": {"eval_sample": sample["id"]},
                 "current_user_message": input["text"], "user_history": input.get("history").cloned().unwrap_or(json!([])),
                 "entities": items(&entities).iter().map(|e| json!({"id": e["id"], "owner_id": "eval",
                     "entity_type": "Person", "canonical_name": e["names"][0], "aliases": e["names"]})).collect::<Vec<_>>(),
@@ -917,7 +917,7 @@ fn stage_request_with_output_tokens(
             if stage == "w1" {
                 (
                     ModelStage::W1,
-                    "w1_v1",
+                    "w1_v2",
                     write_models::W1_PROMPT,
                     write_models::w1_schema(),
                     payload,
@@ -936,7 +936,7 @@ fn stage_request_with_output_tokens(
                 payload["memory_requests"] = serde_json::to_value(&batch.memory_requests).unwrap();
                 (
                     ModelStage::W3,
-                    "w3_v1",
+                    "w3_v2",
                     write_models::W3_PROMPT,
                     write_models::w3_schema(),
                     payload,
@@ -962,10 +962,10 @@ fn stage_request_with_output_tokens(
                 .collect();
             (
                 ModelStage::W4,
-                "w4_v3",
+                "w4_v4",
                 write_models::W4_PROMPT,
                 write_models::w4_schema(),
-                json!({"contract": "w4.v3", "w4_input": input, "sources": sources}),
+                json!({"contract": "w4.v4", "w4_input": input, "sources": sources}),
             )
         }
         "r1" | "r4" => recall_adapter::request(stage, sample)?,
@@ -1007,7 +1007,7 @@ fn fingerprint(request: &Value) -> Value {
     }
     if matches!(
         request["text"]["format"]["name"].as_str(),
-        Some("r1_v1" | "r4_v3")
+        Some("r1_v1" | "r4_v3" | "r4_v4")
     ) {
         // 新召回不删除时钟字段；request.at/said_on/时区/模型/提示词/完整包都须参与绑定。
         return json!(hippocampus::recall_models::fingerprint(&request));
@@ -1687,7 +1687,7 @@ fn eval_request_timeout(request: &Value) -> std::time::Duration {
     let compute =
         hippocampus::recall_models::RecallModels::default().r4_effort(op) == ReasoningEffort::Low;
     std::time::Duration::from_secs(
-        if request["text"]["format"]["name"] == "r4_v3"
+        if request["text"]["format"]["name"] == "r4_v4"
             && request["reasoning"]["effort"] == "low"
             && compute
         {
@@ -1701,17 +1701,17 @@ fn eval_request_timeout(request: &Value) -> std::time::Duration {
 #[test]
 fn evaluation_timeout_is_240_only_for_r4_compute_low() {
     for (stage, effort, op, seconds) in [
-        ("r4_v3", "low", "count", 240),
-        ("r4_v3", "low", "sum", 240),
-        ("r4_v3", "low", "elapsed", 240),
-        ("r4_v3", "low", "compare", 240),
-        ("r4_v3", "low", "lookup", 180),
-        ("r4_v3", "low", "list", 180),
-        ("r4_v3", "low", "invalid", 180),
-        ("r4_v3", "minimal", "count", 180),
-        ("r4_v3", "high", "count", 180),
+        ("r4_v4", "low", "count", 240),
+        ("r4_v4", "low", "sum", 240),
+        ("r4_v4", "low", "elapsed", 240),
+        ("r4_v4", "low", "compare", 240),
+        ("r4_v4", "low", "lookup", 180),
+        ("r4_v4", "low", "list", 180),
+        ("r4_v4", "low", "invalid", 180),
+        ("r4_v4", "minimal", "count", 180),
+        ("r4_v4", "high", "count", 180),
         ("r1_v1", "low", "count", 180),
-        ("w3_v1", "low", "count", 180),
+        ("w3_v2", "low", "count", 180),
     ] {
         let request = json!({"text":{"format":{"name":stage}},"reasoning":{"effort":effort},
             "input":json!({"plan":{"plan":{"op":op}}}).to_string()});
@@ -3530,4 +3530,46 @@ fn z8_r1_condition_subset_and_unlabelled_time_keep_required_semantics() {
         score("r1", &sample, Some(&output.to_string()))["status"],
         "失败"
     );
+}
+
+#[test]
+fn m15_stage_executors_bind_current_schema_and_input_contracts() {
+    for (stage, schema, contract) in [
+        ("w1", "w1_v2", "w1.v2"),
+        ("w3", "w3_v2", "w3.v2"),
+        ("w4", "w4_v4", "w4.v4"),
+        ("r1", "r1_v1", "r1.v1"),
+        ("r4", "r4_v4", "r4.v4"),
+    ] {
+        let request =
+            stage_request_with_output_tokens(stage, &samples(stage).remove(0), 16384).unwrap();
+        let input: Value = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        assert_eq!(request["text"]["format"]["name"], schema);
+        assert_eq!(input["contract"], contract);
+        assert!(input.get("model").is_none());
+        let mut previous = request.clone();
+        let mut old_input = input;
+        old_input.as_object_mut().unwrap().remove("contract");
+        previous["input"] = json!(old_input.to_string());
+        assert_ne!(fingerprint(&request), fingerprint(&previous));
+    }
+    for (stages, af11) in [("w3,r4", false), ("r1,r4", true)] {
+        for (stage, sample) in fixed_adapter::selected_set(stages, "", af11).unwrap() {
+            let request = stage_request_with_output_tokens(&stage, &sample, 16384).unwrap();
+            let mut input: Value =
+                serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+            let contract = match stage.as_str() {
+                "w3" => "w3.v2",
+                "r1" => "r1.v1",
+                "r4" => "r4.v4",
+                _ => unreachable!(),
+            };
+            assert_eq!(input["contract"], contract);
+            assert!(input.get("model").is_none());
+            input.as_object_mut().unwrap().remove("contract");
+            let mut frozen = sample["input"].clone();
+            frozen.as_object_mut().unwrap().remove("contract");
+            assert_eq!(input, frozen, "fixed input fields must remain verbatim");
+        }
+    }
 }

@@ -1,4 +1,4 @@
-# personal_memory 客户端接入约定（recall.v3）
+# personal_memory 客户端接入约定（recall.v4）
 
 启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；问个人安排、经历、状态等具体问题时，另调普通 memory_recall，不用 bootstrap 代替。在线请求不要自行加 offline=true。
 
@@ -38,7 +38,7 @@ MCP 无法强制第三方聊天客户端遵守这些表达规则；此边界仍�
 
 ## 校验、删除与预算
 
-memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v3 保守回答，不使用旧 safe_answer。
+memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v4 保守回答，不使用旧 safe_answer。
 
 用户明确要求遗忘且目标可定位时调用 memory_forget；对象不明先澄清。旧记录和暂存仍可删除；墓碑、索引、回执及迟到任务保护不变。
 

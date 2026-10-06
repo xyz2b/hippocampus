@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""target-design 2.6: new inline write + recall.v3 over MCP and synthetic loopback HTTP."""
+"""target-design 2.6: new inline write + recall.v4 over MCP and synthetic loopback HTTP."""
 import argparse
 import contextlib
 import datetime
@@ -52,7 +52,7 @@ class VisibilityFixture(Fixture):
     def output(self, body):
         stage = body["text"]["format"]["name"]
         payload = json.loads(body["input"])
-        if stage == "w1_v1":
+        if stage == "w1_v2":
             text = payload["current_user_message"]
             if text == HYPOTHESIS:
                 return {"candidates": [], "memory_requests": []}
@@ -64,7 +64,7 @@ class VisibilityFixture(Fixture):
                 result["candidates"][0]["times"] = [{"role": "event", "quote": {"text": "昨天"},
                     "interp": {"kind": "relative", "unit": "day", "offset": -1}, "anchor": "said_on"}]
             return result
-        if stage == "w4_v3":
+        if stage == "w4_v4":
             w4 = payload["w4_input"]
             old = next((r for r in w4["records"] if r["format"] == "current" and r["stored_status"] == "active"), None)
             return {"decisions": [{"candidate": c["index"], "status": "decided",
@@ -76,7 +76,7 @@ class VisibilityFixture(Fixture):
             return {"need": "judge", "current_evidence": "query_only", "type": "single",
                     "subject": {"entity_id": "self"}, "relation": "居住地", "conditions": [], "time": None,
                     "plan": {"op": "lookup", "filter": {"relation": "lives_in", "time": None}, "unit": None}}
-        if stage == "r4_v3":
+        if stage == "r4_v4":
             evidence = payload["evidence"]
             records = [r for r in evidence["records"] if r["format"] == "current" and r["stored_status"] == "active"]
             raw = next((r for r in evidence["raw"] if "搬到" in r["quote"]["text"] and r["quote"]["text"] != HYPOTHESIS and r["enrichment"] != "needs_rejudge"), None)
@@ -133,7 +133,7 @@ def run(case, binary):
             client.call("memory_remember", turn("old", OLD))
             wait_status(db, "old", "committed")
         if case == "a":
-            entered, release = gate("w1_v1", NEW)
+            entered, release = gate("w1_v2", NEW)
             saved = client.finish_call(client.start_call("memory_remember", turn("new", NEW)), timeout=5)
             # Startup/periodic scans can claim between T1 and receipt reading, before the explicit wake.
             assert saved["enrichment"]["status"] in ("queued", "running"), saved
@@ -164,7 +164,7 @@ def run(case, binary):
             assert result["facts"][0]["statement"] == text, result
             assert any(r["enrichment"] == "failed" and r["quote"]["text"] == text for r in result["raw"])
         elif case == "d":
-            entered, release = gate("w1_v1", NEW)
+            entered, release = gate("w1_v2", NEW)
             client.call("memory_remember", turn("omitted", NEW))
             assert entered.wait(8)
             for n in range(32):
@@ -175,7 +175,7 @@ def run(case, binary):
             assert result["facts"][0]["current"] != "yes" and "budget_exhausted" not in result["degraded_reasons"]
             release.set()
         elif case == "e":
-            entered, release = gate("w1_v1", NEW)
+            entered, release = gate("w1_v2", NEW)
             client.call("memory_remember", turn("older", NEW))
             assert entered.wait(8)
             latest = "我已搬到杭州。"
@@ -213,13 +213,13 @@ def run(case, binary):
             dates = [datetime.datetime.fromtimestamp(r["start"] + 28800, datetime.timezone.utc).date().isoformat()
                      for r in resolutions(s["result"]) if r.get("start") is not None]
             assert dates and set(dates) == {"2026-10-01"}, dates
-            w1 = next(r for r in VisibilityFixture.requests if r["text"]["format"]["name"] == "w1_v1")
+            w1 = next(r for r in VisibilityFixture.requests if r["text"]["format"]["name"] == "w1_v2")
             assert json.loads(w1["input"])["said_on"] == "2026-10-02"
             result = recall(client, "relative")
             assert result["facts"][0]["grade"] == "committed", result
         elif case == "g":
-            entered, release = gate("w1_v1", NEW)
-            r4_entered, r4_release = gate("r4_v3")
+            entered, release = gate("w1_v2", NEW)
+            r4_entered, r4_release = gate("r4_v4")
             saved = client.call("memory_remember", turn("deleted", NEW))
             assert entered.wait(8)
             foreground = client.start_call("memory_recall", {"query": "我住在哪？", "at": 1790899200, "request_id": "deleted"})

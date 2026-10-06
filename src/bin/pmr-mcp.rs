@@ -459,7 +459,7 @@ mod tests {
         };
         let body = resumed.structured_content.unwrap();
         assert_eq!(body["source"]["status"], "stored");
-        assert_eq!(body["recall"]["version"], "recall.v3");
+        assert_eq!(body["recall"]["version"], "recall.v4");
         assert_eq!(body["recall"]["semantic_judgment"], "skipped");
         assert!(server.prepares.lock().unwrap().is_empty());
         let store = SqliteMemoryStore::open_operation(&path, "prepare-timeout".into()).unwrap();
@@ -486,7 +486,7 @@ mod tests {
             (
                 "new",
                 Some(
-                    json!({"source":{"status":"stored"},"enrichment":{},"recall":{"version":"recall.v3","current_message":"原话"}}),
+                    json!({"source":{"status":"stored"},"enrichment":{},"recall":{"version":"recall.v4","current_message":"原话"}}),
                 ),
             ),
             (

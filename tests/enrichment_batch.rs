@@ -1344,3 +1344,357 @@ fn new_control_review_can_pause_previously_committed_product_and_persist_batch()
         out
     );
 }
+
+// M1.5：只注入模型输出；真实 SQLite / W2 / W3 / W4 / W5，关闭重开读完整候选。
+fn run_plan_action(
+    db: &Db,
+    key: &str,
+    c: Candidate,
+    action: Action,
+    targets: Vec<MemoryId>,
+) -> Json {
+    run_source(
+        &mut db.open(),
+        key,
+        RuntimeInputBudget::default(),
+        |ctx, input| {
+            Ok(reviewed(
+                ctx,
+                input,
+                w2_batch(ctx, input, vec![c.clone()], vec![]),
+                |_| {},
+            ))
+        },
+        |_, input, _| {
+            let mut output = new_output(input);
+            let decision = &mut output.decisions[0];
+            decision.action = Some(action);
+            decision.targets = targets.clone();
+            for id in &targets {
+                let record = input.records.iter().find(|r| r.id() == *id).unwrap();
+                let RecordView2::Current(record) = record else {
+                    panic!("plan is complete")
+                };
+                decision.basis.extend(record.evidence.clone());
+            }
+            Ok(Some(output))
+        },
+    )
+    .unwrap()
+}
+fn submitted(out: &Json) -> MemoryId {
+    assert_eq!(
+        out["enrichment"]["candidates"][0]["status"], "committed",
+        "{out}"
+    );
+    MemoryId(
+        out["enrichment"]["candidates"][0]["memory_id"]
+            .as_u64()
+            .unwrap(),
+    )
+}
+fn as_plan(text: &str) -> Candidate {
+    let mut c = candidate(text);
+    c.speech = Speech::Plan;
+    c
+}
+
+#[test]
+fn plans_keep_modality_polarity_qualifiers_and_past_event_dates_on_reopen() {
+    let db = Db::new();
+    let text = "如果码头开放，我可能计划在2002年2月14日乘渡轮。";
+    let mut c = as_plan(text);
+    c.conditions = vec![TextQualifier {
+        quote: Quote {
+            text: "如果码头开放".into(),
+        },
+        resolved: true,
+    }];
+    c.uncertainty = Some(TextQualifier {
+        quote: Quote {
+            text: "可能".into(),
+        },
+        resolved: true,
+    });
+    c.times = vec![TimeInterp {
+        role: TimeRole::Event,
+        quote: Quote {
+            text: "2002年2月14日".into(),
+        },
+        interp: Interp::Date {
+            date: "2002-02-14".into(),
+        },
+        anchor: TimeAnchor::SaidOn,
+    }];
+    let key = db.start("plan", text);
+    let id = submitted(&run_plan_action(&db, &key, c.clone(), Action::New, vec![]));
+    let state = db.open().read().unwrap();
+    let full = w5_record_contract(&state, id).unwrap();
+    assert_eq!(full.candidate, c);
+    assert!(!full.lossless());
+    let RecordView2::Current(view) = w4::record_view(&state, id).unwrap() else {
+        panic!()
+    };
+    assert_eq!(view.candidate, c);
+    assert_eq!(view.stored_status, StoredStatus::Active);
+    let m = db.memories().into_iter().find(|m| m.id == id).unwrap();
+    assert_eq!(m.temporal.valid_to, None);
+    assert_eq!(m.temporal.expires_at, None);
+
+    let text = "我不计划参加夜间巡游。";
+    let mut c = as_plan(text);
+    c.polarity = hippocampus::contract::Polarity::Negate;
+    let key = db.start("negative", text);
+    let id = submitted(&run_plan_action(
+        &db,
+        &key,
+        c.clone(),
+        Action::Coexist,
+        vec![],
+    ));
+    assert_eq!(
+        w5_record_contract(&db.open().read().unwrap(), id)
+            .unwrap()
+            .candidate,
+        c
+    );
+    c.polarity = hippocampus::contract::Polarity::Unknown;
+    let key = db.start("unknown", text);
+    let out = run_plan_action(&db, &key, c, Action::New, vec![]);
+    assert_eq!(out["enrichment"]["candidates"][0]["status"], "pending");
+    assert!(out["enrichment"]["candidates"][0]["memory_id"].is_null());
+    assert_eq!(db.memories().len(), 2);
+    let listed = ChatMemoryService::new(db.open(), ChatConfig::default())
+        .unwrap()
+        .call("memory_list", json!({}), || false)
+        .unwrap();
+    let negative = listed["memories"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|m| m["id"] == id.0)
+        .unwrap();
+    assert_eq!(negative["qualifiers_unmapped"]["speech"], "plan");
+    assert_eq!(negative["qualifiers_unmapped"]["polarity"], "negate");
+}
+
+#[test]
+fn plan_changes_and_cancellation_end_only_model_targets_and_keep_booking() {
+    let db = Db::new();
+    let booking = seed(&db, "booking", "我已购买渡轮船票。");
+    let booking_id = submitted(&hippocampus::enrichment::receipt(&db.open(), &booking).unwrap());
+    let text = "我计划清晨乘渡轮。";
+    let key = db.start("morning", text);
+    let original = submitted(&run_plan_action(
+        &db,
+        &key,
+        as_plan(text),
+        Action::Coexist,
+        vec![],
+    ));
+    let text = "我改为计划下午乘渡轮。";
+    let key = db.start("afternoon", text);
+    let changed = submitted(&run_plan_action(
+        &db,
+        &key,
+        as_plan(text),
+        Action::StateChange,
+        vec![original],
+    ));
+    let text = "我取消乘渡轮的计划。";
+    let key = db.start("cancel", text);
+    let mut c = as_plan(text);
+    c.polarity = hippocampus::contract::Polarity::Negate;
+    let cancelled = submitted(&run_plan_action(
+        &db,
+        &key,
+        c,
+        Action::StateChange,
+        vec![changed],
+    ));
+    let state = db.open().read().unwrap();
+    for id in [original, changed] {
+        let RecordView2::Current(view) = w4::record_view(&state, id).unwrap() else {
+            panic!()
+        };
+        assert_eq!(view.termination_reason, Some(SupersedeReason::StateChanged));
+        assert_eq!(view.ended, Ended::EndUnknown);
+        assert_eq!(view.candidate.speech, Speech::Plan);
+    }
+    let RecordView2::Current(view) = w4::record_view(&state, booking_id).unwrap() else {
+        panic!()
+    };
+    assert_eq!(view.stored_status, StoredStatus::Active);
+    assert_eq!(view.candidate.speech, Speech::UserStatement);
+    assert_eq!(
+        w5_record_contract(&state, cancelled)
+            .unwrap()
+            .candidate
+            .polarity,
+        hippocampus::contract::Polarity::Negate
+    );
+    assert!(state.sources.values().all(|s| s.enrichment != "deleted"));
+}
+
+#[test]
+fn plan_correction_and_withdrawal_preserve_the_distinct_model_decision() {
+    for action in [Action::Correction, Action::Retract] {
+        let db = Db::new();
+        let text = "我计划参加晨间导览。";
+        let key = db.start("original", text);
+        let id = submitted(&run_plan_action(
+            &db,
+            &key,
+            as_plan(text),
+            Action::New,
+            vec![],
+        ));
+        let text = "此前导览计划的陈述有误。";
+        let key = db.start("revision", text);
+        let mut c = as_plan(text);
+        if action == Action::Retract {
+            c.kind = CandidateKind::Retraction;
+            c.value = None;
+        }
+        run_plan_action(&db, &key, c, action, vec![id]);
+        let state = db.open().read().unwrap();
+        let RecordView2::Current(view) = w4::record_view(&state, id).unwrap() else {
+            panic!()
+        };
+        assert_eq!(
+            view.termination_reason,
+            Some(if action == Action::Correction {
+                SupersedeReason::Correction
+            } else {
+                SupersedeReason::UserRetracted
+            })
+        );
+        assert!(state.sources.values().all(|s| s.enrichment != "deleted"));
+        assert_eq!(
+            db.memories().len(),
+            if action == Action::Correction { 2 } else { 1 }
+        );
+    }
+}
+
+#[test]
+fn w3_reported_missing_plan_condition_cannot_be_supported_or_committed() {
+    let db = Db::new();
+    let text = "若渡口开放，我计划乘渡轮。";
+    let key = db.start("condition", text);
+    let out = run(&db, &key, |ctx, input| {
+        let batch = w2_batch(ctx, input, vec![as_plan(text)], vec![]);
+        let problem = ReviewProblem {
+            aspect: ReviewAspect::Condition,
+            quote: Quote {
+                text: "若渡口开放".into(),
+            },
+        };
+        let mut review = W3Output {
+            reviews: vec![CandidateReview {
+                candidate: 0,
+                verdict: Verdict::Supported,
+                problems: vec![problem],
+                episode_value: EpisodeValue::NotApplicable,
+            }],
+            request_reviews: vec![],
+            coverage: W3Coverage {
+                status: CoverageStatus::Complete,
+                missing: vec![],
+            },
+        };
+        assert!(
+            review
+                .clone()
+                .validate(&batch, &ctx.source_binding, &input.text)
+                .is_err()
+        );
+        review.reviews[0].verdict = Verdict::Contradicted;
+        let review = Some(
+            review
+                .validate(&batch, &ctx.source_binding, &input.text)
+                .unwrap(),
+        );
+        Ok(UpstreamBatch { w2: batch, review })
+    });
+    assert!(out["enrichment"]["candidates"][0]["memory_id"].is_null());
+    assert!(db.memories().is_empty());
+}
+
+#[test]
+fn recall_preserves_plan_records_and_injected_plan_wording_without_inferring_execution() {
+    use hippocampus::recall::{self, Budget, Request};
+    let db = Db::new();
+    let text = "我计划参加清晨导览。";
+    let c = as_plan(text);
+    let key = db.start("recall-plan", text);
+    let id = submitted(&run_plan_action(&db, &key, c.clone(), Action::New, vec![]));
+    let query = "已记录的导览计划是什么？";
+    let req = Request {
+        binding: RecallRequest {
+            request_id: "plan-query".into(),
+            query: query.into(),
+            context: vec![],
+            task_id: None,
+            at: 1893456000,
+        },
+        owner: UserId::from("alice"),
+        subject_ids: None,
+        said_on: "2030-01-01".into(),
+        utc_offset_seconds: 28800,
+        bootstrap: false,
+    };
+    let relations = [w2::Relation {
+        id: "fact".into(),
+        memory_types: vec![MemoryType::Fact],
+    }];
+    let entities = [EntityId::from("self")];
+    let plan = r1::validate(serde_json::from_value(json!({"need":"judge","current_evidence":"query_only","type":"single","subject":{"entity_id":"self"},"relation":"导览计划","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})).unwrap(), &r1::Context { query, context: &[], entities: &entities, relations: &relations, subject_ids: None, task_id: None, said_on: &req.said_on, utc_offset_seconds: req.utc_offset_seconds, supported_units: &[] }).unwrap();
+    let assembly = recall::assemble(&db.open(), &req, &plan, Budget::default()).unwrap();
+    let stored_source = db.open().read().unwrap().sources[&key].id.clone();
+    let model = json!({"verdict":"supported","facts":[{"statement":"用户计划参加清晨导览，执行情况未知。","evidence":[{"source":{"kind":"stored","source_id":stored_source},"quote":{"text":text}}],"record_ids":[id.0],"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[]}],"compute":null});
+    let out = assembly
+        .finish_r4(&db.open(), Ok(&model.to_string()))
+        .unwrap();
+    assert_eq!(out.version, "recall.v4");
+    assert_eq!(out.status, RecallStatus::Answered);
+    assert_eq!(
+        out.facts[0].statement,
+        "用户计划参加清晨导览，执行情况未知。"
+    );
+    let RecordView::Current(record) = &out.records[0] else {
+        panic!()
+    };
+    assert_eq!(record.candidate, c);
+    assert_eq!(record.stored_status, StoredStatus::Active);
+    // 查询执行：模型提供不足判断，代码不根据 Active/日期自行改成已发生。
+    let mut execution = req.clone();
+    execution.binding.request_id = "plan-execution-query".into();
+    execution.binding.query = "导览是否已参加？".into();
+    let mut understood = plan.output.clone().unwrap();
+    understood.relation = "导览执行情况".into();
+    let execution_plan = r1::validate(
+        understood,
+        &r1::Context {
+            query: &execution.binding.query,
+            context: &[],
+            entities: &entities,
+            relations: &relations,
+            subject_ids: None,
+            task_id: None,
+            said_on: &execution.said_on,
+            utc_offset_seconds: execution.utc_offset_seconds,
+            supported_units: &[],
+        },
+    )
+    .unwrap();
+    let out = recall::assemble(&db.open(), &execution, &execution_plan, Budget::default())
+        .unwrap()
+        .finish_r4(
+            &db.open(),
+            Ok(r#"{"verdict":"insufficient","facts":[],"compute":null}"#),
+        )
+        .unwrap();
+    assert_eq!(out.status, RecallStatus::Insufficient);
+    assert!(out.facts.is_empty());
+}

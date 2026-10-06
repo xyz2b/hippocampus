@@ -1166,7 +1166,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v3");
+    assert_eq!(out["version"], "recall.v4");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1255,7 +1255,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v3");
+        assert_eq!(result["recall"]["version"], "recall.v4");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1270,7 +1270,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v3");
+    assert_eq!(body["recall"]["version"], "recall.v4");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -2768,4 +2768,27 @@ fn remember_acknowledgment_is_progress_but_retention_control_is_safety() {
     assert!(rt.retained(&db.open(), "requests").is_err());
     assert!(rt.cache.lock().unwrap().is_empty());
     assert_eq!(db.calls(), 0);
+}
+
+#[test]
+fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
+    for rule in [
+        "Kinship refers to the related person",
+        "never default it to self",
+        "r1.v1",
+    ] {
+        assert!(R1_PROMPT.contains(rule), "{rule}");
+    }
+    for rule in [
+        "r4.v4",
+        "candidate.speech",
+        "latest supported plan version",
+        "otherwise remains insufficient",
+        "does not alone cancel a booking",
+        "Event dates passing do not prove",
+    ] {
+        assert!(R4_PROMPT.contains(rule), "{rule}");
+    }
+    assert!(!R1_PROMPT.contains("For example"));
+    assert!(!R4_PROMPT.contains("For example"));
 }

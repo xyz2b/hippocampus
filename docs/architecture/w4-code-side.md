@@ -17,7 +17,7 @@
   - 带其他任务条件的记录不进入输入。关系含任何越界成员时整条不送入，也不由该关系带入其他成员；被挡住的成员数计入 `coverage.omitted`，范围不完整。
   - 重判的记录本身不与自己比较；它是关系成员时仍出现在记录里。
 - **记录预算**：`W4Budget { facts, records }` 中 `records` 是实际可送入记录的总数上限，已删除、缺失、越界记录不计。必需集合（专用关系记录、关系成员、重判前身）展开后超限时，记录与关系输入留空、不调用 W4，整批 pending / scope_incomplete；fact 命中按检索顺序逐条尝试加入。第③段另加候选数、关系数、原文 UTF-8 字节预算（第 5 节），不改变上述取数规则；token 和付费调用预算由第④段模型提供者负责。
-- **coverage.complete**：专用关系全部取到时为 true；通用 fact 实际穷举含历史及关系闭包且在预算内时也可 true；检索回落、任务隔离挡住关系、覆盖未知或超预算时为 false。已有 pending 不因本次穷举或新提交而批量清除，只能显式重判。W4 契约为 w4.v3，请求版本进入指纹，旧录制自然过期。已删除记录不计入 omitted。这个值原样写进 W5 组的 `scope_complete`。
+- **coverage.complete**：专用关系全部取到时为 true；通用 fact 实际穷举含历史及关系闭包且在预算内时也可 true；检索回落、任务隔离挡住关系、覆盖未知或超预算时为 false。已有 pending 不因本次穷举或新提交而批量清除，只能显式重判。W4 契约为 w4.v4，请求版本进入指纹，旧录制自然过期。已删除记录不计入 omitted。这个值原样写进 W5 组的 `scope_complete`。
 - **记录视图（`record_view`）**
   - 有完整候选和更新状态的记录给 CurrentRecordView2：
     - `ended` / `end` 取结束它的决定里保存的生效时间；
@@ -96,9 +96,9 @@
   - 必需记录超限时整批待定；w4_22 删除 s-501 后重判 N 可清除缺口，`records=1` 不误判超限，零预算仍待定且只计未送入的存活记录。
   - retract 可带结束时间；reinforce 等非结束动作只记回执。
 - **反例**：23 种不合规输出整份拒绝。
-- **范围外**：`after.recall` 涉及 recall.v3，不在这里验收。
+- **范围外**：`after.recall` 涉及 recall.v4，不在这里验收。
 - **例外（用户同意）**：w4_09 不比对组装结果。样本为了测试“检索到无关记录时判为 new”，送入了一条按取数规则取不到的其他关系记录；该样本直接用样本输入验证校验、转换与提交。
-- **标签状态与验证边界**：样本迁移到 w4.v2 后为 draft，等用户复核。复核前，本测试只说明代码与当前标签一致；“无新回归”仅指约定检查覆盖范围，不代表模型语义、运行时接线或 recall.v3 已验收。
+- **标签状态与验证边界**：样本迁移到 w4.v2 后为 draft，等用户复核。复核前，本测试只说明代码与当前标签一致；“无新回归”仅指约定检查覆盖范围，不代表模型语义、运行时接线或 recall.v4 已验收。
 
 ## 5. 运行时库级闭环
 
@@ -117,7 +117,7 @@
 - **重判复用**：新轮继承 W4 候选，从上一轮回执绑定 committed_id，原有绑定不能丢弃或替换。本轮暂停或拒收的已提交候选仍保留在完整批次，后续轮次从本来源各轮已提交 W5 回执恢复最新产物绑定；不另存进度或把暂停候选变成无 ID 的新增。低层接口没有完整批次时仍禁止移除已有绑定。完整批次来源绑定不变时，复用已经核验的 W2/W3，绝不重新提取后按索引套用产物；来源快照变化时通过 previous_w2 将最终候选与请求交提供者重新核验 W3，禁止替换该 W2 批次，旧 W3 绑定会被拒。W5 继续核对产物的来源、完整候选、有效状态及快照；失效或归并退出的产物不能回落成无 ID 的新增。新尝试仍须显式重判，不自动再次调用模型。
 - **删除与验证**：清空自身 result（含批次、控制标记、模型阶段结果和输入元数据）和认领；清洗他处候选、W3 binding/问题/覆盖片段、请求、来源历史副本、依据和编码快照，受影响计划整体失效，进入 needs_rejudge。旁侧元数据没有原文副本；新轮才重建。保留历史组 ID 供审计，不执行失效旧组。重判可读取失效关系的来源 ID 与墓碑，但不向提供者附已删除原文；输出若仍把它当动作依据，validate / W5 继续拒绝。`tests/enrichment_batch.rs`、`tests/enrichment_runtime.rs` 与 `tests/w4_recovery.rs` 用真实 SQLite 关闭重开覆盖完整批次、绑定、控制暂停、T1、注入输出、预算、恢复窗口、屏障、争抢、删除和回执映射。
 
-默认切换、MCP inline/deferred 后台与 recall.v3 均已接通。检索 full_text/fallback 只记内部输入诊断，继续使用已有 w1:<来源ID>:<候选索引> 证据ID；旧ID与回执原样读取。关系由W4决定或显式判定解决，不从枚举完整性自动解决。
+默认切换、MCP inline/deferred 后台与 recall.v4 均已接通。检索 full_text/fallback 只记内部输入诊断，继续使用已有 w1:<来源ID>:<候选索引> 证据ID；旧ID与回执原样读取。关系由W4决定或显式判定解决，不从枚举完整性自动解决。
 
 ## 6. W1/W3 模型提供者（④-3）
 
@@ -129,8 +129,8 @@
 
 ## 7. W4 模型提供者（④-4）
 
-- **入口与约束**：`enrichment::run_source_with_all_models(store, key, budget, provider)` 将同一个 `WriteModelProvider` 接到 W1/W3 上游和 W4 判定位置；保留 `run_source` 与 `run_source_with_models` 的注入接口。`W4_PROMPT` 与 `w4_schema()` 在 `src/write_models.rs`，覆盖 w4.v3 动作、逐候选决定、目标数量、新旧双方依据、legacy 待定、范围缺口、关系解决、生效时间及 QualifierRef 冲突范围；原文和历史没有指令权限。提示词不放样本原文、ID 或说明标签，静态测试扫描 W1/W3/W4 samples 的原文、ID 和说明标签；全量验收 B 另扫描 cases 的消息、问题、上下文和说明，覆盖全部五份提示词。W3 定向修正明确原始索引逐项且唯一、非 episode 的 not_applicable、supported 的空 problems，并要求简洁输出而不删核验项；schema、核验规则与冻结契约不变。
-- **输入与阶段结果**：W4 请求传入 `contract=w4.v3`、实际 `w4_input` 和按来源 ID 去重的 `sources { text, history }`；完整输入 JSON 作为 `result.w4_model_stages.w4.binding`，与已核验输出、operation_id 一起保存，不改数据库版本。记录、关系、coverage 或提供原文/历史变化时，同操作缓存拒绝复用并要求 needs_rejudge。加载和保存均核对认领、租约、轮次及来源绑定。阶段内部 `output` 保存 `{raw_output, final_output, valid, validation_error}`：原始模型 JSON 不被覆盖，最终决定经过同一组装规则和严格校验；组装成功但校验失败仍保留组装后的 final_output；解码或组装失败时为 null，valid=false。失败检查点另绑定 invalid_operation_id：同操作复验失败不重发，显式重判的新操作可再次调用。缓存重开重新组装、校验并核对保存的最终输出，差异拒收、不发送。旧的裸 W4Output 检查点继续复验，但不能冒充已保存过原始模型输出。此内部 JSON 扩展不升数据库版本，不改变外部回执或冻结 schema。
+- **入口与约束**：`enrichment::run_source_with_all_models(store, key, budget, provider)` 将同一个 `WriteModelProvider` 接到 W1/W3 上游和 W4 判定位置；保留 `run_source` 与 `run_source_with_models` 的注入接口。`W4_PROMPT` 与 `w4_schema()` 在 `src/write_models.rs`，覆盖 w4.v4 动作、逐候选决定、目标数量、新旧双方依据、legacy 待定、范围缺口、关系解决、生效时间及 QualifierRef 冲突范围；原文和历史没有指令权限。提示词不放样本原文、ID 或说明标签，静态测试扫描 W1/W3/W4 samples 的原文、ID 和说明标签；全量验收 B 另扫描 cases 的消息、问题、上下文和说明，覆盖全部五份提示词。W3 定向修正明确原始索引逐项且唯一、非 episode 的 not_applicable、supported 的空 problems，并要求简洁输出而不删核验项；schema、核验规则与冻结契约不变。
+- **输入与阶段结果**：W4 请求传入 `contract=w4.v4`、实际 `w4_input` 和按来源 ID 去重的 `sources { text, history }`；完整输入 JSON 作为 `result.w4_model_stages.w4.binding`，与已核验输出、operation_id 一起保存，不改数据库版本。记录、关系、coverage 或提供原文/历史变化时，同操作缓存拒绝复用并要求 needs_rejudge。加载和保存均核对认领、租约、轮次及来源绑定。阶段内部 `output` 保存 `{raw_output, final_output, valid, validation_error}`：原始模型 JSON 不被覆盖，最终决定经过同一组装规则和严格校验；组装成功但校验失败仍保留组装后的 final_output；解码或组装失败时为 null，valid=false。失败检查点另绑定 invalid_operation_id：同操作复验失败不重发，显式重判的新操作可再次调用。缓存重开重新组装、校验并核对保存的最终输出，差异拒收、不发送。旧的裸 W4Output 检查点继续复验，但不能冒充已保存过原始模型输出。此内部 JSON 扩展不升数据库版本，不改变外部回执或冻结 schema。
 - **校验与提交**：W4 提供者、注入入口和离线回放共用 `w4::assemble_new_basis`（运行时包装入口为 prepare_output），组装逻辑只有这一处，重复调用幂等。为每条 decided/pending 复制当前输入候选的 source 与 sentence；来源必须仍存在、属于本次提供的输入、原文未变化且候选原句逐字存在。已有等价原句引用不重复；其他原始引用不删改，旧方依据、动作、目标和关系解决均不补。组装后调用原有严格 validate，再交现有 `plan`（再次 validate）、保存计划与 W5 提交。原始输出及最终输出保存到阶段检查点；无效决定仍整份失败、零业务写入，T1 与预算记录保留，错误为 w4_invalid_output 或已有模型错误码，不自动重试。有调用记录无阶段结果的崩溃窗口仍为 failed/model_invalid_output，内部 detail_code=model_result_missing。
 - **预算与恢复**：w4 与 w1/w3 共用后台每消息额度（最多 3），与旧前台计数分开，共享授权 group 总额；同 owner/operation 的后台次数跨 group 统计。W1 空发送一次，无需 W4 发送两次，需要 W4 最多三次。W4 阶段已保存但计划尚未保存时，同输入重开可零发送恢复；计划已经保存时直接续交余组或补来源汇总，不重新 assemble 或调用 W4，目标变化由 W5 快照检查要求重判。
 - **清洗与离线验证**：W4 的输入记录、关系、提供原文/历史和输出依据都是阶段检查点里的原文副本，沿用删除清洗及整份计划失效；固定 action/pending_reason/of 枚举保留。涉及删除的 W4 阶段整体清空 raw_output 与 validation_error，避免空白变体或无效 JSON 残留；valid=false 时 final_output 也整体清空，已校验的 final_output 沿用逐片段墓碑清洗。受影响的缓存与计划不可续跑，未涉及的来源与审计副本保持不变。真实 SQLite 与假 HTTP 回归使用 W4 强化夹具作为响应（只重绑定数据库生成的来源和目标 ID），覆盖完整闭环、1/2/3 次发送、整份无效零写入、缓存输入变化、缺结果、计划/部分提交/未写总状态重开、晚到结果和删除；删除回归另覆盖空白变体、无效/不可解码响应、检查点失效及无关审计副本保留。w4_save_model_stage 在保存的同一事务内复用 SourceInput::of 核对全部提供来源的正文与历史，不使用全局 revision 等值检查；来源已删除或变化时整次保存回滚，不保留原始输出或输入绑定，运行时仅记录 needs_rejudge 失败码。旧方删除先于保存时拒绝晚到响应，保存先于删除时沿用上述清洗。回归同时覆盖有效/无效响应、正文/历史变化及终态不自动续跑。测试不评价真实模型语义或改变样本标签。
@@ -210,3 +210,9 @@ EVAL_HISTORY=1 cargo test --test write_stage_eval write_stage_eval_suite -- --ex
 W1/W3/W4 的单次本地 HTTP 超时统一为 360 秒。本轮录制最长约 242 秒，预留约 118 秒余量；每次调用前续租的 W4 执行租约为 900 秒，仍大于阶段超时，避免正常执行先失去认领。R1/R4 与前台总预算不变。远端迟到 completed 不等于本地阶段成功；没有自动重试，超时仍保留失败回执与已占用调用预算。
 
 AF1 升版后的离线回归保留 w4.v2 归档样本的显式 incomplete 输入来验证原有保守提交规则；组装对照仍核对记录与关系闭包，coverage 按 v3 规则另验。新回归直接使用生产组装的 complete 输入，核对小范围穷举、预算回落、历史及关系闭包、任务隔离，以及新提交不会批量清除旧 pending。召回侧在可信主体/任务内，对空关系结果或范围内更强词法命中放宽关系提示；无关系过滤的小范围实际穷举，裁剪/越界仍报告不完整。
+
+## M1.5 第②步：计划与协议升版
+
+当前核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
+
+主体确认/重建、历史补录与 nullable said_on 在第③④步实现，本步 DB 仍为 9。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。宿主分发的版本字面量位于本任务范围外 chat.rs/chat_recall.rs，接线需补充授权；未完成前不能宣称 MCP 的 v4 闭环已可用。

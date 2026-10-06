@@ -143,14 +143,16 @@ impl W5View {
                 }
                 if !contract.lossless() {
                     let c = &contract.candidate;
-                    qualified.insert(
-                        id,
-                        serde_json::json!({
-                            "conditions": c.conditions,
-                            "uncertainty": c.uncertainty,
-                            "times": c.times,
-                        }),
-                    );
+                    let mut qualifiers = serde_json::json!({
+                        "conditions": c.conditions,
+                        "uncertainty": c.uncertainty,
+                        "times": c.times,
+                    });
+                    if c.speech == crate::contract::Speech::Plan {
+                        qualifiers["speech"] = serde_json::json!(c.speech);
+                        qualifiers["polarity"] = serde_json::json!(c.polarity);
+                    }
+                    qualified.insert(id, qualifiers);
                 }
             }
         }
@@ -497,7 +499,7 @@ pub struct W5Candidate {
     /// 重判已提交断言时为原记录 ID（第 4 段）。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub committed_id: Option<MemoryId>,
-    /// 完整的 w1.v1 候选（A 段）。为空时不序列化，旧组的指纹不变。记录的完整候选取产生它的
+    /// 完整的 w1.v2 候选（A 段）。为空时不序列化，旧组的指纹不变。记录的完整候选取产生它的
     /// 那次提交，之后不可变：重判必须带完全相同的完整候选。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub contract: Option<crate::contract::ContractCandidate>,

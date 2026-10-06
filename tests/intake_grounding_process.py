@@ -19,8 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 OWNER = "intake-grounding-synthetic"
 SUBJECT = "霜叶31"
 OTHER = "青石82"
-REVIEW = "w3_v1"
-EXTRACTION = "w1_v1"
+REVIEW = "w3_v2"
+EXTRACTION = "w1_v2"
 PAPER = "霜叶31默认用 A4 纸打印，纸张放在右侧纸盒。"
 # text, predicate, value kind, value, review verdict; all statements are synthetic.
 CASES = {
