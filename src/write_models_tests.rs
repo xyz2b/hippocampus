@@ -2764,3 +2764,98 @@ fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_
         );
     }
 }
+
+#[test]
+fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
+    let db = Db::new();
+    let text = "孩子常用琥珀色书签。";
+    let key = db.start_turn(text, "unresolved", &[]);
+    let mut extraction = w1(text);
+    extraction["candidates"][0]["subject"] = json!({"unresolved":{"text":"孩子"}});
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&extraction.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    assert_eq!(
+        run(&db, &key, &provider)["enrichment"]["candidates"][0]["status"],
+        "unresolved"
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let confirming = db.start_turn("我确认这里的孩子是青芽。", "identity-confirmation", &[]);
+    let entity = Entity {
+        id: "child".into(),
+        owner_id: "alice".into(),
+        entity_type: EntityType::Person,
+        canonical_name: "青芽".into(),
+        aliases: vec!["孩子".into()],
+    };
+    db.open()
+        .transaction(|state| {
+            state.entities.upsert(entity.clone());
+            Ok(())
+        })
+        .unwrap();
+    let state = db.open().read().unwrap();
+    let id = &state.sources[&key].id;
+    let citation = &state.sources[&confirming].id;
+    let mut service = ChatMemoryService::new(
+        db.open(),
+        ChatConfig {
+            enrichment_mode: EnrichmentMode::Deferred,
+            model_budget: Some(ModelBudgetConfig {
+                group_id: "authorized".into(),
+                max_calls: 100,
+                max_operation_calls: 3,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let status = service
+        .call("memory_source_status", json!({"source_id":id}), || false)
+        .unwrap();
+    let args = json!({"source_id":id,"request_id":"confirmation","expected_state_token":status["state_token"],
+        "mode":"confirm_subject","candidate_index":0,"entity_id":"child","enqueue":true,
+        "confirmation":{"source":{"kind":"stored","source_id":citation},"quote":{"text":"这里的孩子是青芽"}}});
+    let (mut final_provider, final_sent) = mocked(&db, vec![Ok(envelope(&w3().to_string()))]);
+    final_provider.context.known_entities.push(entity);
+    final_provider.context.utc_offset_seconds = 0; // Changing server timezone doesn't change the frozen anchor.
+    service.inject_model_client(final_provider.client.clone());
+    let accepted = service
+        .call("memory_source_reprocess", args.clone(), || false)
+        .unwrap();
+    assert_eq!(accepted["enqueued"], true);
+    assert_eq!(accepted["generation"], 1);
+    assert_eq!(db.calls(), 2);
+    assert!(final_sent.lock().unwrap().is_empty()); // enqueue isn't a synchronous model call.
+    assert_eq!(
+        run(&db, &key, &final_provider)["enrichment"]["status"],
+        "committed"
+    );
+    assert_eq!(final_sent.lock().unwrap().len(), 1);
+    assert_eq!(db.calls(), 3);
+    let request = &final_sent.lock().unwrap()[0];
+    assert_eq!(request["text"]["format"]["name"], "w3_v2");
+    let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+    assert_eq!(payload["generation"], 1);
+    assert_eq!(payload["utc_offset_seconds"], 28_800);
+    assert_eq!(payload["subject_confirmations"][0]["entity_id"], "child");
+    assert_eq!(
+        payload["user_history"].as_array().unwrap().last().unwrap(),
+        "这里的孩子是青芽"
+    );
+    assert_eq!(payload["current_user_message"], text);
+    assert_eq!(payload["candidates"][0]["candidate"]["value"]["text"], text);
+    assert!(payload.get("model").is_none());
+    assert_eq!(
+        service
+            .call("memory_source_reprocess", args, || false)
+            .unwrap()["replayed"],
+        true
+    );
+    assert_eq!(db.calls(), 3);
+}

@@ -160,7 +160,7 @@ fn m1_old_v1_to_v8_profiles_survive_migration_reopen_and_save() {
                 .unwrap()
                 .pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
                 .unwrap(),
-            9
+            10
         );
     }
 }

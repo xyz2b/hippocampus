@@ -9,18 +9,29 @@
 ## 输入与调用顺序
 
 1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求，零模型调用；完成后继续处理同一条消息，不是普通个人事实查询。
-2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 仅含必要的先前 USER 原话，不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交，计划记忆闭环在后续步骤实现。
+2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 仅含必要的先前 USER 原话，不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交；计划按完整断言与限定语保存、呈现，不当作已发生事件。
 3. 只有整条当前消息及必要 history 均获准留存时传 capture_source=true。省略/false 被拒绝，不转为事实保存。明确不保存、无法满足的保存期限、秘密、假设或引用不调用持久写入工具；改用只读 recall 或本轮上下文。
 4. 只读查询提交完整原问，context 仅放必要 USER 澄清，不能拼接不同消息或增加事实。Recall 包括 bootstrap 都须稳定 request_id；新查询/刷新使用新 ID。同参重放复用首次 at 和结果，不追加模型尝试。Prepare 缺省从 session/turn 派生 request_id。
-5. 主体未解析时必要澄清一次，不凭目录唯一或排除法绑定；明确家人等人物的称呼可用 memory_entity_upsert 登记，不要求真名，不把属性或事件登记成人物。登记不会自动修复旧候选；memory_source_status 可查看待处理原因，主体确认与重建入口在后续步骤实现。memory_list 仅作管理，不能绕过召回取得事实答案。memory_clarify 已停用旧 staged 提交，旧暂存只读/可删。
+5. 主体未解析时必要澄清一次，不凭目录唯一或排除法绑定；明确家人等人物的称呼可用 memory_entity_upsert 登记，不要求真名，不把属性或事件登记成人物。登记不会自动修复旧候选；使用下述 status → reprocess 流程确认待处理主体，不要求用户重说已留存原话。memory_list 仅作管理，不能绕过召回取得事实答案。memory_clarify 已停用旧 staged 提交，旧暂存只读/可删。
 
 ## 来源管理（零模型调用）
 
 memory_source_status 输入 `source_id`，只读取服务器当前 owner 的来源。返回 `source/enrichment`、`generation`、`round`、`state_token`、`provenance`、`time_anchor`、`uncommitted_candidates`（index/status/reasons）与 `pending_update_candidates`，不含原文或事实值；未找到或属于其他 owner 时 `source_not_found`，已删除时 `source_deleted`。管理状态是读快照，不能用它代替 memory_recall 的证据或事实判断。
 
-当前 v9 的 generation 为 0，未开始判定时 round 为 null；出处只给现有接收身份，parent_source_id/history_index 为 null；时间锚由 observed_at 与服务器时区提供，不推断未记录的历史时间。后续步骤补全代际、出处与时间信息。state_token 是单来源及其候选/组回执状态的绑定；来源正文、任务/租约、控制或回执改变会改变令牌，无关来源或全局 revision 推进不改变令牌。此入口不续跑、不触发重建、不调用模型。
+DB 10 的 generation 初始为 0，每次确认或重提取加 1；未开始判定时 round 为 null。普通来源的出处包含接收身份，parent_source_id/history_index 为 null；新来源保存接收时的时间锚，旧库缺省按现有 observed_at 提供，不推断历史时间。subject_confirmations 仅给候选身份、实体、来源引用与片段哈希，audit_generations 给出旧代际号，不返回确认原文。历史补录另在第④步实现。state_token 是单来源及其候选/组回执状态的绑定；来源正文、任务/租约、控制或回执改变会改变令牌，无关来源或全局 revision 推进不改变令牌。此入口不续跑、不触发重建、不调用模型。
 
 memory_list 原有 `pending_total/pending` 仍表示旧 staged 暂存；新增 `pending_source_total/pending_sources` 显示尚未成功整理、失败、未解析或仍有待处理候选/更新的已保存来源，删除来源不显示。`offset/limit` 分页记忆与旧暂存，`source_offset/source_limit` 独立分页来源（缺省 0/20，limit 均为 1–100）。每个来源仅给 ID、保存/整理状态、未提交候选和待定更新的索引/状态/原因，不返回事实值或原文。已提交但 update.pending 的候选属于 pending_update_candidates，不冒充未提交。
+
+## 主体确认与候选重建
+
+1. 必要时澄清一次，把获准完整 USER 确认消息独立保存（capture_source=true），记下其 source_id；不把助手文本当确认依据。用 memory_entity_upsert 登记用户确认的实体称呼。
+2. 用 memory_source_status 查看原事实来源的未提交候选 index 和最新 state_token；调用 memory_source_reprocess，传 source_id、稳定 request_id、expected_state_token、mode="confirm_subject"、candidate_index、entity_id、confirmation={source:{kind:"stored",source_id:确认来源ID},quote:{text:该来源中的连续原句片段}}。只改变所选未提交候选主体，其余原话、事实值、索引和已提交产品保留；仍须 W2/W3 核验，不免除语义判断。确认依据只解释身份，不成为旧事实值的新证据。
+3. enqueue 缺省 false：原子保存控制与新代际，零模型调用，也不会被 worker 自动拾取。显式 CLI --enrich-source 可在另获有限预算时处理；enqueue=true 需 inline/deferred 配置、有限 model_budget 及网络门控授权，后台按已有流程整理。确认最多新 W3/W4 两次，重提取最多 W1/W3/W4 三次，耗费共享授权；不自动扩大额度或重试。
+4. mode="reextract" 不传确认字段，仅接受从未有已提交动作的来源。新代际从 W1 重提取，旧代际审计保留；混合来源用逐项确认，不可全文重建。操作取得新 round/order_sequence，原 received_sequence 与陈述时间不变，其他来源顺序屏障不放宽。
+5. 同参数/ID 重放返回首次管理回执（replayed=true），不重新入队、不追加调用；这是首次接受状态，当前进度另查 status。异参 request_id_conflict；source_busy 等租约结束，source_changed 重新 status 后由宿主决定是否发新操作，不隐式重试。source_not_found/source_deleted、invalid_confirmation、rebuild_requires_uncommitted_source、operation_not_authorized 直接报告，不能放入召回 degraded_reasons。
+6. 删除来源清除其确认、审计与派生内容；删除确认依据会撤销依赖它的主体绑定和产品、使待处理来源 needs_rejudge，并使旧回执/缓存/晚到执行失效；不删除该原事实来源或其他独立候选。
+
+DB 9→10 沿用现有快照与索引，不新增存储系统。所有 owner 缺省代际 0、普通来源；旧回执不改写、不自动入队，已删墓碑保留。v9 写程序拒绝 v10；只读范围 3–10。升级前手动备份，不能用旧程序直接回退写入新库。
 
 ## 读取结果与回答
 

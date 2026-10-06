@@ -22,6 +22,7 @@ fn summary(state: &PersistedMemoryState, key: &str) -> PersistenceResult<Value> 
         .collect();
     Ok(json!({
         "source_id":state.sources[key].id,
+        "generation":state.sources[key].task.generation,
         "status":receipt["source"]["status"],
         "enrichment":{"status":receipt["enrichment"]["status"], "error":state.sources[key].error},
         "uncommitted_candidates":uncommitted,
@@ -40,15 +41,17 @@ pub(super) fn status(
     result.as_object_mut().unwrap().remove("source_id");
     result.as_object_mut().unwrap().remove("status");
     result["source"] = source.status()["source"].clone();
-    // v9 has one candidate generation and only the capture clock/identity. Do not infer
-    // a parent source, confirmation or unknown original history time from message text.
-    result["generation"] = json!(0);
+    // Older snapshots default to ordinary provenance. Never infer history times from text.
+    result["generation"] = json!(source.task.generation);
     result["round"] = json!(source.task.round);
     result["provenance"] = json!({
         "kind":source.status()["source"]["provenance"],
         "session_id":source.session_id, "turn_id":source.turn_id,
         "parent_source_id":null, "history_index":null
     });
+    if let Some(provenance) = &source.management.provenance {
+        result["provenance"] = provenance.clone();
+    }
     let offset = time::UtcOffset::from_whole_seconds(utc_offset_seconds)?;
     let said_on = time::OffsetDateTime::from_unix_timestamp(source.observed_at)
         .ok()
@@ -57,6 +60,22 @@ pub(super) fn status(
         "observed_at":source.observed_at, "said_on":said_on,
         "utc_offset_seconds":utc_offset_seconds
     });
+    if let Some(anchor) = &source.management.time_anchor {
+        result["time_anchor"] = anchor.clone();
+    }
+    result["subject_confirmations"] = json!(source.management.confirmations.iter().map(|c| json!({
+        "generation":c.generation,"candidate_index":c.candidate_index,"candidate_identity":c.candidate_identity,
+        "entity_id":c.entity_id,"source":c.evidence.source,
+        "quote_hash":crate::recall_models::fingerprint(&json!(c.evidence.quote))
+    })).collect::<Vec<_>>());
+    result["audit_generations"] = json!(
+        source
+            .management
+            .audits
+            .iter()
+            .map(|a| a["generation"].clone())
+            .collect::<Vec<_>>()
+    );
     // A committed group may precede the source summary. Include its derived receipt too;
     // unrelated source/global revision changes must not invalidate this token.
     let mut binding = serde_json::to_value(source)?;

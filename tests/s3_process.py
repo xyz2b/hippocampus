@@ -83,7 +83,7 @@ def main():
 
         run("--rebuild")
         with sqlite3.connect(db) as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 10
         trace = root / "trace"
         trace.mkdir(mode=0o700)
         found = run("--query", "SQLite", trace=trace)

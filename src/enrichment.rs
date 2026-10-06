@@ -272,7 +272,11 @@ fn run_claimed(
             None => {
                 let batch = match (model_batch, previous) {
                     (Some(batch), _) => batch,
-                    (None, Some(prior)) if prior.source_binding == ctx.source_binding => {
+                    (None, Some(prior))
+                        if prior.source_binding == ctx.source_binding
+                            && !(selected_candidate(source).is_some()
+                                && prior.batch.review.is_none()) =>
+                    {
                         prior.batch
                     }
                     _ => upstream(store, claim, &ctx, &input)?,
@@ -304,6 +308,7 @@ fn run_claimed(
                     .w2
                     .candidates
                     .iter()
+                    .filter(|c| selected_candidate(source).is_none_or(|i| c.index == i))
                     .filter(|c| {
                         c.status == w2::Status::Ok && !whole_source && !blocked.contains(&c.index)
                     })
@@ -692,6 +697,7 @@ pub(crate) fn check_saved_inputs(
         .w2
         .candidates
         .iter()
+        .filter(|c| selected_candidate(source).is_none_or(|i| c.index == i))
         .filter(|c| c.status == w2::Status::Ok && !whole && !blocked.contains(&c.index))
         .filter_map(|c| {
             reviews
@@ -931,4 +937,12 @@ pub(crate) fn summary_status(source: &SourceRecord, default: &str) -> Persistenc
         }
     }
     Ok(default.into())
+}
+
+pub(crate) fn selected_candidate(source: &SourceRecord) -> Option<usize> {
+    source
+        .management
+        .selection
+        .filter(|(round, _)| Some(*round) == source.task.round)
+        .map(|(_, index)| index)
 }

@@ -107,6 +107,7 @@ fn source(db: &Db, id: &str, text: &str, task: Option<&str>, status: &str) {
             state.sources.insert(
                 id.into(),
                 SourceRecord {
+                    management: Default::default(),
                     id: id.into(),
                     session_id: "recall-test".into(),
                     turn_id: id.into(),

@@ -300,6 +300,7 @@ impl Db {
                 s.sources.insert(
                     "s-purple".into(),
                     SourceRecord {
+                        management: Default::default(),
                         id: "s-purple".into(),
                         session_id: "fixture".into(),
                         turn_id: "fixture".into(),
@@ -1117,7 +1118,7 @@ fn long_request_id_is_bound_without_persisting_its_original_words() {
             .connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
             .unwrap(),
-        9
+        10
     );
 }
 

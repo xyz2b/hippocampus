@@ -1923,6 +1923,9 @@ fn save_w4_inputs(
         return Err("invalid candidate or admission index".into());
     }
     for c in candidates {
+        if crate::enrichment::selected_candidate(source).is_some_and(|i| i != c.index) {
+            return Err("candidate is outside confirmed selection".into());
+        }
         if c.source
             != (crate::contract::SourceRef::Stored {
                 source_id: source.id.clone(),
@@ -2112,16 +2115,24 @@ pub struct W4Progress {
     pub invalidated: Option<String>,
 }
 
-fn source_binding(source: &SourceRecord) -> serde_json::Value {
+pub(crate) fn source_binding(source: &SourceRecord) -> serde_json::Value {
     // Exact JSON, like W5 fingerprints; the budget ledger's diagnostic hash is not an identity check.
-    serde_json::json!([
+    let mut binding = serde_json::json!([
         source.id,
         source.session_id,
         source.turn_id,
         source.observed_at,
         source.received_sequence,
         source.request
-    ])
+    ]);
+    if source.task.generation != 0 {
+        binding.as_array_mut().unwrap().push(
+            serde_json::json!({"generation":source.task.generation,
+            "provenance":source.management.provenance,"time_anchor":source.management.time_anchor,
+            "confirmations":source.management.confirmations}),
+        );
+    }
+    binding
 }
 
 /// 某轮暂停/拒收的候选可能不在当前 W4 输入中；历史产物仍只从已提交回执推导。
@@ -2190,6 +2201,22 @@ fn owned_w4<'a>(
         || source.task.order_sequence != Some(claim.order_sequence)
     {
         return Err("claim_lost: round binding changed".into());
+    }
+    for confirmation in &source.management.confirmations {
+        let crate::contract::SourceRef::Stored { source_id } = &confirmation.evidence.source else {
+            return Err("needs_rejudge: invalid confirmation".into());
+        };
+        if state
+            .sources
+            .values()
+            .find(|s| &s.id == source_id && s.request.is_some())
+            .is_none_or(|s| {
+                serde_json::json!({"request":s.request,"observed_at":s.observed_at})
+                    != confirmation.evidence_binding
+            })
+        {
+            return Err("needs_rejudge: confirmation source changed".into());
+        }
     }
     let checkpoint = checkpoint(source)?;
     if checkpoint.invalidated.is_some()
@@ -2340,6 +2367,7 @@ pub fn w4_start_round(
             source.received_sequence
         };
         let binding = source_binding(source);
+        let selected = crate::enrichment::selected_candidate(source);
         let mut candidates = if rejudge {
             checkpoint(source)?.candidates
         } else {
@@ -2380,6 +2408,10 @@ pub fn w4_start_round(
             }
         }
         let source = state.sources.get_mut(key).unwrap();
+        if let Some(index) = selected {
+            candidates.retain(|candidate| candidate.index == index);
+            source.management.selection = Some((round, index));
+        }
         source.task.processing_version = Some(W4_PROCESSING_VERSION.into());
         source.task.round = Some(round);
         source.task.rejudge = Some(rejudge);
@@ -2417,6 +2449,64 @@ pub fn w4_start_round(
         );
         Ok(round)
     })
+}
+
+/// Atomic control transition: new identity/order without changing capture time or text.
+pub(crate) fn begin_source_generation(
+    state: &mut PersistedMemoryState,
+    key: &str,
+    operation: &str,
+    seed: Option<crate::w2::Batch>,
+    selected: Option<usize>,
+    enqueue: bool,
+) -> PersistenceResult<()> {
+    let sequence = state.next_source_sequence()?;
+    let source = state.sources.get_mut(key).ok_or("source_not_found")?;
+    if source.management.time_anchor.is_none()
+        && let Some(saved) = crate::enrichment::stored_batch(source)?
+    {
+        source.management.time_anchor = Some(serde_json::json!({"observed_at":source.observed_at,
+            "said_on":saved.batch.w2.said_on,"utc_offset_seconds":saved.batch.w2.utc_offset_seconds}));
+    }
+    let round = source
+        .task
+        .round
+        .map_or(Ok(0), |r| r.checked_add(1).ok_or("round overflow"))?;
+    source.task.generation = source
+        .task
+        .generation
+        .checked_add(1)
+        .ok_or("generation overflow")?;
+    source.task.round = Some(round);
+    source.task.operation_id = Some(operation.into());
+    source.task.order_sequence = Some(sequence);
+    source.task.processing_version = Some(W4_PROCESSING_VERSION.into());
+    source.task.accepted_mode = Some(if enqueue { "deferred" } else { "off" }.into());
+    source.task.rejudge = Some(false);
+    release(source);
+    source.error = None;
+    source.enrichment = if enqueue { "queued" } else { "pending" }.into();
+    source.management.selection = selected.map(|i| (round, i));
+    source.result = Some(serde_json::json!({}));
+    let binding = source_binding(source);
+    write_checkpoint(
+        source,
+        &W4Checkpoint {
+            round,
+            source_binding: binding.clone(),
+            candidates: Vec::new(),
+            plan: None,
+            invalidated: None,
+        },
+    )?;
+    if let Some(w2) = seed {
+        source.result.as_mut().unwrap()["w4_batch"] =
+            serde_json::to_value(crate::enrichment::StoredBatch {
+                source_binding: binding,
+                batch: crate::enrichment::UpstreamBatch { w2, review: None },
+            })?;
+    }
+    Ok(())
 }
 
 /// 续跑只换 attempt 和租约；无计划时也不产生模型请求。
@@ -2723,6 +2813,34 @@ pub(crate) fn w4_candidate_results(
             result["update"] = serde_json::to_value(update)?;
             result["reasons"] =
                 serde_json::to_value(update.map(|u| &u.reasons).cloned().unwrap_or_default())?;
+        }
+    }
+    if source
+        .management
+        .selection
+        .is_some_and(|(round, _)| Some(round) == source.task.round)
+    {
+        for receipt in state
+            .w5_receipts
+            .iter()
+            .filter(|(id, r)| id.starts_with(&format!("{key}#")) && r.status == W5Status::Committed)
+            .map(|(_, r)| r)
+        {
+            for decision in &receipt.decisions {
+                let id = receipt.products.get(&decision.candidate);
+                if id.is_some_and(|id| {
+                    state
+                        .repository
+                        .get(*id)
+                        .ok()
+                        .flatten()
+                        .is_none_or(|m| m.status == MemoryStatus::Deleted)
+                }) {
+                    continue;
+                }
+                results.entry(decision.candidate).or_insert_with(|| serde_json::json!({"index":decision.candidate,
+                    "status":"committed","memory_id":id,"update":id.and_then(|id|state.record_updates.get(id)),"reasons":[]}));
+            }
         }
     }
     crate::enrichment::merge_candidate_results(source, results.into_values().collect())

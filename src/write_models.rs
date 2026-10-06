@@ -282,11 +282,41 @@ impl WriteModelProvider {
         if self.context.owner_id != ctx.owner {
             return Err("attempt_failed: write catalogue owner differs".into());
         }
-        let offset = UtcOffset::from_whole_seconds(self.context.utc_offset_seconds)?;
-        let said_on = OffsetDateTime::from_unix_timestamp(ctx.observed_at)?
-            .to_offset(offset)
-            .date()
-            .to_string();
+        let source_record = store.read()?.sources[&ctx.source_key].clone();
+        let confirming = crate::enrichment::selected_candidate(&source_record).is_some();
+        let anchor = source_record
+            .management
+            .time_anchor
+            .as_ref()
+            .filter(|_| source_record.task.generation != 0);
+        let utc_offset_seconds = ctx
+            .previous_w2
+            .as_ref()
+            .filter(|_| confirming)
+            .map(|batch| batch.utc_offset_seconds)
+            .or_else(|| {
+                anchor
+                    .and_then(|a| a["utc_offset_seconds"].as_i64())
+                    .and_then(|n| n.try_into().ok())
+            })
+            .unwrap_or(self.context.utc_offset_seconds);
+        let offset = UtcOffset::from_whole_seconds(utc_offset_seconds)?;
+        let said_on = ctx
+            .previous_w2
+            .as_ref()
+            .filter(|_| confirming)
+            .map(|b| b.said_on.clone())
+            .or_else(|| {
+                anchor
+                    .and_then(|a| a["said_on"].as_str())
+                    .map(str::to_owned)
+            })
+            .unwrap_or(
+                OffsetDateTime::from_unix_timestamp(ctx.observed_at)?
+                    .to_offset(offset)
+                    .date()
+                    .to_string(),
+            );
         let relations = w2::relation_catalog(
             &self.context.known_predicates,
             &self.context.predicate_memory_types,
@@ -305,40 +335,61 @@ impl WriteModelProvider {
             "relations":relations.iter().map(|r| json!({"id":r.id,
                 "memory_types":r.memory_types.iter().map(|t| format!("{t:?}").to_lowercase()).collect::<Vec<_>>()
             })).collect::<Vec<_>>(),
-            "said_on":said_on,"utc_offset_seconds":self.context.utc_offset_seconds,"task_id":ctx.task_id,
+            "said_on":said_on,"utc_offset_seconds":utc_offset_seconds,"task_id":ctx.task_id,
         });
+        if source_record.task.generation != 0 {
+            input["generation"] = json!(source_record.task.generation);
+            input["subject_confirmations"] = json!(source_record.management.confirmations);
+            if confirming {
+                // W3 already allows USER history to resolve references. These retained USER
+                // excerpts explain identity only; current_user_message remains the factual evidence.
+                input["user_history"].as_array_mut().unwrap().extend(
+                    source_record
+                        .management
+                        .confirmations
+                        .iter()
+                        .map(|confirmation| json!(confirmation.evidence.quote.text)),
+                );
+            }
+        }
         let client = self.operation_client(store, ctx)?;
         let mut w1_binding = json!({"contract":"w1.v2","model":self.models.w1,"input":input});
         self.models.effort("w1").bind(&mut w1_binding);
         // Even when the full batch exists, compare the stage binding before reusing it.
-        let saved_w1 = crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?;
+        let saved_w1 = if confirming {
+            None
+        } else {
+            crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?
+        };
         if let Some(output) = &saved_w1 {
             crate::diagnostics::checked("W1", "decode", w2::decode(&output.to_string()))?;
             crate::commit::w4_save_model_stage(store, claim, "w1", &w1_binding, output)?;
         }
         let output = if let Some(previous) = &ctx.previous_w2 {
             // 已冻结的候选不能重提取后按旧索引提交，也不能冒充由新模型产生。
-            let state = store.read()?;
-            let prior_model = state.sources[&ctx.source_key]
-                .result
-                .as_ref()
-                .and_then(|r| r["w4_model_stages"]["w1"]["binding"]["model"].as_str())
-                .unwrap_or(super::DEEPSEEK_MODEL);
-            if prior_model != self.models.w1 {
-                return Err("needs_rejudge: frozen W1 model changed".into());
-            }
-            let prior_effort: ReasoningEffort = serde_json::from_value(
-                state.sources[&ctx.source_key]
+            if !confirming {
+                let state = store.read()?;
+                let prior_model = state.sources[&ctx.source_key]
                     .result
                     .as_ref()
-                    .and_then(|r| {
-                        r["w4_model_stages"]["w1"]["binding"]["reasoning_effort"].as_str()
-                    })
-                    .map(|s| json!(s))
-                    .unwrap_or(json!("medium")),
-            )?;
-            if prior_effort != self.models.effort("w1") {
-                return Err("needs_rejudge: frozen W1 reasoning effort changed".into());
+                    .and_then(|r| r["w4_model_stages"]["w1"]["binding"]["model"].as_str())
+                    .unwrap_or(super::DEEPSEEK_MODEL);
+                if prior_model != self.models.w1 {
+                    return Err("needs_rejudge: frozen W1 model changed".into());
+                }
+                let prior_effort: ReasoningEffort = serde_json::from_value(
+                    state.sources[&ctx.source_key]
+                        .result
+                        .as_ref()
+                        .and_then(|r| {
+                            r["w4_model_stages"]["w1"]["binding"]["reasoning_effort"].as_str()
+                        })
+                        .map(|s| json!(s))
+                        .unwrap_or(json!("medium")),
+                )?;
+                if prior_effort != self.models.effort("w1") {
+                    return Err("needs_rejudge: frozen W1 reasoning effort changed".into());
+                }
             }
             W1Output {
                 candidates: previous
@@ -393,7 +444,7 @@ impl WriteModelProvider {
                     entities: &entities,
                     relations: &relations,
                     said_on: &said_on,
-                    utc_offset_seconds: self.context.utc_offset_seconds,
+                    utc_offset_seconds,
                     task_id: ctx.task_id.as_ref(),
                 },
             ),

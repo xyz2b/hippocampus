@@ -116,6 +116,7 @@ fn claim_source(db: &Db, sid: &str, text: &str) {
             state.sources.insert(
                 sid.into(),
                 SourceRecord {
+                    management: Default::default(),
                     id: sid.into(),
                     session_id: "chat".into(),
                     turn_id: sid.into(),

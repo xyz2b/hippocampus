@@ -50,7 +50,7 @@ fn v8_migrates_to_v9_without_enrolling_legacy_tasks() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |r| r.get(0))
         .unwrap();
-    assert_eq!(version, 9);
+    assert_eq!(version, 10);
     assert!(
         !(1..=8).contains(&version),
         "the released v8 writer rejects this version"
@@ -71,6 +71,7 @@ fn source(db: &Db, key: &str, text: &str) {
             state.sources.insert(
                 key.into(),
                 SourceRecord {
+                    management: Default::default(),
                     id: key.into(),
                     session_id: "chat".into(),
                     turn_id: key.into(),
@@ -741,7 +742,7 @@ fn real_v8_receipt_replays_unchanged_and_future_v10_is_rejected() {
         .unwrap(),
         before
     );
-    connection.pragma_update(None, "user_version", 10).unwrap();
+    connection.pragma_update(None, "user_version", 11).unwrap();
     assert!(SqliteMemoryStore::open(&db.0, UserId::from("alice")).is_err());
     assert!(SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).is_err());
 }

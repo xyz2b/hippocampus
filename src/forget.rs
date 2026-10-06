@@ -37,6 +37,23 @@ const METADATA_KEYS: &[&str] = &[
     "status",
 ];
 
+const W4_ENUM_KEYS: &[&str] = &[
+    "verdict",
+    "episode_value",
+    "aspect",
+    "speech",
+    "polarity",
+    "strength",
+    "role",
+    "unit",
+    "anchor",
+    "precision",
+    "object",
+    "action",
+    "pending_reason",
+    "of",
+];
+
 fn turn_of(evidence: &Evidence) -> Turn {
     (evidence.session_id.0.clone(), evidence.turn_id.0.clone())
 }
@@ -528,6 +545,35 @@ pub(crate) fn forget(
             }
         }
     }
+    // Identity confirmations are dependencies, not independent factual support. Deleting one
+    // invalidates only the selected candidate's products; it never deletes its other raw source.
+    let deleting_sources: BTreeSet<String> = state
+        .sources
+        .values()
+        .filter(|s| turns.contains(&(s.session_id.clone(), s.turn_id.clone())))
+        .map(|s| s.id.clone())
+        .collect();
+    let dependent_confirmations: BTreeMap<String, Vec<crate::sqlite::SubjectConfirmation>> = state.sources.iter()
+        .filter_map(|(key, source)| {
+            let affected: Vec<_> = source.management.confirmations.iter().filter(|c| matches!(
+                &c.evidence.source, crate::contract::SourceRef::Stored { source_id } if deleting_sources.contains(source_id)
+            )).cloned().collect();
+            (!affected.is_empty() && !deleting_sources.contains(&source.id)).then(|| (key.clone(), affected))
+        }).collect();
+    for (key, confirmations) in &dependent_confirmations {
+        for receipt in state
+            .w5_receipts
+            .iter()
+            .filter(|(id, r)| id.starts_with(&format!("{key}#")) && r.status == W5Status::Committed)
+            .map(|(_, r)| r)
+        {
+            for confirmation in confirmations {
+                if let Some(id) = receipt.products.get(&confirmation.candidate_index) {
+                    targeted.insert(*id);
+                }
+            }
+        }
+    }
     // 派生记录：不再迭代；部分证据被删时按回执确认的独立支持决定去留。
     let roles = Roles::build(state);
     let mut deleted: BTreeSet<MemoryId> = targeted.clone();
@@ -562,6 +608,7 @@ pub(crate) fn forget(
             fragments.push(text.to_owned());
         }
         source.request = None;
+        source.management = Default::default();
         // Retain only the accepted mode; deletion removes business results and source text.
         source.result = source
             .result
@@ -593,6 +640,21 @@ pub(crate) fn forget(
     }
     let deleted_source_ids: BTreeSet<&str> = deleted_sources.iter().map(String::as_str).collect();
     crate::recall_models::invalidate_deleted(state, &deleted_source_ids);
+    let affected_source_ids: BTreeSet<_> = dependent_confirmations
+        .keys()
+        .map(|key| state.sources[key].id.clone())
+        .collect();
+    let affected_sources = affected_source_ids.iter().map(String::as_str).collect();
+    crate::recall_models::invalidate_deleted(state, &affected_sources);
+    for receipt in state.receipts.values_mut() {
+        if receipt.request.get("digest").is_some()
+            && receipt.request["source_id"]
+                .as_str()
+                .is_some_and(|id| deleted_source_ids.contains(id) || affected_sources.contains(id))
+        {
+            receipt.result = json!({"error":"source_changed"});
+        }
+    }
     for relation in state.relations.values() {
         for evidence in relation.basis.iter().chain(relation.resolution.iter()) {
             if deleted_source_ids.contains(evidence.source_id.as_str()) {
@@ -830,7 +892,32 @@ pub(crate) fn forget(
         }
     }
     // Checkpoints are raw-content copies too, including JSON-encoded W5 snapshots.
-    for source in state.sources.values_mut() {
+    for (key, source) in &mut state.sources {
+        source.management.audits.retain_mut(|audit| {
+            !touches(audit, &deleted_source_ids, &deleted)
+                && !scrub_at(audit, &scrubbed, false, W4_ENUM_KEYS)
+        });
+        let confirmation_affected = dependent_confirmations.get(key);
+        if let Some(confirmations) = confirmation_affected {
+            source.management.confirmations.retain(|c| {
+                !confirmations
+                    .iter()
+                    .any(|lost| lost.candidate_index == c.candidate_index)
+            });
+            if let Some(batch) = source.result.as_mut().and_then(|r| r.get_mut("w4_batch")) {
+                for confirmation in confirmations {
+                    if let Some(candidate) =
+                        batch["batch"]["w2"]["candidates"].get_mut(confirmation.candidate_index)
+                    {
+                        candidate["candidate"]["subject"] =
+                            serde_json::to_value(&confirmation.original_subject)?;
+                        candidate["status"] = json!("unresolved");
+                        candidate["reasons"] = json!(["unresolved_subject"]);
+                    }
+                }
+                batch["batch"]["review"] = Value::Null;
+            }
+        }
         let mut batch_affected = false;
         if let Some(result) = source.result.as_mut() {
             for key in ["w4_batch", "w4_controls", "w4_model_stages"] {
@@ -839,27 +926,7 @@ pub(crate) fn forget(
                     let touched = touches(value, &deleted_source_ids, &deleted);
                     // 新批次的固定枚举不是原文；不能把被删的英文 supported 当作 verdict 清掉。
                     // 自由文本（包括未通过 W2 的 relation/memory_type）仍照常清洗；旧路径用空列表。
-                    let scrubbed_stage = scrub_at(
-                        value,
-                        &scrubbed,
-                        false,
-                        &[
-                            "verdict",
-                            "episode_value",
-                            "aspect",
-                            "speech",
-                            "polarity",
-                            "strength",
-                            "role",
-                            "unit",
-                            "anchor",
-                            "precision",
-                            "object",
-                            "action",
-                            "pending_reason",
-                            "of",
-                        ],
-                    );
+                    let scrubbed_stage = scrub_at(value, &scrubbed, false, W4_ENUM_KEYS);
                     batch_affected |= touched || scrubbed_stage;
                     if let Some(before) = w4_before
                         && (touches(&before, &deleted_source_ids, &deleted)
@@ -884,7 +951,9 @@ pub(crate) fn forget(
         else {
             continue;
         };
-        let mut affected = batch_affected || touches(checkpoint, &deleted_source_ids, &deleted);
+        let mut affected = confirmation_affected.is_some()
+            || batch_affected
+            || touches(checkpoint, &deleted_source_ids, &deleted);
         for group in checkpoint
             .get_mut("plan")
             .and_then(|p| p.get_mut("groups"))

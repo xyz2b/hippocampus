@@ -54,6 +54,8 @@ mod background;
 mod configuration;
 #[path = "chat_recall.rs"]
 mod recall_dispatch;
+#[path = "chat_reprocess.rs"]
+mod reprocess;
 #[path = "chat_sources.rs"]
 mod sources;
 pub use background::BackgroundWorker;
@@ -1193,6 +1195,14 @@ impl ChatMemoryService {
                     result:Some(if enrichment_off {json!({"status":"completed","enrichment_mode":"off","outcomes":[]})}
                         else {json!({"enrichment_mode":self.config.enrichment_mode})}),
                     base_revision:read_revision, received_sequence, index:Value::Null,
+                    management: SourceManagement {
+                        provenance: Some(json!({"kind":"mcp_received","session_id":input.session_id,
+                            "turn_id":input.turn_id,"parent_source_id":null,"history_index":null})),
+                        time_anchor: Some(json!({"observed_at":context.now.0,
+                            "said_on":time::OffsetDateTime::from_unix_timestamp(context.now.0)?.to_offset(time::UtcOffset::from_whole_seconds(self.config.utc_offset_seconds)?).date().to_string(),
+                            "utc_offset_seconds":self.config.utc_offset_seconds})),
+                        ..Default::default()
+                    },
                     task: Default::default(),
                 };
                 source.task.accepted_mode = Some(if enrichment_off {"off"} else if enrichment_deferred {"deferred"} else {"inline"}.into());
@@ -1324,6 +1334,10 @@ impl ChatMemoryService {
                 serde_json::from_value(arguments)?,
                 &cancelled,
             ),
+            "memory_source_reprocess" => {
+                check_cancelled(&cancelled)?;
+                self.reprocess_source(serde_json::from_value(arguments)?)
+            }
             "memory_source_status" => {
                 let input: SourceStatus = serde_json::from_value(arguments)?;
                 bounded_text(&input.source_id, "source_id", 512)?;
@@ -1499,9 +1513,16 @@ pub fn memory_tools() -> Vec<Tool> {
             true,
             false,
         ),
+        tool::<reprocess::Reprocess>(
+            "memory_source_reprocess",
+            "Explicitly rebuild retained source candidates with a stable request_id and the latest expected_state_token from memory_source_status. mode=confirm_subject requires candidate_index, a registered entity_id and a stored USER confirmation EvidenceRef; only that uncommitted candidate's identity changes, W3 still checks meaning. Never rewrite source text or fact values. mode=reextract requires no committed actions. A fresh generation/round/order prevents old results from submitting. enqueue defaults false (zero calls); true requires authorized network, finite model budget and inline/deferred background configuration. Repeat identical parameters for idempotent acknowledgment, never a new model attempt. Register the entity, inspect status, then confirm a pending candidate without asking the user to repeat retained facts. Busy/stale/deleted sources fail explicitly.",
+            true,
+            false,
+            true,
+        ),
         tool::<SourceStatus>(
             "memory_source_status",
-            "Read-only management status for one retained source: source/enrichment, generation, round, state_token, provenance, time_anchor and uncommitted candidate indices/reasons, plus pending update indices. No source text or fact values, no model calls, no retry or reconstruction. v9 generation is 0; future provenance/time metadata is null when unavailable. The token binds this owner's source and its observed processing state, not global database progress. Other-owner/unknown IDs return source_not_found; deleted sources return source_deleted. Status is a read snapshot; use memory_recall for evidence and factual answers.",
+            "Read-only management status for one retained source: source/enrichment, generation, round, state_token, provenance, time_anchor and uncommitted candidate indices/reasons, plus pending update indices. No source text or fact values, no model calls, no retry or reconstruction. Shows current generation, provenance/time anchors and subject confirmation identities without exposing confirmation text; unavailable historical metadata is null. The token binds this owner's source and its observed processing state, not global database progress. Other-owner/unknown IDs return source_not_found; deleted sources return source_deleted. Status is a read snapshot; use memory_recall for evidence and factual answers.",
             false,
             true,
             false,

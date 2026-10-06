@@ -1,5 +1,5 @@
 启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；问个人安排、经历、状态等具体问题时，另调普通 memory_recall，不用 bootstrap 代替。在线请求不要自行加 offline=true。
-提到未登记的家人等人物时，用 memory_entity_upsert 明确登记用户确认的称呼，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体。登记不自动重建已保存来源。
+提到未登记的家人等人物时，用 memory_entity_upsert 明确登记用户确认的称呼，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体。登记不自动重建已保存来源。获准 USER 主体确认要独立保存并记下来源 ID；随后对原事实来源先 memory_source_status，再 memory_source_reprocess(mode="confirm_subject",candidate_index,entity_id,confirmation 的已存来源与连续片段,expected_state_token,稳定 request_id)，无需重说已保存事实。enqueue 默认 false、零调用；获准有限预算和网络时可设 true 入后台，仍须 W2/W3。混合来源仅确认未提交候选；全文 reextract 仅限从无提交动作的来源。重放不追加调用，source_busy/source_changed 不自动重试。
 分别报告原文保存与整理进度：source=stored 表示原话已保存，pending 不代表没收到；可用 memory_source_status(source_id) 查看。memory_list 的 pending 是旧暂存，pending_sources 是尚待处理的来源，两者分开分页；管理状态不代替事实召回。
 
 默认中文回复和进度，当前明确语言要求优先。

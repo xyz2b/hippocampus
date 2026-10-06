@@ -53,6 +53,8 @@ pub struct PersistedMemoryState {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(default)]
 pub struct EnrichmentTask {
+    #[serde(skip_serializing_if = "is_zero_generation")]
+    pub generation: u64,
     pub processing_version: Option<String>,
     pub attempt_count: u32,
     pub attempt_id: Option<String>,
@@ -69,8 +71,41 @@ pub struct EnrichmentTask {
     pub order_sequence: Option<u64>,
 }
 
+fn is_zero_generation(value: &u64) -> bool {
+    *value == 0
+}
+
+/// Source controls are separate from model decisions and never rewrite USER text.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct SourceManagement {
+    pub provenance: Option<Value>,
+    pub time_anchor: Option<Value>,
+    pub confirmations: Vec<SubjectConfirmation>,
+    pub audits: Vec<Value>,
+    pub selection: Option<(u32, usize)>,
+}
+impl SourceManagement {
+    fn is_empty(&self) -> bool {
+        self == &Self::default()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SubjectConfirmation {
+    pub generation: u64,
+    pub candidate_index: usize,
+    pub candidate_identity: String,
+    pub original_subject: crate::contract::Subject,
+    pub entity_id: EntityId,
+    pub evidence: crate::contract::EvidenceRef,
+    pub evidence_binding: Value,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SourceRecord {
+    #[serde(default, skip_serializing_if = "SourceManagement::is_empty")]
+    pub management: SourceManagement,
     pub id: String,
     pub session_id: String,
     pub turn_id: String,
@@ -197,7 +232,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=9 => (),
+            1..=10 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -282,6 +317,11 @@ impl SqliteMemoryStore {
             // Missing optional fields remain absent; do not enroll legacy tasks or rewrite receipts.
             tx.pragma_update(None, "user_version", 9)?;
         }
+        if version < 10 {
+            // All owners decode missing source controls as ordinary provenance/generation 0.
+            // No enrollment or receipt rewrite: v9 writers must reject this version.
+            tx.pragma_update(None, "user_version", 10)?;
+        }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
         if crate::lexical::initialize(&tx, &owner, &mut state)? && !state.sources.is_empty() {
@@ -320,9 +360,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if version != 9 {
+        if version != 10 {
             return Err(format!(
-                "operation connection requires initialized database version 9; found {version}"
+                "operation connection requires initialized database version 10; found {version}"
             )
             .into());
         }
@@ -352,9 +392,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=9).contains(&version) {
+        if !(3..=10).contains(&version) {
             return Err(format!(
-                "source search requires database version 3 to 9; found {version}; migrate explicitly"
+                "source search requires database version 3 to 10; found {version}; migrate explicitly"
             )
             .into());
         }

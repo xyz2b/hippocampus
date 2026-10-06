@@ -163,6 +163,7 @@ impl ChatMemoryService {
                     return Ok(false);
                 };
                 if current.request == source.request
+                    && current.task.generation == source.task.generation
                     && current.task.processing_version == source.task.processing_version
                     && (current.task.round == source.task.round
                         || (source.task.round.is_none()
