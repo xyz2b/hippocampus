@@ -270,9 +270,19 @@ impl Assembly {
                     .map(str::to_owned)
             });
             audit.as_mut().unwrap().final_output = Some(final_output.clone());
-            let evaluated =
-                crate::diagnostics::checked("R4", "validate", r4::evaluate(final_output, &context))
-                    .map_err(|_| JudgmentFailure::InvalidOutput)?;
+            let evaluated = r4::evaluate_detailed(final_output, &context);
+            crate::diagnostics::record("model_check", || {
+                let mut event = serde_json::json!({"stage":"R4","phase":"validate",
+                    "status":if evaluated.is_ok() {"completed"} else {"failed"},
+                    "error":evaluated.as_ref().err().map(|d| d.error.to_string())});
+                if let Err(diagnostic) = &evaluated {
+                    event["field"] = serde_json::json!(diagnostic.field);
+                    event["rule"] = serde_json::json!(diagnostic.error.0);
+                    event["cause"] = serde_json::json!(diagnostic.cause);
+                }
+                event
+            });
+            let evaluated = evaluated.map_err(|_| JudgmentFailure::InvalidOutput)?;
             audit.as_mut().unwrap().final_output = Some(evaluated.output.clone());
             Ok(evaluated)
         });

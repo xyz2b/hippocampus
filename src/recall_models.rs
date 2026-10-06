@@ -121,6 +121,10 @@ polarity is affirm, negate or unknown, independent of uncertainty. strength is n
 schema enum. uncertainty is null or {"quote":Quote,"resolved":boolean}; conditions is an array
 of the same qualifier shape. All qualifier and time quotes must occur in this fact's evidence
 sources. resolved means the restriction is understood, not that it applies to this query.
+For each fact.times entry, its quote must occur in a source already referenced by THAT fact's
+evidence. If the time comes from another supplied source, add a real reference to that source
+in the same fact.evidence and judge whether the time applies to this assertion. A time elsewhere
+in the package does not establish its applicability or count as this fact's evidence.
 conditions describe restrictions asserted by the evidence source, never conditions introduced
 only by the question. A query situation may guide applies, but cannot become a source qualifier.
 Do not output a statement first and leave evidence empty: if it has no real supporting reference,

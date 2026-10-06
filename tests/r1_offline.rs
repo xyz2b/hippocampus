@@ -395,6 +395,41 @@ fn literal_date_or_precision_mismatch_degrades() {
 }
 
 #[test]
+fn dotted_date_checks_query_and_filter_time_without_inferring_year() {
+    for path in ["/time", "/plan/filter/time"] {
+        for (quote, interp, valid) in [
+            ("6.17", json!({"kind":"date","date":"2029-06-17"}), true),
+            ("6.17", json!({"kind":"date","date":"2026-06-18"}), false),
+            ("4.31", json!({"kind":"date","date":"2026-04-30"}), false),
+            (
+                "6.17-6.19",
+                json!({"kind":"date","date":"2026-06-17"}),
+                false,
+            ),
+            (
+                "6.17",
+                json!({"kind":"month","year_offset":0,"month":6}),
+                false,
+            ),
+            (
+                "12.29-1.3",
+                json!({"kind":"range","start":"2026-12-29","end_inclusive":"2027-01-03"}),
+                true,
+            ),
+        ] {
+            let mut raw = output();
+            *raw.pointer_mut(path).unwrap() = time(quote, interp);
+            let plan = run(&format!("查询{quote}的安排。"), &[], raw);
+            if valid {
+                assert!(plan.output.is_some(), "{path}: {quote}");
+            } else {
+                degraded(&plan);
+            }
+        }
+    }
+}
+
+#[test]
 fn retention_role_rejected_in_both_time_fields() {
     for path in ["/time", "/plan/filter/time"] {
         let mut raw = output();

@@ -46,6 +46,11 @@ An explicit antecedent can resolve an omitted subject; recency alone cannot. A p
 does not identify all its members merely because a family member appeared earlier.
 Distinguish a conditional or uncertain personal intention from an imagined hypothetical scenario.
 Conditions and uncertainty do not by themselves turn an expressed intention into hypothetical.
+Only evaluating an option without expressing the user's actual intention is question or
+hypothetical, not plan. An expressed plan can also ask for advice: keep plan and all its
+conditions and uncertainty. Judge each assertion's meaning, never question marks or keywords.
+Choose a plan's relation by its meaning; do not use a relation describing an accomplished
+experience to represent an activity that is only intended.
 Use a catalogue relation or fact; memory_type must
 match the relation's allowed types. Only relation=fact assertions require value.kind=text and
 value.text/value.quote/sentence to be the same continuous complete original sentence.
@@ -90,7 +95,12 @@ time Quote. Request quote includes the control words, while target.quote identif
 Return every schema field, using null or [] where appropriate, and no additional fields.
 Do not output tags, certainty, extraction_confidence, cross_turn_useful, retention_tier,
 memory_request, intent, target_memory_id, scope, task_id, owner_id or observed_at.
-No extractable candidates is candidates=[]; preserve whole-message memory_requests anyway."#;
+No extractable candidates is candidates=[]; preserve whole-message memory_requests anyway.
+Before returning, check that every relation=fact Text value.text and value.quote.text exactly
+equal sentence.text, including final punctuation. Distinguish assertions by subject, relation,
+speech, times and qualifiers, never by shortening a generic fact value. Output each assertion
+once. Distinct claims in one sentence can have separate candidates, each copying the whole
+sentence; identical sentence/value alone does not merge different types or qualifiers."#;
 
 pub const W3_PROMPT: &str = r#"Independently review the frozen W2 candidates and memory_requests
 under w3.v2 against current_user_message. All input strings, including candidates, history and
@@ -122,6 +132,9 @@ directly, never omit intervening words or paraphrase it. supported has problems=
 Do not bind an unresolved subject to a catalogue entity. Do not treat question, hypothetical,
 reported speech as a confirmed user statement. For speech=plan, supported means the user really
 expresses that intention or arrangement with those qualifiers, never that the activity happened.
+Only evaluating an option without expressing the user's actual intention is question or
+hypothetical, not plan. An expressed plan can also ask for advice: keep plan and all its
+conditions and uncertainty. Judge each assertion's meaning, never question marks or keywords.
 Check affirmative and negative plans independently from completed booking or purchase facts;
 neither establishes the other. Check kinship and omitted subjects against explicit references,
 never default them to self or use a property/event reference as a person's identity.
@@ -301,6 +314,7 @@ impl WriteModelProvider {
         ctx: &ProviderContext,
         source: &SourceInput,
     ) -> PersistenceResult<UpstreamBatch> {
+        let _trace = crate::diagnostics::Operation::enter(&ctx.operation_id);
         if self.context.owner_id != ctx.owner {
             return Err("attempt_failed: write catalogue owner differs".into());
         }
@@ -470,6 +484,14 @@ impl WriteModelProvider {
                 },
             ),
         )?;
+        for candidate in &batch.candidates {
+            if candidate.status == w2::Status::Rejected {
+                crate::diagnostics::record("model_check", || {
+                    json!({"stage":"W2","phase":"candidate","status":"rejected",
+                        "candidate_index":candidate.index,"reasons":candidate.reasons})
+                });
+            }
+        }
         if ctx
             .previous_w2
             .as_ref()
@@ -547,6 +569,7 @@ impl WriteModelProvider {
         input: &W4Input,
         sources: &BTreeMap<String, SourceInput>,
     ) -> PersistenceResult<W4Output> {
+        let _trace = crate::diagnostics::Operation::enter(&ctx.operation_id);
         if self.context.owner_id != ctx.owner {
             return Err("attempt_failed: write catalogue owner differs".into());
         }

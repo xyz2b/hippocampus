@@ -559,6 +559,9 @@ pub fn resolve_time_interp_nullable(
 /// 核对 Quote 中明确日历片段；不解释相对时间，也不推断多个日期的语义归属。
 fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precision) -> bool {
     let text: String = quote.chars().filter(|ch| !ch.is_whitespace()).collect();
+    if let Some(matches) = literal_dot_calendar_matches(&text, start, end, precision) {
+        return matches;
+    }
     if let Some(matches) = literal_calendar_matches(&text, start, end, precision) {
         return matches;
     }
@@ -598,6 +601,73 @@ fn literal_time_matches(quote: &str, start: Date, end: Date, precision: Precisio
     }
     // 未识别的自然语言仍由模型解释；有明确日期时，至少须有一个完整片段吻合。
     !recognized
+}
+
+/// 只对完整的数字月日片段核对，不扫描正文、小数或版本号的子串，不推断年份。
+fn literal_dot_calendar_matches(
+    text: &str,
+    start: Date,
+    end: Date,
+    precision: Precision,
+) -> Option<bool> {
+    fn month_day(text: &str) -> Option<(u8, u8)> {
+        let (month, day) = text.split_once('.')?;
+        if [month, day]
+            .iter()
+            .any(|part| !(1..=2).contains(&part.len()) || !part.bytes().all(|b| b.is_ascii_digit()))
+        {
+            return None;
+        }
+        Some((month.parse().ok()?, day.parse().ok()?))
+    }
+    let (first, last, range) = match text.split_once('-') {
+        Some((first, last)) => (month_day(first)?, month_day(last)?, true),
+        None => {
+            let date = month_day(text)?;
+            (date, date, false)
+        }
+    };
+    let last_day = end.previous_day()?;
+    Some(
+        precision == Precision::Day
+            && (start.month() as u8, start.day()) == first
+            && (last_day.month() as u8, last_day.day()) == last
+            && (range || start.next_day() == Some(end)),
+    )
+}
+
+#[cfg(test)]
+#[test]
+fn dotted_calendar_requires_a_complete_numeric_time_fragment() {
+    let start = Date::from_calendar_date(2026, Month::June, 17).unwrap();
+    let end = start.next_day().unwrap();
+    for text in [
+        "版本6.17.2",
+        "6.17.2",
+        "2026.6.17",
+        "2026-06.17",
+        "106.17",
+        "6.170",
+        "安排在6.17",
+        "6.17元",
+        ".6.17",
+        "6.17.",
+        "6.17-6.19-6.21",
+    ] {
+        assert_eq!(
+            literal_dot_calendar_matches(text, start, end, Precision::Day),
+            None,
+            "{text}"
+        );
+    }
+    assert_eq!(
+        literal_dot_calendar_matches("6.17", start, end, Precision::Day),
+        Some(true)
+    );
+    assert_eq!(
+        literal_dot_calendar_matches("6.17", start, end, Precision::Month),
+        Some(false)
+    );
 }
 
 /// None 表示不是支持的明确日历表达；Some(false) 包括非法日期及精度矛盾。

@@ -205,6 +205,11 @@ pub(crate) fn record(kind: &str, data: impl FnOnce() -> Value) {
             "timeout_ms",
             "duration_ms",
             "parsing_status",
+            "field",
+            "rule",
+            "cause",
+            "candidate_index",
+            "reasons",
         ];
         let mut metadata = json!({});
         for key in keys {

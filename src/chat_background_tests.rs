@@ -164,6 +164,126 @@ fn query(id: &str) -> Json {
 }
 
 #[test]
+fn background_candidate_diagnostics_are_durable_and_optional() {
+    for mode in ["enabled", "disabled", "failed"] {
+        let db = Db::new();
+        let trace = db.0.parent().unwrap().join("trace");
+        std::fs::create_dir_all(&trace).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&trace, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        // Separate processes isolate the opt-in writer's OnceLock and environment.
+        let child = format!(
+            "{}::background_trace_child",
+            module_path!().split_once("::").unwrap().1
+        );
+        let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+        command
+            .args(["--exact", &child, "--nocapture"])
+            .env("PMR_BACKGROUND_TRACE_TEST", mode)
+            .env_remove("PMR_TRACE_DIR");
+        match mode {
+            "enabled" => {
+                command.env("PMR_TRACE_DIR", &trace);
+            }
+            "failed" => {
+                command.env("PMR_TRACE_DIR", trace.join("missing-directory"));
+            }
+            _ => (),
+        }
+        let result = command.output().unwrap();
+        assert!(
+            result.status.success(),
+            "{mode}: {}\n{}",
+            String::from_utf8_lossy(&result.stdout),
+            String::from_utf8_lossy(&result.stderr)
+        );
+        assert!(String::from_utf8_lossy(&result.stdout).contains("1 passed"));
+        let files: Vec<_> = std::fs::read_dir(&trace)
+            .unwrap()
+            .map(|e| e.unwrap().path())
+            .collect();
+        if mode != "enabled" {
+            assert!(files.is_empty());
+            if mode == "failed" {
+                assert!(String::from_utf8_lossy(&result.stderr).contains("evidence_incomplete"));
+            }
+            continue;
+        }
+        assert_eq!(files.len(), 1);
+        let rows: Vec<Json> = std::fs::read_to_string(&files[0])
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect();
+        let checks: Vec<_> = rows.iter().filter(|r| r["kind"] == "model_check").collect();
+        let rejected = checks.iter().find(|r| r["data"]["stage"] == "W2").unwrap();
+        assert_eq!(rejected["data"]["candidate_index"], 0);
+        assert_eq!(
+            rejected["data"]["reasons"],
+            json!(["candidate_rejected:fact_sentence_mismatch"])
+        );
+        assert!(checks.iter().any(|r| r["data"]["stage"] == "W1"
+            && r["data"]["phase"] == "validate"
+            && r["data"]["status"] == "completed"));
+        assert!(
+            checks
+                .iter()
+                .any(|r| r["data"]["stage"] == "W3" && r["data"]["status"] == "completed")
+        );
+        for row in checks {
+            assert!(!row.to_string().contains(OLD));
+            assert!(row["data"].get("candidate").is_none());
+            assert!(
+                row["run_id"]
+                    .as_str()
+                    .is_some_and(|id| id.starts_with("w4:"))
+            );
+        }
+    }
+}
+
+#[test]
+fn background_trace_child() {
+    if std::env::var_os("PMR_BACKGROUND_TRACE_TEST").is_none() {
+        return;
+    }
+    let db = Db::new();
+    let mut service = db.service(5);
+    let key = capture(&mut service, &db, "diagnostics", OLD);
+    let (mut c, sent) = client();
+    let original = c.transport.take().unwrap();
+    c.transport = Some(Arc::new(move |request| {
+        let body: Json =
+            serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+        if body["text"]["format"]["name"] != "w1_v2" {
+            return original(request);
+        }
+        let mut extraction = w1(OLD);
+        extraction["candidates"][0]["relation"] = json!("fact");
+        let valid = extraction["candidates"][0].clone();
+        extraction["candidates"][0]["value"]["text"] = json!(OLD.trim_end_matches('。'));
+        extraction["candidates"][0]["value"]["quote"]["text"] = json!(OLD.trim_end_matches('。'));
+        extraction["candidates"].as_array_mut().unwrap().push(valid);
+        Ok(envelope(extraction))
+    }));
+    service.inject_model_client(c);
+    let worker = service.start_background().unwrap().unwrap();
+    worker.wait_idle();
+    worker.stop_and_join().unwrap();
+    // Identical business assertions run with diagnostics enabled, disabled and failing.
+    assert_eq!(db.calls(), 2);
+    assert_eq!(sent.lock().unwrap().len(), 1); // W1 is intercepted above; W3 uses the original transport.
+    let state = db.open().read().unwrap();
+    let result = crate::enrichment::receipt(&db.open(), &key).unwrap();
+    assert_eq!(state.sources[&key].enrichment, "pending");
+    assert_eq!(result["enrichment"]["candidates"][0]["status"], "rejected");
+    assert_eq!(result["enrichment"]["candidates"][1]["status"], "committed");
+}
+
+#[test]
 fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable() {
     for recall_pipeline in [crate::chat::RecallPipeline::RecallV3] {
         let db = Db::new();

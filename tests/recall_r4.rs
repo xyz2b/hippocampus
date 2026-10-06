@@ -435,6 +435,118 @@ fn fact(statement: &str, evidence: Vec<EvidenceRef>, ids: Vec<MemoryId>, current
 fn output(facts: Vec<Json>, compute: Option<Json>) -> Json {
     json!({"verdict":"supported","facts":facts,"compute":compute})
 }
+
+#[test]
+fn time_evidence_must_reference_its_source_and_diagnostics_exclude_original_text() {
+    let f = Fixture::new(json!({
+        "query":"我的住宿安排是什么？", "at":SAID_ON, "current_evidence":"query_only",
+        "plan":{"type":"single","relation":"住宿安排","op":"list"},
+        "records":[],"relations":[],"raw":[
+            {"source":"schedule","text":"活动在6.17-6.19。","said_on":SAID_ON,"enrichment":"pending"},
+            {"source":"lodging","text":"我打算住在松桥旅馆。","said_on":SAID_ON,"enrichment":"pending"}
+        ]
+    }));
+    let mut item = fact(
+        "计划住宿",
+        vec![stored("lodging", "我打算住在松桥旅馆。")],
+        vec![],
+        "yes",
+    );
+    item["times"] = json!([{"role":"event","quote":{"text":"6.17-6.19"},
+        "interp":{"kind":"range","start":"2026-06-17","end_inclusive":"2026-06-19"},"anchor":"said_on"}]);
+    let (bad, events) =
+        diagnostics::capture_model_events(|| f.finish(output(vec![item.clone()], None)));
+    assert_eq!(bad.status, RecallStatus::Degraded);
+    assert_eq!(bad.semantic_judgment, SemanticJudgment::Failed);
+    assert!(bad.facts.is_empty());
+    assert!(
+        bad.degraded_reasons
+            .iter()
+            .any(|r| r == "model_invalid_output")
+    );
+    let event = events
+        .iter()
+        .find(|e| e["data"]["phase"] == "validate")
+        .unwrap();
+    assert_eq!(event["data"]["field"], "facts[0].times[0]");
+    assert_eq!(event["data"]["rule"], "fact_time");
+    assert_eq!(event["data"]["cause"], "quote_or_source");
+    assert!(!serde_json::to_string(&events).unwrap().contains("松桥"));
+    assert!(!serde_json::to_string(&events).unwrap().contains("6.17"));
+    item["evidence"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!(stored("schedule", "活动在6.17-6.19。")));
+    let good = f.finish(output(vec![item.clone()], None));
+    assert_eq!(good.semantic_judgment, SemanticJudgment::Model);
+    assert_eq!(good.facts.len(), 1);
+    let assembly = f.assembly();
+    f.db.open()
+        .transaction(|state| {
+            let source = state.sources.get_mut("schedule").unwrap();
+            source.request = None;
+            source.enrichment = "deleted".into();
+            Ok(())
+        })
+        .unwrap();
+    let late = assembly
+        .finish_r4(
+            &f.db.open(),
+            Ok(&output(vec![item.clone()], None).to_string()),
+        )
+        .unwrap_err();
+    assert_eq!(late.to_string(), "recall_snapshot_changed");
+    let deleted = f.finish(output(vec![item], None));
+    assert!(deleted.facts.is_empty());
+    assert_ne!(deleted.semantic_judgment, SemanticJudgment::Model);
+    assert!(!serde_json::to_string(&deleted).unwrap().contains("6.17"));
+}
+
+#[test]
+fn r4_dotted_time_uses_shared_calendar_validation() {
+    for (quote, interp, valid) in [
+        ("6.17", json!({"kind":"date","date":"2029-06-17"}), true),
+        ("6.17", json!({"kind":"date","date":"2026-06-18"}), false),
+        ("4.31", json!({"kind":"date","date":"2026-04-30"}), false),
+        (
+            "6.17-6.19",
+            json!({"kind":"date","date":"2026-06-17"}),
+            false,
+        ),
+        (
+            "6.17",
+            json!({"kind":"month","year_offset":0,"month":6}),
+            false,
+        ),
+        (
+            "12.29-1.3",
+            json!({"kind":"range","start":"2026-12-29","end_inclusive":"2027-01-03"}),
+            true,
+        ),
+    ] {
+        let text = format!("计划日期为{quote}。");
+        let f = Fixture::new(json!({"query":"我的计划日期是什么？","at":SAID_ON,
+            "current_evidence":"query_only","plan":{"type":"single","relation":"计划","op":"list"},
+            "records":[],"relations":[],"raw":[{"source":"schedule","text":text,"said_on":SAID_ON,"enrichment":"pending"}]}));
+        let mut item = fact("计划日期", vec![stored("schedule", &text)], vec![], "yes");
+        item["times"] =
+            json!([{"role":"event","quote":{"text":quote},"interp":interp,"anchor":"said_on"}]);
+        let (result, events) =
+            diagnostics::capture_model_events(|| f.finish(output(vec![item], None)));
+        if valid {
+            assert_eq!(result.semantic_judgment, SemanticJudgment::Model, "{quote}");
+        } else {
+            assert_eq!(result.status, RecallStatus::Degraded, "{quote}");
+            assert!(result.facts.is_empty());
+            let event = events
+                .iter()
+                .find(|e| e["data"]["phase"] == "validate")
+                .unwrap();
+            assert_eq!(event["data"]["rule"], "fact_time");
+            assert_eq!(event["data"]["cause"], "time");
+        }
+    }
+}
 fn compute(
     op: &str,
     items: Vec<Json>,

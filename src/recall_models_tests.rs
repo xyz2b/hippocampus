@@ -2772,6 +2772,19 @@ fn remember_acknowledgment_is_progress_but_retention_control_is_safety() {
 }
 
 #[test]
+fn r4_time_quotes_require_a_real_reference_on_the_same_fact() {
+    for rule in [
+        "For each fact.times entry",
+        "THAT fact's",
+        "add a real reference to that source",
+        "judge whether the time applies to this assertion",
+        "does not establish its applicability",
+    ] {
+        assert!(R4_PROMPT.contains(rule), "{rule}");
+    }
+}
+
+#[test]
 fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
     for rule in [
         "Kinship refers to the related person",

@@ -2802,6 +2802,33 @@ fn w4_late_old_source_deletion_cannot_restore_raw_audit_or_input_copies() {
 }
 
 #[test]
+fn prompts_distinguish_assertions_and_intentions_without_rewriting_quotes() {
+    for rule in [
+        "value.quote.text exactly",
+        "including final punctuation",
+        "never by shortening a generic fact value",
+        "Output each assertion",
+        "each copying the whole",
+        "does not merge different types or qualifiers",
+        "do not use a relation describing an accomplished",
+    ] {
+        assert!(W1_PROMPT.contains(rule), "{rule}");
+    }
+    for prompt in [W1_PROMPT, W3_PROMPT] {
+        for rule in [
+            "without expressing the user's actual intention",
+            "question or",
+            "An expressed plan can also ask for advice",
+            "conditions and uncertainty",
+            "never question marks or keywords",
+        ] {
+            assert!(prompt.contains(rule), "{rule}");
+        }
+        assert!(!prompt.contains("For example"));
+    }
+}
+
+#[test]
 fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
     for (prompt, rules) in [
         (

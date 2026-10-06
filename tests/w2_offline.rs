@@ -89,6 +89,72 @@ fn rejected(text: &str, candidate: Json, reason: &str) {
     );
 }
 
+#[test]
+fn dotted_month_days_check_whole_days_and_ranges_without_inventing_years() {
+    for (quote, interp, valid) in [
+        ("6.17", json!({"kind":"date","date":"2029-06-17"}), true),
+        ("06.17", json!({"kind":"date","date":"2027-06-17"}), true),
+        ("6.17", json!({"kind":"date","date":"2026-06-18"}), false),
+        ("6.17", json!({"kind":"date","date":"2026-07-17"}), false),
+        ("13.1", json!({"kind":"date","date":"2026-01-01"}), false),
+        ("4.31", json!({"kind":"date","date":"2026-04-30"}), false),
+        ("2.29", json!({"kind":"date","date":"2026-02-28"}), false),
+        ("2.29", json!({"kind":"date","date":"2028-02-29"}), true),
+        (
+            "6.17-6.19",
+            json!({"kind":"range","start":"2026-06-17","end_inclusive":"2026-06-19"}),
+            true,
+        ),
+        (
+            "12.29-1.3",
+            json!({"kind":"range","start":"2026-12-29","end_inclusive":"2027-01-03"}),
+            true,
+        ),
+        (
+            "6.17-6.19",
+            json!({"kind":"date","date":"2026-06-17"}),
+            false,
+        ),
+        (
+            "6.17-6.19",
+            json!({"kind":"range","start":"2026-06-17","end_inclusive":"2026-06-18"}),
+            false,
+        ),
+        (
+            "6.17",
+            json!({"kind":"month","year_offset":0,"month":6}),
+            false,
+        ),
+        (
+            "6.17",
+            json!({"kind":"range","start":"2026-06-17","end_inclusive":"2027-06-17"}),
+            false,
+        ),
+    ] {
+        let text = format!("安排在{quote}。");
+        let mut c = candidate(&text);
+        c["times"] = json!([time(quote, interp)]);
+        let batch = run(&text, vec![c], vec![]).unwrap();
+        assert_eq!(
+            batch.candidates[0].status,
+            if valid { Status::Ok } else { Status::Rejected },
+            "{quote}"
+        );
+        if !valid {
+            assert_eq!(
+                batch.candidates[0].reasons,
+                ["candidate_rejected:invalid_time"]
+            );
+        }
+    }
+    let mut c = candidate("安排时间未知。");
+    c["times"] = json!([time("未知", json!({"kind":"unknown"}))]);
+    assert_eq!(
+        run("安排时间未知。", vec![c], vec![]).unwrap().candidates[0].status,
+        Status::Ok
+    );
+}
+
 // 要求 1：严格形状解码（正／反）。
 #[test]
 fn schema_accepts_nulls_and_empty_output() {
