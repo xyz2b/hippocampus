@@ -3939,6 +3939,126 @@
       "note": "如实复述 s1_t2（会去有 Ibotta 返现的地方购物），applies=unknown，不误导。",
       "reviewer": "xyzjiao",
       "confirmed_at": "2026-10-05"
+    },
+    "sha256:ca861bbef583d1d95806d8c5fbdf0dbc98d00ff5a1af8eec1ce679c527e19495": {
+      "question": "event_registration_fee/event_q5",
+      "side": "new",
+      "item": "facts[0].value",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "值写在 text 中（海盐 36 元），value 字段为空；值与来源 event_s1 正确。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:164adcbe0063243ce3e24239444fdf830e95028ae47395f50500df1ba69745a0": {
+      "question": "event_registration_fee/event_q5",
+      "side": "new",
+      "item": "facts[0].semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "海盐折纸工作坊报名费 36 元，来源 event_s1，标为当前，与期望一致。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:b09911840424c3e947cbcaa542e2477b13b3c07d28ee4675f0dd6dabafe1b6cb": {
+      "question": "event_registration_fee/event_q5",
+      "side": "new",
+      "item": "forbidden[1]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "未把 58 元当作当前值。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:adef08a5c6fb1fa6567340aca0fb53905fc8310479005dfca1cc97dfeeaafe12": {
+      "question": "unresolved_conflict/conflict_q2",
+      "side": "new",
+      "item": "conflict_report.semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "第二条 fact 引用 conflict_s2，同时提到 7 和 8 英寸、未核实，本身符合 AF11。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:e41ffcba3db9a4f2208fc11a6261464d1a824dc6fd2ac043b8336a81fe817d3d": {
+      "question": "unresolved_conflict/conflict_q2",
+      "side": "new",
+      "item": "forbidden[0]",
+      "verdict": "fail",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "另一条 fact 断言“屏幕尺寸是7英寸”，current=yes、applies=yes，把 7 英寸当作当前值，与冲突说明自相矛盾。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:d13db464a1851f7181145e6118bc6f3a5f954c09668ed83cac658f6499b9bba7": {
+      "question": "unresolved_conflict/conflict_q2",
+      "side": "new",
+      "item": "forbidden[1]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "未把 8 英寸当作当前值。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:3dc06d12cd24294fd708da9e6d97c69b2a8ff32e846e3787aae26333785971c6": {
+      "question": "unresolved_conflict/conflict_q2",
+      "side": "new",
+      "item": "extra:facts[0]",
+      "verdict": "fail",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "额外 fact 把已被冲突的 7 英寸作为当前确定值（current=yes），会误导用户。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:1fc1a1e93949ae1a571e5e4bc00cbcdb9c37bbacd2c0fd89a54d42d3b7218ab4": {
+      "question": "unresolved_conflict/conflict_q3",
+      "side": "new",
+      "item": "conflict_report.semantic",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "引用 conflict_s2，同时提到 7 和 8 英寸，明确都不能作为最终结论，符合 AF11。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:d1cb7e365efb79972e43e61ca92ab093adc05ce31c4a271a172194576ee6240b": {
+      "question": "unresolved_conflict/conflict_q3",
+      "side": "new",
+      "item": "forbidden[0]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "未确认 7 英寸为当前值。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
+    },
+    "sha256:52a7018cacbfaa23c1695170a5a92265a6d379dea3b0d664410efc7804fa95d7": {
+      "question": "unresolved_conflict/conflict_q3",
+      "side": "new",
+      "item": "forbidden[1]",
+      "verdict": "pass",
+      "status": "confirmed",
+      "drafted_by": "claude",
+      "contract": "recall.v3",
+      "note": "未确认 8 英寸为当前值。",
+      "reviewer": "xyzjiao",
+      "confirmed_at": "2026-10-06"
     }
   }
 }
