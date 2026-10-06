@@ -461,7 +461,7 @@ fn planned(db: &Db, service: &mut ChatMemoryService, turn: &str) -> (String, W4C
                 source: SourceRef::Stored {
                     source_id: source_id.clone(),
                 },
-                said_on: "2026-10-02".into(),
+                said_on: Some("2026-10-02".into()),
                 time_resolutions: vec![],
             }
         })

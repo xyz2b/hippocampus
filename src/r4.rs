@@ -35,8 +35,8 @@ pub struct Context<'a> {
     pub plan: &'a r1::Plan,
     pub request: &'a RecallRequest,
     pub utc_offset_seconds: i32,
-    /// 运行时从同一快照取得的来源接收日；不能由模型给出。
-    pub source_dates: &'a BTreeMap<String, String>,
+    /// 运行时从同一快照取得的可信原陈述日（未知为 None）；不能由模型给出。
+    pub source_dates: &'a BTreeMap<String, Option<String>>,
 }
 
 pub struct Evaluated {
@@ -236,20 +236,21 @@ impl Context<'_> {
             self.restore(anchor_quote, source)?;
         }
         let said_on = match source {
-            SourceRef::Current {} => {
-                &self
-                    .evidence
+            SourceRef::Current {} => Some(
+                self.evidence
                     .current_message
                     .as_ref()
                     .ok_or(InvalidOutput("current_missing"))?
                     .said_on
-            }
+                    .as_str(),
+            ),
             SourceRef::Stored { source_id } => self
                 .source_dates
                 .get(source_id)
-                .ok_or(InvalidOutput("source_date_missing"))?,
+                .ok_or(InvalidOutput("source_date_missing"))?
+                .as_deref(),
         };
-        crate::w2::resolve_time_interp(time, said_on, self.utc_offset_seconds)
+        crate::w2::resolve_time_interp_nullable(time, said_on, self.utc_offset_seconds)
             .map_err(|_| InvalidOutput("time"))
     }
 

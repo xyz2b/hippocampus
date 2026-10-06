@@ -52,6 +52,8 @@ enum RecallVersion {
 mod background;
 #[path = "chat_config.rs"]
 mod configuration;
+#[path = "chat_import.rs"]
+mod history_import;
 #[path = "chat_recall.rs"]
 mod recall_dispatch;
 #[path = "chat_reprocess.rs"]
@@ -1350,6 +1352,9 @@ impl ChatMemoryService {
                 }
                 sources::status(&state, key, &owner, self.config.utc_offset_seconds)
             }
+            "memory_source_import_history" => {
+                self.import_history(serde_json::from_value(arguments)?)
+            }
             "memory_list" => {
                 let input: List = serde_json::from_value(arguments)?;
                 check_limit(input.limit)?;
@@ -1463,7 +1468,7 @@ fn tool<T: JsonSchema>(
         name,
         "memory_recall" | "memory_prepare" | "memory_entity_upsert"
     ) {
-        "After bootstrap, continue handling the SAME current USER message; an empty bootstrap is not evidence that personal memory is empty. For authorized personal background, plans, additions or corrections, use memory_prepare to save that first message too. For a concrete question about personal arrangements, experiences or state, also call ordinary memory_recall with the complete question; bootstrap does not answer it. Do not add offline=true to an online request on your own. Explicitly register an unregistered family member or other person with memory_entity_upsert using the user's confirmed reference; a real name is not required. Never register a property or event as a person; ask once when the referent is ambiguous, never guess. Check raw source saving and enrichment independently; pending is not a failed raw save. Inspect pending with memory_source_status. "
+        "After bootstrap, continue handling the SAME current USER message; an empty bootstrap is not evidence that personal memory is empty. For authorized personal background, plans, additions or corrections, use memory_prepare to save that first message too. For a concrete question about personal arrangements, experiences or state, also call ordinary memory_recall with the complete question; bootstrap does not answer it. Do not add offline=true to an online request on your own. Explicitly register an unregistered family member or other person with memory_entity_upsert using the user's confirmed reference; a real name is not required. Never register a property or event as a person; ask once when the referent is ambiguous, never guess. Check raw source saving and enrichment independently; pending is not a failed raw save. Inspect pending with memory_source_status; if a first USER message was retained only in history, inspect its history_entries and explicitly authorize memory_source_import_history before separate reprocess. "
     } else {
         ""
     };
@@ -1520,9 +1525,16 @@ pub fn memory_tools() -> Vec<Tool> {
             false,
             true,
         ),
+        tool::<history_import::ImportHistory>(
+            "memory_source_import_history",
+            "Import one complete retention-authorized USER history entry already stored by this owner. Inspect memory_source_status.history_entries; pass parent source_id, history_index, expected_content_fingerprint, stable request_id and capture_source=true. No caller-supplied text/date, concatenation or rewriting. Parent/hash/slot provenance preserves an unknown original said_on and earlier-than-parent ordering; reception is not assertion chronology. T1+index only, no models or automatic enrichment; use memory_source_reprocess separately. Same-entry replay is idempotent, deletion survives slot changes. Use for a first USER message retained only in history, without asking the user to repeat it.",
+            true,
+            false,
+            true,
+        ),
         tool::<SourceStatus>(
             "memory_source_status",
-            "Read-only management status for one retained source: source/enrichment, generation, round, state_token, provenance, time_anchor and uncommitted candidate indices/reasons, plus pending update indices. No source text or fact values, no model calls, no retry or reconstruction. Shows current generation, provenance/time anchors and subject confirmation identities without exposing confirmation text; unavailable historical metadata is null. The token binds this owner's source and its observed processing state, not global database progress. Other-owner/unknown IDs return source_not_found; deleted sources return source_deleted. Status is a read snapshot; use memory_recall for evidence and factual answers.",
+            "Read-only management status for one retained source: source/enrichment, generation, round, state_token, provenance, time_anchor and uncommitted candidate indices/reasons, plus pending update indices. history_entries gives USER history slots, full-text fingerprints and byte counts only. No source text or fact values, no model calls, no retry or reconstruction. Shows current generation, provenance/time anchors and subject confirmation identities without exposing confirmation text; unavailable historical metadata is null. The token binds this owner's source and its observed processing state, not global database progress. Other-owner/unknown IDs return source_not_found; deleted sources return source_deleted. Status is a read snapshot; use memory_recall for evidence and factual answers.",
             false,
             true,
             false,

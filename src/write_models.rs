@@ -284,11 +284,10 @@ impl WriteModelProvider {
         }
         let source_record = store.read()?.sources[&ctx.source_key].clone();
         let confirming = crate::enrichment::selected_candidate(&source_record).is_some();
-        let anchor = source_record
-            .management
-            .time_anchor
-            .as_ref()
-            .filter(|_| source_record.task.generation != 0);
+        let anchor =
+            source_record.management.time_anchor.as_ref().filter(|_| {
+                source_record.task.generation != 0 || source_record.is_history_import()
+            });
         let utc_offset_seconds = ctx
             .previous_w2
             .as_ref()
@@ -301,22 +300,18 @@ impl WriteModelProvider {
             })
             .unwrap_or(self.context.utc_offset_seconds);
         let offset = UtcOffset::from_whole_seconds(utc_offset_seconds)?;
-        let said_on = ctx
-            .previous_w2
-            .as_ref()
-            .filter(|_| confirming)
-            .map(|b| b.said_on.clone())
-            .or_else(|| {
-                anchor
-                    .and_then(|a| a["said_on"].as_str())
-                    .map(str::to_owned)
-            })
-            .unwrap_or(
+        let said_on = if confirming {
+            ctx.previous_w2.as_ref().unwrap().said_on.clone()
+        } else if source_record.is_history_import() || anchor.is_some() {
+            source_record.said_on(utc_offset_seconds)?
+        } else {
+            Some(
                 OffsetDateTime::from_unix_timestamp(ctx.observed_at)?
                     .to_offset(offset)
                     .date()
                     .to_string(),
-            );
+            )
+        };
         let relations = w2::relation_catalog(
             &self.context.known_predicates,
             &self.context.predicate_memory_types,
@@ -337,6 +332,10 @@ impl WriteModelProvider {
             })).collect::<Vec<_>>(),
             "said_on":said_on,"utc_offset_seconds":utc_offset_seconds,"task_id":ctx.task_id,
         });
+        if let Some(provenance) = &source.provenance {
+            input["source_provenance"] = provenance.clone();
+            input["time_anchor"] = json!(source.time_anchor);
+        }
         if source_record.task.generation != 0 {
             input["generation"] = json!(source_record.task.generation);
             input["subject_confirmations"] = json!(source_record.management.confirmations);
@@ -443,7 +442,7 @@ impl WriteModelProvider {
                     text: &source.text,
                     entities: &entities,
                     relations: &relations,
-                    said_on: &said_on,
+                    said_on: said_on.as_deref(),
                     utc_offset_seconds,
                     task_id: ctx.task_id.as_ref(),
                 },

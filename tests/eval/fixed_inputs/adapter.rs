@@ -66,7 +66,8 @@ fn batch(input: &Value) -> Result<w2::Batch, String> {
             .map_err(|e| e.to_string())?,
         index_map,
         task_id: serde_json::from_value(input["task_id"].clone()).map_err(|e| e.to_string())?,
-        said_on: input["said_on"].as_str().ok_or("said_on")?.into(),
+        said_on: serde_json::from_value(input.get("said_on").ok_or("said_on")?.clone())
+            .map_err(|e| e.to_string())?,
         utc_offset_seconds: serde_json::from_value(input["utc_offset_seconds"].clone())
             .map_err(|e| e.to_string())?,
     })

@@ -124,6 +124,35 @@ pub struct SourceRecord {
 }
 
 impl SourceRecord {
+    pub(crate) fn is_history_import(&self) -> bool {
+        self.management
+            .provenance
+            .as_ref()
+            .is_some_and(|p| p["kind"] == "history_import")
+    }
+
+    /// Explicit null remains unknown; reception is only a fallback for ordinary legacy sources.
+    pub(crate) fn said_on(&self, offset: i32) -> PersistenceResult<Option<String>> {
+        if let Some(anchor) = &self.management.time_anchor {
+            return match &anchor["said_on"] {
+                Value::Null => Ok(None),
+                Value::String(date) if crate::temporal::parse_iso_date(date).is_some() => {
+                    Ok(Some(date.clone()))
+                }
+                _ => Err("invalid source time anchor".into()),
+            };
+        }
+        if self.is_history_import() {
+            return Ok(None);
+        }
+        Ok(Some(
+            time::OffsetDateTime::from_unix_timestamp(self.observed_at)?
+                .to_offset(time::UtcOffset::from_whole_seconds(offset)?)
+                .date()
+                .to_string(),
+        ))
+    }
+
     /// 重判取得新的写入排序序号，原文接收顺序与时间保持不变。
     pub fn order_sequence(&self) -> u64 {
         self.task.order_sequence.unwrap_or(self.received_sequence)
@@ -135,8 +164,8 @@ impl SourceRecord {
                 "status": if self.request.is_some() { "stored" } else { "deleted" },
                 "source_id": self.id,
                 "received_sequence": self.received_sequence,
-                "provenance": "mcp_received",
-                "message_id_trust": "client_supplied"
+                "provenance": if self.is_history_import() { "history_import" } else { "mcp_received" },
+                "message_id_trust": if self.is_history_import() { "server_generated" } else { "client_supplied" }
             },
             "index": if self.request.is_none() { serde_json::json!({"status":"deleted"}) }
                 else if self.index.is_object() { self.index.clone() }

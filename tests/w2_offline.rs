@@ -73,7 +73,7 @@ fn run_at(
             text,
             entities: &entities,
             relations: &relations,
-            said_on,
+            said_on: Some(said_on),
             utc_offset_seconds: offset,
             task_id: task,
         },
@@ -145,7 +145,7 @@ fn schema_errors_fail_the_whole_output() {
                 text: "我住上海。",
                 entities: &[],
                 relations: &[],
-                said_on: "2026-04-15",
+                said_on: Some("2026-04-15"),
                 utc_offset_seconds: 0,
                 task_id: None
             }
@@ -289,7 +289,7 @@ fn unresolved_subject_is_not_bound_to_the_only_catalog_entity() {
             text: "他住上海。",
             entities: &entities,
             relations: &relations,
-            said_on: "2026-04-15",
+            said_on: Some("2026-04-15"),
             utc_offset_seconds: 0,
             task_id: None,
         },

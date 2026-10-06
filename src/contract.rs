@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::{MemoryId, SupersedeReason, UpdateState};
 
 /// 契约里“必须出现、可以为 null”的字段：缺省视为错误，不当作 null。
-fn required<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+pub(crate) fn required<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     D: serde::Deserializer<'de>,
     T: Deserialize<'de>,
@@ -547,7 +547,8 @@ pub struct W4Candidate {
     pub committed_id: Option<MemoryId>,
     pub candidate: Candidate,
     pub source: SourceRef,
-    pub said_on: String,
+    #[serde(deserialize_with = "required")]
+    pub said_on: Option<String>,
     pub time_resolutions: Vec<TimeResolution>,
 }
 
@@ -741,7 +742,8 @@ pub struct CurrentRecordView {
     pub candidate: Candidate,
     pub evidence: Vec<EvidenceRef>,
     pub grade: Grade,
-    pub said_on: String,
+    #[serde(deserialize_with = "required")]
+    pub said_on: Option<String>,
     pub time_resolutions: Vec<TimeResolution>,
     pub history: Vec<MemoryId>,
     pub open_relations: Vec<String>,
@@ -823,7 +825,8 @@ pub struct CurrentMessage {
 pub struct RawEvidence {
     pub source_id: String,
     pub quote: Quote,
-    pub said_on: String,
+    #[serde(deserialize_with = "required")]
+    pub said_on: Option<String>,
     pub sequence: u64,
     pub grade: RecallGrade,
     pub enrichment: EnrichmentStatus,
@@ -1106,7 +1109,8 @@ pub struct CurrentRecordView2 {
     pub candidate: Candidate,
     pub evidence: Vec<EvidenceRef>,
     pub grade: Grade,
-    pub said_on: String,
+    #[serde(deserialize_with = "required")]
+    pub said_on: Option<String>,
     pub time_resolutions: Vec<TimeResolution>,
     pub history: Vec<MemoryId>,
     pub open_relations: Vec<String>,
@@ -1137,7 +1141,8 @@ impl RecordView2 {
 pub struct ContractCandidate {
     pub candidate: Candidate,
     pub source: SourceRef,
-    pub said_on: String,
+    #[serde(deserialize_with = "required")]
+    pub said_on: Option<String>,
     pub time_resolutions: Vec<TimeResolution>,
 }
 

@@ -249,7 +249,7 @@ fn batch(output: W1Output, input: &Value) -> Result<w2::Batch, w2::Error> {
             text: input["text"].as_str().unwrap(),
             entities: &entities,
             relations: &relations,
-            said_on: input["said_on"].as_str().unwrap(),
+            said_on: input["said_on"].as_str(),
             utc_offset_seconds: 28_800,
             task_id: None,
         },
@@ -954,6 +954,8 @@ fn stage_request_with_output_tokens(
                     (
                         id,
                         hippocampus::enrichment::SourceInput {
+                            provenance: None,
+                            time_anchor: None,
                             text: s["text"].as_str().unwrap().into(),
                             history: vec![],
                         },

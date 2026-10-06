@@ -545,6 +545,34 @@ pub(crate) fn forget(
             }
         }
     }
+    // Import provenance is a hard dependency: deleting a parent deletes all descendants.
+    // Never follow ordinary factual evidence to unrelated independent sources.
+    loop {
+        let ids: BTreeSet<_> = state
+            .sources
+            .values()
+            .filter(|s| turns.contains(&(s.session_id.clone(), s.turn_id.clone())))
+            .map(|s| s.id.as_str())
+            .collect();
+        let descendants: Vec<_> = state
+            .sources
+            .values()
+            .filter(|s| {
+                s.management.provenance.as_ref().is_some_and(|p| {
+                    p["kind"] == "history_import"
+                        && p["parent_source_id"]
+                            .as_str()
+                            .is_some_and(|id| ids.contains(id))
+                })
+            })
+            .map(|s| (s.session_id.clone(), s.turn_id.clone()))
+            .collect();
+        let before = turns.len();
+        turns.extend(descendants);
+        if turns.len() == before {
+            break;
+        }
+    }
     // Identity confirmations are dependencies, not independent factual support. Deleting one
     // invalidates only the selected candidate's products; it never deletes its other raw source.
     let deleting_sources: BTreeSet<String> = state
@@ -608,7 +636,21 @@ pub(crate) fn forget(
             fragments.push(text.to_owned());
         }
         source.request = None;
-        source.management = Default::default();
+        // Retain only parent/hash/slot identity; request IDs can contain text, so drop authorization too.
+        let import = source
+            .management
+            .provenance
+            .take()
+            .filter(|p| p["kind"] == "history_import")
+            .map(|p| {
+                json!({"kind":"history_import","parent_source_id":p["parent_source_id"],
+                "history_index":p["history_index"],"content_fingerprint":p["content_fingerprint"],
+                "before_source_id":p["before_source_id"]})
+            });
+        source.management = crate::sqlite::SourceManagement {
+            provenance: import,
+            ..Default::default()
+        };
         // Retain only the accepted mode; deletion removes business results and source text.
         source.result = source
             .result

@@ -46,7 +46,9 @@ def main():
         client = Client(args.binary.resolve(), db, env, "alice", config=config)
         try:
             tools = {t["name"]: t for t in client.rpc("tools/list", {})["tools"]}
-            assert len(tools) == 10
+            assert len(tools) == 11
+            assert "memory_source_import_history" in tools
+            assert tools["memory_source_import_history"]["annotations"]["readOnlyHint"] is False
             assert "memory_source_reprocess" in tools
             assert tools["memory_source_reprocess"]["annotations"]["readOnlyHint"] is False
             assert "memory_source_status" in tools

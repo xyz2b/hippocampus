@@ -17,8 +17,8 @@ pub struct Context<'a> {
     pub text: &'a str,
     pub entities: &'a [EntityId],
     pub relations: &'a [Relation],
-    /// 原文接收日（用户本地日期），不是后台执行日。
-    pub said_on: &'a str,
+    /// 可信原陈述日；补录未知时为 None，不用接收日或后台执行日代填。
+    pub said_on: Option<&'a str>,
     pub utc_offset_seconds: i32,
     /// 仅从运行时复制；w1.v2 没有可由模型填写的任务字段。
     pub task_id: Option<&'a TaskId>,
@@ -63,7 +63,8 @@ pub struct Batch {
     pub memory_requests: Vec<RequestResult>,
     pub index_map: Vec<Option<usize>>,
     pub task_id: Option<TaskId>,
-    pub said_on: String,
+    #[serde(deserialize_with = "crate::contract::required")]
+    pub said_on: Option<String>,
     pub utc_offset_seconds: i32,
 }
 
@@ -146,7 +147,10 @@ fn shape(output: &W1Output) -> Result<(), Error> {
 
 pub fn validate(mut output: W1Output, ctx: &Context<'_>) -> Result<Batch, Error> {
     shape(&output)?;
-    if crate::temporal::parse_iso_date(ctx.said_on).is_none() {
+    if ctx
+        .said_on
+        .is_some_and(|date| crate::temporal::parse_iso_date(date).is_none())
+    {
         return Err(Error::InvalidContext("said_on"));
     }
     if time::UtcOffset::from_whole_seconds(ctx.utc_offset_seconds).is_err() {
@@ -231,7 +235,7 @@ pub fn validate(mut output: W1Output, ctx: &Context<'_>) -> Result<Batch, Error>
         memory_requests,
         index_map,
         task_id: ctx.task_id.cloned(),
-        said_on: ctx.said_on.into(),
+        said_on: ctx.said_on.map(str::to_owned),
         utc_offset_seconds: ctx.utc_offset_seconds,
     })
 }
@@ -383,7 +387,8 @@ fn check_time(time: &mut TimeInterp, ctx: &Context<'_>) -> Result<TimeResolution
     if let Interp::Anchored { anchor_quote, .. } = &mut time.interp {
         restore(anchor_quote, ctx.text).map_err(|_| "anchor_quote_not_found")?;
     }
-    resolve_time_interp(time, ctx.said_on, ctx.utc_offset_seconds).map_err(|_| "invalid_time")
+    resolve_time_interp_nullable(time, ctx.said_on, ctx.utc_offset_seconds)
+        .map_err(|_| "invalid_time")
 }
 
 fn check_request(
@@ -425,12 +430,34 @@ pub fn resolve_time_interp(
     said_on: &str,
     utc_offset_seconds: i32,
 ) -> Result<crate::contract::TimeResolution, TemporalResolveError> {
+    resolve_time_interp_nullable(time, Some(said_on), utc_offset_seconds)
+}
+
+/// Absolute dates are independent of utterance time; relative dates require a known anchor.
+pub fn resolve_time_interp_nullable(
+    time: &crate::contract::TimeInterp,
+    said_on: Option<&str>,
+    utc_offset_seconds: i32,
+) -> Result<crate::contract::TimeResolution, TemporalResolveError> {
     use crate::contract::{Interp, Precision, ResolutionStatus, TimeResolution, TimeUnit};
     let invalid = || TemporalResolveError("invalid TimeInterp calendar or literal date".into());
-    let said_on = crate::temporal::parse_iso_date(said_on).ok_or_else(invalid)?;
+    let said_on = said_on
+        .map(|date| crate::temporal::parse_iso_date(date).ok_or_else(invalid))
+        .transpose()?;
     let offset = UtcOffset::from_whole_seconds(utc_offset_seconds).map_err(|_| invalid())?;
+    if matches!(time.interp, Interp::Month { month, .. } if !(1..=12).contains(&month)) {
+        return Err(invalid());
+    }
+    if said_on.is_none() && matches!(time.interp, Interp::Relative { .. } | Interp::Month { .. }) {
+        return Ok(TimeResolution {
+            status: ResolutionStatus::Unknown,
+            start: None,
+            end_exclusive: None,
+            precision: Precision::Unknown,
+        });
+    }
     let year = |offset: i64| {
-        i64::from(said_on.year())
+        i64::from(said_on.ok_or_else(invalid)?.year())
             .checked_add(offset)
             .and_then(|year| i32::try_from(year).ok())
             .ok_or_else(invalid)
@@ -466,13 +493,14 @@ pub fn resolve_time_interp(
                 let days = offset
                     .checked_mul(if *unit == TimeUnit::Week { 7 } else { 1 })
                     .ok_or_else(invalid)?;
-                let julian = i64::from(said_on.to_julian_day())
+                let julian = i64::from(said_on.ok_or_else(invalid)?.to_julian_day())
                     .checked_add(days)
                     .and_then(|day| i32::try_from(day).ok())
                     .ok_or_else(invalid)?;
                 day(Date::from_julian_day(julian).map_err(|_| invalid())?)?
             }
             TimeUnit::Month => {
+                let said_on = said_on.ok_or_else(invalid)?;
                 let months = (i64::from(said_on.year()) * 12 + i64::from(said_on.month() as u8)
                     - 1)
                 .checked_add(*offset)

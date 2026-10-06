@@ -103,7 +103,7 @@ fn process(db: &Db, key: &str, candidates: Vec<Candidate>, pending: bool) -> Jso
                     text: &input.text,
                     entities: &[EntityId::from("self")],
                     relations: &catalog,
-                    said_on: "2026-10-02",
+                    said_on: Some("2026-10-02"),
                     utc_offset_seconds: 28_800,
                     task_id: ctx.task_id.as_ref(),
                 },

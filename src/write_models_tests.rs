@@ -679,6 +679,8 @@ fn inputs(store: &SqliteMemoryStore, key: &str, claim: &W4Claim) -> (ProviderCon
             previous_w2: None,
         },
         SourceInput {
+            provenance: None,
+            time_anchor: None,
             text: s.request.as_ref().unwrap()["text"].as_str().unwrap().into(),
             history: serde_json::from_value(s.request.as_ref().unwrap()["history"].clone())
                 .unwrap(),
@@ -1560,6 +1562,8 @@ fn ready_w4(
             (
                 s.id.clone(),
                 SourceInput {
+                    provenance: None,
+                    time_anchor: None,
                     text: crate::lexical::body(s).unwrap().into(),
                     history: serde_json::from_value(s.request.as_ref().unwrap()["history"].clone())
                         .unwrap(),
@@ -2858,4 +2862,126 @@ fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
         true
     );
     assert_eq!(db.calls(), 3);
+}
+
+#[test]
+fn history_import_models_receive_null_original_time_and_frozen_before_parent_provenance() {
+    let db = Db::new();
+    let text = "我计划明天参加石溪展览。";
+    let parent_key = db.start_turn("我补充展览安排。", "import-parent", &[text]);
+    let parent = db.open().read().unwrap().sources[&parent_key].id.clone();
+    let mut service = ChatMemoryService::new(
+        db.open(),
+        ChatConfig {
+            enrichment_mode: EnrichmentMode::Off,
+            model_budget: Some(ModelBudgetConfig {
+                group_id: "authorized".into(),
+                max_calls: 100,
+                max_operation_calls: 3,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let status = service
+        .call("memory_source_status", json!({"source_id":parent}), || {
+            false
+        })
+        .unwrap();
+    let args = json!({"source_id":parent,"history_index":0,
+        "expected_content_fingerprint":status["history_entries"][0]["content_fingerprint"],
+        "request_id":"import-model-input","capture_source":true});
+    let imported = service
+        .call("memory_source_import_history", args.clone(), || false)
+        .unwrap();
+    let child = imported["source"]["source_id"].as_str().unwrap();
+    let key = db
+        .open()
+        .read()
+        .unwrap()
+        .sources
+        .iter()
+        .find(|(_, s)| s.id == child)
+        .unwrap()
+        .0
+        .clone();
+    let status = service
+        .call("memory_source_status", json!({"source_id":child}), || false)
+        .unwrap();
+    let accepted = service
+        .call(
+            "memory_source_reprocess",
+            json!({"source_id":child,
+        "request_id":"import-model-round","expected_state_token":status["state_token"],
+        "mode":"reextract","enqueue":false}),
+            || false,
+        )
+        .unwrap();
+    assert_eq!(accepted["generation"], 1);
+    assert_eq!(accepted["time_anchor"]["said_on"], Json::Null);
+    assert_eq!(accepted["enqueued"], false);
+    let mut extraction = w1(text);
+    extraction["candidates"][0]["speech"] = json!("plan");
+    extraction["candidates"][0]["times"] = json!([{"role":"event","quote":{"text":"明天"},
+        "anchor":"said_on","interp":{"kind":"relative","unit":"day","offset":1}}]);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&extraction.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    let result = run(&db, &key, &provider);
+    assert_eq!(result["enrichment"]["status"], "committed", "{result}");
+    let requests = sent.lock().unwrap();
+    assert_eq!(requests.len(), 2);
+    for request in requests.iter() {
+        let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+        assert_eq!(payload["said_on"], Json::Null);
+        assert_eq!(payload["time_anchor"]["said_on"], Json::Null);
+        assert_eq!(payload["source_provenance"]["before_source_id"], parent);
+        assert_eq!(payload["current_user_message"], text);
+        assert!(payload.get("model").is_none());
+        if request["text"]["format"]["name"] == "w3_v2" {
+            assert_eq!(
+                payload["candidates"][0]["time_resolutions"][0]["status"],
+                "unknown"
+            );
+        }
+    }
+    drop(requests);
+    let state = db.open().read().unwrap();
+    let record = state
+        .repository
+        .list_by_owner(&UserId::from("alice"))
+        .unwrap()
+        .pop()
+        .unwrap();
+    let crate::contract::RecordView2::Current(view) =
+        crate::w4::record_view(&state, record.id).unwrap()
+    else {
+        panic!("current record required")
+    };
+    assert_eq!(view.said_on, None);
+    assert_eq!(
+        view.time_resolutions[0].status,
+        crate::contract::ResolutionStatus::Unknown
+    );
+    assert_eq!(
+        service
+            .call("memory_source_import_history", args, || false)
+            .unwrap()["replayed"],
+        true
+    );
+    assert_eq!(service.enrich_source(child).unwrap(), result);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    assert_eq!(db.calls(), 2); // Mock transport only; replays never send again.
+    service
+        .call("memory_forget", json!({"source_id":parent}), || false)
+        .unwrap();
+    let deleted = db.open().read().unwrap();
+    assert!(deleted.sources[&key].request.is_none());
+    assert!(!serde_json::to_string(&deleted).unwrap().contains(text));
+    assert!(crate::w4::record_view(&deleted, record.id).is_none());
 }

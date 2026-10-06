@@ -22,6 +22,15 @@ fn day_at(day: &str) -> Result<i64, String> {
         .assume_offset(time::UtcOffset::from_whole_seconds(28_800).unwrap())
         .unix_timestamp())
 }
+fn stored_date(input: &Value) -> Result<Option<String>, String> {
+    let date: Option<String> =
+        serde_json::from_value(input.get("said_on").ok_or("said_on")?.clone())
+            .map_err(|e| e.to_string())?;
+    if let Some(day) = &date {
+        day_at(day)?;
+    }
+    Ok(date)
+}
 fn entities(input: &Value) -> Vec<Entity> {
     items(&input["entities"])
         .iter()
@@ -124,7 +133,7 @@ pub struct R4Input {
     pub request: RecallRequest,
     pub plan: r1::Plan,
     pub evidence: RecallEvidence,
-    pub source_dates: BTreeMap<String, String>,
+    pub source_dates: BTreeMap<String, Option<String>>,
     pub source_texts: BTreeMap<String, String>,
 }
 impl R4Input {
@@ -169,8 +178,7 @@ impl R4Input {
         let mut records = vec![];
         for r in items(&input["records"]) {
             let id = MemoryId(r["id"].as_u64().ok_or("record id")?);
-            let said_on = r["said_on"].as_str().ok_or("record said_on")?.to_owned();
-            day_at(&said_on)?;
+            let said_on = stored_date(r)?;
             let text = r["sentence"].as_str().unwrap_or("legacy");
             let evidence = r["source"]
                 .as_str()
@@ -231,7 +239,7 @@ impl R4Input {
                         _ => hippocampus::MemoryStatus::Expired,
                     },
                     temporal: hippocampus::Temporal::observed_at(hippocampus::Timestamp(day_at(
-                        &said_on,
+                        said_on.as_deref().ok_or("legacy record observed date")?,
                     )?)),
                     extraction_confidence: hippocampus::Confidence::High,
                     certainty: hippocampus::Confidence::High,
@@ -285,8 +293,7 @@ impl R4Input {
             .enumerate()
             .map(|(i, r)| {
                 let source_id = r["source"].as_str().ok_or("raw source")?.to_owned();
-                let said_on = r["said_on"].as_str().ok_or("raw date")?.to_owned();
-                day_at(&said_on)?;
+                let said_on = stored_date(r)?;
                 source_dates.insert(source_id.clone(), said_on.clone());
                 source_texts.insert(
                     source_id.clone(),

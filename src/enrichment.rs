@@ -53,6 +53,10 @@ pub struct ProviderContext {
 pub struct SourceInput {
     pub text: String,
     pub history: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_anchor: Option<serde_json::Value>,
 }
 
 impl SourceInput {
@@ -65,6 +69,18 @@ impl SourceInput {
                 .map(|v| serde_json::from_value(v.clone()))
                 .transpose()?
                 .unwrap_or_default(),
+            provenance: source
+                .management
+                .provenance
+                .clone()
+                .filter(|p| p["kind"] == "history_import"),
+            time_anchor: source.management.time_anchor.clone().filter(|_| {
+                source
+                    .management
+                    .provenance
+                    .as_ref()
+                    .is_some_and(|p| p["kind"] == "history_import")
+            }),
         })
     }
 
@@ -227,7 +243,7 @@ fn run_claimed(
         check_batch(
             &prior.batch,
             claim.source_binding(),
-            &input.text,
+            &input,
             crate::lexical::task(source).map(TaskId::from).as_ref(),
         )?;
     }
@@ -281,12 +297,7 @@ fn run_claimed(
                     }
                     _ => upstream(store, claim, &ctx, &input)?,
                 };
-                check_batch(
-                    &batch,
-                    &ctx.source_binding,
-                    &input.text,
-                    ctx.task_id.as_ref(),
-                )?;
+                check_batch(&batch, &ctx.source_binding, &input, ctx.task_id.as_ref())?;
                 if ctx
                     .previous_w2
                     .as_ref()
@@ -592,10 +603,19 @@ pub(crate) fn stored_batch(source: &SourceRecord) -> PersistenceResult<Option<St
 fn check_batch(
     batch: &UpstreamBatch,
     snapshot: &serde_json::Value,
-    text: &str,
+    input: &SourceInput,
     task: Option<&TaskId>,
 ) -> PersistenceResult<()> {
+    let text = &input.text;
     let w2 = &batch.w2;
+    if input.provenance.is_some()
+        && input
+            .time_anchor
+            .as_ref()
+            .is_none_or(|anchor| serde_json::json!(w2.said_on) != anchor["said_on"])
+    {
+        return Err("w1_invalid_output".into());
+    }
     let mut next = 0;
     let expected: Vec<_> = w2
         .candidates
@@ -614,7 +634,10 @@ fn check_batch(
         .collect::<Result<_, _>>()?;
     if expected != w2.index_map
         || w2.task_id.as_ref() != task
-        || crate::temporal::parse_iso_date(&w2.said_on).is_none()
+        || w2
+            .said_on
+            .as_deref()
+            .is_some_and(|date| crate::temporal::parse_iso_date(date).is_none())
         || time::UtcOffset::from_whole_seconds(w2.utc_offset_seconds).is_err()
     {
         return Err("w1_invalid_output".into());
@@ -688,7 +711,7 @@ pub(crate) fn check_saved_inputs(
     check_batch(
         &batch,
         snapshot,
-        &input.text,
+        &input,
         crate::lexical::task(source).map(TaskId::from).as_ref(),
     )?;
     let (blocked, whole) = request_blocks(&visible_requests(source)?);

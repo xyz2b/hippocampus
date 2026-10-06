@@ -2125,7 +2125,7 @@ pub(crate) fn source_binding(source: &SourceRecord) -> serde_json::Value {
         source.received_sequence,
         source.request
     ]);
-    if source.task.generation != 0 {
+    if source.task.generation != 0 || source.is_history_import() {
         binding.as_array_mut().unwrap().push(
             serde_json::json!({"generation":source.task.generation,
             "provenance":source.management.provenance,"time_anchor":source.management.time_anchor,

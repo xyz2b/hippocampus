@@ -124,7 +124,7 @@ fn process_review(
                     text: &input.text,
                     entities: &entities,
                     relations: &catalog,
-                    said_on: "2026-10-02",
+                    said_on: Some("2026-10-02"),
                     utc_offset_seconds: 28_800,
                     task_id: ctx.task_id.as_ref(),
                 },

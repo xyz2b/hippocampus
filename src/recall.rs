@@ -91,18 +91,21 @@ fn source_binding(source: &SourceRecord) -> PersistenceResult<String> {
         .into_iter()
         .filter(|r| r["kind"] != "remember")
         .collect();
-    Ok(crate::openai::recall_models::fingerprint(
-        &serde_json::json!([
-            source.id,
-            source.session_id,
-            source.turn_id,
-            source.observed_at,
-            source.received_sequence,
-            source.request,
-            source.enrichment == "awaiting_confirmation",
-            controls
-        ]),
-    ))
+    let mut binding = serde_json::json!([
+        source.id,
+        source.session_id,
+        source.turn_id,
+        source.observed_at,
+        source.received_sequence,
+        source.request,
+        source.enrichment == "awaiting_confirmation",
+        controls
+    ]);
+    if source.is_history_import() {
+        binding.as_array_mut().unwrap().push(serde_json::json!({
+            "provenance":source.management.provenance,"time_anchor":source.management.time_anchor}));
+    }
+    Ok(crate::openai::recall_models::fingerprint(&binding))
 }
 
 fn record_binding(memory: &Memory) -> String {
@@ -212,7 +215,8 @@ pub struct Assembly {
     pub snapshot: RecallSnapshot,
     pub(crate) safety: SafetySnapshot,
     utc_offset_seconds: i32,
-    source_dates: BTreeMap<String, String>,
+    source_dates: BTreeMap<String, Option<String>>,
+    pub source_context: BTreeMap<String, serde_json::Value>,
     entity_names: BTreeMap<String, String>,
     history_until: BTreeMap<MemoryId, String>,
     // 仅保留未覆盖来源的可靠槽位；None 表示无法证明它与某条事实无关。
@@ -845,6 +849,17 @@ fn fit_raw(raw: &mut RawEvidence, bytes: usize) -> PersistenceResult<bool> {
     Ok(!raw.quote.text.is_empty() || text.is_empty())
 }
 
+fn source_date(
+    source: &SourceRecord,
+    offset: time::UtcOffset,
+) -> PersistenceResult<Option<String>> {
+    if source.is_history_import() {
+        source.said_on(offset.whole_seconds())
+    } else {
+        Ok(Some(local_date(source.observed_at, offset)?))
+    }
+}
+
 /// 全部数据与索引查询共用 tx；不调用旧召回，也不增加 retrieval_count 或写入来源。
 pub fn assemble(
     store: &SqliteMemoryStore,
@@ -1155,7 +1170,7 @@ pub fn assemble(
         raw.push(RawEvidence {
             source_id: source.id.clone(),
             quote: Quote { text: body.into() },
-            said_on: local_date(source.observed_at, offset)?,
+            said_on: source_date(source, offset)?,
             sequence: source.received_sequence,
             grade: RecallGrade::Uncommitted,
             enrichment: status,
@@ -1308,8 +1323,13 @@ pub fn assemble(
             .sources
             .values()
             .filter(|s| source_in_task(s, request))
-            .map(|s| Ok((s.id.clone(), local_date(s.observed_at, offset)?)))
+            .map(|s| Ok((s.id.clone(), source_date(s, offset)?)))
             .collect::<PersistenceResult<_>>()?,
+        source_context: state.sources.values()
+            .filter(|s| source_in_task(s, request) && s.is_history_import())
+            .filter(|s| raw.iter().any(|r| r.source_id == s.id) || views.iter().any(|r| crate::r4::record_evidence(r).iter().any(|e| matches!(&e.source, crate::contract::SourceRef::Stored {source_id} if source_id == &s.id))))
+            .map(|s| (s.id.clone(), serde_json::json!({"provenance":s.management.provenance,
+                "time_anchor":s.management.time_anchor}))).collect(),
         entity_names: state
             .entities
             .list_by_owner(store.owner())

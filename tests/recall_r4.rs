@@ -108,7 +108,7 @@ fn candidate(id: &str, text: &str, subject: &str) -> W4Candidate {
         source: SourceRef::Stored {
             source_id: id.into(),
         },
-        said_on: SAID_ON.into(),
+        said_on: Some(SAID_ON.into()),
         time_resolutions: vec![],
         candidate: Candidate {
             kind: CandidateKind::Assertion,
@@ -182,7 +182,7 @@ fn seed_on(
         })
         .unwrap();
     let mut c = candidate(id, text, subject);
-    c.said_on = said_on.into();
+    c.said_on = Some(said_on.into());
     let input = W4Input {
         candidates: vec![c],
         records: vec![],

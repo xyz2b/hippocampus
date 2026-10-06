@@ -180,13 +180,14 @@ TIME SHAPE AND PRECISION
 Every TimeInterp has exactly role, quote, interp, anchor. role preserves event versus validity
 versus retention; anchor is said_on. quote selects the actual time expression as one continuous
 span, not an entire sentence to conceal missing date precision. Use the referenced source's
-receiving day as the relative anchor, never request.at or execution time.
+trusted original utterance time as the relative anchor; unknown means null and no relative
+date inference, never request.at or execution time.
 interp has only the fields of its chosen kind: date has a full ISO day; range has start and
 end_inclusive full ISO days; relative has unit and signed integer offset; month has integer
 year_offset and numbered month; anchored has anchor_quote, unit and offset; recurring/unknown
 have only kind. Month-only evidence uses month, not a date with an invented day. Year-only
-evidence uses relative with unit=year and the offset from that source's receiving year, or unknown
-when the anchor is unknown. Never pad a month/year into a date or invent an anchor. Do no calendar
+evidence uses relative with unit=year and the offset from that source's trusted original utterance time; unknown means null and no
+relative date inference. Never pad a month/year into a date or invent an anchor. Do no calendar
 arithmetic; code resolves time. Unknown anchors or endpoints coarser than day prevent elapsed.
 Date compare may order nonoverlapping precision intervals; overlapping coarse intervals cannot
 prove order or equality. Retain original precision in facts.times AND compute.items[].date.
@@ -379,12 +380,16 @@ pub fn r1_input(ctx: &r1::Context<'_>, entities: &[Entity]) -> Value {
         "task_id":ctx.task_id,"supported_units":ctx.supported_units})
 }
 pub fn r4_input(assembly: &Assembly, utc_offset_seconds: i32) -> Value {
-    r4_payload(
+    let mut input = r4_payload(
         &assembly.request,
         &assembly.plan,
         &assembly.evidence,
         utc_offset_seconds,
-    )
+    );
+    if !assembly.source_context.is_empty() {
+        input["source_context"] = json!(assembly.source_context);
+    }
+    input
 }
 pub fn r4_payload(
     request: &RecallRequest,

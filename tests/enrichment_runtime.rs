@@ -35,8 +35,7 @@ fn run_source(
             let supported = upstream(ctx, input)?;
             let said_on = supported
                 .first()
-                .map_or("2026-10-02", |c| c.contract.said_on.as_str())
-                .to_owned();
+                .map_or_else(|| Some("2026-10-02".into()), |c| c.contract.said_on.clone());
             let mut memory_requests = Vec::new();
             let mut request_reviews = Vec::new();
             let reviews = supported
@@ -1535,7 +1534,7 @@ fn injected_state_change_fixture_updates_the_real_sqlite_chain() {
                     source: SourceRef::Stored {
                         source_id: ctx.source_id.clone(),
                     },
-                    said_on: "2026-03-02".into(),
+                    said_on: Some("2026-03-02".into()),
                     time_resolutions: vec![],
                 },
                 admission: Default::default(),

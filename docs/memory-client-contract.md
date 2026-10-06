@@ -33,6 +33,14 @@ memory_list 原有 `pending_total/pending` 仍表示旧 staged 暂存；新增 `
 
 DB 9→10 沿用现有快照与索引，不新增存储系统。所有 owner 缺省代际 0、普通来源；旧回执不改写、不自动入队，已删墓碑保留。v9 写程序拒绝 v10；只读范围 3–10。升级前手动备份，不能用旧程序直接回退写入新库。
 
+## 历史 USER 原话补录
+
+首轮原话只存在于已保存来源的 history 时，先查父来源的 memory_source_status.history_entries，取得原槽位和完整条目指纹。在整条 USER 原话明确获准独立保存后，调用 memory_source_import_history(source_id, history_index, expected_content_fingerprint, request_id, capture_source=true)。服务复制服务器已有的完整文本，不接受宿主重新提交正文、不拼接、不改写，不导入助手消息。每条分别导入；不需用户重说原话。管理状态仅含指纹/位置，不是事实回答。
+
+补录默认只保存原话与索引，enrichment=not_requested；需要整理时，再 status/reprocess(mode=reextract)，enqueue 依原有预算和网络授权。原话陈述时间未知则 said_on=null，相对日期未知；observed_at/received_sequence 是补录接收时间/屏障顺序，不能当作最新陈述或计算起点。before_source_id 明示早于父来源；宿主保留 unknown/pending 标注。
+
+相同请求/条目重放不新增来源或调用；异参 request_id_conflict；错误 history_entry_not_found/history_content_changed 需重新检查 status，不猜槽位或指纹。父/子删除传播依赖副本、产品、确认与审计，墓碑不可用移动槽位或新 request_id 绕过；其他独立获准来源保留。
+
 ## 读取结果与回答
 
 MCP Recall 的冻结对象位于 recall；Prepare 直接返回 source/enrichment/recall，并附独立 global_context。分别核对 source 保存状态、enrichment 整理进度和 recall；source=stored 不等于事实已提交。inline/deferred 在 T1 后入后台，queued 表示原文已收到、等待整理；off 为 not_requested，不排队。in_progress 时保持参数继续等结果，不重复保存或改 ID。

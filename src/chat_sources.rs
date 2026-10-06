@@ -87,6 +87,10 @@ pub(super) fn status(
         "receipt":crate::enrichment::receipt_from_state(state, key)?
     })));
     result["model_calls"] = json!([]);
+    result["history_entries"] = json!(source.request.as_ref().and_then(|r| r["history"].as_array())
+        .into_iter().flatten().enumerate().filter_map(|(index, value)| value.as_str().map(|text|
+            json!({"history_index":index,"content_fingerprint":crate::recall_models::fingerprint(&json!(text)),
+                "bytes":text.len()}))).collect::<Vec<_>>());
     Ok(result)
 }
 

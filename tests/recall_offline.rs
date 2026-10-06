@@ -154,7 +154,7 @@ fn candidate(id: &str, text: &str, subject: &str) -> W4Candidate {
         source: SourceRef::Stored {
             source_id: id.into(),
         },
-        said_on: SAID_ON.into(),
+        said_on: Some(SAID_ON.into()),
         time_resolutions: vec![],
         candidate: Candidate {
             kind: CandidateKind::Assertion,
@@ -533,7 +533,7 @@ fn raw_preserves_sequence_status_requests_and_local_received_date() {
         result
             .raw
             .iter()
-            .all(|r| r.grade == RecallGrade::Uncommitted && r.said_on == SAID_ON)
+            .all(|r| r.grade == RecallGrade::Uncommitted && r.said_on.as_deref() == Some(SAID_ON))
     );
     assert_eq!(result.completeness.pending_related_sources, 3);
 }

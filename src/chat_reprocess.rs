@@ -197,7 +197,7 @@ impl ChatMemoryService {
                     let relations = crate::w2::relation_catalog(&config.predicates, &config.memory_types)?;
                     let batch = crate::w2::validate(W1Output { candidates, memory_requests:saved.batch.w2.memory_requests.iter().map(|r| r.request.clone()).collect() },
                         &crate::w2::Context {text:crate::lexical::body(source).ok_or("source_deleted")?, entities:&entities,
-                            relations:&relations, said_on:&saved.batch.w2.said_on, utc_offset_seconds:saved.batch.w2.utc_offset_seconds,
+                            relations:&relations, said_on:saved.batch.w2.said_on.as_deref(), utc_offset_seconds:saved.batch.w2.utc_offset_seconds,
                             task_id:saved.batch.w2.task_id.as_ref()})?;
                     (Some(batch), Some(confirmation))
                 }

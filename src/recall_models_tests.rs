@@ -2793,3 +2793,16 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
     assert!(!R1_PROMPT.contains("For example"));
     assert!(!R4_PROMPT.contains("For example"));
 }
+
+#[test]
+fn r4_unknown_original_time_keeps_v4_and_never_uses_the_receiving_day() {
+    assert!(R4_PROMPT.contains("r4.v4"));
+    assert_eq!(
+        R4_PROMPT.matches("trusted original utterance time").count(),
+        2
+    );
+    assert_eq!(R4_PROMPT.matches("unknown means null and no").count(), 2);
+    assert!(!R4_PROMPT.contains("receiving day"));
+    assert!(!R4_PROMPT.contains("receiving year"));
+    assert!(!R4_PROMPT.contains("For example"));
+}

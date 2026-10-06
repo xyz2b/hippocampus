@@ -288,7 +288,7 @@ coverage 不完整时区分两类结论：
 - 旧/新记录的替代映射保存在重建回执；只有已核验替代的旧记录退出有效召回，不双返回已被替代的旧记录，也不删除未覆盖的 legacy 记录。确认与删除控制引用沿用该映射，重建不能改变其含义。
 - 迁移验收用相同输入比较重建前后结果；实际迁移范围按可用授权来源确定，不缩成评测集。可重建、无法重建、失败、尚未完成的数量和模型调用预算在执行前单独报出。
 
-### 2.7 来源确认、重建与历史补录（确认/重建已实现，补录第④步）
+### 2.7 来源确认、重建与历史补录
 
 - 全文重提取只接受没有任何已提交动作的来源，新代际重新提取并核验，旧代际审计保留；不得把旧核验与新候选数组按索引拼接。混合来源仅逐项确认未提交候选，不覆盖已提交产品。普通重判复用原候选，不等于全文重提取。
 - 历史补录只复制明确获准的独立完整 USER history 条目，不拼接、不改写、不导入助手文本；保存父来源/全文哈希/槽位出处与独立授权。原陈述时间与新接收时间分开，未知 said_on=null；模型取得原始时间锚点及早于父来源的顺序关系，新 received_sequence 不等于最新陈述。
@@ -300,6 +300,10 @@ coverage 不完整时区分两类结论：
 - `memory_source_reprocess` 输入 `{source_id, request_id, expected_state_token, mode:"confirm_subject"|"reextract", enqueue:false}`。确认另传 `candidate_index`、已登记 `entity_id` 和 `confirmation:EvidenceRef`，引用必须是当前 owner 已获准完整保存的 USER 来源、可逐字核对的连续片段；任务来源仅在同可信任务内使用，全局确认可用于该任务。代码只核引用、归属、目录及提交资格，W3 核身份语义。只改选中候选主体，保留完整数组原索引；只允许选中项进入本轮 W4/W5。
 - `enqueue=false` 仅存控制与新代际，不调用模型、不自动入队；`true` 须有限 model_budget、网络门控以及 inline/deferred 后台授权。同参回执重放不重新入队；回执给接受时状态，当前进度另查 `memory_source_status`。
 - 返回同 status 的来源、整理、generation/round、state_token、出处、时间锚和候选索引/原因，附 `enqueued`、`replayed`、`model_calls:[]`；不返回事实值、原文、确认片段或旧代际原始输出。确认摘要包含代际、候选索引/身份哈希、实体、来源引用、片段哈希；审计公开旧代际号。
+- `memory_source_import_history` 输入 `{source_id, history_index, expected_content_fingerprint, request_id, capture_source:true}`，不接受自带正文或日期；`memory_source_status.history_entries` 只给槽位、字节数与全文指纹，不公开原文。父来源及 history 必须已获准完整 USER 留存，再由本次显式授权逐条复制，任务范围继承父来源。返回同 status 的片段，附 `enqueued:false`、`replayed`、`model_calls:[]`；只做 T1+索引，不自动整理，另用 reprocess。
+- 补录身份按父来源 ID＋完整条目指纹绑定，原槽位仅作出处；不同 request_id 同条目仍只产生一个来源，同 ID 异参 `request_id_conflict`。保存独立授权与父来源/指纹/槽位、`before_source_id`；新接收序号只用于事务屏障，不能冒充最新陈述。原陈述时间未知时 `time_anchor.said_on=null`，接收时间另存 observed_at，不从父消息或请求时刻推算。
+- 补录的 nullable `said_on` 原样进入 W2/W4、提交记录及 R3/R4；字段必须出现，旧已知日期字符串仍可读取。未知锚点的 relative/month 换算为 unknown，绝对 date/range 仍按原文核验；代码不按接收序号决定语义更新。R4 沿用 v4。
+- 补录错误：无/异 owner 父来源 `source_not_found`；父/条目墓碑 `source_deleted`；未获准留存 `operation_not_authorized`；槽位不存在/非完整文本 `history_entry_not_found`；指纹不符 `history_content_changed`。原子拒绝，零模型调用。删除父来源递归删除依附补录，删除子来源清除历史副本、产品、确认、索引、缓存及审计；子来源仅保留不含原文的父/指纹/槽位墓碑，槽位移动不能绕过删除；无关独立来源保留。
 - 活跃租约 `source_busy`；状态令牌不符 `source_changed`；未知/异 owner `source_not_found`；墓碑 `source_deleted`；无效引用/实体/候选（含已提交项）`invalid_confirmation`；全文重提取涉及任何已提交动作（含无产品动作）`rebuild_requires_uncommitted_source`；异参重放 `request_id_conflict`；无网络/有限预算/后台授权 `operation_not_authorized`。操作原子拒绝；不隐式重试。
 - 代际与 round 同时递增，取得新的排序序号、操作预算身份和来源绑定；原接收序号/时间不变，不放宽其他来源屏障。旧执行者及旧模型结果不能提交。DB 10 沿用 SourceRecord 控制/审计及 EnrichmentTask.generation；各 owner 旧字段缺省普通来源/代际 0，旧回执不改写、不自动入队，v9 写程序拒绝 v10，只读支持 3–10。删除传播同时清除确认依赖与代际原始副本；确认不是独立事实支持。
 
