@@ -1,0 +1,102 @@
+{
+  "id": "af11_r4_lme_a2f3aa27_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 141304,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "af11-pro-minimal",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I think I'm close to 1300 now"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s2_t1"
+                }
+              },
+              {
+                "quote": {
+                  "text": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t2"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "As of 2023-05-28, the user estimated being close to 1,300 Instagram followers, superseding a prior report of 1,250 followers the same day.",
+            "strength": "weak",
+            "supersedes_record_ids": [
+              2
+            ],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "now"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": {
+              "quote": {
+                "text": "I think"
+              },
+              "resolved": false
+            }
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n      \"applies\": \"no\",\n      \"conditions\": [],\n      \"current\": \"unknown\",\n      \"evidence\": [\n        {\n          \"quote\": {\n            \"text\": \"I think I'm close to 1300 now\"\n          },\n          \"source\": {\n            \"kind\": \"stored\",\n            \"source_id\": \"s2_t1\"\n          }\n        },\n        {\n          \"quote\": {\n            \"text\": \"And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.\"\n          },\n          \"source\": {\n            \"kind\": \"stored\",\n            \"source_id\": \"s1_t2\"\n          }\n        }\n      ],\n      \"polarity\": \"affirm\",\n      \"record_ids\": [],\n      \"statement\": \"As of 2023-05-28, the user estimated being close to 1,300 Instagram followers, superseding a prior report of 1,250 followers the same day.\",\n      \"strength\": \"weak\",\n      \"supersedes_record_ids\": [\n        2\n      ],\n      \"times\": [\n        {\n          \"anchor\": \"said_on\",\n          \"interp\": {\n            \"kind\": \"relative\",\n            \"offset\": 0,\n            \"unit\": \"day\"\n          },\n          \"quote\": {\n            \"text\": \"now\"\n          },\n          \"role\": \"event\"\n        }\n      ],\n      \"uncertainty\": {\n        \"quote\": {\n          \"text\": \"I think\"\n        },\n        \"resolved\": false\n      }\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:8dac2647d0c504eaed2e96e70d644afbe186efcf7446407b0423a34fd5f556f9",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 6247,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 9004,
+          "output_tokens_details": {
+            "reasoning_tokens": 8639
+          },
+          "total_tokens": 15251
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 6247,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 9004,
+        "output_tokens_details": {
+          "reasoning_tokens": 8639
+        },
+        "total_tokens": 15251
+      }
+    }
+  ]
+}

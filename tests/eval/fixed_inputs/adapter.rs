@@ -4,16 +4,36 @@ use hippocampus::{r1, r4, recall_models};
 use std::collections::{BTreeMap, BTreeSet};
 
 pub fn selected(stages: &str, prefixes: &str) -> Result<Vec<(String, Value)>, String> {
+    selected_set(
+        stages,
+        prefixes,
+        std::env::var("EVAL_FIXED_INPUTS").as_deref() == Ok("af11"),
+    )
+}
+
+pub fn selected_set(
+    stages: &str,
+    prefixes: &str,
+    af11: bool,
+) -> Result<Vec<(String, Value)>, String> {
     let stages: Vec<_> = stages.split(',').map(str::trim).collect();
-    if stages.iter().any(|s| !["w3", "r4"].contains(s)) {
-        return Err("fixed input EVAL_STAGES only accepts w3,r4".into());
+    let allowed = if af11 { ["r1", "r4"] } else { ["w3", "r4"] };
+    if stages.iter().any(|s| !allowed.contains(s)) {
+        return Err(format!(
+            "fixed input EVAL_STAGES only accepts {}",
+            allowed.join(",")
+        ));
     }
     let prefixes: Vec<_> = prefixes.split(',').map(str::trim).collect();
     if prefixes.len() > 1 && prefixes.contains(&"") {
         return Err("EVAL_CASES must not contain an empty prefix".into());
     }
-    let data: Value =
-        serde_json::from_str(include_str!("inputs.json")).map_err(|e| e.to_string())?;
+    let data: Value = serde_json::from_str(if af11 {
+        include_str!("af11.json")
+    } else {
+        include_str!("inputs.json")
+    })
+    .map_err(|e| e.to_string())?;
     if data["version"] != "eval.fixed_inputs@1" {
         return Err("invalid fixed input version".into());
     }
@@ -89,8 +109,65 @@ fn r4_input(sample: &Value) -> Result<recall_adapter::R4Input, String> {
     })
 }
 
+fn r1_plan(sample: &Value, text: &str) -> Result<r1::Plan, String> {
+    let input = &sample["input"];
+    let entities: Vec<hippocampus::Entity> =
+        serde_json::from_value(input["entities"].clone()).map_err(|e| e.to_string())?;
+    let ids: Vec<_> = entities.into_iter().map(|e| e.id).collect();
+    let relations: Vec<w2::Relation> =
+        serde_json::from_value::<Vec<String>>(input["relations"].clone())
+            .map_err(|e| e.to_string())?
+            .into_iter()
+            .map(|id| w2::Relation {
+                id,
+                memory_types: vec![
+                    hippocampus::MemoryType::Fact,
+                    hippocampus::MemoryType::Preference,
+                    hippocampus::MemoryType::Constraint,
+                    hippocampus::MemoryType::Episode,
+                ],
+            })
+            .collect();
+    let context: Vec<String> =
+        serde_json::from_value(input["context"].clone()).map_err(|e| e.to_string())?;
+    let subject_ids: Option<Vec<hippocampus::EntityId>> =
+        serde_json::from_value(input["subject_ids"].clone()).map_err(|e| e.to_string())?;
+    let task: Option<hippocampus::TaskId> =
+        serde_json::from_value(input["task_id"].clone()).map_err(|e| e.to_string())?;
+    let units: Vec<String> =
+        serde_json::from_value(input["supported_units"].clone()).map_err(|e| e.to_string())?;
+    let units: Vec<_> = units.iter().map(String::as_str).collect();
+    let ctx = r1::Context {
+        query: input["message"].as_str().ok_or("message")?,
+        context: &context,
+        entities: &ids,
+        relations: &relations,
+        subject_ids: subject_ids.as_deref(),
+        task_id: task.as_ref(),
+        said_on: input["said_on"].as_str().ok_or("said_on")?,
+        utc_offset_seconds: serde_json::from_value(input["utc_offset_seconds"].clone())
+            .map_err(|e| e.to_string())?,
+        supported_units: &units,
+    };
+    if text.is_empty() {
+        r1::not_understood(&ctx)
+    } else {
+        r1::validate(r1::decode(text).map_err(|e| e.to_string())?, &ctx)
+    }
+    .map_err(|e| e.to_string())
+}
+
 pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String> {
     let (stage, name, prompt, schema) = match stage {
+        "r1" => {
+            r1_plan(sample, "")?;
+            (
+                ModelStage::R1,
+                "r1_v1",
+                recall_models::R1_PROMPT,
+                recall_models::r1_schema(),
+            )
+        }
         "w3" => {
             batch(&sample["input"])?;
             (
@@ -154,6 +231,14 @@ pub fn score(
     fields: &mut Vec<Value>,
 ) -> Result<Value, String> {
     let actual = match stage {
+        "r1" => {
+            let output = r1_plan(sample, text)?.output.ok_or("r1_not_understood")?;
+            let actual = serde_json::to_value(output).unwrap();
+            if let Some(expected) = sample["expect"]["plan.op"].as_str() {
+                compare(fields, "plan.op", &json!(expected), &actual["plan"]["op"]);
+            }
+            actual
+        }
         "w3" => {
             let input = &sample["input"];
             let batch = batch(input)?;
@@ -183,6 +268,102 @@ pub fn score(
     };
     check(fields, "decode/validate", json!(true), json!(true), true);
     Ok(actual)
+}
+
+#[test]
+fn af11_exact_inputs_bound_sources_and_seven_call_cap() {
+    let selected = selected_set("r1,r4", "", true).unwrap();
+    assert_eq!(selected.iter().filter(|(s, _)| s == "r1").count(), 2);
+    assert_eq!(selected.iter().filter(|(s, _)| s == "r4").count(), 5);
+    for (stage, sample) in &selected {
+        let origin = &sample["origin"];
+        let original: Value = serde_json::from_slice(
+            &std::fs::read(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("tests/eval/end_to_end")
+                    .join(origin["label"].as_str().unwrap())
+                    .join(format!("{}.json", origin["case"].as_str().unwrap())),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let row = &original["operations"][origin["operation"].as_str().unwrap()]
+            [origin["row"].as_u64().unwrap() as usize];
+        assert_eq!(
+            origin["request"],
+            json!(recall_models::fingerprint(&row["request_content"]))
+        );
+        if sample.get("evidence_origin").is_none() {
+            assert_eq!(sample["input"], row["request_content"]["input"]);
+        } else {
+            let mut input = sample["input"].clone();
+            input["evidence"] = row["request_content"]["input"]["evidence"].clone();
+            assert_eq!(input, row["request_content"]["input"]);
+            assert_eq!(
+                sample["input"]["evidence"]["records"][0]["update"]["status"],
+                "judged"
+            );
+            assert_eq!(
+                sample["input"]["evidence"]["completeness"]["pending_updates"],
+                0
+            );
+        }
+        let request = request(stage, sample, 16384).unwrap();
+        assert_eq!(
+            serde_json::from_str::<Value>(request["input"].as_str().unwrap()).unwrap(),
+            sample["input"]
+        );
+        assert!(sample["input"].get("model").is_none());
+        assert!(sample["input"].get("origin").is_none());
+        assert_ne!(recording_fingerprint(sample, &request), origin["request"]);
+    }
+    let temp = TempRecords::new();
+    let model = EvalModel {
+        label: "af11-test".into(),
+        model: Some("ep-20261003130756-trhj6".into()),
+        base: None,
+        effort: ReasoningEffort::Minimal,
+    };
+    let cases = plan_repeated(selected, &temp.0, &model, 1).unwrap();
+    assert_eq!(preflight(&cases, None).unwrap(), 0);
+    assert!(preflight(&cases, Some(6)).is_err());
+    assert_eq!(preflight(&cases, Some(7)).unwrap(), 7);
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|c| c.model.effort == ReasoningEffort::Low)
+            .count(),
+        2
+    );
+    let report = evaluate(&cases, None, &mut |_| panic!("AF11 offline sent")).unwrap();
+    assert_eq!(report["sent_calls"], 0);
+}
+
+#[test]
+fn af11_q3_wrong_current_reference_remains_rejected() {
+    let sample = selected_set("r4", "af11_r4_unresolved", true)
+        .unwrap()
+        .remove(0)
+        .1;
+    let origin = &sample["origin"];
+    let doc: Value = serde_json::from_slice(
+        &std::fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/eval/end_to_end")
+                .join(origin["label"].as_str().unwrap())
+                .join("unresolved_conflict.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let row = &doc["operations"][origin["operation"].as_str().unwrap()]
+        [origin["row"].as_u64().unwrap() as usize];
+    let envelope: Value = serde_json::from_str(row["body"].as_str().unwrap()).unwrap();
+    let text = completed_text(&envelope).unwrap();
+    let error: Value =
+        serde_json::from_str(&score("r4", &sample, &text, &mut vec![]).unwrap_err()).unwrap();
+    assert_eq!(error["rule"], "quote_or_source");
+    assert_eq!(error["field"], "facts[0].evidence[0]");
 }
 
 #[test]
@@ -226,7 +407,7 @@ fn fixed_inputs_are_exactly_the_33_original_failed_requests() {
 }
 
 #[test]
-fn fixed_input_record_basis_replay_keeps_raw_and_does_not_send_or_change_compute() {
+fn fixed_input_record_basis_diagnostic_keeps_raw_and_stale_replay_does_not_send() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/eval/fixed_inputs/recordings");
     let model = EvalModel {
         label: "ac2-fixed-pro-minimal".into(),
@@ -237,13 +418,15 @@ fn fixed_input_record_basis_replay_keeps_raw_and_does_not_send_or_change_compute
     let cases = plan_repeated(selected("r4", "").unwrap(), &root, &model, 1).unwrap();
     let report = evaluate(&cases, None, &mut |_| panic!("offline replay sent")).unwrap();
     assert_eq!(report["sent_calls"], 0);
+    assert!(cases.iter().all(|c| matches!(c.replay, Replay::Stale)));
     for id in ["r4_lme_603deb26_q", "r4_lme_gpt4_6dc9b45b_q"] {
-        let row = report["results"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|r| r["id"] == id)
+        let case = cases.iter().find(|c| c.sample["id"] == id).unwrap();
+        // Historical output is only a pure validator/assembly regression fixture.
+        // It is not registered under a new fingerprint or reused as a model answer.
+        let text = items(&case.file["recorded"]).last().unwrap()["output_text"]
+            .as_str()
             .unwrap();
+        let row = super::score("r4", &case.sample, Some(text));
         assert_eq!(row["raw_result"]["status"], "失败");
         assert_eq!(
             row["raw_result"]["fields"][0]["actual"]["rule"],
@@ -349,7 +532,7 @@ fn fixed_input_replay_binds_every_field_and_records_each_call() {
 }
 
 #[test]
-fn fixed_input_r4_low_preserves_25_strict_recordings_without_sending() {
+fn fixed_input_new_r4_prompt_preserves_w3_and_expires_all_r4_without_sending() {
     // AE14 已补齐 low 录制；此回归仍独立模拟“只有 minimal”时的严格复用。
     let root = TempRecords::new();
     let minimal = Path::new("ac2-fixed-pro-minimal/reasoning-minimal/repeat-1");
@@ -373,7 +556,7 @@ fn fixed_input_r4_low_preserves_25_strict_recordings_without_sending() {
             .iter()
             .filter(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
             .count(),
-        25
+        23
     );
     assert_eq!(
         cases
@@ -381,6 +564,19 @@ fn fixed_input_r4_low_preserves_25_strict_recordings_without_sending() {
             .filter(|c| matches!(c.replay, Replay::Missing))
             .count(),
         8
+    );
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Stale))
+            .count(),
+        2
+    );
+    assert!(
+        cases
+            .iter()
+            .filter(|c| c.stage == "r4")
+            .all(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
     );
     for case in &cases {
         if case.model.effort == ReasoningEffort::Low {
@@ -394,8 +590,8 @@ fn fixed_input_r4_low_preserves_25_strict_recordings_without_sending() {
             );
         }
     }
-    assert!(preflight(&cases, Some(7)).is_err());
-    assert_eq!(preflight(&cases, Some(8)).unwrap(), 8);
+    assert!(preflight(&cases, Some(9)).is_err());
+    assert_eq!(preflight(&cases, Some(10)).unwrap(), 10);
     let report = evaluate(&cases, None, &mut |_| panic!("offline sender invoked")).unwrap();
     assert_eq!(report["sent_calls"], 0);
 }

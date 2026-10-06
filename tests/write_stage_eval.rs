@@ -1035,15 +1035,19 @@ fn recording_fingerprint(sample: &Value, request: &Value) -> Value {
 fn fixed_inputs_enabled() -> bool {
     match std::env::var("EVAL_FIXED_INPUTS").as_deref() {
         Err(_) | Ok("0") => false,
-        Ok("1") => true,
-        _ => panic!("EVAL_FIXED_INPUTS only accepts 0 or 1"),
+        Ok("1" | "af11") => true,
+        _ => panic!("EVAL_FIXED_INPUTS only accepts 0, 1 or af11"),
     }
 }
 
 fn stages_from_env() -> String {
     std::env::var("EVAL_STAGES").unwrap_or_else(|_| {
         if fixed_inputs_enabled() {
-            "w3,r4"
+            if std::env::var("EVAL_FIXED_INPUTS").as_deref() == Ok("af11") {
+                "r1,r4"
+            } else {
+                "w3,r4"
+            }
         } else {
             "w1,w3,w4"
         }
@@ -1091,7 +1095,12 @@ impl EvalModel {
         };
         if fixed_inputs_enabled() {
             if std::env::var_os("EVAL_MODEL_LABEL").is_none() {
-                model.label = "ac2-fixed-pro-minimal".into();
+                model.label = if std::env::var("EVAL_FIXED_INPUTS").as_deref() == Ok("af11") {
+                    "af11-pro-minimal"
+                } else {
+                    "ac2-fixed-pro-minimal"
+                }
+                .into();
             }
             if std::env::var_os("EVAL_MODEL").is_none() {
                 model.model = Some("ep-20261003130756-trhj6".into());
@@ -2274,11 +2283,30 @@ fn dry_run_plan() {
         println!(
             "R4 分流：计算类 {compute} 次 low，非计算类 {other} 次常规强度；依据冻结输入的已核验 R1 plan.op。"
         );
-        println!(
-            "R4 输出估算：计算类 {:.0} token（low 40次均值2895.5），其余沿用同输入 minimal 实测；单次延迟参考 low p50≈41.8s、minimal≈4.5s。",
-            compute as f64 * 2895.5
-        );
-        println!("完整 token/延迟估算：python3 tests/eval/fixed_inputs/prepare.py（零调用）。");
+        if std::env::var("EVAL_FIXED_INPUTS").as_deref() == Ok("af11") {
+            let usage: Vec<_> = cases
+                .iter()
+                .filter_map(|c| {
+                    Some((
+                        c.sample["original_usage"]["input_tokens"].as_u64()?,
+                        c.sample["original_usage"]["output_tokens"].as_u64()?,
+                    ))
+                })
+                .collect();
+            println!(
+                "AF11 原请求历史usage：已知{}/{}，输入{}、输出{} token；提示词/event证据已改变，仅作参考，不是新调用预测或费用上限。",
+                usage.len(),
+                cases.len(),
+                usage.iter().map(|u| u.0).sum::<u64>(),
+                usage.iter().map(|u| u.1).sum::<u64>()
+            );
+        } else {
+            println!(
+                "R4 输出估算：计算类 {:.0} token（low 40次均值2895.5），其余沿用同输入 minimal 实测；单次延迟参考 low p50≈41.8s、minimal≈4.5s。",
+                compute as f64 * 2895.5
+            );
+            println!("完整 token/延迟估算：python3 tests/eval/fixed_inputs/prepare.py（零调用）。");
+        }
     }
     println!(
         "本次需录制: {}",
@@ -2288,6 +2316,31 @@ fn dry_run_plan() {
             .count()
     );
     println!("本次真实调用: 0");
+    if std::env::var("EVAL_FIXED_INPUTS").as_deref() == Ok("af11") {
+        for case in &cases {
+            println!(
+                "{} {}: {}，max_output_tokens={}，请求指纹={}",
+                case.stage,
+                case.sample["id"].as_str().unwrap(),
+                serde_json::to_value(case.model.effort)
+                    .unwrap()
+                    .as_str()
+                    .unwrap(),
+                case.request["max_output_tokens"],
+                recording_fingerprint(&case.sample, &case.request)
+                    .as_str()
+                    .unwrap()
+            );
+        }
+        println!(
+            "AF11：固定输入独立阶段试验，不作为新端到端通过；以下仅模拟容量预检，不发送请求。"
+        );
+        let limit = std::env::var("EVAL_RECORD").ok().map(|s| {
+            s.parse::<usize>()
+                .expect("EVAL_RECORD must be a nonnegative integer")
+        });
+        preflight(&cases, limit).unwrap();
+    }
 }
 
 #[test]

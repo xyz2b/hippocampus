@@ -490,8 +490,17 @@ def score(expect: dict, query_meta: dict, view: dict, source_texts: dict | None 
     fact_match = match_facts(ctx, facts, view["assertions"])
     for i, f in enumerate(facts):
         items += _fact_items(ctx, i, f, fact_match.get(i))
-    used_conflicts, extra_members = set(), []
-    if "conflicts" in expect:
+    used_conflicts, extra_members, report_match = set(), [], {}
+    # AF11: a sourced conflict report is an alternative to persisted members.
+    # Only source bindings are mechanical; its meaning (both values, attribution,
+    # no settled winner) remains a review. Never construct relations from prose.
+    if "conflict_report" in expect and view["status"] == "conflict" and not view["conflicts"]:
+        report_match = match_facts(ctx, [expect["conflict_report"]], view["assertions"])
+        ri = _fact_items(ctx, 0, expect["conflict_report"], report_match.get(0))
+        for item in ri:
+            item["id"] = item["id"].replace("facts[0]", "conflict_report", 1)
+        items += ri
+    elif "conflicts" in expect:
         ci, used_conflicts, extra_members = _conflict_items(ctx, expect["conflicts"], view["conflicts"])
         items += sorted(ci, key=lambda i: i["id"])  # stable report order
     if "computed" in expect:
@@ -500,7 +509,7 @@ def score(expect: dict, query_meta: dict, view: dict, source_texts: dict | None 
     for x in expect.get("not_measurable") or []:
         items.append(_item(f"not_measurable:{x}", NOT_MEASURABLE, "标签不足"))
 
-    matched = {a["id"] for a in fact_match.values()}
+    matched = {a["id"] for a in list(fact_match.values()) + list(report_match.values())}
     extras = list(extra_members)
     for a in view["assertions"]:
         if a["id"] not in matched:

@@ -4,6 +4,7 @@
 """
 import copy
 import inspect
+import json
 import pathlib
 import sys
 import unittest
@@ -37,6 +38,59 @@ def _key(res, item_id):
 
 
 class AdapterBoundary(unittest.TestCase):
+    def af11_view(self):
+        run = json.loads((pathlib.Path(__file__).resolve().parent.parent /
+                          "end_to_end/ac2-af-targeted/run.json").read_text())
+        case = next(c for c in run["cases"] if c["case"] == "unresolved_conflict")
+        step = next(s for s in case["steps"] if s.get("question") == "conflict_q2")
+        return trial.run_new("unresolved_conflict", "conflict_q2",
+                             {"recall": step["result"], "source_ids": step["source_ids"]})
+
+    def test_af11_conflict_report_is_sourced_review_not_generated_members(self):
+        case, q, meta, expect, view = self.af11_view()
+        original_forbidden = copy.deepcopy(expect["forbidden"])
+        # A report has no persisted members. Its actual meaning is never inferred
+        # from occurrences of the two numbers.
+        view = copy.deepcopy(view)
+        view["conflicts"] = []
+        view["assertions"] = [copy.deepcopy(view["assertions"][0])]
+        report = view["assertions"][0]
+        report["sources"] = ["conflict_s2"]
+        report["text"] = "两种尺寸说法尚未核实，不能确定最终尺寸。"
+        report["plain"] = False
+        report["value"] = None
+        before = copy.deepcopy(view)
+        result = score(expect, meta, view, trial.source_texts(case, q))
+        items = {i["id"]: i for i in result["items"]}
+        self.assertEqual(items["conflict_report.sources"]["result"], PASS)
+        self.assertEqual(items["conflict_report.semantic"]["result"], REVIEW)
+        self.assertFalse(any(i.startswith("conflicts[") for i in items))
+        self.assertEqual(expect["forbidden"], original_forbidden)
+        self.assertEqual(view, before)
+        self.assertEqual(result["extras"], [])
+        report["sources"] = ["conflict_s1"]
+        self.assertEqual(next(i for i in score(expect, meta, view)["items"]
+                              if i["id"] == "conflict_report.sources")["result"], FAIL)
+        view["assertions"] = []
+        self.assertEqual(next(i for i in score(expect, meta, view)["items"]
+                              if i["id"] == "conflict_report.semantic")["result"], MISSING)
+
+    def test_af11_keeps_structured_members_and_forbidden_current_winner(self):
+        case, q, meta, expect, view = trial.run_new("unresolved_conflict", "conflict_q2",
+                                                  trial.new_fixture("unresolved_conflict", "conflict_q2"))
+        result = score(expect, meta, view, trial.source_texts(case, q))
+        self.assertTrue(any(i["id"].startswith("conflicts[") for i in result["items"]))
+        _, _, _, _, view = self.af11_view()
+        view["conflicts"] = []
+        view["status"] = "answer"
+        view["assertions"] = [copy.deepcopy(view["assertions"][0])]
+        winner = view["assertions"][0]
+        winner.update(sources=["conflict_s2"], text="7英寸", value="7英寸", plain=True,
+                      current="yes", polarity="affirm")
+        items = {i["id"]: i for i in score(expect, meta, view)["items"]}
+        self.assertEqual(items["status"]["result"], FAIL)
+        self.assertTrue(any(i["result"] == FAIL for k, i in items.items() if k.startswith("forbidden")))
+
     def test_accepted_status_set_does_not_relax_facts_or_binding(self):
         case, q, meta, expect, view = trial.run_new("person_sketch_pen", "person_q4",
                                                   trial.new_fixture("person_sketch_pen", "person_q4"))
@@ -574,7 +628,13 @@ class TrialResults(unittest.TestCase):
             for side in ("old", "new"):
                 for i in qr[side]["items"] + qr[side]["extras"]:
                     if i["result"] == REVIEW:
-                        self.assertTrue(i["key"] in led["entries"], f"{qr['question']} {side} {i['id']} 台账键已失效")
+                        if qr["question"] == "unresolved_conflict/conflict_q2" and i["key"] not in led["entries"]:
+                            # AF11 changed this annotation: old human judgments must
+                            # stay stale, rather than silently approving the new branch.
+                            self.assertEqual(i["final"], "pending_review")
+                            self.assertFalse(qr[side]["question_final_pass"])
+                        else:
+                            self.assertTrue(i["key"] in led["entries"], f"{qr['question']} {side} {i['id']} 台账键已失效")
 
     def test_new_fixture_has_no_blockers_and_no_auto_fail(self):
         for qr in trial.run_trial(EMPTY)["questions"]:

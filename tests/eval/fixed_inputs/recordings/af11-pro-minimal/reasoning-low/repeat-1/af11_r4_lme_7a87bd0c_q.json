@@ -1,0 +1,130 @@
+{
+  "id": "af11_r4_lme_7a87bd0c_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 69109,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "af11-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -4,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "for 4 weeks now"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s2_t1"
+              },
+              "event_group": "daily tidying routine",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s2_t1"
+                  }
+                }
+              ],
+              "id": "routine_start",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "routine_start"
+          ],
+          "unit": "week"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s2_t1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              9
+            ],
+            "statement": "The user reported on 2023-09-30 that they had been sticking to their daily tidying routine for 4 weeks.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -4,
+                  "unit": "week"
+                },
+                "quote": {
+                  "text": "for 4 weeks now"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"incomplete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-4,\"unit\":\"week\"},\"quote\":{\"text\":\"for 4 weeks now\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s2_t1\"},\"event_group\":\"daily tidying routine\",\"evidence\":[{\"quote\":{\"text\":\"By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s2_t1\"}}],\"id\":\"routine_start\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"routine_start\"],\"unit\":\"week\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s2_t1\"}}],\"polarity\":\"affirm\",\"record_ids\":[9],\"statement\":\"The user reported on 2023-09-30 that they had been sticking to their daily tidying routine for 4 weeks.\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-4,\"unit\":\"week\"},\"quote\":{\"text\":\"for 4 weeks now\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:be1e4754ac0d33d373cf96a2b7285d83622a6294aa79fe0c57eea2a216618202",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 8467,
+          "input_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "output_tokens": 4484,
+          "output_tokens_details": {
+            "reasoning_tokens": 4127
+          },
+          "total_tokens": 12951
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 8467,
+        "input_tokens_details": {
+          "cached_tokens": 4352
+        },
+        "output_tokens": 4484,
+        "output_tokens_details": {
+          "reasoning_tokens": 4127
+        },
+        "total_tokens": 12951
+      }
+    }
+  ]
+}

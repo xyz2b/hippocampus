@@ -73,9 +73,15 @@ copy one nonempty continuous span in that named source; never paraphrase, join s
 metadata as original words. A source without verifiable text cannot supply an EvidenceRef.
 current_evidence=query_only forbids current factual/computational evidence. assertion_present
 or unknown allows reviewing actual current assertions, not treating the question as its answer.
+For evidence found in raw, copy that raw entry's source_id and use kind=stored, even when
+it is the newest source. Before returning, check each quote against its named source:
+query_only permits no current references; recency never changes stored evidence into current.
 Review new assertions in current/raw as well as records; include supported new assertions,
 not only an old fact marked current=no. Questions, hypotheses, plans and reported assertions
 do not alone establish a confirmed current state; preserve attribution, modality and conditions.
+Inspect supplied raw for independent assertions answering the requested attribute, including
+assertions embedded beside unrelated plans or questions. Pending enrichment does not erase
+their evidence; judge each assertion's own meaning without endorsing the surrounding plans.
 
 FACTS
 Each FactView has exactly statement, evidence, record_ids, polarity, strength, uncertainty,
@@ -101,6 +107,12 @@ only by the question. A query situation may guide applies, but cannot become a s
 Do not output a statement first and leave evidence empty: if it has no real supporting reference,
 omit that FactView and reflect missing support in verdict. This also applies to historical facts.
 current and applies are independently yes, no or unknown. Active/committed does not prove them.
+A qualified self-report can answer a request for the latest reported estimate. If the evidence
+establishes that it is the latest applicable report, retain its approximate wording and uncertainty;
+uncertainty alone does not make current=no or applies=no. Current=yes describes that reported
+estimate's current relevance, not independent confirmation of an exact value. Respect evidence
+time, applicable scope, unresolved competing claims and uncovered updates; do not pick the last
+received number mechanically or assert a unique value over pending scope.
 Set applies to yes only when the query situation satisfies the restriction; an unstated situation
 stays unknown, not automatically yes. A supported conditional fact can retain applies=unknown
 or no; do not drop its condition or claim an unconditional answer. Unknown end does not prove
@@ -143,6 +155,10 @@ When evidenced endpoints are coarse, keep valid items/operands and report insuff
 unit follows the approved plan when specified; otherwise use an evidenced supported quantity
 unit, the requested day/week/month/year for elapsed, or null. Numeric comparison needs comparable
 quantities/units. Never provide final counts, sums, elapsed numbers or comparison conclusions.
+An elapsed plan requires a supported day/week/month/year unit justified by the approved plan,
+the request or an explicit duration unit in supplied evidence. Otherwise use compute=null and
+reflect insufficiency; never return elapsed with
+unit=null or guess a unit. A lookup for a reported duration needs no computation or invented endpoint.
 
 TIME SHAPE AND PRECISION
 Every TimeInterp has exactly role, quote, interp, anchor. role preserves event versus validity
@@ -172,6 +188,8 @@ limits with a self-reported complete. An insufficient result must still be struc
 
 BEFORE RETURNING CHECK
 All required keys present; null/[] explicit; every source and continuous quote real; every
+raw reference uses its stored source_id; query_only has no current references; elapsed has a
+justified unit or compute=null; relevant independent raw assertions have been reviewed; every
 record ID supported in the same fact; each replacement has old AND new evidence in that fact;
 no legacy metadata used as evidence; computation inputs in items, not just facts; every item
 has all six fields; date/source paired; operands empty for count/sum and two for elapsed/compare;

@@ -1,0 +1,2066 @@
+{
+  "version": "eval.fixed_inputs@1",
+  "samples": [
+    {
+      "id": "af11_r4_unresolved_conflict_conflict_q3",
+      "stage": "r4",
+      "fixed_input": true,
+      "label_status": "contract_only",
+      "split": "failure_regression",
+      "input": {
+        "current_evidence": "query_only",
+        "evidence": {
+          "completeness": {
+            "enrichment_gaps": 0,
+            "pending_related_sources": 1,
+            "pending_updates": 0,
+            "plan_complete": true,
+            "retrieval_truncated": false
+          },
+          "current_message": {
+            "enrichment": "not_stored",
+            "memory_requests": [],
+            "said_on": "2026-09-28",
+            "sequence": null,
+            "source_id": null,
+            "text": "能确定栖风读书机是7英寸屏幕吗？"
+          },
+          "raw": [
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+              },
+              "said_on": "2026-09-28",
+              "sequence": 2,
+              "source_id": "conflict_s2"
+            }
+          ],
+          "records": [
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "device_qifeng_reader"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  },
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "conflict_s1"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 1,
+              "open_relations": [],
+              "said_on": "2026-09-28",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "plan": {
+          "conditions": [],
+          "current_evidence": "query_only",
+          "need": "judge",
+          "plan": {
+            "filter": {
+              "relation": null,
+              "time": null
+            },
+            "op": "lookup",
+            "unit": null
+          },
+          "relation": "fact",
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "time": null,
+          "type": "single"
+        },
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "能确定栖风读书机是7英寸屏幕吗？",
+          "request_id": "eval-unresolved_conflict-conflict_q3",
+          "task_id": null
+        },
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 4735,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 213,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4948
+      },
+      "origin": {
+        "label": "ac2-af-targeted",
+        "case": "unresolved_conflict",
+        "operation": "recall:conflict_q3",
+        "row": 1,
+        "request": "sha256:c3bd5795c9d6fe348987615e902896fd0722acb5ad681b7520af524650b87b3e"
+      },
+      "note": "独立阶段试验；R4保留录制中的已核验R1计划，不代表新R1后的端到端结果。",
+      "source_texts": {
+        "conflict_s1": "我已确认栖风读书机的屏幕尺寸是7英寸。",
+        "conflict_s2": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+      }
+    },
+    {
+      "id": "af11_r1_lme_7a87bd0c_q",
+      "stage": "r1",
+      "fixed_input": true,
+      "label_status": "approved_operation",
+      "split": "failure_regression",
+      "input": {
+        "context": [],
+        "entities": [
+          {
+            "aliases": [
+              "我",
+              "自己",
+              "本人",
+              "I",
+              "me"
+            ],
+            "canonical_name": "用户本人",
+            "entity_type": "Person",
+            "id": "self",
+            "owner_id": "eval"
+          }
+        ],
+        "message": "How long have I been sticking to my daily tidying routine?",
+        "relations": [
+          "allergic_to",
+          "avoids",
+          "code_example_language",
+          "fact",
+          "job_title",
+          "likes",
+          "lives_in",
+          "owns",
+          "response_language",
+          "response_style",
+          "uses",
+          "visited",
+          "works_at"
+        ],
+        "said_on": "2023-09-30",
+        "subject_ids": null,
+        "supported_units": [
+          "day",
+          "week",
+          "month",
+          "year",
+          "kg",
+          "g",
+          "mg",
+          "km",
+          "m",
+          "cm",
+          "mm",
+          "元"
+        ],
+        "task_id": null,
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 2359,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 64,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2423
+      },
+      "origin": {
+        "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+        "case": "lme_7a87bd0c",
+        "operation": "recall:q",
+        "row": 0,
+        "request": "sha256:61e8365902abc8b6c967f293279f0a26959caf56477a8324cbdc46976fd43692"
+      },
+      "note": "独立阶段试验；R4保留录制中的已核验R1计划，不代表新R1后的端到端结果。",
+      "expect": {
+        "plan.op": "lookup"
+      }
+    },
+    {
+      "id": "af11_r4_lme_7a87bd0c_q",
+      "stage": "r4",
+      "fixed_input": true,
+      "label_status": "contract_only",
+      "split": "failure_regression",
+      "input": {
+        "current_evidence": "query_only",
+        "evidence": {
+          "completeness": {
+            "enrichment_gaps": 0,
+            "pending_related_sources": 10,
+            "pending_updates": 6,
+            "plan_complete": false,
+            "retrieval_truncated": false
+          },
+          "current_message": {
+            "enrichment": "not_stored",
+            "memory_requests": [],
+            "said_on": "2023-09-30",
+            "sequence": null,
+            "source_id": null,
+            "text": "How long have I been sticking to my daily tidying routine?"
+          },
+          "raw": [
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "That's really helpful, thanks! I think I'll start with purging and categorizing all the items in my garage. Do you have any tips on how to decide what to keep and what to get rid of?"
+              },
+              "said_on": "2023-06-11",
+              "sequence": 2,
+              "source_id": "s1_t2"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm feeling pretty good about getting started, thanks for the tips! I think I'll start with the tools and sports equipment, those are the categories that are most cluttered. I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too."
+              },
+              "said_on": "2023-06-11",
+              "sequence": 3,
+              "source_id": "s1_t3"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space."
+              },
+              "said_on": "2023-06-11",
+              "sequence": 4,
+              "source_id": "s1_t4"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm thinking of turning that space into a little workstation for my daily tidying routine. I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized. Plus, it'll be a great way to stay consistent with my daily routine, now that I've been doing it for 3 weeks."
+              },
+              "said_on": "2023-06-11",
+              "sequence": 5,
+              "source_id": "s1_t5"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?"
+              },
+              "said_on": "2023-06-11",
+              "sequence": 6,
+              "source_id": "s1_t6"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+              },
+              "said_on": "2023-09-30",
+              "sequence": 7,
+              "source_id": "s2_t1"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm planning to use some of those tips to organize my garage, especially the one about categorizing and grouping similar items. I've also been thinking about implementing a \"one-touch rule\" when it comes to cleaning, do you have any advice on how to make it a habit?"
+              },
+              "said_on": "2023-09-30",
+              "sequence": 8,
+              "source_id": "s2_t2"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'll definitely try to implement the \"one-touch rule\" when I'm cleaning out the garage this weekend. I've also been thinking about using a label maker to label all the storage bins and shelves, do you have any recommendations for a good label maker?"
+              },
+              "said_on": "2023-09-30",
+              "sequence": 9,
+              "source_id": "s2_t3"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?"
+              },
+              "said_on": "2023-09-30",
+              "sequence": 10,
+              "source_id": "s2_t4"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm planning to use some of those tips to organize my bookshelf, especially the one about categorizing and grouping similar books together. Speaking of categorizing, do you have any advice on how to categorize my cleaning supplies? I've been thinking of organizing them by room or by type of cleaning product."
+              },
+              "said_on": "2023-09-30",
+              "sequence": 11,
+              "source_id": "s2_t5"
+            }
+          ],
+          "records": [
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "recurring"
+                    },
+                    "quote": {
+                      "text": "daily"
+                    },
+                    "role": "event"
+                  },
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "relative",
+                      "offset": -4,
+                      "unit": "week"
+                    },
+                    "quote": {
+                      "text": "for 4 weeks now"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+                  },
+                  "text": "By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s2_t1"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [
+                1
+              ],
+              "id": 9,
+              "open_relations": [],
+              "said_on": "2023-09-30",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [
+                {
+                  "end_exclusive": null,
+                  "precision": "unknown",
+                  "start": null,
+                  "status": "unknown"
+                },
+                {
+                  "end_exclusive": 1693670400,
+                  "precision": "day",
+                  "start": 1693584000,
+                  "status": "resolved"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "relative",
+                      "offset": -3,
+                      "unit": "week"
+                    },
+                    "quote": {
+                      "text": "3 weeks"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                  },
+                  "text": "I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                }
+              },
+              "ended": "known",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t1"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 1,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "time_resolutions": [
+                {
+                  "end_exclusive": 1684684800,
+                  "precision": "day",
+                  "start": 1684598400,
+                  "status": "resolved"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "uses",
+                "sentence": {
+                  "text": "I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "the kitchen counter"
+                  },
+                  "text": "the kitchen counter"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t5"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 4,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "preference",
+                "polarity": "affirm",
+                "relation": "likes",
+                "sentence": {
+                  "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom."
+                },
+                "speech": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "the all-natural brand I started using last week for the bathroom"
+                  },
+                  "text": "the all-natural brand I started using last week for the bathroom"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t6"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 7,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [
+                  {
+                    "quote": {
+                      "text": "for the bathroom"
+                    },
+                    "resolved": true
+                  }
+                ],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "uses",
+                "sentence": {
+                  "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "relative",
+                      "offset": -1,
+                      "unit": "week"
+                    },
+                    "quote": {
+                      "text": "last week"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "the all-natural brand"
+                  },
+                  "text": "the all-natural brand"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t6"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 8,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [
+                {
+                  "end_exclusive": 1685894400,
+                  "precision": "day",
+                  "start": 1685808000,
+                  "status": "resolved"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "preference",
+                "polarity": "affirm",
+                "relation": "likes",
+                "sentence": {
+                  "text": "I'm looking forward to getting rid of it and freeing up some space."
+                },
+                "speech": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "getting rid of it and freeing up some space"
+                  },
+                  "text": "getting rid of it and freeing up some space"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I'm looking forward to getting rid of it and freeing up some space."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t4"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 3,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "owns",
+                "sentence": {
+                  "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "a few specialized tools like a cordless vacuum and a microfiber mop"
+                  },
+                  "text": "a few specialized tools like a cordless vacuum and a microfiber mop"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t6"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 5,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "uses",
+                "sentence": {
+                  "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "recurring"
+                    },
+                    "quote": {
+                      "text": "regularly"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "a cordless vacuum and a microfiber mop"
+                  },
+                  "text": "a cordless vacuum and a microfiber mop"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t6"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 6,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [
+                {
+                  "end_exclusive": null,
+                  "precision": "unknown",
+                  "start": null,
+                  "status": "unknown"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "preference",
+                "polarity": "affirm",
+                "relation": "likes",
+                "sentence": {
+                  "text": "I'm feeling pretty good about getting rid of the old furniture."
+                },
+                "speech": "user_statement",
+                "strength": "moderate",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "getting rid of the old furniture"
+                  },
+                  "text": "getting rid of the old furniture"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I'm feeling pretty good about getting rid of the old furniture."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t4"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 2,
+              "open_relations": [],
+              "said_on": "2023-06-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "plan": {
+          "conditions": [],
+          "current_evidence": "query_only",
+          "need": "judge",
+          "plan": {
+            "filter": {
+              "relation": null,
+              "time": null
+            },
+            "op": "elapsed",
+            "unit": null
+          },
+          "relation": "daily tidying routine",
+          "subject": {
+            "entity_id": "self"
+          },
+          "time": null,
+          "type": "temporal"
+        },
+        "request": {
+          "at": 1696070160,
+          "context": [],
+          "query": "How long have I been sticking to my daily tidying routine?",
+          "request_id": "eval-lme_7a87bd0c-q",
+          "task_id": null
+        },
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 8312,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 10674,
+        "output_tokens_details": {
+          "reasoning_tokens": 9913
+        },
+        "total_tokens": 18986
+      },
+      "origin": {
+        "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+        "case": "lme_7a87bd0c",
+        "operation": "recall:q",
+        "row": 1,
+        "request": "sha256:b7444721cc3305334ee04d108146a11fe14f3a3342dc3a16ac6a6c3b9aa60dd2"
+      },
+      "note": "独立阶段试验；R4保留录制中的已核验R1计划，不代表新R1后的端到端结果。",
+      "source_texts": {
+        "s1_t1": "I need help organizing my garage this weekend. Can you give me some tips on how to sort through all the boxes and storage bins? Oh, and by the way, I've been feeling really proud of myself for sticking to my daily tidying routine - it's already been 3 weeks!",
+        "s1_t2": "That's really helpful, thanks! I think I'll start with purging and categorizing all the items in my garage. Do you have any tips on how to decide what to keep and what to get rid of?",
+        "s1_t3": "I'm feeling pretty good about getting started, thanks for the tips! I think I'll start with the tools and sports equipment, those are the categories that are most cluttered. I've also been meaning to get rid of some old furniture that's just taking up space, so I'll probably tackle that too.",
+        "s1_t4": "I'm feeling pretty good about getting rid of the old furniture. There's this one old desk that's been taking up a lot of space and I haven't used it in years. It's just been collecting dust and clutter. I'm looking forward to getting rid of it and freeing up some space.",
+        "s1_t5": "I'm thinking of turning that space into a little workstation for my daily tidying routine. I've been doing it on the kitchen counter, but it would be nice to have a dedicated area where I can keep all my cleaning supplies and focus on getting things organized. Plus, it'll be a great way to stay consistent with my daily routine, now that I've been doing it for 3 weeks.",
+        "s1_t6": "I'm planning to keep a variety of cleaning supplies at my workstation, including all-purpose cleaners, disinfectants, dusters, and paper towels. I've also got a few specialized tools like a cordless vacuum and a microfiber mop that I use regularly. As for specific products, I've really been loving the all-natural brand I started using last week for the bathroom. It's been doing a great job of getting rid of soap scum and mildew.\n\nBut anyway, back to the garage organization project. I'm thinking of using some stackable bins and labels to keep everything organized and easy to find. Do you have any tips on how to choose the right bins and labels for the job?",
+        "s2_t1": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment.",
+        "s2_t2": "I'm planning to use some of those tips to organize my garage, especially the one about categorizing and grouping similar items. I've also been thinking about implementing a \"one-touch rule\" when it comes to cleaning, do you have any advice on how to make it a habit?",
+        "s2_t3": "I'll definitely try to implement the \"one-touch rule\" when I'm cleaning out the garage this weekend. I've also been thinking about using a label maker to label all the storage bins and shelves, do you have any recommendations for a good label maker?",
+        "s2_t4": "I think I'll go with the Brother P-Touch label maker, I've heard good things about it. Can you give me some advice on how to organize my bookshelf?",
+        "s2_t5": "I'm planning to use some of those tips to organize my bookshelf, especially the one about categorizing and grouping similar books together. Speaking of categorizing, do you have any advice on how to categorize my cleaning supplies? I've been thinking of organizing them by room or by type of cleaning product."
+      }
+    },
+    {
+      "id": "af11_r1_lme_a2f3aa27_q",
+      "stage": "r1",
+      "fixed_input": true,
+      "label_status": "approved_operation",
+      "split": "failure_regression",
+      "input": {
+        "context": [],
+        "entities": [
+          {
+            "aliases": [
+              "我",
+              "自己",
+              "本人",
+              "I",
+              "me"
+            ],
+            "canonical_name": "用户本人",
+            "entity_type": "Person",
+            "id": "self",
+            "owner_id": "eval"
+          }
+        ],
+        "message": "How many followers do I have on Instagram now?",
+        "relations": [
+          "allergic_to",
+          "avoids",
+          "code_example_language",
+          "fact",
+          "job_title",
+          "likes",
+          "lives_in",
+          "owns",
+          "response_language",
+          "response_style",
+          "uses",
+          "visited",
+          "works_at"
+        ],
+        "said_on": "2023-06-03",
+        "subject_ids": null,
+        "supported_units": [
+          "day",
+          "week",
+          "month",
+          "year",
+          "kg",
+          "g",
+          "mg",
+          "km",
+          "m",
+          "cm",
+          "mm",
+          "元"
+        ],
+        "task_id": null,
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 2356,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 83,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2439
+      },
+      "origin": {
+        "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+        "case": "lme_a2f3aa27",
+        "operation": "recall:q",
+        "row": 0,
+        "request": "sha256:ec0fd7d5dd3733189a727f3dfa0f1ee09d43a2e5d923b2c06b12e7519dcf9504"
+      },
+      "note": "独立阶段试验；R4保留录制中的已核验R1计划，不代表新R1后的端到端结果。",
+      "expect": {
+        "plan.op": "lookup"
+      }
+    },
+    {
+      "id": "af11_r4_lme_a2f3aa27_q",
+      "stage": "r4",
+      "fixed_input": true,
+      "label_status": "contract_only",
+      "split": "failure_regression",
+      "input": {
+        "current_evidence": "query_only",
+        "evidence": {
+          "completeness": {
+            "enrichment_gaps": 0,
+            "pending_related_sources": 8,
+            "pending_updates": 2,
+            "plan_complete": true,
+            "retrieval_truncated": false
+          },
+          "current_message": {
+            "enrichment": "not_stored",
+            "memory_requests": [],
+            "said_on": "2023-06-03",
+            "sequence": null,
+            "source_id": null,
+            "text": "How many followers do I have on Instagram now?"
+          },
+          "raw": [
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm looking to optimize my Instagram content strategy, can you give me some tips on how to increase engagement and grow my audience?"
+              },
+              "said_on": "2023-05-28",
+              "sequence": 1,
+              "source_id": "s1_t1"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "What are some tips for creating engaging captions for my posts?"
+              },
+              "said_on": "2023-05-28",
+              "sequence": 3,
+              "source_id": "s1_t3"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm actually thinking of trying out Instagram Live more often. Do you have any tips on how to make my live streams more engaging and interactive?"
+              },
+              "said_on": "2023-05-28",
+              "sequence": 4,
+              "source_id": "s1_t4"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm thinking of doing a Q&A session on my next live stream. Do you have any tips on how to make it more engaging and interactive? For example, how can I encourage viewers to ask questions?"
+              },
+              "said_on": "2023-05-28",
+              "sequence": 5,
+              "source_id": "s1_t5"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now."
+              },
+              "said_on": "2023-05-28",
+              "sequence": 6,
+              "source_id": "s2_t1"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "Can you suggest some relevant influencers or content creators in my niche that I could collaborate with, considering my recent growth and engagement on social media?"
+              },
+              "said_on": "2023-05-28",
+              "sequence": 8,
+              "source_id": "s2_t3"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I think I'll start with micro-influencers and see how it goes. Can you suggest some potential collaboration ideas for me to reach out to them?"
+              },
+              "said_on": "2023-05-28",
+              "sequence": 9,
+              "source_id": "s2_t4"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\""
+              },
+              "said_on": "2023-05-28",
+              "sequence": 10,
+              "source_id": "s2_t5"
+            }
+          ],
+          "records": [
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "relative",
+                      "offset": 0,
+                      "unit": "day"
+                    },
+                    "quote": {
+                      "text": "now"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
+                  },
+                  "text": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t2"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 2,
+              "open_relations": [],
+              "said_on": "2023-05-28",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [
+                {
+                  "end_exclusive": 1685289600,
+                  "precision": "day",
+                  "start": 1685203200,
+                  "status": "resolved"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "preference",
+                "polarity": "affirm",
+                "relation": "likes",
+                "sentence": {
+                  "text": "I like the options!"
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "the options"
+                  },
+                  "text": "the options"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I like the options!"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s2_t2"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 3,
+              "open_relations": [],
+              "said_on": "2023-05-28",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic."
+                  },
+                  "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic."
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I've been doing some of these already, like posting regularly and using a consistent aesthetic."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t2"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 1,
+              "open_relations": [],
+              "said_on": "2023-05-28",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "plan": {
+          "conditions": [],
+          "current_evidence": "query_only",
+          "need": "judge",
+          "plan": {
+            "filter": {
+              "relation": null,
+              "time": null
+            },
+            "op": "count",
+            "unit": null
+          },
+          "relation": "followers",
+          "subject": {
+            "entity_id": "self"
+          },
+          "time": {
+            "anchor": "said_on",
+            "interp": {
+              "kind": "unknown"
+            },
+            "quote": {
+              "text": "now"
+            },
+            "role": "event"
+          },
+          "type": "single"
+        },
+        "request": {
+          "at": 1685754060,
+          "context": [],
+          "query": "How many followers do I have on Instagram now?",
+          "request_id": "eval-lme_a2f3aa27-q",
+          "task_id": null
+        },
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 6028,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 4901,
+        "output_tokens_details": {
+          "reasoning_tokens": 4541
+        },
+        "total_tokens": 10929
+      },
+      "origin": {
+        "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+        "case": "lme_a2f3aa27",
+        "operation": "recall:q",
+        "row": 1,
+        "request": "sha256:33e50e913f8b29dcdfe7bf1a21230e49863f0089ee6a85599a9c177399ff7087"
+      },
+      "note": "独立阶段试验；R4保留录制中的已核验R1计划，不代表新R1后的端到端结果。",
+      "source_texts": {
+        "s1_t1": "I'm looking to optimize my Instagram content strategy, can you give me some tips on how to increase engagement and grow my audience?",
+        "s1_t2": "I've been doing some of these already, like posting regularly and using a consistent aesthetic. It's great to know I'm on the right track. Speaking of which, I'm curious to know if there's a way to see which posts are performing well and which ones aren't. Do you know if Instagram Insights can help me with that? And by the way, I've got 1250 followers on Instagram now, so it'd be great to get some insights on how to optimize my content for them.",
+        "s1_t3": "What are some tips for creating engaging captions for my posts?",
+        "s1_t4": "I'm actually thinking of trying out Instagram Live more often. Do you have any tips on how to make my live streams more engaging and interactive?",
+        "s1_t5": "I'm thinking of doing a Q&A session on my next live stream. Do you have any tips on how to make it more engaging and interactive? For example, how can I encourage viewers to ask questions?",
+        "s2_t1": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
+        "s2_t2": "I like the options! For Option 1, can you modify the hashtags to make them more specific to my niche, like #contentcreation or #digitalmarketing, instead of the general #industryevent?",
+        "s2_t3": "Can you suggest some relevant influencers or content creators in my niche that I could collaborate with, considering my recent growth and engagement on social media?",
+        "s2_t4": "I think I'll start with micro-influencers and see how it goes. Can you suggest some potential collaboration ideas for me to reach out to them?",
+        "s2_t5": "I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\""
+      }
+    },
+    {
+      "id": "af11_r4_lme_59524333_q",
+      "stage": "r4",
+      "fixed_input": true,
+      "label_status": "contract_only",
+      "split": "failure_regression",
+      "input": {
+        "current_evidence": "query_only",
+        "evidence": {
+          "completeness": {
+            "enrichment_gaps": 0,
+            "pending_related_sources": 8,
+            "pending_updates": 3,
+            "plan_complete": false,
+            "retrieval_truncated": false
+          },
+          "current_message": {
+            "enrichment": "not_stored",
+            "memory_requests": [],
+            "said_on": "2023-06-08",
+            "sequence": null,
+            "source_id": null,
+            "text": "What time do I usually go to the gym?"
+          },
+          "raw": [
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm trying to plan out my week and was wondering if you could suggest some productivity apps that can help me stay organized."
+              },
+              "said_on": "2023-02-11",
+              "sequence": 1,
+              "source_id": "s1_t1"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?"
+              },
+              "said_on": "2023-02-11",
+              "sequence": 3,
+              "source_id": "s1_t3"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "How about exploring Todoist's features for tracking progress and achieving goals? For instance, can you tell me more about how to set and track goals in Todoist?"
+              },
+              "said_on": "2023-02-11",
+              "sequence": 5,
+              "source_id": "s1_t5"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'm trying to plan out my week and was wondering if you could help me figure out the best time to schedule a meeting with a potential client."
+              },
+              "said_on": "2023-05-30",
+              "sequence": 6,
+              "source_id": "s2_t1"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I think Tuesday afternoon at 2:00 pm could work well. I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm."
+              },
+              "said_on": "2023-05-30",
+              "sequence": 8,
+              "source_id": "s2_t3"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I need to send some files to the potential client before the meeting. Can you help me figure out the best way to share them?"
+              },
+              "said_on": "2023-05-30",
+              "sequence": 9,
+              "source_id": "s2_t4"
+            },
+            {
+              "enrichment": "pending",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'll use Google Drive to share the files with the potential client. I'll create a folder with the necessary files and share the link with them via email."
+              },
+              "said_on": "2023-05-30",
+              "sequence": 10,
+              "source_id": "s2_t5"
+            },
+            {
+              "enrichment": "no_candidates_unreviewed",
+              "grade": "uncommitted",
+              "memory_requests": [],
+              "quote": {
+                "text": "I'll send the email with the file link and a brief note. Do you think I should also confirm the meeting details, like the time and date, in the email?"
+              },
+              "said_on": "2023-05-30",
+              "sequence": 11,
+              "source_id": "s2_t6"
+            }
+          ],
+          "records": [
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "recurring"
+                    },
+                    "quote": {
+                      "text": "Mondays, Wednesdays, and Fridays"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times."
+                  },
+                  "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times."
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s2_t2"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 4,
+              "open_relations": [],
+              "said_on": "2023-05-30",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [
+                {
+                  "end_exclusive": null,
+                  "precision": "unknown",
+                  "start": null,
+                  "status": "unknown"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "constraint",
+                "polarity": "affirm",
+                "relation": "avoids",
+                "sentence": {
+                  "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [
+                  {
+                    "anchor": "said_on",
+                    "interp": {
+                      "kind": "recurring"
+                    },
+                    "quote": {
+                      "text": "Mondays, Wednesdays, and Fridays"
+                    },
+                    "role": "event"
+                  }
+                ],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "scheduling the meeting during those times"
+                  },
+                  "text": "scheduling the meeting during those times"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s2_t2"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 5,
+              "open_relations": [],
+              "said_on": "2023-05-30",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [
+                {
+                  "end_exclusive": null,
+                  "precision": "unknown",
+                  "start": null,
+                  "status": "unknown"
+                }
+              ],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "I have a lot of projects going on at the same time, and I want to make sure I'm prioritizing the right tasks."
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "I have a lot of projects going on at the same time, and I want to make sure I'm prioritizing the right tasks."
+                  },
+                  "text": "I have a lot of projects going on at the same time, and I want to make sure I'm prioritizing the right tasks."
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I have a lot of projects going on at the same time, and I want to make sure I'm prioritizing the right tasks."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t4"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 3,
+              "open_relations": [],
+              "said_on": "2023-02-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "pending"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "preference",
+                "polarity": "affirm",
+                "relation": "likes",
+                "sentence": {
+                  "text": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine."
+                },
+                "speech": "user_statement",
+                "strength": "weak",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "Todoist"
+                  },
+                  "text": "Todoist"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t3"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [
+                1
+              ],
+              "id": 2,
+              "open_relations": [],
+              "said_on": "2023-02-11",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            },
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "preference",
+                "polarity": "affirm",
+                "relation": "likes",
+                "sentence": {
+                  "text": "I'm particularly interested in Todoist and Trello."
+                },
+                "speech": "user_statement",
+                "strength": "strong",
+                "subject": {
+                  "entity_id": "self"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "Todoist and Trello"
+                  },
+                  "text": "Todoist and Trello"
+                }
+              },
+              "ended": "end_unknown",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I'm particularly interested in Todoist and Trello."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t2"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 1,
+              "open_relations": [],
+              "said_on": "2023-02-11",
+              "stored_status": "superseded",
+              "termination_reason": "PreferenceChanged",
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "plan": {
+          "conditions": [],
+          "current_evidence": "query_only",
+          "need": "judge",
+          "plan": {
+            "filter": {
+              "relation": null,
+              "time": null
+            },
+            "op": "lookup",
+            "unit": null
+          },
+          "relation": "uses",
+          "subject": {
+            "entity_id": "self"
+          },
+          "time": null,
+          "type": "single"
+        },
+        "request": {
+          "at": 1686156840,
+          "context": [],
+          "query": "What time do I usually go to the gym?",
+          "request_id": "eval-lme_59524333-q",
+          "task_id": null
+        },
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 6590,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 265,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6855
+      },
+      "origin": {
+        "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+        "case": "lme_59524333",
+        "operation": "recall:q",
+        "row": 1,
+        "request": "sha256:6f8fdfa07066c8e2f6181163eafb2abf50994dd4d6c4f5091c315f7e27a474d6"
+      },
+      "note": "独立阶段试验；R4保留录制中的已核验R1计划，不代表新R1后的端到端结果。",
+      "source_texts": {
+        "s1_t1": "I'm trying to plan out my week and was wondering if you could suggest some productivity apps that can help me stay organized.",
+        "s1_t2": "I'm particularly interested in Todoist and Trello. Can you tell me more about how they integrate with Google Calendar?",
+        "s1_t3": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
+        "s1_t4": "What are some good ways to organize my tasks in Todoist? I have a lot of projects going on at the same time, and I want to make sure I'm prioritizing the right tasks.",
+        "s1_t5": "How about exploring Todoist's features for tracking progress and achieving goals? For instance, can you tell me more about how to set and track goals in Todoist?",
+        "s2_t1": "I'm trying to plan out my week and was wondering if you could help me figure out the best time to schedule a meeting with a potential client.",
+        "s2_t2": "I'm pretty flexible, but I do have a few commitments already. I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times. How about we focus on Tuesday or Thursday?",
+        "s2_t3": "I think Tuesday afternoon at 2:00 pm could work well. I need to make sure I'm done with the meeting before I head to the gym, which is usually at 6:00 pm.",
+        "s2_t4": "I need to send some files to the potential client before the meeting. Can you help me figure out the best way to share them?",
+        "s2_t5": "I'll use Google Drive to share the files with the potential client. I'll create a folder with the necessary files and share the link with them via email.",
+        "s2_t6": "I'll send the email with the file link and a brief note. Do you think I should also confirm the meeting details, like the time and date, in the email?"
+      }
+    },
+    {
+      "id": "af11_r4_event_registration_fee_event_q5",
+      "stage": "r4",
+      "fixed_input": true,
+      "label_status": "contract_only",
+      "split": "failure_regression",
+      "input": {
+        "current_evidence": "query_only",
+        "evidence": {
+          "completeness": {
+            "enrichment_gaps": 0,
+            "pending_related_sources": 0,
+            "pending_updates": 0,
+            "plan_complete": true,
+            "retrieval_truncated": false
+          },
+          "current_message": {
+            "enrichment": "not_stored",
+            "memory_requests": [],
+            "said_on": "2026-09-28",
+            "sequence": null,
+            "source_id": null,
+            "text": "参加海盐折纸工作坊，报名要交多少钱？"
+          },
+          "raw": [],
+          "records": [
+            {
+              "candidate": {
+                "conditions": [],
+                "kind": "assertion",
+                "memory_type": "fact",
+                "polarity": "affirm",
+                "relation": "fact",
+                "sentence": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "speech": "user_statement",
+                "strength": null,
+                "subject": {
+                  "entity_id": "event_haiyan_origami"
+                },
+                "times": [],
+                "uncertainty": null,
+                "value": {
+                  "kind": "text",
+                  "quote": {
+                    "text": "海盐折纸工作坊的报名费为36元。"
+                  },
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                }
+              },
+              "ended": "not_ended",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "海盐折纸工作坊的报名费为36元。"
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "event_s1"
+                  }
+                }
+              ],
+              "format": "current",
+              "grade": "committed",
+              "history": [],
+              "id": 1,
+              "open_relations": [],
+              "said_on": "2026-09-28",
+              "stored_status": "active",
+              "termination_reason": null,
+              "time_resolutions": [],
+              "update": {
+                "reasons": [],
+                "status": "judged"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "plan": {
+          "conditions": [],
+          "current_evidence": "query_only",
+          "need": "judge",
+          "plan": {
+            "filter": {
+              "relation": null,
+              "time": null
+            },
+            "op": "lookup",
+            "unit": "元"
+          },
+          "relation": "fact",
+          "subject": {
+            "entity_id": "event_haiyan_origami"
+          },
+          "time": null,
+          "type": "single"
+        },
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "参加海盐折纸工作坊，报名要交多少钱？",
+          "request_id": "eval-event_registration_fee-event_q5",
+          "task_id": null
+        },
+        "utc_offset_seconds": 28800
+      },
+      "original_usage": {
+        "input_tokens": 4644,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4666
+      },
+      "origin": {
+        "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+        "case": "event_registration_fee",
+        "operation": "recall:event_q5",
+        "row": 1,
+        "request": "sha256:493036ddca6510e36adbbb98eeff385683c71e34a87091abcb6427649477acfa"
+      },
+      "note": "q5原请求/已核验计划＋定点q3同范围证据包；judged来自真实录制，未手改状态。仍为固定阶段试验。",
+      "evidence_origin": {
+        "label": "ac2-af-targeted",
+        "case": "event_registration_fee",
+        "operation": "recall:event_q3",
+        "row": 1,
+        "request": "sha256:d56ba5cd2676aa03aa057c47a595828c6d34bf064c7d37ddcedb29a478ebf745"
+      },
+      "source_texts": {
+        "event_s1": "海盐折纸工作坊的报名费为36元。"
+      }
+    }
+  ]
+}

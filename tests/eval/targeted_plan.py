@@ -268,9 +268,10 @@ def main():
         parser = argparse.ArgumentParser(description="生成独立定点目录，保留原AC2及严格请求指纹")
         parser.add_argument("--source", type=pathlib.Path, default=SOURCE)
         parser.add_argument("--output", type=pathlib.Path, required=True)
+        parser.add_argument("--questions", nargs="+", help="case/question；缺省为AF的16题")
         args = parser.parse_args(sys.argv[2:])
         try:
-            prepare(args.source, args.output)
+            prepare(args.source, args.output, args.questions)
         except (ValueError, OSError, KeyError) as error:
             parser.error(str(error))
         return

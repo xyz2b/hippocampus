@@ -252,6 +252,133 @@
         },
         "total_tokens": 5078
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 6066,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [],
+          "op": "compare",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我2024年3月开始学日语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-25"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              25
+            ],
+            "statement": "用户自述2024年3月开始学日语。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 3,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "2024年3月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我2025年开始学韩语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-26"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              26
+            ],
+            "statement": "用户自述2025年开始学韩语。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "year"
+                },
+                "quote": {
+                  "text": "2025年"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"complete\",\n    \"items\": [\n    ],\n    \"op\": \"compare\",\n    \"operands\": [\n    ],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我2024年3月开始学日语。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-25\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    25\n    ],\n    \"statement\": \"用户自述2024年3月开始学日语。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [\n    ],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 3,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"2024年3月\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我2025年开始学韩语。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-26\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    26\n    ],\n    \"statement\": \"用户自述2025年开始学韩语。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [\n    ],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": 0,\n    \"unit\": \"year\"\n    },\n    \"quote\": {\n    \"text\": \"2025年\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:d71f0c6b0b48c6d085f027495c052c264d290d0354a0cf8b1c3423351304f08f",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5105,
+          "input_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "output_tokens": 498,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5603
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5105,
+        "input_tokens_details": {
+          "cached_tokens": 4352
+        },
+        "output_tokens": 498,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5603
+      }
     }
   ]
 }

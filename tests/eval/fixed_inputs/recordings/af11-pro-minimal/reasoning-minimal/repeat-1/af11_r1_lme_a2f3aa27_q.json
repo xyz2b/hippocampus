@@ -1,0 +1,74 @@
+{
+  "id": "af11_r1_lme_a2f3aa27_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2793,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "af11-pro-minimal",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "count",
+          "unit": null
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": 0,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "now"
+          },
+          "role": "event"
+        },
+        "type": "aggregate"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":null},\"op\":\"count\",\"unit\":null},\"relation\":\"fact\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"now\"},\"role\":\"event\"},\"type\":\"aggregate\"}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:c1661b05a8201ea2484fd784c9584beb7b216acd9d16aa1d48f760a5e2f4a653",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2410,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 91,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2501
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2410,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 91,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2501
+      }
+    }
+  ]
+}

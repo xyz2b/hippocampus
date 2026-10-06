@@ -154,6 +154,83 @@
         },
         "total_tokens": 4585
       }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3841,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写的时候"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我画速写的时候固定用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-3"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              3
+            ],
+            "statement": "我画速写的时候固定用炭笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "needs_clarification"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n    \"applies\": \"unknown\",\n    \"conditions\": [\n    {\n    \"quote\": {\n    \"text\": \"画速写的时候\"\n    },\n    \"resolved\": true\n    }\n    ],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我画速写的时候固定用炭笔。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-3\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    3\n    ],\n    \"statement\": \"我画速写的时候固定用炭笔。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"needs_clarification\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:7a845e917212fc590ae5b5781ce57bfd137340932b16557c0c1130fa6c8a04c7",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4905,
+          "input_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "output_tokens": 205,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5110
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4905,
+        "input_tokens_details": {
+          "cached_tokens": 4352
+        },
+        "output_tokens": 205,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5110
+      }
     }
   ]
 }
