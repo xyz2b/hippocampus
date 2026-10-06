@@ -1,4 +1,4 @@
-//! recall.v3 宿主分发；旧契约分支保持原样，不读取评测夹具。
+//! recall.v3 宿主分发；只提供新契约，不读取评测夹具。
 use super::*;
 use crate::contract::{
     Polarity, Qualification, RecallOutput, RecallRequest, RecallStatus, SemanticJudgment, SourceRef,
@@ -25,20 +25,7 @@ impl ChatMemoryService {
                 return Err("contract_version_unsupported".into());
             }
         }
-        let selected = match name {
-            "memory_recall" => serde_json::from_value::<Recall>(arguments.clone())?.recall_version,
-            "memory_prepare" => {
-                serde_json::from_value::<Prepare>(arguments.clone())?.recall_version
-            }
-            _ => {
-                serde_json::from_value::<VersionedValidateAnswer>(arguments.clone())?.recall_version
-            }
-        };
-        Ok(match selected {
-            Some(RecallVersion::V3) => true,
-            Some(RecallVersion::Legacy) => self.config.recall_pipeline == RecallPipeline::RecallV3,
-            None => self.config.recall_pipeline == RecallPipeline::RecallV3,
-        })
+        Ok(true)
     }
 
     fn recall_provider(
@@ -77,8 +64,6 @@ impl ChatMemoryService {
                 .read()?
                 .entities
                 .list_by_owner(self.store.owner()),
-            None,
-            default_limit(),
         )?;
         Ok(Some(
             RecallModelProvider::new(client, context)
@@ -114,6 +99,9 @@ impl ChatMemoryService {
         operation: &str,
         cancelled: &impl Fn() -> bool,
     ) -> PersistenceResult<Value> {
+        if input.recall_version == Some(RecallVersion::Legacy) {
+            return Err("contract_version_unsupported".into());
+        }
         validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
         check_limit(input.limit)?;
         if input.bootstrap && input.task_id.is_some() {
@@ -127,7 +115,6 @@ impl ChatMemoryService {
                 self.config.utc_offset_seconds,
             )?)
             .date();
-        let legacy_output = input.recall_version == Some(RecallVersion::Legacy);
         let request = crate::recall::Request {
             binding: RecallRequest {
                 request_id: id,
@@ -195,7 +182,7 @@ impl ChatMemoryService {
                 output,
                 crate::recall::SafetySnapshot::capture(&before, &request)?,
             )?;
-            return format_recall_output(output, legacy_output);
+            return Ok(serde_json::to_value(output)?);
         }
         let provider = self.recall_provider(operation, input.offline)?;
         let result = self.recall_runtime.run_cancellable(
@@ -209,7 +196,7 @@ impl ChatMemoryService {
             implicit_at,
             cancelled,
         )?;
-        format_recall_output(result, legacy_output)
+        Ok(serde_json::to_value(result)?)
     }
 
     pub(super) fn call_recall_v3(
@@ -283,22 +270,15 @@ impl ChatMemoryService {
                         Err(e) => json!({"status":"failed","error":e.to_string()}),
                     }
                 };
-                if input.recall_version == Some(RecallVersion::Legacy) {
-                    let recalled = if recall.get("answer_contract").is_some() {
-                        json!({"status":"completed","result":recall})
-                    } else {
-                        recall
-                    };
-                    return Ok(
-                        json!({"remember":{"status":if saved.is_ok() {"completed"} else {"failed"},"result":receipt},"recall":recalled}),
-                    );
-                }
                 Ok(
                     json!({"source":receipt["source"],"enrichment":receipt["enrichment"],"recall":recall}),
                 )
             }
             "memory_validate_answer" => {
                 let versioned: VersionedValidateAnswer = serde_json::from_value(arguments)?;
+                if versioned.recall_version == Some(RecallVersion::Legacy) {
+                    return Err("contract_version_unsupported".into());
+                }
                 let input = versioned.answer;
                 validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
                 bounded_text(&input.draft_answer, "draft_answer", 4_000)?;
@@ -316,18 +296,6 @@ impl ChatMemoryService {
                     || versioned.at.is_some_and(|at| at != output.request.at)
                 {
                     return Err("recall_request_mismatch".into());
-                }
-                if versioned.recall_version == Some(RecallVersion::Legacy) {
-                    let mut contract = legacy_contract(&output);
-                    let approved = contract["safe_answer"].as_str() == Some(&input.draft_answer)
-                        && json!(input.source_ids) == contract["safe_source_ids"];
-                    contract["approved"] = json!(approved);
-                    contract["approved_source_ids"] = if approved {
-                        contract["safe_source_ids"].clone()
-                    } else {
-                        json!([])
-                    };
-                    return Ok(contract);
                 }
                 Ok(validate_retained_answer(&input, &output))
             }
@@ -359,7 +327,7 @@ impl ChatMemoryService {
                 _ => "failed",
             };
             let original = source.result.as_ref().unwrap_or(&Value::Null);
-            let candidates = legacy_candidates(original);
+            let candidates = retained_write_candidates(original);
             return Ok(
                 json!({"source":{"status":if source.request.is_some() {"stored"} else {"deleted"},"source_id":source.id},
                 "enrichment":{"status":if source.request.is_some() {status} else {"deleted"},"candidates":candidates,
@@ -370,7 +338,7 @@ impl ChatMemoryService {
             Ok(v) => v.clone(),
             Err(e) => error_body(e.as_ref()),
         };
-        let candidates = legacy_candidates(&value);
+        let candidates = retained_write_candidates(&value);
         let source_status = value["source"]["status"]
             .as_str()
             .filter(|s| matches!(*s, "stored" | "rejected" | "failed" | "deleted"))
@@ -394,16 +362,10 @@ impl ChatMemoryService {
         state: &PersistedMemoryState,
     ) -> Option<CallToolResult> {
         let body = response.structured_content.as_ref()?;
-        let compatibility = body["remember"]["result"].get("source").is_some()
-            && body["recall"]["result"].get("request_id").is_some();
-        if (body.get("source").is_none() || body.get("recall").is_none()) && !compatibility {
+        if body.get("source").is_none() || body.get("recall").is_none() {
             return None;
         }
-        let source = if compatibility {
-            &body["remember"]["result"]["source"]
-        } else {
-            &body["source"]
-        };
+        let source = &body["source"];
         let source_id = source["source_id"].as_str();
         let live = source_id.is_none()
             || state.sources.values().any(|src| {
@@ -411,16 +373,7 @@ impl ChatMemoryService {
                     && src.request.is_some()
                     && src.enrichment != "deleted"
             });
-        let recall = if compatibility {
-            &body["recall"]["result"]
-        } else {
-            &body["recall"]
-        };
-        let id = if compatibility {
-            recall["request_id"].as_str()
-        } else {
-            recall["request"]["request_id"].as_str()
-        };
+        let id = body["recall"]["request"]["request_id"].as_str();
         let valid = id.is_none_or(|id| {
             self.recall_runtime
                 .retained_in_state(&self.store, state, id)
@@ -441,11 +394,7 @@ impl ChatMemoryService {
             return Some(checked);
         }
         if !live {
-            let receipt = if compatibility {
-                &mut body["remember"]["result"]
-            } else {
-                &mut body
-            };
+            let receipt = &mut body;
             receipt["source"]["status"] = json!("deleted");
             receipt["enrichment"] = json!({"status":"deleted","candidates":[],"memory_requests":[],"retention_pending":false});
         }
@@ -485,16 +434,7 @@ impl ChatMemoryService {
                 return Ok(publish(checked));
             }
             let mut response = response;
-            let body = response.structured_content.as_ref();
-            let new_recall = self.config.recall_pipeline == RecallPipeline::RecallV3
-                || body.is_some_and(|b| {
-                    b["recall"]["request"]["request_id"].is_string()
-                        || b["request"]["request_id"].is_string()
-                        || b["request_id"].is_string()
-                        || b["error"].as_str().is_some_and(|e| e.starts_with("recall_"))
-                });
             if let Some(body) = response.structured_content.as_mut()
-                && new_recall
                 && body.get("global_context").is_some()
             {
                 body["global_context"] = match self.global_context_from_state(state) {
@@ -542,7 +482,7 @@ impl ChatMemoryService {
     }
 }
 
-fn legacy_candidates(result: &Value) -> Vec<Value> {
+fn retained_write_candidates(result: &Value) -> Vec<Value> {
     result["outcomes"]
         .as_array()
         .into_iter()
@@ -613,76 +553,6 @@ fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value
         "reason":if approved {"retained_exact_statement"} else {"draft_requires_semantic_review"}})
 }
 
-// 冻结§7：同一次 R4/快照机械生成旧回执；没有重跑旧检索或额外模型调用。
-fn format_recall_output(output: RecallOutput, legacy: bool) -> PersistenceResult<Value> {
-    if legacy {
-        Ok(
-            json!({"answer_contract":legacy_contract(&output),"request_id":output.request.request_id,
-            "read_revision":output.snapshot.read_revision,"source_revision":output.snapshot.source_revision}),
-        )
-    } else {
-        Ok(serde_json::to_value(output)?)
-    }
-}
-
-fn legacy_contract(out: &RecallOutput) -> Value {
-    let fact = out.facts.first();
-    let mut answer = String::new();
-    let mut ids = BTreeSet::new();
-    let mut sources = Vec::new();
-    let safe = !out.completeness.retrieval_truncated
-        && out.completeness.pending_related_sources == 0
-        && out.completeness.pending_updates == 0
-        && out.completeness.enrichment_gaps == 0
-        && out.completeness.plan_complete
-        && fact.is_some_and(|f| {
-            let input = ValidateAnswer {
-                query: out.request.query.clone(),
-                context: out.request.context.clone(),
-                task_id: out.request.task_id.clone(),
-                draft_answer: f.statement.clone(),
-                source_ids: f
-                    .evidence
-                    .iter()
-                    .filter_map(|e| match &e.source {
-                        SourceRef::Stored { source_id } => Some(source_id.clone()),
-                        _ => None,
-                    })
-                    .collect::<BTreeSet<_>>()
-                    .into_iter()
-                    .collect(),
-            };
-            f.grade == crate::contract::RecallGrade::Committed
-                && f.update
-                    .as_ref()
-                    .is_some_and(|u| u.status == UpdateStatus::Judged)
-                && validate_retained_answer(&input, out)["approved"] == true
-        });
-    let status = if out.current_message.is_none()
-        || !crate::local_recall::asks_for_answer(&out.request.query)
-    {
-        "not_applicable"
-    } else if safe {
-        let f = fact.unwrap();
-        answer = f.statement.clone();
-        for e in &f.evidence {
-            if let SourceRef::Stored { source_id } = &e.source {
-                ids.insert(source_id.clone());
-                sources
-                    .push(json!({"source_id":source_id,"quote":e.quote.text,"grade":"committed"}));
-            }
-        }
-        "source_linked_fact"
-    } else {
-        answer = "已有证据无法在旧回执中安全表达，因此不能据此核准事实答复。".into();
-        "insufficient_evidence"
-    };
-    json!({"version":1,"query":out.request.query,"context":out.request.context,"task_id":out.request.task_id,
-        "status":status,"safe_answer":if status == "not_applicable" {Value::Null} else {json!(answer)},
-        "safe_source_ids":ids,"sources":sources,"read_revision":out.snapshot.read_revision,
-        "source_revision":out.snapshot.source_revision})
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -708,30 +578,5 @@ mod tests {
         out.facts[0].current = Qualification::Yes;
         out.status = RecallStatus::Insufficient;
         assert_eq!(validate_retained_answer(&input, &out)["approved"], false);
-    }
-
-    #[test]
-    fn legacy_adapter_quotes_committed_fact_but_withholds_incomplete_and_uncommitted() {
-        // 已经经过 R4/R5 的冻结结果；这里只检验无模型适配，不替代上游核验。
-        let mut out: RecallOutput = serde_json::from_value(json!({
-            "version":"recall.v3","request":{"request_id":"adapt","query":"我的灯是什么颜色？","context":[],"task_id":null,"at":1791000000},
-            "status":"answered","current_message":{"source_id":null,"text":"我的灯是什么颜色？","said_on":"2026-10-03","sequence":null,"enrichment":"not_stored","memory_requests":[]},
-            "records":[],"raw":[],"facts":[{"statement":"我的灯是紫色。","evidence":[{"source":{"kind":"stored","source_id":"s-purple"},"quote":{"text":"我的灯是紫色。"}}],
-                "record_ids":[1],"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[],"grade":"committed","update":{"status":"judged","reasons":[]}}],
-            "computed":null,"history":[],"conflicts":[],"clarification":null,"semantic_judgment":"model",
-            "completeness":{"retrieval_truncated":false,"pending_related_sources":0,"pending_updates":0,"enrichment_gaps":0,"plan_complete":true},
-            "degraded_reasons":[],"snapshot":{"read_revision":1,"source_revision":1}
-        })).unwrap();
-        let old = legacy_contract(&out);
-        assert_eq!(old["status"], "source_linked_fact");
-        assert_eq!(
-            old["sources"],
-            json!([{"source_id":"s-purple","quote":"我的灯是紫色。","grade":"committed"}])
-        );
-        out.completeness.retrieval_truncated = true;
-        assert_eq!(legacy_contract(&out)["status"], "insufficient_evidence");
-        out.completeness.retrieval_truncated = false;
-        out.facts[0].grade = crate::contract::RecallGrade::Uncommitted;
-        assert_eq!(legacy_contract(&out)["safe_source_ids"], json!([]));
     }
 }

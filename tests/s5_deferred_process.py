@@ -81,7 +81,7 @@ def downgrade_v4(db, mutate=None):
 
 def config(directory, name, mode):
     path = directory / f"{name}.json"
-    path.write_text(json.dumps({"retrieval_mode": "local", "enrichment_mode": mode,
+    path.write_text(json.dumps({"enrichment_mode": mode,
                                 "model_budget": {"group_id": f"s5-deferred-{name}", "max_calls": 20}}))
     return path
 
@@ -169,7 +169,7 @@ def main():
             replay = c.call("memory_remember", turn("first"))
             assert replay["replayed"] is True and queued(replay) == first
             before_read = state(db)
-            c.call("memory_recall", {"query": "以后回答语言"})
+            c.call("memory_recall", {"query": "以后回答语言", "request_id":"language-first", "offline":True})
             assert state(db) == before_read, "read-only recall changed a queued task"
             assert calls(db) == 0
         checks.append("T1 queued and indexed; restart and replay do not send or duplicate")
@@ -208,7 +208,7 @@ def main():
                         DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1",
                         DEEPSEEK_API_KEY="local-fixture-key")
         no_budget = root / "no-budget.json"
-        no_budget.write_text(json.dumps({"retrieval_mode": "local", "enrichment_mode": "deferred"}))
+        no_budget.write_text(json.dumps({"enrichment_mode": "deferred"}))
         command = ["--db", str(db), "--owner", OWNER, "--config", str(deferred),
                    "--drain-enrichment", "--max-jobs", "1"]
         before_state = state(db)
@@ -234,7 +234,7 @@ def main():
         pending = state(rollback_db)
         before_requests = len(Fixture.requests)
         with client(binary, rollback_db, denied, off) as c:
-            c.call("memory_recall", {"query": "回答语言"})
+            c.call("memory_recall", {"query": "回答语言", "request_id":"language-again", "offline":True})
         paused = batch(binary, rollback_db, loopback, off,
                        "--drain-enrichment", "--max-jobs", "1")
         assert paused.returncode != 0 and "deferred mode is disabled" in paused.stderr, paused

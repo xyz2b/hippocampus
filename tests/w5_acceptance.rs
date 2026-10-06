@@ -4355,7 +4355,6 @@ fn call(db: &TestDb, tool: &str, arguments: serde_json::Value) -> serde_json::Va
     let mut service = hippocampus::chat::ChatMemoryService::new(
         db.open(),
         hippocampus::chat::ChatConfig {
-            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             ..Default::default()
         },
     )
@@ -4393,19 +4392,17 @@ fn a_a_lossy_constraint_never_enters_the_global_requirements() {
         let recalled = call(
             &db,
             "memory_recall",
-            serde_json::json!({"query":"全局回答要求","bootstrap":true}),
+            serde_json::json!({"query":"全局回答要求","bootstrap":true,"request_id":"global"}),
         );
-        let lanes = &recalled["result"];
-        let returned = ["mandatory", "constraints", "preferences", "facts"]
-            .iter()
-            .any(|lane| lanes[*lane].to_string().contains("中文"));
+        let lanes = &recalled["records"];
+        let returned = lanes.to_string().contains("中文");
         assert_eq!(returned, global, "{recalled}");
         // 本地召回附带的全局要求同样不能含有它。
         let mut service = local_service(&db, Vec::new());
         let body = service
             .call_with_global_context(
                 "memory_recall",
-                serde_json::json!({"query":"我喜欢什么水果？"}),
+                serde_json::json!({"query":"我喜欢什么水果？","request_id":"fruits","offline":true}),
                 || false,
             )
             .structured_content
@@ -4423,8 +4420,6 @@ fn local_service(
     predicates: Vec<PredicateDefinition>,
 ) -> hippocampus::chat::ChatMemoryService {
     let mut config = hippocampus::chat::ChatConfig {
-        recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
-        retrieval_mode: Some(hippocampus::chat::RetrievalMode::Local),
         ..hippocampus::chat::ChatConfig::default()
     };
     config.predicates.extend(predicates);
@@ -4475,19 +4470,16 @@ fn a_a_lossy_record_does_not_compete_for_a_single_slot() {
     let recalled = service
         .call(
             "memory_recall",
-            serde_json::json!({"query":"我的签到编号是什么？"}),
+            serde_json::json!({"query":"我的签到编号是什么？","request_id":"code","offline":true}),
             || false,
         )
         .unwrap();
-    let result = &recalled["result"];
+    let result = &recalled;
     assert_eq!(result["conflicts"], serde_json::json!([]), "{recalled}");
-    let facts = result["facts"].to_string();
+    let facts = result["records"].to_string();
     assert!(facts.contains("Q71") && facts.contains("Q72"), "{recalled}");
     // 有损记录不能被核准为唯一当前值。
-    assert_ne!(
-        recalled["answer_contract"]["status"], "source_linked_fact",
-        "{recalled}"
-    );
+    assert_ne!(recalled["status"], "answered", "{recalled}");
     // 管理视图里只有 Q72 带限定语原文，Q71 不带。
     let listed = call(&db, "memory_list", serde_json::json!({}));
     let annotation = |id: MemoryId| {

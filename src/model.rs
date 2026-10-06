@@ -216,16 +216,6 @@ pub struct Scope {
     pub conditions: Vec<ScopeCondition>,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
-pub enum ScopeRelation {
-    Equal,
-    MoreSpecific,
-    MoreGeneral,
-    Disjoint,
-    Overlap,
-    Unknown,
-}
-
 #[derive(
     serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd,
 )]
@@ -268,17 +258,6 @@ pub struct DatedValue {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
-/// 已解析的现实时间区间，统一使用左闭右开语义。
-pub struct TemporalRange {
-    /// 区间起点（包含）。
-    pub start: Timestamp,
-    /// 区间终点（不包含）。
-    pub end: Timestamp,
-    /// 绝对日期来自明示，还是由相对表达式推断。
-    pub source: TemporalSource,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 /// 相对于某个事件边界的位置。
 pub enum TemporalRelation {
     /// 在已知状态变化开始之前；只有能唯一关联到版本链时才换算边界。
@@ -306,15 +285,6 @@ pub enum TemporalReference {
         /// 固定为 `TemporalSource::Unknown`。
         source: TemporalSource,
     },
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
-/// 相对时间解析后的两种安全结果。
-pub enum TemporalResolution {
-    /// 已换算成绝对时间区间。
-    Range(TemporalRange),
-    /// 仍依赖事件或未知信息的结构化引用。
-    Reference(TemporalReference),
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -347,35 +317,6 @@ impl Temporal {
         self.reference.is_none()
             && self.valid_from.is_none_or(|from| from.at <= at)
             && self.valid_to.is_none_or(|to| at < to.at)
-    }
-
-    /// 将解析结果应用到新建的 Temporal；不会同时保留绝对区间与未解析引用。
-    pub fn apply_resolution(&mut self, resolution: TemporalResolution) {
-        match resolution {
-            TemporalResolution::Range(range) => {
-                self.valid_from = Some(DatedValue {
-                    at: range.start,
-                    source: range.source,
-                });
-                self.valid_to = Some(DatedValue {
-                    at: range.end,
-                    source: range.source,
-                });
-                self.reference = None;
-            }
-            TemporalResolution::Reference(reference) => {
-                self.valid_from = None;
-                self.valid_to = None;
-                self.reference = Some(reference);
-            }
-        }
-    }
-
-    /// 检查 Memory 的现实有效期是否与查询区间相交。
-    pub fn overlaps(&self, range: TemporalRange) -> bool {
-        self.reference.is_none()
-            && self.valid_from.is_none_or(|from| from.at < range.end)
-            && self.valid_to.is_none_or(|to| range.start < to.at)
     }
 }
 
@@ -677,62 +618,4 @@ impl Memory {
             tags: candidate.tags.clone(),
         }
     }
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
-pub enum TemporalIntent {
-    Current,
-    Historical,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
-/// Query understanding 的结构化结果，是 retrieval 的唯一上下文输入。
-pub struct RuntimeContext {
-    /// 本次查询访问的用户记忆库。
-    pub owner_id: UserId,
-    /// 当前问题涉及的领域。
-    pub domain: Option<Domain>,
-    /// 主 Entity 与上下文相关 Entity；优先于纯语义相似度。
-    pub entities: Vec<EntityId>,
-    /// 当前任务标识；仅匹配相同 `ScopeCondition::Task`。
-    pub task_id: Option<TaskId>,
-    /// 当前查询实际满足的 scope conditions。
-    pub conditions: Vec<ScopeCondition>,
-    /// 可选 predicate 白名单；为空表示不按 predicate 预过滤。
-    pub predicates: Vec<Predicate>,
-    /// 当前查询涉及的候选项或类别，用于判断父类别 Constraint 是否适用。
-    pub targets: Vec<MemoryValue>,
-    /// Current 只看 Active；Historical 可查看有效的旧版本。
-    pub temporal_intent: TemporalIntent,
-    /// 显式时间过滤；为空时 Current 按 `at` 查当前，Historical 查截至 `at` 的历史。
-    pub temporal_filter: Option<TemporalResolution>,
-    /// 查询的现实时间锚点。
-    pub at: Timestamp,
-    /// 普通候选的最大数量，不包含 mandatory memories。
-    pub limit: usize,
-}
-
-impl RuntimeContext {
-    pub fn current(owner_id: UserId, at: Timestamp) -> Self {
-        Self {
-            owner_id,
-            domain: None,
-            entities: Vec::new(),
-            task_id: None,
-            conditions: Vec::new(),
-            predicates: Vec::new(),
-            targets: Vec::new(),
-            temporal_intent: TemporalIntent::Current,
-            temporal_filter: None,
-            at,
-            limit: 20,
-        }
-    }
-}
-
-/// 把自然语言 query 转成 retrieval 所需 `RuntimeContext` 的适配器接口。
-pub trait RuntimeContextBuilder {
-    type Error;
-
-    fn build(&self, query: &str) -> Result<RuntimeContext, Self::Error>;
 }

@@ -543,7 +543,6 @@ fn disabled_capture_and_cancellation_do_not_store_or_start_model_processing() {
 
     let db = TestDb::new();
     let config = ChatConfig {
-        recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
         source_capture_enabled: false,
         ..ChatConfig::default()
     };
@@ -558,11 +557,8 @@ fn disabled_capture_and_cancellation_do_not_store_or_start_model_processing() {
     let prepared = service
         .call("memory_prepare", json!({"user_turn":turn}), || false)
         .unwrap();
-    assert_eq!(prepared["remember"]["source"]["status"], "rejected");
-    assert_eq!(
-        prepared["remember"]["enrichment"]["status"],
-        "not_requested"
-    );
+    assert_eq!(prepared["source"]["status"], "rejected");
+    assert_eq!(prepared["enrichment"]["status"], "not_requested");
     assert_eq!(prepared["recall"]["status"], "not_requested");
     assert_eq!(
         serde_json::to_value(db.open("alice").read().unwrap()).unwrap(),
@@ -591,7 +587,6 @@ fn capture_storage_read_failure_stops_prepare_before_models() {
     let mut service = ChatMemoryService::new(
         db.open("alice"),
         ChatConfig {
-            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             ..Default::default()
         },
     )
@@ -600,27 +595,22 @@ fn capture_storage_read_failure_stops_prepare_before_models() {
         .unwrap()
         .execute_batch("DROP TABLE memory_profiles")
         .unwrap();
-    let result = service
-        .call(
-            "memory_prepare",
-            json!({"user_turn":{"text":"我住在上海","session_id":"chat","turn_id":"one","capture_source":true}}),
-            || false,
-        )
+    let error = service.call("memory_prepare", json!({"user_turn":{"text":"我住在上海","session_id":"chat","turn_id":"one","capture_source":true}}), || false).unwrap_err();
+    assert!(error.to_string().contains("no such table: memory_profiles"));
+    let model_calls: i64 = Connection::open(&db.0)
+        .unwrap()
+        .query_row("SELECT COUNT(*) FROM model_calls", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(result["remember"]["status"], "failed");
-    assert_eq!(result["remember"]["source"]["status"], "failed");
-    assert_eq!(result["remember"]["enrichment"]["status"], "not_requested");
-    assert_eq!(result["recall"]["status"], "not_requested");
+    assert_eq!(model_calls, 0);
 }
 
 #[test]
 fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
     use hippocampus::chat::{ChatConfig, ChatMemoryService};
-    use rmcp::model::CallToolResult;
 
     let db = TestDb::new();
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
-    let arguments = json!({"user_turn":{"text":"原文不产生事实","session_id":"session","turn_id":"one","capture_source":true}});
+    let arguments = json!({"offline":true,"user_turn":{"text":"原文不产生事实","session_id":"session","turn_id":"one","capture_source":true,"history":[],"task_id":null}});
     let key = serde_json::to_string(&("memory_remember", "session", "one")).unwrap();
     let mut record = source("one");
     record.request = Some(arguments["user_turn"].clone());
@@ -632,11 +622,12 @@ fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
             Ok(())
         })
         .unwrap();
-    let cached = CallToolResult::structured(json!({
-        "remember":{"status":"completed","result":record.status()},
-        "recall":{"status":"completed","result":{"facts":[]}},
-        "global_context":{"status":"available","result":{"facts":[]}}
-    }));
+    let cached = service.call_with_global_context("memory_prepare", arguments.clone(), || false);
+    assert_ne!(cached.is_error, Some(true));
+    assert_eq!(
+        cached.structured_content.as_ref().unwrap()["source"]["status"],
+        "stored"
+    );
     assert_eq!(
         service
             .validate_prepare_response(&arguments, cached.clone())
@@ -654,8 +645,8 @@ fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
         .validate_prepare_response(&arguments, cached)
         .structured_content
         .unwrap();
-    assert_eq!(refreshed["remember"]["status"], "failed");
-    assert_eq!(refreshed["remember"]["source"]["status"], "deleted");
+    assert_eq!(refreshed["enrichment"]["status"], "deleted");
+    assert_eq!(refreshed["source"]["status"], "deleted");
     assert_eq!(refreshed["recall"]["status"], "not_requested");
     assert_eq!(refreshed["global_context"]["status"], "available");
 }
@@ -663,7 +654,6 @@ fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
 #[test]
 fn completed_prepare_cache_removes_deleted_recall_and_global_context() {
     use hippocampus::chat::{ChatConfig, ChatMemoryService};
-    use rmcp::model::CallToolResult;
 
     let db = TestDb::new();
     db.open("alice").transaction(ingest).unwrap();
@@ -676,13 +666,10 @@ fn completed_prepare_cache_removes_deleted_recall_and_global_context() {
         .list_by_owner(&UserId::from("alice"))
         .unwrap()
         .remove(0);
-    let arguments =
-        json!({"user_turn":{"text":"我住在哪里？","session_id":"other-session","turn_id":"query"}});
-    let cached = CallToolResult::structured(json!({
-        "remember":{"status":"completed","result":{"outcomes":[]}},
-        "recall":{"status":"completed","result":{"facts":[memory]}},
-        "global_context":{"status":"available","result":{"facts":[memory]}}
-    }));
+    let arguments = json!({"offline":true,"user_turn":{"text":"我住在哪里？","session_id":"other-session","turn_id":"query","capture_source":true}});
+    let cached = service.call_with_global_context("memory_prepare", arguments.clone(), || false);
+    assert_ne!(cached.is_error, Some(true));
+    assert!(serde_json::to_string(&cached).unwrap().contains("上海"));
     assert_eq!(
         service
             .validate_prepare_response(&arguments, cached.clone())
@@ -694,7 +681,7 @@ fn completed_prepare_cache_removes_deleted_recall_and_global_context() {
         .unwrap();
     let refreshed = service.validate_prepare_response(&arguments, cached);
     let body = refreshed.structured_content.as_ref().unwrap();
-    assert_eq!(body["remember"]["status"], "completed");
+    assert_eq!(body["source"]["status"], "stored");
     assert_eq!(body["recall"]["status"], "not_requested");
     assert_eq!(body["global_context"]["status"], "available");
     // Both structured and text content must be rebuilt; the old evidence cannot survive in either.

@@ -95,7 +95,7 @@ pub(super) fn target_ceiling(dir: &Path, cases: &[Value]) -> Result<Option<u64>,
             &std::fs::read(dir.join(format!("{cid}.json"))).map_err(|e| e.to_string())?,
         )
         .map_err(|e| e.to_string())?;
-        if doc["configuration"] != configuration {
+        if recording_configuration(&doc["configuration"]) != configuration {
             return Err(format!("整批拒绝：录制配置不符 {cid}"));
         }
         for op in ops {
@@ -314,6 +314,33 @@ pub(super) struct Operation {
     pub(super) ids: BTreeMap<String, String>,
 }
 
+// Retired execution settings are inert for the only supported pipelines.
+// This archive-metadata comparison never changes requests, fingerprints or recordings.
+fn recording_configuration(value: &Value) -> Value {
+    let mut value = value.clone();
+    if let Some(fields) = value.as_object_mut() {
+        for field in ["retrieval_mode", "local_recall_enabled", "local_recall_budget", "is_a"] {
+            fields.remove(field);
+        }
+    }
+    value
+}
+
+#[test]
+fn retired_recording_configuration_keeps_active_bindings_strict() {
+    let current = json!({"recall_pipeline":"recall_v3","write_pipeline":"w4_runtime_v1", "predicates":["fact"], "utc_offset_seconds":28800, "recall_models":{"r4":"endpoint"}});
+    let mut archived = current.clone();
+    for field in ["retrieval_mode", "local_recall_enabled", "local_recall_budget", "is_a"] {
+        archived[field] = json!({"archived":"inert"});
+    }
+    assert_eq!(recording_configuration(&archived), current);
+    for field in ["recall_pipeline", "write_pipeline", "predicates", "utc_offset_seconds", "recall_models"] {
+        let mut changed = archived.clone();
+        changed[field] = json!("changed");
+        assert_ne!(recording_configuration(&changed), current, "{field}");
+    }
+}
+
 pub(super) struct Recorder {
     pub(super) dir: PathBuf,
     pub(super) configuration: Value,
@@ -374,7 +401,7 @@ impl Recorder {
                 json!({"version":"eval.e2e.v3@1","configuration":self.configuration,"operations":{}})
             };
             assert_eq!(
-                doc["configuration"], self.configuration,
+                recording_configuration(&doc["configuration"]), self.configuration,
                 "配置标签已绑定其他配置，必须使用单独目录"
             );
             docs.insert(case.into(), doc);

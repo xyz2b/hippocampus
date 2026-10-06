@@ -102,24 +102,3 @@ fn s2_independent_source_capture() {
         String::from_utf8_lossy(&output.stderr)
     );
 }
-
-#[test]
-fn s4_local_mcp_and_frozen_development_cases() {
-    let output = std::process::Command::new("python3")
-        .args([
-            "tests/m1_host.py",
-            "--check",
-            "local",
-            "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
-        ])
-        .current_dir(env!("CARGO_MANIFEST_DIR"))
-        .output()
-        .expect("python3 and the built Inspector are required for S4 contract checks");
-    assert!(
-        output.status.success(),
-        "{}\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
-    );
-}

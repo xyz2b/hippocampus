@@ -84,7 +84,7 @@ def calls(db):
 def settings(root, pipeline, mode):
     path = root / f"{pipeline}-{mode}.json"
     path.write_text(json.dumps({"write_pipeline": pipeline, "enrichment_mode": mode,
-                               "retrieval_mode": "local", "model_budget": {
+                               "model_budget": {
                                    "group_id": "write-pipeline-http", "max_calls": 30}}))
     return path
 

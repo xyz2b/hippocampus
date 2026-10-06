@@ -16,14 +16,6 @@ use serde_json::{Value, json};
 
 use crate::*;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum RetrievalMode {
-    Legacy,
-    Local,
-    Assisted,
-}
-
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EnrichmentMode {
@@ -43,7 +35,6 @@ pub enum WritePipeline {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RecallPipeline {
-    Legacy,
     #[default]
     RecallV3,
 }
@@ -69,11 +60,6 @@ pub use background::BackgroundWorker;
 pub struct ChatConfig {
     /// Accept explicitly authorized raw turns; disabling this rejects new capture requests.
     pub source_capture_enabled: bool,
-    /// S4 opt-in; false preserves the existing structured/model path. Never automatic fallback.
-    #[serde(skip_serializing_if = "is_false")]
-    pub local_recall_enabled: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub retrieval_mode: Option<RetrievalMode>,
     pub enrichment_mode: EnrichmentMode,
     pub write_pipeline: WritePipeline,
     pub recall_pipeline: RecallPipeline,
@@ -88,13 +74,11 @@ pub struct ChatConfig {
     /// Explicit background allowance; all clients retain the same total budget group.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub background_operation_limit: Option<u64>,
-    pub local_recall_budget: LocalRecallBudget,
     pub utc_offset_seconds: i32,
     pub predicates: Vec<PredicateDefinition>,
     pub domains: Vec<Domain>,
     pub value_kinds: Vec<(Predicate, Vec<MemoryValueKind>)>,
     pub memory_types: Vec<(Predicate, Vec<MemoryType>)>,
-    pub is_a: Vec<(MemoryValue, MemoryValue)>,
     /// Overrides `DEEPSEEK_BASE_URL` for this service; the eval routes each case to its own queue.
     #[serde(skip)]
     pub model_base_url: Option<String>,
@@ -104,8 +88,6 @@ impl Default for ChatConfig {
     fn default() -> Self {
         Self {
             source_capture_enabled: true,
-            local_recall_enabled: false,
-            retrieval_mode: None,
             enrichment_mode: EnrichmentMode::Inline,
             write_pipeline: WritePipeline::W4RuntimeV1,
             recall_pipeline: RecallPipeline::RecallV3,
@@ -114,7 +96,6 @@ impl Default for ChatConfig {
             fact_index_enabled: false,
             model_budget: None,
             background_operation_limit: None,
-            local_recall_budget: LocalRecallBudget::default(),
             utc_offset_seconds: 28_800,
             predicates: [
                 ("lives_in", Cardinality::Single),
@@ -146,10 +127,6 @@ impl Default for ChatConfig {
                 Predicate::from("code_example_language"),
                 vec![MemoryType::Constraint, MemoryType::Preference],
             )],
-            is_a: vec![(
-                MemoryValue::Text("latte".into()),
-                MemoryValue::Text("coffee".into()),
-            )],
             model_base_url: None,
         }
     }
@@ -180,7 +157,6 @@ impl<'de> Deserialize<'de> for ChatConfig {
             }
         }
         let fields = deserializer.deserialize_map(Fields)?;
-        let old_mode_explicit = fields.contains_key("local_recall_enabled");
         let mut config = Self::default();
         for (name, value) in fields {
             if matches!(name.as_str(), "write_pipeline" | "recall_pipeline") && value == "legacy" {
@@ -194,9 +170,12 @@ impl<'de> Deserialize<'de> for ChatConfig {
                 };
             }
             match name.as_str() {
+                "retrieval_mode" | "local_recall_enabled" | "local_recall_budget" | "is_a" => {
+                    return Err(D::Error::custom(format!(
+                        "config field {name} is retired (已退出); recall_v3 is the only recall pipeline; configuration is not rewritten"
+                    )));
+                }
                 "source_capture_enabled" => read!(source_capture_enabled),
-                "local_recall_enabled" => read!(local_recall_enabled),
-                "retrieval_mode" => read!(retrieval_mode),
                 "enrichment_mode" => read!(enrichment_mode),
                 "write_pipeline" => read!(write_pipeline),
                 "recall_pipeline" => read!(recall_pipeline),
@@ -223,42 +202,19 @@ impl<'de> Deserialize<'de> for ChatConfig {
                 "fact_index_enabled" => read!(fact_index_enabled),
                 "model_budget" => read!(model_budget),
                 "background_operation_limit" => read!(background_operation_limit),
-                "local_recall_budget" => read!(local_recall_budget),
                 "utc_offset_seconds" => read!(utc_offset_seconds),
                 "predicates" => read!(predicates),
                 "domains" => read!(domains),
                 "value_kinds" => read!(value_kinds),
                 "memory_types" => read!(memory_types),
-                "is_a" => read!(is_a),
                 _ => return Err(D::Error::custom(format!("unknown config field {name}"))),
             }
-        }
-        if let Some(mode) = config.retrieval_mode {
-            let old_mode = if config.local_recall_enabled {
-                RetrievalMode::Local
-            } else {
-                RetrievalMode::Legacy
-            };
-            if old_mode_explicit && mode != old_mode {
-                return Err(D::Error::custom(
-                    "retrieval_mode conflicts with explicit local_recall_enabled",
-                ));
-            }
-            config.local_recall_enabled = mode == RetrievalMode::Local;
         }
         Ok(config)
     }
 }
 
 impl ChatConfig {
-    pub fn retrieval_mode(&self) -> RetrievalMode {
-        self.retrieval_mode.unwrap_or(if self.local_recall_enabled {
-            RetrievalMode::Local
-        } else {
-            RetrievalMode::Legacy
-        })
-    }
-
     pub fn validate(&self) -> PersistenceResult<()> {
         if let Some(models) = &self.recall_models {
             configuration::validate_recall_models(models)?;
@@ -266,7 +222,6 @@ impl ChatConfig {
         if let Some(models) = &self.write_models {
             configuration::validate_write_models(models)?;
         }
-        self.local_recall_budget.validate()?;
         if let Some(budget) = &self.model_budget {
             budget.validate()?;
         }
@@ -290,8 +245,6 @@ impl ChatConfig {
         &self,
         owner: UserId,
         entities: Vec<Entity>,
-        task: Option<String>,
-        limit: usize,
     ) -> PersistenceResult<OpenAiAdapterContext> {
         let now = Timestamp(
             SystemTime::now()
@@ -299,16 +252,11 @@ impl ChatConfig {
                 .as_secs()
                 .try_into()?,
         );
-        let mut context = OpenAiAdapterContext::new(owner, entities, now)?
+        let context = OpenAiAdapterContext::new(owner, entities, now)?
             .with_utc_offset_seconds(self.utc_offset_seconds)?
-            .with_retrieval_limit(limit)?
             .with_semantic_catalog(self.predicates.clone(), self.domains.clone())?
             .with_predicate_value_kinds(self.value_kinds.clone())?
             .with_predicate_memory_types(self.memory_types.clone())?;
-        if let Some(task) = task {
-            bounded_text(&task, "task_id", 200)?;
-            context = context.with_task_id(TaskId(task))?;
-        }
         Ok(context)
     }
 }
@@ -595,207 +543,6 @@ fn error_body(error: &(dyn std::error::Error + Send + Sync + 'static)) -> Value 
         .unwrap_or_else(|| json!({"error":error.to_string()}))
 }
 
-fn linked_candidates(
-    store: &SqliteMemoryStore,
-    subject: &Entity,
-    query_predicate: Option<&str>,
-    task_id: Option<&str>,
-) -> PersistenceResult<Vec<Value>> {
-    let state = store.read()?;
-    let search = store.search_sources(&subject.canonical_name, task_id, 30)?;
-    if search["status"] != "completed" {
-        return Ok(Vec::new());
-    }
-    if search["read_revision"] != json!(state.revision)
-        || search["source_revision"] != json!(state.source_revision)
-    {
-        return Ok(Vec::new());
-    }
-    let memories = state.repository.list_by_owner(store.owner())?;
-    let mut seen = BTreeSet::new();
-    let mut result = Vec::new();
-    for candidate in search["candidates"].as_array().into_iter().flatten() {
-        if candidate["enrichment"] != "committed" || candidate["mapping_uncertain"] != false {
-            continue;
-        }
-        let Some(source_id) = candidate["source_id"].as_str() else {
-            continue;
-        };
-        let Some(source) = state.sources.values().find(|source| source.id == source_id) else {
-            continue;
-        };
-        if source.enrichment != "committed"
-            || task_id.is_some_and(|task| crate::lexical::task(source) != Some(task))
-            || candidate["segment_version"] != source.index["source_version"]
-        {
-            continue;
-        }
-        let Some(text) = crate::lexical::body(source) else {
-            continue;
-        };
-        let (Some(segment_start), Some(segment_end)) = (
-            candidate["byte_start"]
-                .as_u64()
-                .and_then(|n| usize::try_from(n).ok()),
-            candidate["byte_end"]
-                .as_u64()
-                .and_then(|n| usize::try_from(n).ok()),
-        ) else {
-            continue;
-        };
-        if segment_start >= segment_end
-            || text.get(segment_start..segment_end) != candidate["text"].as_str()
-        {
-            continue;
-        }
-        for link in candidate["known_memories"].as_array().into_iter().flatten() {
-            if link["association"] != "exact_quote" {
-                continue;
-            }
-            let Some(memory) = memories.iter().find(|memory| {
-                json!(memory.id) == link["memory_id"]
-                    && memory.status == MemoryStatus::Active
-                    && memory.subject_id == subject.id
-                    && query_predicate.is_none_or(|query| query.contains(&memory.predicate.0))
-            }) else {
-                continue;
-            };
-            let Some(range) = link["quote_byte_range"].as_array() else {
-                continue;
-            };
-            let (Some(start), Some(end)) = (
-                range
-                    .first()
-                    .and_then(Value::as_u64)
-                    .and_then(|n| usize::try_from(n).ok()),
-                range
-                    .get(1)
-                    .and_then(Value::as_u64)
-                    .and_then(|n| usize::try_from(n).ok()),
-            ) else {
-                continue;
-            };
-            if start < segment_start || end > segment_end || start >= end {
-                continue;
-            }
-            let Some(quote) = text.get(start..end) else {
-                continue;
-            };
-            if quote.chars().count() > 1000
-                || !memory.evidence.iter().any(|evidence| {
-                    evidence.session_id.0 == source.session_id
-                        && evidence.turn_id.0 == source.turn_id
-                        && evidence.quote == quote
-                })
-                || !seen.insert((source_id.to_owned(), memory.id))
-            {
-                continue;
-            }
-            result.push(json!({"source_id":source_id,"memory_id":memory.id,
-                "subject_id":memory.subject_id,"predicate":memory.predicate,
-                "value":memory.value,"quote":quote}));
-            if result.len() == 8 {
-                return Ok(result);
-            }
-        }
-    }
-    Ok(result)
-}
-
-fn comparison_candidates(
-    store: &SqliteMemoryStore,
-    query: &str,
-    task_id: Option<&str>,
-) -> PersistenceResult<Vec<Value>> {
-    let state = store.read()?;
-    let entities = state.entities.list_by_owner(store.owner());
-    let hints = crate::lexical::entity_hints(query, &entities);
-    let Some(subject) = (hints.len() == 1)
-        .then(|| hints.keys().next())
-        .flatten()
-        .and_then(|id| entities.iter().find(|entity| entity.id == *id))
-    else {
-        return Ok(Vec::new());
-    };
-    linked_candidates(store, subject, Some(query), task_id)
-}
-
-fn single_relation_subject(
-    store: &SqliteMemoryStore,
-    query: &str,
-    context: &[String],
-) -> PersistenceResult<Option<(String, String, Entity)>> {
-    let Some((question, tail)) = query
-        .char_indices()
-        .find(|(_, mark)| matches!(mark, '？' | '?'))
-        .map(|(index, mark)| {
-            (
-                &query[..index + mark.len_utf8()],
-                &query[index + mark.len_utf8()..],
-            )
-        })
-    else {
-        return Ok(None);
-    };
-    let Some((modifier, _answer_role)) =
-        crate::local_recall::single_relation_identity_parts(question)
-    else {
-        return Ok(None);
-    };
-    if modifier.is_empty() {
-        return Ok(None);
-    }
-    let clarification = if context.len() == 1 && tail.trim().is_empty() {
-        context[0].as_str()
-    } else if context.is_empty() && !tail.trim().is_empty() {
-        tail.trim()
-    } else {
-        return Ok(None);
-    };
-    let clarification = clarification
-        .trim()
-        .trim_end_matches(['。', '.', '！', '!']);
-    if [
-        "不是",
-        "并非",
-        "没有",
-        "以外",
-        "之外",
-        "除外",
-        "除了",
-        "不包括",
-        "可能",
-        "也许",
-        "或",
-        "和",
-        "与",
-        "、",
-    ]
-    .iter()
-    .any(|word| clarification.contains(word))
-    {
-        return Ok(None);
-    }
-    let state = store.read()?;
-    let entities = state.entities.list_by_owner(store.owner());
-    if !crate::lexical::entity_hints(question, &entities).is_empty() {
-        return Ok(None);
-    }
-    let hints = crate::lexical::entity_hints(clarification, &entities);
-    let Some(subject) = (hints.len() == 1)
-        .then(|| hints.keys().next())
-        .flatten()
-        .and_then(|id| entities.into_iter().find(|entity| entity.id == *id))
-    else {
-        return Ok(None);
-    };
-    Ok(Some((
-        question.to_owned(),
-        clarification.to_owned(),
-        subject,
-    )))
-}
-
 fn source_response(source: &SourceRecord, replayed: bool) -> PersistenceResult<Value> {
     let mut result = source.status();
     result["replayed"] = json!(replayed);
@@ -860,542 +607,6 @@ fn source_response(source: &SourceRecord, replayed: bool) -> PersistenceResult<V
 }
 
 /// These reports describe this attempt; replay never reissues or recharges an earlier model call.
-fn with_model_calls(
-    response: PersistenceResult<Value>,
-    reports: Vec<Value>,
-) -> PersistenceResult<Value> {
-    let (mut value, failed) = match response {
-        Ok(value) => (value, false),
-        Err(error) => (error_body(error.as_ref()), true),
-    };
-    value["model_calls"] = json!(reports);
-    if failed {
-        Err(Box::new(CaptureError(value)))
-    } else {
-        Ok(value)
-    }
-}
-
-fn assistance_failure(error: &OpenAiAdapterError) -> &'static str {
-    match error {
-        OpenAiAdapterError::MissingBaseUrl | OpenAiAdapterError::MissingApiKey => {
-            "model_credentials_missing"
-        }
-        OpenAiAdapterError::NetworkDisabled => "model_network_disabled",
-        OpenAiAdapterError::Budget(_) => "model_budget_rejected",
-        OpenAiAdapterError::Http(_) | OpenAiAdapterError::Api { .. } => "model_request_failed",
-        OpenAiAdapterError::Refusal(_) => "model_refused",
-        OpenAiAdapterError::Incomplete(_) => "planner_incomplete",
-        OpenAiAdapterError::InvalidResponse(_)
-        | OpenAiAdapterError::InvalidStructuredOutput(_)
-        | OpenAiAdapterError::SourceCoverageIncomplete
-        | OpenAiAdapterError::InvalidContext(_) => "invalid_plan",
-    }
-}
-
-fn withhold_unverified_answer(result: &mut Value) {
-    result["result"] = result["global_context"]["result"].clone();
-    result["source_evidence"] = json!([]);
-    result["historical_or_conflicting"] = json!([]);
-    result["source_decisions"] = json!([]);
-}
-
-fn require_subject_clarification(result: &mut Value) {
-    withhold_unverified_answer(result);
-    result["reference_resolution"]["status"] = json!("needs_clarification");
-    result["reference_resolution"]["needs_clarification"] = json!(true);
-    result["reference_resolution"]["clarification_question"] =
-        json!("你说的是哪个人、事物或哪次事件？请说明具体所指。");
-    result["evidence_status"] = json!("clarification_required");
-}
-
-/// 来源上有更新判定待定、处在未解决冲突里，或限定语无法用现有 Memory 表达（含无从得知）的
-/// 记录标注（可限定到某条记录）：这样的记录不能被核准为唯一的当前结论（contracts 1.3、1.6、
-/// 2.4）。没有这些字段表示未知，沿用原有判断。
-fn pending_update_on(recall: &Value, source_id: &str, memory_id: Option<u64>) -> bool {
-    recall["source_evidence"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter(|source| source["source_id"] == source_id)
-        .flat_map(|source| source["state_annotations"].as_array().into_iter().flatten())
-        .any(|annotation| {
-            (annotation["update"]["status"] == "pending"
-                || annotation["open_relations"]
-                    .as_array()
-                    .is_some_and(|relations| !relations.is_empty())
-                || annotation.get("qualifiers_unmapped").is_some())
-                && memory_id.is_none_or(|id| annotation["memory_id"].as_u64() == Some(id))
-        })
-}
-
-fn answer_policy(recall: &Value) -> (&'static str, String, Vec<String>) {
-    let identity = verified_proposed_identity_value(recall);
-    let missing: Vec<_> = recall["comparison_evidence"]["missing_relations"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(Value::as_str)
-        .collect();
-    let comparison = recall["comparison_evidence"]["required_relations"]
-        .as_array()
-        .is_some_and(|relations| !relations.is_empty());
-    if recall["reference_resolution"]["needs_clarification"] == true {
-        (
-            "clarification_required",
-            recall["reference_resolution"]["clarification_question"]
-                .as_str()
-                .unwrap_or("你说的是哪个人、事物或哪次事件？请说明具体所指。")
-                .to_owned(),
-            Vec::new(),
-        )
-    } else if !missing.is_empty() {
-        (
-            "comparison_evidence_incomplete",
-            format!(
-                "现有记录证据不足，无法判断是否一致；缺少关于{}的证据。",
-                missing.join("、")
-            ),
-            Vec::new(),
-        )
-    } else if comparison {
-        (
-            "comparison_conclusion_not_verified",
-            "已查到相关记录，但尚不能据此核准是否一致的结论。".to_owned(),
-            Vec::new(),
-        )
-    } else if let Some((value, source_id)) = verified_fact_value(recall) {
-        (
-            "source_linked_fact",
-            format!("{value}。"),
-            vec![source_id.to_owned()],
-        )
-    } else if let Some((value, source_id, _, _, _)) = identity {
-        // The recall does not verify arbitrary prose; only this unique source-linked value is approved.
-        (
-            "source_linked_exact_identity",
-            format!("{value}。"),
-            vec![source_id.to_owned()],
-        )
-    } else if (computed_elapsed(recall).is_some() || model_answer_value(recall).is_some())
-        && (recall["model_answer"]["update"]["status"] == "pending"
-            || recall["model_answer"]["memory_id"]
-                .as_u64()
-                .zip(recall["model_answer"]["source_id"].as_str())
-                .is_some_and(|(memory_id, source_id)| {
-                    pending_update_on(recall, source_id, Some(memory_id))
-                }))
-    {
-        // 模型答案或计算答案所引用的记录更新判定待定：不核准。补答候选在构造时从同一快照
-        // 按记录带上待定标记（记录可能不在本地证据包里），证据包里该记录的标注也一并检查；
-        // 同一原文里的其他独立断言不受影响。
-        (
-            "answer_not_verified",
-            "已查到相关记录，但尚不能核准这条回答。".to_owned(),
-            Vec::new(),
-        )
-    } else if let Some((value, event_date, source_id)) = computed_elapsed(recall) {
-        (
-            "source_linked_computed_elapsed",
-            format!("{value}（{event_date}）。"),
-            vec![source_id.to_owned()],
-        )
-    } else if let Some((value, source_id)) = model_answer_value(recall) {
-        (
-            "source_linked_model_answer",
-            format!("{value}。"),
-            vec![source_id.to_owned()],
-        )
-    } else if recall["model_answer"]["status"] == "conflict" {
-        (
-            "conflicting_records",
-            "现有记录之间存在未解决的冲突，无法确定答案。".to_owned(),
-            Vec::new(),
-        )
-    } else if recall["source_evidence"]
-        .as_array()
-        .is_some_and(|sources| !sources.is_empty())
-    {
-        (
-            "answer_not_verified",
-            "已查到相关记录，但尚不能核准这条回答。".to_owned(),
-            Vec::new(),
-        )
-    } else {
-        (
-            "insufficient_evidence",
-            "现有记录证据不足，无法回答这个问题。".to_owned(),
-            Vec::new(),
-        )
-    }
-}
-
-fn verified_fact_value(recall: &Value) -> Option<(&str, &str)> {
-    if recall["evidence_status"] == "uncommitted_newer_revision"
-        || recall["reference_resolution"]["needs_clarification"] == true
-        || !recall["result"]["conflicts"].as_array()?.is_empty()
-    {
-        return None;
-    }
-    let mut verified = None;
-    for source in recall["source_evidence"].as_array()? {
-        let fact = source.get("verified_fact")?;
-        let memory_id = fact["memory_id"].as_u64()?;
-        let value = fact["value"].as_str()?;
-        let subject = fact["subject"].as_str()?;
-        let relation = fact["relation"].as_str()?;
-        let source_id = source["source_id"].as_str()?;
-        let quote = source["text"].as_str()?;
-        let start = source["byte_start"].as_u64()?;
-        let end = source["byte_end"].as_u64()?;
-        if fact["unique_in_snapshot"] != true
-            || pending_update_on(recall, source_id, Some(memory_id))
-            || source["enrichment"] != "committed"
-            || source["mapping_uncertain"] != false
-            || source["evidence_kind"] != "source_linked_quote"
-            || source["semantic_status"] != "literal_relation_checked"
-            || value.is_empty()
-            || value.chars().count() > 200
-            || subject.is_empty()
-            || relation.is_empty()
-            || source_id.is_empty()
-            || !quote.contains(value)
-            || end <= start
-            || end - start != quote.len() as u64
-            || !source["state_annotations"]
-                .as_array()?
-                .iter()
-                .any(|annotation| {
-                    annotation["memory_id"].as_u64() == Some(memory_id)
-                        && matches!(
-                            annotation["decision"].as_str(),
-                            Some("Selected" | "Mandatory")
-                        )
-                        && annotation["association"] == "exact_quote"
-                        && annotation["quote_byte_range"] == json!([start, end])
-                })
-        {
-            return None;
-        }
-        if let Some((previous, _)) = verified {
-            if previous != value {
-                return None;
-            }
-        } else {
-            verified = Some((value, source_id));
-        }
-    }
-    verified
-}
-
-fn answer_sources(recall: &Value, source_ids: &[String]) -> Vec<Value> {
-    source_ids
-        .iter()
-        .filter_map(|id| {
-            let linked = recall["source_evidence"]
-                .as_array()
-                .and_then(|sources| sources.iter().find(|source| source["source_id"] == *id))
-                .map(|source| {
-                    // source_evidence holds only committed quotes of selected memories.
-                    json!({"source_id":source["source_id"],"quote":source["text"],
-                        "grade":"committed"})
-                });
-            linked.or_else(|| {
-                let answer = &recall["model_answer"];
-                (answer["source_id"] == *id).then(|| {
-                    json!({"source_id":answer["source_id"],"quote":answer["quote"],
-                        "grade":answer["evidence_grade"]})
-                })
-            })
-        })
-        .collect()
-}
-
-/// A backend-computed interval from a model-grounded event day in a committed quote.
-fn computed_elapsed(recall: &Value) -> Option<(&str, &str, &str)> {
-    let answer = &recall["model_answer"];
-    let source_id = answer["source_id"].as_str()?;
-    (answer["status"] == "computed_elapsed"
-        && !source_id.is_empty()
-        && answer["quote"]
-            .as_str()?
-            .contains(answer["time_text"].as_str()?))
-    .then_some((
-        answer["value"].as_str()?,
-        answer["event_date"].as_str()?,
-        source_id,
-    ))
-}
-
-fn elapsed_text(count: i64, unit: crate::openai::ElapsedUnit, query: &str) -> String {
-    use crate::openai::ElapsedUnit::*;
-    let (english, chinese) = match unit {
-        Day => ("day", "天"),
-        Week => ("week", "周"),
-        Month => ("month", "个月"),
-        Year => ("year", "年"),
-    };
-    if query
-        .chars()
-        .any(|c| ('\u{4e00}'..='\u{9fff}').contains(&c))
-    {
-        format!("{count}{chinese}前")
-    } else {
-        format!("{count} {english}{} ago", if count == 1 { "" } else { "s" })
-    }
-}
-
-fn model_answer_value(recall: &Value) -> Option<(&str, &str)> {
-    let answer = &recall["model_answer"];
-    let value = answer["value"].as_str()?;
-    let source_id = answer["source_id"].as_str()?;
-    (answer["status"] == "verified_span"
-        && !value.is_empty()
-        && !source_id.is_empty()
-        && answer["quote"].as_str()?.contains(value))
-    .then_some((value, source_id))
-}
-
-/// Common v1 fields for recall contracts and validation verdicts; callers supply validated input.
-fn bind_answer_contract(answer: &mut Value, request: &Value) {
-    answer["version"] = json!(1);
-    answer["query"] = request["query"].clone();
-    answer["context"] = request.get("context").cloned().unwrap_or_else(|| json!([]));
-    answer["task_id"] = request["task_id"].clone();
-    let fields = answer.as_object_mut().expect("answer result is an object");
-    fields.entry("sources").or_insert_with(|| json!([]));
-    fields.entry("read_revision").or_insert(Value::Null);
-    fields.entry("source_revision").or_insert(Value::Null);
-}
-
-fn final_answer_gate(input: &ValidateAnswer, recall: &Value) -> Value {
-    let identity = verified_proposed_identity_value(recall);
-    let (status, safe_answer, safe_source_ids) = answer_policy(recall);
-    let natural_answer = identity.and_then(|(value, _, subject, relation, evidence_relation)| {
-        let (modifier, _) = crate::local_recall::single_relation_identity_parts(&input.query)?;
-        let relation = relation.strip_suffix('的').unwrap_or(relation);
-        let temporary_source = ["暂不引入", "暂时不引入", "先不引入", "暂缓引入", "推迟引入"]
-            .contains(&evidence_relation);
-        let core = modifier.strip_prefix('先').unwrap_or(modifier);
-        let core = core.strip_suffix("引入").unwrap_or(core);
-        let safe_modifier = modifier == evidence_relation
-            || ["搁置", "暂缓", "推迟", "延后"].contains(&core)
-                && (!modifier.starts_with('先') || temporary_source);
-        (if modifier == relation {
-            true
-        } else {
-            modifier.strip_prefix('先') == Some(relation) && temporary_source
-        } && safe_modifier
-            && modifier.chars().count() <= 40
-            && !modifier.contains([
-                '\n', '\r', '。', '？', '?', '，', ',', '；', ';', '！', '!', '：', ':',
-            ])
-            && input.context.len() == 1
-            && input.context[0]
-                .trim()
-                .trim_end_matches(['。', '！', '.', '!'])
-                == subject)
-            .then(|| format!("{subject}{modifier}的是 {value}。"))
-    });
-    let draft = input.draft_answer.trim();
-    let approved = input.source_ids == safe_source_ids
-        && (draft == safe_answer
-            || status == "source_linked_exact_identity"
-                && natural_answer.as_deref() == Some(draft));
-    json!({
-        "approved": approved,
-        "status": status,
-        "safe_answer": safe_answer,
-        "safe_source_ids": safe_source_ids,
-        "sources": answer_sources(recall, &safe_source_ids),
-        "approved_source_ids": if approved {json!(safe_source_ids)} else {json!([])},
-        "read_revision":recall["read_revision"],
-        "source_revision":recall["source_revision"],
-        "retrieval_mode":recall["retrieval_mode"],
-        "model_calls":recall["model_calls"],
-    })
-}
-
-fn verified_proposed_identity_value(recall: &Value) -> Option<(&str, &str, &str, &str, &str)> {
-    if recall["assistance"]["resolution"] != "single_relation_source_link_verified" {
-        return None;
-    }
-    let sources = recall["source_evidence"].as_array()?;
-    if sources.len() != 1 {
-        return None;
-    }
-    let source = &sources[0];
-    let identity = &source["verified_identity"];
-    let memory_id = identity["memory_id"].as_u64()?;
-    let value = identity["value"].as_str()?;
-    let subject = identity["subject"].as_str()?;
-    let query_relation = identity["query_relation"].as_str()?;
-    let evidence_relation = identity["evidence_relation"].as_str()?;
-    let source_id = source["source_id"].as_str()?;
-    let quote = source["text"].as_str()?;
-    let start = source["byte_start"].as_u64()?;
-    let end = source["byte_end"].as_u64()?;
-    if pending_update_on(recall, source_id, Some(memory_id))
-        || source["enrichment"] != "committed"
-        || source["mapping_uncertain"] != false
-        || source["evidence_kind"] != "source_linked_quote"
-        || source["semantic_status"] != "model_proposed_relation_checked_against_committed_fact"
-        || source_id.is_empty()
-        || value.is_empty()
-        || value.chars().count() > 100
-        || subject.is_empty()
-        || subject.chars().count() > 100
-        || query_relation.is_empty()
-        || query_relation.chars().count() > 40
-        || evidence_relation.is_empty()
-        || evidence_relation.chars().count() > 40
-        || value.contains([
-            '\n', '\r', '。', '？', '?', '，', ',', '；', ';', '！', '!', '：', ':',
-        ])
-        || subject.contains([
-            '\n', '\r', '。', '？', '?', '，', ',', '；', ';', '！', '!', '：', ':',
-        ])
-        || end <= start
-        || end - start != quote.len() as u64
-        || !quote.contains(value)
-        || !quote.contains(evidence_relation)
-        || !source["state_annotations"]
-            .as_array()?
-            .iter()
-            .any(|annotation| {
-                annotation["memory_id"].as_u64() == Some(memory_id)
-                    && annotation["decision"] == "Selected"
-                    && annotation["association"] == "exact_quote"
-                    && annotation["quote_byte_range"] == json!([start, end])
-            })
-    {
-        return None;
-    }
-    Some((value, source_id, subject, query_relation, evidence_relation))
-}
-
-fn validated_clarification<'a>(
-    joined_query: &str,
-    context: &[String],
-    proposal: &'a crate::openai::ClarificationProposal,
-    entities: &[Entity],
-) -> Option<(&'a str, &'a str)> {
-    if proposal.ambiguous {
-        return None;
-    }
-    let question = proposal.question_text.as_str();
-    let clarification = proposal.clarification_text.as_str();
-    let subject = proposal.subject_text.as_str();
-    if question.trim() != question
-        || clarification.trim() != clarification
-        || subject.trim() != subject
-        || !matches!(question.chars().last(), Some('？' | '?'))
-        || question
-            .chars()
-            .filter(|mark| matches!(mark, '？' | '?'))
-            .count()
-            != 1
-        || clarification.contains(['？', '?'])
-        || !question.contains(&proposal.relation_text)
-        || !joined_query
-            .trim()
-            .strip_prefix(question)?
-            .trim_start()
-            .strip_prefix(clarification)?
-            .chars()
-            .all(|ch| ch.is_whitespace() || ['。', '.', '！', '!'].contains(&ch))
-    {
-        return None;
-    }
-    let clause = clarification
-        .trim_end_matches(['。', '.', '！', '!'])
-        .trim();
-    if context.iter().any(|item| {
-        let text = item.trim().trim_end_matches(['。', '.', '！', '!']).trim();
-        text != subject && text != clause
-    }) {
-        return None;
-    }
-    let prefix = clause.strip_suffix(subject)?.trim();
-    if ![
-        "",
-        "我说的是",
-        "我指的是",
-        "我问的是",
-        "我的意思是",
-        "这里说的是",
-        "这里指的是",
-        "说的是",
-        "指的是",
-        "问的是",
-        "关于",
-        "就是",
-    ]
-    .contains(&prefix)
-    {
-        return None;
-    }
-    let normalized = format!("{question}{subject}");
-    crate::local_recall::appended_clarification(&normalized, entities)?;
-    Some((question, subject))
-}
-
-fn validated_single_relation<'a>(
-    query: &str,
-    context: &[String],
-    proposal: &'a crate::openai::SingleRelationProposal,
-    candidates: &[Value],
-    entities: &[Entity],
-) -> Option<(
-    &'a str,
-    &'a str,
-    crate::local_recall::SingleRelationEvidenceHint,
-)> {
-    if proposal.ambiguous {
-        return None;
-    }
-    let clarification = crate::openai::ClarificationProposal {
-        question_text: proposal.question_text.clone(),
-        clarification_text: proposal.clarification_text.clone(),
-        subject_text: proposal.subject_text.clone(),
-        relation_text: proposal.relation_text.clone(),
-        ambiguous: false,
-    };
-    let joined = if context.len() == 1 {
-        format!("{query}{}", context[0])
-    } else {
-        query.to_owned()
-    };
-    let (_question, subject) = validated_clarification(&joined, context, &clarification, entities)?;
-    let candidate = candidates.get(proposal.candidate_index)?;
-    let subject_id = entities
-        .iter()
-        .find(|entity| {
-            std::iter::once(entity.canonical_name.as_str())
-                .chain(entity.aliases.iter().map(String::as_str))
-                .any(|name| name == subject)
-        })?
-        .id
-        .clone();
-    if candidate["subject_id"] != json!(subject_id)
-        || !candidate["quote"]
-            .as_str()?
-            .contains(&proposal.evidence_relation)
-    {
-        return None;
-    }
-    Some((
-        proposal.question_text.as_str(),
-        proposal.clarification_text.as_str(),
-        crate::local_recall::SingleRelationEvidenceHint {
-            query_relation: proposal.relation_text.clone(),
-            source_id: candidate["source_id"].as_str()?.to_owned(),
-            memory_id: serde_json::from_value(candidate["memory_id"].clone()).ok()?,
-            evidence_relation: proposal.evidence_relation.clone(),
-        },
-    ))
-}
-
 pub struct ChatMemoryService {
     store: SqliteMemoryStore,
     config: ChatConfig,
@@ -1440,17 +651,6 @@ impl ChatOperation {
     }
 }
 
-fn bootstrap_runtime(owner: UserId, now: Timestamp, limit: usize) -> RuntimeContext {
-    let mut runtime = RuntimeContext::current(owner, now);
-    runtime.entities = vec![EntityId::from("self")];
-    runtime.predicates = vec![
-        Predicate::from("response_language"),
-        Predicate::from("response_style"),
-    ];
-    runtime.limit = limit;
-    runtime
-}
-
 // Local lifecycle handling shared by management reads and the disposable bootstrap snapshot.
 // Keep the existing policy; this does not infer new facts or run the legacy write engine.
 fn apply_local_retention(
@@ -1470,7 +670,7 @@ fn apply_local_retention(
 }
 
 impl ChatMemoryService {
-    /// MCP keeps legacy tools serialized; recall.v3 uses an operation connection outside the lock.
+    /// MCP serializes control tools; recall.v3 uses an operation connection outside the lock.
     pub fn call_shared(
         shared: &std::sync::Mutex<Self>,
         name: &str,
@@ -1513,7 +713,7 @@ impl ChatMemoryService {
         config.validate()?;
         store.set_fact_index_enabled(config.fact_index_enabled);
         let owner = store.owner().clone();
-        config.context(owner.clone(), Vec::new(), None, 20)?;
+        config.context(owner.clone(), Vec::new())?;
         store.transaction(|state| {
             if state.entities.get(&EntityId::from("self")).is_none() {
                 state.entities.upsert(Entity {
@@ -1609,20 +809,14 @@ impl ChatMemoryService {
             );
         }
         let bootstrap = name == "memory_recall" && arguments["bootstrap"] == true;
-        let mut operation = self.call_in_operation(name, arguments, cancelled, operation_id, false);
+        let mut operation = self.call_in_operation(name, arguments, cancelled, operation_id);
         let context_started = std::time::Instant::now();
         let local_context = operation.as_mut().ok().and_then(|value| {
-            if name == "memory_recall"
-                && matches!(value["retrieval_mode"].as_str(), Some("local" | "assisted"))
-            {
-                value.get("global_context").cloned()
-            } else {
-                value
-                    .get_mut("recall")?
-                    .get_mut("result")?
-                    .as_object_mut()?
-                    .remove("global_context")
-            }
+            value
+                .get_mut("recall")?
+                .get_mut("result")?
+                .as_object_mut()?
+                .remove("global_context")
         });
         let context = if let Some(context) = local_context {
             context
@@ -1652,7 +846,7 @@ impl ChatMemoryService {
                 value["retrieval_mode"] = if bootstrap {
                     json!("bootstrap")
                 } else {
-                    json!(self.config.retrieval_mode())
+                    json!("recall_v3")
                 };
             }
             if matches!(name, "memory_remember" | "memory_recall")
@@ -1691,7 +885,7 @@ impl ChatMemoryService {
         result
     }
 
-    fn global_context(&self) -> PersistenceResult<RetrievalResult> {
+    fn global_context(&self) -> PersistenceResult<GlobalContext> {
         // ponytail: rebuild from a local snapshot on each call; cache by a DB revision only if profiles become large.
         // Do not cache per MCP process: one process can serve multiple chats, and other clients can edit memory.
         let state = self.store.read()?;
@@ -1701,152 +895,35 @@ impl ChatMemoryService {
     fn global_context_from_state(
         &self,
         state: &PersistedMemoryState,
-    ) -> PersistenceResult<RetrievalResult> {
-        let owner = self.store.owner().clone();
-        let now = self
-            .config
-            .context(owner.clone(), Vec::new(), None, 20)?
-            .now;
-        let mut repository = InMemoryMemoryRepository::default();
-        for memory in state.repository.list_by_owner(&owner)? {
-            if memory.subject_id == EntityId::from("self")
-                && memory.scope.domain.is_none()
-                && memory.scope.conditions.is_empty()
-            {
-                repository.insert(memory)?;
-            }
-        }
-        // 全局要求无条件适用：限定语无法用现有 Memory 表达的记录不能进入（它们在相关召回里带
-        // 限定语原文作为上下文出现）。
-        let unmapped = crate::commit::W5View::of(&state).unmapped_qualifiers();
-        apply_local_retention(&mut repository, &owner, now)?;
-        let mut result = DefaultMemoryRetriever::new(&mut repository, &self.config.registry())
-            .with_unmapped_qualifiers(&unmapped, crate::retrieval::UnmappedQualifiers::Exclude)
-            .retrieve(&bootstrap_runtime(owner, now, usize::MAX))?;
-        result.trace.clear();
-        // Retention and retrieval affect only the disposable snapshot. Report persisted counters, not simulated increments.
-        for memory in result
-            .mandatory
-            .iter_mut()
-            .chain(&mut result.constraints)
-            .chain(&mut result.preferences)
-            .chain(&mut result.facts)
-            .chain(&mut result.episodes)
-        {
-            if let Some(original) = state.repository.get(memory.id)? {
-                memory.retrieval_count = original.retrieval_count;
-                memory.last_retrieved_at = original.last_retrieved_at;
-            }
-        }
-        Ok(result)
+    ) -> PersistenceResult<GlobalContext> {
+        let owner = self.store.owner();
+        let now = Timestamp(unix_seconds()?);
+        let mut repository = state.repository.clone();
+        apply_local_retention(&mut repository, owner, now)?;
+        Ok(crate::retrieval::global_requirements(
+            repository.list_by_owner(owner)?,
+            &self.config.registry(),
+            &crate::commit::W5View::of(state).unmapped_qualifiers(),
+            now,
+        ))
     }
 
-    /// A completed long task can wait in the MCP continuation cache while another connection deletes data.
+    /// Recheck completed v3 prepare responses under the publication barrier.
     pub fn validate_prepare_response(
         &self,
-        arguments: &Value,
+        _arguments: &Value,
         response: CallToolResult,
     ) -> CallToolResult {
         match self
             .store
             .read_for_publication(|state| Ok(self.validate_v3_prepare_response(&response, state)))
         {
-            Ok(Some(checked)) => return checked,
-            Err(_) => {
-                return CallToolResult::structured_error(
-                    json!({"error":"could not validate the completed prepare against current storage", "recall":{"status":"not_requested","reason":"current_state_unavailable"},"global_context":{"status":"unavailable"}}),
-                );
-            }
-            Ok(None) => (),
+            Ok(Some(checked)) => checked,
+            Ok(None) => response,
+            Err(_) => CallToolResult::structured_error(
+                json!({"error":"could not validate the completed prepare against current storage", "recall":{"status":"not_requested","reason":"current_state_unavailable"},"global_context":{"status":"unavailable"}}),
+            ),
         }
-        if response.is_error == Some(true) {
-            return response;
-        }
-        let checked = (|| -> PersistenceResult<CallToolResult> {
-            let state = self.store.read()?;
-            let input: Prepare = serde_json::from_value(arguments.clone())?;
-            let key = receipt_key(
-                "memory_remember",
-                &input.user_turn.session_id,
-                &input.user_turn.turn_id,
-            )?;
-            let source = state.sources.get(&key);
-            let deleted = source.is_some_and(|source| source.request.is_none());
-            fn changed(value: &Value, state: &PersistedMemoryState) -> PersistenceResult<bool> {
-                match value {
-                    Value::Object(fields)
-                        if fields.contains_key("reinforcement_count")
-                            && fields.contains_key("evidence") =>
-                    {
-                        let Some(id) = value["id"].as_u64() else {
-                            return Ok(true);
-                        };
-                        Ok(state
-                            .repository
-                            .get(MemoryId(id))?
-                            .as_ref()
-                            .map(serde_json::to_value)
-                            .transpose()?
-                            .as_ref()
-                            != Some(value))
-                    }
-                    Value::Object(fields) => {
-                        for value in fields.values() {
-                            if changed(value, state)? {
-                                return Ok(true);
-                            }
-                        }
-                        Ok(false)
-                    }
-                    Value::Array(values) => {
-                        for value in values {
-                            if changed(value, state)? {
-                                return Ok(true);
-                            }
-                        }
-                        Ok(false)
-                    }
-                    _ => Ok(false),
-                }
-            }
-            let Some(body) = response.structured_content.as_ref() else {
-                return Ok(response.clone());
-            };
-            let recalled = &body["recall"]["result"];
-            let revision_changed = [
-                ("read_revision", state.revision),
-                ("source_revision", state.source_revision),
-            ]
-            .into_iter()
-            .any(|(field, current)| {
-                recalled[field]
-                    .as_u64()
-                    .is_some_and(|revision| revision != current)
-            });
-            // ponytail: conservatively invalidate a changed cached record, including counters; no paid refresh.
-            if !deleted && !revision_changed && !changed(body, &state)? {
-                return Ok(response.clone());
-            }
-            let mut remembered = body.get("remember").cloned().unwrap_or(Value::Null);
-            if deleted {
-                remembered = source.unwrap().status();
-                remembered["status"] = json!("failed");
-                remembered["error"] = json!("source_deleted");
-                remembered["enrichment_mode"] = body["enrichment_mode"].clone();
-            }
-            let context = self.global_context()?;
-            Ok(CallToolResult::structured(
-                json!({"retrieval_mode":body["retrieval_mode"],"enrichment_mode":body["enrichment_mode"],"remember":remembered,
-                "recall":{"status":"not_requested","reason":"state_changed_after_prepare"},
-                "global_context":{"status":"available","source":"local_snapshot","result":context}}),
-            ))
-        })();
-        checked.unwrap_or_else(|_| {
-            CallToolResult::structured_error(json!({
-            "error":"could not validate the completed prepare against current storage",
-            "recall":{"status":"not_requested","reason":"current_state_unavailable"},
-            "global_context":{"status":"unavailable"}}))
-        })
     }
 
     fn source_receipt(&self, key: &str, replayed: bool) -> PersistenceResult<Value> {
@@ -1886,13 +963,9 @@ impl ChatMemoryService {
         }
         let state = self.store.read()?;
         let source = &state.sources[key];
-        let request: Remember =
-            serde_json::from_value(source.request.clone().ok_or("source_deleted")?)?;
         let context = self.config.context(
             self.store.owner().clone(),
             state.entities.list_by_owner(self.store.owner()),
-            request.task_id,
-            20,
         )?;
         let client = match self.model_client(
             source
@@ -2071,12 +1144,9 @@ impl ChatMemoryService {
             )));
         }
         let read_revision = state.revision;
-        let mut context = self.config.context(
-            owner.clone(),
-            state.entities.list_by_owner(&owner),
-            input.task_id.clone(),
-            20,
-        )?;
+        let mut context = self
+            .config
+            .context(owner.clone(), state.entities.list_by_owner(&owner))?;
         if let Some(at) = input.observed_at {
             context.now = Timestamp(at);
         }
@@ -2172,250 +1242,7 @@ impl ChatMemoryService {
         arguments: Value,
         cancelled: impl Fn() -> bool,
     ) -> PersistenceResult<Value> {
-        self.call_in_operation(
-            name,
-            arguments,
-            cancelled,
-            &crate::diagnostics::new_id(),
-            false,
-        )
-    }
-
-    /// M1 entailment step. Only when literal local checks certify nothing for one bound subject,
-    /// one budgeted call judges that subject's task-scoped USER quotes. The backend accepts an
-    /// exact span of an active, source-linked, committed quote, or a refusal that cites nothing.
-    fn model_answer(
-        &self,
-        (query, context, task, at): (&str, &[String], Option<&str>, Timestamp),
-        result: &mut Value,
-        operation_id: &str,
-        model_calls: &mut Vec<Value>,
-    ) -> PersistenceResult<()> {
-        let (status, _, _) = answer_policy(result);
-        if !matches!(status, "insufficient_evidence" | "answer_not_verified")
-            || result["reference_resolution"]["needs_clarification"] == true
-            || result["evidence_status"] == "clarification_required"
-            || self.config.model_budget.is_none()
-        {
-            return Ok(());
-        }
-        let bound: BTreeSet<&str> = ["query_entity_ids", "context_entity_ids"]
-            .iter()
-            .flat_map(|key| result["reference_resolution"][key].as_array())
-            .flatten()
-            .filter_map(Value::as_str)
-            .collect();
-        // Single-character self aliases (我/I) never bind lexically; an otherwise unbound
-        // first-person question is about the user.
-        let first_person = crate::local_recall::first_person(query);
-        let subject_id = match bound.into_iter().collect::<Vec<_>>()[..] {
-            [subject_id] => subject_id,
-            [] if first_person => "self",
-            _ => return Ok(()),
-        };
-        let state = self.store.read()?;
-        let Some(subject) = state
-            .entities
-            .list_by_owner(self.store.owner())
-            .into_iter()
-            .find(|entity| entity.id.0 == subject_id)
-        else {
-            return Ok(());
-        };
-        let names: Vec<&str> = std::iter::once(subject.canonical_name.as_str())
-            .chain(subject.aliases.iter().map(String::as_str))
-            .filter(|name| !name.is_empty())
-            .collect();
-        let local_date = |at: i64| {
-            let offset =
-                time::UtcOffset::from_whole_seconds(self.config.utc_offset_seconds).ok()?;
-            Some(
-                time::OffsetDateTime::from_unix_timestamp(at)
-                    .ok()?
-                    .to_offset(offset)
-                    .date(),
-            )
-        };
-        let said_on = |at: i64| local_date(at).map(|date| date.to_string());
-        let in_task = |source: &&crate::SourceRecord| {
-            task.is_none_or(|id| crate::lexical::task(source) == Some(id))
-        };
-        let newest = |mut list: Vec<(u64, Value)>, limit: usize| {
-            list.sort_by_key(|(sequence, _)| *sequence);
-            let skip = list.len().saturating_sub(limit);
-            list.into_iter().skip(skip).collect::<Vec<_>>()
-        };
-        // The update state of the record a committed candidate quotes (contracts 1.6): a pending
-        // record cannot be approved as the unique current value. Read from the same snapshot the
-        // candidates come from, not from the local evidence package, which may not include it,
-        // and per record: an independent assertion of the same source keeps its own state. Not
-        // sent to the model.
-        //
-        // A raw candidate (its source task not yet finished, e.g. a W5 group committed while
-        // the task is still running) carries no record ID, yet records of that source may
-        // already be committed with a pending state. The answer span is then bound to every
-        // active record of that source whose quote contains it; any pending one blocks.
-        // 待定或处在未解决冲突里的记录都不能作为唯一当前值。
-        let w5 = crate::commit::W5View::of(&state);
-        let is_pending = |id: MemoryId| w5.unsettled(id);
-        let active_records = state.repository.list_by_owner(self.store.owner())?;
-        // 答案绑定到实际支持它的断言：同一原文里证据片段含有答案片段的全部有效记录（候选只按
-        // 来源去重、带首条记录的 ID，模型可能回答同一原句里的另一条断言）。其中任一条待定、处在
-        // 未解决冲突里或限定语无法表达，就不核准。
-        let mark_pending = |answer: &mut Value, candidate: &Value, span: &str| {
-            let listed = serde_json::from_value::<MemoryId>(candidate["memory_id"].clone())
-                .ok()
-                .is_some_and(is_pending);
-            let bound = state
-                .sources
-                .values()
-                .find(|source| candidate["source_id"] == source.id.as_str())
-                .is_some_and(|source| {
-                    active_records.iter().any(|memory| {
-                        memory.status == MemoryStatus::Active
-                            && is_pending(memory.id)
-                            && memory.evidence.iter().any(|evidence| {
-                                evidence.session_id.0 == source.session_id
-                                    && evidence.turn_id.0 == source.turn_id
-                                    && !span.is_empty()
-                                    && evidence.quote.contains(span)
-                            })
-                    })
-                });
-            let pending = listed || bound;
-            if pending {
-                answer["update"] = json!({"status":"pending"});
-            }
-        };
-        // The USER quote behind each of the subject's active memories (evidence grade committed).
-        let mut seen = BTreeSet::new();
-        let committed: Vec<(u64, Value)> = state
-            .repository
-            .list_by_owner(self.store.owner())?
-            .into_iter()
-            .filter(|memory| {
-                memory.status == MemoryStatus::Active && memory.subject_id == subject.id
-            })
-            .flat_map(|memory| {
-                let id = memory.id;
-                memory
-                    .evidence
-                    .into_iter()
-                    .map(move |evidence| (id, evidence))
-            })
-            .filter_map(|(memory_id, evidence)| {
-                let source = state.sources.values().filter(in_task).find(|source| {
-                    source.enrichment == "committed"
-                        && source.session_id == evidence.session_id.0
-                        && source.turn_id == evidence.turn_id.0
-                })?;
-                seen.insert(source.id.clone()).then(|| {
-                    let quote: String = evidence.quote.chars().take(1000).collect();
-                    (
-                        source.received_sequence,
-                        json!({"source_id":source.id,
-                        "memory_id":memory_id,"quote":quote,"committed":true,
-                        "said_on":said_on(source.observed_at)}),
-                    )
-                })
-            })
-            .collect();
-        // Saved USER statements not reconciled into memory are citable too (grade uncommitted):
-        // the raw words are the evidence, structured memory only ranks them.
-        let uncommitted: Vec<(u64, Value)> = state
-            .sources
-            .values()
-            .filter(in_task)
-            .filter_map(|source| {
-                let body = crate::lexical::body(source)?;
-                (source.enrichment != "committed"
-                    && (subject.id.0 == "self" || names.iter().any(|name| body.contains(name))))
-                .then(|| {
-                    let quote: String = body.chars().take(1000).collect();
-                    (
-                        source.received_sequence,
-                        json!({"source_id":source.id,"quote":quote,
-                        "committed":false,"said_on":said_on(source.observed_at)}),
-                    )
-                })
-            })
-            .collect();
-        let mut candidates = committed;
-        candidates.extend(uncommitted);
-        let candidates: Vec<Value> = newest(candidates, 16)
-            .into_iter()
-            .map(|(_, candidate)| candidate)
-            .collect();
-        if candidates.is_empty() {
-            return Ok(());
-        }
-        let grade = |candidate: &Value| {
-            if candidate["committed"] == true {
-                "committed"
-            } else {
-                "uncommitted"
-            }
-        };
-        let client = match self.model_client(operation_id) {
-            Ok(client) => client,
-            Err(_) => {
-                result["model_answer"] = json!({"status":"model_client_unavailable"});
-                return Ok(());
-            }
-        };
-        let proposed = client.answer_proposal(query, context, &candidates);
-        model_calls.extend(client.model_budget_report());
-        result["model_answer"] = match proposed {
-            Ok(proposal) => match proposal.verdict {
-                crate::openai::AnswerVerdict::Answer => {
-                    let candidate = &candidates[proposal.candidate_index.unwrap_or_default()];
-                    let mut answer = json!({"status":"verified_span","semantic_judgment":"model_proposed",
-                        "value":proposal.answer_text,"source_id":candidate["source_id"],
-                        "memory_id":candidate["memory_id"],"quote":candidate["quote"],
-                        "evidence_grade":grade(candidate)});
-                    mark_pending(
-                        &mut answer,
-                        candidate,
-                        proposal.answer_text.as_deref().unwrap_or(""),
-                    );
-                    answer
-                }
-                crate::openai::AnswerVerdict::Elapsed => {
-                    let candidate = &candidates[proposal.candidate_index.unwrap_or_default()];
-                    let unit = proposal.unit.expect("decoded elapsed answers carry a unit");
-                    let count = proposal
-                        .event_date
-                        .as_deref()
-                        .and_then(crate::temporal::parse_iso_date)
-                        .zip(local_date(at.0))
-                        .and_then(|(event, asked)| {
-                            crate::openai::elapsed_count(event, asked, unit)
-                        });
-                    match count {
-                        Some(count) => {
-                            let mut answer = json!({"status":"computed_elapsed",
-                            "semantic_judgment":"model_proposed",
-                            "value":elapsed_text(count, unit, query),
-                            "event_date":proposal.event_date,"time_text":proposal.answer_text,
-                            "source_id":candidate["source_id"],
-                            "memory_id":candidate["memory_id"],"quote":candidate["quote"],
-                            "evidence_grade":grade(candidate)});
-                            mark_pending(
-                                &mut answer,
-                                candidate,
-                                proposal.answer_text.as_deref().unwrap_or(""),
-                            );
-                            answer
-                        }
-                        None => json!({"status":"elapsed_after_question"}),
-                    }
-                }
-                crate::openai::AnswerVerdict::Conflict => json!({"status":"conflict"}),
-                crate::openai::AnswerVerdict::Insufficient => json!({"status":"insufficient"}),
-            },
-            Err(error) => json!({"status":assistance_failure(&error)}),
-        };
-        Ok(())
+        self.call_in_operation(name, arguments, cancelled, &crate::diagnostics::new_id())
     }
 
     fn model_client(&self, operation_id: &str) -> PersistenceResult<OpenAiClient> {
@@ -2458,7 +1285,6 @@ impl ChatMemoryService {
         arguments: Value,
         cancelled: impl Fn() -> bool,
         operation_id: &str,
-        from_prepare: bool,
     ) -> PersistenceResult<Value> {
         if serde_json::to_vec(&arguments)?.len() > 65_536 {
             return Err("tool arguments exceed 64 KiB".into());
@@ -2467,70 +1293,7 @@ impl ChatMemoryService {
             check_cancelled(&cancelled)?;
             return self.call_recall_v3(name, arguments, cancelled, operation_id);
         }
-        if name == "memory_prepare" && arguments["offline"] == true {
-            return Err("offline is supported only by recall.v3; select recall.v3".into());
-        }
-        if name == "memory_recall" {
-            // Invalid arguments are tool errors, never a seemingly usable answer contract.
-            let input: Recall = serde_json::from_value(arguments.clone())?;
-            validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
-            check_limit(input.limit)?;
-            if input.offline && !input.bootstrap {
-                return Err("offline is supported only by recall.v3; select recall.v3".into());
-            }
-            if input.bootstrap && input.task_id.is_some() {
-                return Err("bootstrap loads global requirements; omit task_id".into());
-            }
-        }
-        let request =
-            matches!(name, "memory_recall" | "memory_validate_answer").then(|| arguments.clone());
-        let result =
-            self.execute_in_operation(name, arguments, cancelled, operation_id, from_prepare);
-        let Some(request) = request else {
-            return result;
-        };
-        if name == "memory_validate_answer" {
-            return result.map(|mut answer| {
-                bind_answer_contract(&mut answer, &request);
-                answer
-            });
-        }
-        let (mut recall, failed) = match result {
-            Ok(value) => (value, false),
-            Err(error) => (error_body(error.as_ref()), true),
-        };
-        let query = request["query"].as_str().unwrap_or_default();
-        let (status, safe_answer, source_ids) = if failed {
-            (
-                "recall_failed",
-                Some("暂时无法核对已记录信息，因此不能根据记忆回答这个问题。".to_owned()),
-                Vec::new(),
-            )
-        } else if request["bootstrap"] == true || !crate::local_recall::asks_for_answer(query) {
-            ("not_applicable", None, Vec::new())
-        } else if self.config.retrieval_mode() == RetrievalMode::Legacy {
-            (
-                "unsupported_retrieval_mode",
-                Some("当前检索模式无法核准这条回答。".to_owned()),
-                Vec::new(),
-            )
-        } else {
-            let (status, answer, sources) = answer_policy(&recall);
-            (status, Some(answer), sources)
-        };
-        // This constrains the tool result; the host's unsent final prose cannot be validated here.
-        let mut contract = json!({
-            "status":status,"safe_answer":safe_answer,"safe_source_ids":source_ids,
-            "sources":answer_sources(&recall, &source_ids),"read_revision":recall["read_revision"],
-            "source_revision":recall["source_revision"],
-        });
-        bind_answer_contract(&mut contract, &request);
-        recall["answer_contract"] = contract;
-        if failed {
-            Err(Box::new(CaptureError(recall)))
-        } else {
-            Ok(recall)
-        }
+        self.execute_in_operation(name, arguments, cancelled)
     }
 
     fn execute_in_operation(
@@ -2538,8 +1301,6 @@ impl ChatMemoryService {
         name: &str,
         arguments: Value,
         cancelled: impl Fn() -> bool,
-        operation_id: &str,
-        from_prepare: bool,
     ) -> PersistenceResult<Value> {
         check_cancelled(&cancelled)?;
         let owner = self.store.owner().clone();
@@ -2548,629 +1309,6 @@ impl ChatMemoryService {
                 serde_json::from_value(arguments)?,
                 &cancelled,
             ),
-            "memory_prepare" => {
-                let input: Prepare = serde_json::from_value(arguments)?;
-                check_limit(input.limit)?;
-                input.user_turn.validate()?;
-                let query = input.user_turn.text.clone();
-                let task_id = input.user_turn.task_id.clone();
-                let context = input.user_turn.history.clone();
-                let capture_source = input.user_turn.capture_source;
-                let at = input.user_turn.observed_at;
-                // Keep the two outcomes explicit: a recall failure cannot undo a completed save.
-                let remembered = self.remember(input.user_turn, &cancelled);
-                let enrichment_mode = match &remembered {
-                    Ok(value) => value.get("enrichment_mode").cloned(),
-                    Err(error) => error_body(error.as_ref()).get("enrichment_mode").cloned(),
-                }
-                .unwrap_or_else(|| json!(self.config.enrichment_mode));
-                let source_rejected = remembered.as_ref().err().is_some_and(|error| {
-                    let body = error_body(error.as_ref());
-                    let status = body["source"]["status"].as_str();
-                    (capture_source && status != Some("stored"))
-                        || matches!(status, Some("failed" | "rejected" | "deleted"))
-                });
-                let recalled = if source_rejected {
-                    None
-                } else {
-                    Some(self.call_in_operation(
-                        "memory_recall",
-                        json!({
-                            "query": query, "task_id": task_id, "limit": input.limit, "context":context,
-                            "at": at,
-                        }),
-                        cancelled,
-                        operation_id,
-                        true,
-                    ))
-                };
-                let part = |result: PersistenceResult<Value>| match result {
-                    Ok(value) => json!({"status":"completed", "result":value}),
-                    Err(error) => {
-                        let mut value = error_body(error.as_ref());
-                        value["status"] = json!("failed");
-                        value
-                    }
-                };
-                Ok(
-                    json!({"retrieval_mode":self.config.retrieval_mode(),"enrichment_mode":enrichment_mode,
-                        "remember":part(remembered), "recall":recalled.map(part).unwrap_or_else(|| json!({"status":"not_requested","reason":"source_not_accepted"}))}),
-                )
-            }
-            "memory_validate_answer" => {
-                let input: VersionedValidateAnswer = serde_json::from_value(arguments)?;
-                let input = input.answer;
-                validate_query_input(&input.query, &input.context, input.task_id.as_deref())?;
-                bounded_text(&input.draft_answer, "draft_answer", 4_000)?;
-                if input.source_ids.len() > 20 {
-                    return Err("too many source IDs".into());
-                }
-                for id in &input.source_ids {
-                    bounded_text(id, "source ID", 200)?;
-                }
-                if !crate::local_recall::asks_for_answer(&input.query) {
-                    return Ok(json!({"approved":false,"status":"question_required",
-                        "safe_answer":"请提供完整原问题后再核对答案。",
-                        "safe_source_ids":[],"approved_source_ids":[],"model_calls":[]}));
-                }
-                if self.config.retrieval_mode() == RetrievalMode::Legacy {
-                    return Ok(
-                        json!({"approved":false,"status":"unsupported_retrieval_mode",
-                        "safe_answer":"当前检索模式无法核准这条回答。",
-                        "safe_source_ids":[],"approved_source_ids":[],"model_calls":[]}),
-                    );
-                }
-                let recall = self.call_in_operation(
-                    "memory_recall",
-                    json!({"query":input.query,"context":input.context,
-                        "task_id":input.task_id,"limit":default_limit()}),
-                    cancelled,
-                    operation_id,
-                    false,
-                );
-                let recall = match recall {
-                    Ok(recall) => recall,
-                    Err(error) => {
-                        let error = error_body(error.as_ref());
-                        return Ok(json!({"approved":false,"status":"recall_failed",
-                            "safe_answer":"暂时无法核对已记录信息，因此不能根据记忆回答这个问题。",
-                            "safe_source_ids":[],"approved_source_ids":[],
-                            "model_calls":error.get("model_calls").cloned().unwrap_or_else(|| json!([]))}));
-                    }
-                };
-                Ok(final_answer_gate(&input, &recall))
-            }
-            "memory_recall" => {
-                let input: Recall = serde_json::from_value(arguments)?;
-                if matches!(
-                    self.config.retrieval_mode(),
-                    RetrievalMode::Local | RetrievalMode::Assisted
-                ) && !input.bootstrap
-                {
-                    past_time(input.at, "at")?;
-                    let now = Timestamp(match input.at {
-                        Some(at) => at,
-                        None => SystemTime::now()
-                            .duration_since(UNIX_EPOCH)?
-                            .as_secs()
-                            .try_into()?,
-                    });
-                    let mut runtime = RuntimeContext::current(owner, now);
-                    runtime.task_id = input.task_id.map(TaskId);
-                    runtime.limit = input.limit;
-                    let mut relations = InMemorySemanticRelationRegistry::default();
-                    for (child, parent) in &self.config.is_a {
-                        relations.register_is_a(child.clone(), parent.clone());
-                    }
-                    check_cancelled(&cancelled)?;
-                    if self.config.retrieval_mode() == RetrievalMode::Local {
-                        let mut result = self.store.recall_local(
-                            &input.query,
-                            &input.context,
-                            &runtime,
-                            self.config.registry(),
-                            &relations,
-                            &self.config.local_recall_budget,
-                        )?;
-                        result["assistance"] = json!({"status":"not_requested"});
-                        result["model_calls"] = json!([]);
-                        return Ok(result);
-                    }
-                    let (initial, signature) = self.store.recall_local_with_signature(
-                        &input.query,
-                        &input.context,
-                        &runtime,
-                        self.config.registry(),
-                        &relations,
-                        &self.config.local_recall_budget,
-                    )?;
-                    if !from_prepare && !crate::local_recall::asks_for_answer(&input.query) {
-                        let mut result = initial;
-                        withhold_unverified_answer(&mut result);
-                        result["retrieval_mode"] = json!("assisted");
-                        result["evidence_status"] = json!("question_required");
-                        result["assistance"] =
-                            json!({"status":"not_requested","reason":"query_has_no_question"});
-                        result["model_calls"] = json!([]);
-                        return Ok(result);
-                    }
-                    if initial["source_evidence"]
-                        .as_array()
-                        .is_some_and(Vec::is_empty)
-                        && initial["evidence_status"] != "uncommitted_newer_revision"
-                        && let Some((_, _, subject)) =
-                            single_relation_subject(&self.store, &input.query, &input.context)?
-                    {
-                        let candidates = linked_candidates(
-                            &self.store,
-                            &subject,
-                            None,
-                            runtime.task_id.as_ref().map(|task| task.0.as_str()),
-                        )?;
-                        let (proposal, planner_status, model_calls) = if candidates.is_empty() {
-                            (None, "no_linked_candidate", Vec::new())
-                        } else if self.config.model_budget.is_none() {
-                            (None, "model_budget_missing", Vec::new())
-                        } else {
-                            check_cancelled(&cancelled)?;
-                            match self.model_client(operation_id) {
-                                Ok(client) => {
-                                    let proposed = client.single_relation_proposal(
-                                        &input.query,
-                                        &input.context,
-                                        &candidates,
-                                    );
-                                    let reports = client.model_budget_report();
-                                    match proposed {
-                                        Ok(proposal) => (Some(proposal), "completed", reports),
-                                        Err(error) => (None, assistance_failure(&error), reports),
-                                    }
-                                }
-                                Err(_) => (None, "model_client_unavailable", Vec::new()),
-                            }
-                        };
-                        let entities = self.store.read()?.entities.list_by_owner(&runtime.owner_id);
-                        let parsed = proposal.as_ref().and_then(|proposal| {
-                            validated_single_relation(
-                                &input.query,
-                                &input.context,
-                                proposal,
-                                &candidates,
-                                &entities,
-                            )
-                        });
-                        let (mut result, changed) =
-                            if let Some((question, clarification, hint)) = parsed.as_ref() {
-                                match self.store.recall_assisted_single_relation(
-                                    question,
-                                    &[(*clarification).to_owned()],
-                                    &runtime,
-                                    self.config.registry(),
-                                    &relations,
-                                    &self.config.local_recall_budget,
-                                    hint,
-                                    &signature,
-                                ) {
-                                    Ok(value) => value,
-                                    Err(error) => return with_model_calls(Err(error), model_calls),
-                                }
-                            } else {
-                                let mut result = initial;
-                                require_subject_clarification(&mut result);
-                                (result, false)
-                            };
-                        if changed {
-                            result = match self.store.recall_local(
-                                &input.query,
-                                &input.context,
-                                &runtime,
-                                self.config.registry(),
-                                &relations,
-                                &self.config.local_recall_budget,
-                            ) {
-                                Ok(value) => value,
-                                Err(error) => return with_model_calls(Err(error), model_calls),
-                            };
-                        }
-                        let sources = result["source_evidence"]
-                            .as_array()
-                            .is_some_and(|sources| !sources.is_empty());
-                        if parsed.is_some() && !sources {
-                            withhold_unverified_answer(&mut result);
-                        }
-                        result["retrieval_mode"] = json!("assisted");
-                        result["assistance"] = if changed {
-                            json!({"status":"state_changed_during_assistance","resolution":"discarded"})
-                        } else if parsed.is_none() {
-                            json!({"status":"fallback_local","reason":if planner_status == "completed" {"invalid_or_ambiguous_relation"} else {planner_status}})
-                        } else if sources {
-                            json!({"status":"completed","resolution":"single_relation_source_link_verified","semantic_judgment":"model_proposed","answer_sufficiency":"not_verified"})
-                        } else {
-                            json!({"status":"fallback_local","reason":"no_verified_evidence"})
-                        };
-                        result["model_calls"] = json!(model_calls);
-                        return Ok(result);
-                    }
-                    if initial["source_evidence"]
-                        .as_array()
-                        .is_some_and(Vec::is_empty)
-                        && initial["evidence_status"] != "uncommitted_newer_revision"
-                        && let Some((question, clarification)) = input.query.split_once(['？', '?'])
-                        && !clarification.trim().is_empty()
-                    {
-                        let entities = self.store.read()?.entities.list_by_owner(&runtime.owner_id);
-                        if crate::lexical::entity_hints(question, &entities).is_empty() {
-                            let tail_hints = crate::lexical::entity_hints(clarification, &entities);
-                            let context_hints =
-                                crate::lexical::entity_hints(&input.context.join("\n"), &entities);
-                            if clarification.chars().count() > 100
-                                || clarification.contains(['？', '?'])
-                                || tail_hints.len() != 1
-                                || !context_hints.is_empty()
-                                    && context_hints.keys().ne(tail_hints.keys())
-                            {
-                                let mut result = initial;
-                                require_subject_clarification(&mut result);
-                                result["retrieval_mode"] = json!("assisted");
-                                result["assistance"] = json!({"status":"not_requested","reason":"ambiguous_joined_clarification"});
-                                result["model_calls"] = json!([]);
-                                return Ok(result);
-                            }
-                            check_cancelled(&cancelled)?;
-                            let (proposal, planner_status, model_calls) = if self
-                                .config
-                                .model_budget
-                                .is_none()
-                            {
-                                (None, "model_budget_missing", Vec::new())
-                            } else {
-                                match self.model_client(operation_id) {
-                                    Ok(client) => {
-                                        let proposed = client.clarification_proposal(&input.query);
-                                        let reports = client.model_budget_report();
-                                        match proposed {
-                                            Ok(proposal) => (Some(proposal), "completed", reports),
-                                            Err(error) => {
-                                                (None, assistance_failure(&error), reports)
-                                            }
-                                        }
-                                    }
-                                    Err(_) => (None, "model_client_unavailable", Vec::new()),
-                                }
-                            };
-                            let parsed = proposal.as_ref().and_then(|proposal| {
-                                validated_clarification(
-                                    &input.query,
-                                    &input.context,
-                                    proposal,
-                                    &entities,
-                                )
-                            });
-                            let (mut result, changed) = if let Some((question, subject)) = parsed {
-                                match self.store.recall_assisted_local(
-                                    question,
-                                    &[subject.to_owned()],
-                                    &runtime,
-                                    self.config.registry(),
-                                    &relations,
-                                    &self.config.local_recall_budget,
-                                    &[],
-                                    &signature,
-                                ) {
-                                    Ok(value) => value,
-                                    Err(error) => {
-                                        return with_model_calls(Err(error), model_calls);
-                                    }
-                                }
-                            } else {
-                                match self.store.recall_assisted_local(
-                                    &input.query,
-                                    &input.context,
-                                    &runtime,
-                                    self.config.registry(),
-                                    &relations,
-                                    &self.config.local_recall_budget,
-                                    &[],
-                                    &signature,
-                                ) {
-                                    Ok(value) => value,
-                                    Err(error) => {
-                                        return with_model_calls(Err(error), model_calls);
-                                    }
-                                }
-                            };
-                            if changed && parsed.is_some() {
-                                result = match self.store.recall_local(
-                                    &input.query,
-                                    &input.context,
-                                    &runtime,
-                                    self.config.registry(),
-                                    &relations,
-                                    &self.config.local_recall_budget,
-                                ) {
-                                    Ok(value) => value,
-                                    Err(error) => {
-                                        return with_model_calls(Err(error), model_calls);
-                                    }
-                                };
-                            }
-                            if parsed.is_none() {
-                                require_subject_clarification(&mut result);
-                            } else if result["source_evidence"]
-                                .as_array()
-                                .is_some_and(Vec::is_empty)
-                            {
-                                withhold_unverified_answer(&mut result);
-                            }
-                            result["retrieval_mode"] = json!("assisted");
-                            result["assistance"] = if changed {
-                                json!({"status":"state_changed_during_assistance","resolution":"discarded"})
-                            } else if parsed.is_none() {
-                                json!({"status":"fallback_local","reason":if planner_status == "completed" {"invalid_or_ambiguous_clarification"} else {planner_status}})
-                            } else if result["source_evidence"]
-                                .as_array()
-                                .is_some_and(|sources| !sources.is_empty())
-                            {
-                                json!({"status":"completed","resolution":"clarification_verified_locally"})
-                            } else {
-                                json!({"status":"fallback_local","reason":"no_verified_evidence"})
-                            };
-                            result["model_calls"] = json!(model_calls);
-                            return Ok(result);
-                        }
-                    }
-                    if initial["reference_resolution"]["needs_clarification"] == true
-                        || initial["evidence_status"] == "uncommitted_newer_revision"
-                    {
-                        let mut result = initial;
-                        result["retrieval_mode"] = json!("assisted");
-                        result["assistance"] = json!({"status":"not_requested","reason":if result["reference_resolution"]["needs_clarification"] == true {"clarification_required"} else {"uncommitted_newer_revision"}});
-                        result["model_calls"] = json!([]);
-                        return Ok(result);
-                    }
-                    if initial["source_evidence"]
-                        .as_array()
-                        .is_some_and(Vec::is_empty)
-                        && initial["degraded_reasons"]
-                            .as_array()
-                            .is_some_and(|reasons| {
-                                reasons
-                                    .iter()
-                                    .any(|reason| reason == "comparison_evidence_incomplete")
-                            })
-                    {
-                        let candidates = comparison_candidates(
-                            &self.store,
-                            &input.query,
-                            runtime.task_id.as_ref().map(|task| task.0.as_str()),
-                        );
-                        let (candidates, candidate_status) = match candidates {
-                            Ok(candidates)
-                                if candidates.len() >= 2
-                                    && candidates
-                                        .iter()
-                                        .filter_map(|candidate| candidate["predicate"].as_str())
-                                        .collect::<BTreeSet<_>>()
-                                        .len()
-                                        >= 2
-                                    && self.config.local_recall_budget.source_limit >= 2 =>
-                            {
-                                (candidates, "ready")
-                            }
-                            Ok(_) => (Vec::new(), "no_complete_candidate_pair"),
-                            Err(_) => (Vec::new(), "candidate_search_failed"),
-                        };
-                        check_cancelled(&cancelled)?;
-                        let (proposal, planner_status, model_calls) = if candidates.is_empty() {
-                            (None, candidate_status, Vec::new())
-                        } else if self.config.model_budget.is_none() {
-                            (None, "model_budget_missing", Vec::new())
-                        } else {
-                            match self.model_client(operation_id) {
-                                Ok(client) => {
-                                    let proposed =
-                                        client.comparison_proposal(&input.query, &candidates);
-                                    let reports = client.model_budget_report();
-                                    match proposed {
-                                        Ok(proposal) => (Some(proposal), "completed", reports),
-                                        Err(error) => (None, assistance_failure(&error), reports),
-                                    }
-                                }
-                                Err(_) => (None, "model_client_unavailable", Vec::new()),
-                            }
-                        };
-                        let hints = proposal
-                            .as_ref()
-                            .filter(|proposal| !proposal.ambiguous && proposal.roles.len() == 2)
-                            .and_then(|proposal| {
-                                proposal
-                                    .roles
-                                    .iter()
-                                    .map(|role| {
-                                        let candidate = candidates.get(role.candidate_index)?;
-                                        Some(crate::local_recall::ComparisonEvidenceHint {
-                                            query_relation: role.query_relation.clone(),
-                                            source_id: candidate["source_id"].as_str()?.to_owned(),
-                                            memory_id: serde_json::from_value(
-                                                candidate["memory_id"].clone(),
-                                            )
-                                            .ok()?,
-                                            evidence_relation: role.evidence_relation.clone(),
-                                        })
-                                    })
-                                    .collect::<Option<Vec<_>>>()
-                            })
-                            .unwrap_or_default();
-                        let final_read = self.store.recall_assisted_comparison(
-                            &input.query,
-                            &input.context,
-                            &runtime,
-                            self.config.registry(),
-                            &relations,
-                            &self.config.local_recall_budget,
-                            &hints,
-                            &signature,
-                        );
-                        let (mut result, changed) = match final_read {
-                            Ok(value) => value,
-                            Err(error) => return with_model_calls(Err(error), model_calls),
-                        };
-                        result["retrieval_mode"] = json!("assisted");
-                        if !changed
-                            && result["source_evidence"]
-                                .as_array()
-                                .is_some_and(|sources| !sources.is_empty())
-                        {
-                            result["reference_resolution"]["semantic_resolution"] =
-                                json!("model_proposed_relation_not_independently_proven");
-                        }
-                        result["assistance"] = if changed {
-                            json!({"status":"state_changed_during_assistance","resolution":"discarded"})
-                        } else if result["source_evidence"]
-                            .as_array()
-                            .is_some_and(|sources| !sources.is_empty())
-                        {
-                            json!({"status":"completed","resolution":"comparison_source_links_verified","semantic_judgment":"model_proposed","answer_sufficiency":"not_verified"})
-                        } else {
-                            json!({"status":"fallback_local","reason":if planner_status == "completed" {"relation_not_verified"} else {planner_status}})
-                        };
-                        result["model_calls"] = json!(model_calls);
-                        return Ok(result);
-                    }
-                    let snippets: Vec<String> = initial["source_evidence"]
-                        .as_array()
-                        .into_iter()
-                        .flatten()
-                        .chain(
-                            initial["historical_or_conflicting"]
-                                .as_array()
-                                .into_iter()
-                                .flatten()
-                                .filter_map(|item| item.get("source")),
-                        )
-                        .filter_map(|item| item["text"].as_str())
-                        .take(3)
-                        .map(|text| text.chars().take(1000).collect())
-                        .collect();
-                    check_cancelled(&cancelled)?;
-                    let (queries, planner_status, model_calls) =
-                        if self.config.model_budget.is_none() {
-                            (Vec::new(), "model_budget_missing", Vec::new())
-                        } else {
-                            match self.model_client(operation_id) {
-                                Ok(client) => {
-                                    let planned = client.supplemental_queries(
-                                        &input.query,
-                                        &input.context,
-                                        &runtime,
-                                        &snippets,
-                                    );
-                                    let reports = client.model_budget_report();
-                                    match planned {
-                                        Ok(queries) => (queries, "completed", reports),
-                                        Err(error) => {
-                                            (Vec::new(), assistance_failure(&error), reports)
-                                        }
-                                    }
-                                }
-                                Err(_) => (Vec::new(), "model_client_unavailable", Vec::new()),
-                            }
-                        };
-                    let final_read = self.store.recall_assisted_local(
-                        &input.query,
-                        &input.context,
-                        &runtime,
-                        self.config.registry(),
-                        &relations,
-                        &self.config.local_recall_budget,
-                        &queries,
-                        &signature,
-                    );
-                    let (mut result, changed) = match final_read {
-                        Ok(value) => value,
-                        Err(error) => return with_model_calls(Err(error), model_calls),
-                    };
-                    result["retrieval_mode"] = json!("assisted");
-                    let search_status = result["assistance_search"]["status"].as_str();
-                    result["assistance"] = if changed {
-                        json!({"status":"state_changed_during_assistance","planner_status":planner_status,
-                            "discarded_queries":queries.len()})
-                    } else if planner_status != "completed" {
-                        json!({"status":"fallback_local","reason":planner_status})
-                    } else if matches!(
-                        search_status,
-                        Some("soft_search_failed" | "invalid_soft_queries")
-                    ) {
-                        json!({"status":"fallback_local","reason":search_status})
-                    } else if queries.is_empty() {
-                        json!({"status":"completed_empty","queries":[]})
-                    } else {
-                        json!({"status":"completed","queries":queries,"source":"llm_inferred","strength":"soft"})
-                    };
-                    let mut model_calls = model_calls;
-                    if !changed {
-                        check_cancelled(&cancelled)?;
-                        let task = runtime.task_id.as_ref().map(|task| task.0.as_str());
-                        let question = (&input.query[..], &input.context[..], task, runtime.at);
-                        self.model_answer(question, &mut result, operation_id, &mut model_calls)?;
-                    }
-                    result["model_calls"] = json!(model_calls);
-                    return Ok(result);
-                }
-                let entities = self.store.read()?.entities.list_by_owner(&owner);
-                let context =
-                    self.config
-                        .context(owner.clone(), entities, input.task_id, input.limit)?;
-                let (runtime, model_calls) = if input.bootstrap {
-                    (
-                        bootstrap_runtime(owner.clone(), context.now, input.limit),
-                        Vec::new(),
-                    )
-                } else {
-                    let client = match self.model_client(operation_id) {
-                        Ok(client) => client,
-                        Err(error) => return with_model_calls(Err(error), Vec::new()),
-                    };
-                    let planned = OpenAiRuntimeContextBuilder::new(client.clone(), context)
-                        .build(&input.query);
-                    let reports = client.model_budget_report();
-                    match planned {
-                        Ok(runtime) => (runtime, reports),
-                        Err(error) => return with_model_calls(Err(Box::new(error)), reports),
-                    }
-                };
-                let mut relations = InMemorySemanticRelationRegistry::default();
-                for (child, parent) in &self.config.is_a {
-                    relations.register_is_a(child.clone(), parent.clone());
-                }
-                let recalled = self.store.transaction(|state| {
-                    check_cancelled(&cancelled)?;
-                    // 旧召回与 bootstrap 的结果不带限定语标注：限定语无法用现有 Memory 表达的记录
-                    // 不作为事实返回。
-                    let unmapped = crate::commit::W5View::of(state).unmapped_qualifiers();
-                    state.with_engine(self.config.registry(), |engine, _| {
-                        engine.run_retention_for_owner(&owner, runtime.at)?;
-                        let retrieval_started = std::time::Instant::now();
-                        let mut result =
-                            DefaultMemoryRetriever::new(&mut engine.repository, &engine.predicates)
-                                .with_semantic_relations(&relations)
-                                .with_unmapped_qualifiers(
-                                    &unmapped,
-                                    crate::retrieval::UnmappedQualifiers::Exclude,
-                                )
-                                .retrieve(&runtime)?;
-                        crate::diagnostics::record(
-                            "retrieval",
-                            || json!({"duration_ms":retrieval_started.elapsed().as_millis(),"runtime":runtime,"result":result,"memories":engine.repository.list_by_owner(&owner).ok()}),
-                        );
-                        // The owner-wide debug trace adds unrelated IDs and grows with the entire profile.
-                        result.trace.clear();
-                        Ok(json!({"result":result,"retrieval_mode":if input.bootstrap {"bootstrap"} else {"legacy"},
-                            "recall_status":"completed","assistance":{"status":"not_requested"}}))
-                    })
-                });
-                with_model_calls(recalled, model_calls)
-            }
             "memory_list" => {
                 let input: List = serde_json::from_value(arguments)?;
                 check_limit(input.limit)?;
@@ -3348,21 +1486,8 @@ pub fn memory_tools() -> Vec<Tool> {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        ChatConfig, RetrievalMode, ValidateAnswer, final_answer_gate, past_time, unix_seconds,
-        validated_single_relation,
-    };
-    use crate::local_recall::SingleRelationEvidenceHint;
-    use crate::openai::SingleRelationProposal;
-    use crate::store::{EntityRepository, MemoryRepository};
-    use crate::{
-        CandidateMemory, Entity, EntityId, EntityType, Evidence, EvidenceId,
-        InMemoryPredicateRegistry, InMemorySemanticRelationRegistry, LocalRecallBudget, MemoryId,
-        MemoryType, MemoryValue, Predicate, RuntimeContext, SessionId, SourceRecord,
-        SqliteMemoryStore, Timestamp, TurnId, UserId,
-    };
+    use super::{ChatConfig, past_time, unix_seconds};
     use serde_json::json;
-
     #[test]
     fn new_host_schema_requires_recall_and_validation_request_ids() {
         for tool in super::memory_tools()
@@ -3376,453 +1501,6 @@ mod tests {
                     .contains(&json!("request_id"))
             );
         }
-    }
-
-    #[test]
-    fn final_gate_approves_only_the_exact_source_linked_identity() {
-        let mut input = ValidateAnswer {
-            query: "先搁置的那种内存缓存服务叫什么？".into(),
-            context: vec!["松石47。".into()],
-            draft_answer: "Redis。".into(),
-            source_ids: vec!["E1".into()],
-            task_id: None,
-        };
-        let quote = "松石47选用 SQLite，Redis 暂时不引入。";
-        let mut recall = json!({
-            "assistance":{"resolution":"single_relation_source_link_verified"},
-            "reference_resolution":{"needs_clarification":false},
-            "result":{"facts":[]},
-            "source_evidence":[{"source_id":"E1","text":quote,
-                "byte_start":0,"byte_end":quote.len(),
-                "enrichment":"committed","mapping_uncertain":false,"evidence_kind":"source_linked_quote",
-                "semantic_status":"model_proposed_relation_checked_against_committed_fact",
-                "verified_identity":{"memory_id":7,"subject":"松石47","value":"Redis",
-                    "query_relation":"先搁置的","evidence_relation":"暂时不引入"},
-                "state_annotations":[{"memory_id":7,"decision":"Selected",
-                    "association":"exact_quote","quote_byte_range":[0,quote.len()]}]}],
-            "retrieval_mode":"assisted","read_revision":2,"model_calls":[]
-        });
-        let approved_value = final_answer_gate(&input, &recall);
-        assert_eq!(approved_value["approved"], true);
-        assert_eq!(approved_value["approved_source_ids"], json!(["E1"]));
-        assert_eq!(approved_value["safe_answer"], "Redis。");
-        assert_eq!(
-            approved_value["sources"],
-            json!([{"source_id":"E1","quote":quote,"grade":"committed"}])
-        );
-        input.source_ids.push("D1".into());
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], false);
-        input.source_ids.pop();
-        recall["assistance"]["resolution"] = json!("other");
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], false);
-        assert_eq!(final_answer_gate(&input, &recall)["sources"], json!([]));
-        recall["assistance"]["resolution"] = json!("single_relation_source_link_verified");
-        recall["source_evidence"][0]["state_annotations"] = json!([]);
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], false);
-        recall["source_evidence"][0]["state_annotations"] = json!([{"memory_id":7,"decision":"Selected","association":"exact_quote",
-                "quote_byte_range":[0,quote.len()]}]);
-        recall["source_evidence"][0]["verified_identity"]["value"] = json!("Redis，另有私事");
-        recall["source_evidence"][0]["text"] = json!("松石47暂不引入 Redis，另有私事。");
-        assert!(
-            !final_answer_gate(&input, &recall)["safe_answer"]
-                .as_str()
-                .unwrap()
-                .contains("私事")
-        );
-    }
-
-    #[test]
-    fn final_gate_uses_real_assisted_source_when_structured_facts_are_empty() {
-        let dir =
-            std::env::temp_dir().join(format!("pmr-answer-gate-{}", crate::diagnostics::new_id()));
-        std::fs::create_dir(&dir).unwrap();
-        let mut store =
-            SqliteMemoryStore::open(dir.join("memory.sqlite3"), UserId::from("alice")).unwrap();
-        let quote = "项目松石47选用 SQLite，Redis 暂时不引入。";
-        let source: SourceRecord = serde_json::from_value(json!({
-            "id":"E1","session_id":"s","turn_id":"t","observed_at":100,
-            "received_sequence":1,"request":{"text":quote,"capture_source":true},
-            "enrichment":"committed","error":null,"result":null,"base_revision":0
-        }))
-        .unwrap();
-        store
-            .transaction(|state| {
-                state.entities.upsert(Entity {
-                    id: EntityId::from("松石47"),
-                    owner_id: UserId::from("alice"),
-                    entity_type: EntityType::Other("project".into()),
-                    canonical_name: "松石47".into(),
-                    aliases: Vec::new(),
-                });
-                state.sources.insert("E1".into(), source);
-                state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                    let mut candidate = CandidateMemory::new(
-                        UserId::from("alice"),
-                        EntityId::from("松石47"),
-                        MemoryType::Episode,
-                        Predicate::from("暂缓技术"),
-                        MemoryValue::Text("Redis".into()),
-                        Timestamp(100),
-                        Evidence::new(
-                            EvidenceId("E1".into()),
-                            SessionId::from("s"),
-                            TurnId::from("t"),
-                            quote,
-                        ),
-                    );
-                    // This retrieval fixture supplies its own successful reviewer result.
-                    candidate.bind_source_support();
-                    let id = engine.repository.allocate_id()?;
-                    engine
-                        .repository
-                        .insert(crate::Memory::from_candidate(id, &candidate, None))?;
-                    Ok(())
-                })
-            })
-            .unwrap();
-        let memory_id = store
-            .read()
-            .unwrap()
-            .repository
-            .list_by_owner(store.owner())
-            .unwrap()[0]
-            .id;
-        let query = "先搁置的那种内存缓存服务叫什么？";
-        let context = vec!["松石47。".to_owned()];
-        let runtime = RuntimeContext::current(UserId::from("alice"), Timestamp(200));
-        let budget = LocalRecallBudget::default();
-        let relations = InMemorySemanticRelationRegistry::default();
-        let (_, signature) = store
-            .recall_local_with_signature(
-                query,
-                &context,
-                &runtime,
-                InMemoryPredicateRegistry::default(),
-                &relations,
-                &budget,
-            )
-            .unwrap();
-        let hint = SingleRelationEvidenceHint {
-            query_relation: "先搁置的".into(),
-            source_id: "E1".into(),
-            memory_id,
-            evidence_relation: "暂时不引入".into(),
-        };
-        let (mut recall, changed) = store
-            .recall_assisted_single_relation(
-                query,
-                &context,
-                &runtime,
-                InMemoryPredicateRegistry::default(),
-                &relations,
-                &budget,
-                &hint,
-                &signature,
-            )
-            .unwrap();
-        assert!(!changed);
-        assert_eq!(recall["result"]["facts"], json!([]));
-        assert_eq!(recall["source_evidence"][0]["source_id"], "E1");
-        recall["assistance"] = json!({"resolution":"single_relation_source_link_verified"});
-        let mut input = ValidateAnswer {
-            query: query.into(),
-            context,
-            draft_answer: "松石47先搁置的是 Redis。".into(),
-            source_ids: vec!["E1".into()],
-            task_id: None,
-        };
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], true);
-        input.draft_answer = "松石47先搁置的是 Memcached。".into();
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], false);
-        input.draft_answer = "松石47先搁置的是 Redis，而且不会再引入。".into();
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], false);
-        input.draft_answer = "Redis。".into();
-        input.source_ids = vec!["D1".into()];
-        assert_eq!(final_answer_gate(&input, &recall)["approved"], false);
-        let short_hint = SingleRelationEvidenceHint {
-            query_relation: "搁置".into(),
-            ..hint
-        };
-        let (mut short_recall, changed) = store
-            .recall_assisted_single_relation(
-                query,
-                &input.context,
-                &runtime,
-                InMemoryPredicateRegistry::default(),
-                &relations,
-                &budget,
-                &short_hint,
-                &signature,
-            )
-            .unwrap();
-        assert!(!changed);
-        assert_eq!(short_recall["result"]["facts"], json!([]));
-        short_recall["assistance"] = json!({"resolution":"single_relation_source_link_verified"});
-        input.draft_answer = "松石47先搁置的是 Redis。".into();
-        input.source_ids = vec!["E1".into()];
-        assert_eq!(final_answer_gate(&input, &short_recall)["approved"], true);
-        drop(store);
-        std::fs::remove_dir_all(dir).unwrap();
-    }
-
-    #[test]
-    fn final_gate_refuses_an_identity_whose_qualifiers_the_memory_cannot_express() {
-        // “写代码时，项目松石47选用 SQLite，Redis 暂时不引入。”：完整候选带条件“写代码时”，投影出的
-        // Memory 没有它。身份答案不能把 Redis 核准为无限定的唯一值；没有条件时照常核准。
-        for qualified in [true, false] {
-            let dir = std::env::temp_dir()
-                .join(format!("pmr-answer-gate-{}", crate::diagnostics::new_id()));
-            std::fs::create_dir(&dir).unwrap();
-            let mut store =
-                SqliteMemoryStore::open(dir.join("memory.sqlite3"), UserId::from("alice")).unwrap();
-            let quote = "写代码时，项目松石47选用 SQLite，Redis 暂时不引入。";
-            let source: SourceRecord = serde_json::from_value(json!({
-                "id":"E1","session_id":"s","turn_id":"t","observed_at":100,
-                "received_sequence":1,"request":{"text":quote,"capture_source":true},
-                "enrichment":"committed","error":null,"result":null,"base_revision":0
-            }))
-            .unwrap();
-            store
-                .transaction(|state| {
-                    state.entities.upsert(Entity {
-                        id: EntityId::from("松石47"),
-                        owner_id: UserId::from("alice"),
-                        entity_type: EntityType::Other("project".into()),
-                        canonical_name: "松石47".into(),
-                        aliases: Vec::new(),
-                    });
-                    state.sources.insert("E1".into(), source);
-                    state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                        let mut candidate = CandidateMemory::new(
-                            UserId::from("alice"),
-                            EntityId::from("松石47"),
-                            MemoryType::Episode,
-                            Predicate::from("暂缓技术"),
-                            MemoryValue::Text("Redis".into()),
-                            Timestamp(100),
-                            Evidence::new(
-                                EvidenceId("E1".into()),
-                                SessionId::from("s"),
-                                TurnId::from("t"),
-                                quote,
-                            ),
-                        );
-                        candidate.bind_source_support();
-                        let id = engine.repository.allocate_id()?;
-                        engine
-                            .repository
-                            .insert(crate::Memory::from_candidate(id, &candidate, None))?;
-                        Ok(())
-                    })?;
-                    let id = state.repository.list_by_owner(&UserId::from("alice"))?[0].id;
-                    let conditions = if qualified {
-                        json!([{"quote": {"text": "写代码时"}, "resolved": true}])
-                    } else {
-                        json!([])
-                    };
-                    let contract = json!({
-                        "candidate": {
-                            "kind": "assertion", "speech": "user_statement",
-                            "subject": {"entity_id": "松石47"}, "relation": "暂缓技术",
-                            "memory_type": "episode",
-                            "value": {"kind": "text", "text": "Redis", "quote": {"text": "Redis"}},
-                            "sentence": {"text": quote}, "polarity": "affirm", "strength": null,
-                            "uncertainty": null, "conditions": conditions, "times": []
-                        },
-                        "source": {"kind": "stored", "source_id": "E1"},
-                        "said_on": "2026-09-28", "time_resolutions": []
-                    });
-                    state.w5_receipts.insert(
-                        "E1#0".into(),
-                        crate::W5Receipt {
-                            group_id: "E1#0".into(),
-                            fingerprint:
-                                json!({"candidates": [{"index": 0, "contract": contract}]})
-                                    .to_string(),
-                            status: crate::W5Status::Committed,
-                            legacy_fingerprint: false,
-                            products: [(0, id)].into(),
-                            decisions: vec![],
-                            updates: Default::default(),
-                            merged: Default::default(),
-                            form: crate::ReceiptForm::V8,
-                        },
-                    );
-                    Ok(())
-                })
-                .unwrap();
-            let memory_id = store
-                .read()
-                .unwrap()
-                .repository
-                .list_by_owner(store.owner())
-                .unwrap()[0]
-                .id;
-            let query = "先搁置的那种内存缓存服务叫什么？";
-            let context = vec!["松石47。".to_owned()];
-            let runtime = RuntimeContext::current(UserId::from("alice"), Timestamp(200));
-            let budget = LocalRecallBudget::default();
-            let relations = InMemorySemanticRelationRegistry::default();
-            let (_, signature) = store
-                .recall_local_with_signature(
-                    query,
-                    &context,
-                    &runtime,
-                    InMemoryPredicateRegistry::default(),
-                    &relations,
-                    &budget,
-                )
-                .unwrap();
-            let hint = SingleRelationEvidenceHint {
-                query_relation: "先搁置的".into(),
-                source_id: "E1".into(),
-                memory_id,
-                evidence_relation: "暂时不引入".into(),
-            };
-            let (mut recall, _) = store
-                .recall_assisted_single_relation(
-                    query,
-                    &context,
-                    &runtime,
-                    InMemoryPredicateRegistry::default(),
-                    &relations,
-                    &budget,
-                    &hint,
-                    &signature,
-                )
-                .unwrap();
-            recall["assistance"] = json!({"resolution":"single_relation_source_link_verified"});
-            let input = ValidateAnswer {
-                query: query.into(),
-                context,
-                draft_answer: "Redis。".into(),
-                source_ids: vec!["E1".into()],
-                task_id: None,
-            };
-            let (status, _, _) = super::answer_policy(&recall);
-            let approved = final_answer_gate(&input, &recall)["approved"].clone();
-            if qualified {
-                assert_ne!(status, "source_linked_exact_identity", "{recall}");
-                assert_eq!(approved, false, "{recall}");
-            } else {
-                assert_eq!(status, "source_linked_exact_identity", "{recall}");
-                assert_eq!(approved, true, "{recall}");
-            }
-            drop(store);
-            std::fs::remove_dir_all(dir).unwrap();
-        }
-    }
-
-    #[test]
-    fn final_gate_does_not_infer_consistency_from_two_relation_sources() {
-        let input = ValidateAnswer {
-            query: "松石47的技术选择和部署限制是否一致？".into(),
-            context: Vec::new(),
-            draft_answer: "一致。".into(),
-            source_ids: vec!["choice".into(), "limit".into()],
-            task_id: None,
-        };
-        let recall = json!({
-            "reference_resolution":{"needs_clarification":false},
-            "comparison_evidence":{"required_relations":["技术选择","部署限制"],
-                "missing_relations":[]},
-            "source_evidence":[{"source_id":"choice"},{"source_id":"limit"}],
-            "retrieval_mode":"assisted","model_calls":[]
-        });
-        let verdict = final_answer_gate(&input, &recall);
-        assert_eq!(verdict["approved"], false);
-        assert_eq!(verdict["safe_source_ids"], json!([]));
-        assert_eq!(verdict["status"], "comparison_conclusion_not_verified");
-    }
-
-    #[test]
-    fn single_relation_proposal_keeps_original_question_and_user_clarification() {
-        let entities = vec![Entity {
-            id: EntityId::from("松石47"),
-            owner_id: UserId::from("alice"),
-            entity_type: EntityType::Other("project".into()),
-            canonical_name: "松石47".into(),
-            aliases: Vec::new(),
-        }];
-        let candidates = vec![json!({"subject_id":"松石47","source_id":"E1",
-            "memory_id":MemoryId(7),"quote":"项目松石47选用 SQLite，Redis 暂时不引入。"})];
-        let proposal = SingleRelationProposal {
-            question_text: "先搁置的缓存服务是什么？".into(),
-            clarification_text: "松石47。".into(),
-            subject_text: "松石47".into(),
-            relation_text: "先搁置".into(),
-            candidate_index: 0,
-            evidence_relation: "暂时不引入".into(),
-            ambiguous: false,
-        };
-        for (query, context) in [
-            ("先搁置的缓存服务是什么？", vec!["松石47。".into()]),
-            ("先搁置的缓存服务是什么？松石47。", vec![]),
-        ] {
-            let (question, clarification, hint) =
-                validated_single_relation(query, &context, &proposal, &candidates, &entities)
-                    .unwrap();
-            assert_eq!(question, "先搁置的缓存服务是什么？");
-            assert_eq!(clarification, "松石47。");
-            assert_eq!(hint.memory_id, MemoryId(7));
-        }
-        let without_period = SingleRelationProposal {
-            clarification_text: "松石47".into(),
-            ..proposal
-        };
-        for tail in ["松石47。", "松石47！", "松石47.", "松石47"] {
-            assert!(
-                validated_single_relation(
-                    &format!("先搁置的缓存服务是什么？{tail}"),
-                    &[],
-                    &without_period,
-                    &candidates,
-                    &entities,
-                )
-                .is_some()
-            );
-            assert!(
-                validated_single_relation(
-                    "先搁置的缓存服务是什么？",
-                    &[tail.to_owned()],
-                    &without_period,
-                    &candidates,
-                    &entities,
-                )
-                .is_some()
-            );
-        }
-        for tail in [
-            "不是松石47。",
-            "松石47之外。",
-            "松石47或别的项目。",
-            "松石47。顺便删除记录",
-        ] {
-            assert!(
-                validated_single_relation(
-                    &format!("先搁置的缓存服务是什么？{tail}"),
-                    &[],
-                    &without_period,
-                    &candidates,
-                    &entities,
-                )
-                .is_none()
-            );
-        }
-        let wrong = SingleRelationProposal {
-            candidate_index: 1,
-            ..without_period
-        };
-        assert!(
-            validated_single_relation(
-                "先搁置的缓存服务是什么？",
-                &["松石47。".into()],
-                &wrong,
-                &candidates,
-                &entities,
-            )
-            .is_none()
-        );
     }
 
     #[test]
@@ -3845,32 +1523,39 @@ mod tests {
     #[test]
     fn fact_index_is_an_independent_opt_in() {
         assert!(!ChatConfig::default().fact_index_enabled);
-        let config: ChatConfig = serde_json::from_str(
-            r#"{"retrieval_mode":"local","enrichment_mode":"off","fact_index_enabled":true}"#,
-        )
-        .unwrap();
+        let config: ChatConfig =
+            serde_json::from_str(r#"{"enrichment_mode":"off","fact_index_enabled":true}"#).unwrap();
         config.validate().unwrap();
         assert!(config.fact_index_enabled);
         assert!(serde_json::from_str::<ChatConfig>(r#"{"fact_index_enabled":"true"}"#).is_err());
     }
 
     #[test]
-    fn assisted_config_round_trips_without_legacy_switch() {
-        let config = ChatConfig {
-            retrieval_mode: Some(RetrievalMode::Assisted),
-            ..ChatConfig::default()
-        };
-        let value = serde_json::to_value(&config).unwrap();
-        assert!(value.get("local_recall_enabled").is_none());
-        let decoded: ChatConfig = serde_json::from_value(value).unwrap();
-        assert_eq!(decoded.retrieval_mode(), RetrievalMode::Assisted);
-        assert!(
-            serde_json::from_str::<ChatConfig>(
-                r#"{"retrieval_mode":"assisted","local_recall_enabled":false}"#
-            )
-            .unwrap_err()
-            .to_string()
-            .contains("conflict")
-        );
+    fn retired_recall_fields_are_rejected_even_when_false_null_or_empty() {
+        for (field, value) in [
+            ("retrieval_mode", json!("local")),
+            ("local_recall_enabled", json!(false)),
+            ("local_recall_budget", json!({})),
+            ("is_a", json!([])),
+        ] {
+            for value in [value, serde_json::Value::Null] {
+                let error = serde_json::from_value::<ChatConfig>(json!({field:value}))
+                    .unwrap_err()
+                    .to_string();
+                assert!(
+                    error.contains(field) && error.contains("retired"),
+                    "{error}"
+                );
+            }
+            assert!(
+                serde_json::to_value(ChatConfig::default())
+                    .unwrap()
+                    .get(field)
+                    .is_none()
+            );
+        }
+        let config: ChatConfig =
+            serde_json::from_value(serde_json::to_value(ChatConfig::default()).unwrap()).unwrap();
+        config.validate().unwrap();
     }
 }

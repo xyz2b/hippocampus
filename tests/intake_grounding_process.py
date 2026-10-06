@@ -154,7 +154,7 @@ def run_case(binary, directory, env, mode, name):
     before, errors_before = len(Fixture.requests), len(Fixture.errors)
     mode_value = {"explicit": "off", "unauthorized": "inline"}.get(mode, mode)
     policy_calls = max(1, expected_calls)
-    config_data = dict(enrichment_mode=mode_value, retrieval_mode="local", fact_index_enabled=True,
+    config_data = dict(enrichment_mode=mode_value, fact_index_enabled=True,
                        memory_types=[],
                        predicates=[{"predicate": item, "cardinality": "Multiple" if item == "fact" else "Single"}
                                    for item in ("fact", "material", "maintenance_budget", "owned_by", "duplex_enabled")],

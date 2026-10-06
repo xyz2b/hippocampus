@@ -127,29 +127,30 @@ fn restart_preserves_versions_evidence_ids_and_retrieval_counters() {
     assert_eq!(current.evidence[0].quote, "我住在北京");
     store
         .transaction(|state| {
-            state.with_engine(registry(), |engine, _| {
-                let runtime = RuntimeContext {
-                    owner_id: UserId::from("alice"),
-                    domain: None,
-                    entities: vec![],
-                    task_id: None,
-                    conditions: vec![],
-                    predicates: vec![],
-                    targets: vec![],
-                    temporal_intent: TemporalIntent::Current,
-                    temporal_filter: None,
-                    at: Timestamp(101),
-                    limit: 20,
-                };
-                let result =
-                    DefaultMemoryRetriever::new(&mut engine.repository, &engine.predicates)
-                        .retrieve(&runtime)?;
-                assert_eq!(result.facts.len(), 1);
-                assert_eq!(result.facts[0].id, second);
-                Ok(())
-            })
+            let mut memory = state.repository.get(second)?.unwrap();
+            memory.retrieval_count = 1;
+            memory.last_retrieved_at = Some(Timestamp(101));
+            state.repository.update(memory)?;
+            Ok(())
         })
         .unwrap();
+    let mut service = ChatMemoryService::new(store, ChatConfig::default()).unwrap();
+    let recalled = service
+        .call(
+            "memory_recall",
+            json!({"query":"我住在哪？", "request_id":"legacy-reopen", "offline":true, "at":101}),
+            || false,
+        )
+        .unwrap();
+    assert!(
+        recalled["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|r| r["id"] == second.0),
+        "{recalled}"
+    );
+    let store = db.open("alice");
     drop(store);
     assert_eq!(
         db.open("alice")
@@ -202,25 +203,38 @@ fn bootstrap_uses_local_store_and_filters_unrelated_scoped_and_expired_memories(
     let mut service = ChatMemoryService::new(
         store,
         ChatConfig {
-            recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             ..Default::default()
         },
     )
     .unwrap();
     let result = service
-        .call(
+        .call_with_global_context(
             "memory_recall",
-            json!({"query":"全局回答要求", "bootstrap":true}),
+            json!({"query":"全局回答要求", "bootstrap":true, "request_id":"bootstrap"}),
             || false,
         )
+        .structured_content
         .unwrap();
-    assert_eq!(result["result"]["mandatory"].as_array().unwrap().len(), 1);
-    assert_eq!(result["result"]["preferences"].as_array().unwrap().len(), 1);
     assert_eq!(
-        result["result"]["preferences"][0]["value"],
+        result["global_context"]["result"]["mandatory"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        result["global_context"]["result"]["preferences"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        result["global_context"]["result"]["preferences"][0]["value"],
         json!({"Text":"先给结论"})
     );
-    assert_eq!(result["result"]["facts"], json!([]));
+    assert_eq!(result["global_context"]["result"]["facts"], json!([]));
+    service.call("memory_list", json!({}), || false).unwrap();
     assert!(
         db.open("alice")
             .read()

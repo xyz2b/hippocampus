@@ -1,13 +1,5 @@
-//! Read-side lifecycle rules and shared slot identity for legacy retrieval.
-use crate::{Cardinality, Memory, MemoryStatus, RetentionTier, Timestamp};
-
-pub(crate) fn memories_share_slot(left: &Memory, right: &Memory, cardinality: Cardinality) -> bool {
-    left.owner_id == right.owner_id
-        && left.subject_id == right.subject_id
-        && left.memory_type == right.memory_type
-        && left.predicate == right.predicate
-        && (cardinality == Cardinality::Single || left.value == right.value)
-}
+//! Read-side lifecycle rules.
+use crate::{Memory, MemoryStatus, RetentionTier, Timestamp};
 
 #[derive(serde::Serialize, Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RetentionAction {

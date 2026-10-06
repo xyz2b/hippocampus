@@ -475,3 +475,36 @@ fn m1_missing_pro_endpoint_fails_online_before_any_physical_send() {
         0
     );
 }
+
+#[test]
+fn m1_retired_recall_config_is_rejected_before_database_open_without_rewriting() {
+    for (field, value) in [
+        ("retrieval_mode", json!("local")),
+        ("local_recall_enabled", json!(false)),
+        ("local_recall_budget", json!({})),
+        ("is_a", json!([])),
+    ] {
+        let db = Db::new();
+        let config = db.0.with_extension("json");
+        let original = json!({field:value}).to_string();
+        std::fs::write(&config, &original).unwrap();
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+            .args([
+                "--db",
+                db.0.to_str().unwrap(),
+                "--config",
+                config.to_str().unwrap(),
+            ])
+            .env("PMR_MODEL_NETWORK", "deny")
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        let error = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            error.contains(field) && error.contains("retired"),
+            "{error}"
+        );
+        assert!(!db.0.exists());
+        assert_eq!(std::fs::read_to_string(config).unwrap(), original);
+    }
+}

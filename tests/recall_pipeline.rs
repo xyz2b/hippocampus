@@ -77,7 +77,7 @@ fn recall_pipeline_strict_defaults_and_independent_write_switch() {
 #[test]
 fn recall_pipeline_explicit_version_single_output_and_offline_replay() {
     let db = Db::new();
-    let mut service = db.service(json!({"retrieval_mode":"local","enrichment_mode":"off"}));
+    let mut service = db.service(json!({"enrichment_mode":"off"}));
     service
         .call("memory_remember", turn("saved"), || false)
         .unwrap();

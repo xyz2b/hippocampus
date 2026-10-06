@@ -165,12 +165,9 @@ fn query(id: &str) -> Json {
 
 #[test]
 fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable() {
-    for recall_pipeline in [
-        crate::chat::RecallPipeline::Legacy,
-        crate::chat::RecallPipeline::RecallV3,
-    ] {
+    for recall_pipeline in [crate::chat::RecallPipeline::RecallV3] {
         let db = Db::new();
-        // T1 publication survives corrupt post-commit snapshots in both recall dispatches.
+        // T1 publication survives corrupt post-commit snapshots in the recall_v3 dispatch.
         let config = ChatConfig {
             recall_pipeline,
             model_budget: Some(
