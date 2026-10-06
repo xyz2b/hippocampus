@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use serde_json::{Value, json};
@@ -53,9 +54,9 @@ fn registry() -> InMemoryPredicateRegistry {
     r.register(Predicate::from("uses"), Cardinality::Single);
     r
 }
-fn id(outcome: IngestOutcome) -> MemoryId {
+fn id(outcome: FixtureOutcome) -> MemoryId {
     match outcome {
-        IngestOutcome::Applied {
+        FixtureOutcome::Applied {
             memory_id: Some(id),
             ..
         } => id,
@@ -116,7 +117,7 @@ fn event_time_recall_accepts_complete_fact_sentences_without_weakening_bindings(
                 .sources
                 .insert("appointment".into(), source("appointment", quote, None));
             state.with_engine(registry(), |engine, _| {
-                Ok(id(engine.ingest(common::grounded(candidate(
+                Ok(id(engine.seed_fixture(common::grounded(candidate(
                     "appointment",
                     "appointment",
                     "fact",
@@ -169,7 +170,7 @@ fn raw_evidence_is_not_starved_by_optional_structured_content() {
                     "database",
                 );
                 preference.memory_type = MemoryType::Preference;
-                id(engine.ingest(common::grounded(preference))?);
+                id(engine.seed_fixture(common::grounded(preference))?);
                 Ok(())
             })
         })
@@ -233,7 +234,7 @@ fn raw_evidence_is_not_starved_by_optional_structured_content() {
                 let mut rule = candidate("rule", "self", "reply", "中文", "必须使用中文");
                 rule.memory_type = MemoryType::Constraint;
                 rule.retention_tier = RetentionTier::Durable;
-                engine.ingest(common::grounded(rule))?;
+                engine.seed_fixture(common::grounded(rule))?;
                 Ok(())
             })
         })
@@ -261,7 +262,7 @@ fn raw_evidence_is_not_starved_by_optional_structured_content() {
                 let mut preference =
                     candidate("preference", "self", "likes", "database notes", "database");
                 preference.memory_type = MemoryType::Preference;
-                engine.ingest(common::grounded(preference))?;
+                engine.seed_fixture(common::grounded(preference))?;
                 Ok(())
             })
         })
@@ -551,35 +552,35 @@ fn structured_evidence_requires_the_asked_subject_and_property() {
                 });
             }
             state.with_engine(registry(), |engine, _| {
-                let a_database = id(engine.ingest(common::grounded(candidate(
+                let a_database = id(engine.seed_fixture(common::grounded(candidate(
                     "a-db",
                     "松石47",
                     "database",
                     "SQLite",
                     "松石47的数据库是 SQLite",
                 )))?);
-                let a_deployment = id(engine.ingest(common::grounded(candidate(
+                let a_deployment = id(engine.seed_fixture(common::grounded(candidate(
                     "a-deploy",
                     "松石47",
                     "deployment_limit",
                     "单机",
                     "松石47的部署限制是单机",
                 )))?);
-                engine.ingest(common::grounded(candidate(
+                engine.seed_fixture(common::grounded(candidate(
                     "a-cost",
                     "松石47",
                     "maintenance_cost",
                     "较低",
                     "松石47的维护成本较低",
                 )))?;
-                let b_database = id(engine.ingest(common::grounded(candidate(
+                let b_database = id(engine.seed_fixture(common::grounded(candidate(
                     "b-db",
                     "赤铜82",
                     "database",
                     "PostgreSQL",
                     "赤铜82的数据库是 PostgreSQL",
                 )))?);
-                engine.ingest(common::grounded(candidate(
+                engine.seed_fixture(common::grounded(candidate(
                     "b-deploy",
                     "赤铜82",
                     "deployment_limit",
@@ -594,7 +595,7 @@ fn structured_evidence_requires_the_asked_subject_and_property() {
                     "赤铜82的部署限制必须三台机器",
                 );
                 b_constraint.memory_type = MemoryType::Constraint;
-                engine.ingest(common::grounded(b_constraint))?;
+                engine.seed_fixture(common::grounded(b_constraint))?;
                 let mut global = candidate(
                     "global",
                     "self",
@@ -604,7 +605,7 @@ fn structured_evidence_requires_the_asked_subject_and_property() {
                 );
                 global.memory_type = MemoryType::Constraint;
                 global.retention_tier = RetentionTier::Durable;
-                let global_rule = id(engine.ingest(common::grounded(global))?);
+                let global_rule = id(engine.seed_fixture(common::grounded(global))?);
                 Ok((a_database, a_deployment, b_database, global_rule))
             })
         })
@@ -678,7 +679,7 @@ fn property_evidence_needs_the_same_relation_instance_across_subject_types() {
                 state.sources.insert(id.into(), source(id, text, None));
             }
             state.with_engine(registry(), |engine, _| {
-                engine.ingest(common::grounded(candidate(
+                engine.seed_fixture(common::grounded(candidate(
                     "party",
                     "小明",
                     "birthday_party_budget",
@@ -711,14 +712,14 @@ fn correction_is_not_current_or_true_history_and_partial_message_survives() {
             s.sources
                 .insert("new".into(), source("new", "纠正：我住在苏州。", None));
             s.with_engine(registry(), |e, _| {
-                let old = id(e.ingest(common::grounded(candidate(
+                let old = id(e.seed_fixture(common::grounded(candidate(
                     "old",
                     "self",
                     "lives_in",
                     "上海",
                     "我住在上海",
                 )))?);
-                let good = id(e.ingest(common::grounded(candidate(
+                let good = id(e.seed_fixture(common::grounded(candidate(
                     "old",
                     "self",
                     "uses",
@@ -730,7 +731,7 @@ fn correction_is_not_current_or_true_history_and_partial_message_survives() {
                     target: Some(old),
                     reason: SupersedeReason::Correction,
                 };
-                let new = id(e.ingest(common::grounded(c))?);
+                let new = id(e.seed_fixture(common::grounded(c))?);
                 Ok((old, good, new))
             })
         })
@@ -852,7 +853,7 @@ fn conflicts_resolve_before_limit_and_mandatory_budget_is_explicit() {
     let mut s = db.open("alice");
     s.transaction(|st| {
         st.with_engine(registry(), |e, _| {
-            let first = id(e.ingest(common::grounded(candidate(
+            let first = id(e.seed_fixture(common::grounded(candidate(
                 "a",
                 "self",
                 "uses",
@@ -866,7 +867,7 @@ fn conflicts_resolve_before_limit_and_mandatory_budget_is_explicit() {
             let mut rule = candidate("rule", "self", "reply", "中文", "必须使用中文");
             rule.memory_type = MemoryType::Constraint;
             rule.retention_tier = RetentionTier::Durable;
-            e.ingest(common::grounded(rule))?;
+            e.seed_fixture(common::grounded(rule))?;
             Ok(())
         })
     })
@@ -908,7 +909,7 @@ fn expiry_retraction_and_pending_source_do_not_revive_old_rules() {
                 c.memory_type = MemoryType::Preference;
                 c.temporal.expires_at = Some(Timestamp(150));
                 c.retention_tier = RetentionTier::ShortTerm;
-                e.ingest(common::grounded(c))?;
+                e.seed_fixture(common::grounded(c))?;
                 Ok(())
             })
         })
@@ -959,14 +960,14 @@ fn original_query_keeps_multiple_subjects_and_older_evidence_without_planner_fil
                 ),
             );
             s.with_engine(registry(), |e, _| {
-                e.ingest(common::grounded(candidate(
+                e.seed_fixture(common::grounded(candidate(
                     "a",
                     "child",
                     "health",
                     "带药",
                     "孩子出行带药",
                 )))?;
-                e.ingest(common::grounded(candidate(
+                e.seed_fixture(common::grounded(candidate(
                     "a",
                     "self",
                     "travel",
@@ -1014,7 +1015,7 @@ fn trusted_valid_time_is_enforced_on_both_lanes_and_source_quota_is_visible() {
                     at: Timestamp(150),
                     source: TemporalSource::Explicit,
                 });
-                e.ingest(common::grounded(c))?;
+                e.seed_fixture(common::grounded(c))?;
                 Ok(())
             })
         })
@@ -1109,7 +1110,7 @@ fn state_annotations_carry_a_recorded_update_state_and_omit_unknown_ones() {
             s.sources
                 .insert("new".into(), source("new", "纠正：我住在苏州。", None));
             s.with_engine(registry(), |e, _| {
-                let old = id(e.ingest(common::grounded(candidate(
+                let old = id(e.seed_fixture(common::grounded(candidate(
                     "old",
                     "self",
                     "lives_in",
@@ -1121,7 +1122,7 @@ fn state_annotations_carry_a_recorded_update_state_and_omit_unknown_ones() {
                     target: Some(old),
                     reason: SupersedeReason::Correction,
                 };
-                let new = id(e.ingest(common::grounded(c))?);
+                let new = id(e.seed_fixture(common::grounded(c))?);
                 Ok((old, new))
             })
         })

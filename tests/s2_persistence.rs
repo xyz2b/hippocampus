@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use rusqlite::{Connection, params};
@@ -48,7 +49,7 @@ fn ingest(state: &mut PersistedMemoryState) -> PersistenceResult<()> {
     let mut predicates = InMemoryPredicateRegistry::default();
     predicates.register(Predicate::from("lives_in"), Cardinality::Single);
     state.with_engine(predicates, |engine, _| {
-        let outcome = engine.ingest(common::grounded(CandidateMemory::new(
+        let outcome = engine.seed_fixture(common::grounded(CandidateMemory::new(
             UserId::from("alice"),
             EntityId::from("self"),
             MemoryType::Fact,
@@ -62,7 +63,7 @@ fn ingest(state: &mut PersistedMemoryState) -> PersistenceResult<()> {
                 "我住在上海",
             ),
         )))?;
-        assert!(matches!(outcome, IngestOutcome::Applied { .. }));
+        assert!(matches!(outcome, FixtureOutcome::Applied { .. }));
         Ok(())
     })
 }
@@ -542,7 +543,6 @@ fn disabled_capture_and_cancellation_do_not_store_or_start_model_processing() {
 
     let db = TestDb::new();
     let config = ChatConfig {
-        write_pipeline: hippocampus::chat::WritePipeline::Legacy,
         recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
         source_capture_enabled: false,
         ..ChatConfig::default()
@@ -591,7 +591,6 @@ fn capture_storage_read_failure_stops_prepare_before_models() {
     let mut service = ChatMemoryService::new(
         db.open("alice"),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             ..Default::default()
         },

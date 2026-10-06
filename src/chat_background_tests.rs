@@ -170,9 +170,8 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
         crate::chat::RecallPipeline::RecallV3,
     ] {
         let db = Db::new();
-        // Keep this old-engine publication guard until execution cleanup; JSON legacy is rejected.
+        // T1 publication survives corrupt post-commit snapshots in both recall dispatches.
         let config = ChatConfig {
-            write_pipeline: crate::chat::WritePipeline::Legacy,
             recall_pipeline,
             model_budget: Some(
                 serde_json::from_value(json!({"group_id":"global-context-fixture","max_calls":4}))
@@ -180,46 +179,15 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
             ),
             ..Default::default()
         };
-        let mut service = ChatMemoryService::new(
+        let service = ChatMemoryService::new(
             SqliteMemoryStore::open(&db.0, OWNER.into()).unwrap(),
             config,
         )
         .unwrap();
-        let (mut c, sent) = client();
-        let requests = Arc::clone(&sent);
-        c.transport = Some(Arc::new(move |request| {
-            let body: Json =
-                serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-            requests.lock().unwrap().push(body.clone());
-            let input: Json = serde_json::from_str(body["input"].as_str().unwrap()).unwrap();
-            let out = if body["text"]["format"]["name"] == "personal_memory_source_support_v1" {
-                json!({"review_binding":input["review_binding"],"omission_supported":false,
-                    "coverage":{"status":"complete","missing_user_spans":[]},
-                    "reviews":[{"candidate_index":0,"issues":[],
-                        "current_user_quote":input["current_user_turn"],
-                        "checks":{"subject":"supported","relation":"supported","value":"supported",
-                            "polarity":"supported","scope":"supported","temporal":"supported",
-                            "intent":"supported","source":"supported","metadata":"supported"},
-                        "evidence":[{"turn_index":0,"quote":input["current_user_turn"]}]}]})
-            } else {
-                json!({"candidates":[{"subject_id":"self","unresolved_subject":null,
-                    "memory_type":"constraint","predicate":"response_language",
-                    "value":{"kind":"text","text":"中文","integer":null,"boolean":null,"entity_id":null},
-                    "polarity":null,"strength":null,"scope":{"domain":null,"conditions":{
-                        "companion_roles":[],"companion_entity_ids":[],"geography":null,"country":null,
-                        "city":null,"date":null,"time_of_day":null,"activities":[],"task_id":null}},
-                    "retention_tier":"durable","valid_from":null,"valid_to":null,"expires_at":null,
-                    "temporal_expression":null,"extraction_confidence":"high","certainty":"high",
-                    "source":"user_statement","intent":{"kind":"assert","target_memory_id":null,"reason":null},
-                    "explicit_memory_request":true,"cross_turn_useful":true,"tags":[]}]})
-            };
-            Ok(envelope(out))
-        }));
-        service.inject_model_client(c);
         let shared = Mutex::new(service);
         let remember = |session: &str| {
             let arguments = json!({"text":"以后无论聊什么，回答都必须使用中文。",
-                "session_id":session,"turn_id":"one"});
+                "session_id":session,"turn_id":"one","capture_source":true});
             let response = ChatMemoryService::call_shared(
                 &shared,
                 "memory_remember",
@@ -257,11 +225,8 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
         let (arguments, committed) = remember("context-failure");
         assert_ne!(committed.is_error, Some(true));
         let body = committed.structured_content.as_ref().unwrap();
-        assert_eq!(body["replayed"], false);
-        assert_eq!(
-            body["outcomes"][0]["Ingested"]["Applied"]["action"],
-            "Reinforce"
-        );
+        assert_eq!(body["source"]["status"], "stored");
+        assert_eq!(body["enrichment"]["status"], "queued");
         assert_eq!(body["global_context"]["status"], "unavailable");
         assert!(shared.lock().unwrap().operation().connect().is_err());
         let published = ChatMemoryService::publish_shared_response(
@@ -283,13 +248,12 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
             )
             .is_err()
         );
-        assert_eq!(sent.lock().unwrap().len(), 4);
         // Inspect SQL directly: an operation connection intentionally rejects the corrupt profile.
         let connection = rusqlite::Connection::open(&db.0).unwrap();
         let calls: i64 = connection
             .query_row("SELECT count(*) FROM model_calls", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(calls, 4);
+        assert_eq!(calls, 0);
         let state: String = connection
             .query_row(
                 "SELECT state_json FROM memory_profiles WHERE owner_id=?1",

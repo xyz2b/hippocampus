@@ -238,19 +238,13 @@ impl ChatMemoryService {
                         crate::openai::recall_models::fingerprint(&json!(key))
                     )
                 })))?;
-                if input.offline
-                    && self.config.enrichment_mode == EnrichmentMode::Inline
-                    && self.config.write_pipeline == WritePipeline::Legacy
-                {
-                    return Err("offline prepare requires enrichment_mode off/deferred".into());
-                }
                 let query = input.user_turn.text.clone();
                 let context = input.user_turn.history.clone();
                 let task_id = input.user_turn.task_id.clone();
                 let capture = input.user_turn.capture_source;
                 let at = input.user_turn.observed_at;
                 let source_request = serde_json::to_value(&input.user_turn)?;
-                let saved = self.remember(input.user_turn, &cancelled, false, operation);
+                let saved = self.remember(input.user_turn, &cancelled);
                 let mut receipt = self.prepare_fragments(&key, &source_request, &saved)?;
                 let rejected = matches!(
                     receipt["source"]["status"].as_str(),

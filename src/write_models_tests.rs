@@ -335,8 +335,8 @@ fn configured_roles_reach_requests_and_bindings_without_changing_legacy_requests
     provider
         .client
         .structured_output(
-            ModelStage::Extraction,
-            "legacy_probe",
+            ModelStage::Reader,
+            "client_probe",
             W1_PROMPT,
             json!({}),
             w1_schema(),

@@ -1,4 +1,4 @@
-//! Entity resolution 与 admission 之前使用的 CandidateMemory 暂存区。
+//! 旧 CandidateMemory 暂存快照；仅保留反序列化、读取和删除。
 
 use std::collections::BTreeMap;
 
@@ -25,7 +25,7 @@ pub struct StagedCandidate {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
-/// V1 内存 pending queue；解析后的 Candidate 经引擎处理成功后移除。
+/// 旧版 pending queue；不再支持新增、重判或提交。
 pub struct CandidateStaging {
     /// 下一个进程内 staged candidate 编号。
     next_id: u64,
@@ -67,42 +67,6 @@ impl CandidateStaging {
     /// 是否没有 Candidate 等待澄清。
     pub fn is_empty(&self) -> bool {
         self.pending.is_empty()
-    }
-
-    pub(crate) fn insert(
-        &mut self,
-        candidate: CandidateMemory,
-        resolution: EntityResolution,
-    ) -> StagedCandidateId {
-        debug_assert!(!matches!(resolution, EntityResolution::Resolved(_)));
-        self.next_id += 1;
-        let id = StagedCandidateId(self.next_id);
-        self.pending.insert(
-            id,
-            StagedCandidate {
-                id,
-                candidate,
-                resolution,
-            },
-        );
-        id
-    }
-
-    pub(crate) fn update(
-        &mut self,
-        id: StagedCandidateId,
-        candidate: CandidateMemory,
-        resolution: EntityResolution,
-    ) {
-        debug_assert!(!matches!(resolution, EntityResolution::Resolved(_)));
-        self.pending.insert(
-            id,
-            StagedCandidate {
-                id,
-                candidate,
-                resolution,
-            },
-        );
     }
 
     pub(crate) fn remove(&mut self, id: StagedCandidateId) -> Option<StagedCandidate> {

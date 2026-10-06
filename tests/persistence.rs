@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use std::{
     path::PathBuf,
@@ -64,8 +65,8 @@ fn insert(store: &mut SqliteMemoryStore, candidate: CandidateMemory) -> MemoryId
     store
         .transaction(|state| {
             state.with_engine(registry(), |engine, _| {
-                match engine.ingest(common::grounded(candidate))? {
-                    IngestOutcome::Applied {
+                match engine.seed_fixture(common::grounded(candidate))? {
+                    FixtureOutcome::Applied {
                         memory_id: Some(id),
                         ..
                     } => Ok(id),
@@ -82,17 +83,7 @@ fn memory_list_is_a_management_directory_not_a_recall_fallback() {
     let saved = insert(&mut db.open("alice"), candidate("E2", "一台机器"));
     let mut pending = candidate("pending", "私密值");
     pending.subject = CandidateSubject::Unresolved("孩子".into());
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                assert!(matches!(
-                    engine.ingest_or_stage(common::grounded(pending), entities)?,
-                    CandidateIngestOutcome::Pending { .. }
-                ));
-                Ok(())
-            })
-        })
-        .unwrap();
+    common::stage_fixture(&db.open("alice"), pending);
 
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     let listing = service
@@ -200,8 +191,8 @@ fn bootstrap_uses_local_store_and_filters_unrelated_scoped_and_expired_memories(
             state.with_engine(registry, |engine, _| {
                 for value in [language, style, scoped, expired, candidate("home", "上海")] {
                     assert!(matches!(
-                        engine.ingest(common::grounded(value))?,
-                        IngestOutcome::Applied { .. }
+                        engine.seed_fixture(common::grounded(value))?,
+                        FixtureOutcome::Applied { .. }
                     ));
                 }
                 Ok(())
@@ -255,7 +246,7 @@ fn failed_batch_rolls_back_supersession_and_allocated_ids() {
     };
     let result: PersistenceResult<()> = store.transaction(|state| {
         state.with_engine(registry(), |engine, _| {
-            engine.ingest(common::grounded(replacement))?;
+            engine.seed_fixture(common::grounded(replacement))?;
             // A later candidate or storage operation fails after ending the old version and inserting the new one.
             Err("injected failure before commit".into())
         })
@@ -336,17 +327,7 @@ fn pending_entities_survive_restart_and_clarification_is_unsupported() {
     let db = TestDb::new();
     let mut candidate = candidate("one", "上海");
     candidate.subject = CandidateSubject::Unresolved("孩子".into());
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                assert!(matches!(
-                    engine.ingest_or_stage(common::grounded(candidate), entities)?,
-                    CandidateIngestOutcome::Pending { .. }
-                ));
-                Ok(())
-            })
-        })
-        .unwrap();
+    common::stage_fixture(&db.open("alice"), candidate);
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     service.call("memory_entity_upsert", json!({"id":"child", "canonical_name":"小明", "aliases":["孩子"], "entity_type":"Person"}), || false).unwrap();
     drop(service);
@@ -384,14 +365,7 @@ fn only_trusted_database_load_restores_matching_pending_source_support() {
     let db = TestDb::new();
     let mut pending = candidate("one", "上海");
     pending.subject = CandidateSubject::Unresolved("孩子".into());
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                engine.ingest_or_stage(common::grounded(pending), entities)?;
-                Ok(())
-            })
-        })
-        .unwrap();
+    common::stage_fixture(&db.open("alice"), pending);
     let restored = db.open("alice").read().unwrap();
     assert!(
         restored
@@ -459,24 +433,12 @@ fn only_trusted_database_load_restores_matching_pending_source_support() {
 #[test]
 fn unsupported_clarification_preserves_each_pending_fact_for_deletion() {
     let db = TestDb::new();
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                for (turn, predicate, value) in
-                    [("one", "lives_in", "上海"), ("two", "owns", "书包")]
-                {
-                    let mut pending = candidate(turn, value);
-                    pending.predicate = Predicate::from(predicate);
-                    pending.subject = CandidateSubject::Unresolved("孩子".into());
-                    assert!(matches!(
-                        engine.ingest_or_stage(common::grounded(pending), entities)?,
-                        CandidateIngestOutcome::Pending { .. }
-                    ));
-                }
-                Ok(())
-            })
-        })
-        .unwrap();
+    for (turn, predicate, value) in [("one", "lives_in", "上海"), ("two", "owns", "书包")] {
+        let mut pending = candidate(turn, value);
+        pending.predicate = Predicate::from(predicate);
+        pending.subject = CandidateSubject::Unresolved("孩子".into());
+        common::stage_fixture(&db.open("alice"), pending);
+    }
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     service
         .call(

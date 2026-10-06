@@ -80,13 +80,6 @@ impl Evidence {
         }
     }
 
-    pub(crate) fn is_complete(&self) -> bool {
-        !self.id.0.trim().is_empty()
-            && !self.session_id.0.trim().is_empty()
-            && !self.turn_id.0.trim().is_empty()
-            && !self.quote.trim().is_empty()
-    }
-
     pub(crate) fn same_turn(&self, other: &Self) -> bool {
         self.session_id == other.session_id && self.turn_id == other.turn_id
     }
@@ -589,36 +582,9 @@ impl CandidateMemory {
     }
 
     /// Only the runtime's source verifier or checked entity rebinding may issue approval.
+    #[cfg(test)]
     pub(crate) fn bind_source_support(&mut self) {
         self.source_support = Some(self.source_support_snapshot());
-    }
-
-    /// The generic slot retains a complete USER sentence, including its qualifiers.
-    /// Dedicated predicates may carry typed values approved by semantic source review.
-    pub(crate) fn has_complete_fact_value(&self) -> bool {
-        if self.predicate.0 != "fact" {
-            return true;
-        }
-        let MemoryValue::Text(value) = &self.value else {
-            return false;
-        };
-        let value = fact_terminal(value);
-        !value.is_empty()
-            && self.evidence.iter().any(|evidence| {
-                fact_terminal(&evidence.quote) == value
-                    || sentence_runs(&evidence.quote)
-                        .into_iter()
-                        .any(|run| fact_terminal(run) == value)
-            })
-    }
-
-    pub(crate) fn has_complete_evidence(&self) -> bool {
-        let mut ids = std::collections::HashSet::new();
-        !self.evidence.is_empty()
-            && self
-                .evidence
-                .iter()
-                .all(|evidence| evidence.is_complete() && ids.insert(&evidence.id))
     }
 }
 
@@ -711,12 +677,6 @@ impl Memory {
             tags: candidate.tags.clone(),
         }
     }
-
-    pub fn same_assertion(&self, candidate: &CandidateMemory) -> bool {
-        self.value == candidate.value
-            && self.polarity == candidate.polarity
-            && self.strength == candidate.strength
-    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -770,159 +730,9 @@ impl RuntimeContext {
     }
 }
 
-/// 把自然语言 conversation 拆成 atomic candidate memories 的适配器接口。
-pub trait MemoryExtractor {
-    type Error;
-
-    fn extract(&self, conversation: &str) -> Result<Vec<CandidateMemory>, Self::Error>;
-}
-
 /// 把自然语言 query 转成 retrieval 所需 `RuntimeContext` 的适配器接口。
 pub trait RuntimeContextBuilder {
     type Error;
 
     fn build(&self, query: &str) -> Result<RuntimeContext, Self::Error>;
-}
-
-fn fact_terminal(text: &str) -> &str {
-    text.trim()
-        .trim_end_matches(['。', '.', '！', '!', '？', '?', ';', '；', '\n', '\r'])
-        .trim()
-}
-
-/// USER sentences in order, each with its closing mark; a '.' closes only before space or end.
-fn user_sentences(quote: &str) -> impl Iterator<Item = &str> {
-    let mut start = 0;
-    let mut marks = quote.char_indices().peekable();
-    std::iter::from_fn(move || {
-        while let Some((at, mark)) = marks.next() {
-            let end = at + mark.len_utf8();
-            let boundary = matches!(mark, '。' | '！' | '!' | '？' | '?' | ';' | '；' | '\n' | '\r')
-                || mark == '.' && marks.peek().is_none_or(|(_, next)| next.is_whitespace());
-            if boundary {
-                let sentence = &quote[start..end];
-                start = end;
-                return Some(sentence);
-            }
-        }
-        let rest = &quote[start..];
-        start = quote.len();
-        (!fact_terminal(rest).is_empty()).then_some(rest)
-    })
-    .filter(|sentence| !fact_terminal(sentence).is_empty())
-}
-
-/// Every run of consecutive whole USER sentences, as slices of the quote.
-fn sentence_runs(quote: &str) -> Vec<&str> {
-    let bounds: Vec<(usize, usize)> = user_sentences(quote)
-        .map(|sentence| {
-            let start = sentence.as_ptr() as usize - quote.as_ptr() as usize;
-            (start, start + sentence.len())
-        })
-        .collect();
-    // ponytail: O(n²) runs per quote; USER turns are a few dozen sentences at most.
-    (0..bounds.len())
-        .flat_map(|i| (i..bounds.len()).map(move |j| (i, j)))
-        .map(|(i, j)| &quote[bounds[i].0..bounds[j].1])
-        .collect()
-}
-
-/// The generic fact value is runtime-owned: the complete USER sentence (or run of consecutive
-/// whole sentences) the model pointed at.
-/// A text fragment selects the one sentence containing it; any other value kind is only
-/// unambiguous when the quote is a single sentence. Otherwise the value is left unchanged.
-pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryValue {
-    // Whitespace and quote typography are not USER content: a model copy with extra spaces or
-    // straight/doubled quotes still points at the same sentence, and the stored value is always
-    // the USER's own text.
-    let squash = |text: &str| {
-        text.split_whitespace()
-            .collect::<Vec<_>>()
-            .join(" ")
-            .replace(['\u{2018}', '\u{2019}', '\u{201B}'], "'")
-            .replace(['\u{201C}', '\u{201D}'], "\"")
-            .replace("''", "'")
-    };
-    let whole = squash(fact_terminal(quote));
-    let pick = |fragment: Option<&str>| {
-        let mut hits = user_sentences(quote).filter(|sentence| {
-            fragment.is_none_or(|f| squash(fact_terminal(sentence)).contains(f))
-        });
-        let hit = hits.next()?;
-        hits.next().is_none().then(|| hit.trim().to_owned())
-    };
-    let chosen = match &value {
-        MemoryValue::Text(text) => {
-            let raw = squash(text);
-            let text = squash(fact_terminal(text));
-            if text.is_empty() {
-                None
-            } else if text == whole {
-                Some(quote.trim().to_owned())
-            } else if let Some(sentence) = sentence_runs(quote)
-                .into_iter()
-                .find(|s| squash(fact_terminal(s)) == text)
-            {
-                // Store the USER's exact sentence(s), not the model's copy with stray marks.
-                Some(sentence.trim().to_owned())
-            } else if let Some(sentence) = pick(Some(&text)) {
-                Some(sentence)
-            } else {
-                // The model appended non-USER text (a translation, a note, a repeat, a stray
-                // token) after complete USER sentences: keep only those sentences.
-                sentence_runs(quote)
-                    .into_iter()
-                    .filter(|run| raw.starts_with(&squash(run.trim())))
-                    .max_by_key(|run| run.len())
-                    .map(|kept| {
-                        crate::diagnostics::record("fact_value_trimmed", || {
-                            serde_json::json!({"kept":kept.trim(),
-                                "dropped":raw[squash(kept.trim()).len()..]})
-                        });
-                        kept.trim().to_owned()
-                    })
-            }
-        }
-        _ => pick(None),
-    };
-    chosen.map_or(value, MemoryValue::Text)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{MemoryValue, complete_fact_sentence};
-
-    #[test]
-    fn generic_fact_keeps_user_sentences_despite_quotes_and_appended_text() {
-        let quote = "I\u{2019}ve been tidying daily. It helps a lot. Any tips?";
-        let fact = |text: &str| complete_fact_sentence(MemoryValue::Text(text.into()), quote);
-        let user = |text: &str| MemoryValue::Text(text.into());
-        // Straight or doubled quotes still point at the USER's curly-quoted sentence.
-        assert_eq!(fact("I've been tidying daily."), user("I\u{2019}ve been tidying daily."));
-        assert_eq!(fact("I''ve been tidying daily."), user("I\u{2019}ve been tidying daily."));
-        // Appended translation, repeat or stray token: only the USER sentences are kept.
-        assert_eq!(
-            fact("I've been tidying daily. It helps a lot.我每天整理。"),
-            user("I\u{2019}ve been tidying daily. It helps a lot.")
-        );
-        assert_eq!(fact("It helps a lot.It helps a lot."), user("It helps a lot."));
-        // A rewrite or a mid-sentence start is not USER text and stays unchanged (rejected).
-        assert_eq!(fact("Tidying helps me a lot."), user("Tidying helps me a lot."));
-        assert_eq!(fact("helps a lot. Any tips?x"), user("helps a lot. Any tips?x"));
-    }
-
-    #[test]
-    fn generic_fact_accepts_consecutive_whole_sentences_only() {
-        let quote = "Books help. I stop emails by 7 pm. It helps me relax. Any tips?";
-        let fact = |text: &str| complete_fact_sentence(MemoryValue::Text(text.into()), quote);
-        assert_eq!(
-            fact("I stop emails by 7 pm. It helps me relax."),
-            MemoryValue::Text("I stop emails by 7 pm. It helps me relax.".into())
-        );
-        // Not consecutive: only the leading run of USER sentences is kept.
-        assert_eq!(
-            fact("Books help. It helps me relax."),
-            MemoryValue::Text("Books help.".into())
-        );
-    }
 }

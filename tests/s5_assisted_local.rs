@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use serde_json::{Value, json};
@@ -126,7 +127,7 @@ fn proposed_single_relation_requires_one_user_bound_subject_and_linked_assertion
             }
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, subject, quote, value) in rows {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -291,7 +292,7 @@ fn proposed_single_relation_requires_one_user_bound_subject_and_linked_assertion
             record.enrichment = "committed".into();
             state.sources.insert("M1".into(), record);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("松石47"),
                     MemoryType::Fact,
@@ -355,7 +356,7 @@ fn proposed_single_relation_requires_one_user_bound_subject_and_linked_assertion
                 record.enrichment = "committed".into();
                 state.sources.insert(format!("record-{source_id}"), record);
                 state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("松石47"),
                         MemoryType::Fact,
@@ -404,7 +405,7 @@ fn proposed_single_relation_requires_one_user_bound_subject_and_linked_assertion
             record.enrichment = "committed".into();
             state.sources.insert("E2".into(), record);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("松石47"),
                     MemoryType::Fact,
@@ -446,7 +447,7 @@ fn proposed_single_relation_binds_a_device_without_project_assumptions() {
             record.enrichment = "committed".into();
             state.sources.insert("record-F1".into(), record);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("厨房净水器"),
                     MemoryType::Fact,
@@ -537,7 +538,7 @@ fn committed_choice_answers_natural_single_relation_questions_only() {
             }
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, subject, text, value) in rows {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -804,8 +805,8 @@ fn soft_relevant_conflicts_include_history_after_original_evidence() {
                         "mint tea",
                     ),
                 );
-                let first_id = match engine.ingest(common::grounded(first))? {
-                    IngestOutcome::Applied {
+                let first_id = match engine.seed_fixture(common::grounded(first))? {
+                    FixtureOutcome::Applied {
                         memory_id: Some(id),
                         ..
                     } => id,
@@ -975,7 +976,7 @@ fn soft_query_cannot_add_other_project_memory_or_unnamed_later_segment() {
                 ),
             );
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("赤铜82"),
                     MemoryType::Fact,
@@ -1374,7 +1375,7 @@ fn source_linked_relation_returns_only_the_verified_quote() {
                         "cost",
                     ),
                 ] {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -1508,7 +1509,7 @@ fn original_n05_generic_sentences_do_not_license_comparison_sources() {
             }
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, subject, text, _, _) in rows {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -1584,7 +1585,6 @@ fn original_n05_generic_sentences_do_not_license_comparison_sources() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Assisted),
             enrichment_mode: EnrichmentMode::Off,
@@ -1657,7 +1657,7 @@ fn comparison_requires_both_source_linked_relations_for_the_same_subject() {
                         .into_iter()
                         .filter(|(id, ..)| include_deployment || *id != "deployment")
                     {
-                        engine.ingest(common::grounded(CandidateMemory::new(
+                        engine.seed_fixture(common::grounded(CandidateMemory::new(
                             UserId::from("alice"),
                             EntityId::from(subject),
                             MemoryType::Fact,
@@ -1778,7 +1778,7 @@ fn comparison_does_not_treat_question_wording_as_a_property_assertion() {
                 record.enrichment = "committed".into();
                 state.sources.insert("questionish".into(), record);
                 state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("松石47"),
                         MemoryType::Fact,
@@ -1836,7 +1836,7 @@ fn comparison_does_not_promote_invalidated_property_assertions() {
                     record.enrichment = "committed".into();
                     state.sources.insert(id.into(), record);
                     state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                        engine.ingest(common::grounded(CandidateMemory::new(
+                        engine.seed_fixture(common::grounded(CandidateMemory::new(
                             UserId::from("alice"),
                             EntityId::from("松石47"),
                             MemoryType::Fact,
@@ -1896,7 +1896,7 @@ fn comparison_requires_a_memory_link_for_each_property() {
             record.enrichment = "committed".into();
             state.sources.insert("mixed".into(), record);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("松石47"),
                     MemoryType::Fact,
@@ -1961,7 +1961,7 @@ fn newer_uncommitted_relation_without_correction_word_blocks_comparison() {
                 record.enrichment = "committed".into();
                 state.sources.insert(id.into(), record);
                 state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("松石47"),
                         MemoryType::Fact,
@@ -2054,7 +2054,7 @@ fn comparison_reserves_source_slots_for_both_properties() {
             }
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, _, quote, property, value, _) in rows {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("松石47"),
                         MemoryType::Fact,
@@ -2118,7 +2118,7 @@ fn pending_revision_of_one_compared_property_blocks_old_mixed_quote() {
                     ("choice", "技术选择", "SQLite", OLD),
                     ("deployment", "部署限制", "一台机器", DEPLOYMENT),
                 ] {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("松石47"),
                         MemoryType::Fact,
@@ -2190,7 +2190,7 @@ fn truncated_source_links_cannot_hide_a_pending_compared_revision() {
                     DEPLOYMENT,
                 ));
                 for (id, property, value, quote) in rows {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("松石47"),
                         MemoryType::Fact,
@@ -2249,7 +2249,7 @@ fn committed_self_preference_answers_what_i_like_without_clarification() {
             committed.enrichment = "committed".into();
             state.sources.insert("preference".into(), committed);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("self"),
                     MemoryType::Preference,
@@ -2342,7 +2342,7 @@ fn linked_quotes_prove_cause_time_and_current_correction_without_cross_claims() 
                     )
                 };
                 for source_id in ["phone", "phone_decoy"] {
-                    engine.ingest(common::grounded(make(
+                    engine.seed_fixture(common::grounded(make(
                         source_id,
                         "王阿姨",
                         "phone_failure_cause",
@@ -2350,20 +2350,20 @@ fn linked_quotes_prove_cause_time_and_current_correction_without_cross_claims() 
                     )))?;
                 }
                 for source_id in ["appointment", "appointment_decoy"] {
-                    engine.ingest(common::grounded(make(
+                    engine.seed_fixture(common::grounded(make(
                         source_id,
                         "牙医预约",
                         "appointment_time",
                         "周二上午",
                     )))?;
                 }
-                let old = engine.ingest(common::grounded(make(
+                let old = engine.seed_fixture(common::grounded(make(
                     "budget_old",
                     "松石47",
                     "maintenance_budget",
                     "500 元",
                 )))?;
-                let IngestOutcome::Applied {
+                let FixtureOutcome::Applied {
                     memory_id: Some(old_id),
                     ..
                 } = old
@@ -2375,7 +2375,7 @@ fn linked_quotes_prove_cause_time_and_current_correction_without_cross_claims() 
                     target: Some(old_id),
                     reason: SupersedeReason::Correction,
                 };
-                engine.ingest(common::grounded(corrected))?;
+                engine.seed_fixture(common::grounded(corrected))?;
                 Ok(())
             })
         })
@@ -2531,7 +2531,7 @@ fn uncommitted_newer_corrections_do_not_leave_old_current_answers() {
             }
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, subject, property, value, quote) in old {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -2658,7 +2658,7 @@ fn older_pending_revision_does_not_hide_newer_committed_answer() {
             committed.enrichment = "committed".into();
             state.sources.insert("committed".into(), committed);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("赵姐"),
                     MemoryType::Fact,
@@ -2703,7 +2703,7 @@ fn uncommitted_revision_blocks_legacy_memory_without_source_sequence() {
             pending.enrichment = "extraction_incomplete".into();
             state.sources.insert("new_pending".into(), pending);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
-                engine.ingest(common::grounded(CandidateMemory::new(
+                engine.seed_fixture(common::grounded(CandidateMemory::new(
                     UserId::from("alice"),
                     EntityId::from("赵姐"),
                     MemoryType::Fact,
@@ -2773,7 +2773,7 @@ fn incidental_person_mention_does_not_hide_their_unrelated_fact() {
             state.sources.insert("mixed".into(), revision);
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, subject, property, value, quote) in old {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -2853,7 +2853,7 @@ fn committed_source_with_unapplied_correction_cannot_keep_old_slot_current() {
                     ("old", "邮箱", "old@example.com", old),
                     ("partial", "职业", "教师", "赵姐的职业是教师。"),
                 ] {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("赵姐"),
                         MemoryType::Fact,
@@ -2886,7 +2886,6 @@ fn committed_source_with_unapplied_correction_cannot_keep_old_slot_current() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Assisted),
             ..ChatConfig::default()

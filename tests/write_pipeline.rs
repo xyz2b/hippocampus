@@ -34,15 +34,10 @@ impl Drop for Db {
         let _ = std::fs::remove_dir_all(self.0.parent().unwrap());
     }
 }
-fn config(pipeline: &str, mode: &str) -> ChatConfig {
-    // Only historical-data fixtures construct an old internal executor. File configs reject legacy.
-    let mut config: ChatConfig = serde_json::from_value(json!({"enrichment_mode":mode,
+fn config(_pipeline: &str, mode: &str) -> ChatConfig {
+    serde_json::from_value(json!({"enrichment_mode":mode,
         "model_budget":{"group_id":"write-pipeline-fixture","max_calls":20}}))
-    .unwrap();
-    if pipeline == "legacy" {
-        config.write_pipeline = WritePipeline::Legacy;
-    }
-    config
+    .unwrap()
 }
 
 fn turn(id: &str) -> Value {
@@ -159,16 +154,36 @@ fn write_pipeline_t1_binds_off_and_deferred_and_requires_capture() {
 #[test]
 fn write_pipeline_reopen_and_replay_preserve_each_bound_version() {
     let db = Db::new();
-    let legacy = save(&mut db.service("legacy", "deferred"), "old");
+    save(&mut db.service("w4_runtime_v1", "deferred"), "old");
+    db.open()
+        .transaction(|state| {
+            let source = state.sources.values_mut().next().unwrap();
+            source.task.processing_version = Some("s5_enrichment_v1".into());
+            source.result = Some(json!({"enrichment_mode":"deferred"}));
+            Ok(())
+        })
+        .unwrap();
+    let legacy = save(&mut db.service("w4_runtime_v1", "off"), "old");
     assert_eq!(legacy["status"], "queued");
     assert_eq!(legacy["model_calls"], json!([]));
     let new = save(&mut db.service("w4_runtime_v1", "deferred"), "new");
     let before = serde_json::to_value(db.open().read().unwrap()).unwrap();
-    let replay = save(&mut db.service("w4_runtime_v1", "off"), "old");
+    let replay = save(&mut db.service("w4_runtime_v1", "inline"), "old");
+    assert_eq!(replay["source"], legacy["source"]);
+    assert_eq!(replay["enrichment"], legacy["enrichment"]);
+    assert_eq!(replay["original_result"], legacy["original_result"]);
+    assert_eq!(replay["model_calls"], json!([]));
+    assert_eq!(
+        replay["index"]["source_version"],
+        legacy["index"]["source_version"]
+    );
+    assert_eq!(
+        replay["index"]["source_revision"],
+        before["source_revision"]
+    );
     assert_eq!(replay["replayed"], true);
     assert_eq!(replay["enrichment_mode"], "deferred");
-    assert_eq!(replay["source"], legacy["source"]);
-    assert_eq!(save(&mut db.service("legacy", "inline"), "new"), new);
+    assert_eq!(save(&mut db.service("w4_runtime_v1", "off"), "new"), new);
     assert_eq!(
         serde_json::to_value(db.open().read().unwrap()).unwrap(),
         before
@@ -182,9 +197,9 @@ fn write_pipeline_reopen_and_replay_preserve_each_bound_version() {
         Some(W4_PROCESSING_VERSION)
     );
     assert_eq!(db.open().read().unwrap().sources.len(), 2);
-    let (_, source) = db.source("new");
+    let (_, source) = db.source("old");
     assert!(
-        db.service("legacy", "inline")
+        db.service("w4_runtime_v1", "inline")
             .enrich_source(&source.id)
             .unwrap_err()
             .to_string()
@@ -529,7 +544,16 @@ fn write_pipeline_http_new_drain_roundtrip() {
 #[test]
 fn write_pipeline_default_preserves_old_queued_sources_without_automatic_conversion() {
     let db = Db::new();
-    let saved = save(&mut db.service("legacy", "deferred"), "legacy-queued");
+    let mut service = db.service("w4_runtime_v1", "deferred");
+    let saved = save(&mut service, "legacy-queued");
+    db.open()
+        .transaction(|state| {
+            let source = state.sources.values_mut().next().unwrap();
+            source.task.processing_version = Some("s5_enrichment_v1".into());
+            source.result = Some(json!({"enrichment_mode":"deferred"}));
+            Ok(())
+        })
+        .unwrap();
     let before = serde_json::to_value(db.open().read().unwrap()).unwrap();
     let mut service = db.service("w4_runtime_v1", "deferred");
     assert_eq!(service.drain_enrichment(2).unwrap()["attempted"], 0);

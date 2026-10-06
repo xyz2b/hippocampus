@@ -1,4 +1,5 @@
 mod common;
+use common::LegacyFixture;
 
 use hippocampus::chat::{
     ChatConfig, ChatMemoryService, EnrichmentMode, RetrievalMode, memory_tools,
@@ -82,7 +83,7 @@ fn fixture() -> (Db, ChatMemoryService) {
             }
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (id, subject, _, quote, predicate, value) in rows {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from(subject),
                         MemoryType::Fact,
@@ -104,7 +105,6 @@ fn fixture() -> (Db, ChatMemoryService) {
     let service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Local),
             ..ChatConfig::default()
@@ -335,7 +335,6 @@ fn prepare_returns_the_same_contract_without_conflating_capture_and_recall() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Local),
             enrichment_mode: EnrichmentMode::Off,
@@ -382,7 +381,6 @@ fn bootstrap_and_non_questions_do_not_force_a_factual_answer() {
         let mut service = ChatMemoryService::new(
             db.open(),
             ChatConfig {
-                write_pipeline: hippocampus::chat::WritePipeline::Legacy,
                 recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
                 retrieval_mode: Some(mode),
                 ..ChatConfig::default()
@@ -430,7 +428,6 @@ fn legacy_validation_remains_unsupported_without_a_model_request() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Legacy),
             ..ChatConfig::default()
@@ -534,7 +531,6 @@ fn prepare_reports_saved_source_separately_when_recall_input_exceeds_bounds() {
     let mut service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Local),
             enrichment_mode: EnrichmentMode::Off,
@@ -647,7 +643,7 @@ fn generic_fact_fixture(values: &[(&str, &str)]) -> (Db, ChatMemoryService) {
                         ),
                     );
                     candidate.scope.conditions = vec![ScopeCondition::Task(TaskId::from("task-a"))];
-                    engine.ingest(common::grounded(candidate))?;
+                    engine.seed_fixture(common::grounded(candidate))?;
                 }
                 Ok(())
             })
@@ -656,7 +652,6 @@ fn generic_fact_fixture(values: &[(&str, &str)]) -> (Db, ChatMemoryService) {
     let service = ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Local),
             local_recall_budget: LocalRecallBudget {
@@ -858,7 +853,6 @@ fn pending_update_state_blocks_a_unique_current_answer() {
             service = ChatMemoryService::new(
                 db.open(),
                 ChatConfig {
-                    write_pipeline: hippocampus::chat::WritePipeline::Legacy,
                     recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
                     retrieval_mode: Some(RetrievalMode::Local),
                     local_recall_budget: LocalRecallBudget {
@@ -971,7 +965,7 @@ fn assisted_fixture(text: &str, quotes: &[&str], whole_sentence: bool) -> Db {
             state.sources.insert("F1".into(), source("F1", text, 1));
             state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                 for (index, quote) in quotes.iter().enumerate() {
-                    engine.ingest(common::grounded(CandidateMemory::new(
+                    engine.seed_fixture(common::grounded(CandidateMemory::new(
                         UserId::from("alice"),
                         EntityId::from("云杉会议"),
                         MemoryType::Fact,
@@ -997,7 +991,6 @@ fn assisted_service(db: &Db, base_url: String) -> ChatMemoryService {
     ChatMemoryService::new(
         db.open(),
         ChatConfig {
-            write_pipeline: hippocampus::chat::WritePipeline::Legacy,
             recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
             retrieval_mode: Some(RetrievalMode::Assisted),
             model_budget: Some(ModelBudgetConfig {
@@ -1358,7 +1351,6 @@ fn open_conflict_blocks_a_unique_current_answer() {
         let mut service = ChatMemoryService::new(
             db.open(),
             ChatConfig {
-                write_pipeline: hippocampus::chat::WritePipeline::Legacy,
                 recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
                 retrieval_mode: Some(RetrievalMode::Local),
                 local_recall_budget: LocalRecallBudget {
@@ -1446,7 +1438,6 @@ fn qualifiers_the_memory_cannot_express_block_a_plain_answer() {
         let mut service = ChatMemoryService::new(
             db.open(),
             ChatConfig {
-                write_pipeline: hippocampus::chat::WritePipeline::Legacy,
                 recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
                 retrieval_mode: Some(RetrievalMode::Local),
                 local_recall_budget: LocalRecallBudget {

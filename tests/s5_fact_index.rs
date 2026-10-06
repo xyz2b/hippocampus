@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use serde_json::{Value, json};
@@ -60,12 +61,14 @@ fn insert(
                     quote,
                 ),
             );
-            s.with_engine(registry(), |e, _| match e.ingest(common::grounded(c))? {
-                IngestOutcome::Applied {
-                    memory_id: Some(id),
-                    ..
-                } => Ok(id),
-                o => Err(format!("{o:?}").into()),
+            s.with_engine(registry(), |e, _| {
+                match e.seed_fixture(common::grounded(c))? {
+                    FixtureOutcome::Applied {
+                        memory_id: Some(id),
+                        ..
+                    } => Ok(id),
+                    o => Err(format!("{o:?}").into()),
+                }
             })
         })
         .unwrap()
@@ -506,8 +509,8 @@ fn correction_and_complete_negative_scoped_rendering() {
                     reason: SupersedeReason::Correction,
                 };
                 assert!(matches!(
-                    e.ingest(common::grounded(c))?,
-                    IngestOutcome::Applied { .. }
+                    e.seed_fixture(common::grounded(c))?,
+                    FixtureOutcome::Applied { .. }
                 ));
                 Ok(())
             })

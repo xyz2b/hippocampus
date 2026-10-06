@@ -14,7 +14,6 @@ use rmcp::{
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use crate::sqlite::TurnReceipt;
 use crate::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -37,7 +36,6 @@ pub enum EnrichmentMode {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum WritePipeline {
-    Legacy,
     #[default]
     W4RuntimeV1,
 }
@@ -66,26 +64,6 @@ mod configuration;
 #[path = "chat_recall.rs"]
 mod recall_dispatch;
 pub use background::BackgroundWorker;
-
-const ENRICHMENT_VERSION: &str = "s5_enrichment_v1";
-const ENRICHMENT_LEASE_SECONDS: i64 = 900;
-
-#[derive(Clone, Copy)]
-enum ClaimMode {
-    Inline,
-    Drain,
-    Explicit,
-}
-
-struct EnrichmentClaim {
-    key: String,
-    source_id: String,
-    request: Value,
-    observed_at: i64,
-    received_sequence: u64,
-    attempt_id: String,
-    claim_revision: u64,
-}
 
 #[derive(Clone, Debug, Serialize)]
 pub struct ChatConfig {
@@ -615,38 +593,6 @@ fn error_body(error: &(dyn std::error::Error + Send + Sync + 'static)) -> Value 
         .downcast_ref::<CaptureError>()
         .map(|e| e.0.clone())
         .unwrap_or_else(|| json!({"error":error.to_string()}))
-}
-
-fn capture_failure(
-    error: &(dyn std::error::Error + Send + Sync + 'static),
-) -> (&'static str, String) {
-    let reason = match error.downcast_ref::<OpenAiAdapterError>() {
-        Some(OpenAiAdapterError::Incomplete(reason)) => {
-            let status = if reason.starts_with("extraction:") {
-                "extraction_incomplete"
-            } else {
-                "review_incomplete"
-            };
-            return (status, status.into());
-        }
-        Some(OpenAiAdapterError::MissingBaseUrl) => "model_endpoint_missing".into(),
-        Some(OpenAiAdapterError::MissingApiKey) => "model_credentials_missing".into(),
-        Some(OpenAiAdapterError::NetworkDisabled) => "model_network_disabled".into(),
-        Some(OpenAiAdapterError::Budget(_)) => "model_budget_denied".into(),
-        Some(OpenAiAdapterError::Http(_)) => "model_transport_failed".into(),
-        Some(OpenAiAdapterError::Api { status, .. }) => format!("model_http_{status}"),
-        Some(OpenAiAdapterError::Refusal(_)) => "model_refused".into(),
-        Some(OpenAiAdapterError::InvalidResponse(_)) => "invalid_model_response".into(),
-        Some(OpenAiAdapterError::InvalidStructuredOutput(_)) => "invalid_candidates".into(),
-        Some(OpenAiAdapterError::SourceCoverageIncomplete) => "source_coverage_incomplete".into(),
-        Some(OpenAiAdapterError::InvalidContext(_)) => "invalid_model_context".into(),
-        None if error.to_string().starts_with("memory_revision_conflict") => {
-            "memory_revision_conflict".into()
-        }
-        None if error.to_string().starts_with("request cancelled") => "cancelled".into(),
-        None => "enrichment_commit_failed".into(),
-    };
-    ("failed", reason)
 }
 
 fn linked_candidates(
@@ -1903,434 +1849,6 @@ impl ChatMemoryService {
         })
     }
 
-    fn claim_source(
-        &mut self,
-        source_id: Option<&str>,
-        mode: ClaimMode,
-    ) -> PersistenceResult<Option<EnrichmentClaim>> {
-        let now = unix_seconds()?;
-        let attempt_id = crate::diagnostics::new_id();
-        self.store.transaction(|state| {
-            let barrier = state
-                .last_applied_source_sequence
-                .max(state.source_less_barrier_sequence);
-            if matches!(mode, ClaimMode::Drain) {
-                // ponytail: owner-wide order gate; refine by semantic slot only if it blocks real throughput.
-                for source in state.sources.values_mut().filter(|source| {
-                    source.enrichment == "queued"
-                        && source.task.processing_version.as_deref() == Some(ENRICHMENT_VERSION)
-                        && source.received_sequence <= barrier
-                }) {
-                    source.enrichment = "stale_requires_review".into();
-                    source.error = Some("newer_authoritative_change".into());
-                }
-            }
-            let key = if matches!(mode, ClaimMode::Drain) {
-                state
-                    .sources
-                    .iter()
-                    .filter(|(_, source)| {
-                        source.enrichment == "queued"
-                            && source.task.processing_version.as_deref() == Some(ENRICHMENT_VERSION)
-                    })
-                    .min_by_key(|(_, source)| source.received_sequence)
-                    .map(|(key, _)| key.clone())
-            } else {
-                state
-                    .sources
-                    .iter()
-                    .find(|(_, source)| Some(source.id.as_str()) == source_id)
-                    .map(|(key, _)| key.clone())
-            };
-            let Some(key) = key else {
-                return if matches!(mode, ClaimMode::Drain) {
-                    Ok(None)
-                } else {
-                    Err("source ID not found for this owner".into())
-                };
-            };
-            let revision = state.revision;
-            let source = state.sources.get_mut(&key).unwrap();
-            if source.request.is_none() {
-                return Err("source_deleted".into());
-            }
-            if source
-                .task
-                .processing_version
-                .as_deref()
-                .is_some_and(|v| v != ENRICHMENT_VERSION)
-            {
-                return Err(
-                    "unsupported_processing_version: this entry cannot claim the source".into(),
-                );
-            }
-            if matches!(
-                source.enrichment.as_str(),
-                "committed" | "completed_no_facts" | "completed_pending" | "completed_rejected"
-            ) {
-                return Ok(None);
-            }
-            if source.enrichment == "stale_requires_review" {
-                return Err("stale_requires_review".into());
-            }
-            if matches!(mode, ClaimMode::Explicit) && source.task.processing_version.is_none() {
-                // v4 has no owner watermark. E1 resume also rewrote base_revision,
-                // so its presence voids the otherwise conservative T1 revision check.
-                let resumed = source
-                    .result
-                    .as_ref()
-                    .is_some_and(|result| result.get("resume_attempts").is_some());
-                if resumed || source.base_revision != revision {
-                    source.enrichment = "stale_requires_review".into();
-                    source.error = Some(
-                        if resumed {
-                            "legacy_resume_revision_untrusted"
-                        } else {
-                            "legacy_revision_changed"
-                        }
-                        .into(),
-                    );
-                    return Ok(None);
-                }
-            }
-            if source.received_sequence <= barrier {
-                source.enrichment = "stale_requires_review".into();
-                source.error = Some("newer_authoritative_change".into());
-                return Ok(None);
-            }
-            let eligible = match mode {
-                ClaimMode::Inline => {
-                    source.enrichment == "pending"
-                        && source.task.processing_version.as_deref() == Some(ENRICHMENT_VERSION)
-                }
-                ClaimMode::Drain => source.enrichment == "queued",
-                ClaimMode::Explicit => {
-                    matches!(
-                        source.enrichment.as_str(),
-                        "not_requested"
-                            | "queued"
-                            | "pending"
-                            | "failed"
-                            | "extraction_incomplete"
-                            | "review_incomplete"
-                    ) || (source.enrichment == "running"
-                        && source.task.lease_until.unwrap_or(0) < now)
-                }
-            };
-            if !eligible {
-                return Err("source is not eligible for this processing attempt".into());
-            }
-            let request = source.request.as_ref().unwrap().clone();
-            source.task.attempt_count = source
-                .task
-                .attempt_count
-                .checked_add(1)
-                .ok_or("source attempt count overflow")?;
-            source.task.processing_version = Some(ENRICHMENT_VERSION.into());
-            if source.task.accepted_mode.is_none() {
-                source.task.accepted_mode = Some(
-                    source
-                        .result
-                        .as_ref()
-                        .and_then(|result| result["enrichment_mode"].as_str())
-                        .unwrap_or("inline")
-                        .into(),
-                );
-            }
-            source.task.attempt_id = Some(attempt_id.clone());
-            source.task.lease_until = Some(
-                now.checked_add(ENRICHMENT_LEASE_SECONDS)
-                    .ok_or("claim lease overflow")?,
-            );
-            source.task.claim_revision = Some(revision);
-            source.enrichment = "running".into();
-            source.error = None;
-            Ok(Some(EnrichmentClaim {
-                key,
-                source_id: source.id.clone(),
-                request,
-                observed_at: source.observed_at,
-                received_sequence: source.received_sequence,
-                attempt_id,
-                claim_revision: revision,
-            }))
-        })
-    }
-
-    fn commit_candidates(
-        &mut self,
-        key: &str,
-        request: &Value,
-        candidates: Vec<CandidateMemory>,
-        record_empty: bool,
-        claim: Option<&EnrichmentClaim>,
-        cancelled: &impl Fn() -> bool,
-    ) -> PersistenceResult<Value> {
-        self.store.transaction(|state| {
-            check_cancelled(cancelled)?;
-            if let Some(claim) = claim {
-                let source = state.sources.get(key).ok_or("claimed source missing")?;
-                if source.task.attempt_id.as_deref() != Some(&claim.attempt_id)
-                    || source.enrichment != "running"
-                {
-                    return Err("claim_lost".into());
-                }
-                if source.request.as_ref() != Some(request)
-                    || source.id != claim.source_id
-                    || source.received_sequence != claim.received_sequence
-                    || source.task.processing_version.as_deref() != Some(ENRICHMENT_VERSION)
-                    || source.task.claim_revision != Some(claim.claim_revision)
-                    || state.revision != claim.claim_revision
-                    || source.task.lease_until.is_none_or(|until| until < unix_seconds().unwrap_or(i64::MAX))
-                    || source.received_sequence <= state.last_applied_source_sequence
-                    || source.received_sequence <= state.source_less_barrier_sequence
-                {
-                    return Err("stale_requires_review: source, claim or owner state changed".into());
-                }
-            }
-            if let Some(result) = replay(state, key, request)? {
-                if claim.is_some() {
-                    return Err("claim_lost: receipt was already committed".into());
-                }
-                return Ok(result);
-            }
-            let before = serde_json::to_value((&state.repository, &state.staging))?;
-            // A candidate the source review did not support is dropped on its own; it never
-            // reaches the engine and cannot roll back the reviewed candidates of its turn.
-            let reviewed = |candidate: &CandidateMemory| {
-                claim.is_none() || candidate.source_support_valid()
-            };
-            let batch_size = candidates.iter().filter(|candidate| reviewed(candidate)).count();
-            let backup =
-                (batch_size > 1).then(|| (state.repository.clone(), state.staging.clone()));
-            let reports = state.with_engine(self.config.registry(), |engine, entities| {
-                candidates
-                    .into_iter()
-                    .map(|candidate| {
-                        if !reviewed(&candidate) {
-                            return Ok(None);
-                        }
-                        let started = std::time::Instant::now();
-                        let captured = crate::diagnostics::enabled().then(|| candidate.clone());
-                        let report = engine.ingest_or_stage_with_trace(candidate, entities)?;
-                        Ok(Some((captured, report, started.elapsed().as_millis())))
-                    })
-                    .collect::<PersistenceResult<Vec<_>>>()
-            })?;
-            let batch_rejected = backup.is_some()
-                && reports.iter().flatten().any(|(_, report, _)| !matches!(report.outcome,
-                    CandidateIngestOutcome::Ingested(IngestOutcome::Applied { .. } | IngestOutcome::Duplicate { .. })));
-            if batch_rejected {
-                // Keep typed backups: JSON round-trips intentionally discard staged approvals.
-                (state.repository, state.staging) = backup.unwrap();
-            }
-            check_cancelled(cancelled)?;
-            let outcomes: Vec<_> = reports.into_iter().map(|report| {
-                let Some((captured, report, duration)) = report else {
-                    return CandidateIngestOutcome::Ingested(IngestOutcome::Rejected(
-                        "source review did not support this candidate"));
-                };
-                crate::diagnostics::record("candidate_decision", || json!({
-                    "candidate":captured,"result":report.outcome,"decision_trace":report.trace,
-                    "duration_ms":duration,"commit_status":if batch_rejected {"rolled_back"} else {"pending_transaction"}
-                }));
-                if batch_rejected {
-                    CandidateIngestOutcome::Ingested(IngestOutcome::Rejected(
-                        "source batch was not committed because a candidate did not pass"))
-                } else { report.outcome }
-            }).collect();
-            if let Some(claim) = claim
-                && before != serde_json::to_value((&state.repository, &state.staging))?
-            {
-                state.last_applied_source_sequence = state
-                    .last_applied_source_sequence
-                    .max(claim.received_sequence);
-            }
-            let mut result = json!({"replayed":false,"outcomes":outcomes});
-            if let Some(claim) = claim {
-                let accepted_mode = state.sources[&claim.key]
-                    .task
-                    .accepted_mode
-                    .as_deref()
-                    .unwrap_or("inline");
-                result["status"] = json!("completed");
-                result["enrichment_mode"] = json!(accepted_mode);
-            }
-            if record_empty
-                || batch_rejected
-                || claim.is_some()
-                || outcomes.iter().any(|outcome| {
-                    !matches!(
-                        outcome,
-                        CandidateIngestOutcome::Ingested(IngestOutcome::Rejected(_))
-                    )
-                })
-            {
-                state.receipts.insert(
-                    key.into(),
-                    TurnReceipt {
-                        request: request.clone(),
-                        result: result.clone(),
-                    },
-                );
-            }
-            if let Some(claim) = claim {
-                let source = state.sources.get_mut(&claim.key).unwrap();
-                source.enrichment = if outcomes.is_empty() {
-                    "completed_no_facts"
-                } else if outcomes.iter().any(|outcome| {
-                    matches!(outcome, CandidateIngestOutcome::Ingested(IngestOutcome::Applied { .. }))
-                }) {
-                    "committed"
-                } else if outcomes.iter().any(|outcome| {
-                    matches!(outcome, CandidateIngestOutcome::Pending { .. })
-                }) {
-                    "completed_pending"
-                } else {
-                    "completed_rejected"
-                }
-                .into();
-                source.result = Some(result.clone());
-                source.error = None;
-                source.task.attempt_id = None;
-                source.task.lease_until = None;
-                source.task.claim_revision = None;
-            }
-            check_cancelled(cancelled)?;
-            Ok(result)
-        })
-    }
-
-    fn process_claim(
-        &mut self,
-        claim: EnrichmentClaim,
-        cancelled: &impl Fn() -> bool,
-        operation_id: Option<&str>,
-    ) -> PersistenceResult<Value> {
-        let internal = operation_id.is_none();
-        let _operation = internal.then(|| crate::diagnostics::Operation::enter(&claim.attempt_id));
-        let started = std::time::Instant::now();
-        if internal {
-            crate::diagnostics::record("run_start", || {
-                json!({"tool":"source_enrichment","entrypoint":"internal_cli",
-                    "arguments":{"source_id":claim.source_id,"attempt_id":claim.attempt_id},
-                    "owner":self.store.owner()})
-            });
-        }
-        let result =
-            self.process_claim_inner(&claim, cancelled, operation_id.unwrap_or(&claim.attempt_id));
-        if internal {
-            crate::diagnostics::record("run_end", || {
-                json!({"status":if result.is_ok() {"completed"} else {"failed"},
-                    "result":match &result {Ok(value)=>value.clone(),Err(error)=>error_body(error.as_ref())},
-                    "duration_ms":started.elapsed().as_millis(),
-                    "evidence_status":if crate::diagnostics::incomplete() {"evidence_incomplete"} else {"complete"}})
-            });
-        }
-        result
-    }
-
-    fn process_claim_inner(
-        &mut self,
-        claim: &EnrichmentClaim,
-        cancelled: &impl Fn() -> bool,
-        model_operation_id: &str,
-    ) -> PersistenceResult<Value> {
-        let mut client_report = None;
-        let processing = (|| -> PersistenceResult<Value> {
-            let input: Remember = serde_json::from_value(claim.request.clone())?;
-            let owner = self.store.owner().clone();
-            let mut context = self.config.context(
-                owner,
-                self.store
-                    .read()?
-                    .entities
-                    .list_by_owner(self.store.owner()),
-                input.task_id.clone(),
-                20,
-            )?;
-            context.now = Timestamp(claim.observed_at);
-            check_cancelled(cancelled)?;
-            let client = self.model_client(model_operation_id)?;
-            client_report = Some(client.clone());
-            let candidates = OpenAiMemoryExtractor::new(
-                client,
-                self.with_update_targets(context)?,
-                SessionId(input.session_id),
-                TurnId(input.turn_id),
-            )
-            .extract_turn(
-                &input.history.iter().map(String::as_str).collect::<Vec<_>>(),
-                &input.text,
-            )?;
-            self.commit_candidates(
-                &claim.key,
-                &claim.request,
-                candidates,
-                true,
-                Some(claim),
-                cancelled,
-            )
-        })();
-        let model_calls = client_report
-            .map(|client| client.model_budget_report())
-            .unwrap_or_default();
-        if let Err(error) = &processing {
-            let (status, reason) = capture_failure(error.as_ref());
-            let stale = error.to_string().starts_with("stale_requires_review");
-            let status_write = self.store.transaction(|state| {
-                let Some(source) = state.sources.get_mut(&claim.key) else {
-                    return Ok(false);
-                };
-                if source.task.attempt_id.as_deref() != Some(&claim.attempt_id)
-                    || source.request.is_none()
-                {
-                    return Ok(false);
-                }
-                if source.enrichment == "stale_requires_review" {
-                    source
-                        .error
-                        .get_or_insert_with(|| "newer_authoritative_change".into());
-                } else if source.enrichment != "running" {
-                    return Ok(false);
-                } else {
-                    source.enrichment = if stale {
-                        "stale_requires_review"
-                    } else {
-                        status
-                    }
-                    .into();
-                    source.error = Some(if stale {
-                        "stale_requires_review".into()
-                    } else {
-                        reason
-                    });
-                }
-                source.task.attempt_id = None;
-                source.task.lease_until = None;
-                source.task.claim_revision = None;
-                Ok(true)
-            });
-            let owned = match status_write {
-                Ok(owned) => owned,
-                Err(error) => return with_model_calls(Err(error), model_calls),
-            };
-            if !owned {
-                return with_model_calls(Err("claim_lost_or_source_deleted".into()), model_calls);
-            }
-        }
-        let response = (|| {
-            let state = self.store.read()?;
-            let source = state
-                .sources
-                .get(&claim.key)
-                .ok_or("claimed source missing")?;
-            crate::diagnostics::record("source_receipt", || source.status());
-            source_response(source, false)
-        })();
-        with_model_calls(response, model_calls)
-    }
-
     fn source_receipt(&self, key: &str, replayed: bool) -> PersistenceResult<Value> {
         let state = self.store.read()?;
         let source = state.sources.get(key).ok_or("source missing")?;
@@ -2347,11 +1865,6 @@ impl ChatMemoryService {
     }
 
     fn process_w4_source(&mut self, key: &str) -> PersistenceResult<Value> {
-        if self.config.enrichment_mode == EnrichmentMode::Inline
-            && self.config.write_pipeline == WritePipeline::Legacy
-        {
-            return Err("unsupported_processing_version: legacy inline cannot process w4_runtime_v1 sources; select w4_runtime_v1 or off/deferred".into());
-        }
         let state = self.store.read()?;
         let source = state.sources.get(key).ok_or("source missing")?;
         if source.request.is_none() {
@@ -2455,38 +1968,19 @@ impl ChatMemoryService {
         let mut results = Vec::new();
         for _ in 0..max_jobs {
             let state = self.store.read()?;
-            let barrier = state
-                .last_applied_source_sequence
-                .max(state.source_less_barrier_sequence);
             let next = state
                 .sources
                 .iter()
                 .filter(|(_, source)| {
                     source.enrichment == "queued"
-                        && (source.task.processing_version.as_deref()
-                            == Some(W4_PROCESSING_VERSION)
-                            || (source.task.processing_version.as_deref()
-                                == Some(ENRICHMENT_VERSION)
-                                && self.config.write_pipeline == WritePipeline::Legacy
-                                && source.received_sequence > barrier))
+                        && source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION)
                 })
                 .min_by_key(|(_, source)| source.order_sequence());
-            let (source_id, result) = if let Some((key, source)) = next
-                && source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION)
-            {
-                (source.id.clone(), self.process_w4_source(key))
-            } else {
-                if self.config.write_pipeline == WritePipeline::W4RuntimeV1 {
-                    break;
-                }
-                let Some(claim) = self.claim_source(None, ClaimMode::Drain)? else {
-                    break;
-                };
-                (
-                    claim.source_id.clone(),
-                    self.process_claim(claim, &|| false, None),
-                )
+            let Some((key, source)) = next else {
+                break;
             };
+            let source_id = source.id.clone();
+            let result = self.process_w4_source(key);
             let budget_exhausted =
                 result.as_ref().err().is_some_and(|error| {
                     error_body(error.as_ref())["error"] == "model_budget_denied"
@@ -2519,29 +2013,13 @@ impl ChatMemoryService {
         {
             return self.process_w4_source(key);
         }
-        if self.config.write_pipeline == WritePipeline::W4RuntimeV1 {
-            return Err("unsupported_processing_version: legacy source is preserved and is not automatically rebuilt".into());
-        }
-        match self.claim_source(Some(source_id), ClaimMode::Explicit)? {
-            Some(claim) => self.process_claim(claim, &|| false, None),
-            None => {
-                let state = self.store.read()?;
-                let source = state
-                    .sources
-                    .values()
-                    .find(|source| source.id == source_id)
-                    .ok_or("source ID not found for this owner")?;
-                source_response(source, true)
-            }
-        }
+        Err("unsupported_processing_version: legacy source is preserved and is not automatically rebuilt".into())
     }
 
     fn remember(
         &mut self,
         input: Remember,
         cancelled: &impl Fn() -> bool,
-        record_empty: bool,
-        operation_id: &str,
     ) -> PersistenceResult<Value> {
         let owner = self.store.owner().clone();
         input.validate()?;
@@ -2577,17 +2055,8 @@ impl ChatMemoryService {
                 .unwrap_or_else(|| json!("inline"));
             return Ok(result);
         }
-        if (matches!(
-            self.config.enrichment_mode,
-            EnrichmentMode::Off | EnrichmentMode::Deferred
-        ) || self.config.write_pipeline == WritePipeline::W4RuntimeV1)
-            && !input.capture_source
-        {
-            let error = if self.config.write_pipeline == WritePipeline::W4RuntimeV1 {
-                "capture_source_required: w4_runtime_v1 requires authorized source capture"
-            } else {
-                "capture_source_required: off/deferred enrichment requires authorized source capture"
-            };
+        if !input.capture_source {
+            let error = "capture_source_required: w4_runtime_v1 requires authorized source capture";
             return Err(Box::new(CaptureError(json!({
                 "error":error,
                 "source":{"status":"rejected"},"index":{"status":"not_requested"},
@@ -2613,9 +2082,7 @@ impl ChatMemoryService {
         }
         let enrichment_off = self.config.enrichment_mode == EnrichmentMode::Off;
         let enrichment_deferred = self.config.enrichment_mode == EnrichmentMode::Deferred;
-        let enrichment_background = enrichment_deferred
-            || (self.config.write_pipeline == WritePipeline::W4RuntimeV1
-                && self.config.enrichment_mode == EnrichmentMode::Inline);
+        let enrichment_background = !enrichment_off;
         // T1 owns only raw reception. A later model or fact-transaction failure cannot undo it.
         if input.capture_source {
             let mut created = false;
@@ -2637,18 +2104,14 @@ impl ChatMemoryService {
                 let mut source = SourceRecord {
                     id:crate::diagnostics::new_id(), session_id:input.session_id.clone(),
                     turn_id:input.turn_id.clone(), observed_at:context.now.0,
-                    request:Some(request.clone()), enrichment:if enrichment_off {"not_requested"} else if enrichment_background {"queued"} else {"pending"}.into(), error:None,
-                    result:if enrichment_off {Some(json!({"status":"completed","enrichment_mode":"off","outcomes":[]}))}
-                        else if enrichment_background {Some(json!({"enrichment_mode":self.config.enrichment_mode}))} else {None},
+                    request:Some(request.clone()), enrichment:if enrichment_off {"not_requested"} else {"queued"}.into(), error:None,
+                    result:Some(if enrichment_off {json!({"status":"completed","enrichment_mode":"off","outcomes":[]})}
+                        else {json!({"enrichment_mode":self.config.enrichment_mode})}),
                     base_revision:read_revision, received_sequence, index:Value::Null,
                     task: Default::default(),
                 };
                 source.task.accepted_mode = Some(if enrichment_off {"off"} else if enrichment_deferred {"deferred"} else {"inline"}.into());
-                if self.config.write_pipeline == WritePipeline::W4RuntimeV1 {
-                    source.task.processing_version = Some(W4_PROCESSING_VERSION.into());
-                } else if !enrichment_off {
-                    source.task.processing_version = Some(ENRICHMENT_VERSION.into());
-                }
+                source.task.processing_version = Some(W4_PROCESSING_VERSION.into());
                 state.sources.insert(key.clone(), source.clone());
                 created = true;
                 let receipt = if source.task.processing_version.as_deref() == Some(W4_PROCESSING_VERSION) {
@@ -2699,50 +2162,7 @@ impl ChatMemoryService {
                 }
             }
         }
-        if input.capture_source {
-            let source_id = self
-                .store
-                .read()?
-                .sources
-                .get(&key)
-                .ok_or("source receipt missing after capture")?
-                .id
-                .clone();
-            return match self.claim_source(Some(&source_id), ClaimMode::Inline)? {
-                Some(claim) => self.process_claim(claim, cancelled, Some(operation_id)),
-                None => {
-                    let state = self.store.read()?;
-                    source_response(state.sources.get(&key).unwrap(), true)
-                }
-            };
-        }
-        let mut client_report = None;
-        let processing = (|| -> PersistenceResult<Value> {
-            // Network calls happen outside the SQLite transaction; recheck receipts after acquiring its lock.
-            let client = self.model_client(operation_id)?;
-            client_report = Some(client.clone());
-            let candidates = OpenAiMemoryExtractor::new(
-                client,
-                self.with_update_targets(context)?,
-                SessionId(input.session_id),
-                TurnId(input.turn_id),
-            )
-            .extract_turn(
-                &input.history.iter().map(String::as_str).collect::<Vec<_>>(),
-                &input.text,
-            )?;
-            self.commit_candidates(&key, &request, candidates, record_empty, None, cancelled)
-        })();
-        let model_calls = client_report
-            .map(|client| client.model_budget_report())
-            .unwrap_or_default();
-        with_model_calls(
-            processing.map(|mut value| {
-                value["enrichment_mode"] = json!("inline");
-                value
-            }),
-            model_calls,
-        )
+        Err("source receipt missing after capture".into())
     }
 
     /// Run on a blocking worker: the existing OpenAI adapter intentionally uses blocking reqwest.
@@ -2998,21 +2418,6 @@ impl ChatMemoryService {
         Ok(())
     }
 
-    fn with_update_targets(
-        &self,
-        mut context: OpenAiAdapterContext,
-    ) -> PersistenceResult<OpenAiAdapterContext> {
-        context.update_targets = self
-            .store
-            .read()?
-            .repository
-            .list_by_owner(self.store.owner())?
-            .into_iter()
-            .filter(|memory| memory.status == MemoryStatus::Active)
-            .collect();
-        Ok(context)
-    }
-
     fn model_client(&self, operation_id: &str) -> PersistenceResult<OpenAiClient> {
         // MCP authorization belongs to this config, owner and operation, never ambient budget IDs.
         #[cfg(test)]
@@ -3142,8 +2547,6 @@ impl ChatMemoryService {
             "memory_remember" => self.remember(
                 serde_json::from_value(arguments)?,
                 &cancelled,
-                true,
-                operation_id,
             ),
             "memory_prepare" => {
                 let input: Prepare = serde_json::from_value(arguments)?;
@@ -3155,7 +2558,7 @@ impl ChatMemoryService {
                 let capture_source = input.user_turn.capture_source;
                 let at = input.user_turn.observed_at;
                 // Keep the two outcomes explicit: a recall failure cannot undo a completed save.
-                let remembered = self.remember(input.user_turn, &cancelled, false, operation_id);
+                let remembered = self.remember(input.user_turn, &cancelled);
                 let enrichment_mode = match &remembered {
                     Ok(value) => value.get("enrichment_mode").cloned(),
                     Err(error) => error_body(error.as_ref()).get("enrichment_mode").cloned(),
@@ -3946,8 +3349,8 @@ pub fn memory_tools() -> Vec<Tool> {
 #[cfg(test)]
 mod tests {
     use super::{
-        ChatConfig, ChatMemoryService, RetrievalMode, ValidateAnswer, final_answer_gate, past_time,
-        unix_seconds, validated_single_relation,
+        ChatConfig, RetrievalMode, ValidateAnswer, final_answer_gate, past_time, unix_seconds,
+        validated_single_relation,
     };
     use crate::local_recall::SingleRelationEvidenceHint;
     use crate::openai::SingleRelationProposal;
@@ -3959,7 +3362,6 @@ mod tests {
         SqliteMemoryStore, Timestamp, TurnId, UserId,
     };
     use serde_json::json;
-    use std::cell::Cell;
 
     #[test]
     fn new_host_schema_requires_recall_and_validation_request_ids() {
@@ -3973,227 +3375,6 @@ mod tests {
                     .unwrap()
                     .contains(&json!("request_id"))
             );
-        }
-    }
-
-    #[test]
-    fn source_batch_commit_is_atomic_and_preserves_single_clarification() {
-        use crate::{CandidateIntent, CandidateSubject, Confidence};
-        for case in [
-            "rejected",
-            "pending",
-            "conflict",
-            "ignored",
-            "accepted",
-            "duplicate",
-            "single_pending",
-        ] {
-            let dir =
-                std::env::temp_dir().join(format!("pmr-batch-{}", crate::diagnostics::new_id()));
-            std::fs::create_dir(&dir).unwrap();
-            let store =
-                SqliteMemoryStore::open(dir.join("memory.sqlite3"), UserId::from("alice")).unwrap();
-            let mut service = ChatMemoryService::new(store, ChatConfig::default()).unwrap();
-            let make = |id: &str, predicate: &str, value: &str| {
-                CandidateMemory::new(
-                    UserId::from("alice"),
-                    EntityId::from("self"),
-                    MemoryType::Fact,
-                    Predicate::from(predicate),
-                    MemoryValue::Text(value.into()),
-                    Timestamp(100),
-                    Evidence::new(
-                        EvidenceId(id.into()),
-                        SessionId::from("s"),
-                        TurnId(id.into()),
-                        "我使用铅笔。我喜欢红茶。",
-                    ),
-                )
-            };
-            // Existing approved pending state must survive an unrelated batch rollback byte-for-byte.
-            service
-                .store
-                .transaction(|state| {
-                    state.with_engine(ChatConfig::default().registry(), |engine, entities| {
-                        let mut old = make("old", "uses", "毛笔");
-                        old.subject = CandidateSubject::Unresolved("之前那个人".into());
-                        old.bind_source_support();
-                        engine.ingest_or_stage(old, entities)?;
-                        Ok(())
-                    })
-                })
-                .unwrap();
-            let before = service.store.read().unwrap();
-            let before_business =
-                serde_json::to_value((&before.repository, &before.staging)).unwrap();
-            let mut first = make("first", "uses", "铅笔");
-            first.bind_source_support();
-            let mut second = make("second", "likes", "红茶");
-            match case {
-                "rejected" => second.extraction_confidence = Confidence::Low,
-                "pending" | "single_pending" => {
-                    second.subject = CandidateSubject::Unresolved("那位同事".into())
-                }
-                "conflict" => second.intent = CandidateIntent::Conflict,
-                "ignored" => second.intent = CandidateIntent::Ignore,
-                _ => (),
-            }
-            second.bind_source_support();
-            let candidates = match case {
-                "single_pending" => vec![second],
-                "duplicate" => vec![first.clone(), first],
-                _ => vec![first, second],
-            };
-            let request = json!({"text":"我使用铅笔。我喜欢红茶。","session_id":"s","turn_id":"t"});
-            let receipt = service
-                .commit_candidates("batch", &request, candidates, true, None, &|| false)
-                .unwrap();
-            let after = service.store.read().unwrap();
-            if matches!(case, "rejected" | "pending" | "conflict" | "ignored") {
-                assert_eq!(
-                    serde_json::to_value((&after.repository, &after.staging)).unwrap(),
-                    before_business,
-                    "{case}"
-                );
-                assert_eq!(
-                    after.revision, before.revision,
-                    "rejected batch changed business revision: {case}"
-                );
-                assert!(
-                    receipt["outcomes"]
-                        .as_array()
-                        .unwrap()
-                        .iter()
-                        .all(|o| o["Ingested"]["Rejected"].is_string()),
-                    "{case}: {receipt}"
-                );
-            } else {
-                let expected = if case == "accepted" {
-                    2
-                } else if case == "duplicate" {
-                    1
-                } else {
-                    0
-                };
-                assert_eq!(
-                    after
-                        .repository
-                        .list_by_owner(service.store.owner())
-                        .unwrap()
-                        .len(),
-                    expected,
-                    "{case}"
-                );
-                assert_eq!(
-                    after.staging.list_by_owner(service.store.owner()).len(),
-                    if case == "single_pending" { 2 } else { 1 },
-                    "{case}"
-                );
-            }
-            assert!(
-                after.staging.list_by_owner(service.store.owner())[0]
-                    .candidate
-                    .source_support_valid(),
-                "{case}"
-            );
-            assert_eq!(after.receipts["batch"].result, receipt);
-            drop(service);
-            std::fs::remove_dir_all(dir).unwrap();
-        }
-    }
-
-    #[test]
-    fn source_batch_commit_preserves_claim_and_final_cancellation_guards() {
-        for case in ["late_cancel", "stale", "claim_lost"] {
-            let dir = std::env::temp_dir()
-                .join(format!("pmr-batch-guard-{}", crate::diagnostics::new_id()));
-            std::fs::create_dir(&dir).unwrap();
-            let store =
-                SqliteMemoryStore::open(dir.join("memory.sqlite3"), UserId::from("alice")).unwrap();
-            let mut service = ChatMemoryService::new(
-                store,
-                ChatConfig {
-                    write_pipeline: super::WritePipeline::Legacy,
-                    enrichment_mode: super::EnrichmentMode::Off,
-                    ..ChatConfig::default()
-                },
-            )
-            .unwrap();
-            let receipt = service.call("memory_remember",
-                json!({"text":"我使用铅笔。我喜欢红茶。","session_id":"s","turn_id":"t","capture_source":true}),
-                || false).unwrap();
-            let source_id = receipt["source"]["source_id"].as_str().unwrap();
-            let claim = service
-                .claim_source(Some(source_id), super::ClaimMode::Explicit)
-                .unwrap()
-                .unwrap();
-            if case != "late_cancel" {
-                service
-                    .store
-                    .transaction(|state| {
-                        let source = state.sources.get_mut(&claim.key).unwrap();
-                        if case == "stale" {
-                            source.received_sequence += 1;
-                        } else {
-                            source.task.attempt_id = Some("different-claim".into());
-                        }
-                        Ok(())
-                    })
-                    .unwrap();
-            }
-            let before = serde_json::to_value(service.store.read().unwrap()).unwrap();
-            let candidates = [("uses", "铅笔"), ("likes", "红茶")]
-                .into_iter()
-                .enumerate()
-                .map(|(index, (predicate, value))| {
-                    let mut c = CandidateMemory::new(
-                        UserId::from("alice"),
-                        EntityId::from("self"),
-                        MemoryType::Fact,
-                        Predicate::from(predicate),
-                        MemoryValue::Text(value.into()),
-                        Timestamp(claim.observed_at),
-                        Evidence::new(
-                            EvidenceId(format!("s:t:{index}")),
-                            SessionId::from("s"),
-                            TurnId::from("t"),
-                            "我使用铅笔。我喜欢红茶。",
-                        ),
-                    );
-                    c.bind_source_support();
-                    c
-                })
-                .collect();
-            let checks = Cell::new(0);
-            let error = service
-                .commit_candidates(
-                    &claim.key,
-                    &claim.request,
-                    candidates,
-                    true,
-                    Some(&claim),
-                    &|| {
-                        let n = checks.get();
-                        checks.set(n + 1);
-                        case == "late_cancel" && n >= 2
-                    },
-                )
-                .unwrap_err();
-            let expected = if case == "late_cancel" {
-                "cancelled"
-            } else if case == "stale" {
-                "stale_requires_review"
-            } else {
-                "claim_lost"
-            };
-            assert!(error.to_string().contains(expected), "{case}: {error}");
-            assert_eq!(
-                serde_json::to_value(service.store.read().unwrap()).unwrap(),
-                before,
-                "{case}"
-            );
-            drop(service);
-            std::fs::remove_dir_all(dir).unwrap();
         }
     }
 
@@ -4291,7 +3472,10 @@ mod tests {
                     );
                     // This retrieval fixture supplies its own successful reviewer result.
                     candidate.bind_source_support();
-                    engine.ingest(candidate)?;
+                    let id = engine.repository.allocate_id()?;
+                    engine
+                        .repository
+                        .insert(crate::Memory::from_candidate(id, &candidate, None))?;
                     Ok(())
                 })
             })
@@ -4424,7 +3608,10 @@ mod tests {
                             ),
                         );
                         candidate.bind_source_support();
-                        engine.ingest(candidate)?;
+                        let id = engine.repository.allocate_id()?;
+                        engine
+                            .repository
+                            .insert(crate::Memory::from_candidate(id, &candidate, None))?;
                         Ok(())
                     })?;
                     let id = state.repository.list_by_owner(&UserId::from("alice"))?[0].id;
@@ -4685,40 +3872,5 @@ mod tests {
             .to_string()
             .contains("conflict")
         );
-    }
-
-    #[test]
-    fn cancellation_after_source_capture_stops_before_model_setup() {
-        let dir = std::env::temp_dir().join(format!("pmr-cancel-{}", crate::diagnostics::new_id()));
-        std::fs::create_dir(&dir).unwrap();
-        let store =
-            SqliteMemoryStore::open(dir.join("memory.sqlite3"), UserId::from("alice")).unwrap();
-        let mut service = ChatMemoryService::new(
-            store,
-            ChatConfig {
-                write_pipeline: super::WritePipeline::Legacy,
-                ..Default::default()
-            },
-        )
-        .unwrap();
-        let checks = Cell::new(0);
-        let error = service
-            .call(
-                "memory_remember",
-                json!({"text":"以后回答用中文","session_id":"s","turn_id":"t","capture_source":true}),
-                || {
-                    let count = checks.get();
-                    checks.set(count + 1);
-                    count >= 2
-                },
-            )
-            .unwrap_err();
-        assert!(error.to_string().contains("cancelled"), "{error}");
-        let state = service.store.read().unwrap();
-        let source = state.sources.values().next().unwrap();
-        assert_eq!(source.enrichment, "failed");
-        assert_eq!(source.error.as_deref(), Some("cancelled"));
-        drop(service);
-        std::fs::remove_dir_all(dir).unwrap();
     }
 }

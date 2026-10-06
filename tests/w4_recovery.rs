@@ -747,31 +747,6 @@ fn real_v8_receipt_replays_unchanged_and_future_v10_is_rejected() {
 }
 
 #[test]
-fn old_explicit_entry_cannot_claim_the_new_processing_version() {
-    let db = Db::new();
-    source(&db, "s", "喜欢咖啡。喜欢红茶。");
-    w4_start_round(&mut db.open(), "s", "op", false).unwrap();
-    let budget =
-        serde_json::from_value(json!({"group_id":"offline","max_calls":1,"max_operation_calls":1}))
-            .unwrap();
-    let config = chat::ChatConfig {
-        write_pipeline: chat::WritePipeline::Legacy,
-        model_budget: Some(budget),
-        ..Default::default()
-    };
-    let mut service = chat::ChatMemoryService::new(db.open(), config).unwrap();
-    let before = snapshot(&db);
-    assert!(
-        service
-            .enrich_source("s")
-            .unwrap_err()
-            .to_string()
-            .contains("unsupported_processing_version")
-    );
-    assert_eq!(snapshot(&db), before);
-}
-
-#[test]
 fn rejudge_cannot_drop_binding_or_reinsert_an_inactive_product() {
     let db = Db::new();
     let (claim, _, plan) = planned(&db, "s");

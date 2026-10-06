@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::chat::{ChatConfig, ChatMemoryService, RetrievalMode};
 use hippocampus::*;
@@ -133,8 +134,8 @@ impl Fixture {
                 state.with_engine(InMemoryPredicateRegistry::default(), |engine, _| {
                     for (_, candidate) in facts {
                         assert!(matches!(
-                            engine.ingest(common::grounded(candidate))?,
-                            IngestOutcome::Applied { .. }
+                            engine.seed_fixture(common::grounded(candidate))?,
+                            FixtureOutcome::Applied { .. }
                         ));
                     }
                     Ok(())
@@ -144,7 +145,6 @@ impl Fixture {
         let service = ChatMemoryService::new(
             store,
             ChatConfig {
-                write_pipeline: hippocampus::chat::WritePipeline::Legacy,
                 recall_pipeline: hippocampus::chat::RecallPipeline::Legacy,
                 retrieval_mode: Some(RetrievalMode::Local),
                 ..ChatConfig::default()

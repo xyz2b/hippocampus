@@ -43,10 +43,7 @@ impl Drop for BackgroundWorker {
 impl ChatMemoryService {
     /// Start once before the service mutex. Off or missing budget keeps the worker inert.
     pub fn start_background(&mut self) -> PersistenceResult<Option<BackgroundWorker>> {
-        if !(self.config.enrichment_mode == EnrichmentMode::Deferred
-            || (self.config.enrichment_mode == EnrichmentMode::Inline
-                && self.config.write_pipeline == WritePipeline::W4RuntimeV1))
-            || self.config.model_budget.is_none()
+        if self.config.enrichment_mode == EnrichmentMode::Off || self.config.model_budget.is_none()
         {
             return Ok(None);
         }
@@ -100,12 +97,9 @@ impl ChatMemoryService {
         }))
     }
 
-    /// One durable new-path task; explicit CLI retry and legacy drain keep their own selection.
+    /// One durable new-path task; explicit CLI processing keeps its own selection.
     pub fn run_background_once(&mut self) -> PersistenceResult<bool> {
-        if !(self.config.enrichment_mode == EnrichmentMode::Deferred
-            || (self.config.enrichment_mode == EnrichmentMode::Inline
-                && self.config.write_pipeline == WritePipeline::W4RuntimeV1))
-            || self.config.model_budget.is_none()
+        if self.config.enrichment_mode == EnrichmentMode::Off || self.config.model_budget.is_none()
         {
             return Ok(false);
         }
