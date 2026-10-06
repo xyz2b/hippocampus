@@ -1,0 +1,138 @@
+{
+  "id": "m15_mvp",
+  "label_status": "draft",
+  "fictional": true,
+  "entities": [
+    {
+      "canonical_name": "小栎",
+      "aliases": [
+        "我女儿"
+      ],
+      "entity_type": "Person",
+      "id": "child-demo"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "text": "我女儿小栎的生日是2020-04-12。",
+      "observed_at": 1790568000
+    },
+    {
+      "id": "m2",
+      "text": "刚才生日记错了，是2020-04-14。",
+      "observed_at": 1790568060
+    },
+    {
+      "id": "m3",
+      "text": "我已订好2027-06-08的车票。我计划2027-06-08至2027-06-10带小栎去海岚镇。如果不下雨，我们可能去南堤散步。",
+      "observed_at": 1790568120
+    },
+    {
+      "id": "m4",
+      "text": "出行计划改为2027-06-09至2027-06-11，散步安排不变，车票还没有改签。",
+      "observed_at": 1790568180
+    }
+  ],
+  "questions": [
+    {
+      "id": "birthday",
+      "after": 4,
+      "query": "我女儿小栎的正确生日是什么？",
+      "context": [],
+      "at": 1790568300,
+      "query_meta": {
+        "time_focus": "current"
+      },
+      "expect_common": {
+        "status": "answer",
+        "facts": [
+          {
+            "subject": "child-demo",
+            "relation_note": "生日更正；第一条是记错，不是历史上的真实生日",
+            "value_any": [
+              "2020-04-14"
+            ],
+            "sources": {
+              "all_of": [
+                "m2"
+              ]
+            },
+            "current": "yes"
+          }
+        ],
+        "answer_requirements": [
+          {
+            "id": "birthday_correction",
+            "requirement": "主体是 child-demo；2020-04-14 是唯一正确生日，2020-04-12 不得称为过去的真实生日。"
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "2020-04-12"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "arrangements",
+      "after": 4,
+      "query": "当前出行计划、散步安排和车票记录分别是什么？",
+      "context": [],
+      "at": 1790568300,
+      "query_meta": {
+        "time_focus": "current"
+      },
+      "expect_common": {
+        "status": "answer",
+        "facts": [],
+        "answer_requirements": [
+          {
+            "id": "latest_plan",
+            "requirement": "当前计划为2027-06-09至2027-06-11带小栎去海岚镇；明确为计划，不能称为已发生；旧2027-06-08至2027-06-10是被修改的计划。",
+            "sources": {
+              "all_of": [
+                "m4"
+              ]
+            }
+          },
+          {
+            "id": "walk",
+            "requirement": "南堤散步仍为计划，保留“不下雨”的条件与“可能”的不确定性；不得编造具体散步日期。",
+            "sources": {
+              "all_of": [
+                "m3"
+              ]
+            }
+          },
+          {
+            "id": "booking",
+            "requirement": "已订2027-06-08的车票是预订事实，车票还未改签；不能根据改后的行程自动改车票日期。",
+            "sources": {
+              "all_of": [
+                "m3",
+                "m4"
+              ]
+            }
+          }
+        ],
+        "required_qualifiers": {
+          "conditions": [
+            "如果不下雨"
+          ],
+          "uncertainty": [
+            "可能"
+          ]
+        },
+        "forbidden": [
+          {
+            "kind": "plan_as_occurred"
+          }
+        ]
+      }
+    }
+  ]
+}

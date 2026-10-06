@@ -7,6 +7,8 @@ use std::sync::atomic::AtomicBool;
 mod core;
 use core::run_case;
 use core::*;
+#[path = "m15/runner.rs"]
+mod m15;
 
 fn preflight(limit: Option<u64>, ceiling: u64) -> Result<(), String> {
     if let Some(limit) = limit
@@ -339,6 +341,10 @@ fn parallel_cases(
 }
 
 pub(super) fn run() {
+    if std::env::var("EVAL_M15").as_deref() == Ok("mvp") {
+        m15::run();
+        return;
+    }
     let dir = std::env::var_os("EVAL_V3_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| Path::new(ROOT).join("end_to_end").join(LABEL));

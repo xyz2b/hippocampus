@@ -1,0 +1,241 @@
+[
+  {
+    "id": "m15_w1_01",
+    "label_status": "draft",
+    "fictional": true,
+    "m15_review": true,
+    "input": {
+      "text": "我女儿小栎喜欢拼陶片。",
+      "history": [],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "child-demo",
+          "names": [
+            "小栎",
+            "我女儿"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "likes",
+        "avoids",
+        "birthday",
+        "owns",
+        "visited",
+        "lives_in",
+        "works_at",
+        "knows",
+        "prefers"
+      ],
+      "said_on": "2026-09-28"
+    },
+    "review_requirements": [
+      "主体 child-demo；喜好拼陶片"
+    ],
+    "focus": "registered_kinship"
+  },
+  {
+    "id": "m15_w1_02",
+    "label_status": "draft",
+    "fictional": true,
+    "m15_review": true,
+    "input": {
+      "text": "她最近更爱折纸帆了。",
+      "history": [
+        "我女儿小栎喜欢拼陶片。"
+      ],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "child-demo",
+          "names": [
+            "小栎",
+            "我女儿"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "likes",
+        "avoids",
+        "birthday",
+        "owns",
+        "visited",
+        "lives_in",
+        "works_at",
+        "knows",
+        "prefers"
+      ],
+      "said_on": "2026-09-28"
+    },
+    "review_requirements": [
+      "当前句省略主体；history明确点名绑定child-demo",
+      "比较/最近限定语不可扩大为永久排他偏好"
+    ],
+    "focus": "history_subject"
+  },
+  {
+    "id": "m15_w1_03",
+    "label_status": "draft",
+    "fictional": true,
+    "m15_review": true,
+    "input": {
+      "text": "我姐姐有一把橘色小提琴。",
+      "history": [],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "likes",
+        "avoids",
+        "birthday",
+        "owns",
+        "visited",
+        "lives_in",
+        "works_at",
+        "knows",
+        "prefers"
+      ],
+      "said_on": "2026-09-28"
+    },
+    "review_requirements": [
+      "姐姐未登记，主体必须 unresolved；不能绑定self或凭排除法绑定目录实体"
+    ],
+    "focus": "unregistered_kinship"
+  },
+  {
+    "id": "m15_w1_04",
+    "label_status": "draft",
+    "fictional": true,
+    "m15_review": true,
+    "input": {
+      "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。",
+      "history": [],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "likes",
+        "avoids",
+        "birthday",
+        "owns",
+        "visited",
+        "lives_in",
+        "works_at",
+        "knows",
+        "prefers"
+      ],
+      "said_on": "2026-09-28"
+    },
+    "review_requirements": [
+      "已订票是statement；登岛是plan",
+      "两条不同日期不能合并为已登岛事实"
+    ],
+    "focus": "booking_plan"
+  },
+  {
+    "id": "m15_w1_05",
+    "label_status": "draft",
+    "fictional": true,
+    "m15_review": true,
+    "input": {
+      "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。",
+      "history": [],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "likes",
+        "avoids",
+        "birthday",
+        "owns",
+        "visited",
+        "lives_in",
+        "works_at",
+        "knows",
+        "prefers"
+      ],
+      "said_on": "2026-09-28"
+    },
+    "review_requirements": [
+      "条件如果雾散了",
+      "不确定性可能",
+      "拍鸟为plan；不租摩托艇的否定和打算均保留"
+    ],
+    "focus": "qualifiers"
+  },
+  {
+    "id": "m15_w1_06",
+    "label_status": "draft",
+    "fictional": true,
+    "m15_review": true,
+    "input": {
+      "text": "我喜欢枫木积木，不喜欢金属哨子。我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。课程计划改到2028-03-05，但预约尚未改期。",
+      "history": [],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "child-demo",
+          "names": [
+            "小栎",
+            "我女儿"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "likes",
+        "avoids",
+        "birthday",
+        "owns",
+        "visited",
+        "lives_in",
+        "works_at",
+        "knows",
+        "prefers"
+      ],
+      "said_on": "2026-09-28"
+    },
+    "review_requirements": [
+      "喜好/否定/预约事实/有条件计划均覆盖",
+      "最新计划日期2028-03-05与未改期预约2028-03-03分开",
+      "child-demo绑定；条件不得遗漏"
+    ],
+    "focus": "long_update"
+  }
+]

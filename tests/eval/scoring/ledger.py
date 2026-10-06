@@ -29,6 +29,8 @@ def expect_sources(expect: dict) -> set:
             out.update(spec.get("any_of", []))
     for f in expect.get("facts") or []:
         add(f.get("sources"))
+    for requirement in expect.get("answer_requirements") or []:
+        add(requirement.get("sources"))
     for c in expect.get("conflicts") or []:
         for m in c.get("members", []):
             add(m.get("sources"))

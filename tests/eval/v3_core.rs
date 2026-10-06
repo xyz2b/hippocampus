@@ -379,6 +379,9 @@ pub(super) struct Recorder {
     pub(super) operations: Mutex<HashMap<String, Operation>>,
     pub(super) documents: Mutex<HashMap<String, Value>>,
     pub(super) observations: Mutex<HashMap<String, Vec<Value>>>,
+    // prepare saves T1 before its foreground call. Evaluator-only database
+    // binding registers those IDs before canonicalizing that first request.
+    source_databases: Mutex<HashMap<String, PathBuf>>,
     pub(super) run_id: String,
     pub(super) send_log: Mutex<Value>,
     log_dir: PathBuf,
@@ -407,6 +410,7 @@ impl Recorder {
             operations: Mutex::default(),
             documents: Mutex::default(),
             observations: Mutex::default(),
+            source_databases: Mutex::default(),
             send_log: Mutex::new(json!({"version":"eval.e2e.sends@1","run_id":run_id,
                 "limit":limit,"attempts":[],"proxy_errors":[]})),
             log_dir,
@@ -447,6 +451,12 @@ impl Recorder {
     }
     pub(super) fn missing(&self, case: &str) -> Option<String> {
         self.operations.lock().unwrap()[case].missing.clone()
+    }
+    pub(super) fn bind_source_database(&self, case: &str, path: &Path) {
+        self.source_databases
+            .lock()
+            .unwrap()
+            .insert(case.into(), path.into());
     }
     pub(super) fn calls(&self, case: &str) -> Vec<Value> {
         self.observations
@@ -558,6 +568,26 @@ impl Recorder {
         send: impl FnOnce() -> Result<(u16, String), String>,
     ) -> Result<(u16, String), String> {
         let handling = Instant::now();
+        if let Some(path) = self
+            .source_databases
+            .lock()
+            .map_err(|_| "source database lock poisoned")?
+            .get(case)
+        {
+            let state = SqliteMemoryStore::open(path, UserId::from(OWNER))
+                .and_then(|s| s.read())
+                .map_err(|e| e.to_string())?;
+            let mut operations = self
+                .operations
+                .lock()
+                .map_err(|_| "operation lock poisoned")?;
+            let op = operations
+                .get_mut(case)
+                .ok_or("proxy case has no active operation")?;
+            for source in state.sources.values().filter(|s| s.request.is_some()) {
+                op.ids.insert(source.id.clone(), source.turn_id.clone());
+            }
+        }
         let (operation, position, mapping) = {
             let mut ops = self
                 .operations

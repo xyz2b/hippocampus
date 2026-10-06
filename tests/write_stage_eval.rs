@@ -295,6 +295,9 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
         })
         .unwrap_or_else(|_| raw.clone());
     let expect = &sample["expect"];
+    if sample["m15_review"] == true {
+        return Ok(final_output);
+    }
     compare(
         fields,
         "candidate_count",
@@ -724,6 +727,16 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         report["raw"] = text
             .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
             .unwrap_or(Value::Null);
+        if sample["m15_review"] == true {
+            report["mechanical_status"] = report["status"].clone();
+            if report["status"] == "通过" {
+                report["status"] = json!("待复核");
+            }
+            report["manual_review"] = json!({"status":"pending",
+                "requirements":sample["review_requirements"],
+                "fields":["coverage","subject","speech","sentence","value","polarity","conditions","uncertainty","times"],
+                "note":"按 W2 最终候选核对覆盖与限定语；不以字段齐全代替语义正确"});
+        }
         report["w2_final"] = result
             .as_ref()
             .and_then(|r| r.as_ref().ok())
@@ -1025,12 +1038,12 @@ fn fingerprint(request: &Value) -> Value {
 }
 
 fn recording_fingerprint(sample: &Value, request: &Value) -> Value {
-    if sample["fixed_input"] != true {
+    if sample["fixed_input"] != true && sample["m15_review"] != true {
         return fingerprint(request);
     }
     let mut request = request.clone();
     request["input"] = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
-    // 固定集保留完整生产输入（含来源快照/时钟），不沿用旧样本的字段剔除。
+    // 固定集及 M1.5 保留完整生产输入/输出上限，不沿用旧样本的字段剔除。
     json!(hippocampus::recall_models::fingerprint(&request))
 }
 
@@ -1315,6 +1328,14 @@ fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
             limit.unwrap()
         ));
     }
+    if limit.is_some() && cases.iter().any(|c| c.sample["m15_review"] == true) {
+        let previous = m15_sent_before(cases)?;
+        if previous + needed > 24 {
+            return Err(format!(
+                "M1.5 W1 整批拒绝：累计已发送/在途 {previous} + 缺口 {needed} > 批准上限 24"
+            ));
+        }
+    }
     Ok(sends)
 }
 
@@ -1375,6 +1396,9 @@ fn save_recording_timed(
     }
     recorded.push(record); // Includes failed attempts; reruns replay them instead of picking a success.
     file["recorded"] = json!(recorded);
+    if case.sample["m15_review"] == true {
+        return m15_write_json(&case.path, &file);
+    }
     std::fs::create_dir_all(case.path.parent().unwrap()).map_err(|e| e.to_string())?;
     let temp = case
         .path
@@ -1411,11 +1435,25 @@ fn evaluate(
             Replay::Output(text) => score(&case.stage, &case.sample, Some(text)),
             Replay::Failed(record) => failed_score(case, record),
             _ if limit.is_some() => {
+                // A durable started entry precedes the physical send. A crash
+                // without a response remains a possibly billed attempt.
+                let attempt = if case.sample["m15_review"] == true {
+                    Some(m15_start_send(case)?)
+                } else {
+                    None
+                };
                 sent += 1;
                 let started = std::time::Instant::now();
                 let response = send(&case.request);
                 let elapsed_ms = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
                 let envelope = response.as_ref().ok().cloned().unwrap_or(Value::Null);
+                if let Some(path) = attempt {
+                    m15_write_json(
+                        &path,
+                        &json!({"state":"responded","request":recording_fingerprint(&case.sample,&case.request),
+                        "elapsed_ms":elapsed_ms,"usage":envelope["usage"],"status":envelope["status"],"error":response.as_ref().err()}),
+                    )?;
+                }
                 metrics = json!({"elapsed_ms":elapsed_ms,"usage":envelope["usage"]});
                 let text = response.and_then(|e| completed_text(&e));
                 match text {
@@ -1608,7 +1646,12 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    let m15 = std::env::var("EVAL_M15").as_deref() == Ok("w1");
     if std::env::var("EVAL_DRY_RUN").as_deref() == Ok("1") {
+        if m15 {
+            m15_dry_run();
+            return;
+        }
         dry_run_plan();
         return;
     }
@@ -1620,20 +1663,25 @@ fn write_stage_eval_suite() {
         return;
     }
     let gate = eval_gate(std::env::var("EVAL_GATE").ok().as_deref()).unwrap();
-    let selected = selected(
-        &stages_from_env(),
-        &std::env::var("EVAL_CASES").unwrap_or_default(),
-    )
-    .unwrap();
-    let root = recording_root();
-    let model = EvalModel::from_env().unwrap();
-    let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
-    let cases = plan_repeated(selected, &root, &model, repeats).unwrap();
+    let cases = if m15 {
+        m15_w1_plan(&m15_root()).unwrap()
+    } else {
+        let selected = selected(
+            &stages_from_env(),
+            &std::env::var("EVAL_CASES").unwrap_or_default(),
+        )
+        .unwrap();
+        let root = recording_root();
+        let model = EvalModel::from_env().unwrap();
+        let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
+        plan_repeated(selected, &root, &model, repeats).unwrap()
+    };
     let limit = std::env::var("EVAL_RECORD").ok().map(|s| {
         s.parse::<usize>()
             .expect("EVAL_RECORD must be a nonnegative integer")
     });
     let sends = preflight(&cases, limit).unwrap();
+    let model = &cases.first().expect("nonempty stage plan").model;
     // No client or credentials when there are no sends, including fully cached EVAL_RECORD=0.
     let live = (sends > 0).then(|| {
         let base = model
@@ -1667,7 +1715,11 @@ fn write_stage_eval_suite() {
             .post(url)
             .bearer_auth(key)
             .json(request)
-            .timeout(eval_request_timeout(request))
+            .timeout(if m15 {
+                std::time::Duration::from_secs(360)
+            } else {
+                eval_request_timeout(request)
+            })
             .send()
             .map_err(|e| e.to_string())?;
         if !response.status().is_success() {
@@ -1677,7 +1729,170 @@ fn write_stage_eval_suite() {
     })
     .unwrap();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if m15 {
+        let path = std::env::var_os("EVAL_M15_OUTPUT")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("target/eval-m15/w1-report.json"));
+        m15_write_json(&path, &report).unwrap();
+        println!(
+            "M1.5 W1 字段对照（raw / w2_final / review / latency / usage）：{}",
+            path.display()
+        );
+    }
     check_report(&report, gate).expect("stage evaluation failures; see report above");
+}
+
+fn m15_root() -> PathBuf {
+    std::env::var_os("EVAL_M15_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("tests/eval/m15/recordings/w1"))
+}
+
+fn m15_w1_plan(root: &Path) -> Result<Vec<Case>, String> {
+    let samples: Vec<Value> =
+        serde_json::from_str(include_str!("eval/m15/w1.json")).map_err(|e| e.to_string())?;
+    if samples.len() != 6 {
+        return Err("M1.5 requires six W1 scenarios".into());
+    }
+    let mut model = EvalModel::from_env()?;
+    model.label = "m15-pro".into();
+    model.model = Some("ep-20261003130756-trhj6".into());
+    let mut cases = Vec::new();
+    for effort in [ReasoningEffort::Low, ReasoningEffort::Medium] {
+        model.effort = effort;
+        model.label = format!(
+            "m15-pro-{}",
+            serde_json::to_value(effort).unwrap().as_str().unwrap()
+        );
+        cases.extend(plan_repeated(
+            samples.iter().cloned().map(|s| ("w1".into(), s)).collect(),
+            root,
+            &model,
+            2,
+        )?);
+    }
+    // Pair identical input/repetition across efforts to reduce order effects.
+    cases.sort_by_key(|c| {
+        (
+            c.sample["id"].as_str().unwrap().to_owned(),
+            c.repeat,
+            c.model.label.clone(),
+        )
+    });
+    Ok(cases)
+}
+
+fn m15_dry_run() {
+    let cases = m15_w1_plan(&m15_root()).unwrap();
+    let limit = std::env::var("EVAL_RECORD")
+        .ok()
+        .map(|s| s.parse().expect("EVAL_RECORD integer"));
+    preflight(&cases, limit).unwrap();
+    let needed = cases
+        .iter()
+        .filter(|c| !matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+        .count();
+    let bytes: usize = cases
+        .iter()
+        .map(|c| serde_json::to_vec(&c.request).unwrap().len())
+        .sum();
+    let output: u64 = cases
+        .iter()
+        .map(|c| c.request["max_output_tokens"].as_u64().unwrap())
+        .sum();
+    println!("M1.5 W1 对照：6 场景 × low/medium × 2 次 = 24 个 W1 槽位；W3/W4/R1/R4=0。");
+    println!(
+        "严格指纹可复用 {}；需新增 {}；精确预留上限 24。",
+        24 - needed,
+        needed
+    );
+    assert!(
+        std::process::Command::new("python3")
+            .args(["tests/eval/m15/token_estimate.py", "w1"])
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .status()
+            .unwrap()
+            .success()
+    );
+    println!(
+        "token 粗估：完整请求 UTF-8 字节/3 向上取整，输入约 {}；输出按配置上限合计 {}（不是预期用量）。",
+        bytes.div_ceil(3),
+        output
+    );
+    println!("干跑：真实调用 0；未读取密钥、未创建录制。标注 draft，语义待人工复核。");
+}
+
+fn m15_write_json(path: &Path, value: &Value) -> Result<(), String> {
+    let parent = path.parent().unwrap();
+    std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    let tmp = path.with_extension("json.tmp");
+    let mut file = std::fs::File::create(&tmp).map_err(|e| e.to_string())?;
+    use std::io::Write;
+    file.write_all(serde_json::to_string_pretty(value).unwrap().as_bytes())
+        .map_err(|e| e.to_string())?;
+    file.sync_all().map_err(|e| e.to_string())?;
+    std::fs::rename(tmp, path).map_err(|e| e.to_string())?;
+    std::fs::File::open(parent)
+        .and_then(|d| d.sync_all())
+        .map_err(|e| e.to_string())
+}
+
+fn m15_start_send(case: &Case) -> Result<PathBuf, String> {
+    let path = case
+        .path
+        .parent()
+        .unwrap()
+        .join("sends")
+        .join(format!("{}.json", hippocampus::diagnostics::new_id()));
+    m15_write_json(
+        &path,
+        &json!({"state":"started","sample":case.sample["id"],"repeat":case.repeat,
+        "effort":case.model.effort,"model":case.request["model"],"request":recording_fingerprint(&case.sample,&case.request)}),
+    )?;
+    Ok(path)
+}
+
+fn m15_sent_before(cases: &[Case]) -> Result<usize, String> {
+    let dirs: std::collections::BTreeSet<_> = cases
+        .iter()
+        .map(|c| c.path.parent().unwrap().join("sends"))
+        .collect();
+    let mut count = 0;
+    for dir in dirs {
+        if !dir.exists() {
+            continue;
+        }
+        for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
+            let path = entry.map_err(|e| e.to_string())?.path();
+            if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                let value: Value =
+                    serde_json::from_slice(&std::fs::read(&path).map_err(|e| e.to_string())?)
+                        .map_err(|e| e.to_string())?;
+                if !matches!(value["state"].as_str(), Some("started" | "responded")) {
+                    return Err("invalid M1.5 send log".into());
+                }
+                count += 1;
+            }
+        }
+    }
+    Ok(count)
+}
+
+#[test]
+fn m15_w1_plan_is_24_and_rejects_23_before_send() {
+    let cases = m15_w1_plan(
+        &std::env::temp_dir().join(format!("m15-plan-{}", hippocampus::diagnostics::new_id())),
+    )
+    .unwrap();
+    assert_eq!(cases.len(), 24);
+    assert!(cases.iter().all(|c| c.stage == "w1"));
+    assert!(preflight(&cases, Some(23)).is_err());
+    assert_eq!(preflight(&cases, Some(24)).unwrap(), 24);
+    for c in cases {
+        let input: Value = serde_json::from_str(c.request["input"].as_str().unwrap()).unwrap();
+        assert!(input.get("model").is_none());
+        assert!(input.get("review_requirements").is_none());
+    }
 }
 
 fn eval_request_timeout(request: &Value) -> std::time::Duration {
@@ -3574,4 +3789,101 @@ fn m15_stage_executors_bind_current_schema_and_input_contracts() {
             assert_eq!(input, frozen, "fixed input fields must remain verbatim");
         }
     }
+}
+
+#[test]
+fn m15_w1_durable_send_and_w2_review_survive_resume_without_network() {
+    let root = std::env::temp_dir().join(format!(
+        "m15-w1-resume-{}",
+        hippocampus::diagnostics::new_id()
+    ));
+    let mut cases = m15_w1_plan(&root).unwrap();
+    cases.truncate(2);
+    let sends = std::cell::Cell::new(0);
+    let report=evaluate(&cases,Some(2),&mut |_request|{
+        let paths:Vec<_>=std::fs::read_dir(cases[0].path.parent().unwrap().join("sends")).unwrap().map(|p|p.unwrap().path()).collect();
+        if sends.get()==0 {
+            let started:Value=serde_json::from_slice(&std::fs::read(&paths[0]).unwrap()).unwrap();
+            assert_eq!(started["state"],"started");
+        }
+        sends.set(sends.get()+1);
+        Ok(json!({"status":"completed","output":[{"content":[{"type":"output_text","text":"{\"candidates\":[],\"memory_requests\":[]}"}]}],"usage":{"input_tokens":10,"output_tokens":20}}))
+    }).unwrap();
+    assert_eq!(report["sent_calls"], 2);
+    for row in items(&report["results"]) {
+        assert_eq!(row["status"], "待复核");
+        assert_eq!(row["mechanical_status"], "通过");
+        assert_eq!(row["manual_review"]["status"], "pending");
+        assert_eq!(row["w2_final"]["candidates"], json!([]));
+        assert_eq!(row["usage"]["output_tokens"], 20);
+    }
+    let mut reopened = m15_w1_plan(&root).unwrap();
+    reopened.truncate(2);
+    let replay = evaluate(&reopened, None, &mut |_| {
+        panic!("resume must not call a model")
+    })
+    .unwrap();
+    assert_eq!(replay["sent_calls"], 0);
+    assert_eq!(replay["results"][0]["raw"], report["results"][0]["raw"]);
+    let path = reopened[0].path.clone();
+    let mut altered: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    altered["recorded"][0]["request"] = json!("wrong-fingerprint");
+    m15_write_json(&path, &altered).unwrap();
+    let mut stale = m15_w1_plan(&root).unwrap();
+    stale.truncate(1);
+    assert!(matches!(stale[0].replay, Replay::Stale));
+    assert_eq!(
+        evaluate(&stale, None, &mut |_| panic!("stale must not send")).unwrap()["results"][0]["status"],
+        "录制过期"
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn m15_w1_inflight_send_consumes_campaign_quota_and_blocks_unfunded_resume() {
+    let root = std::env::temp_dir().join(format!(
+        "m15-inflight-{}",
+        hippocampus::diagnostics::new_id()
+    ));
+    let cases = m15_w1_plan(&root).unwrap();
+    let path = m15_start_send(&cases[0]).unwrap();
+    assert!(path.exists());
+    assert_eq!(m15_sent_before(&cases).unwrap(), 1);
+    assert!(
+        preflight(&cases, Some(24))
+            .unwrap_err()
+            .contains("累计已发送/在途")
+    );
+    let mut sent = 0;
+    assert!(
+        evaluate(&cases, Some(24), &mut |_| {
+            sent += 1;
+            Ok(Value::Null)
+        })
+        .is_err()
+    );
+    assert_eq!(sent, 0);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn m15_w1_fingerprint_covers_complete_request_without_stripping_fields() {
+    let root = std::env::temp_dir().join(format!(
+        "m15-fingerprint-{}",
+        hippocampus::diagnostics::new_id()
+    ));
+    let cases = m15_w1_plan(&root).unwrap();
+    let c = &cases[0];
+    let original = recording_fingerprint(&c.sample, &c.request);
+    let mut changed = c.request.clone();
+    changed["max_output_tokens"] = json!(1);
+    assert_ne!(original, recording_fingerprint(&c.sample, &changed));
+    let mut changed = c.request.clone();
+    changed["reasoning"] = json!({"effort":"medium"});
+    assert_ne!(original, recording_fingerprint(&c.sample, &changed));
+    let mut changed = c.request.clone();
+    let mut input: Value = serde_json::from_str(changed["input"].as_str().unwrap()).unwrap();
+    input["observed_at"] = json!(1);
+    changed["input"] = json!(input.to_string());
+    assert_ne!(original, recording_fingerprint(&c.sample, &changed));
 }

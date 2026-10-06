@@ -16,7 +16,7 @@ PASS, FAIL, REVIEW, MISSING, NOT_MEASURABLE = "auto_pass", "auto_fail", "review"
 CANNOT = "format_cannot_express"
 # Forbidden kinds whose hit is an acceptance blocker (common-scoring-view.md 5).
 BLOCKER_KINDS = {"value_as_current": "错误替换", "condition_broadened": "条件扩大",
-                 "source_out_of_scope": "来源越权"}
+                 "source_out_of_scope": "来源越权", "plan_as_occurred": "计划误报已发生"}
 
 
 def _norm_src(s):
@@ -451,6 +451,10 @@ def _forbidden_items(ctx, forbidden, fact_match, facts):
                     continue
                 if pol in ("negate", "unknown", None):
                     undetermined.append(a["id"])
+        elif kind == "plan_as_occurred":
+            # speech=plan on a cited record does not prove that the answer
+            # presents it as a plan. Assess the actual statement in review.
+            undetermined = [a["id"] for a in view["assertions"]]
         else:
             items.append(_item(p, REVIEW, f"未知禁止项类型 {kind}，不能自动判定", fb))
             continue
@@ -506,6 +510,26 @@ def score(expect: dict, query_meta: dict, view: dict, source_texts: dict | None 
     if "computed" in expect:
         items += _computed_items(expect["computed"], view["computed"], source_texts)
     items += _forbidden_items(ctx, expect.get("forbidden") or [], fact_match, facts)
+    # M1.5: bundled answers may split/merge propositions. Review the complete
+    # answer, without matching semantic slots by sentence order or keywords.
+    content = {"assertions": [_assertion_content(a) for a in view["assertions"]],
+               "history": view.get("history", []), "records": view.get("semantic_state", {}).get("records", [])}
+    srcs = {s for a in view["assertions"] for s in a["sources"]}
+    for requirement in expect.get("answer_requirements", []):
+        if "sources" in requirement:
+            items.append(_item(f"answer_requirements:{requirement['id']}.sources",
+                               PASS if sources_ok(requirement["sources"], srcs) else FAIL,
+                               "核对整份答案是否引用所需来源；对应陈述的绑定仍须语义复核",
+                               {"requirement": requirement, "answer": content}, srcs))
+        items.append(_item(f"answer_requirements:{requirement['id']}", REVIEW if view["assertions"] else MISSING,
+                           "计划/事实、主体、日期、更新和限定语语义须人工复核；不按候选 speech 推定呈现正确",
+                           {"requirement": requirement, "answer": content}, srcs))
+    for kind, required in expect.get("required_qualifiers", {}).items():
+        have = {q for a in view["assertions"] for q in
+                (a.get("conditions") or [] if kind == "conditions" else [a.get("uncertainty")]) if q}
+        items.append(_item(f"required_qualifiers:{kind}", FAIL if required and not have else REVIEW,
+                           f"结构化限定语缺失 {required}" if required and not have else "限定语片段、对应安排与语义完整性须复核（容许同义表述）",
+                           {"required": required, "answer": content}, srcs))
     for x in expect.get("not_measurable") or []:
         items.append(_item(f"not_measurable:{x}", NOT_MEASURABLE, "标签不足"))
 

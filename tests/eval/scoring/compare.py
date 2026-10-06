@@ -80,7 +80,9 @@ def local_calls(case):
     """Actual caller outcomes, independent of late proxy responses and replay speed."""
     outcomes = {}
     for step in case.get("steps", []):
-        operation = ("write:" + step["message"] if step["step"] == "message"
+        if not step.get("model_diagnostics"):
+            continue
+        operation = step.get("operation") or ("write:" + step["message"] if step["step"] == "message"
                      else "recall:" + step["question"])
         calls, latest = {}, {}
         for event in step.get("model_diagnostics", []):
