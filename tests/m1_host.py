@@ -46,7 +46,9 @@ def main():
         client = Client(args.binary.resolve(), db, env, "alice", config=config)
         try:
             tools = {t["name"]: t for t in client.rpc("tools/list", {})["tools"]}
-            assert len(tools) == 8
+            assert len(tools) == 9
+            assert "memory_source_status" in tools
+            assert tools["memory_source_status"]["annotations"]["readOnlyHint"] is True
             assert "request_id" in tools["memory_recall"]["inputSchema"]["required"]
             turn = {"text": "我有一把蓝伞。", "session_id": "m1", "turn_id": "one", "capture_source": True}
             if args.check in ("smoke", "source", "trace", "modes"):

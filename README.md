@@ -65,6 +65,10 @@ cargo build --workspace --bins
 
 完整配置可通过 `pmr-mcp --print-default-config` 查看。调用规则见[客户端接入约定](docs/memory-client-contract.md)与[自动记忆规则](docs/personal-memory-instructions.md)。
 
+新聊天 bootstrap 后继续处理同一条用户消息；获准个人背景、计划原话、补充或更正用 memory_prepare 独立保存，具体个人问题另用普通 memory_recall。bootstrap 空结果不代表没有个人记忆，在线请求不要自行设 offline=true。未登记家人等人物用 memory_entity_upsert 明确登记确认的称呼（不要求真名；有歧义问一次，不把属性/事件当人物）。
+
+原文保存与整理状态分别核对；pending 表示原话已保存、整理待处理，可用 memory_source_status 查看来源状态及候选索引/原因（零模型调用）。memory_list 的 pending_sources 与旧 staged pending 分开分页，不提供事实值或原文。实体登记不自动重建旧候选；计划结构化存储与主体确认/重建/历史补录将在 M1.5 后续步骤实现。
+
 ### 可选模型能力
 
 默认 W0 保存原文，W1/W3/W4 后台整理，R1/R4 前台召回。inline/deferred 在 T1 后排队，off 不自动整理。Recall 包括 bootstrap 须稳定 request_id，Prepare 缺省从 session/turn 派生。capture_source=true 必须有整条原文及必要 USER history 的保存授权；省略/false 被拒绝。

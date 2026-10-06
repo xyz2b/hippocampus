@@ -2,6 +2,88 @@
 use super::*;
 use std::time::Instant;
 
+#[test]
+fn host_bootstrap_continues_with_first_turn_prepare_and_concrete_recall() {
+    let db = Db::new();
+    let mut service = service(&db);
+    let (client, sent) = visible_client();
+    service.inject_model_client(client);
+    let shared = Mutex::new(service);
+    let bootstrap = shared_call(
+        &shared,
+        "memory_recall",
+        json!({
+            "query":"全局回答要求", "bootstrap":true, "request_id":"boot:host-route", "at":AT
+        }),
+    );
+    assert_eq!(bootstrap["recall"]["facts"], json!([]));
+    assert!(sent.lock().unwrap().is_empty());
+    let prepare = json!({"user_turn":{"session_id":"host-route", "turn_id":"first",
+        "text":NEW, "observed_at":AT, "capture_source":true}});
+    assert!(prepare.get("offline").is_none());
+    let prepared = shared_call(&shared, "memory_prepare", prepare);
+    assert_eq!(prepared["source"]["status"], "stored");
+    assert_eq!(prepared["enrichment"]["status"], "queued");
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let recall = query("host-route:question");
+    assert!(recall.get("bootstrap").is_none());
+    assert!(recall.get("offline").is_none());
+    let recalled = shared_call(&shared, "memory_recall", recall);
+    assert_eq!(recalled["recall"]["status"], "answered");
+    assert_eq!(
+        recalled["recall"]["raw"][0]["source_id"],
+        prepared["source"]["source_id"]
+    );
+    let inspected = shared_call(
+        &shared,
+        "memory_source_status",
+        json!({
+            "source_id":prepared["source"]["source_id"]
+        }),
+    );
+    assert_eq!(inspected["enrichment"]["status"], "queued");
+    assert_eq!(inspected["model_calls"], json!([]));
+    let stages: Vec<_> = sent
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|r| r["text"]["format"]["name"].clone())
+        .collect();
+    assert_eq!(
+        stages,
+        vec![
+            json!("r1_v1"),
+            json!("r4_v3"),
+            json!("r1_v1"),
+            json!("r4_v3")
+        ]
+    );
+    assert_eq!(db.calls(), 4); // injected physical sends; bootstrap and inspection send none.
+
+    for tool in crate::chat::memory_tools().into_iter().filter(|t| {
+        matches!(
+            t.name.as_ref(),
+            "memory_recall" | "memory_prepare" | "memory_entity_upsert"
+        )
+    }) {
+        let description = tool.description.unwrap();
+        for rule in [
+            "SAME current USER message",
+            "empty bootstrap",
+            "background, plans, additions or corrections",
+            "also call ordinary memory_recall",
+            "Do not add offline=true",
+            "unregistered family member",
+            "real name is not required",
+            "property or event",
+            "ask once",
+            "memory_source_status",
+        ] {
+            assert!(description.contains(rule), "missing {rule}: {description}");
+        }
+    }
+}
+
 const SHANGHAI: &str = "我住上海。";
 const NANJING: &str = "我已搬到南京。";
 const HYPOTHESIS: &str = "假如我搬到南京，通勤会怎样？";

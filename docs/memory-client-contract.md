@@ -1,14 +1,26 @@
 # personal_memory 客户端接入约定（recall.v3）
 
+启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；问个人安排、经历、状态等具体问题时，另调普通 memory_recall，不用 bootstrap 代替。在线请求不要自行加 offline=true。
+
+提到未登记的家人等人物时，用 memory_entity_upsert 明确登记用户确认的称呼，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体。登记不自动重建已保存来源。分别报告原文保存与整理进度；pending 时可用 memory_source_status 查看，不能说原话未收到。
+
 默认写入 w4_runtime_v1、召回 recall_v3；旧执行器已删除；legacy 值及 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 字段（包括 false/null/空值）在打开数据库前拒绝，不自动改写配置；answer_contract.v1 返回 contract_version_unsupported。旧数据仍通过 LegacyRecordView 读取，不自动重建。工具名和参数以 tools/list 为准，owner 固定在服务器配置，客户端不能切换。
 
 ## 输入与调用顺序
 
-1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求，零模型调用；不是普通个人事实查询。
-2. 获准保存的个人陈述使用 memory_prepare；user_turn.text 是当前整条 USER 原话，history 仅含必要的先前 USER 原话。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。
+1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求，零模型调用；完成后继续处理同一条消息，不是普通个人事实查询。
+2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 仅含必要的先前 USER 原话，不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交，计划记忆闭环在后续步骤实现。
 3. 只有整条当前消息及必要 history 均获准留存时传 capture_source=true。省略/false 被拒绝，不转为事实保存。明确不保存、无法满足的保存期限、秘密、假设或引用不调用持久写入工具；改用只读 recall 或本轮上下文。
 4. 只读查询提交完整原问，context 仅放必要 USER 澄清，不能拼接不同消息或增加事实。Recall 包括 bootstrap 都须稳定 request_id；新查询/刷新使用新 ID。同参重放复用首次 at 和结果，不追加模型尝试。Prepare 缺省从 session/turn 派生 request_id。
-5. 主体未解析时请求用户澄清，不凭目录唯一或排除法绑定。明确实体可用 memory_entity_upsert 登记；memory_list 仅作管理，不能绕过召回取得事实答案。memory_clarify 已停用旧 staged 提交，旧暂存只读/可删。
+5. 主体未解析时必要澄清一次，不凭目录唯一或排除法绑定；明确家人等人物的称呼可用 memory_entity_upsert 登记，不要求真名，不把属性或事件登记成人物。登记不会自动修复旧候选；memory_source_status 可查看待处理原因，主体确认与重建入口在后续步骤实现。memory_list 仅作管理，不能绕过召回取得事实答案。memory_clarify 已停用旧 staged 提交，旧暂存只读/可删。
+
+## 来源管理（零模型调用）
+
+memory_source_status 输入 `source_id`，只读取服务器当前 owner 的来源。返回 `source/enrichment`、`generation`、`round`、`state_token`、`provenance`、`time_anchor`、`uncommitted_candidates`（index/status/reasons）与 `pending_update_candidates`，不含原文或事实值；未找到或属于其他 owner 时 `source_not_found`，已删除时 `source_deleted`。管理状态是读快照，不能用它代替 memory_recall 的证据或事实判断。
+
+当前 v9 的 generation 为 0，未开始判定时 round 为 null；出处只给现有接收身份，parent_source_id/history_index 为 null；时间锚由 observed_at 与服务器时区提供，不推断未记录的历史时间。后续步骤补全代际、出处与时间信息。state_token 是单来源及其候选/组回执状态的绑定；来源正文、任务/租约、控制或回执改变会改变令牌，无关来源或全局 revision 推进不改变令牌。此入口不续跑、不触发重建、不调用模型。
+
+memory_list 原有 `pending_total/pending` 仍表示旧 staged 暂存；新增 `pending_source_total/pending_sources` 显示尚未成功整理、失败、未解析或仍有待处理候选/更新的已保存来源，删除来源不显示。`offset/limit` 分页记忆与旧暂存，`source_offset/source_limit` 独立分页来源（缺省 0/20，limit 均为 1–100）。每个来源仅给 ID、保存/整理状态、未提交候选和待定更新的索引/状态/原因，不返回事实值或原文。已提交但 update.pending 的候选属于 pending_update_candidates，不冒充未提交。
 
 ## 读取结果与回答
 
