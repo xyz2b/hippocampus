@@ -43,7 +43,7 @@ fn stage_name(request: &Value) -> &str {
         "w3_v1" | "w3_v2" => "W3",
         "w4_v2" | "w4_v3" | "w4_v4" => "W4",
         "r1_v1" => "R1",
-        "r4_v3" | "r4_v4" => "R4",
+        "r4_v3" | "r4_v4" | "r4_v5" => "R4",
         other => other,
     }
 }
@@ -392,6 +392,13 @@ pub(super) struct Recorder {
 }
 
 impl Recorder {
+    pub(super) fn seed_mvp(&mut self, document: Value, plan: Value) {
+        self.documents
+            .get_mut()
+            .unwrap()
+            .insert("m15_mvp".into(), document);
+        self.target_plan = Some(plan);
+    }
     pub(super) fn new(dir: PathBuf, limit: Option<u64>, live: Option<(String, String)>) -> Self {
         let target_plan = read_target_plan(&dir).unwrap();
         let mut cfg = config("configuration", "", 1);

@@ -53,9 +53,9 @@ fn host_bootstrap_continues_with_first_turn_prepare_and_concrete_recall() {
         stages,
         vec![
             json!("r1_v1"),
-            json!("r4_v4"),
+            json!("r4_v5"),
             json!("r1_v1"),
-            json!("r4_v4")
+            json!("r4_v5")
         ]
     );
     assert_eq!(db.calls(), 4); // injected physical sends; bootstrap and inspection send none.
@@ -148,7 +148,7 @@ fn visible_output(body: &Json) -> Json {
                     "effective":null,"relation_scope":null,"pending_reason":null,"resolves_relations":[]})
             }).collect::<Vec<_>>()})
         }
-        "r4_v4" => {
+        "r4_v5" => {
             let e = &input["evidence"];
             let records: Vec<_> = e["records"]
                 .as_array()
@@ -491,7 +491,7 @@ fn visibility_g_deletion_invalidates_foreground_and_late_background() {
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
     let (entered, release) = hold(&mut c, "w1_v2");
-    let (r4_entered, r4_release) = hold(&mut c, "r4_v4");
+    let (r4_entered, r4_release) = hold(&mut c, "r4_v5");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -702,7 +702,7 @@ fn visibility_real_prepare_immediate_recall_success_frequency() {
             )
             .unwrap();
             let body = response.structured_content.as_ref().unwrap();
-            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v4" {
+            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v5" {
                 success += 1;
                 assert_eq!(body["source"]["status"], "stored");
                 assert_eq!(body["recall"]["status"], "answered", "{body}");

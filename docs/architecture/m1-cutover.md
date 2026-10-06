@@ -16,8 +16,8 @@
 
    integrity_check 应为 ok；记录原 user_version。不要在 WAL 活跃时只复制主数据库文件；.backup 包含一致性快照中的已提交数据和预算账本。备份也含原文，保持私有权限并明确保留/删除安排。
 3. 保存当前配置、切换前实际运行的二进制及版本/校验值。例如保存可读 DB9 的 036e7f8 版本；不要把重新编译后的 target/debug 文件误当旧版本。
-4. 用新程序的 --print-default-config 核对配置，再手工编辑。write_pipeline/recall_pipeline 缺省为 w4_runtime_v1/recall_v3，显式 legacy 报错且不自动改写文件。移除 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 等已退出字段，包含 false/null/空值也会拒绝。客户端改用 recall.v4；bootstrap 也提供稳定 request_id。memory_clarify 不再提交旧暂存。
-5. 未配置角色时，DEEPSEEK_PRO_MODEL 提供用户自己的 Pro 接入点/模型 ID。缺省 W1/W4 medium、W3/R1/R4 minimal，计算 R4 low。离线不要求模型环境变量；需要全服务零调用时用 enrichment_mode=off、PMR_MODEL_NETWORK=deny。
+4. 用新程序的 --print-default-config 核对配置，再手工编辑。write_pipeline/recall_pipeline 缺省为 w4_runtime_v1/recall_v3，显式 legacy 报错且不自动改写文件。移除 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 等已退出字段，包含 false/null/空值也会拒绝。客户端改用 recall.v5；bootstrap 也提供稳定 request_id。memory_clarify 不再提交旧暂存。
+5. 未配置角色时，DEEPSEEK_PRO_MODEL 提供用户自己的 Pro 接入点/模型 ID。缺省 W1 low、W4 medium、W3/R1/R4 minimal，计算 R4 low。离线不要求模型环境变量；需要全服务零调用时用 enrichment_mode=off、PMR_MODEL_NETWORK=deny。
 6. 先离线核对原文、旧记录、暂存和删除。在线启用须有用户授权的有限预算；历史预算字段/计数保留。旧组没有新 W 输出额度时申请显式新授权，不自动提高额度、修改旧 policy_json 或重置 group_id。
 
 ## 回退

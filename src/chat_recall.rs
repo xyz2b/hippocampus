@@ -1,4 +1,4 @@
-//! recall.v4 宿主分发；只提供新契约，不读取评测夹具。
+//! recall.v5 宿主分发；只提供新契约，不读取评测夹具。
 use super::*;
 use crate::contract::{
     Polarity, Qualification, RecallOutput, RecallRequest, RecallStatus, SemanticJudgment, SourceRef,
@@ -72,7 +72,7 @@ impl ChatMemoryService {
     }
 
     fn recall_id(id: Option<String>) -> PersistenceResult<String> {
-        let id = id.ok_or("recall.v4 requires request_id")?;
+        let id = id.ok_or("recall.v5 requires request_id")?;
         bounded_text(&id, "request_id", 512)?;
         Ok(id)
     }
@@ -80,7 +80,7 @@ impl ChatMemoryService {
     fn recall_at(&self, id: &str, at: Option<i64>) -> PersistenceResult<i64> {
         past_time(at, "at")?;
         let key = json!([
-            "recall.v4",
+            "recall.v5",
             crate::openai::recall_models::fingerprint(&json!(id))
         ])
         .to_string();
@@ -147,7 +147,7 @@ impl ChatMemoryService {
                 .filter_map(|m| crate::recall::projection(&before, m.id))
                 .collect::<Vec<_>>();
             let output = RecallOutput {
-                version: "recall.v4".into(),
+                version: "recall.v5".into(),
                 request: request.binding.clone(),
                 status: RecallStatus::ContextOnly,
                 current_message: None,
@@ -511,7 +511,7 @@ fn retained_write_candidates(result: &Value) -> Vec<Value> {
         .collect()
 }
 
-/// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v4 组织回答。
+/// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v5 组织回答。
 fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value {
     let fact = out.facts.first();
     // R5 对已知相关原文遗漏降 current=unknown、status=insufficient；两者都不能批准。
@@ -548,7 +548,7 @@ fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value
         && input.source_ids.len() == proposed.len()
         && proposed == sources
         && fact.is_some_and(|f| f.statement == input.draft_answer);
-    json!({"version":"recall.v4","request":out.request,"snapshot":out.snapshot,
+    json!({"version":"recall.v5","request":out.request,"snapshot":out.snapshot,
         "approved":approved,"approved_source_ids":if approved {sources} else {BTreeSet::new()},
         "reason":if approved {"retained_exact_statement"} else {"draft_requires_semantic_review"}})
 }
@@ -559,7 +559,7 @@ mod tests {
     #[test]
     fn new_validator_checks_r5_gate_instead_of_blanket_truncation() {
         let mut out: RecallOutput = serde_json::from_value(json!({
-            "version":"recall.v4","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
+            "version":"recall.v5","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
             "status":"answered","current_message":null,"records":[],"raw":[],
             "facts":[{"statement":"我住上海。","evidence":[{"source":{"kind":"stored","source_id":"home"},"quote":{"text":"我住上海。"}}],
                 "record_ids":[1],"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes",

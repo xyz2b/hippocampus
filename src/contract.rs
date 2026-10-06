@@ -900,7 +900,7 @@ pub enum Qualification {
     Unknown,
 }
 
-/// §3.3 r4.v4；不把写入侧 insufficient/contradicted 枚举混入召回判断。
+/// §3.3 r4.v5；不把写入侧 insufficient/contradicted 枚举混入召回判断。
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum R4Verdict {

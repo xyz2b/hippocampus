@@ -24,11 +24,198 @@ fn sent_before(dir: &Path) -> Result<u64, String> {
     Ok(count)
 }
 
+// Keep the AC2 harness profile unchanged; this approved repair has its own campaign.
+fn mvp_config(case: &str, address: &str) -> ChatConfig {
+    let mut cfg = config(case, address, RESERVED);
+    cfg.write_models
+        .as_mut()
+        .unwrap()
+        .reasoning_effort
+        .insert("w1".into(), ReasoningEffort::Low);
+    cfg
+}
+
+fn r1_requests(case: &Value) -> BTreeMap<String, Value> {
+    let db =
+        TempDb(std::env::temp_dir().join(format!("m15-plan-{}.sqlite3", diagnostics::new_id())));
+    let cfg = mvp_config("m15_mvp", "");
+    let mut service = ChatMemoryService::new(db.open(), cfg.clone()).unwrap();
+    service
+        .call(
+            "memory_recall",
+            json!({"bootstrap":true,"offline":true,"query":"全局回答要求",
+        "request_id":"m15-plan-bootstrap","at":CLOCK}),
+            || false,
+        )
+        .unwrap();
+    for entity in case["entities"].as_array().unwrap() {
+        service
+            .call("memory_entity_upsert", entity.clone(), || false)
+            .unwrap();
+    }
+    let entities = db
+        .open()
+        .read()
+        .unwrap()
+        .entities
+        .list_by_owner(&UserId::from(OWNER));
+    let entity_ids = entities.iter().map(|e| e.id.clone()).collect::<Vec<_>>();
+    let relations = w2::relation_catalog(&cfg.predicates, &cfg.memory_types).unwrap();
+    let mut requests = BTreeMap::new();
+    let mut turns = Vec::new();
+    let mut history = Vec::new();
+    for message in case["messages"].as_array().unwrap() {
+        turns.push((
+            format!("prepare:{}", message["id"].as_str().unwrap()),
+            message["text"].as_str().unwrap().to_owned(),
+            history.clone(),
+            message["observed_at"].as_i64().unwrap(),
+        ));
+        history.push(message["text"].as_str().unwrap().to_owned());
+    }
+    for question in case["questions"].as_array().unwrap() {
+        turns.push((
+            format!("recall:{}", question["id"].as_str().unwrap()),
+            question["query"].as_str().unwrap().to_owned(),
+            serde_json::from_value(question["context"].clone()).unwrap(),
+            question["at"].as_i64().unwrap(),
+        ));
+    }
+    for (op, query, context, at) in turns {
+        let said_on = time::OffsetDateTime::from_unix_timestamp(at)
+            .unwrap()
+            .to_offset(time::UtcOffset::from_whole_seconds(cfg.utc_offset_seconds).unwrap())
+            .date()
+            .to_string();
+        let ctx = r1::Context {
+            query: &query,
+            context: &context,
+            entities: &entity_ids,
+            relations: &relations,
+            subject_ids: None,
+            task_id: None,
+            said_on: &said_on,
+            utc_offset_seconds: cfg.utc_offset_seconds,
+            supported_units: recall_models::SUPPORTED_UNITS,
+        };
+        let mut wire = hippocampus::structured_request(
+            ModelStage::R1,
+            "r1_v1",
+            recall_models::R1_PROMPT,
+            recall_models::r1_input(&ctx, &entities),
+            recall_models::r1_schema(),
+            cfg.model_budget.as_ref().unwrap(),
+        );
+        wire["model"] = json!(cfg.recall_models.as_ref().unwrap().r1);
+        cfg.recall_models
+            .as_ref()
+            .unwrap()
+            .effort("r1")
+            .apply(&mut wire);
+        requests.insert(op, normalized(&wire, &BTreeMap::new()).unwrap());
+    }
+    requests
+}
+
+fn repair_plan(case: &Value, archive: &Value, configuration: &Value) -> (Value, Value, u64, usize) {
+    let current_r1 = r1_requests(case);
+    let mut prefixes = serde_json::Map::new();
+    let mut slots = serde_json::Map::new();
+    let mut reused = 0;
+    for (op, request) in current_r1 {
+        let fp = recall_models::fingerprint(&request);
+        let old = &archive["operations"][&op][0];
+        let same = old["request"] == fp && old["request_content"] == request;
+        prefixes.insert(op.clone(), if same { json!([fp]) } else { json!([]) });
+        slots.insert(
+            op,
+            if same {
+                json!(["R4"])
+            } else {
+                json!(["R1", "R4"])
+            },
+        );
+        reused += usize::from(same);
+    }
+    for (i, message) in case["messages"].as_array().unwrap().iter().enumerate() {
+        let op = format!("write:{}", message["id"].as_str().unwrap());
+        prefixes.insert(op.clone(), json!([]));
+        // The first source has an empty record/relation snapshot; production skips W4.
+        slots.insert(
+            op,
+            if i == 0 {
+                json!(["W1", "W3"])
+            } else {
+                json!(["W1", "W3", "W4"])
+            },
+        );
+    }
+    let ceiling = slots
+        .values()
+        .map(|s| s.as_array().unwrap().len() as u64)
+        .sum();
+    let mut reserved = BTreeMap::from([("W1", 0), ("W3", 0), ("W4", 0), ("R1", 0), ("R4", 0)]);
+    for s in slots.values().flat_map(|s| s.as_array().unwrap()) {
+        *reserved.get_mut(s.as_str().unwrap()).unwrap() += 1;
+    }
+    let plan = json!({"version":"eval.e2e.targeted@1","call_ceiling":ceiling,"reserved":reserved,
+        "cases":{"m15_mvp":{"prefixes":prefixes,"slots":slots}}});
+    let document = json!({"version":"eval.e2e.v3@1","configuration":configuration,
+        "reuse_configuration":archive["configuration"],"operations":archive.get("operations").cloned().unwrap_or(json!({}))});
+    (document, plan, ceiling, reused)
+}
+
+fn campaign_recorder(
+    dir: PathBuf,
+    limit: Option<u64>,
+    live: Option<(String, String)>,
+    document: Value,
+    plan: Value,
+) -> Recorder {
+    let mut recorder = Recorder::new(dir, limit, live);
+    recorder.configuration = document["configuration"].clone();
+    recorder.seed_mvp(document, plan);
+    recorder
+}
+
 pub(super) fn run() {
     let case = sample();
     let dir = std::env::var_os("EVAL_M15_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("tests/eval/m15/recordings/mvp"));
+        .unwrap_or_else(|| PathBuf::from("target/eval-m15/mvp-af56"));
+    let archive_path = std::env::var_os("EVAL_M15_REUSE_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("tests/eval/m15/recordings/mvp"))
+        .join("m15_mvp.json");
+    assert_ne!(
+        dir.join("m15_mvp.json"),
+        archive_path,
+        "repair must not overwrite its archive"
+    );
+    if dir.join("m15_mvp.json").exists() && archive_path.exists() {
+        assert_ne!(
+            std::fs::canonicalize(dir.join("m15_mvp.json")).unwrap(),
+            std::fs::canonicalize(&archive_path).unwrap(),
+            "repair must not overwrite its archive"
+        );
+    }
+    let mut cfg = mvp_config("configuration", "");
+    cfg.model_budget = None;
+    let configuration = serde_json::to_value(cfg).unwrap();
+    let archive: Value = if dir.join("m15_mvp.json").exists() {
+        let doc: Value =
+            serde_json::from_slice(&std::fs::read(dir.join("m15_mvp.json")).unwrap()).unwrap();
+        assert_eq!(
+            doc["configuration"], configuration,
+            "repair campaign configuration changed"
+        );
+        doc
+    } else if archive_path.exists() {
+        serde_json::from_slice(&std::fs::read(&archive_path).unwrap()).unwrap()
+    } else {
+        json!({})
+    };
+    let (document, plan, ceiling, reused) = repair_plan(&case, &archive, &configuration);
     let spent = sent_before(&dir).unwrap();
     let remaining = RESERVED
         .checked_sub(spent)
@@ -36,32 +223,42 @@ pub(super) fn run() {
     let limit = std::env::var("EVAL_RECORD")
         .ok()
         .map(|s| s.parse().expect("EVAL_RECORD integer"));
-    preflight(limit, RESERVED).unwrap();
+    preflight(limit, ceiling).unwrap();
     println!("本目录累计已发送/在途 {spent}；本轮最多新增 {remaining}；累计上限 24。");
     println!("M1.5 MVP：预登记 child-demo（0 调用）；4 prepare + 4 后台整理 + 新会话 2 recall。");
-    println!("精确预留上限 24：W1=4、W3=4、W4=4、R1=6、R4=6；跳过阶段少发，不增加重试槽位。");
+    println!(
+        "严格匹配可复用 R1={reused}/6；新发送槽位上限 {ceiling}：{}；W4 首条跳过，后续按模型结果可能少发，不增加重试。",
+        plan["reserved"]
+    );
+    println!(
+        "历史 W1 low/提示词、W3/W4 提示词、R4 v5/提示词变化均按完整指纹过期；不改旧请求或指纹。"
+    );
     assert!(
         std::process::Command::new("python3")
             .args(["tests/eval/m15/token_estimate.py", "mvp"])
+            .arg(plan["reserved"].to_string())
             .env("PYTHONDONTWRITEBYTECODE", "1")
             .status()
             .unwrap()
             .success()
     );
-    let cfg = config("m15_mvp", "", RESERVED);
+    let cfg = mvp_config("m15_mvp", "");
     let budget = cfg.model_budget.as_ref().unwrap();
     let output = 4 * 32768
-        + 8 * 16384
-        + 6 * budget.query_output_tokens as u64
+        + 7 * 16384
+        + plan["reserved"]["R1"].as_u64().unwrap() * budget.query_output_tokens as u64
         + 6 * budget.review_output_tokens as u64;
     println!(
-        "按请求字节预算/3 粗估输入容量约 {}（24 × {} 字节）；输出配置上限合计 {}；动态证据未知，不把容量当实际 token 上界。",
-        (24 * budget.max_input_bytes).div_ceil(3),
+        "新发送输入容量约 {}（{ceiling} × {} 字节/3）；输出配置上限合计 {}；动态证据未知，不把容量当实际 token 上界。",
+        (ceiling * budget.max_input_bytes as u64).div_ceil(3),
         budget.max_input_bytes,
         output
     );
     if std::env::var("EVAL_DRY_RUN").as_deref() == Ok("1") {
-        println!("干跑：真实调用 0；未读取密钥、未创建录制。标注 draft，待 Claude/用户复核。");
+        println!(
+            "干跑：真实调用 0；未读取密钥、未创建录制。标注 {}；未来实际发送次数由语义输出决定。",
+            case["label_status"]
+        );
         return;
     }
     let output = std::env::var_os("EVAL_M15_OUTPUT")
@@ -78,9 +275,18 @@ pub(super) fn run() {
             std::env::var("DEEPSEEK_API_KEY").expect("live API key"),
         )
     });
-    let recorder = Arc::new(Recorder::new(dir.clone(), limit.map(|_| remaining), live));
+    let recorder = Arc::new(campaign_recorder(
+        dir.clone(),
+        limit.map(|n| remaining.min(n)),
+        live,
+        document,
+        plan,
+    ));
     // Missing offline replay does not even need a listening socket.
-    let mut result = if limit.is_none() && !dir.join("m15_mvp.json").exists() {
+    let mut result = if limit.is_none()
+        && !archive_path.exists()
+        && !dir.join("m15_mvp.json").exists()
+    {
         json!({"case":"m15_mvp","steps":case["questions"].as_array().unwrap().iter().map(|q|
             json!({"step":"question","question":q["id"],"state":"not_recorded","reason":"未录制"})).collect::<Vec<_>>()})
     } else {
@@ -97,7 +303,7 @@ pub(super) fn run() {
     result["calls"] = json!(recorder.calls("m15_mvp"));
     write_json(
         &output,
-        &json!({"pipeline":"m15","label_status":"draft","cases":[result],
+        &json!({"pipeline":"m15","label_status":case["label_status"],"cases":[result],
             "reserved":RESERVED,"real_calls":recorder.sent.load(Ordering::Relaxed),"previous_sends":spent,
             "total_sends":spent+recorder.sent.load(Ordering::Relaxed) as u64,"send_log":recorder.send_log_path(),
         "configuration":recorder.configuration}),
@@ -119,7 +325,7 @@ fn run_on(case: &Value, recorder: &Recorder, address: &str) -> Value {
     let id = case["id"].as_str().unwrap();
     let db =
         TempDb(std::env::temp_dir().join(format!("eval-m15-{}.sqlite3", diagnostics::new_id())));
-    let cfg = config(id, address, RESERVED);
+    let cfg = mvp_config(id, address);
     let mut service = ChatMemoryService::new(db.open(), cfg.clone()).unwrap();
     recorder.bind_source_database(id, &db.0);
     let mut steps = Vec::new();
@@ -198,7 +404,7 @@ fn run_on(case: &Value, recorder: &Recorder, address: &str) -> Value {
 }
 
 #[test]
-fn m15_mvp_reserves_24_and_refuses_23() {
+fn m15_mvp_dimensions_keep_the_24_send_authorization_cap() {
     let s = sample();
     assert_eq!(s["messages"].as_array().unwrap().len(), 4);
     assert_eq!(s["questions"].as_array().unwrap().len(), 2);
@@ -209,8 +415,68 @@ fn m15_mvp_reserves_24_and_refuses_23() {
             .iter()
             .all(|q| q["context"] == json!([]))
     );
-    assert!(preflight(Some(23), RESERVED).is_err());
-    assert!(preflight(Some(24), RESERVED).is_ok());
+    assert_eq!(RESERVED, 24);
+}
+
+#[test]
+fn m15_repair_plan_reuses_only_exact_r1_requests_and_reserves_changed_stages() {
+    let case = sample();
+    let requests = r1_requests(&case);
+    let operations: serde_json::Map<String, Value> = requests
+        .iter()
+        .map(|(op, request)| {
+            (
+                op.clone(),
+                json!([{"request":recall_models::fingerprint(request),
+            "request_content":request,"http_status":200,"body":"{}"}]),
+            )
+        })
+        .collect();
+    let archive = json!({"configuration":{"old":true},"operations":operations});
+    let configuration = json!({"repair":true});
+    let (document, plan, ceiling, reused) = repair_plan(&case, &archive, &configuration);
+    assert_eq!((ceiling, reused), (17, 6));
+    assert!(preflight(Some(16), ceiling).is_err());
+    assert!(preflight(Some(17), ceiling).is_ok());
+    assert_eq!(
+        plan["reserved"],
+        json!({"W1":4,"W3":4,"W4":3,"R1":0,"R4":6})
+    );
+    assert_eq!(document["operations"], archive["operations"]);
+    assert_eq!(document["reuse_configuration"], archive["configuration"]);
+    let dir = std::env::temp_dir().join(format!("m15-repair-plan-{}", diagnostics::new_id()));
+    let recorder = campaign_recorder(dir.clone(), None, None, document, plan);
+    let (op, request) = requests.first_key_value().unwrap();
+    let mut wire = request.clone();
+    wire["input"] = json!(request["input"].to_string());
+    recorder.begin("m15_mvp", op, &BTreeMap::new());
+    assert_eq!(
+        recorder
+            .respond("m15_mvp", &wire, || panic!("exact replay must not send"))
+            .0,
+        200
+    );
+    let mut changed = request.clone();
+    changed["reasoning"] = json!({"effort":"low"});
+    wire["reasoning"] = changed["reasoning"].clone();
+    recorder.begin("m15_mvp", op, &BTreeMap::new());
+    assert_eq!(
+        recorder
+            .respond("m15_mvp", &wire, || panic!(
+                "changed retained prefix must not send"
+            ))
+            .0,
+        503
+    );
+    assert_eq!(recorder.sent.load(Ordering::Relaxed), 0);
+    let mut stale = archive.clone();
+    stale["operations"][op][0]["request_content"] = changed;
+    // A matching stored hash alone cannot authorize reuse of altered content.
+    assert_eq!(repair_plan(&case, &stale, &configuration).2, 18);
+    assert_eq!(repair_plan(&case, &json!({}), &configuration).2, 23);
+    if dir.exists() {
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 }
 
 #[test]
@@ -299,7 +565,7 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
                 json!({"need":"judge","current_evidence":"assertion_present","type":"single","subject":{"entity_id":"self"},
                 "relation":"fact","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})
             }
-            "r4_v4" => {
+            "r4_v5" => {
                 let r = &input["evidence"]["records"][0];
                 if !r.is_null() {
                     json!({"verdict":"supported","facts":[{"statement":r["candidate"]["sentence"]["text"],

@@ -28,7 +28,7 @@ impl Db {
         let config: ChatConfig = serde_json::from_value(json!({
             "write_pipeline":"w4_runtime_v1","recall_pipeline":"recall_v3",
         "write_models":{"w1":DEEPSEEK_MODEL,"w3":DEEPSEEK_MODEL,"w4":DEEPSEEK_MODEL,
-            "reasoning_effort":{"w1":"medium","w3":"medium","w4":"medium"}},
+            "reasoning_effort":{"w1":"low","w3":"medium","w4":"medium"}},
         "recall_models":{"r1":DEEPSEEK_MODEL,"r4":DEEPSEEK_MODEL,
             "reasoning_effort":{"r1":"medium","r4":"medium"}},
             "enrichment_mode":"deferred","background_operation_limit":3,
@@ -110,7 +110,7 @@ fn output(request: &Json) -> Json {
             json!({"need":"judge","current_evidence":"query_only","type":"single","subject":{"entity_id":"self"},
             "relation":"居住地","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"lives_in","time":null},"unit":null}})
         }
-        "r4_v4" => json!({"verdict":"insufficient","facts":[],"compute":null}),
+        "r4_v5" => json!({"verdict":"insufficient","facts":[],"compute":null}),
         stage => panic!("unexpected stage {stage}"),
     }
 }
@@ -201,7 +201,7 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
             first.structured_content.unwrap()["global_context"]["status"],
             "available"
         );
-        let recall_arguments = json!({"recall_version":"recall.v4","request_id":"retained",
+        let recall_arguments = json!({"recall_version":"recall.v5","request_id":"retained",
             "query":"全局回答要求","offline":true,"bootstrap":true});
         let recalled = ChatMemoryService::call_shared(
             &shared,
@@ -745,7 +745,7 @@ fn background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled
         service.run_background_once().unwrap();
         let (mut c, _) = client();
         let (w1_entered, release_w1) = hold(&mut c, "w1_v2");
-        let (r4_entered, release_r4) = hold(&mut c, "r4_v4");
+        let (r4_entered, release_r4) = hold(&mut c, "r4_v5");
         service.inject_model_client(c);
         capture(&mut service, &db, "new", NEW);
         let worker = service.start_background().unwrap().unwrap();
@@ -780,7 +780,7 @@ fn background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled
             let result = foreground.join().unwrap().unwrap();
             assert!(!result.is_error.unwrap_or(false));
             let recall = &result.structured_content.as_ref().unwrap()["recall"];
-            assert_eq!(recall["version"], "recall.v4");
+            assert_eq!(recall["version"], "recall.v5");
             assert!(
                 recall["snapshot"]["read_revision"].as_u64().unwrap()
                     < db.open().read().unwrap().revision

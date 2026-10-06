@@ -1,6 +1,9 @@
-# personal_memory 客户端接入约定（recall.v4）
+# personal_memory 客户端接入约定（recall.v5）
 
 启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；问个人安排、经历、状态等具体问题时，另调普通 memory_recall，不用 bootstrap 代替。在线请求不要自行加 offline=true。
+
+主体澄清以最终 recall.status/clarification 为准：R1 是初步判断，通过完整核验的 R4 按授权证据终审。
+开放列表不要求先选一个人；真正的指代歧义仍先澄清。跳过/失败不代表已解决歧义，不把返回的记录数量当作答案资格。
 
 提到未登记的家人等人物时，用 memory_entity_upsert 明确登记用户确认的称呼，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体。登记不自动重建已保存来源。分别报告原文保存与整理进度；pending 时可用 memory_source_status 查看，不能说原话未收到。
 
@@ -57,13 +60,13 @@ MCP 无法强制第三方聊天客户端遵守这些表达规则；此边界仍�
 
 ## 校验、删除与预算
 
-memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v4 保守回答，不使用旧 safe_answer。
+memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v5 保守回答，不使用旧 safe_answer。
 
 用户明确要求遗忘且目标可定位时调用 memory_forget；对象不明先澄清。旧记录和暂存仍可删除；墓碑、索引、回执及迟到任务保护不变。
 
 offline=true 与 bootstrap 只关闭召回模型，不关闭已获授权的后台 worker。全服务零模型应设 enrichment_mode=off、PMR_MODEL_NETWORK=deny。CLI --call 不启动 worker；需要同步整理时显式 --enrich-source，批量 drain 要求 deferred。MCP 前后台模型在独立操作连接上运行，不占用全局锁等待模型。
 
-模型调用须有有限持久 model_budget；前台最多 R1/R4 两次、每条消息后台最多 W1/W3/W4 三次，共享总额度。失败/超时计入已尝试预算，不自动重试、重置或扩大授权。缺省角色：W1/W4 Pro medium；W3/R1/R4 Pro minimal；计算 R4 low。DEEPSEEK_PRO_MODEL 提供 Pro 接入点/模型 ID；缺少时只在需要在线模型时明确报错，显式角色配置可覆盖。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
+模型调用须有有限持久 model_budget；前台最多 R1/R4 两次、每条消息后台最多 W1/W3/W4 三次，共享总额度。失败/超时计入已尝试预算，不自动重试、重置或扩大授权。缺省角色：W1 Pro low、W4 Pro medium；W3/R1/R4 Pro minimal；计算 R4 low。DEEPSEEK_PRO_MODEL 提供 Pro 接入点/模型 ID；缺少时只在需要在线模型时明确报错，显式角色配置可覆盖。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
 
 旧库升级与手工备份见 [本地数据库切换步骤](architecture/m1-cutover.md)。
 

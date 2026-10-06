@@ -40,7 +40,7 @@ class BackgroundFixture(Fixture):
             return {"need": "judge", "current_evidence": "query_only", "type": "single",
                     "subject": {"entity_id": "self"}, "relation": "居住地", "conditions": [],
                     "time": None, "plan": {"op": "lookup", "filter": {"relation": "lives_in", "time": None}, "unit": None}}
-        if stage == "r4_v4":
+        if stage == "r4_v5":
             return {"verdict": "insufficient", "facts": [], "compute": None}
         if stage == "w1_v2" and type(self).invalid:
             return {"synthetic_invalid_output": True}

@@ -295,6 +295,157 @@ fn understanding() -> Json {
         "plan":{"op":"count","filter":{"relation":"fact","time":null},"unit":null}})
 }
 
+#[test]
+fn m15_r4_final_clarification_is_semantic_and_requires_valid_output() {
+    let db = Db::new();
+    let text = "我备有一盏青色台灯。";
+    let id = seed(&db, "lamp", text, "self", None, true);
+    let base_request = request("列出已有的用品记录。", None, None);
+    let mut r1 = understanding();
+    r1["subject"] = json!({"ambiguous":["self","child"]});
+    r1["type"] = json!("open");
+    r1["plan"]["op"] = json!("list");
+    let preliminary = plan(&base_request, Some(r1.clone()));
+    assert!(preliminary.needs_clarification());
+    for (verdict, status) in [
+        ("supported", RecallStatus::Answered),
+        ("needs_clarification", RecallStatus::NeedsClarification),
+        ("insufficient", RecallStatus::Insufficient),
+    ] {
+        let query = if verdict == "needs_clarification" {
+            request("那个人备有哪些用品？", None, None)
+        } else {
+            base_request.clone()
+        };
+        let judgment_plan = plan(&query, Some(r1.clone()));
+        let assembly =
+            recall::assemble(&db.open(), &query, &judgment_plan, Budget::default()).unwrap();
+        let output = json!({"verdict":verdict,"facts":[{
+            "statement":text,"evidence":[stored("lamp",text)],"record_ids":[id],
+            "polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],
+            "current":"yes","applies":"yes","supersedes_record_ids":[]}],"compute":null});
+        let result = assembly
+            .finish_r4(&db.open(), Ok(&output.to_string()))
+            .unwrap();
+        assert_eq!(result.status, status);
+        assert_eq!(result.facts.len(), 1); // facts do not decide clarification or insufficiency.
+        assert_eq!(
+            result.clarification.is_some(),
+            verdict == "needs_clarification"
+        );
+        assert_eq!(result.semantic_judgment, SemanticJudgment::Model);
+    }
+    let failed = recall::assemble(&db.open(), &base_request, &preliminary, Budget::default())
+        .unwrap()
+        .finish_r4(&db.open(), Ok("{}"))
+        .unwrap();
+    assert_eq!(failed.status, RecallStatus::Degraded);
+    assert!(failed.facts.is_empty() && failed.clarification.is_some());
+    let skipped = recall::assemble(&db.open(), &base_request, &preliminary, Budget::default())
+        .unwrap()
+        .finish_skipped(&db.open(), recall::SkipReason::Offline)
+        .unwrap();
+    assert_eq!(skipped.status, RecallStatus::Degraded);
+    assert!(skipped.facts.is_empty() && skipped.clarification.is_some());
+}
+
+#[test]
+fn m15_plan_change_unknown_effective_time_and_r4_history_survive_reopen() {
+    let db = Db::new();
+    let old_text = "我计划2029-08-02参加木作讲座。";
+    let new_text = "讲座计划改到2029-08-04。";
+    source(&db, "plan-old", old_text, None, "running");
+    let mut old = candidate("plan-old", old_text, "self");
+    old.candidate.speech = Speech::Plan;
+    let old_id = commit(
+        &db,
+        "plan-old",
+        None,
+        W4Input {
+            candidates: vec![old],
+            records: vec![],
+            relations: vec![],
+            coverage: W4Coverage {
+                complete: true,
+                omitted: 0,
+            },
+        },
+        W4Decision {
+            candidate: 0,
+            status: DecisionStatus::Decided,
+            action: Some(Action::New),
+            targets: vec![],
+            resolves_relations: vec![],
+            basis: vec![stored("plan-old", old_text)],
+            effective: None,
+            relation_scope: None,
+            pending_reason: None,
+        },
+    );
+    source(&db, "plan-new", new_text, None, "running");
+    let mut new = candidate("plan-new", new_text, "self");
+    new.candidate.speech = Speech::Plan;
+    new.candidate.times = vec![TimeInterp {
+        role: TimeRole::Event,
+        quote: Quote {
+            text: "2029-08-04".into(),
+        },
+        anchor: TimeAnchor::SaidOn,
+        interp: Interp::Date {
+            date: "2029-08-04".into(),
+        },
+    }];
+    new.time_resolutions =
+        vec![w2::resolve_time_interp(&new.candidate.times[0], SAID_ON, 8 * 3600).unwrap()];
+    let new_id = commit(
+        &db,
+        "plan-new",
+        None,
+        W4Input {
+            candidates: vec![new],
+            records: vec![w4::record_view(&db.state(), old_id).unwrap()],
+            relations: vec![],
+            coverage: W4Coverage {
+                complete: true,
+                omitted: 0,
+            },
+        },
+        W4Decision {
+            candidate: 0,
+            status: DecisionStatus::Decided,
+            action: Some(Action::StateChange),
+            targets: vec![old_id],
+            resolves_relations: vec![],
+            basis: vec![stored("plan-new", new_text), stored("plan-old", old_text)],
+            effective: None,
+            relation_scope: None,
+            pending_reason: None,
+        },
+    );
+    let ended = serde_json::to_value(w4::record_view(&db.state(), old_id).unwrap()).unwrap();
+    assert_eq!(ended["ended"], "end_unknown");
+    assert!(ended["end"].is_null());
+    let request = request("现在的讲座计划及原计划分别是什么？", None, None);
+    let mut r1 = understanding();
+    r1["plan"]["op"] = json!("list");
+    let plan = plan(&request, Some(r1));
+    let output = json!({"verdict":"supported","facts":[
+        {"statement":"目前计划参加讲座，日期已修改。","evidence":[stored("plan-new",new_text)],"record_ids":[new_id],
+         "polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[old_id]},
+        {"statement":"原先计划参加讲座。","evidence":[stored("plan-old",old_text)],"record_ids":[old_id],
+         "polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"no","applies":"yes","supersedes_record_ids":[]}
+    ],"compute":null});
+    let result = recall::assemble(&db.open(), &request, &plan, Budget::default())
+        .unwrap()
+        .finish_r4(&db.open(), Ok(&output.to_string()))
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Answered);
+    assert_eq!(result.history.len(), 1);
+    assert_eq!(result.history[0].statement, "原先计划参加讲座。");
+    assert_eq!(result.history[0].until, None);
+    assert_eq!(result.facts[1].current, Qualification::No);
+}
+
 fn run(db: &Db, request: &Request, output: Option<Json>, budget: Budget) -> RecallOutput {
     // 每次均已关闭建库连接并重开，只调用生产离线入口。
     recall::run_offline(&db.open(), request, &plan(request, output), budget).unwrap()
@@ -367,7 +518,7 @@ fn reopened_offline_loop_binds_request_snapshot_and_never_writes() {
     assert!(result.facts.is_empty() && result.computed.is_none() && result.history.is_empty());
     assert_eq!(serde_json::to_value(db.state()).unwrap(), before);
     let wire = serde_json::to_value(&result).unwrap();
-    assert_eq!(wire["version"], "recall.v4");
+    assert_eq!(wire["version"], "recall.v5");
     assert!(wire["records"][0].get("end").is_none());
     assert!(wire["records"][0].get("current").is_none());
     assert_eq!(

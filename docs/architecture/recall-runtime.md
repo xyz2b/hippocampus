@@ -6,7 +6,7 @@
 
 ## 入口与快照
 
-`recall::run_offline(store, request, plan, budget)` 使用同一个 `assemble` 入口，随后消费 `Assembly::finish_skipped`。需要判断时，调用方取得同一个 Assembly 的证据包，把 r4.v4 JSON 或 JudgmentFailure 传给 Assembly::finish_r4；该入口先严格解码、完整核验再计算、组装 R5。context_only 继续走跳过分支。生产不读取评测夹具；④的 RecallRuntime 沿用相同 assemble/finish 入口，提供者只增加模型调用与门控。
+`recall::run_offline(store, request, plan, budget)` 使用同一个 `assemble` 入口，随后消费 `Assembly::finish_skipped`。需要判断时，调用方取得同一个 Assembly 的证据包，把 r4.v5 JSON 或 JudgmentFailure 传给 Assembly::finish_r4；该入口先严格解码、完整核验再计算、组装 R5。context_only 继续走跳过分支。生产不读取评测夹具；④的 RecallRuntime 沿用相同 assemble/finish 入口，提供者只增加模型调用与门控。
 
 `Request` 的归属、任务、主体范围、said_on 和时区均由运行时提供。输出的 request 复制稳定 request_id、原始 query/context/task_id/at；R1 Plan 的原问题、上下文及可信范围必须与请求相同，否则拒绝组装。跨调用同 ID 的参数一致性与首次 at 由④的摘要回执绑定，正文与完整结果只留内存，见下文。
 
@@ -82,7 +82,7 @@ Z18 / AE15 在解码与完整核验之间共用 `r4::assemble_old_basis`：对�
 
 ## R5 派生与边界
 
-成功判断按 needs_clarification > conflict > insufficient > answered 排序；R1 未解析/歧义主体也触发澄清。已有相关 open 关系仍阻止确定答案，除非同一个 current=yes 事实以新旧依据明确 supersedes 全部冲突成员，或只保留唯一所引用成员；此消解只用于本轮，不改变存储或关系状态。R4 自报 conflict 同样得到 conflict。没有事实或计算的 supported 不包装成 answered。
+成功判断按 needs_clarification > conflict > insufficient > answered 排序；r4.v5 中，主体澄清以完整核验通过的 R4 verdict 为准，R1 的未解析/歧义判断为初步判断，不单独覆盖 R4。已有相关 open 关系仍阻止确定答案，除非同一个 current=yes 事实以新旧依据明确 supersedes 全部冲突成员，或只保留唯一所引用成员；此消解只用于本轮，不改变存储或关系状态。R4 自报 conflict 同样得到 conflict。没有事实或计算的 supported 不包装成 answered。
 
 grade 仅为标注：所有依据来自已提交记录且没有 raw/current 来源时为 committed，否则 uncommitted；同一来源同时出现在 raw/records 时保守取 uncommitted。update 合并显式 ID 和依据实际涉及记录的状态，不能省略 record_ids 绕过 pending；pending 优先、原因去重；其他未知或只有原文依据则 null，全部已明确判定才 judged。grade 不改变 status。
 
@@ -107,7 +107,7 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 `recall_models::RecallRuntime::run(store, request, evidence_budget, provider)` 串联 R1 → assemble → R4 → finish。provider=None、客户端网络关闭或 bootstrap 跳过两次调用；context_only 或 query_only 且无 records/raw 时只跳过 R4。R1 无效或失败按 judge/unknown 宽泛检索，保留 r1_not_understood 和具体失败原因；R4 超时/HTTP失败/无效输出按③的整份降级规则处理。预算不足标 semantic_judgment_skipped:budget 与 budget_exhausted，没有隐式重试。
 
-角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，常规角色缺省仍发送 medium；`r4_compute_reasoning_effort` 缺省 low。R4 只按已核验 R1 的 plan.op 分流：count/sum/elapsed/compare 用计算强度，lookup/list 或 R1 未理解用常规 r4 强度。选择复用同一纯函数，实际强度进入阶段绑定与完整请求指纹，两种配置强度都进入请求/缓存绑定；更换强度不能复用旧请求结果。不增加调用或重试。配置由 with_models 与 ChatConfig/CLI/MCP 分发。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；除下述已测配置外，端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v4 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload。全量验收 B 定向修正 R1/R4 提示词，分别明确数量读取与枚举、关系过滤，以及完整计算条目/操作数、来源限定语和事实依据；两阶段的旧录制均须按完整指纹过期，不借用旧输出评分。固定输入小集与 AC2 配置见 tests/eval/README-v3.md。
+角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，常规角色缺省仍发送 medium；`r4_compute_reasoning_effort` 缺省 low。R4 只按已核验 R1 的 plan.op 分流：count/sum/elapsed/compare 用计算强度，lookup/list 或 R1 未理解用常规 r4 强度。选择复用同一纯函数，实际强度进入阶段绑定与完整请求指纹，两种配置强度都进入请求/缓存绑定；更换强度不能复用旧请求结果。不增加调用或重试。配置由 with_models 与 ChatConfig/CLI/MCP 分发。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；除下述已测配置外，端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v5 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload。全量验收 B 定向修正 R1/R4 提示词，分别明确数量读取与枚举、关系过滤，以及完整计算条目/操作数、来源限定语和事实依据；两阶段的旧录制均须按完整指纹过期，不借用旧输出评分。固定输入小集与 AC2 配置见 tests/eval/README-v3.md。
 
 新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1 输出上限沿用 ModelBudgetConfig.query_output_tokens（缺省4096）。新路径 R4 的已核验计算类且实际强度为 low 时，使用 ModelBudgetConfig.r4_compute_output_tokens（缺省16384，可配置为1–65536）；其他 R4 调用（含 minimal、非计算类 low 和 R1 未理解）沿用 ModelBudgetConfig.review_output_tokens（缺省4096）。只在本次 R4 客户端副本中选择计算类额度，持久授权配置不变；账本记录实际选用的上限，历史授权默认值不重写。上限进入 API max_output_tokens 及完整请求指纹，专用上限也进入参数/缓存绑定。输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置；单阶段评测不能代替生产预算下的整链路验收。
 
@@ -131,7 +131,7 @@ AE10 的 low 参考来自已提交的首轮40次录制：平均输出2895.5 toke
 
 Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12），final 26/40（dev20/28、holdout6/12）。补入8条旧引用，原8次 record_basis 失败全部通过；5次 operands 核验失败与9次字段评分失败仍保留。请求指纹全部有效，详见[补入后报告](../../tests/eval/recall_stage/r4-old-basis-review.md)。这是同一批响应的机械组装收益，没有新模型测量，也不代替语义人工复核。
 
-回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v4", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、R3 快照版本及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
+回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v5", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、R3 快照版本及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
 同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算、角色推理强度与 R4 计算类输出上限须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省常规 medium / 计算 low / 计算上限16384 沿用原参数摘要；任一配置非缺省时，将 R1/R4 常规、R4 计算强度与计算上限一同规范化加入摘要。缺省与显式相同值等效，不同值不能复用结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
@@ -155,7 +155,7 @@ R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_a
 
 `ChatConfig.recall_pipeline` 只接受 `recall_v3`，也是缺省值；`write_pipeline` 缺省且只接受 `w4_runtime_v1`。legacy 值及 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 字段明确报已退出，不自动改写配置。新召回读取旧数据的 LegacyRecordView 和原文，不启动旧执行器或自动语义重建。完整在线示例见 [examples/recall-v3.json](../../examples/recall-v3.json)；升级前按 [手工备份](m1-cutover.md) 操作。
 
-三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 的权威版本都是 recall.v4；recall_version 可省略或指定 recall.v4，recall.v3、answer_contract.v1 及未知版本返回 contract_version_unsupported，不适配或回落。CLI/库 Recall 直接返回冻结对象；MCP 使用 `{recall: <recall.v4>, global_context: ...}` 包络。Prepare 返回冻结3.5的 source/enrichment/recall 三段，MCP 另附 global_context。源未获接收时 recall 为 not_requested；合法原文先接收，召回超限或失败不回滚保存，错误片段无事实答复权限。
+三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 的权威版本都是 recall.v5；recall_version 可省略或指定 recall.v5，recall.v3、recall.v4、answer_contract.v1 及未知版本返回 contract_version_unsupported，不适配或回落。CLI/库 Recall 直接返回冻结对象；MCP 使用 `{recall: <recall.v5>, global_context: ...}` 包络。Prepare 返回冻结3.5的 source/enrichment/recall 三段，MCP 另附 global_context。源未获接收时 recall 为 not_requested；合法原文先接收，召回超限或失败不回滚保存，错误片段无事实答复权限。
 
 Recall（包括 bootstrap）须稳定 request_id，保持 query/context/task_id/limit/离线选择不变。at 首次省略时绑定服务器时钟，重放读取首次时刻；显式时刻须为过去且与绑定一致。Prepare 缺省从 session_id/turn_id 摘要派生 request_id，不用原话作为身份。只读 query/context 不保存原文，预算及只读回执仅保留无正文元数据。跨进程完整结果不保留，重跑已完成 ID 或跨进程 Validate 明确失败、零重调；新尝试须新 ID 及授权预算。
 
@@ -172,7 +172,7 @@ pmr-mcp --db /tmp/recall-demo.sqlite3 --owner demo \
 参数文件示例（在线需另行批准真实调用、提供凭据与有限 model_budget；此文件示例强制离线）：
 
 ```json
-{"query":"请查阅已记录信息。","recall_version":"recall.v4","request_id":"demo-recall-1","offline":true}
+{"query":"请查阅已记录信息。","recall_version":"recall.v5","request_id":"demo-recall-1","offline":true}
 ```
 
 同样支持 `--call memory_prepare` 和 `--call memory_validate_answer`，其参数文件按 tools/list schema 提交。CLI 工具调用要求显式 db/owner，不能与批量整理参数混用。模型 ID 只用于 API 路由及阶段绑定，不放进模型可见 payload；预算仍为每请求 R1/R4 各一次、共最多两次，无自动重试。
@@ -183,7 +183,7 @@ Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或
 
 **新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和仍获准可见的原读快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
-客户端使用单一 recall.v4、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1/W4 medium、W3/R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
+客户端使用单一 recall.v5、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1 low、W4 medium、W3/R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
 
 ## 第4项④：与后台整理并发
 
@@ -195,8 +195,8 @@ MCP 新写入 inline/deferred 以单个独立连接 worker 整理已绑定 w4_ru
 
 AE15 最新计算类 low 固定输入8次，中位延迟84.4秒（含1次180秒超时），7次已知 usage 平均输出5164.71 token；未知 usage 不按零。AE14 报告的65秒/约4.1k是10条混合集指标。240秒下的完成率尚未测量，固定失败输入也不能保证全量延迟。离线补 record_ids 引用不修改提示词、schema、payload 或指纹，不重发已录制超时项。
 
-## M1.5 第②步：计划与协议升版
+## M1.5 第②步：计划与协议升版（历史记录）
 
-当前核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
+该步当时的核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
 
-主体确认/重建、历史补录与 nullable said_on 在第③④步实现，本步 DB 仍为 9。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。宿主版本枚举、bootstrap、MCP 包络、请求时钟与 Validate 同步到 recall.v4；显式 recall.v3 请求返回 contract_version_unsupported，不静默升级。评测执行器使用现行 schema 与输入版本号，历史录制仅作历史核验，严格回放如实报告过期。
+主体确认/重建、历史补录与 nullable said_on 在第③④步实现，该步 DB 仍为 9。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。宿主版本枚举、bootstrap、MCP 包络、请求时钟与 Validate 同步到 recall.v4；显式 recall.v3 请求返回 contract_version_unsupported，不静默升级。评测执行器使用现行 schema 与输入版本号，历史录制仅作历史核验，严格回放如实报告过期。

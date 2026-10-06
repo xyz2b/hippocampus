@@ -17,6 +17,7 @@ import unicodedata
 OLD_ADAPTER = "old_answer_contract@1"
 NEW_ADAPTER = "recall_v3@1"
 V4_ADAPTER = "recall_v4@1"
+V5_ADAPTER = "recall_v5@1"
 TZ = _dt.timezone(_dt.timedelta(seconds=28800))  # eval time zone, UTC+8
 RECALL_VERSION = "recall.v3"
 
@@ -262,7 +263,7 @@ def _map_ids(obj, rev):
 
 
 # --------------------------------------------------------------------------
-# recall.v3 historical / recall.v4 current (contracts.md 3.4)
+# recall.v3/v4 historical / recall.v5 current (contracts.md 3.4)
 # --------------------------------------------------------------------------
 
 def _date(s: str) -> _dt.date:
@@ -286,7 +287,7 @@ def _shift(d: _dt.date, unit: str, offset: int):
 
 def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                  source_texts: dict, source_state: dict | None = None) -> dict:
-    """raw = recall.v3/v4 JSON (contracts.md 3.4). source_ids: stable message id
+    """raw = recall.v3/v4/v5 JSON (contracts.md 3.4). source_ids: stable message id
     -> runtime source id. source_texts: stable message id -> original text,
     used only to verify that quotes occur verbatim.
 
@@ -299,8 +300,8 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
     deleted = {k for k, v in (source_state or {}).items() if v.get("deleted") or v.get("linkable") is False}
     req = raw.get("request") or {}
     binding = []
-    if raw.get("version") not in (RECALL_VERSION, "recall.v4"):
-        binding.append(f"version={raw.get('version')!r}，期望 recall.v3 或 recall.v4")
+    if raw.get("version") not in (RECALL_VERSION, "recall.v4", "recall.v5"):
+        binding.append(f"version={raw.get('version')!r}，期望 recall.v3、recall.v4 或 recall.v5")
     for k, want in (("query", q["query"]), ("context", q["context"]), ("task_id", q["task_id"]), ("at", q["at"])):
         if req.get(k) != want:
             binding.append(f"request.{k}={req.get(k)!r}，问题为 {want!r}")
@@ -514,7 +515,7 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                     "sources": _sorted_unique(s for it in items.values() for s in it["sources"])}
 
     view = {
-        "adapter": V4_ADAPTER if raw.get("version") == "recall.v4" else NEW_ADAPTER,
+        "adapter": {"recall.v4": V4_ADAPTER, "recall.v5": V5_ADAPTER}.get(raw.get("version"), NEW_ADAPTER),
         "status": NEW_STATUS.get(raw.get("status"), "unknown"),
         "status_raw": raw.get("status"),
         "binding": binding,

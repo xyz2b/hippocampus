@@ -73,7 +73,7 @@ cargo build --workspace --bins
 
 默认 W0 保存原文，W1/W3/W4 后台整理，R1/R4 前台召回。inline/deferred 在 T1 后排队，off 不自动整理。Recall 包括 bootstrap 须稳定 request_id，Prepare 缺省从 session/turn 派生。capture_source=true 必须有整条原文及必要 USER history 的保存授权；省略/false 被拒绝。
 
-模型调用仍需 DEEPSEEK_BASE_URL、DEEPSEEK_API_KEY、有限持久 model_budget 和网络门控。缺省角色为 W1/W4 Pro medium、W3/R1/R4 Pro minimal、计算 R4 low；设置 `DEEPSEEK_PRO_MODEL` 为自己的 Pro 接入点/模型 ID，或显式配置角色。缺少默认模型只在需要在线提供者时报错，offline/Bootstrap 可用。在线配置示例见 [background-recall.json](examples/background-recall.json)，其中预算须按用户授权填写，不能自动提高。
+模型调用仍需 DEEPSEEK_BASE_URL、DEEPSEEK_API_KEY、有限持久 model_budget 和网络门控。缺省角色为 W1 Pro low、W4 Pro medium、W3/R1/R4 Pro minimal、计算 R4 low；设置 `DEEPSEEK_PRO_MODEL` 为自己的 Pro 接入点/模型 ID，或显式配置角色。缺少默认模型只在需要在线提供者时报错，offline/Bootstrap 可用。在线配置示例见 [background-recall.json](examples/background-recall.json)，其中预算须按用户授权填写，不能自动提高。
 
 - PMR_MODEL_NETWORK=offline（默认）：只允许字面本机回环测试端点。
 - PMR_MODEL_NETWORK=deny：禁止所有模型 HTTP。

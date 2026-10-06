@@ -1150,10 +1150,19 @@ fn status_priority_open_conflicts_and_ephemeral_resolution_do_not_write() {
     let mut plan = f.plan_json();
     plan["subject"] = json!({"ambiguous":["self","child"]});
     let result = f
-        .assembly_with(&f.request(), plan, Budget::default())
+        .assembly_with(&f.request(), plan.clone(), Budget::default())
         .finish_r4(
             &f.db.open(),
             Ok("{\"verdict\":\"conflict\",\"facts\":[],\"compute\":null}"),
+        )
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Conflict);
+    assert!(result.clarification.is_none());
+    let result = f
+        .assembly_with(&f.request(), plan, Budget::default())
+        .finish_r4(
+            &f.db.open(),
+            Ok("{\"verdict\":\"needs_clarification\",\"facts\":[],\"compute\":null}"),
         )
         .unwrap();
     assert_eq!(result.status, RecallStatus::NeedsClarification);
@@ -1174,7 +1183,10 @@ fn r4_conflict_without_link_and_clarification_context_only() {
     plan["subject"] = json!({"unresolved":{"text":"我"}});
     let result = f
         .assembly_with(&f.request(), plan, Budget::default())
-        .finish_r4(&f.db.open(), Ok(&output(vec![], None).to_string()))
+        .finish_r4(
+            &f.db.open(),
+            Ok("{\"verdict\":\"needs_clarification\",\"facts\":[],\"compute\":null}"),
+        )
         .unwrap();
     assert_eq!(result.status, RecallStatus::NeedsClarification);
     assert!(result.clarification.unwrap().question.contains("我"));
@@ -2095,7 +2107,10 @@ fn r1_unresolved_history_does_not_forge_current_quote_and_fallback_cannot_author
     understood["subject"] = json!({"unresolved":{"text":"那位同事"}});
     let result = f
         .assembly_with(&req, understood, Budget::default())
-        .finish_r4(&f.db.open(), Ok(&output(vec![], None).to_string()))
+        .finish_r4(
+            &f.db.open(),
+            Ok("{\"verdict\":\"needs_clarification\",\"facts\":[],\"compute\":null}"),
+        )
         .unwrap();
     let clarification = result.clarification.unwrap();
     assert!(clarification.question.contains("那位同事"));

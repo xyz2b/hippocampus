@@ -1,0 +1,236 @@
+{
+  "id": "m15_w1_06",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 247539,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-medium",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "likes",
+            "sentence": {
+              "text": "我喜欢枫木积木，不喜欢金属哨子。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "枫木积木"
+              },
+              "text": "枫木积木"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "avoids",
+            "sentence": {
+              "text": "我喜欢枫木积木，不喜欢金属哨子。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "金属哨子"
+              },
+              "text": "金属哨子"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-03-03",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2028-03-03"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。"
+              },
+              "text": "我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。"
+            }
+          },
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "她没有发热"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-03-03",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "那天"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。"
+              },
+              "text": "我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "课程计划改到2028-03-05，但预约尚未改期。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-03-05",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2028-03-05"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "课程计划改到2028-03-05，但预约尚未改期。"
+              },
+              "text": "课程计划改到2028-03-05，但预约尚未改期。"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "negate",
+            "relation": "fact",
+            "sentence": {
+              "text": "课程计划改到2028-03-05，但预约尚未改期。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "课程计划改到2028-03-05，但预约尚未改期。"
+              },
+              "text": "课程计划改到2028-03-05，但预约尚未改期。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"likes\",\"sentence\":{\"text\":\"我喜欢枫木积木，不喜欢金属哨子。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"枫木积木\"},\"text\":\"枫木积木\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\":{\"text\":\"我喜欢枫木积木，不喜欢金属哨子。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"金属哨子\"},\"text\":\"金属哨子\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2028-03-03\",\"kind\":\"date\"},\"quote\":{\"text\":\"2028-03-03\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。\"},\"text\":\"我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。\"}},{\"conditions\":[{\"quote\":{\"text\":\"她没有发热\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。\"},\"speech\":\"plan\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2028-03-03\",\"kind\":\"date\"},\"quote\":{\"text\":\"那天\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。\"},\"text\":\"我已预约2028-03-03的窑作课，计划那天带小栎参加，前提是她没有发热。\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"课程计划改到2028-03-05，但预约尚未改期。\"},\"speech\":\"plan\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2028-03-05\",\"kind\":\"date\"},\"quote\":{\"text\":\"2028-03-05\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"课程计划改到2028-03-05，但预约尚未改期。\"},\"text\":\"课程计划改到2028-03-05，但预约尚未改期。\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"fact\",\"sentence\":{\"text\":\"课程计划改到2028-03-05，但预约尚未改期。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"课程计划改到2028-03-05，但预约尚未改期。\"},\"text\":\"课程计划改到2028-03-05，但预约尚未改期。\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "medium",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:d0bfb4e16500c0e98d256ba8c6f128c7fc9fda4b28525961732d8709350b02d1",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3864,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 16972,
+          "output_tokens_details": {
+            "reasoning_tokens": 16079
+          },
+          "total_tokens": 20836
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3864,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 16972,
+        "output_tokens_details": {
+          "reasoning_tokens": 16079
+        },
+        "total_tokens": 20836
+      }
+    }
+  ]
+}

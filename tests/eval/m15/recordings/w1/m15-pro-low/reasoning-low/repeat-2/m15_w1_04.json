@@ -1,0 +1,121 @@
+{
+  "id": "m15_w1_04",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 35134,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-low",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-02-19",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2028-02-19"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+              },
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "visited",
+            "sentence": {
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-02-20",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2028-02-20"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "岬岛"
+              },
+              "text": "岬岛"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n      \"conditions\": [],\n      \"kind\": \"assertion\",\n      \"memory_type\": \"fact\",\n      \"polarity\": \"affirm\",\n      \"relation\": \"fact\",\n      \"sentence\": {\n        \"text\": \"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"\n      },\n      \"speech\": \"user_statement\",\n      \"strength\": null,\n      \"subject\": {\n        \"entity_id\": \"self\"\n      },\n      \"times\": [\n        {\n          \"anchor\": \"said_on\",\n          \"interp\": {\n            \"date\": \"2028-02-19\",\n            \"kind\": \"date\"\n          },\n          \"quote\": {\n            \"text\": \"2028-02-19\"\n          },\n          \"role\": \"event\"\n        }\n      ],\n      \"uncertainty\": null,\n      \"value\": {\n        \"kind\": \"text\",\n        \"quote\": {\n          \"text\": \"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"\n        },\n        \"text\": \"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"\n      }\n    },\n    {\n      \"conditions\": [],\n      \"kind\": \"assertion\",\n      \"memory_type\": \"fact\",\n      \"polarity\": \"affirm\",\n      \"relation\": \"visited\",\n      \"sentence\": {\n        \"text\": \"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"\n      },\n      \"speech\": \"plan\",\n      \"strength\": null,\n      \"subject\": {\n        \"entity_id\": \"self\"\n      },\n      \"times\": [\n        {\n          \"anchor\": \"said_on\",\n          \"interp\": {\n            \"date\": \"2028-02-20\",\n            \"kind\": \"date\"\n          },\n          \"quote\": {\n            \"text\": \"2028-02-20\"\n          },\n          \"role\": \"event\"\n        }\n      ],\n      \"uncertainty\": null,\n      \"value\": {\n        \"kind\": \"text\",\n        \"quote\": {\n          \"text\": \"岬岛\"\n        },\n        \"text\": \"岬岛\"\n      }\n    }\n  ],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:748547331158eeb327f28651479a274dc96a38a233dba61fc1a5ee14f25f83b6",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3719,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2394,
+          "output_tokens_details": {
+            "reasoning_tokens": 1868
+          },
+          "total_tokens": 6113
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3719,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2394,
+        "output_tokens_details": {
+          "reasoning_tokens": 1868
+        },
+        "total_tokens": 6113
+      }
+    }
+  ]
+}

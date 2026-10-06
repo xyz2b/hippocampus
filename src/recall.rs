@@ -291,7 +291,9 @@ impl Assembly {
                     None,
                     vec![],
                     self.evidence.relations.clone(),
-                    None,
+                    self.plan
+                        .needs_clarification()
+                        .then(|| self.clarification(&[])),
                     SemanticJudgment::Failed,
                 )
             }
@@ -317,8 +319,9 @@ impl Assembly {
                     })
                     .cloned()
                     .collect();
-                let clarification_needed = self.plan.needs_clarification()
-                    || output.verdict == R4Verdict::NeedsClarification;
+                // R1 is preliminary; a fully validated R4 decides semantic clarification.
+                // Skipped/failed judgment still uses R1 in the conservative fallback below.
+                let clarification_needed = output.verdict == R4Verdict::NeedsClarification;
                 let insufficient = evaluated.compute_insufficient
                     || visibility_incomplete
                     || output.verdict == R4Verdict::Insufficient
@@ -352,7 +355,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v4".into(),
+                version: "recall.v5".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -608,15 +611,15 @@ impl Assembly {
             .map(|reason| (*reason).into())
             .collect();
         degraded_reasons.push(format!("semantic_judgment_skipped:{}", reason.code()));
-        // 无事实证据只阻止 R4；R1 已识别的主体歧义仍须按 Y1 请求澄清。
-        let clarification = (reason == SkipReason::NoEvidence && self.plan.needs_clarification())
-            .then(|| self.clarification(&[]));
+        // R4 未核验时保留初步澄清；离线/预算等降级状态不被提示覆盖。
+        let clarification =
+            (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v4".into(),
+            version: "recall.v5".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
-            } else if clarification.is_some() {
+            } else if reason == SkipReason::NoEvidence && clarification.is_some() {
                 RecallStatus::NeedsClarification
             } else if reason == SkipReason::NoEvidence
                 && self.evidence.completeness.plan_complete

@@ -4,7 +4,7 @@ import pathlib
 import sys
 import unittest
 
-from adapters import adapt_recall, question_input, NEW_ADAPTER, V4_ADAPTER
+from adapters import adapt_recall, question_input, NEW_ADAPTER, V4_ADAPTER, V5_ADAPTER
 from scoring import score
 
 M15 = pathlib.Path(__file__).resolve().parent.parent / "m15"
@@ -13,7 +13,7 @@ from check_samples import check
 
 
 class M15Scoring(unittest.TestCase):
-    def fixture(self, version="recall.v4"):
+    def fixture(self, version="recall.v5"):
         case = json.loads((M15 / "mvp.json").read_text())
         q = case["questions"][1]
         source = {"kind":"stored", "source_id":"runtime-m3"}
@@ -27,13 +27,15 @@ class M15Scoring(unittest.TestCase):
         return adapt_recall(question_input(case, q), q["query_meta"], raw, {"m3":"runtime-m3"},
                             source_texts={m["id"]:m["text"] for m in case["messages"]})
 
-    def test_v4_is_supported_but_v3_history_adapter_unchanged(self):
+    def test_v5_is_supported_and_history_adapters_unchanged(self):
         c,q,raw=self.fixture()
+        self.assertEqual(self.view(c,q,raw)["adapter"], V5_ADAPTER)
+        raw["version"]="recall.v4"
         self.assertEqual(self.view(c,q,raw)["adapter"], V4_ADAPTER)
         self.assertEqual(self.view(c,q,raw)["binding"], [])
         raw["version"]="recall.v3"
         self.assertEqual(self.view(c,q,raw)["adapter"], NEW_ADAPTER)
-        raw["version"]="recall.v5"
+        raw["version"]="recall.v6"
         self.assertTrue(self.view(c,q,raw)["binding"])
         raw["version"]="recall.v4";raw["request"]["query"]="别的问题"
         self.assertTrue(self.view(c,q,raw)["binding"])

@@ -1,0 +1,121 @@
+{
+  "id": "m15_w1_04",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 64463,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-medium",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-02-19",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2028-02-19"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+              },
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2028-02-20",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "2028-02-20"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+              },
+              "text": "我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2028-02-19\",\"kind\":\"date\"},\"quote\":{\"text\":\"2028-02-19\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"},\"text\":\"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"},\"speech\":\"plan\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2028-02-20\",\"kind\":\"date\"},\"quote\":{\"text\":\"2028-02-20\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"},\"text\":\"我已订2028-02-19的渡船票，计划在2028-02-20登岬岛。\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "medium",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:ab6ad52c28986ff15c8df72876376c0eb22014c4dafd0d2ef74255ac2b6eff31",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3798,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4235,
+          "output_tokens_details": {
+            "reasoning_tokens": 3839
+          },
+          "total_tokens": 8033
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3798,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4235,
+        "output_tokens_details": {
+          "reasoning_tokens": 3839
+        },
+        "total_tokens": 8033
+      }
+    }
+  ]
+}

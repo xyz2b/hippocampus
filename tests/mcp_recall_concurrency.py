@@ -112,7 +112,7 @@ def main():
 
         try:
             seed()
-            for stage in ["r1_v1", "r4_v4"]:
+            for stage in ["r1_v1", "r4_v5"]:
                 entered, release = gate(stage)
                 before = len(HeldFixture.requests)
                 args = query(f"same-{stage}")
@@ -134,7 +134,7 @@ def main():
                 assert checked["approved"] is True, checked
 
             for action in ["change", "delete", "cancel"]:
-                for stage in ["r1_v1", "r4_v4"]:
+                for stage in ["r1_v1", "r4_v5"]:
                     entered, release = gate(stage)
                     before = len(HeldFixture.requests)
                     args = query(f"{action}-{stage}")

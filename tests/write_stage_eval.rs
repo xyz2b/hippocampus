@@ -1022,7 +1022,7 @@ fn fingerprint(request: &Value) -> Value {
     }
     if matches!(
         request["text"]["format"]["name"].as_str(),
-        Some("r1_v1" | "r4_v3" | "r4_v4")
+        Some("r1_v1" | "r4_v3" | "r4_v4" | "r4_v5")
     ) {
         // 新召回不删除时钟字段；request.at/said_on/时区/模型/提示词/完整包都须参与绑定。
         return json!(hippocampus::recall_models::fingerprint(&request));
@@ -1904,7 +1904,7 @@ fn eval_request_timeout(request: &Value) -> std::time::Duration {
     let compute =
         hippocampus::recall_models::RecallModels::default().r4_effort(op) == ReasoningEffort::Low;
     std::time::Duration::from_secs(
-        if request["text"]["format"]["name"] == "r4_v4"
+        if request["text"]["format"]["name"] == "r4_v5"
             && request["reasoning"]["effort"] == "low"
             && compute
         {
@@ -1918,15 +1918,15 @@ fn eval_request_timeout(request: &Value) -> std::time::Duration {
 #[test]
 fn evaluation_timeout_is_240_only_for_r4_compute_low() {
     for (stage, effort, op, seconds) in [
-        ("r4_v4", "low", "count", 240),
-        ("r4_v4", "low", "sum", 240),
-        ("r4_v4", "low", "elapsed", 240),
-        ("r4_v4", "low", "compare", 240),
-        ("r4_v4", "low", "lookup", 180),
-        ("r4_v4", "low", "list", 180),
-        ("r4_v4", "low", "invalid", 180),
-        ("r4_v4", "minimal", "count", 180),
-        ("r4_v4", "high", "count", 180),
+        ("r4_v5", "low", "count", 240),
+        ("r4_v5", "low", "sum", 240),
+        ("r4_v5", "low", "elapsed", 240),
+        ("r4_v5", "low", "compare", 240),
+        ("r4_v5", "low", "lookup", 180),
+        ("r4_v5", "low", "list", 180),
+        ("r4_v5", "low", "invalid", 180),
+        ("r4_v5", "minimal", "count", 180),
+        ("r4_v5", "high", "count", 180),
         ("r1_v1", "low", "count", 180),
         ("w3_v2", "low", "count", 180),
     ] {
@@ -3756,7 +3756,7 @@ fn m15_stage_executors_bind_current_schema_and_input_contracts() {
         ("w3", "w3_v2", "w3.v2"),
         ("w4", "w4_v4", "w4.v4"),
         ("r1", "r1_v1", "r1.v1"),
-        ("r4", "r4_v4", "r4.v4"),
+        ("r4", "r4_v5", "r4.v5"),
     ] {
         let request =
             stage_request_with_output_tokens(stage, &samples(stage).remove(0), 16384).unwrap();
@@ -3778,7 +3778,7 @@ fn m15_stage_executors_bind_current_schema_and_input_contracts() {
             let contract = match stage.as_str() {
                 "w3" => "w3.v2",
                 "r1" => "r1.v1",
-                "r4" => "r4.v4",
+                "r4" => "r4.v5",
                 _ => unreachable!(),
             };
             assert_eq!(input["contract"], contract);

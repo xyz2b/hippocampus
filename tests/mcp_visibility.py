@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""target-design 2.6: new inline write + recall.v4 over MCP and synthetic loopback HTTP."""
+"""target-design 2.6: new inline write + recall.v5 over MCP and synthetic loopback HTTP."""
 import argparse
 import contextlib
 import datetime
@@ -76,7 +76,7 @@ class VisibilityFixture(Fixture):
             return {"need": "judge", "current_evidence": "query_only", "type": "single",
                     "subject": {"entity_id": "self"}, "relation": "居住地", "conditions": [], "time": None,
                     "plan": {"op": "lookup", "filter": {"relation": "lives_in", "time": None}, "unit": None}}
-        if stage == "r4_v4":
+        if stage == "r4_v5":
             evidence = payload["evidence"]
             records = [r for r in evidence["records"] if r["format"] == "current" and r["stored_status"] == "active"]
             raw = next((r for r in evidence["raw"] if "搬到" in r["quote"]["text"] and r["quote"]["text"] != HYPOTHESIS and r["enrichment"] != "needs_rejudge"), None)
@@ -219,7 +219,7 @@ def run(case, binary):
             assert result["facts"][0]["grade"] == "committed", result
         elif case == "g":
             entered, release = gate("w1_v2", NEW)
-            r4_entered, r4_release = gate("r4_v4")
+            r4_entered, r4_release = gate("r4_v5")
             saved = client.call("memory_remember", turn("deleted", NEW))
             assert entered.wait(8)
             foreground = client.start_call("memory_recall", {"query": "我住在哪？", "at": 1790899200, "request_id": "deleted"})

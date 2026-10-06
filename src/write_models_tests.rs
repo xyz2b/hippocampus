@@ -235,10 +235,14 @@ fn changed_write_reasoning_never_reuses_saved_stages_or_frozen_candidates() {
             .judge(&mut db.open(), &claim, &ctx, &input, &sources)
             .unwrap();
         let (mut changed, sent) = mocked(&db, vec![]);
-        changed
-            .models
-            .reasoning_effort
-            .insert(role.into(), ReasoningEffort::Low);
+        changed.models.reasoning_effort.insert(
+            role.into(),
+            if role == "w1" {
+                ReasoningEffort::Medium
+            } else {
+                ReasoningEffort::Low
+            },
+        );
         let error = if role == "w4" {
             changed
                 .judge(&mut db.open(), &claim, &ctx, &input, &sources)
@@ -631,6 +635,115 @@ fn w1(text: &str) -> Json {
 fn w3() -> Json {
     json!({"reviews":[{"candidate":0,"verdict":"supported","problems":[],"episode_value":"not_applicable"}],
         "coverage":{"status":"complete","missing":[]},"request_reviews":[]})
+}
+
+#[test]
+fn m15_history_resolves_identity_but_never_bypasses_w3_insufficiency() {
+    let text = "刚才编号写错了，是58。";
+    for ambiguous in [false, true] {
+        let db = Db::new();
+        let history = if ambiguous {
+            vec!["我的卡编号是45。妹妹的卡编号是72。"]
+        } else {
+            vec!["我的卡编号是45。"]
+        };
+        let key = db.start_turn(text, "history-correction", &history);
+        let mut review = w3();
+        if ambiguous {
+            review["reviews"][0]["verdict"] = json!("insufficient");
+            review["reviews"][0]["problems"] = json!([
+                {"aspect":"subject","quote":{"text":text}}
+            ]);
+        }
+        let (provider, requests) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&w1(text).to_string())),
+                Ok(envelope(&review.to_string())),
+            ],
+        );
+        let result = run(&db, &key, &provider);
+        let requests = requests.lock().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[0]["reasoning"]["effort"], "low");
+        let input: Json = serde_json::from_str(requests[1]["input"].as_str().unwrap()).unwrap();
+        assert_eq!(input["user_history"], json!(history));
+        assert_eq!(input["current_user_message"], text);
+        assert_eq!(
+            input["candidates"][0]["candidate"]["subject"]["entity_id"],
+            "self"
+        );
+        assert!(
+            requests[1]["instructions"]
+                .as_str()
+                .unwrap()
+                .contains("Ambiguous history remains insufficient")
+        );
+        assert_eq!(
+            result["enrichment"]["candidates"][0]["status"],
+            if ambiguous { "pending" } else { "committed" }
+        );
+        assert_eq!(
+            db.open()
+                .read()
+                .unwrap()
+                .repository
+                .list_by_owner(&UserId::from("alice"))
+                .unwrap()
+                .len(),
+            usize::from(!ambiguous)
+        );
+        assert_eq!(db.calls(), 2);
+    }
+}
+
+#[test]
+fn m15_w1_low_default_preserves_explicit_override_and_rule_only_prompts() {
+    let mut models = WriteModels::default();
+    assert_eq!(models.effort("w1"), ReasoningEffort::Low);
+    assert_eq!(models.effort("w3"), ReasoningEffort::Medium);
+    assert_eq!(models.effort("w4"), ReasoningEffort::Medium);
+    models
+        .reasoning_effort
+        .insert("w1".into(), ReasoningEffort::Medium);
+    assert_eq!(models.effort("w1"), ReasoningEffort::Medium);
+    assert!(W1_PROMPT.contains("replacement value is one assertion"));
+    assert!(W1_PROMPT.contains("Conditions and uncertainty do not by themselves"));
+    assert!(W1_PROMPT.contains("identify its already named"));
+    assert!(W4_PROMPT.contains("when the intention changes"));
+    assert!(W4_PROMPT.contains("effective=null"));
+    let samples: Json = serde_json::from_str(include_str!("../tests/eval/m15/w1.json")).unwrap();
+    let mvp: Json = serde_json::from_str(include_str!("../tests/eval/m15/mvp.json")).unwrap();
+    let originals = samples
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["input"]["text"].as_str().unwrap())
+        .chain(
+            mvp["messages"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|m| m["text"].as_str().unwrap()),
+        )
+        .chain(
+            mvp["questions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|q| q["query"].as_str().unwrap()),
+        );
+    for original in originals {
+        for prompt in [
+            W1_PROMPT,
+            W3_PROMPT,
+            W4_PROMPT,
+            crate::recall_models::R1_PROMPT,
+            crate::recall_models::R4_PROMPT,
+        ] {
+            assert!(!prompt.contains(original), "M1.5 sample leaked into prompt");
+        }
+    }
 }
 fn mocked(
     db: &Db,

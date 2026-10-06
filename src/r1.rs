@@ -45,6 +45,7 @@ impl Plan {
         self.current_evidence() != R1CurrentEvidence::QueryOnly
     }
 
+    /// 初步主体判断；已核验的 R4 终审是否仍需澄清，跳过/失败时保留此提示。
     pub fn needs_clarification(&self) -> bool {
         self.output
             .as_ref()

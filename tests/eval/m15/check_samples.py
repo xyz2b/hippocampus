@@ -26,7 +26,7 @@ def inputs(value):
 def check():
     mvp = json.loads((ROOT / "mvp.json").read_text())
     w1 = json.loads((ROOT / "w1.json").read_text())
-    assert mvp["label_status"] == "draft" and mvp["fictional"]
+    assert mvp["label_status"] in ("draft", "reviewed") and mvp["fictional"]
     assert len(mvp["messages"]) == 4 and len(mvp["questions"]) == 2
     assert len(w1) == 6 and all(s["label_status"] == "draft" and s["fictional"] for s in w1)
     new = list(inputs(mvp)) + list(inputs(w1))

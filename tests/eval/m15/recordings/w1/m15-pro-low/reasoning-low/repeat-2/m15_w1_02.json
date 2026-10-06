@@ -1,0 +1,84 @@
+{
+  "id": "m15_w1_02",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 31733,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-low",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "likes",
+            "sentence": {
+              "text": "她最近更爱折纸帆了。"
+            },
+            "speech": "user_statement",
+            "strength": "moderate",
+            "subject": {
+              "entity_id": "child-demo"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "最近"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "折纸帆"
+              },
+              "text": "折纸帆"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"likes\",\"sentence\":{\"text\":\"她最近更爱折纸帆了。\"},\"speech\":\"user_statement\",\"strength\":\"moderate\",\"subject\":{\"entity_id\":\"child-demo\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"最近\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"折纸帆\"},\"text\":\"折纸帆\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:9a34cacee2b18ff6ab64b08023d1692d2bbe07e28a11ca3a93505998b8b81632",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3750,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2087,
+          "output_tokens_details": {
+            "reasoning_tokens": 1953
+          },
+          "total_tokens": 5837
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3750,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2087,
+        "output_tokens_details": {
+          "reasoning_tokens": 1953
+        },
+        "total_tokens": 5837
+      }
+    }
+  ]
+}

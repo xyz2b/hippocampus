@@ -1098,7 +1098,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
                 json!({"need":"judge","current_evidence":"query_only","type":"single","subject":{"entity_id":"self"},
                 "relation":"研究","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})
             }
-            "r4_v4" => {
+            "r4_v5" => {
                 let r = &input["evidence"]["records"][0];
                 json!({"verdict":"supported","facts":[{
                 "statement":r["candidate"]["sentence"]["text"],"evidence":r["evidence"],"record_ids":[r["id"]],
@@ -1132,7 +1132,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         .flat_map(|v| v.as_array().unwrap())
         .map(|r| r["schema"].as_str().unwrap())
         .collect();
-    for stage in ["w1_v2", "w3_v2", "w4_v4", "r1_v1", "r4_v4"] {
+    for stage in ["w1_v2", "w3_v2", "w4_v4", "r1_v1", "r4_v5"] {
         assert!(names.contains(&stage));
     }
     let replay = Arc::new(Recorder::new(dir.clone(), None, None));

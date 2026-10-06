@@ -1167,7 +1167,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v4");
+    assert_eq!(out["version"], "recall.v5");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1256,7 +1256,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v4");
+        assert_eq!(result["recall"]["version"], "recall.v5");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1271,7 +1271,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v4");
+    assert_eq!(body["recall"]["version"], "recall.v5");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -2781,7 +2781,7 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
         assert!(R1_PROMPT.contains(rule), "{rule}");
     }
     for rule in [
-        "r4.v4",
+        "r4.v5",
         "candidate.speech",
         "latest supported plan version",
         "otherwise remains insufficient",
@@ -2796,7 +2796,7 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
 
 #[test]
 fn r4_unknown_original_time_keeps_v4_and_never_uses_the_receiving_day() {
-    assert!(R4_PROMPT.contains("r4.v4"));
+    assert!(R4_PROMPT.contains("r4.v5"));
     assert_eq!(
         R4_PROMPT.matches("trusted original utterance time").count(),
         2

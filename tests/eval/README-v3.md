@@ -3,7 +3,7 @@
 缺省 `tests/eval.rs` 只运行 v3，未设置 EVAL_RECORD 时严格离线回放已有 AC2 录制。
 旧运行器已删除，EVAL_PIPELINE=legacy 明确拒绝。按 AD1，expect_common 绝对评分为主，
 0517000 原始报告和纯评分适配器保留作历史参考，不作上线门槛。
-新模式以 AC2 配置跑生产 `ChatMemoryService`：W1/W4 Pro medium、W3 Pro minimal、
+新模式以 AC2 配置跑生产 `ChatMemoryService`：W1 Pro low、W4 Pro medium、W3 Pro minimal、
 R1 Pro minimal、R4 Pro 计算类 low / 其余 minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型可见 input。
 输出预算 W1=32768、W3/W4=16384（生产阶段常量），R1=4096、R4=16384；禁用模型修复。
 
@@ -102,7 +102,7 @@ python3 tests/eval/scoring/compare.py --send-log <runs/run_id.json> --output /tm
 报告还会核对单次录制的 send_run/send_index/请求指纹，恢复“响应已落盘、日志终态未写”的窗口。
 W1≤204、W3≤204、W4≤169、R1≤63、R4≤63，合计≤703（首条消息的空库不需要W4）。
 W4/R4“预计”是有效候选且需要判定的容量规划情景，不是从标签推断的质量/分支预测；实际可能为零。
-干跑按 query_meta.operation 标注预计 R4 计算类7次、其余56次；实际调用只取已核验的 R1 plan.op（count/sum/elapsed/compare 用 low，其余或 R1 未理解用 minimal），总上限仍703。新的独立配置目录含 r4-compute-low，旧 AC2 配置目录不混用。干跑耗时列保留混合批次代理：W1/W4 medium；W3 用 AE9 Pro minimal 固定输入23次实测均值3.8s，R1 minimal p50、R4 按分流使用 AE14 low 8次实测中位84.4s（含1次180s超时）与 minimal 4.5s；计算类 low 本地超时240s，常规R4仍180s，无重试。
+干跑按 query_meta.operation 标注预计 R4 计算类7次、其余56次；实际调用只取已核验的 R1 plan.op（count/sum/elapsed/compare 用 low，其余或 R1 未理解用 minimal），总上限仍703。新的独立配置目录含 r4-compute-low，旧 AC2 配置目录不混用。干跑耗时列保留混合批次代理：W1 low、W4 medium；W3 用 AE9 Pro minimal 固定输入23次实测均值3.8s，R1 minimal p50、R4 按分流使用 AE14 low 8次实测中位84.4s（含1次180s超时）与 minimal 4.5s；计算类 low 本地超时240s，常规R4仍180s，无重试。
 W1/W4 混合批次和 W3 失败固定输入都是代理；情景不能保证 AC2 墙钟时间，未计并发限流、排队与输出差异。
 各阶段 token 估算见下述脚本，使用首轮实际 usage（含 incomplete），不是费用或 token 上界。
 脚本保留旧估算，并另列 AE10 分流估算：W3 输出采用 AE9 Pro minimal 固定集23次均值169.09 token（偏长失败输入），R4 low 输出采用首轮40次均值2895.5，其余用首轮 minimal 均值278.10；输入/W1/W4量沿用首轮代理，不是费用或 token 上界。AE15 最新估算单列：low8次中7次已知 usage 输出均值5164.71 token，另1次未知不计零；中位延迟84.4s。旧AE10估算保留作历史参考，干跑使用最新分组指标，不能声称全部符合15秒前台目标。
@@ -218,5 +218,5 @@ python3 tests/eval/scoring/compare.py \
 
 合并报告逐题标出 `targeted/ac2` 与运行文件路径。定点题缺结果记未录制，不回落 AC2；本轮发送计数不累加 AC2 的583次历史调用。合并分数是混合版本的63题视图，不表示全量重测；原 AC2 报告不得覆盖。
 
-M1.5 的 recall.v4 评分、虚构 prepare MVP 和固定 W1 low/medium 对照使用独立入口与目录，
+M1.5 的 recall.v5 评分、虚构 prepare MVP 和固定 W1 low/medium 对照使用独立入口与目录，
 见 [m15/README.md](m15/README.md)。两组各预留最多 24 次；默认历史评测及 59/4 核验不变。

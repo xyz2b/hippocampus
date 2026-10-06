@@ -1,7 +1,7 @@
 # M1.5 虚构 MVP 与 W1 推理强度对照
 
 本目录仅评测接线和虚构输入；不修改生产提示词、契约、模型默认值或用户数据库。
-`mvp.json` 和 `w1.json` 全部 `fictional=true, label_status=draft`，先由 Claude 审核、用户确认。
+`mvp.json` 和 `w1.json` 全部 `fictional=true`，标注状态以各文件的 `label_status` 为准，由 Claude 审核、用户确认。
 确认时只改标注，不能把标签或预期结果加进请求。默认测试仍是原 63 题的严格离线回放；历史合并 59/4 单独核验。
 
 ## 零调用检查和干跑
@@ -13,14 +13,20 @@ EVAL_M15=mvp EVAL_DRY_RUN=1 cargo test --test eval resident_eval_suite -- --exac
 EVAL_M15=w1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-MVP 精确预留 24：四条消息各至多 W1/W3/W4 + 前台 R1/R4，两个新会话查询各至多 R1/R4。
+AF56 修复 MVP 的累计授权上限为 24，使用独立目录 `target/eval-m15/mvp-af56/`，只读复用首轮
+`recordings/mvp/`（可通过 EVAL_M15_REUSE_DIR 指定）。当前完整请求匹配可复用 6 个 R1；
+两轮授权分别记账；首轮已花费的调用和发送日志不重置，本目录不得用于补发旧轮。
+新发送精确预留上限 17：W1×4、W3×4、W4×3、R4×6。首条来源没有旧记录或关系，生产跳过 W4。
+所有 R1 都不匹配时预留 23；W1 low/提示词、W3/W4 提示词、R4 v5/提示词改变均如实过期。
+旧配置仅作为复用出处保留；每条旧请求内容与指纹都必须匹配，不改旧指纹或响应，不因配置差异放宽阶段校验。
 bootstrap 和实体登记不调用模型。W4 不需要时直接走生产 W5；R1/核验使某阶段跳过时少发，预算不转作重试。
 W1 对照固定六场景 × low/medium × 两次，仅 W1，24 个独立槽位。干跑以完整请求字节粗估输入，
 样本 ID 为无语义编号，focus/预期复核项不进请求；按同样本/同重复配对交错 low 和 medium。
 本组 W1 两种强度均用生产写入侧的 360 秒超时，避免旧阶段脚本的 180 秒提前截断 medium。
-列出输出配置容量，并参考 AC2 公开录制中的 usage 均值；low 的估算暂借 medium，不声称已经节省。
+列出输出配置容量，并参考 AC2 公开录制中的 usage 均值；W1 low 对照实测平均输出 3337 token、medium 4512，
+容量估算仍借 AC2 medium，不保证未来节省或质量。
 动态 W3/W4/R4 输入未知，精确的是预留数，不是未来实际调用数/token/费用。
-`EVAL_RECORD=23` 在全新计划下整批拒绝，先于密钥读取和监听端口；MVP 每次启动均要求预留 24，
+`EVAL_RECORD` 小于本次计划的预留上限时整批拒绝，先于密钥读取和监听端口；
 W1 续跑按严格可复用的成功/失败响应计算剩余槽位。只有显式 EVAL_RECORD 才启用物理发送。
 
 ## MVP 输入和执行顺序
@@ -54,7 +60,8 @@ EVAL_M15=mvp cargo test --test eval resident_eval_suite -- --exact --nocapture
 EVAL_M15=w1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-录制默认在 `recordings/mvp/`、`recordings/w1/`。每次发送前写入并 fsync `started` 日志，响应逐次
+本轮 MVP 新录制默认在 `target/eval-m15/mvp-af56/`，W1 对照在 `recordings/w1/`；修复目录不能覆盖复用目录。
+每次发送前写入并 fsync `started` 日志，响应逐次
 原子写入并 fsync；MVP 日志在 runs/，W1 日志在各模型/重复目录的 sends/。日志条目数是已进入
 物理发送的计数，started 无响应表示可能在途/计费，不证明服务器已收到。中断后严格复用已有响应，
 失败响应也复用，不能挑成功；没有响应的调用重启可能需要补发，先核对发送日志和授权剩余额度。
@@ -69,7 +76,7 @@ usage 与延迟；W2 只作机械核验，空候选不能视为语义通过。
 
 ## 评分边界
 
-v3 历史适配保留 `recall_v3@1`，v4 使用 `recall_v4@1`，不复用旧语义裁定。
+v3/v4 历史适配保留 `recall_v3@1` / `recall_v4@1`，当前 v5 使用 `recall_v5@1`，不复用旧语义裁定。
 MVP 的主体、生日更正、计划/预订事实、日期角色、更新、条件与可能性均为必审项；
 `answer_requirements` 对整份答案复核，容许分句合并/拆分、同义表达与标点差异，不靠句子顺序配对。
 出处、已绑定字段、完全缺失的条件/不确定字段机械判分；限定语片段存在时，其语义和所修饰安排仍待复核。

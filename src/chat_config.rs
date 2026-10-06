@@ -11,7 +11,7 @@ pub(super) fn role_defaults(mut value: Value, write: bool) -> PersistenceResult<
         .as_object_mut()
         .ok_or("role models must be an object")?;
     let defaults: &[(&str, &str)] = if write {
-        &[("w1", "medium"), ("w3", "minimal"), ("w4", "medium")]
+        &[("w1", "low"), ("w3", "minimal"), ("w4", "medium")]
     } else {
         &[("r1", "minimal"), ("r4", "minimal")]
     };
@@ -116,7 +116,7 @@ mod tests {
         );
         assert_eq!(
             [write.effort("w1"), write.effort("w3"), write.effort("w4")],
-            [Medium, Minimal, Medium]
+            [Low, Minimal, Medium]
         );
         let recall = config.recall_models_for(Some("pro-fixture")).unwrap();
         assert_eq!(

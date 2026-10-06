@@ -69,7 +69,7 @@ def model_output(request, case, db):
     assert prompt["user_history"] == []
     assert "model" not in prompt
     assert request["model"] == "pro-fixture"
-    assert request["reasoning"]["effort"] == ("medium" if name == EXTRACTION else "minimal")
+    assert request["reasoning"]["effort"] == ("low" if name == EXTRACTION else "minimal")
     if name == EXTRACTION:
         return {"candidates": [raw_candidate(case)], "memory_requests": []}
     assert name == REVIEW, name
