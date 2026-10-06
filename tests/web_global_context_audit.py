@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Audit captured CUA web results. This script never sends chats or fabricates observations."""
+"""Historical read-only audit; not an acceptance runner for recall.v3.
+Audit captured CUA web results. This script never sends chats or fabricates observations."""
 import argparse
 import copy
 import json

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Check recorded web/UI/RPC/SQLite evidence; never synthesize a web turn."""
+"""Historical read-only audit; not an acceptance runner for recall.v3.
+Check recorded web/UI/RPC/SQLite evidence; never synthesize a web turn."""
 import hashlib
 import json
 import sys

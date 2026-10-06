@@ -1,4 +1,4 @@
-# common.v1 共同判分视图（四题试跑）
+# common.v1 评分与历史验收重算
 
 依据 `docs/architecture/common-scoring-view.md`。全部离线，只用 Python 标准库，不调用模型。
 
@@ -32,6 +32,13 @@ python3 tests/eval/scoring/compare.py --run <v3-run.json> --output /tmp/eval-v3-
 
 复核流程：跑 `trial.py`，报告中“待复核”项带台账键；在 `review_ledger.json` 中按键写入或确认结论。标注、问题、输出、额外结论或语义状态任一变化，键随之改变，旧结论不再适用；`test_ledger_covers_every_pending_item` 会指出失效的键。
 
-全量验收 A 的逐次诊断见报告“逐次远端 / 本地结果”：远端状态与本地 timeout、解码/核验失败、输出超限分列。回放明确标注，不表示线上质量或延迟；旧 live 缺本地诊断时显示 unknown。新回放默认另存 run-replay.json，保留 live run.json 和原报告。
+全量验收 A 的逐次诊断见报告“逐次远端 / 本地结果”：远端状态与本地 timeout、解码/核验失败、输出超限分列。回放明确标注，不表示线上质量或延迟；旧 live 缺本地诊断时显示 unknown。新回放默认写入 target/eval-replay/<配置标签>/run-replay.json，保留 live run.json 和原报告。
 
 AF2/AF3：`expect_common.status` 可为单值或非空集合（common.v1 使用 answer / insufficient / clarify / conflict）。只放宽该字段，事实、来源、方向、当前资格及语义复核照常执行；标签变更使对应复核键失效。`compare.py` 单列 HTTP/账户/传输/超时为调用失败（非模型），不计入模型解码/核验失败。
+
+## M1 已接受历史（AF27）
+
+`test_m1_history.py` 默认随 unittest 运行，普通 cargo test 也通过 Rust 入口执行此检查。
+从 AC2、两轮定点的原始 run.json/target-plan.json 和当前 confirmed 复核台账重算，不读取已有最终报告作为答案。校验两份计划均绑定原 AC2 的 SHA-256，断言63题59通过/4失败/0待复核以及准确失败集合。最小数据路径及来源见 [历史归档](../end_to_end/README.md)。
+
+当前严格回放仍为235复用/59缺口/0发送，63题未录制，不计通过；历史59/4不能补齐当前缺口。补录须另行授权。

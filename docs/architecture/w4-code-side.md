@@ -1,8 +1,8 @@
 # W4 的代码侧与运行时离线闭环
 
-> 2026-10-06 AF21：默认 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；legacy 配置与 answer_contract.v1 入口已拒绝，旧执行代码留后续清理。缺省角色采用 AC2，Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除和授权账本不变。下文关于旧默认、opt-in 和 v1 适配的内容属于历史实现记录；当前客户端按 docs/memory-client-contract.md。
+> 2026-10-06 M1 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。缺省角色采用 AC2，Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除、DB9 和授权账本保留，客户端见 [接入约定](../memory-client-contract.md)。历史测量与检查点兼容说明不代表旧执行器仍可用。
 
-依据 contracts.md 2.1–2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。W2 在 `src/w2.rs`，W3 类型与机械核验在 `src/contract.rs`，W4 在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，库级入口在 `src/enrichment.rs`。注入提供者实现离线闭环；④-3/④-4 增加显式 W1/W3/W4 模型入口，④-5 接通 opt-in 配置与 CLI 分发。
+依据 contracts.md 2.1–2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。W2 在 `src/w2.rs`，W3 类型与机械核验在 `src/contract.rs`，W4 在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，库级入口在 `src/enrichment.rs`。注入提供者实现离线闭环；④-3/④-4 增加显式 W1/W3/W4 模型入口，④-5 接通配置与 CLI 分发。
 
 ## 1. 输入组装（`assemble`）
 
@@ -100,9 +100,9 @@
 - **例外（用户同意）**：w4_09 不比对组装结果。样本为了测试“检索到无关记录时判为 new”，送入了一条按取数规则取不到的其他关系记录；该样本直接用样本输入验证校验、转换与提交。
 - **标签状态与验证边界**：样本迁移到 w4.v2 后为 draft，等用户复核。复核前，本测试只说明代码与当前标签一致；“无新回归”仅指约定检查覆盖范围，不代表模型语义、运行时接线或 recall.v3 已验收。
 
-## 5. 运行时库级离线闭环与未接通部分
+## 5. 运行时库级闭环
 
-第③段及④-1～④-5在 `w4_runtime_v1` 上扩展，数据库保持 9，W5 回执格式仍为 `v8`。默认使用旧 `commit_candidates`；新路径通过 opt-in 配置接通 CLI 与 MCP inline/deferred 后台整理，没有新增工具或输出契约（见第 8、10 节）。
+第③段及④-1～④-5在 w4_runtime_v1 上扩展，现已是唯一默认写入路径。数据库保持9，W5回执格式仍v8；CLI 与 MCP inline/deferred 后台接通，旧 commit_candidates 等执行器已删除。对外使用冻结3.5片段（见第8、10节），旧保存回执读取保留。
 
 - **入口**：调用方先显式 `w4_start_round`，再调用 `enrichment::run_source(store, key, budget, upstream, judge)`。流程为认领 → 恢复检查 → 保存输入 → `assemble` → 提供者输出或 `assembly.skipped` → `prepare_output`（共享组装函数后严格校验） → `plan`（内部再次 `validate`）→ 保存计划 → 逐组提交 → 汇总。提供者调用期间不持有数据库事务。终态用 `enrichment::receipt` 读取，普通读取不重新认领或判定。
 - **提供者**：上游接收 `ProviderContext` 与 `SourceInput { text, history }`，返回 `UpstreamBatch { w2, review }`，包括所有 W2 ok/unresolved/rejected 候选、原始索引和请求映射，以及 W3 verdict、problems、episode_value、coverage 和 request_reviews；不返回准入布尔缺省、committed_id、Plan、组编号或提交快照。`review` 由代码 `W3Output::validate` 产生，核对候选（含 unresolved，排除 rejected）和请求一一对应、无重复、所有 Quote 逐字存在且还原、supported 的 problems 为空、非 Episode 的 episode_value 为 not_applicable。核验绑定最终完整 W2 结果（含时间换算、请求索引映射）和运行时来源快照，保存后重新加载也复验；改变输入不得沿用核验。W1 为空时 review 必须为 None；全部被 W2 拒收时允许不调用 W3，请求仍未核验。只有 W2 ok 且 W3 supported、未被控制请求阻断的候选进入 W4/W5。运行时由 episode_value 和已核验 remember 的最终索引映射计算 Admission，绑定历史产物，`plan` 生成证据、组和快照。
@@ -117,7 +117,7 @@
 - **重判复用**：新轮继承 W4 候选，从上一轮回执绑定 committed_id，原有绑定不能丢弃或替换。本轮暂停或拒收的已提交候选仍保留在完整批次，后续轮次从本来源各轮已提交 W5 回执恢复最新产物绑定；不另存进度或把暂停候选变成无 ID 的新增。低层接口没有完整批次时仍禁止移除已有绑定。完整批次来源绑定不变时，复用已经核验的 W2/W3，绝不重新提取后按索引套用产物；来源快照变化时通过 previous_w2 将最终候选与请求交提供者重新核验 W3，禁止替换该 W2 批次，旧 W3 绑定会被拒。W5 继续核对产物的来源、完整候选、有效状态及快照；失效或归并退出的产物不能回落成无 ID 的新增。新尝试仍须显式重判，不自动再次调用模型。
 - **删除与验证**：清空自身 result（含批次、控制标记、模型阶段结果和输入元数据）和认领；清洗他处候选、W3 binding/问题/覆盖片段、请求、来源历史副本、依据和编码快照，受影响计划整体失效，进入 needs_rejudge。旁侧元数据没有原文副本；新轮才重建。保留历史组 ID 供审计，不执行失效旧组。重判可读取失效关系的来源 ID 与墓碑，但不向提供者附已删除原文；输出若仍把它当动作依据，validate / W5 继续拒绝。`tests/enrichment_batch.rs`、`tests/enrichment_runtime.rs` 与 `tests/w4_recovery.rs` 用真实 SQLite 关闭重开覆盖完整批次、绑定、控制暂停、T1、注入输出、预算、恢复窗口、屏障、争抢、删除和回执映射。
 
-尚未接通：默认切换；MCP 新路径 inline/deferred 后台与 recall.v3 已 opt-in 接通。检索 full_text / fallback 仅记入新路径的内部输入诊断。继续使用已有 `w1:<来源 ID>:<候选索引>` 证据 ID；旧 ID、处理版本输出与回执保持原样。关系只由 W4 决定或用户确认解决，不因成员进入历史自动关闭。
+默认切换、MCP inline/deferred 后台与 recall.v3 均已接通。检索 full_text/fallback 只记内部输入诊断，继续使用已有 w1:<来源ID>:<候选索引> 证据ID；旧ID与回执原样读取。关系由W4决定或显式判定解决，不从枚举完整性自动解决。
 
 ## 6. W1/W3 模型提供者（④-3）
 
@@ -153,14 +153,14 @@
 }
 ```
 
-- `write_pipeline` 缺省为 `legacy`，只接受 `legacy` / `w4_runtime_v1`，未知值报错。新路径允许 `inline` / `deferred` / `off`。新 inline 的含义是 T1 接收原文后立即排入后台，前台不等待 W1/W3/W4；它与 deferred 均保存 queued 并唤醒 MCP worker，accepted_mode 仍记录实际模式。legacy inline 继续同步提取/核验/提交，默认配置不变。显式 CLI --enrich-source 在新配置 inline 下按绑定版本同步整理；legacy inline 仍拒绝处理已绑定的新来源，保持旧行为；旧版本来源不受影响。原文接收必须 `capture_source=true`；无独立原文的请求明确拒绝。此开关不选择或改写召回路径。
-- `write_models` 选择新写入路径的 W1/W3/W4 模型 ID；AE7 推荐三个角色均用 DeepSeek-V4-Pro，W1/W4 medium、W3 minimal（端点如上）。配置项或单个角色缺省沿用常量 `DEEPSEEK_MODEL`；不读取同名环境变量，不自动切换现有部署。未知角色、非字符串、null 或空白 ID 报错；模型 ID 为供应商端点标识，离线配置检查不验证远端是否存在。base URL/API key、旧提取核验及召回模型不变。
-- 按角色推理强度另设 `write_models.reasoning_effort`，角色缺省仍发送 medium；既有角色 ID 的字符串格式不变。接受 low/medium/high/minimal/none/xhigh/max；显式 omit 删除请求的 reasoning 字段，交由供应商默认，不能等同 medium。未知角色、非法值/null 报错。[Responses 文档](https://developers.openai.com/api/docs/guides/reasoning)说明可省略且强度支持取决于模型；Pro minimal 已按 AE6 实测，其他未测强度仍待验证。强度是 API 请求内容，进入预算请求指纹与阶段绑定，不进入 USER payload/提示词。既有检查点缺少强度按 medium 识别，medium 绑定保持原结构；变化不复用旧结果，已冻结 W1 候选也不能冒充不同强度产生的结果。旧路径仍固定 medium，不受新配置影响。
+- `write_pipeline` 缺省且只接受 w4_runtime_v1；legacy 报已退出。允许 inline/deferred/off。inline 与 deferred 均在 T1 后保存 queued、唤醒 MCP worker，前台不等待写入模型；accepted_mode 保留实际模式。CLI --call 不启动 worker，--enrich-source 按来源绑定版本同步整理，旧版本任务明确拒绝执行。原文接收必须 capture_source=true。
+- `write_models` 选择 W1/W3/W4 模型ID；缺省从 DEEPSEEK_PRO_MODEL 取得用户自己的 Pro 接入点，W1/W4 medium、W3 minimal。显式角色可覆盖；缺少端点只在需要在线模型时明确报错，离线不要求。未知角色、非字符串/null/空白ID报错；离线配置检查不验证远端是否存在。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
+- 按角色推理强度另设 `write_models.reasoning_effort`，角色缺省为 W1/W4 medium、W3 minimal；既有角色 ID 的字符串格式不变。接受 low/medium/high/minimal/none/xhigh/max；显式 omit 删除请求的 reasoning 字段，交由供应商默认，不能等同 medium。未知角色、非法值/null 报错。[Responses 文档](https://developers.openai.com/api/docs/guides/reasoning)说明可省略且强度支持取决于模型；Pro minimal 已按 AE6 实测，其他未测强度仍待验证。强度是 API 请求内容，进入预算请求指纹与阶段绑定，不进入 USER payload/提示词。既有检查点缺少强度按 medium 识别，medium 绑定保持原结构；变化不复用旧结果，已冻结 W1 候选也不能冒充不同强度产生的结果。旧授权与检查点保留原绑定，不隐式改变。
 - 所选模型 ID 仅用于 API 外层 model 路由及每个阶段的持久输入绑定，不进入模型可见的 payload。W1/W3 已独立构造绑定；W4 将 payload 与 stage_binding 分开，绑定仍保留原有 model、w4_input、sources 结构，失败操作标识也仅保留在绑定中。已有结果时同轮换模型返回 needs_rejudge，零发送；未写出结果的已占用调用也不重发。显式新轮次可重跑变化的 W3/W4，其他相同阶段继续复用。尚未冻结 W2 批次时，显式新轮次可重新提取 W1；已有冻结批次后，换 W1 仍返回 needs_rejudge，不能重提取后按旧候选索引提交或把旧候选标为新模型产物。旧检查点缺少模型字段时同轮也需重判；其冻结 W1 按已知旧默认 Flash 识别。已保存计划仍按既有规则续交，不因换 W4 模型重做已保存决定。数据库版本、schema、回执和冻结契约不变。
 - T1 在 `SourceRecord.task.processing_version` 绑定版本，包括新路径 off 来源；此时 round 仍为空，不调用模型。修改配置不会迁移既有来源或重排队列。同消息键同参数重放只读实际回执，不增加任务、轮次或模型调用；不同参数仍要求新 turn_id。
-- `pmr-mcp --db PATH --owner ID --config CONFIG --drain-enrichment --max-jobs N` 在 deferred 模式整理 queued 来源，按任务排序序号选取新旧版本并分别执行；旧来源继续 `commit_candidates`。旧顺序屏障仍生效，新路径复用 W4/W5 屏障、租约和快照检查。
-- `pmr-mcp --db PATH --owner ID --config CONFIG --enrich-source SOURCE_ID` 按来源绑定版本处理，当前开关为 legacy 时仅 off/deferred 能整理已绑定的新来源；off 来源只能由显式入口启动。新来源首次整理用稳定 `w4:<source_id>:0` 登记第 0 轮，随后 `run_source_with_all_models` 串联 W1/W2/W3/W4/W5。若首轮登记前已被顺序屏障标 stale_requires_review，只有已在 T1 绑定新版本的来源可登记第 0 轮，沿用原序号，仍由原屏障阻止模型调用与提交并返回 needs_rejudge；不放宽旧来源的登记规则。续跑沿用 operation_id 与轮次；needs_rejudge、已提交等终态只返回回执，活跃租约只返回 running；pending/coverage_gaps 仅在无计划时续跑。drain 不自动重试 failed/budget_exhausted 或显式重判；加轮次仍须库级 `w4_start_round(..., rejudge=true)`，本段不新增重判 CLI。
-- 新路径返回冻结 3.5 的 source/enrichment 片段，不公开检查点、缓存、内部错误细节或旧 outcomes；尚未启动轮次时候选/请求为空。内部 stale_requires_review 映射为 needs_rejudge。drain 外层 `{max_jobs, attempted, results}` 与每项 `{source_id,status,result}` 不变；外层 completed 表示调用返回，事实结果看 enrichment.status。旧来源输出原样保留。缺少模型客户端配置时来源落 failed、释放认领、零发送，批处理可继续下一条；遇 budget_exhausted 停止本批。
+- `pmr-mcp --db PATH --owner ID --config CONFIG --drain-enrichment --max-jobs N` 在 deferred 模式整理 queued 来源，按任务排序序号选择新版本；旧版本来源不自动执行，不转换版本。新来源仍受此前来源与无来源屏障约束，复用 W4/W5 屏障、租约和快照检查。
+- `pmr-mcp --db PATH --owner ID --config CONFIG --enrich-source SOURCE_ID` 按来源绑定版本处理，旧处理版本明确拒绝；off 来源只能由显式入口启动。新来源首次整理用稳定 `w4:<source_id>:0` 登记第 0 轮，随后 `run_source_with_all_models` 串联 W1/W2/W3/W4/W5。若首轮登记前已被顺序屏障标 stale_requires_review，只有已在 T1 绑定新版本的来源可登记第 0 轮，沿用原序号，仍由原屏障阻止模型调用与提交并返回 needs_rejudge；不放宽旧来源的登记规则。续跑沿用 operation_id 与轮次；needs_rejudge、已提交等终态只返回回执，活跃租约只返回 running；pending/coverage_gaps 仅在无计划时续跑。drain 不自动重试 failed/budget_exhausted 或显式重判；加轮次仍须库级 `w4_start_round(..., rejudge=true)`，本段不新增重判 CLI。
+- 新路径返回冻结 3.5 的 source/enrichment 片段，不公开检查点、缓存、内部错误细节或旧 outcomes；尚未启动轮次时候选/请求为空。内部 stale_requires_review 映射为 needs_rejudge。drain 外层 `{max_jobs, attempted, results}` 与每项 `{source_id,status,result}` 不变；外层 completed 表示调用返回，事实结果看 enrichment.status。旧来源回执原样读取，显式整理也不执行旧版本。缺少模型客户端配置时来源落 failed、释放认领、零发送，批处理可继续下一条；遇 budget_exhausted 停止本批。
 - 批处理在 `pmr-mcp` 创建 `Arc<Mutex<ChatMemoryService>>` 之前执行并返回，模型调用不持有服务全局锁；提供者调用期间也无 SQLite 写事务。第4项④/⑤已启用 MCP 新路径 deferred/inline 后台（见第10节）。AA10 将现有 memory_remember 纳入 CLI --call 白名单，返回裸 source/enrichment JSON；单次命令不启动后台，批处理行为保持独立。
 - `tests/write_pipeline.rs` 与 `tests/write_pipeline_process.py` 覆盖严格配置、原文授权、T1 版本绑定、关闭重开后配置切换/同参重放、终态与租约、缺凭证、两种 CLI 入口和混合队列；HTTP 仅使用本机合成 Responses。
 
@@ -171,7 +171,7 @@
 - **W3**：明确冲突或删改明确限定语判 contradicted，无法确认或排除命题判 insufficient。覆盖按 relation/value/限定语判断，不因 sentence 包含整条消息就判完整；gaps 必须附遗漏断言的非空连续原文。问题 Quote 不省略中间文字。
 - **W4**：提示词要求每条决定（含 pending）附新候选 `source.source_id` 的依据；decided 的每个目标还要分别引用旧依据。pending 要求仅为提示词约束，不收紧 validate。legacy 信息缺失用 unclear_relation，不伪造旧依据；依赖排除未检索记录的结论用 scope_incomplete，双方完整的已定位目标仍可更新。整个旧断言的修订用 refine，现实及偏好强度变化用 state_change，独立范围或局部补充才 coexist。整组协调目标与动作，每候选一条决定，每关系最多解决一次。
 - **V6 回退**：W4 提示词逐字恢复 554ae73/e887e63 的第 2 版；W1 保留第 3 版，W3 不变。w4_16/w4_17 标签仍为 pending，decided 不算通过。提示词泄漏扫描继续覆盖三阶段全部样本原文、ID 和标签；schema、契约、validate 不变。
-- **生产预算**：新写入阶段固定 W1=32768、W3/W4=16384；旧阶段沿用原配置及默认 4096。W1 按既有超时规则使用 360 秒，W3/W4 使用 180 秒。新授权的内部 policy_json 增加 `write_output_tokens` 绑定；已有无此字段的授权仍可用于旧阶段且不重写，不能静默用于提高额度后的新写入阶段，须提供新 group_id。本轮不改变上述预算、数据库版本及调用次数限制。
+- **生产预算**：新写入阶段固定 W1=32768、W3/W4=16384；历史授权保留原配置，旧阶段不再执行。W1 按既有超时规则使用 360 秒，W3/W4 使用 180 秒。新授权的内部 policy_json 增加 `write_output_tokens` 绑定；已有无此字段的历史授权不重写，不能静默用于提高额度后的新写入阶段，须提供新 group_id。本轮不改变上述预算、数据库版本及调用次数限制。
 - **评分与门禁**：`tests/write_stage_eval.rs` 默认仅报告模型评分或调用失败；显式 `EVAL_GATE=1` 才因最终评分或调用失败而失败（原始 W4 评分另行报告），`EVAL_GATE=0` 关闭门禁。无效样本、损坏录制、非法配置及上限预检仍失败。W1 按 W2 最终候选与还原后的请求评分，保留 raw 和含拒收、原因、索引映射的 w2_final。候选完整匹配仍决定整项是否通过；字段独立诊断，不把一个错误扩散到正确字段。W4 resolves_relations 按整组比对，合法的归属变化不扣分，遗漏或重复仍失败。
 - 时间对象内的 role 与请求 target_object 均支持标签的可接受集合，结构数组仍逐项完整匹配；接受 event/validity 不意味着接受 retention，时间解释、Quote 和其他限定语继续逐字段严格评分。
 - **U4 评分校准**：逐字段及逐样本分别报告 contract（解码、机械校验、编号一致性）、semantic（标签语义）和 reference（引用选择）；机械校验通过不证明完整语义正确。允许的引用等价仅为：两边均是当前原文连续片段，末尾单个句号（中文或英文）或分句逗号可有可无；conditions 可多/少一个本候选完整原句中明确存在的开头主语“我”（不从其他断言借主语）。不忽略内部标点，不缩短目标指代，不改变限定语或时间，不放宽专用关系的值；fact 的原句值沿用原句引用等价。coexist 且 targets 为空时不要求旧方依据。W4 报告 raw_result/raw_output 与 final_result/final_output，最终评分采用和运行时相同的组装规则；不能把组装后的通过当作模型原始引用能力改善。
@@ -191,12 +191,12 @@ EVAL_HISTORY=1 cargo test --test write_stage_eval write_stage_eval_suite -- --ex
 
 ## 10. MCP 后台执行与恢复（第4项④）
 
-- `ChatMemoryService::start_background` 在 MCP 服务建立前启动单个 worker，使用 `ChatOperation::connect` 的独立连接；模型等待不持有服务全局锁或 SQLite 写事务。配置为 deferred 或新写入路径 inline、且存在有限 model_budget 时启动；legacy/default inline 与 off 不启动。未配置预算时原文仍可接收排队，模型不会执行，不能把 queued 当成已整理。legacy deferred 来源不自动执行，保持 CLI drain 的旧行为；已绑定的新 deferred/inline 来源按自身版本执行，不由当前 write_pipeline 改写。
+- `ChatMemoryService::start_background` 在 MCP 服务建立前启动单个 worker，使用 `ChatOperation::connect` 的独立连接；模型等待不持有服务全局锁或 SQLite 写事务。配置为 deferred 或新写入路径 inline、且存在有限 model_budget 时启动；off 不启动。未配置预算时原文仍可接收排队，模型不会执行，不能把 queued 当成已整理。旧版本来源不自动执行，CLI 显式处理也拒绝旧执行版本；已绑定的新 deferred/inline 来源按自身版本执行，不由当前 write_pipeline 改写。
 - 来源记录是唯一任务真相。启动立即扫描，T1 保存后发送容量为1的合并通知，每5秒重新扫描以发现遗漏通知和过期租约。仅选择正文仍存在、新版本、accepted_mode=deferred/inline 的 queued 或租约已过期的 running，按 order_sequence 从旧到新处理。failed、budget_exhausted、needs_rejudge 与完成/待定终态不自动重试；stale_requires_review 仅当计划中全部组已提交且无待重判组时补汇总，其他 stale 不自动执行；off 来源只能走显式 CLI。队列中另一来源仍受 received_sequence / last_applied_source_sequence / 无来源屏障约束，不因恢复放宽。
 - 恢复沿用原 round/operation_id。已存完整计划直接走库级恢复，复验来源/批次绑定、逐组核对回执并补总状态，零模型调用且不要求模型凭据；部分提交不会重复插入/加强，全部组已提交只补汇总。未存计划则复用持久 W1/W3/W4 阶段结果；已预留但没有输出明确 failed/model_result_missing，零重发。每次物理 W1/W3/W4 调用前、逐组提交及收尾前核对身份并续租900秒；单阶段 HTTP 时限最长360秒，模型等待不跨租约周期。旧执行者不能续租、保存或覆盖新认领。
 - 相对时间始终锚定 SourceRecord.observed_at 对应的接收日，不用实际后台日期。关闭 MCP 时不等待已发送的阻塞 HTTP；进程退出留下持久认领/预留，后续按租约与结果缺失规则恢复，不承诺关闭时返回中的响应都已保存。
 - 联合配置示例 [background-recall.json](../../examples/background-recall.json)：前台 max_operation_calls=2、显式 background_operation_limit=3，合用一个 model_budget.group_id/max_calls（示例总额5，不自动补额度）。缺省仍是 min(max_operation_calls,3)，新字段缺省不改变既有授权；显式设置会进入同组所有客户端的持久 policy_json，已有组策略不同须显式新授权，不修改旧授权。
-- 无端口的真实 SQLite/注入请求测试在 `src/chat_background_tests.rs`；MCP stdio + loopback 合成 HTTP 在 `tests/mcp_background.py`。最小并发用事件屏障保持后台 W1 未结束，前台在线 R1/R4 在释放前完成，raw 带 running 新原文，返回不足而非确定旧当前值。另将后台提交安排在前台 R4 已发出、返回核验之前，3次受控重复实测均明确 recall_snapshot_changed；不改变 AA3 为隐式重试。此比例仅是屏障强制交错，不是生产发生率或P95验收；⑤补充无屏障固定节奏实验，见 [visibility-cadence.md](visibility-cadence.md)；不替代生产负载验收。
+- 无端口的真实 SQLite/注入请求测试在 `src/chat_background_tests.rs`；MCP stdio + loopback 合成 HTTP 在 `tests/mcp_background.py`。最小并发用事件屏障保持后台 W1 未结束，前台在线 R1/R4 在释放前完成，raw 带 running 新原文，返回不足而非确定旧当前值。AB2 后普通后台提交保留 R3 读快照，删除/输入/范围/控制绑定变化仍明确失败，零自动重试。早期受控交错3/3失败是策略修正前的历史测量，不是现行行为；⑤补充无屏障固定节奏实验，见 [visibility-cadence.md](visibility-cadence.md)；不替代生产负载验收。
 
 
 ## 11. 2.6 七类可见性验收（第4项⑤）

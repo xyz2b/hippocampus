@@ -1,6 +1,6 @@
 # personal_memory 客户端接入约定（recall.v3）
 
-默认写入 w4_runtime_v1、召回 recall_v3；旧 legacy 配置在打开数据库前拒绝，answer_contract.v1 返回 contract_version_unsupported。旧数据仍通过 LegacyRecordView 读取，不自动重建。工具名和参数以 tools/list 为准，owner 固定在服务器配置，客户端不能切换。
+默认写入 w4_runtime_v1、召回 recall_v3；旧执行器已删除；legacy 值及 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 字段（包括 false/null/空值）在打开数据库前拒绝，不自动改写配置；answer_contract.v1 返回 contract_version_unsupported。旧数据仍通过 LegacyRecordView 读取，不自动重建。工具名和参数以 tools/list 为准，owner 固定在服务器配置，客户端不能切换。
 
 ## 输入与调用顺序
 
@@ -35,3 +35,7 @@ offline=true 与 bootstrap 只关闭召回模型，不关闭已获授权的后�
 模型调用须有有限持久 model_budget；前台最多 R1/R4 两次、每条消息后台最多 W1/W3/W4 三次，共享总额度。失败/超时计入已尝试预算，不自动重试、重置或扩大授权。缺省角色：W1/W4 Pro medium；W3/R1/R4 Pro minimal；计算 R4 low。DEEPSEEK_PRO_MODEL 提供 Pro 接入点/模型 ID；缺少时只在需要在线模型时明确报错，显式角色配置可覆盖。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
 
 旧库升级与手工备份见 [本地数据库切换步骤](architecture/m1-cutover.md)。
+
+## 验收与已知局限
+
+历史全量加两轮定点的 common.v1 合并为 63 题 59 通过 / 4 失败 / 0 待复核，默认离线检查重新计算并核对失败题集合。conflict_q2 仍可能在冲突说明外给出唯一尺寸，三道 LME（7a87bd0c、a2f3aa27、59524333）是已知提取/计划/判断局限；宿主仍须保留完整冲突和不确定标注，不能把验收分数当作单题保证。当前严格回放 235 复用 / 59 缺口 / 0 发送，缺口不计通过；补录另行授权，命令见[评测说明](../tests/eval/README-v3.md)。

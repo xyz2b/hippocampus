@@ -1,7 +1,8 @@
-# 新路径端到端评测（M1 全量验收准备）
+# 默认新路径端到端评测与历史验收
 
-本段不切默认、不删旧代码；缺省 `tests/eval.rs` 仍走旧路径。按 AD1，新路径以
-`expect_common` 绝对评分验收，0517000 旧基线只作附录参考，不作为上线门槛。
+缺省 `tests/eval.rs` 只运行 v3，未设置 EVAL_RECORD 时严格离线回放已有 AC2 录制。
+旧运行器已删除，EVAL_PIPELINE=legacy 明确拒绝。按 AD1，expect_common 绝对评分为主，
+0517000 原始报告和纯评分适配器保留作历史参考，不作上线门槛。
 新模式以 AC2 配置跑生产 `ChatMemoryService`：W1/W4 Pro medium、W3 Pro minimal、
 R1 Pro minimal、R4 Pro 计算类 low / 其余 minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型可见 input。
 输出预算 W1=32768、W3/W4=16384（生产阶段常量），R1=4096、R4=16384；禁用模型修复。
@@ -10,7 +11,7 @@ R1 Pro minimal、R4 Pro 计算类 low / 其余 minimal，UTC+8；不复制提示
 # 干跑：不读取凭据、不绑定端口、不创建录制；全部35例/63题。
 EVAL_PIPELINE=v3 EVAL_JOBS=8 EVAL_DRY_RUN=1 cargo test --test eval resident_eval_suite -- --exact --nocapture
 
-# 空录制回放：产生 run-replay.json；缺录制为“未录制”，不计通过、不判模型失败。
+# 默认严格回放：报告到 target/eval-replay/<配置标签>/run-replay.json；缺口不计通过。
 EVAL_PIPELINE=v3 cargo test --test eval resident_eval_suite -- --exact --nocapture
 
 # 新路径绝对评分；旧基线在附录。不存在的 run 文件明确报告未录制。
@@ -38,7 +39,7 @@ W1 → W2 → W3 → assemble → 条件性 W4 → validate/plan/commit/finish�
 
 录制单独存入 `tests/eval/end_to_end/ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low/<case>.json`。
 首轮 AC1 的录制保留在原目录，不移入 AC2；W3 模型/强度及 W3/R1/R4 提示词变化均使原请求指纹过期。
-`EVAL_V3_DIR` 可指定其他配置目录，`EVAL_V3_OUTPUT` 可指定运行输出（真实模式缺省该目录/run.json，零调用回放缺省 run-replay.json）。
+`EVAL_V3_DIR` 指定录制输入目录；`EVAL_V3_OUTPUT` 可显式指定运行输出，回放请用 target/ 或临时目录。真实模式缺省输入目录/run.json；零调用回放缺省 `target/eval-replay/<配置标签>/run-replay.json`，分用例文件也在该目录。回放代理错误/发送诊断日志位于同一 target 目录的 runs/，不会写入录制输入目录；真实发送日志仍在录制目录 runs/，落盘与续录规则不变。
 每次真实调用完成（含 HTTP/传输失败）立即原子写入 `<case>.json`，文件同步后才向生产客户端返回。
 每个用例完成即独立原子写入 `<输出名>.cases/<case>.json`（真实模式缺省 `run.cases/`，回放为 `run-replay.cases/`），
 所有用例结束后写汇总；迟到响应收齐后仅补齐诊断，不改生产运行当时的结果。
@@ -51,6 +52,25 @@ W1 → W2 → W3 → assemble → 条件性 W4 → validate/plan/commit/finish�
 响应的结构化来源 ID 回放时还原。即使缺省模式也严格拒绝过期录制，不借用旧基线输出。
 录制保存规范化请求、完整响应、HTTP 状态、usage、elapsed_ms、incomplete_details 与传输错误。
 已录制失败也回放，不自动重试；不完整 JSON 保持原样用于诊断。
+
+
+## 默认离线验收的两项独立检查
+
+1. **当前严格回放**：生产请求与指纹完全匹配才复用。235次复用/59缺口/0发送的缺口是58过期+1缺录制，63题均为未录制，不计通过；不从历史结果补齐。完整补录需要用户另行批准预算，不能在默认测试中发送。
+2. **已接受历史重算**：从 AC2 run.json、ac2-af-targeted 和 af14-targeted 各自的 run.json/target-plan.json、当前案例标注及 confirmed 复核台账，调用同一个 compare.merge_runs/run 重算。自动断言63题为59通过/4失败/0待复核，失败集合固定为 unresolved_conflict/conflict_q2 与 lme_7a87bd0c/q、lme_a2f3aa27/q、lme_59524333/q。前者仍会在冲突说明之外给出唯一尺寸；三道LME是已知提取/计划/判断局限，不再为提高分数放宽语义。
+
+历史检查在普通 `cargo test` 的 historical_common_score_is_recomputed_offline 中默认运行，也纳入 Python unittest；不是当前请求的严格回放，更不是63题全量重测。最小归档来源见 [end_to_end/README.md](end_to_end/README.md)。
+
+```sh
+# 不需要端口、密钥或网络，不写报告。
+cargo test --test eval historical_common_score_is_recomputed_offline -- --exact --nocapture
+python3 -m unittest discover -s tests/eval/scoring -p test_m1_history.py -v
+# 端口受限时的严格回放入口；报告显式写临时目录。
+EVAL_V3_UNIT_OUTPUT=/tmp/m1-current-replay.json cargo test --lib recorded_full_e2e_replay_never_sends -- --nocapture
+python3 tests/eval/scoring/compare.py --run /tmp/m1-current-replay.json --output /tmp/m1-current-report
+```
+
+下面各带日期/阶段名的测量和估算保留原口径，仅是历史记录，不是新的录制授权或当前性能保证。
 
 ## 后续获批真实录制时
 
@@ -100,7 +120,7 @@ W1/W4 混合批次和 W3 失败固定输入都是代理；情景不能保证 AC2
 
 ## 全量验收 A：回放与逐次诊断
 
-保留原 live run.json、发送日志和报告。回放默认另存 run-replay.json；显式输出路径也不得覆盖 real_calls>0 的 live 文件。报告标题标注“回放”，回放处理耗时不代表在线延迟，历史 usage 不表示本轮费用。
+保留原 live run.json、发送日志和报告。回放默认在 target/eval-replay/<配置标签>/ 另存 run-replay.json；显式输出路径也不得覆盖 real_calls>0 的 live 文件。报告标题标注“回放”，回放处理耗时不代表在线延迟，历史 usage 不表示本轮费用。
 
 生产调用旁只采集诊断元数据（阶段、物理调用 ID、本地超时、结果、解码/核验阶段与具体失败规则），不改变业务回执或冻结契约。报告逐次同时展示远端 completed/incomplete/HTTP 与本地 completed/timeout/decode_failed/validation_failed/output_limit 等结果。代理等待并收齐迟到响应后，仍保留调用方当时的 timeout。旧 live 文件没有本地诊断时显示 unknown，不凭远端 completed 推定本地成功。显式回放拒绝绑定含真实发送项的发送日志，避免混用旧账单。
 
@@ -111,7 +131,7 @@ EVAL_V3_UNIT_OUTPUT=/tmp/eval-A-replay.json cargo test --lib recorded_full_e2e_r
 python3 tests/eval/scoring/compare.py --run /tmp/eval-A-replay.json --output /tmp/eval-A-report
 ```
 
-该入口只编译到测试，生产不读夹具；真实 SQLite、五阶段请求与 HTTP 回放走相同业务路径。传输只返回指纹完全匹配的现有响应，缺失/过期请求记 not_recorded，发送闭包一旦被调用测试立即失败。上游修复或 AC2 请求变化时，不能借用旧输出评分；需另行批准重录。当前 AC2 尚无录制，该入口验证零发送与未录制处理，不能给出 AC2 质量分。这项回放不模拟历史等待时间；不能代替真实 HTTP/MCP 端到端测试。
+该入口只编译到测试，生产不读夹具；真实 SQLite、五阶段请求与 HTTP 回放走相同业务路径。传输只返回指纹完全匹配的现有响应，缺失/过期请求记 not_recorded，发送闭包一旦被调用测试立即失败。上游修复或 AC2 请求变化时，不能借用旧输出评分；需另行批准重录。当前严格回放为235次复用、59个缺口（58过期、1缺录制）、0发送；63题均未形成完整当前结果，不计通过。这项回放不模拟历史等待时间；不能代替真实 HTTP/MCP 端到端测试。
 
 ## B：失败阶段固定输入小集
 

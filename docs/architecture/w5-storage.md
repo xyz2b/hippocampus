@@ -109,7 +109,7 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 - 第③段 `enrichment::run_source` 在计划恢复时跳过两个提供者；只有输入检查点时复用候选与准入，重新组装后调用 W4 提供者。需要 W4 但未接入为 pending、释放认领、零业务提交；新输入预算超限为 budget_exhausted，不截断后继续。模型调用预算与阶段缓存由第④段提供者负责。
 - 提供者/解码错误可能包含原文片段，新运行时只持久保存已知错误码（未知故障用内部 attempt_failed），不保存异常细节到 source.error 或输入诊断，避免检查点之外留下无法随来源清洗的原文副本。
 - `w4_finish_round` 与 `enrichment::receipt` 共用逐候选结果：产品取真实 products（其更新状态可取 live record_updates），强化/归并取实际目标及本次回执 updates；撤回执行成功为 committed / memory_id=null，待定撤回虽有 Committed 组回执，候选及来源仍 pending。Held 为 pending（未解决主体为 unresolved），混合结果保留已提交候选。输入就绪且候选为空为 no_candidates_unreviewed，不推断 completed_no_facts；决定过期或余组屏障为 needs_rejudge。专用转换只输出 contracts 3.5 的片段，不展开检查点，也不改旧 MCP 输出。
-- ④-5 新增 `write_pipeline: legacy | w4_runtime_v1`（默认 legacy），新路径仅 off/deferred；inline 启动报错，当前 legacy/inline 配置也拒绝整理已绑定的新版本来源，未授权 capture_source 的请求拒绝。T1 固定来源的 processing_version，不登记模型轮次；修改配置不迁移既有任务。现有 CLI drain/enrich-source 按来源版本分发，新来源首次整理才用稳定 `w4:<source_id>:0` 登记 round=0，续跑不加轮次，终态需显式重判。drain 只处理 queued，不自动重试失败或重判；off 来源须显式 enrich-source。旧队列、顺序屏障和输出保留，新输出仅冻结 3.5 片段（内部 stale_requires_review 转 needs_rejudge），无轮次的接收回执返回空候选。CLI 在创建服务全局锁之前执行；不启用新路径 inline/MCP 后台。开启示例、命令与并存规则见 `w4-code-side.md` 第 8 节。
+- 当前 write_pipeline 缺省且只支持 w4_runtime_v1，legacy 值及旧检索字段在打开库前拒绝。inline/deferred 的 T1 绑定 processing_version 并排队，MCP 单 worker 自动执行；CLI --call 不启动 worker，--enrich-source 显式同步处理，drain 只选 queued。off 来源须显式整理。既有旧版本来源、失败与排队任务不自动转换或执行；读取/删除与顺序屏障保留。首轮round=0，续跑不加轮次，终态重判须显式新轮。冻结3.5对外片段、组计划及认领规则见 w4-code-side.md 第8、10节。
 
 ## 6. 版本 9 与兼容
 

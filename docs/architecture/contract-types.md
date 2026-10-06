@@ -44,12 +44,9 @@
 处理方式：
 
 - 不用占位条件冒充：同一 Activity 文本不同就会被判为互斥，不能用它代替。
-- 带这类限定语的记录，以及 W5 产生、但已找不到完整候选的记录（限定语无从得知，标为 `{"status": "unknown"}`），在旧路径里按下面三条处理：
-  - **答复门**：不能作为无限定事实答复（`W5View.unsettled`），与待定、未解决冲突同样处理。
-  - **全局要求与旧召回**：这些结果不带限定语标注，这类记录不进入结果（`UnmappedQualifiers::Exclude`，过滤原因 `QualifiersUnmapped`）。覆盖的范围：bootstrap 的全局要求、`global_context`、本地召回附带的全局要求、旧召回（legacy）。
-  - **本地召回**：记录只作上下文（`UnmappedQualifiers::ContextOnly`）。它仍按状态、时间、主体、谓词过滤，但不进入全局要求，不参与同槽竞争与覆盖，附在所属分区末尾，并带上限定语原文。不直接排除，是因为排除会连同原文上下文一起丢掉。
-- 旧格式输出（memory_list、本地召回的状态标注、来源检索）附上 `qualifiers_unmapped`，内容是条件、不确定表达和时间的原文，或 `{"status": "unknown"}`。
-- 完整限定语保存在完整候选里，由 recall.v3 使用。
+- 带这类限定语或完整候选未知的记录，不进入 bootstrap/global_context 的无限定全局要求；这些本地结果不执行条件语义推导。
+- 普通 recall.v3 保留完整候选限定语；旧数据使用 LegacyRecordView.data 与 gaps 原样表达，不按旧条件、别名或 IS-A 规则筛成确定结论。R4 依据可核准原文判断，R5 按完整性门控。
+- memory_list 与来源检索仍附 qualifiers_unmapped（限定语原文或 unknown）；旧 answer_contract 答复门、本地/assisted 执行器已删除。
 
 **单个已换算的有效期**写成 valid_from / valid_to（左闭右开，来源为明示）。保存期限只做标记：不写入有效期，也不写入到期时间。
 

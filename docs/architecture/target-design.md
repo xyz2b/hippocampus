@@ -1,8 +1,10 @@
-# 目标架构设计（已冻结，待实现）
+# 目标架构设计（已冻结）
+
+> M1 收尾状态（2026-10-06）：默认新路径，旧执行器已删除、旧数据读取保留；历史合并 59/4，当前严格回放仍有 59 个缺口。实现、备份、局限与补录授权见 [架构索引](README.md)。本轮仅同步文档状态，不修改契约字段与不变量。
 
 本文确定 hippocampus 重构的主流程、最小数据契约、模型参与点、状态变化和验收方式。先定契约与首批验收样本，再分段实现；减少因主流程反复变化而产生的真实模型重录。离线回放仍作为常规回归检查。
 
-本文描述目标行为，不代表当前代码已经实现。现状见本目录的 [overview.md](overview.md)、[write-path.md](write-path.md) 和 [recall-path.md](recall-path.md)。修订日期：2026-09-30。
+本文描述冻结目标行为；当前实现范围见 [w4-code-side.md](w4-code-side.md) 与 [recall-runtime.md](recall-runtime.md)，旧 overview/write-path/recall-path 已标历史。完整负载延迟目标仍未完成验收。原设计日期：2026-09-30。
 
 第一阶段的具体字段、核验和迁移退出条件见 [contracts.md](contracts.md)；契约已于 2026-09-30 冻结，编号为 `w1.v1`、`w3.v1`、`w4.v1`、`r1.v1`、`r4.v3` 与宿主 `recall.v3`（r4、recall 同日因提问时刻端点和计算取整口径两次升版，见 contracts.md 第 8 节）。
 

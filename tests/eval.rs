@@ -56,6 +56,32 @@ fn eval_defaults_to_v3_and_rejects_retired_execution() {
     assert!(validate_pipeline(Some("invalid")).is_err());
 }
 
+#[test]
+fn historical_common_score_is_recomputed_offline() {
+    let result = std::process::Command::new("python3")
+        .args([
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests/eval/scoring",
+            "-p",
+            "test_m1_history.py",
+            "-v",
+        ])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("Python 3 is required for offline scoring");
+    assert!(
+        result.status.success(),
+        "{}\n{}",
+        String::from_utf8_lossy(&result.stdout),
+        String::from_utf8_lossy(&result.stderr)
+    );
+    print!("{}", String::from_utf8_lossy(&result.stdout));
+}
+
 struct TempDb(std::path::PathBuf);
 
 impl TempDb {

@@ -15,7 +15,7 @@ A personal memory system for AI assistants that preserves your original words, f
 
 ## 当前状态
 
-项目仍在开发中。M1 新路径 common.v1 验收结果为 63 题 59 通过 / 4 失败（已知局限留账）。默认写入 w4_runtime_v1、召回 recall_v3；旧入口不再兼容，旧数据读取与删除保留。完整负载 P95 验收尚未完成。
+项目仍在开发中。M1 历史全量与两轮定点结果按 common.v1 合并为 63 题 59 通过 / 4 失败 / 0 待复核（用户已确认）。默认写入 w4_runtime_v1、召回 recall_v3；旧入口不再兼容，旧数据读取与删除保留。完整负载 P95 验收尚未完成。
 
 模型可能漏抽、错误理解时间，独立复核也可能漏判。缺少证据时拒答不等于效果验收通过；MCP 工具也无法强制第三方聊天客户端原样采用核准答案。
 
@@ -32,7 +32,7 @@ cargo build --workspace --bins
 ./target/debug/pmr-mcp --help
 ```
 
-`basic` 等旧引擎示例将在后续清理，当前接入以 MCP 新路径为准。
+旧写入与召回执行器、`basic` / `s5_assisted_eval` 示例已删除；当前接入使用 MCP 新路径。旧数据读取、管理和删除仍保留。
 
 ### MCP 接入
 
@@ -53,7 +53,7 @@ cargo build --workspace --bins
 }
 ```
 
-先创建只保存原文、本地检索的配置：
+先创建只保存原文、不自动整理的配置：
 
 ```json
 {
@@ -75,7 +75,7 @@ cargo build --workspace --bins
 - PMR_MODEL_NETWORK=deny：禁止所有模型 HTTP。
 - PMR_MODEL_NETWORK=live：允许已配置的真实端点，仍受持久预算限制。
 
-前台最多 2 次、每条消息后台最多 3 次，共享总授权。历史策略字段作为授权数据保留；旧 repair 开关不驱动新路径，已有授权组不重置或自动扩大。旧组未授权新阶段额度时需显式新授权。Legacy 配置在打开数据库前拒绝，answer_contract.v1 不支持；旧数据经 LegacyRecordView 读取，不自动模型重建。切换前按 [手工备份步骤](docs/architecture/m1-cutover.md) 操作。
+前台最多 2 次、每条消息后台最多 3 次，共享总授权。历史策略字段作为授权数据保留；旧 repair 开关不驱动新路径，已有授权组不重置或自动扩大。旧组未授权新阶段额度时需显式新授权。`write_pipeline` / `recall_pipeline` 的 legacy 值以及 `retrieval_mode`、`local_recall_enabled`、`local_recall_budget`、`is_a` 字段（即使 false/null/空值）在打开数据库前明确拒绝，不自动改写配置；`answer_contract.v1` 不支持，`memory_clarify` 不再提交旧暂存；旧数据经 LegacyRecordView 读取，不自动模型重建。切换前按 [手工备份步骤](docs/architecture/m1-cutover.md) 操作。
 
 ### Memory Inspector
 
@@ -88,13 +88,14 @@ cargo build --workspace --bins
 ## 开发与验证
 
 ```sh
-cargo fmt --all -- --check
 cargo build --workspace --all-targets
 PMR_MODEL_NETWORK=offline PMR_INSPECTOR_BINARY="$PWD/target/debug/pmr-inspector" cargo test --workspace --all-targets
-cargo clippy --workspace --all-targets -- -D warnings
+python3 -m unittest discover -s tests/eval/scoring -v
 ```
 
-普通测试使用合成数据和本机回环服务；付费模型测试默认标记为 ignored。不要在未配置有限预算时启用真实模型测试。
+普通测试使用合成数据、本机回环服务和已有录制。默认 E2E 为严格回放，只有显式 `EVAL_RECORD` 才可发送，发起前仍须用户另行授权。只格式化本轮改动的 Rust 文件。
+
+默认测试还会从原始 AC2、两轮定点结果及复核台账重算历史 59/4，并断言失败题集合：`unresolved_conflict/conflict_q2`（冲突说明外仍给出唯一尺寸）、`lme_7a87bd0c/q`、`lme_a2f3aa27/q`、`lme_59524333/q`（提取、计划或判断的已知局限）。这不代表当前请求全量回放通过：当前严格回放为 235 次复用、59 个缺口（58 过期、1 缺录制）、0 发送，63 题均未形成完整当前回放结果，不计通过。回放报告与诊断写入 `target/eval-replay/`；补录和费用须另行批准。命令及历史结果来源见[评测说明](tests/eval/README-v3.md)。
 
 仓库包含核心源码、当前文档和必要的合成回归样本。历史运行日志、冻结二进制、原始会话记录和本机部署资料留在开发者本地；部分历史验收脚本需要这些档案，无法仅凭公开源码重放原批次。当前改名也不会重写旧证据的名称或哈希。
 

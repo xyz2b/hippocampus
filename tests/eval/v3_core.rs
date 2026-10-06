@@ -6,6 +6,20 @@ pub(super) const LABEL: &str = "ac2-pro-medium-pro-minimal-pro-minimal-r4-comput
 pub(super) const PRO: &str = "ep-20261003130756-trhj6";
 pub(super) const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/eval");
 
+pub(super) fn replay_dir() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("target/eval-replay")
+        .join(LABEL)
+}
+
+pub(super) fn default_run_output(dir: &Path, recording: bool) -> PathBuf {
+    if recording {
+        dir.join("run.json")
+    } else {
+        replay_dir().join("run-replay.json")
+    }
+}
+
 pub(super) fn read_target_plan(dir: &Path) -> Result<Option<Value>, String> {
     let path = dir.join("target-plan.json");
     if !path.exists() {
@@ -319,7 +333,12 @@ pub(super) struct Operation {
 fn recording_configuration(value: &Value) -> Value {
     let mut value = value.clone();
     if let Some(fields) = value.as_object_mut() {
-        for field in ["retrieval_mode", "local_recall_enabled", "local_recall_budget", "is_a"] {
+        for field in [
+            "retrieval_mode",
+            "local_recall_enabled",
+            "local_recall_budget",
+            "is_a",
+        ] {
             fields.remove(field);
         }
     }
@@ -330,11 +349,22 @@ fn recording_configuration(value: &Value) -> Value {
 fn retired_recording_configuration_keeps_active_bindings_strict() {
     let current = json!({"recall_pipeline":"recall_v3","write_pipeline":"w4_runtime_v1", "predicates":["fact"], "utc_offset_seconds":28800, "recall_models":{"r4":"endpoint"}});
     let mut archived = current.clone();
-    for field in ["retrieval_mode", "local_recall_enabled", "local_recall_budget", "is_a"] {
+    for field in [
+        "retrieval_mode",
+        "local_recall_enabled",
+        "local_recall_budget",
+        "is_a",
+    ] {
         archived[field] = json!({"archived":"inert"});
     }
     assert_eq!(recording_configuration(&archived), current);
-    for field in ["recall_pipeline", "write_pipeline", "predicates", "utc_offset_seconds", "recall_models"] {
+    for field in [
+        "recall_pipeline",
+        "write_pipeline",
+        "predicates",
+        "utc_offset_seconds",
+        "recall_models",
+    ] {
         let mut changed = archived.clone();
         changed[field] = json!("changed");
         assert_ne!(recording_configuration(&changed), current, "{field}");
@@ -351,6 +381,7 @@ pub(super) struct Recorder {
     pub(super) observations: Mutex<HashMap<String, Vec<Value>>>,
     pub(super) run_id: String,
     pub(super) send_log: Mutex<Value>,
+    log_dir: PathBuf,
     pub(super) sent: AtomicUsize,
     target_plan: Option<Value>,
     target_refused: std::sync::atomic::AtomicBool,
@@ -363,6 +394,11 @@ impl Recorder {
         let mut cfg = config("configuration", "", 1);
         cfg.model_budget = None;
         let run_id = diagnostics::new_id();
+        let log_dir = if limit.is_some() {
+            dir.join("runs")
+        } else {
+            replay_dir().join("runs")
+        };
         Self {
             dir,
             configuration: serde_json::to_value(cfg).unwrap(),
@@ -373,6 +409,7 @@ impl Recorder {
             observations: Mutex::default(),
             send_log: Mutex::new(json!({"version":"eval.e2e.sends@1","run_id":run_id,
                 "limit":limit,"attempts":[],"proxy_errors":[]})),
+            log_dir,
             run_id,
             sent: AtomicUsize::new(0),
             target_plan,
@@ -401,7 +438,8 @@ impl Recorder {
                 json!({"version":"eval.e2e.v3@1","configuration":self.configuration,"operations":{}})
             };
             assert_eq!(
-                recording_configuration(&doc["configuration"]), self.configuration,
+                recording_configuration(&doc["configuration"]),
+                self.configuration,
                 "配置标签已绑定其他配置，必须使用单独目录"
             );
             docs.insert(case.into(), doc);
@@ -419,7 +457,7 @@ impl Recorder {
             .unwrap_or_default()
     }
     pub(super) fn send_log_path(&self) -> PathBuf {
-        self.dir.join("runs").join(format!("{}.json", self.run_id))
+        self.log_dir.join(format!("{}.json", self.run_id))
     }
     // Persist BEFORE entering the physical send. An interrupted `started` entry is a
     // possibly billed attempt, not proof the remote endpoint received it.

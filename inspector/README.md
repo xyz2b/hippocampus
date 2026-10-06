@@ -49,7 +49,7 @@ cargo build -p pmr-inspector --release
 ./target/release/pmr-inspector --export-trace /absolute/path/trace-ID.jsonl
 ```
 
-`--export-trace` 接受运行时 JSONL；早期历史捕获的 `index.json` 不是该格式。S5 deferred 的接收调用与显式 CLI 整理是两条运行记录，Inspector 按同一个 `source_id` 关联；CLI 结果不是 MCP 响应，状态和尝试次数取自各自记录时刻。Trace 目录须预先创建并设为私有（Unix 权限 `0700`）。
+`--export-trace` 接受运行时 JSONL；早期历史捕获的 `index.json` 不是该格式。接收调用与显式 CLI 整理是两条运行记录，Inspector 按同一个 `source_id` 关联；CLI 结果不是 MCP 响应，状态和尝试次数取自各自记录时刻。Trace 目录须预先创建并设为私有（Unix 权限 `0700`）。
 已经导出的历史失败记录仍随程序内置，可以直接在页面查看。
 
 ## 目录与开发
@@ -76,13 +76,12 @@ cargo test -p pmr-inspector
 node tests/s1_inspector.js
 python3 tests/memory_inspector_live.py
 python3 tests/s0_offline.py
-python3 tests/s1_trace.py
-python3 tests/s5_inspector.py
-python3 tests/mcp_prepare.py
+cargo test --test mcp_stdio
+cargo test --test mcp_background --test mcp_visibility
 ```
 
 测试默认使用 `target/release/pmr-inspector`，可用 `PMR_INSPECTOR_BINARY` 指定其他已构建的二进制。
-S0、S1 和 prepare 测试还使用 debug `pmr-mcp`；模型响应来自本机合成桩，不调用真实模型。
+S0 只验证历史 Inspector 包；MCP 测试使用 debug `pmr-mcp` 和新默认路径，本机合成桩不调用真实模型。旧 s1_trace/mcp_prepare/S5 单次提取运行器已删除；接收、后台、召回与删除保护由新 MCP 测试覆盖。
 
 历史报告、原型资料和 `.ai-coding-flow/` 早期验收资料中的 Python 命令描述当时的实现，
 不再是可执行的当前入口；保留这些记录不表示旧实现仍在项目中。

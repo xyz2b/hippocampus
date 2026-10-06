@@ -1,8 +1,8 @@
 # 召回运行时：证据闭环、R4 核验与 R5
 
-> 2026-10-06 AF21：默认 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；legacy 配置与 answer_contract.v1 入口已拒绝，旧执行代码留后续清理。缺省角色采用 AC2，Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除和授权账本不变。下文关于旧默认、opt-in 和 v1 适配的内容属于历史实现记录；当前客户端按 docs/memory-client-contract.md。
+> 2026-10-06 M1 收尾：默认且仅支持 w4_runtime_v1 / recall_v3，旧执行器与 v1 输出适配已删除。legacy 值及旧检索配置字段拒绝，旧数据读取/删除、DB9与授权账本保留。客户端见 [接入约定](../memory-client-contract.md)，备份见 [切换步骤](m1-cutover.md)。
 
-本模块实现 contracts 3.1–3.4 的问题理解、证据组装、R4 核验与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。召回④新增可选模型提供者与请求重放；不新增来源、不更新读取计数、不迁移数据库，也不改变旧召回入口。
+本模块实现 contracts 3.1–3.4 的问题理解、证据组装、R4 核验与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。召回④新增可选模型提供者与请求重放；不新增来源、不更新读取计数、不迁移数据库，旧召回入口现已退出。
 
 ## 入口与快照
 
@@ -109,7 +109,7 @@ conflicts 的冻结类型是 RelationLink[]，只放输入中的未在本轮消�
 
 角色配置为 `recall_models: { r1, r4 }`，各角色缺省 DEEPSEEK_MODEL；另设 `reasoning_effort: { r1, r4 }`，常规角色缺省仍发送 medium；`r4_compute_reasoning_effort` 缺省 low。R4 只按已核验 R1 的 plan.op 分流：count/sum/elapsed/compare 用计算强度，lookup/list 或 R1 未理解用常规 r4 强度。选择复用同一纯函数，实际强度进入阶段绑定与完整请求指纹，两种配置强度都进入请求/缓存绑定；更换强度不能复用旧请求结果。不增加调用或重试。配置由 with_models 与 ChatConfig/CLI/MCP 分发。支持 low/medium/high/minimal/none/xhigh/max，以及显式 omit（删除 API 请求的 reasoning 字段，使用远端默认）；除下述已测配置外，端点/模型支持范围待真实验证，见 w4-code-side 第8节。两份提示词全文在 `src/recall_models.rs` 的 R1_PROMPT、R4_PROMPT，strict schema 复用写入侧 Quote/限定语/时间结构构造，与冻结 r1.v1/r4.v3 对应。模型 ID 只用于 API 顶层路由、内部绑定，不进入 input 或 instructions；强度用于 API reasoning 及内部绑定，不进入 USER payload。生产与评测共用 r1_input/r4_payload。全量验收 B 定向修正 R1/R4 提示词，分别明确数量读取与枚举、关系过滤，以及完整计算条目/操作数、来源限定语和事实依据；两阶段的旧录制均须按完整指纹过期，不借用旧输出评分。固定输入小集与 AC2 配置见 tests/eval/README-v3.md。
 
-新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1 输出上限沿用 ModelBudgetConfig.query_output_tokens（缺省4096）。新路径 R4 的已核验计算类且实际强度为 low 时，使用 ModelBudgetConfig.r4_compute_output_tokens（缺省16384，可配置为1–65536）；其他 R4 调用（含 minimal、非计算类 low 和 R1 未理解）沿用 ModelBudgetConfig.review_output_tokens（缺省4096）。只在本次 R4 客户端副本中选择计算类额度，持久授权配置不变；账本记录实际选用的上限，旧路径默认值不变。上限进入 API max_output_tokens 及完整请求指纹，专用上限也进入参数/缓存绑定。输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置；单阶段评测不能代替生产预算下的整链路验收。
+新账本阶段 r1/r4 复用 model_calls：每请求每阶段一次、合计最多2次，跨 group_id 核对尝试数；总授权仍与后台共享。请求按 owner 与稳定 request_id 关联独立 operation_id。物理发送前持久预留，超时、HTTP失败、无效输出不退次数；输出为空或崩溃都不重发。R1 输出上限沿用 ModelBudgetConfig.query_output_tokens（缺省4096）。新路径 R4 的已核验计算类且实际强度为 low 时，使用 ModelBudgetConfig.r4_compute_output_tokens（缺省16384，可配置为1–65536）；其他 R4 调用（含 minimal、非计算类 low 和 R1 未理解）沿用 ModelBudgetConfig.review_output_tokens（缺省4096）。只在本次 R4 客户端副本中选择计算类额度，持久授权配置不变；账本记录实际选用的上限，历史授权默认值不重写。上限进入 API max_output_tokens 及完整请求指纹，专用上限也进入参数/缓存绑定。输入总上限沿用 max_input_bytes；实际时限沿用账本阶段策略。这些限额可显式配置；单阶段评测不能代替生产预算下的整链路验收。
 
 ### 推荐配置与实测边界
 
@@ -127,7 +127,7 @@ medium 耗时按录制写入间隔估算，含额外开销；low/minimal 为单�
 
 AE10 的 low 参考来自已提交的首轮40次录制：平均输出2895.5 token，p50 41.8s（约40秒）；minimal 常见约4秒。计算题预期明显变慢，不能声称满足前台15秒目标；R1 与常规 R4 沿用180秒时限，计算类 low 按 AE15 改为240秒；每请求仍最多两次调用，无重试。固定输入集按冻结生产 payload 中已核验的 R1 计划分流；全量干跑按 query_meta.operation 标注估算，实际只取核验后的模型计划，R1 失败用常规 minimal。完整指纹过期的录制必须重录，不能靠更换标签复用。
 
-该40次 low 测量的输出上限为16384，最大输出7420 token，8次超过4096；平均值不能证明4096足够。按 AE11，新路径计算类 low 默认上限改为16384，与 AC2 和固定集一致；minimal 及旧路径沿用现有上限。可通过 model_budget.r4_compute_output_tokens 调整专用上限；自定义额度进入持久授权策略，复用已有授权组时不能改变额度。完成率仍待整链路验收。
+该40次 low 测量的输出上限为16384，最大输出7420 token，8次超过4096；平均值不能证明4096足够。按 AE11，新路径计算类 low 默认上限改为16384，与 AC2 和固定集一致；minimal 沿用现有上限，历史预算授权保留。可通过 model_budget.r4_compute_output_tokens 调整专用上限；自定义额度进入持久授权策略，复用已有授权组时不能改变额度。完成率仍待整链路验收。
 
 Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12），final 26/40（dev20/28、holdout6/12）。补入8条旧引用，原8次 record_basis 失败全部通过；5次 operands 核验失败与9次字段评分失败仍保留。请求指纹全部有效，详见[补入后报告](../../tests/eval/recall_stage/r4-old-basis-review.md)。这是同一批响应的机械组装收益，没有新模型测量，也不代替语义人工复核。
 
@@ -135,13 +135,13 @@ Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12）�
 
 同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算、角色推理强度与 R4 计算类输出上限须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。缺省常规 medium / 计算 low / 计算上限16384 沿用原参数摘要；任一配置非缺省时，将 R1/R4 常规、R4 计算强度与计算上限一同规范化加入摘要。缺省与显式相同值等效，不同值不能复用结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
-第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate 的新路径及其 v1 输出适配。legacy 召回与其他工具仍串行；新写入 inline 只保存 T1 并唤醒后台，legacy inline 仍同步。
+第4项②提供 `ChatMemoryService::operation()`：只复制数据库位置、owner、配置与 Arc 共享的 RecallRuntime；在锁外调用句柄的 `connect()` 打开独立操作连接。`SqliteMemoryStore::open_operation` 只接受已初始化的 v9/WAL 数据库，不创建文件、不迁移、不执行初始化写事务、不修复或重建索引；self 实体等初始化仍只由启动时的 `open/new` 执行。第4项③通过 `ChatMemoryService::call_shared` 在短锁内识别新召回工具并复制句柄，在锁外连接与执行；覆盖 Recall、Prepare 和 Validate；旧召回及 v1 输出适配已删除。管理工具仍串行，inline 只保存 T1 并唤醒后台。
 
 共享缓存与进行中表均按数据库规范路径、owner、请求身份隔离。缓存短锁仅覆盖最终发布/重放所需的短事务，不覆盖模型等待；同 ID 同参的跨线程并发调用等待已有执行，完成后按原有回执/快照规则重放，R1/R4 各发送一次；异参立即拒绝。同线程递归调用保留原有明确拒绝，避免等待自己。等待者只保留完成状态，不另留正文副本。执行异常退出也会唤醒等待者，持久回执仍阻止未获授权的重试。`memory_forget` 沿用原删除事务的来源清洗，实际删除后清空该 owner 的完整结果（含 R4 原始审计），并标记进行中的结果不得重新入缓存；其他 owner/数据库不受影响。其他连接/进程的删除或输入/权限改变同样使结果失效；普通提交和进度推进允许按原快照返回，不隐式刷新或重新调用模型。
 
 R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_audit` 经相同身份与快照检查返回同一对审计；原 `run` 的冻结输出接口不变。两份审计均不写数据库，不改变模型请求格式或指纹算法。来源失效时不能返回迟到审计，重开无结果时同样不重调。
 
-重放及结束事务核对 R3 输入、范围/控制绑定和执行身份；原输出版本保持不变，不要求等于当前全局版本。安全失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；第4项③/④已为新召回与新后台模型调用拆开服务锁；legacy 路径仍保持串行。
+重放及结束事务核对 R3 输入、范围/控制绑定和执行身份；原输出版本保持不变，不要求等于当前全局版本。安全失效返回库级 recall_cached_snapshot_stale/recall_snapshot_changed，不自动重调。同请求正在运行时也不重新认领；结束回执核对执行身份，删除中途到达则不能发布或缓存迟到结果。forget 在同一删除事务内整体清空涉及来源的召回元数据结果；原文及其空白变体不依赖文本替换清洗。运行时下一次校验时移除失效内存结果。模型请求不持有 SQLite 事务或内存缓存锁；第4项③/④已为新召回与新后台模型调用拆开服务锁；旧执行器现已删除。
 
 以上新失败说明仅是库级错误，不增加冻结状态枚举或新的 MCP 输出。⑤需要在授权范围内决定宿主如何呈现缓存不可用，不能将其当作自动重调许可。
 
@@ -153,13 +153,13 @@ R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_a
 
 ## ⑤ 配置、CLI 与客户端迁移
 
-`ChatConfig.recall_pipeline` 接受 `legacy`（默认）或 `recall_v3`，未知值报错。`recall_models` 接受上面的角色配置；可直接运行的完整示例为 [examples/recall-v3.json](../../examples/recall-v3.json)。`write_pipeline` 和 `recall_pipeline` 独立选择；新召回可以读取旧写入的记录和原文，旧召回也可继续读取新写入。缺省配置和未显式迁移的客户端仍取得旧输出。
+`ChatConfig.recall_pipeline` 只接受 `recall_v3`，也是缺省值；`write_pipeline` 缺省且只接受 `w4_runtime_v1`。legacy 值及 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 字段明确报已退出，不自动改写配置。新召回读取旧数据的 LegacyRecordView 和原文，不启动旧执行器或自动语义重建。完整在线示例见 [examples/recall-v3.json](../../examples/recall-v3.json)；升级前按 [手工备份](m1-cutover.md) 操作。
 
-三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 均接受 `recall_version`：`recall.v3` 或 `answer_contract.v1`。显式参数选择权威输出版本；legacy 流水线收到 recall.v3 请求时改用新运行时，recall_v3 流水线收到 answer_contract.v1 请求时从同一次新召回/快照机械适配（不重跑旧模型链路）。新流水线请求旧回执的 validate 同样须提交 request_id 并只读已有结果。未知版本返回 `contract_version_unsupported`，不换版本。新 Recall 只返回冻结的 recall.v3，不附旧 answer_contract。CLI/库调用直接返回该对象；MCP 在 `{recall: <recall.v3>, global_context: ...}` 包络内返回。新 Prepare 直接返回冻结3.5的 `source/enrichment/recall` 三段，MCP 另附 global_context；不再返回 remember 或 recall.result.answer_contract。源未获接收时 recall 为 not_requested；合法原文先接收，召回上下文超限或运行失败不会回滚保存，recall 返回 failed 错误片段，两种情况均无事实答复权限。
+三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 的权威版本都是 recall.v3；recall_version 可省略或指定 recall.v3，answer_contract.v1 及未知版本返回 contract_version_unsupported，不适配或回落。CLI/库 Recall 直接返回冻结对象；MCP 使用 `{recall: <recall.v3>, global_context: ...}` 包络。Prepare 返回冻结3.5的 source/enrichment/recall 三段，MCP 另附 global_context。源未获接收时 recall 为 not_requested；合法原文先接收，召回超限或失败不回滚保存，错误片段无事实答复权限。
 
-使用新流水线（包括请求旧回执）须提交稳定 `request_id`，保持 query/context/task_id/limit/离线选择不变。`at` 可省略：首次取服务器时钟，重放读取已绑定的首次 at（bootstrap 也共用绑定和缓存）；显式 at 须为过去时刻并与首次绑定一致。Prepare 请求旧回执时保留 remember/recall.result 包络，其中旧 recall.result 含机械生成的 answer_contract 和 request_id/快照元数据；未指定 request_id 时从 session_id/turn_id 摘要派生，不把用户原话用于身份。只读 query/context 不保存为原文；模型预算和只读回执仍保留不含正文的元数据。跨进程结果不保留，CLI 重跑已完成 request_id 或验证上一 CLI 进程的结果会明确失败，零重调；需要新尝试须显式新请求及预算，不能把重试改成隐式付费。
+Recall（包括 bootstrap）须稳定 request_id，保持 query/context/task_id/limit/离线选择不变。at 首次省略时绑定服务器时钟，重放读取首次时刻；显式时刻须为过去且与绑定一致。Prepare 缺省从 session_id/turn_id 摘要派生 request_id，不用原话作为身份。只读 query/context 不保存原文，预算及只读回执仅保留无正文元数据。跨进程完整结果不保留，重跑已完成 ID 或跨进程 Validate 明确失败、零重调；新尝试须新 ID 及授权预算。
 
-`offline=true` 强制跳过新召回模型；缺凭据或网络门关闭也走离线路径。新离线 Prepare 允许 `enrichment_mode=off/deferred` 或 `w4_runtime_v1 + inline`，后者只入队，不在前台执行写入模型。legacy inline 仍拒绝离线 Prepare，避免旧写入模型请求；已启动的新后台 worker 不受单次 offline=true 约束（该参数只禁用 R1/R4）。bootstrap 无论网络配置如何均零调用，仅读取全局规则，current_message=null、raw=[]、facts=[]，语义标 skipped。普通离线保留本轮消息、记录和未完成原文，facts=[]、computed=null，不能包装为确定当前结论。
+`offline=true` 强制跳过新召回模型；缺凭据或网络门关闭也走离线路径。离线 Prepare 在 off 下不自动整理，inline/deferred 仅入队，不在前台执行写入模型；已启动的新后台 worker 不受单次 offline=true 约束（该参数只禁用 R1/R4）。bootstrap 无论网络配置如何均零调用，仅读取全局规则，current_message=null、raw=[]、facts=[]，语义标 skipped。普通离线保留本轮消息、记录和未完成原文，facts=[]、computed=null，不能包装为确定当前结论。
 
 CLI 在 MCP 服务锁建立前运行一次工具：
 
@@ -183,7 +183,7 @@ Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或
 
 **新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和仍获准可见的原读快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
-迁移客户端须先适配单一 recall.v3、prepare 三段和上述校验边界；未迁移客户端显式选择 answer_contract.v1 或保留 legacy 默认。当前未开始默认切换或旧契约退出，也未证明生产整链路 P95≤15秒。
+客户端使用单一 recall.v3、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1/W4 medium、W3/R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
 
 ## 第4项④：与后台整理并发
 

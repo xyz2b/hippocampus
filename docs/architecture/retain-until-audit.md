@@ -1,5 +1,7 @@
 # 附录：`retain_until` 误填统计
 
+> 历史文档：下文保留原版本的实现描述、命令及结论，不是当前执行入口。旧写入及 legacy/local/assisted 召回已退出；当前路径、配置、备份与评测见 [架构索引](README.md)。0517000 仅作参考，不是上线门槛。
+
 本附录为 [target-design.md](target-design.md) 1.3 节“历史观测”提供可复核的依据。
 
 ## 统计方法

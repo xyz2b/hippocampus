@@ -1,5 +1,7 @@
 # 新增记忆流程
 
+> 历史文档：下文保留原版本的实现描述、命令及结论，不是当前执行入口。旧写入及 legacy/local/assisted 召回已退出；当前路径、配置、备份与评测见 [架构索引](README.md)。0517000 仅作参考，不是上线门槛。
+
 本文描述一条用户消息如何变成结构化记忆。入口有四个：`memory_remember`、`memory_prepare` 的保存部分、deferred 批处理 CLI，以及 `memory_clarify`。删除（`memory_forget`）放在最后一节。
 
 ## 1. 总体流程

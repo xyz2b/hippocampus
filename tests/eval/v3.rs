@@ -1,4 +1,4 @@
-//! Opt-in end-to-end harness. Production owns all five model stages and their prompts.
+//! Default end-to-end harness. Production owns all five model stages and their prompts.
 use super::*;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
@@ -389,13 +389,7 @@ pub(super) fn run() {
     );
     let output = std::env::var_os("EVAL_V3_OUTPUT")
         .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            dir.join(if limit.is_none() {
-                "run-replay.json"
-            } else {
-                "run.json"
-            })
-        });
+        .unwrap_or_else(|| default_run_output(&dir, limit.is_some()));
     if limit.is_none() && output.exists() {
         let previous: Value = serde_json::from_slice(&std::fs::read(&output).unwrap()).unwrap();
         assert!(
@@ -461,6 +455,32 @@ pub(super) fn run() {
         recorder.sent.load(Ordering::Relaxed),
         output.display()
     );
+}
+
+#[test]
+fn v3_replay_outputs_and_proxy_errors_leave_recording_directory_unchanged() {
+    let dir = std::env::temp_dir().join(format!("eval-replay-output-{}", diagnostics::new_id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let marker = dir.join("original.json");
+    std::fs::write(&marker, "archived data").unwrap();
+    let replay = Recorder::new(dir.clone(), None, None);
+    let output = default_run_output(&dir, false);
+    assert!(output.starts_with(replay_dir()));
+    assert!(!output.starts_with(&dir));
+    assert!(!output.with_extension("cases").starts_with(&dir));
+    assert!(replay.send_log_path().starts_with(replay_dir()));
+    assert_eq!(
+        replay.proxy_error(None, "synthetic proxy error".into()).0,
+        503
+    );
+    assert_eq!(std::fs::read_to_string(&marker).unwrap(), "archived data");
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 1);
+    assert_eq!(replay.sent.load(Ordering::Relaxed), 0);
+    let recording = Recorder::new(dir.clone(), Some(1), None);
+    assert_eq!(default_run_output(&dir, true), dir.join("run.json"));
+    assert!(recording.send_log_path().starts_with(dir.join("runs")));
+    std::fs::remove_file(replay.send_log_path()).unwrap();
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]

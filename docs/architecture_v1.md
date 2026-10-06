@@ -1,5 +1,7 @@
 # Personal Memory Architecture V1
 
+> 历史 V1 设计，旧执行器已退出。当前默认新路径与旧数据只读兼容见 [架构索引](architecture/README.md)，本文件不作为当前运行指南。
+
 ## 边界
 
 系统管理属于某个用户的 Personal Memory，但被描述的 subject 可以是用户、孩子、

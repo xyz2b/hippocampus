@@ -1,5 +1,7 @@
 # W5 提交验收清单（草案）
 
+> 历史文档：下文保留原版本的实现描述、命令及结论，不是当前执行入口。旧写入及 legacy/local/assisted 召回已退出；当前路径、配置、备份与评测见 [架构索引](README.md)。0517000 仅作参考，不是上线门槛。
+
 本文列出 W5（contracts.md 2.5）的验收项，供实现前审阅。W5 目前尚未实现：`src/` 里还没有 RelationLink、UpdateState、needs_rejudge、committed_id、resolves_relations。做法是先按本清单写验收测试（此时应失败），再实现 W5，直到测试通过。
 
 W4 样本的静态检查（`tests/eval/w4/check_samples.py`）只能证明预期状态自洽，证明不了事务正确。本清单的每一项都走真实执行路径：真实 SQLite 文件、真实写事务，提交后关闭并重新打开数据库再核对。
