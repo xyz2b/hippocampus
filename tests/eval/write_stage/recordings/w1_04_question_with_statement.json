@@ -1,0 +1,65 @@
+{
+  "id": "w1_04_question_with_statement",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我上个月刚搬到成都"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "上个月"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "成都"
+              },
+              "text": "成都"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我上个月刚搬到成都\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"month\"},\"quote\":{\"text\":\"上个月\"},\"role\":\"validity\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"成都\"},\"text\":\"成都\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:7ea8d6e4c05428a3",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1465,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16228,
+        "output_tokens_details": {
+          "reasoning_tokens": 16091
+        },
+        "total_tokens": 17693
+      }
+    }
+  ]
+}

@@ -437,6 +437,7 @@ fn memory_links(
     start: usize,
     end: usize,
     task_id: Option<&str>,
+    limit: Option<usize>,
 ) -> PersistenceResult<(Vec<Value>, bool)> {
     let memories = state.repository.list_by_owner(owner)?;
     let allowed = |m: &Memory| {
@@ -454,6 +455,7 @@ fn memory_links(
         .map(|m| m.id)
         .collect();
     let text = body(source).unwrap_or("");
+    let w5 = crate::commit::W5View::of(state);
     let mut links = Vec::new();
     let mut uncertain = false;
     for memory in memories.iter().filter(|m| allowed(m)) {
@@ -488,18 +490,18 @@ fn memory_links(
             continue;
         }
         uncertain |= exact.is_none();
-        if links.len() == 20 {
+        if limit.is_some_and(|limit| links.len() == limit) {
             uncertain = true;
             break;
         }
-        links.push(
-            json!({"memory_id":memory.id,"status":memory.status,"temporal":memory.temporal,
+        let mut link = json!({"memory_id":memory.id,"status":memory.status,"temporal":memory.temporal,
             "supersede_reason":memory.supersede_reason,
             "supersedes":memory.supersedes.filter(|id|visible_ids.contains(id)),
             "superseded_by":memory.superseded_by.filter(|id|visible_ids.contains(id)),
             "association":if exact.is_some(){"exact_quote"}else{"same_turn_uncertain"},
-            "quote_byte_range":exact}),
-        );
+            "quote_byte_range":exact});
+        w5.attach(&mut link, memory.id);
+        links.push(link);
     }
     uncertain |= links.is_empty();
     Ok((links, uncertain))
@@ -575,6 +577,99 @@ fn projection_complete(
 }
 
 impl SqliteMemoryStore {
+    /// W4 在组装的同一读事务里取全部命中：先映射、过滤、去重，再由记录预算截断。
+    /// 沿用原文检索的实体、短语命中数及接收顺序排序；不以片段 LIMIT 限制记录数。
+    pub(crate) fn search_w4_facts(
+        &self,
+        db: &Connection,
+        state: &PersistedMemoryState,
+        query: &str,
+        eligible: &[&Memory],
+    ) -> PersistenceResult<Vec<MemoryId>> {
+        if !self.source_search_enabled {
+            return Err("source_search_disabled".into());
+        }
+        let (generation, version, revision) =
+            metadata(db, &self.owner)?.ok_or("source_index_missing")?;
+        if version != VERSION || revision != state.source_revision {
+            return Err("source_index_version_mismatch".into());
+        }
+        if !projection_complete(db, &self.owner, state, generation, revision, None)? {
+            return Err("source_index_projection_incomplete".into());
+        }
+        let entities = state.entities.list_by_owner(&self.owner);
+        let phrases = natural_phrases(query, &entities);
+        if phrases.len() > 256 {
+            return Err("natural query exceeds 256 phrases".into());
+        }
+        if phrases.is_empty() {
+            return Ok(Vec::new());
+        }
+        let expression = phrases
+            .iter()
+            .map(|p| format!("\"{p}\""))
+            .collect::<Vec<_>>()
+            .join(" OR ");
+        let query_hints = entity_hints(query, &entities);
+        let mut statement = db.prepare(
+            "SELECT s.source_id,s.byte_start,s.byte_end,
+               (SELECT count(*) FROM json_each(?4) e WHERE EXISTS (
+                 SELECT 1 FROM json_each(e.value) n
+                 WHERE instr(' '||s.index_text||' ',' '||n.value||' ')>0)) AS query_entity_matches,
+               (SELECT count(*) FROM json_each(?5) p
+                 WHERE instr(' '||s.index_text||' ',' '||p.value||' ')>0) AS query_phrase_matches
+             FROM source_fts JOIN source_segments s ON s.id=source_fts.rowid
+             WHERE source_fts MATCH ?1 AND s.owner_id=?2 AND s.generation=?3
+             ORDER BY query_entity_matches DESC,query_phrase_matches DESC,
+               s.received_sequence DESC,s.source_id,s.byte_start",
+        )?;
+        let rows = statement.query_map(
+            params![
+                expression,
+                self.owner.0,
+                i64::try_from(generation)?,
+                serde_json::to_string(&query_hints.values().collect::<Vec<_>>())?,
+                serde_json::to_string(&phrases)?,
+            ],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, i64>(2)?,
+                ))
+            },
+        )?;
+        let allowed: BTreeSet<MemoryId> = eligible.iter().map(|memory| memory.id).collect();
+        let mut seen = BTreeSet::new();
+        let mut hits = Vec::new();
+        // ponytail: 全部命中逐片段映射（命中数 × owner 记录数）；实测过慢再按来源缓存映射。
+        for row in rows {
+            let (id, start, end) = row?;
+            let source = state
+                .sources
+                .values()
+                .find(|source| source.id == id)
+                .ok_or("indexed source missing")?;
+            // 来源任务不代替记录任务范围；eligible 已按主体、关系、状态和可信任务过滤。
+            let (links, _) = memory_links(
+                state,
+                &self.owner,
+                source,
+                usize::try_from(start)?,
+                usize::try_from(end)?,
+                None,
+                None,
+            )?;
+            for link in links {
+                let id: MemoryId = serde_json::from_value(link["memory_id"].clone())?;
+                if allowed.contains(&id) && seen.insert(id) {
+                    hits.push(id);
+                }
+            }
+        }
+        Ok(hits)
+    }
+
     pub fn set_source_search_enabled(&mut self, enabled: bool) {
         self.source_search_enabled = enabled;
     }
@@ -844,7 +939,8 @@ impl SqliteMemoryStore {
                 complete = false;
                 continue;
             }
-            let (links, uncertain) = memory_links(state, &self.owner, source, start, end, task_id)?;
+            let (links, uncertain) =
+                memory_links(state, &self.owner, source, start, end, task_id, Some(20))?;
             let positioned_words = format!(" {index_words} ");
             let matched_phrases: Vec<_> = phrases
                 .iter()

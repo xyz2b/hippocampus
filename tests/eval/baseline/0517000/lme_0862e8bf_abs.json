@@ -1,0 +1,2817 @@
+{
+  "case": "lme_0862e8bf_abs",
+  "source_ids": {
+    "s1_t1": "83715-1790753231159380000-23",
+    "s1_t2": "83715-1790753231203632000-63",
+    "s1_t3": "83715-1790753231264048000-122",
+    "s1_t4": "83715-1790753231332023000-176",
+    "s1_t5": "83715-1790753231415804000-231",
+    "s1_t6": "83715-1790753231513640000-274"
+  },
+  "steps": [
+    {
+      "memories_after": {},
+      "message": "s1_t1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+              "read_revision": 1,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 695,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684522920,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 6,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 138,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original"
+                ],
+                "enrichment": "completed_rejected",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1684522920,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_0862e8bf_abs",
+                "source_id": "83715-1790753231159380000-23",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231169464000-47",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231159219000-19",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231176945000-51",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231159219000-19",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source batch was not committed because a candidate did not pass"
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source batch was not committed because a candidate did not pass"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753231159380000-23",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+              "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684522980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a new litter box with low sides for my cat"
+          }
+        }
+      },
+      "message": "s1_t2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats."
+              ],
+              "query": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+              "read_revision": 2,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684522980,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 21,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 499,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2053
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 2834,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "self"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231211506000-83",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231203236000-61",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231221049000-97",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231203236000-61",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753231203632000-63",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+              "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684522980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a new litter box with low sides for my cat"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t3:0",
+              "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "cat",
+            "litter_box",
+            "odor"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684523040,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky."
+          }
+        }
+      },
+      "message": "s1_t3",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter."
+              ],
+              "query": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+              "read_revision": 3,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 3,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 2,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684523040,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                  "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 30,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 2,
+                "hint_bytes": 1050,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 2,
+                "repository_memory_count": 2,
+                "segment_association_count": 2,
+                "skipped": {},
+                "token_bytes": 4370
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 5984,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 3,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 3
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 3,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231271583000-134",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231263159000-119",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231279611000-146",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231263159000-119",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 2,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 3,
+              "source_id": "83715-1790753231264048000-122",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+              "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684522980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a new litter box with low sides for my cat"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t3:0",
+              "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "cat",
+            "litter_box",
+            "odor"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684523040,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky."
+          }
+        }
+      },
+      "message": "s1_t4",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?"
+              ],
+              "query": "I'm thinking of getting my cat microchipped, do you know anything about the process or have any recommendations for veterinarians in my area?",
+              "read_revision": 3,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 4,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 2,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684523100,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                  "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                  "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm thinking of getting my cat microchipped, do you know anything about the process or have any recommendations for veterinarians in my area?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 38,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 2,
+                "hint_bytes": 1050,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 2,
+                "repository_memory_count": 2,
+                "segment_association_count": 2,
+                "skipped": {},
+                "token_bytes": 4370
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 5984,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 4,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231332023000-176:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 4
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_no_facts"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 4,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231341350000-189",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231331222000-175",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231348498000-193",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231331222000-175",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 4,
+              "source_id": "83715-1790753231332023000-176",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+              "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684522980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a new litter box with low sides for my cat"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t3:0",
+              "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "cat",
+            "litter_box",
+            "odor"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684523040,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky."
+          }
+        }
+      },
+      "message": "s1_t5",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                "I'm thinking of getting my cat microchipped, do you know anything about the process or have any recommendations for veterinarians in my area?"
+              ],
+              "query": "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out.",
+              "read_revision": 3,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 5,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 4008,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684523160,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                  "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                  "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                  "I'm thinking of getting my cat microchipped, do you know anything about the process or have any recommendations for veterinarians in my area?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 45,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 2,
+                "hint_bytes": 1050,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 2,
+                "repository_memory_count": 2,
+                "segment_association_count": 2,
+                "skipped": {},
+                "token_bytes": 4370
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 5984,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 5,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_0862e8bf_abs:s1_t3:0",
+                      "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                      "session_id": "eval-lme_0862e8bf_abs",
+                      "turn_id": "s1_t3"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "cat",
+                    "litter_box",
+                    "odor"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684523040,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+                      "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                      "session_id": "eval-lme_0862e8bf_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684522980,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "a new litter box with low sides for my cat"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231415804000-231:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231332023000-176:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 380,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_0862e8bf_abs:s1_t2:3",
+                    "matched_query_phrases": [
+                      "c6211",
+                      "c672c c4eba",
+                      "c7528 c6237 c672c c4eba",
+                      "c81ea c5df1",
+                      "w000061",
+                      "w00006200006f000078",
+                      "w000063000061000074",
+                      "w00006600006f000072",
+                      "w000069",
+                      "w00006c000069000074000074000065000072",
+                      "w00006c00006f000077",
+                      "w00006d000065",
+                      "w00006d000079",
+                      "w00006e000065000077",
+                      "w000073000069000064000065000073",
+                      "w00007400006f",
+                      "w000077000069000074000068"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      380
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684522980,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_0862e8bf_abs",
+                "source_id": "83715-1790753231203632000-63",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      380
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                "turn_id": "s1_t2"
+              }
+            ],
+            "source_revision": 5
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 5,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231425738000-240",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231414861000-229",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231437318000-243",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231414861000-229",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source batch was not committed because a candidate did not pass"
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source batch was not committed because a candidate did not pass"
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source batch was not committed because a candidate did not pass"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 5,
+              "source_id": "83715-1790753231415804000-231",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+              "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684522980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a new litter box with low sides for my cat"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t3:0",
+              "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "cat",
+            "litter_box",
+            "odor"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684523040,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky."
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_0862e8bf_abs:s1_t6:0",
+              "quote": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment. I'm just glad I can provide her with a happy and healthy home.",
+              "session_id": "eval-lme_0862e8bf_abs",
+              "turn_id": "s1_t6"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "cat",
+            "pet_name"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684523220,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment."
+          }
+        }
+      },
+      "message": "s1_t6",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                "I'm thinking of getting my cat microchipped, do you know anything about the process or have any recommendations for veterinarians in my area?",
+                "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out."
+              ],
+              "query": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment. I'm just glad I can provide her with a happy and healthy home.",
+              "read_revision": 4,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 6,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 5072,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684523220,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm having some issues with my cat's digestive health and I was wondering if you could recommend some good probiotic supplements for cats.",
+                  "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                  "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                  "I'm thinking of getting my cat microchipped, do you know anything about the process or have any recommendations for veterinarians in my area?",
+                  "I've been meaning to get my cat microchipped for a while now, especially since we've been having some issues with our front door not closing properly and I've been worried about her getting out."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment. I'm just glad I can provide her with a happy and healthy home.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 56,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 3,
+                "hint_bytes": 1636,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 3,
+                "repository_memory_count": 3,
+                "segment_association_count": 3,
+                "skipped": {},
+                "token_bytes": 6859
+              },
+              "eligible_segment_association_count": 3,
+              "generation": 1,
+              "index_bytes": 9341,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 6,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_0862e8bf_abs:s1_t6:0",
+                      "quote": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment. I'm just glad I can provide her with a happy and healthy home.",
+                      "session_id": "eval-lme_0862e8bf_abs",
+                      "turn_id": "s1_t6"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 3,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "cat",
+                    "pet_name"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684523220,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "By the way, my cat's name is Luna, and she's been such a sweetie throughout all the changes we've been making to her environment."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_0862e8bf_abs:s1_t3:0",
+                      "quote": "I've been having some issues with my cat's litter box lately, it's been getting really stinky. I actually just washed all of her blankets and beds on January 25th because they were getting stinky too. Do you think the new litter you recommended would help with odor control?",
+                      "session_id": "eval-lme_0862e8bf_abs",
+                      "turn_id": "s1_t3"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "cat",
+                    "litter_box",
+                    "odor"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684523040,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I've been having some issues with my cat's litter box lately, it's been getting really stinky."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_0862e8bf_abs:s1_t2:3",
+                      "quote": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                      "session_id": "eval-lme_0862e8bf_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684522980,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "a new litter box with low sides for my cat"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231513640000-274:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231415804000-231:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753231332023000-176:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 380,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_0862e8bf_abs:s1_t2:3",
+                    "matched_query_phrases": [
+                      "c6211",
+                      "c672c c4eba",
+                      "c7528 c6237 c672c c4eba",
+                      "c81ea c5df1",
+                      "w000061",
+                      "w00006200006f000078",
+                      "w000063000061000074",
+                      "w00006600006f000072",
+                      "w000069",
+                      "w00006c000069000074000074000065000072",
+                      "w00006c00006f000077",
+                      "w00006d000065",
+                      "w00006d000079",
+                      "w00006e00006100006d000065",
+                      "w00006e000065000077",
+                      "w000073000069000064000065000073",
+                      "w00007400006f",
+                      "w000077000069000074000068"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      380
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684522980,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_0862e8bf_abs",
+                "source_id": "83715-1790753231203632000-63",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      380
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I've actually already started giving my cat a probiotic supplement, and it seems to be helping. The vet recommended it to me during a follow-up appointment we had on January 15th. By the way, do you have any recommendations for good cat litter that's easy to clean and odor-free? I just got a new litter box with low sides for my cat, and I'm looking to switch to a better litter.",
+                "turn_id": "s1_t2"
+              }
+            ],
+            "source_revision": 6
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 6,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231525618000-277",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231512494000-272",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231536341000-287",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231512494000-272",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 3,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 6,
+              "source_id": "83715-1790753231513640000-274",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "q",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "What is the name of my hamster?",
+          "read_revision": 4,
+          "safe_answer": "现有记录证据不足，无法回答这个问题。",
+          "safe_source_ids": [],
+          "source_revision": 6,
+          "sources": [],
+          "status": "insufficient_evidence",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "my hamster is named",
+            "I have a hamster called",
+            "we adopted a hamster named"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 15,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 3
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 3,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1684734120,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "What is the name of my hamster?",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 130,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 3,
+            "hint_bytes": 1636,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 3,
+            "repository_memory_count": 3,
+            "segment_association_count": 3,
+            "skipped": {},
+            "token_bytes": 6859
+          },
+          "eligible_segment_association_count": 3,
+          "generation": 1,
+          "index_bytes": 9341,
+          "rebuild_ms": 2,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 6,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "status": "insufficient"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753231659625000-334",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753231627836000-321",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753231797372000-379",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753231627836000-321",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231513640000-274:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231332023000-176:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231415804000-231:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231513640000-274:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231332023000-176:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231415804000-231:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231513640000-274:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231264048000-122:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231332023000-176:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231415804000-231:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231159380000-23:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231513640000-274:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231203632000-63:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231415804000-231:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 6
+      },
+      "step": "question"
+    }
+  ]
+}

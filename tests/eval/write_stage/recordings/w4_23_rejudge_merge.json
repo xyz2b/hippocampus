@@ -1,0 +1,40 @@
+{
+  "id": "w4_23_rejudge_merge",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "reinforce",
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              55
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"reinforce\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[55]}]}",
+      "request": "fnv1a64:b63c36fee1ddb402",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1625,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2569,
+        "output_tokens_details": {
+          "reasoning_tokens": 2511
+        },
+        "total_tokens": 4194
+      }
+    }
+  ]
+}

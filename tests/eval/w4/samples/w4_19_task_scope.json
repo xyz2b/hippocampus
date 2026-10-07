@@ -1,0 +1,168 @@
+{
+  "id": "w4_19_task_scope",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "任务范围：只在可信任务内判定，其他任务的记录不进入输入",
+  "boundary_with": null,
+  "sources": {
+    "s-501": {
+      "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。",
+      "said_on": "2026-09-28"
+    },
+    "s-510": {
+      "text": "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。",
+      "said_on": "2026-09-28"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_zheye_terminal"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。",
+            "quote": {
+              "text": "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。"
+            }
+          },
+          "sentence": {
+            "text": "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-510"
+        },
+        "said_on": "2026-09-28",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 97,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "device_zheye_terminal"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。",
+            "quote": {
+              "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+            }
+          },
+          "sentence": {
+            "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-501"
+            },
+            "quote": {
+              "text": "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-09-28",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          97
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-501",
+          "s-510"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "97": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "new": {
+          "from_candidate": 0,
+          "history": [
+            97
+          ],
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          }
+        }
+      },
+      "untouched_other_task": [
+        "98（高原路演任务：意大利语）不在输入中，不得改动"
+      ]
+    },
+    "must_not": [
+      "不得把其他任务的记录送入 W4 或作为目标",
+      "不得改动 98"
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "可信任务 s6-tide-exhibit 由运行时绑定；代码只取该任务范围内的记录。98 属于 s6-plateau-demo，被代码排除。",
+  "qualifier_marks": {}
+}

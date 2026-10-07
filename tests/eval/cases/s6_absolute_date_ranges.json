@@ -245,8 +245,44 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "2027-04-14 的闭馆时间（4/1–4/14 每天 17:30）",
+            "sources": {
+              "all_of": [
+                "time_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "organization_anzhi_gallery",
+            "value_any": [
+              "17:30"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "19:00"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "time_q1",
       "query": "2027年4月14日，岸芷艺术馆几点闭馆？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "at_time"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -313,8 +349,44 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "2027-04-15 的闭馆时间（4/15–4/30 每天 19:00）",
+            "sources": {
+              "all_of": [
+                "time_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "organization_anzhi_gallery",
+            "value_any": [
+              "19:00"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "17:30"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "time_q2",
       "query": "2027年4月15日，岸芷艺术馆几点闭馆？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "at_time"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -376,8 +448,29 @@
         ],
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "annotator_note": "5/1 不在两段已定安排之内。",
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "17:30",
+              "19:00"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "time_q3",
       "query": "2027年5月1日，岸芷艺术馆几点闭馆？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "at_time"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

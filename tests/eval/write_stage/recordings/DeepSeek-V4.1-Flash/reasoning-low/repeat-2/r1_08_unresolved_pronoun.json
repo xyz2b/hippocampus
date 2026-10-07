@@ -1,0 +1,84 @@
+{
+  "id": "r1_08_unresolved_pronoun",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 30118,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "end_inclusive": "2026-10-03",
+                "kind": "range",
+                "start": "2026-09-03"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "date": "2026-10-03",
+            "kind": "date"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "validity"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\": \"said_on\",\"interp\":  {\"end_inclusive\": \"2026-10-03\",\"kind\": \"range\",\"start\": \"2026-09-03\" },\"quote\":  {\"text\": \"最近\" },\"role\": \"validity\" } },\"op\":\"lookup\",\"unit\":null },\"relation\": \"lives_in\",\"subject\":{\"entity_id\": \"self\"},\"time\":  {\"anchor\":\"said_on\",\"interp\":  {\"date\": \"2026-10-03\"  ,\"kind\":\"date\"},\"quote\":  {\"text\":\"最近\"},\"role\":\"validity\"},\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:1876ac68b2166164370732877b4722a05e5c53ad215d4bbb1925cc60ade05ddf",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 897,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 5430,
+          "output_tokens_details": {
+            "reasoning_tokens": 5256
+          },
+          "total_tokens": 6327
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 897,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 5430,
+        "output_tokens_details": {
+          "reasoning_tokens": 5256
+        },
+        "total_tokens": 6327
+      }
+    }
+  ]
+}

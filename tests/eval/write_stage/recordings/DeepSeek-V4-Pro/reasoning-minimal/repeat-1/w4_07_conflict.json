@@ -1,0 +1,69 @@
+{
+  "id": "w4_07_conflict",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2928,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "coexist",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-260"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\n  \"decisions\": [\n    {\n    \"action\": \"coexist\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-260\"\n    }\n    }\n    ],\n    \"candidate\": 0,\n    \"effective\": null,\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [],\n    \"status\": \"decided\",\n    \"targets\": []\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:e23bc200c1cbbac1",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2774,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 148,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2922
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2774,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 148,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2922
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+ "id": "r4_06_query_only_not_evidence",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "问句本身不是证据",
+ "input": {
+  "query": "我是不是对花生过敏？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "allergic_to"
+  },
+  "records": [],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "insufficient",
+  "facts": [],
+  "compute": null
+ },
+ "must_not": [
+  "以问题文本为证据给出 supported 事实"
+ ],
+ "note": null
+}

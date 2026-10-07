@@ -1,0 +1,52 @@
+{
+  "id": "w1_15_negation",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "avoids",
+            "sentence": {
+              "text": "香菜"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "香菜"
+              },
+              "text": "香菜"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"avoids\",\"sentence\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{\"text\":\"香菜\"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t},\"speech\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{\"text\":\"香菜\"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t},\"text\": \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\"香菜\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:7b50f8cff212f285",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1452,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 10847,
+        "output_tokens_details": {
+          "reasoning_tokens": 10716
+        },
+        "total_tokens": 12299
+      }
+    }
+  ]
+}

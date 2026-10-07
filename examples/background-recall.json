@@ -1,0 +1,12 @@
+{
+  "write_pipeline": "w4_runtime_v1",
+  "recall_pipeline": "recall_v3",
+  "enrichment_mode": "deferred",
+  "background_operation_limit": 3,
+  "model_budget": {
+    "group_id": "replace-with-your-joint-authorized-budget",
+    "max_calls": 5,
+    "max_operation_calls": 2,
+    "r4_compute_output_tokens": 16384
+  }
+}

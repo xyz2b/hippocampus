@@ -1,0 +1,45 @@
+{
+  "id": "w3_07_reported_as_statement",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "speech",
+                "quote": {
+                  "text": "我妈说"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"speech\",\"quote\":{\"text\":\"我妈说\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:aec72eb1eca4caeb",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 965,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9077,
+        "output_tokens_details": {
+          "reasoning_tokens": 9012
+        },
+        "total_tokens": 10042
+      }
+    }
+  ]
+}

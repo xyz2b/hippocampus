@@ -1,0 +1,81 @@
+{
+  "id": "r1_09_ambiguous_name",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 54710,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "responses",
+        "subject": {
+          "entity_id": "e-xiaowang-1"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "validity"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\": \"said_on\",\"interp\": {\"kind\": \"unknown\" },\"quote\":  {\"text\": \"最近\" },\"role\": \"validity\"} },\"op\":\"lookup\",\"unit\":null},\"relation\": \"responses\",\"subject\":{\"entity_id\": \"e-xiaowang-1\"},\"time\": {\"anchor\": \"said_on\",\"interp\": {\"kind\": \"unknown\" },\"quote\":  {\"text\": \"最近\" },\"role\": \"validity\"},\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:92b2f0bf685a503cbe5fcea591ed43bf5a2943d65d25bcc0aa904b2b30f0154a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 898,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 9912,
+          "output_tokens_details": {
+            "reasoning_tokens": 9770
+          },
+          "total_tokens": 10810
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 898,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 9912,
+        "output_tokens_details": {
+          "reasoning_tokens": 9770
+        },
+        "total_tokens": 10810
+      }
+    }
+  ]
+}

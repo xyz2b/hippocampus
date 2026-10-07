@@ -281,8 +281,20 @@
       "expect": {
         "kind": "clarify"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "clarify"
+      },
       "id": "device_q1",
-      "query": "默认纸张规格是什么？"
+      "query": "默认纸张规格是什么？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      }
     },
     {
       "after": 2,
@@ -292,8 +304,20 @@
       "expect": {
         "kind": "clarify"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "clarify"
+      },
       "id": "device_q2",
-      "query": "默认纸张规格是什么？"
+      "query": "默认纸张规格是什么？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      }
     },
     {
       "after": 2,
@@ -312,8 +336,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "默认纸张规格",
+            "sources": {
+              "all_of": [
+                "device_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "device_wulan_printer",
+            "value_any": [
+              "A4"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "device_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "B5"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "device_q3",
       "query": "默认纸张规格是什么？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -356,8 +423,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "默认纸张规格",
+            "sources": {
+              "all_of": [
+                "device_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "device_qingtai_printer",
+            "value_any": [
+              "B5"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "device_s1"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "A4"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "device_q4",
       "query": "青苔打印机的默认纸张规格是什么？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -396,8 +506,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "不改设置时按默认纸张规格打印",
+            "sources": {
+              "all_of": [
+                "device_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "device_wulan_printer",
+            "value_any": [
+              "A4"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "device_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "B5"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "device_q5",
       "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -435,8 +588,28 @@
         ],
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "A4",
+              "B5"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "device_q6",
       "query": "青苔打印机使用什么型号的墨盒？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

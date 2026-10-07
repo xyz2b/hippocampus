@@ -1,0 +1,64 @@
+{
+  "id": "w1_05_hypothetical",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            },
+            "speech": "hypothetical",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "date": "2026-09-20",
+                  "kind": "date"
+                },
+                "quote": {
+                  "text": "以后"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "如果我以后去深圳工作，我会考虑租房。"
+              },
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":  {\"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"speech\":\"hypothetical\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2026-09-20\",\"kind\":\"date\"},\"quote\":  {\"text\":\"以后\" },\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"text\":\"如果我以后去深圳工作，我会考虑租房。\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:1ae5727a7be59c30",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1459,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 13101,
+        "output_tokens_details": {
+          "reasoning_tokens": 12943
+        },
+        "total_tokens": 14560
+      }
+    }
+  ]
+}

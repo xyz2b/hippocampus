@@ -1,0 +1,38 @@
+{
+  "id": "w4_16_pending_scope_incomplete",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "coexist",
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:48a0734444879aab",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1594,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 25799,
+        "output_tokens_details": {
+          "reasoning_tokens": 25742
+        },
+        "total_tokens": 27393
+      }
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+ "id": "r4_10_superseded_history",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "被替代的旧值是历史而非当前",
+ "input": {
+  "query": "我以前住在哪？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "temporal",
+   "op": "lookup",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 10,
+    "sentence": "我住在上海。",
+    "said_on": "2025-03-01",
+    "source": "s-10",
+    "status": "superseded",
+    "ended": "known",
+    "termination": "state_changed",
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 11,
+    "sentence": "我搬到杭州了。",
+    "said_on": "2026-02-01",
+    "source": "s-11",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     10
+    ],
+    "sources": [
+     "s-10"
+    ],
+    "must": {
+     "current": "no"
+    }
+   },
+   {
+    "record_ids": [
+     11
+    ],
+    "sources": [
+     "s-11"
+    ],
+    "must": {
+     "current": "yes"
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [],
+ "note": null
+}

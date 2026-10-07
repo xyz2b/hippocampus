@@ -1,0 +1,83 @@
+{
+  "id": "w1_06_reported",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "我小时候特别怕狗"
+            },
+            "speech": "reported",
+            "strength": "strong",
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "anchor_quote": {
+                    "text": "我妈说"
+                  },
+                  "kind": "anchored",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "我妈说"
+                },
+                "role": "event"
+              },
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "小时候"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": {
+              "quote": {
+                "text": "我妈说"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "我小时候特别怕狗"
+              },
+              "text": "我小时候特别怕狗"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\": {\"text\":\"我小时候特别怕狗\"},\"speech\":\"reported\",\"strength\":\"strong\",\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\",\"interp\": {\"anchor_quote\": {\"text\":\"我妈说\"},\"kind\":\"anchored\",\"offset\":0,\"unit\":\"day\"},\"quote\": {\"text\":\"我妈说\"},\"role\":\"event\"},{\"anchor\": \"said_on\",\"interp\": {\"kind\":\"unknown\"},\"quote\": {\"text\":\"小时候\"},\"role\":\"validity\"}],\"uncertainty\":{\"quote\": {\"text\":\"我妈说\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\": {\"text\":\"我小时候特别怕狗\"},\"text\":\"我小时候特别怕狗\"} }],\"memory_requests\":[]}",
+      "request": "fnv1a64:bbee53f9ec16c700",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1454,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 14261,
+        "output_tokens_details": {
+          "reasoning_tokens": 14065
+        },
+        "total_tokens": 15715
+      }
+    }
+  ]
+}

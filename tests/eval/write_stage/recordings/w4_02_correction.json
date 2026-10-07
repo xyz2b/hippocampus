@@ -1,0 +1,40 @@
+{
+  "id": "w4_02_correction",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "correction",
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              21
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"correction\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[21]}]}",
+      "request": "fnv1a64:c504efa672d6e608",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1526,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4336,
+        "output_tokens_details": {
+          "reasoning_tokens": 4278
+        },
+        "total_tokens": 5862
+      }
+    }
+  ]
+}

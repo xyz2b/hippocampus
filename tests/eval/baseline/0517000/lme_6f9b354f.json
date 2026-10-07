@@ -1,0 +1,1564 @@
+{
+  "case": "lme_6f9b354f",
+  "source_ids": {
+    "s1_t1": "83715-1790753231784266000-372",
+    "s1_t2": "83715-1790753231824970000-398",
+    "s1_t3": "83715-1790753231876437000-429",
+    "s1_t4": "83715-1790753231926266000-463",
+    "s1_t5": "83715-1790753232003403000-496"
+  },
+  "steps": [
+    {
+      "memories_after": {},
+      "message": "s1_t1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+              "read_revision": 1,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 756,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684631460,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 6,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 201,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original"
+                ],
+                "enrichment": "completed_rejected",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1684631460,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_6f9b354f",
+                "source_id": "83715-1790753231784266000-372",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231790875000-376",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231784171000-371",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231800706000-380",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231784171000-371",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753231784266000-372",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {},
+      "message": "s1_t2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
+              ],
+              "query": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+              "read_revision": 1,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684631520,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 12,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "self"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231832878000-404",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231824294000-397",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231843448000-408",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231824294000-397",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753231824970000-398",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {},
+      "message": "s1_t3",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
+              ],
+              "query": "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?",
+              "read_revision": 1,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 3,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684631580,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                  "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 13,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 3,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 3
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_no_facts"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 3,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231885373000-434",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231876048000-427",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231892947000-440",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231876048000-427",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 3,
+              "source_id": "83715-1790753231876437000-429",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {},
+      "message": "s1_t4",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?"
+              ],
+              "query": "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?",
+              "read_revision": 1,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 4,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684631640,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                  "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                  "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 32,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 4,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231926266000-463:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 4
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_no_facts"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 4,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231938401000-470",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231925694000-462",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231948078000-473",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231925694000-462",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 4,
+              "source_id": "83715-1790753231926266000-463",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {},
+      "message": "s1_t5",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?",
+                "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?"
+              ],
+              "query": "I'm considering a pendant light above the desk and some table lamps for task lighting. I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents. For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space. Do you have any suggestions on how to choose the right pendant light for my home office nook?",
+              "read_revision": 1,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 5,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684631700,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some recommendations on indoor plants that can thrive in low-light conditions. I recently added a vase with fresh greenery to my kitchen countertop and I'd love to explore more options.",
+                  "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+                  "I'm also thinking of creating a home office nook in the spare bedroom. Do you have any suggestions on how to design the space to maximize productivity and comfort?",
+                  "I'm thinking of using a floating desk in the middle of the room, and adding some built-in shelving for storage. I've been browsing online for inspiration and ideas, and I'm considering a minimalist aesthetic with a lot of natural wood accents. I also want to incorporate some greenery, maybe a small herb garden or a vase with fresh flowers. Do you have any suggestions on how to choose the right lighting for the space?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm considering a pendant light above the desk and some table lamps for task lighting. I've been eyeing a minimalist wooden desk lamp with a simple shade that will complement my natural wood accents. For the pendant light, I'm thinking of a sleek, modern design that will add a touch of sophistication to the space. Do you have any suggestions on how to choose the right pendant light for my home office nook?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 44,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 5,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232003403000-496:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231926266000-463:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 5
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "source_coverage_incomplete",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "source_coverage_incomplete",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 5,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753232013829000-500",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753232002672000-495",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753232022169000-503",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753232002672000-495",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 5,
+            "source_id": "83715-1790753232003403000-496",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "q",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "What color did I repaint my bedroom walls?",
+          "read_revision": 1,
+          "safe_answer": "a lighter shade of gray。",
+          "safe_source_ids": [
+            "83715-1790753231824970000-398"
+          ],
+          "source_revision": 5,
+          "sources": [
+            {
+              "grade": "uncommitted",
+              "quote": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+              "source_id": "83715-1790753231824970000-398"
+            }
+          ],
+          "status": "source_linked_model_answer",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "repainted bedroom walls",
+            "bedroom walls painted",
+            "bedroom wall paint color"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 6,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [],
+          "excluded_count": 0,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1684647840,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "What color did I repaint my bedroom walls?",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 86,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 0,
+            "hint_bytes": 0,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 0,
+            "repository_memory_count": 0,
+            "segment_association_count": 0,
+            "skipped": {},
+            "token_bytes": 0
+          },
+          "eligible_segment_association_count": 0,
+          "generation": 1,
+          "index_bytes": 2,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 1,
+          "source_revision": 5,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 1,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "evidence_grade": "uncommitted",
+          "memory_id": null,
+          "quote": "I've heard great things about Snake Plants, but I'm also curious about the ZZ Plant. Can you tell me more about its watering schedule and how often it needs to be fertilized? By the way, I've been doing some redecorating and recently repainted my bedroom walls a lighter shade of gray - it's made the room feel so much brighter!",
+          "semantic_judgment": "model_proposed",
+          "source_id": "83715-1790753231824970000-398",
+          "status": "verified_span",
+          "value": "a lighter shade of gray"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753232118098000-548",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753232094747000-533",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753232210990000-583",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753232094747000-533",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 1,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232003403000-496:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231784266000-372:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231926266000-463:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231824970000-398:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231876437000-429:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 5
+      },
+      "step": "question"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "w4_15_resolve_conflict",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "retract",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我核实过了，栖风读书机屏幕7英寸那份是记错的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-370"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-130"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [
+              "rel-1"
+            ],
+            "status": "decided",
+            "targets": [
+              50
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"retract\",\"basis\":[{\"quote\":{\"text\":\"我核实过了，栖风读书机屏幕7英寸那份是记错的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-370\"}},{\"quote\":{\"text\":\"我已确认栖风读书机的屏幕尺寸是7英寸。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-130\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[\"rel-1\"],\"status\": \"decided\",\"targets\":[50]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:32e142108f7c3cbf",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2012,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 7927,
+          "output_tokens_details": {
+            "reasoning_tokens": 7793
+          },
+          "total_tokens": 9939
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2012,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7927,
+        "output_tokens_details": {
+          "reasoning_tokens": 7793
+        },
+        "total_tokens": 9939
+      }
+    }
+  ]
+}

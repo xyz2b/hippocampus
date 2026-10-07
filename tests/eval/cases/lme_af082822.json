@@ -954,8 +954,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": {
+          "approximate": false,
+          "bound": "exact",
+          "end": {
+            "date": "2022-12-01",
+            "source": "request.at"
+          },
+          "exact_days": 14,
+          "op": "elapsed",
+          "rounding": "nearest_week",
+          "start": {
+            "date": "2022-11-17",
+            "role": "event",
+            "source": "s1_t2"
+          },
+          "unit": "week",
+          "value": "2"
+        },
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "参加 Nordstrom 亲友特卖（s1_t2 原文 Yesterday）",
+            "sources": {
+              "all_of": [
+                "s1_t2"
+              ],
+              "any_of": []
+            },
+            "subject": "self"
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many weeks ago did I attend the friends and family sale at Nordstrom?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

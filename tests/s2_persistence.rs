@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use rusqlite::{Connection, params};
@@ -29,6 +30,7 @@ impl Drop for TestDb {
 
 fn source(turn: &str) -> SourceRecord {
     SourceRecord {
+        management: Default::default(),
         id: format!("source:{turn}"),
         session_id: "session".into(),
         turn_id: turn.into(),
@@ -48,7 +50,7 @@ fn ingest(state: &mut PersistedMemoryState) -> PersistenceResult<()> {
     let mut predicates = InMemoryPredicateRegistry::default();
     predicates.register(Predicate::from("lives_in"), Cardinality::Single);
     state.with_engine(predicates, |engine, _| {
-        let outcome = engine.ingest(common::grounded(CandidateMemory::new(
+        let outcome = engine.seed_fixture(common::grounded(CandidateMemory::new(
             UserId::from("alice"),
             EntityId::from("self"),
             MemoryType::Fact,
@@ -62,7 +64,7 @@ fn ingest(state: &mut PersistedMemoryState) -> PersistenceResult<()> {
                 "我住在上海",
             ),
         )))?;
-        assert!(matches!(outcome, IngestOutcome::Applied { .. }));
+        assert!(matches!(outcome, FixtureOutcome::Applied { .. }));
         Ok(())
     })
 }
@@ -101,7 +103,7 @@ fn migration_preserves_old_snapshots_and_is_repeatable() {
         connection
             .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
             .unwrap(),
-        5
+        10
     );
     let saved: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -109,7 +111,7 @@ fn migration_preserves_old_snapshots_and_is_repeatable() {
         })
         .unwrap();
     assert_eq!(serde_json::from_str::<Value>(&saved).unwrap(), old);
-    connection.pragma_update(None, "user_version", 6).unwrap();
+    connection.pragma_update(None, "user_version", 11).unwrap();
     assert!(SqliteMemoryStore::open(&db.0, UserId::from("alice")).is_err());
 }
 
@@ -164,7 +166,7 @@ fn v4_upgrade_preserves_legacy_pending_without_queueing_it() {
         connection
             .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
             .unwrap(),
-        5
+        10
     );
     let saved: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -285,7 +287,7 @@ fn s5_migration_keeps_v3_sources_facts_and_index_read_only_until_opened_for_writ
         connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
             .unwrap(),
-        5
+        10
     );
     assert_eq!(
         connection
@@ -430,6 +432,86 @@ fn concurrent_source_commits_preserve_each_other_and_isolate_owners() {
 }
 
 #[test]
+fn operation_connections_read_committed_snapshots_and_preserve_each_others_writes() {
+    let db = TestDb::new();
+    drop(db.open("alice"));
+    let mut first = SqliteMemoryStore::open_operation(&db.0, "alice".into()).unwrap();
+    let mut second = SqliteMemoryStore::open_operation(&db.0, "alice".into()).unwrap();
+    let snapshot = second.read().unwrap();
+    first
+        .transaction(|state| {
+            state.sources.insert("one".into(), source("one"));
+            // WAL permits another operation to read while this write is uncommitted.
+            assert!(second.read()?.sources.is_empty());
+            Ok(())
+        })
+        .unwrap();
+    assert!(snapshot.sources.is_empty());
+    second
+        .transaction(|state| {
+            assert!(state.sources.contains_key("one"));
+            state.sources.insert("two".into(), source("two"));
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(first.read().unwrap().sources.len(), 2);
+    assert_eq!(second.read().unwrap().sources.len(), 2);
+}
+
+#[test]
+fn operation_connection_and_service_handle_do_not_initialize_under_a_writer() {
+    use hippocampus::chat::{ChatConfig, ChatMemoryService};
+    let db = TestDb::new();
+    let config: ChatConfig = serde_json::from_value(json!({
+        "write_pipeline":"w4_runtime_v1", "recall_pipeline":"recall_v3",
+        "enrichment_mode":"off", "fact_index_enabled":true
+    }))
+    .unwrap();
+    let service = ChatMemoryService::new(db.open("alice"), config).unwrap();
+    let operation = service.operation();
+    drop(service);
+    let mut writer = Connection::open(&db.0).unwrap();
+    let tx = writer
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let before = SqliteMemoryStore::open_read_only(&db.0, "alice".into())
+        .unwrap()
+        .read()
+        .unwrap();
+    let store = SqliteMemoryStore::open_operation(&db.0, "alice".into()).unwrap();
+    assert_eq!(
+        serde_json::to_value(store.read().unwrap()).unwrap(),
+        serde_json::to_value(before).unwrap()
+    );
+    // ChatMemoryService::new would take a write lock and refresh the enabled fact index.
+    drop(operation.connect().unwrap());
+    let version: i64 = tx
+        .pragma_query_value(None, "user_version", |r| r.get(0))
+        .unwrap();
+    assert_eq!(version, 10);
+}
+
+#[test]
+fn operation_connection_never_creates_or_migrates_a_database() {
+    let missing = TestDb::new();
+    assert!(SqliteMemoryStore::open_operation(&missing.0, "alice".into()).is_err());
+    assert!(!missing.0.exists());
+    for version in [0, 8, 9, 11] {
+        let db = TestDb::new();
+        drop(db.open("alice"));
+        let connection = Connection::open(&db.0).unwrap();
+        connection
+            .pragma_update(None, "user_version", version)
+            .unwrap();
+        assert!(SqliteMemoryStore::open_operation(&db.0, "alice".into()).is_err());
+        let after: i64 = connection
+            .pragma_query_value(None, "user_version", |r| r.get(0))
+            .unwrap();
+        assert_eq!(after, version);
+    }
+}
+
+#[test]
 fn revision_overflow_rolls_back_all_changes() {
     let db = TestDb::new();
     let mut store = db.open("alice");
@@ -476,11 +558,8 @@ fn disabled_capture_and_cancellation_do_not_store_or_start_model_processing() {
     let prepared = service
         .call("memory_prepare", json!({"user_turn":turn}), || false)
         .unwrap();
-    assert_eq!(prepared["remember"]["source"]["status"], "rejected");
-    assert_eq!(
-        prepared["remember"]["enrichment"]["status"],
-        "not_requested"
-    );
+    assert_eq!(prepared["source"]["status"], "rejected");
+    assert_eq!(prepared["enrichment"]["status"], "not_requested");
     assert_eq!(prepared["recall"]["status"], "not_requested");
     assert_eq!(
         serde_json::to_value(db.open("alice").read().unwrap()).unwrap(),
@@ -506,32 +585,33 @@ fn capture_storage_read_failure_stops_prepare_before_models() {
     use hippocampus::chat::{ChatConfig, ChatMemoryService};
 
     let db = TestDb::new();
-    let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
+    let mut service = ChatMemoryService::new(
+        db.open("alice"),
+        ChatConfig {
+            ..Default::default()
+        },
+    )
+    .unwrap();
     Connection::open(&db.0)
         .unwrap()
         .execute_batch("DROP TABLE memory_profiles")
         .unwrap();
-    let result = service
-        .call(
-            "memory_prepare",
-            json!({"user_turn":{"text":"我住在上海","session_id":"chat","turn_id":"one","capture_source":true}}),
-            || false,
-        )
+    let error = service.call("memory_prepare", json!({"user_turn":{"text":"我住在上海","session_id":"chat","turn_id":"one","capture_source":true}}), || false).unwrap_err();
+    assert!(error.to_string().contains("no such table: memory_profiles"));
+    let model_calls: i64 = Connection::open(&db.0)
+        .unwrap()
+        .query_row("SELECT COUNT(*) FROM model_calls", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(result["remember"]["status"], "failed");
-    assert_eq!(result["remember"]["source"]["status"], "failed");
-    assert_eq!(result["remember"]["enrichment"]["status"], "not_requested");
-    assert_eq!(result["recall"]["status"], "not_requested");
+    assert_eq!(model_calls, 0);
 }
 
 #[test]
 fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
     use hippocampus::chat::{ChatConfig, ChatMemoryService};
-    use rmcp::model::CallToolResult;
 
     let db = TestDb::new();
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
-    let arguments = json!({"user_turn":{"text":"原文不产生事实","session_id":"session","turn_id":"one","capture_source":true}});
+    let arguments = json!({"offline":true,"user_turn":{"text":"原文不产生事实","session_id":"session","turn_id":"one","capture_source":true,"history":[],"task_id":null}});
     let key = serde_json::to_string(&("memory_remember", "session", "one")).unwrap();
     let mut record = source("one");
     record.request = Some(arguments["user_turn"].clone());
@@ -543,11 +623,12 @@ fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
             Ok(())
         })
         .unwrap();
-    let cached = CallToolResult::structured(json!({
-        "remember":{"status":"completed","result":record.status()},
-        "recall":{"status":"completed","result":{"facts":[]}},
-        "global_context":{"status":"available","result":{"facts":[]}}
-    }));
+    let cached = service.call_with_global_context("memory_prepare", arguments.clone(), || false);
+    assert_ne!(cached.is_error, Some(true));
+    assert_eq!(
+        cached.structured_content.as_ref().unwrap()["source"]["status"],
+        "stored"
+    );
     assert_eq!(
         service
             .validate_prepare_response(&arguments, cached.clone())
@@ -565,8 +646,8 @@ fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
         .validate_prepare_response(&arguments, cached)
         .structured_content
         .unwrap();
-    assert_eq!(refreshed["remember"]["status"], "failed");
-    assert_eq!(refreshed["remember"]["source"]["status"], "deleted");
+    assert_eq!(refreshed["enrichment"]["status"], "deleted");
+    assert_eq!(refreshed["source"]["status"], "deleted");
     assert_eq!(refreshed["recall"]["status"], "not_requested");
     assert_eq!(refreshed["global_context"]["status"], "available");
 }
@@ -574,7 +655,6 @@ fn completed_prepare_cache_checks_source_deletion_without_revision_change() {
 #[test]
 fn completed_prepare_cache_removes_deleted_recall_and_global_context() {
     use hippocampus::chat::{ChatConfig, ChatMemoryService};
-    use rmcp::model::CallToolResult;
 
     let db = TestDb::new();
     db.open("alice").transaction(ingest).unwrap();
@@ -587,13 +667,10 @@ fn completed_prepare_cache_removes_deleted_recall_and_global_context() {
         .list_by_owner(&UserId::from("alice"))
         .unwrap()
         .remove(0);
-    let arguments =
-        json!({"user_turn":{"text":"我住在哪里？","session_id":"other-session","turn_id":"query"}});
-    let cached = CallToolResult::structured(json!({
-        "remember":{"status":"completed","result":{"outcomes":[]}},
-        "recall":{"status":"completed","result":{"facts":[memory]}},
-        "global_context":{"status":"available","result":{"facts":[memory]}}
-    }));
+    let arguments = json!({"offline":true,"user_turn":{"text":"我住在哪里？","session_id":"other-session","turn_id":"query","capture_source":true}});
+    let cached = service.call_with_global_context("memory_prepare", arguments.clone(), || false);
+    assert_ne!(cached.is_error, Some(true));
+    assert!(serde_json::to_string(&cached).unwrap().contains("上海"));
     assert_eq!(
         service
             .validate_prepare_response(&arguments, cached.clone())
@@ -605,7 +682,7 @@ fn completed_prepare_cache_removes_deleted_recall_and_global_context() {
         .unwrap();
     let refreshed = service.validate_prepare_response(&arguments, cached);
     let body = refreshed.structured_content.as_ref().unwrap();
-    assert_eq!(body["remember"]["status"], "completed");
+    assert_eq!(body["source"]["status"], "stored");
     assert_eq!(body["recall"]["status"], "not_requested");
     assert_eq!(body["global_context"]["status"], "available");
     // Both structured and text content must be rebuilt; the old evidence cannot survive in either.

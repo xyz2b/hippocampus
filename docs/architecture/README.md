@@ -1,31 +1,37 @@
 # 架构文档
 
-本目录根据当前源码梳理 hippocampus 的系统架构和两条主链路：新增记忆、召回记忆。内容以代码为准，对应提交 `8cd3113`。旧文档 `docs/architecture_v1.md` 仍保留设计约定，但部分实现描述已经过时，差异见文末。
+M1.5 收尾（2026-10-07）：默认写入 `w4_runtime_v1`、召回 `recall_v3`，旧写入/召回执行器已删除。当前 DB v10；旧数据通过 LegacyRecordView 读取，保留原值、Scope、条件、时间、证据和缺口；不自动调用模型重建。配置名中的 v1/v3 不是模型契约或宿主协议版本。
 
-| 文档 | 内容 |
+当前契约为 W1/W3 v3、W4 v4、R1 v2、R4/recall v6。缺省角色强度为 W1 low、W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；显式配置仍生效。日常使用的 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 单独列出。
+
+| 当前文档 | 内容 |
 | --- | --- |
-| [overview.md](overview.md) | 部署形态、模块分层、数据模型、存储、配置模式、信任边界 |
-| [write-path.md](write-path.md) | 新增记忆：原文接收、模型提取、原文核验、准入与合并、提交、澄清与删除 |
-| [recall-path.md](recall-path.md) | 召回记忆：bootstrap、legacy、local、assisted 四条路径，结构化检索规则，答案契约与答案校验 |
-| [capabilities.md](capabilities.md) | 能力现状：信息抽取、多会话推理、知识更新、时间推理、弃答的实现方式、短板与改进优先级 |
-| [retention.md](retention.md) | 记忆留存：短期、长期层级的设定与升级，五种失效机制，留存检查的触发时机、问题与建议 |
-| [model-usage.md](model-usage.md) | 模型参与：哪些环节用了模型、实际效果（基于留存 trace）、应去除和应加入模型的环节 |
+| [target-design.md](target-design.md) | 已冻结目标设计与不变量；实现范围和性能边界以运行时文档为准 |
+| [contracts.md](contracts.md) | 冻结契约：W1/W3 v3、W4 v4、R1 v2、R4/recall v6；旧数据读取与删除边界 |
+| [w4-code-side.md](w4-code-side.md) | 默认写入：W0/T1、W1/W2/W3/W4、后台执行、轮次与恢复 |
+| [w5-storage.md](w5-storage.md) | W5 事务、更新状态、关系、回执及删除清洗 |
+| [contract-types.md](contract-types.md) | 旧 Memory 投影、限定语保留及 LegacyRecordView 兼容 |
+| [recall-runtime.md](recall-runtime.md) | 默认 R1/R3/R4/R5、请求重放、计算、快照安全及宿主分发 |
+| [visibility-cadence.md](visibility-cadence.md) | 七类场景与节奏测试；不代表生产完整负载 P95 已验收 |
+| [m1-cutover.md](m1-cutover.md) | 用户本地升级前的手工一致性备份、配置清理和回退 |
+| [../memory-client-contract.md](../memory-client-contract.md) | 客户端/宿主入口、request_id、原文授权和回执呈现 |
+| [common-scoring-view.md](common-scoring-view.md) | common.v1 判分、复核台账及旧基线参考 |
+| [../../tests/eval/README-v3.md](../../tests/eval/README-v3.md) | 默认严格回放、历史 59/4 自动重算、产物位置与补录授权 |
 
-建议阅读顺序：先读 overview 的“分层”和“数据模型”，再按需读两条链路；想了解系统能做到什么、还缺什么，读 capabilities。
+下一阶段的目标、方向和里程碑见 [../roadmap.md](../roadmap.md)。
 
-## 一句话概括
+写入模型判断语义，代码核对机械事实、预算、引用和认领；T1 保存原话与后台整理分别报告。召回先取得可信计划与 R3 读快照，再核验 R4 判断、执行确定性计算并由 R5 汇总；发布前检查删除、来源与授权/控制变化，普通后台提交允许按原快照返回。
 
-用户原话先原样落库并建立全文索引；模型再从原话中提取结构化候选记忆，由另一次模型调用逐项核验，最后交给 Rust 规则引擎做准入、合并和版本管理。召回时同时走“结构化记忆”和“原文片段”两条通道，只有能精确链接回已提交原文的结论，才会被放行为可引用的答案。
+M1 历史合并为 63 题 59/4/0 待复核；已知失败是 conflict_q2 和三道 LME。M1 收尾时严格回放为 235 复用 / 59 缺口 / 0 发送；M1.5 契约与提示词变化后仍须核对完整指纹，不能借历史输出补成当前通过，补录另行授权。
 
-## 与旧文档的主要差异
+## 历史说明与报告
 
-对照 `docs/architecture_v1.md` 与 README，下列描述已经与代码不一致：
+以下文档记录旧版本，不作为当前配置、运行命令或能力说明；旧接口在当前程序不可用，原历史结论保留。
 
-| 旧描述 | 当前代码 |
+| 历史文档 | 固定范围 |
 | --- | --- |
-| 召回由 LLM 生成 `RuntimeContext` 后规则过滤 | 只是 `legacy` 模式的做法。`local` 模式完全离线，走结构化与原文双通道；`assisted` 模式在 local 基础上最多加一次模型辅助 |
-| FTS 原文检索“尚未接入正式 MCP 召回” | 已接入 `local`、`assisted` 召回，是主要证据来源 |
-| 提取器“命中特定条件时最多一次 LLM 复核” | 每次提取固定有一次独立的原文核验调用（source review，9 项检查）；另有可选的一次纠错重提取，需预算显式授权 |
-| 推理接入点 `ep-20260920181641-8728q` | 代码常量为 `ep-20260923215039-vxgxg`（`src/openai.rs:37`） |
-| 保存只有一个结果 | 拆成两个事务：T1 保存原文和索引，T2 提交整理出的事实；另有 `inline`、`deferred`、`off` 三种整理模式和一个带租约的任务状态机 |
-| 未提及 | 新增答案契约 `answer_contract`、`memory_validate_answer` 最终核准、持久模型调用预算、可选事实键索引 `fact_index`、本地时间落地校验 `temporal_grounding` |
+| [overview.md](overview.md)、[write-path.md](write-path.md)、[recall-path.md](recall-path.md) | 旧引擎与 legacy/local/assisted 的实现梳理 |
+| [capabilities.md](capabilities.md)、[retention.md](retention.md)、[model-usage.md](model-usage.md) | 相应历史提交的能力、留存和模型调用分析 |
+| [phase1-baseline.md](phase1-baseline.md) | 0517000 基线，只作参考，不是上线门槛 |
+| [retain-until-audit.md](retain-until-audit.md)、[w5-acceptance.md](w5-acceptance.md) | 旧 schema 审计与阶段验收记录 |
+| [../architecture_v1.md](../architecture_v1.md) | 旧 V1 设计 |

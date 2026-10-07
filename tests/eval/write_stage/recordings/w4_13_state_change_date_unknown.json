@@ -1,0 +1,40 @@
+{
+  "id": "w4_13_state_change_date_unknown",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              64
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[64]}]}",
+      "request": "fnv1a64:7d65e5e893091d56",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1567,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 4724,
+        "output_tokens_details": {
+          "reasoning_tokens": 4666
+        },
+        "total_tokens": 6291
+      }
+    }
+  ]
+}

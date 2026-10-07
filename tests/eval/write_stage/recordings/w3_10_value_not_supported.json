@@ -1,0 +1,51 @@
+{
+  "id": "w3_10_value_not_supported",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "value",
+                "quote": {
+                  "text": "杭州附近"
+                }
+              },
+              {
+                "aspect": "condition",
+                "quote": {
+                  "text": "杭州附近"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"value\",\"quote\":{\"text\":\"杭州附近\"}},{\"aspect\":\"condition\",\"quote\":{\"text\":\"杭州附近\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:674327c1430f1dc1",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 953,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 476,
+        "output_tokens_details": {
+          "reasoning_tokens": 400
+        },
+        "total_tokens": 1429
+      }
+    }
+  ]
+}

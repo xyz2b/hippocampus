@@ -1,0 +1,80 @@
+{
+  "id": "w1_05_hypothetical",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3372,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "如果我以后去深圳工作"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            },
+            "speech": "hypothetical",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "租房"
+              },
+              "text": "租房"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n    \"conditions\": [\n    {\n    \"quote\": {\n    \"text\": \"如果我以后去深圳工作\"\n    },\n    \"resolved\": true\n    }\n    ],\n    \"kind\": \"assertion\",\n    \"memory_type\": \"preference\",\n    \"polarity\": \"affirm\",\n    \"relation\": \"lives_in\",\n    \"sentence\": {\n    \"text\": \"如果我以后去深圳工作，我会考虑租房。\"\n    },\n    \"speech\": \"hypothetical\",\n    \"strength\": null,\n    \"subject\": {\n    \"entity_id\": \"self\"\n    },\n    \"times\": [],\n    \"uncertainty\": null,\n    \"value\": {\n    \"kind\": \"text\",\n    \"quote\": {\n    \"text\": \"租房\"\n    },\n    \"text\": \"租房\"\n    }\n    }\n    ],\n  \"memory_requests\": []\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:7a781e872d8688d0",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3642,
+          "input_tokens_details": {
+            "cached_tokens": 3072
+          },
+          "output_tokens": 196,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3838
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3642,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 196,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3838
+      }
+    }
+  ]
+}

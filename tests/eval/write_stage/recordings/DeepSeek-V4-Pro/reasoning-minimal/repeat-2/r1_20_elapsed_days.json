@@ -1,0 +1,74 @@
+{
+  "id": "r1_20_elapsed_days",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2969,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "elapsed",
+          "unit": "day"
+        },
+        "relation": "visited",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": -1,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "上次体检"
+          },
+          "role": "event"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n    \"relation\": null,\n    \"time\": null\n    },\n    \"op\": \"elapsed\",\n    \"unit\": \"day\"\n  },\n  \"relation\": \"visited\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": -1,\n    \"unit\": \"day\"\n    },\n    \"quote\": {\n    \"text\": \"上次体检\"\n    },\n    \"role\": \"event\"\n  },\n  \"type\": \"temporal\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:2223a2594a5d7df6cf57819451e63124dd7a48b628da392ce1df3721dfc3e49a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2363,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 162,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2525
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2363,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 162,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2525
+      }
+    }
+  ]
+}

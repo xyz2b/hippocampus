@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "state_change",
+      "targets": [
+        41
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-121"
+          },
+          "quote": {
+            "text": "我有点喜欢爵士乐。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-330"
+          },
+          "quote": {
+            "text": "我现在特别喜欢爵士乐。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}

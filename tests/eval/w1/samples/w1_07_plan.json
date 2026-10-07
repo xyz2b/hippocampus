@@ -1,0 +1,89 @@
+{
+ "id": "w1_07_plan",
+ "contract": "w1.v1",
+ "label_status": "reviewed",
+ "focus": "计划与时间",
+ "input": {
+  "text": "我打算下个月开始学日语。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "plan",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "我打算下个月开始学日语。",
+    "sentence": "我打算下个月开始学日语。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "下个月",
+      "interp": {
+       "kind": "relative",
+       "unit": "month",
+       "offset": 1
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "speech 为 user_statement（还没开始学）"
+ ],
+ "note": "用户确认（2026-10-03）：“打算”由 speech=plan 表达，不属于 uncertainty。"
+}

@@ -1,0 +1,2019 @@
+{
+  "questions": [
+    {
+      "annotator_note": "原文只有猫叫 Luna，没有仓鼠。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What is the name of my hamster?",
+      "question": "lme_0862e8bf_abs/q"
+    },
+    {
+      "annotator_note": "较早一次为 7/10（s1_t2，7 条）；7/22 那次为 9 条（s2_t2、s2_t5），不能答 9。",
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "7 largemouth bass。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many largemouth bass did I catch with Alex on the earlier fishing trip to Lake Michigan before the 7/22 trip?",
+      "question": "lme_10e09553/q"
+    },
+    {
+      "annotator_note": "原文是收藏老相机三个月，不是老电影。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How long have I been collecting vintage films?",
+      "question": "lme_15745da0_abs/q"
+    },
+    {
+      "annotator_note": "原文两周是在日本；韩国只是打算去。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How long was I in Korea for?",
+      "question": "lme_19b5f2b3_abs/q"
+    },
+    {
+      "annotator_note": "原文每天 30 分钟练的是吉他，不是小提琴。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How much time do I dedicate to practicing violin every day?",
+      "question": "lme_29f2956b_abs/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "7 pm。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What time do I stop checking work emails and messages?",
+      "question": "lme_577d4d32/q"
+    },
+    {
+      "annotator_note": "知识更新：10（s1_t1）→ 第 12 个（s1_t5）→ 15（s2_t1）。原文直接给出数量，按取值题处理。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "15。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many Crash Course videos have I watched in the past few weeks?",
+      "question": "lme_5831f84d/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "6:00 pm。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What time do I usually go to the gym?",
+      "question": "lme_59524333/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "日期计算",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 9,
+        "final_pass": 7,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 4,
+        "missing": 2,
+        "review": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.basis"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.endpoints"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": "3 months ago（2023-11-01）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many months ago did I attend the photography workshop?",
+      "question": "lme_5e1b23de/q"
+    },
+    {
+      "annotator_note": "知识更新：5 次（s1_t3）→ 10 次（s2_t1/t4/t6）。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "10 times。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many times have I tried making a Negroni at home since my friend Emma showed me how to make it?",
+      "question": "lme_603deb26/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 8,
+        "denominator": 8,
+        "final_pass": 8,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 8
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "a lighter shade of gray。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What color did I repaint my bedroom walls?",
+      "question": "lme_6f9b354f/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "日期计算",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 9,
+        "final_pass": 7,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 4,
+        "missing": 2,
+        "review": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.basis"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.endpoints"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": "4 weeks ago（2023-03-04）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many weeks ago did I meet up with my aunt and receive the crystal chandelier?",
+      "question": "lme_71017276/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "55-inch。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What size is my new Samsung TV?",
+      "question": "lme_76d63226/q"
+    },
+    {
+      "annotator_note": "知识更新：3 周（s1_t1、s1_t5，2023-06-11）→ 4 周（s2_t1，2023-09-30）。原文直接给出时长，不做日期换算。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "4 weeks。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How long have I been sticking to my daily tidying routine?",
+      "question": "lme_7a87bd0c/q"
+    },
+    {
+      "annotator_note": "知识更新：1250（s1_t2）→ “I think I'm close to 1300”（s2_t1）。value_any 只放裸值 1300；带“close to/about”等限定的答案不作整串等值，送复核判断是否保留了原文的估计语气。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 5,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": false,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 5,
+        "review": 6
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "close to 1300。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many followers do I have on Instagram now?",
+      "question": "lme_a2f3aa27/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "日期计算",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 9,
+        "final_pass": 7,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 4,
+        "missing": 2,
+        "review": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.basis"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.endpoints"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": "2 weeks ago（2022-11-17）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many weeks ago did I attend the friends and family sale at Nordstrom?",
+      "question": "lme_af082822/q"
+    },
+    {
+      "annotator_note": "原文只说“last trip to Costa Rica”带了 7 件、穿了 3 件；可答 7 件，但不能据此确认旅行为 5 天。wrong_value 只禁止把 3 作为本题答案，“带了 7 件、实际穿了 3 件”这类正确补充不算错。",
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "7 shirts。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many shirts did I pack for my 5-day trip to Costa Rica?",
+      "question": "lme_af8d2e46/q"
+    },
+    {
+      "annotator_note": "知识更新：4 部（s1_t3）→ 5 部（s2_t1，同句 12 部是全部电影）。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 12,
+        "denominator": 12,
+        "final_pass": 12,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 12
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "5 MCU films。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many MCU films did I watch in the last 3 months?",
+      "question": "lme_b6019101/q"
+    },
+    {
+      "annotator_note": "原文的柠檬蓝莓蛋糕是给侄女/外甥女的生日会做的，不是叔叔。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What did I bake for my uncle's birthday party?",
+      "question": "lme_bc8a6e93_abs/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "日期计算",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 9,
+        "final_pass": 7,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 4,
+        "missing": 2,
+        "review": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.basis"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.endpoints"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": "4 weeks ago（2023-04-01）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many weeks ago did I attend a bird watching workshop at the local Audubon society?",
+      "question": "lme_bcbe585f/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "Nike。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What brand are my favorite running shoes?",
+      "question": "lme_c8c3f81d/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "Spotify。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What is the name of the music streaming service have I been using lately?",
+      "question": "lme_ccb36322/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 8,
+        "denominator": 8,
+        "final_pass": 8,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 8
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "Business Administration。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What degree did I graduate with?",
+      "question": "lme_e47becba/q"
+    },
+    {
+      "annotator_note": "原文的厨师机是姐姐/妹妹送的生日礼物，不是爸爸。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "What did my dad gave me as a birthday gift?",
+      "question": "lme_f4f1d8a4_abs/q"
+    },
+    {
+      "annotator_note": "起点取 s1_t1 “today” 看 Coda 的日期，这是明确参与电影节的日期，不是电影节开始日期（原文另说参加了一周）。",
+      "blockers": [],
+      "category": "日期计算",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 9,
+        "final_pass": 7,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 4,
+        "missing": 2,
+        "review": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.basis"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.endpoints"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": "4 months ago（2021-06-01）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many months ago did I attend the Seattle International Film Festival?",
+      "question": "lme_gpt4_6dc9b45b/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "日期计算",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 9,
+        "final_pass": 7,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 4,
+        "missing": 2,
+        "review": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.basis"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "computed.endpoints"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": "4 days ago（2023-04-06）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many days ago did I attend the Maundy Thursday service at the Episcopal Church?",
+      "question": "lme_gpt4_b5700ca9/q"
+    },
+    {
+      "annotator_note": "原文只说 2023-04-16 “I've just downloaded Ibotta … I want to make sure I get the most out of it”，下载不等于开始使用，开始使用的日期证据不足。原始 LongMemEval 期望“3 weeks ago”保留在 expect 中，报告需说明两种口径的差异；20 天约 3 周的算术本身正确。 状态为 insufficient 时仍可返回可信的补充事实（如“4月16日的消息里提到刚下载 Ibotta，首次使用日期没有记录”），作为额外结论进复核；若提到 20 天，须说明是距该条消息的时间，不能说成距下载或首次使用的精确时间。computed 保持 null。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 1,
+        "denominator": 3,
+        "final_pass": 1,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_fail": 2,
+        "auto_pass": 1
+      },
+      "extras": [
+        "extra:safe_answer"
+      ],
+      "failed": [
+        "status",
+        "computed",
+        "extra:safe_answer"
+      ],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "3 weeks ago（2023-04-16）。",
+      "old_status": "source_linked_computed_elapsed",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "How many weeks ago did I start using the cashback app 'Ibotta'?",
+      "question": "lme_gpt4_e072b769/q"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "17:30。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "2027年4月14日，岸芷艺术馆几点闭馆？",
+      "question": "absolute_date_ranges/time_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 9,
+        "denominator": 9,
+        "final_pass": 9,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 9
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "19:00。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "2027年4月15日，岸芷艺术馆几点闭馆？",
+      "question": "absolute_date_ranges/time_q2"
+    },
+    {
+      "annotator_note": "5/1 不在两段已定安排之内。",
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "2027年5月1日，岸芷艺术馆几点闭馆？",
+      "question": "absolute_date_ranges/time_q3"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "默认纸张规格是什么？",
+      "question": "device_default_paper/device_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "默认纸张规格是什么？",
+      "question": "device_default_paper/device_q2"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "A4。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "默认纸张规格是什么？",
+      "question": "device_default_paper/device_q3"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "B5。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "青苔打印机的默认纸张规格是什么？",
+      "question": "device_default_paper/device_q4"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "A4。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
+      "question": "device_default_paper/device_q5"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "青苔打印机使用什么型号的墨盒？",
+      "question": "device_default_paper/device_q6"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "报名费是多少？",
+      "question": "event_registration_fee/event_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "报名费是多少？",
+      "question": "event_registration_fee/event_q2"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "36元。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "报名费是多少？",
+      "question": "event_registration_fee/event_q3"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "58元。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "银杏折纸工作坊的报名费是多少？",
+      "question": "event_registration_fee/event_q4"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "36元。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "参加海盐折纸工作坊，报名要交多少钱？",
+      "question": "event_registration_fee/event_q5"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "银杏折纸工作坊最多招收多少人？",
+      "question": "event_registration_fee/event_q6"
+    },
+    {
+      "annotator_note": "提问时 correction_s2 尚未出现，64GB 当时正确。 wrong_source 保留：该来源在提问时尚不存在，答案不能以它为依据。",
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "64GB。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "墨湾相机使用多大容量的存储卡？",
+      "question": "explicit_correction/correction_q1"
+    },
+    {
+      "annotator_note": "correction_s2 为纠错：64GB 不是曾经成立的历史值，不应作为当前结论或历史事实出现（contracts 不变量 7）。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "128GB。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "墨湾相机使用多大容量的存储卡？",
+      "question": "explicit_correction/correction_q2"
+    },
+    {
+      "annotator_note": "correction_s2 为纠错：64GB 不是曾经成立的历史值，不应作为当前结论或历史事实出现（contracts 不变量 7）。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "128GB。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "现在确认墨湾相机的存储卡是64GB还是128GB？",
+      "question": "explicit_correction/correction_q3"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "每人同时最多能借几本书？",
+      "question": "organization_borrow_limit/organization_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "每人同时最多能借几本书？",
+      "question": "organization_borrow_limit/organization_q2"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "3册。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "每人同时最多能借几本书？",
+      "question": "organization_borrow_limit/organization_q3"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "5册。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "赤枫读书会每名会员同时最多能借几册书？",
+      "question": "organization_borrow_limit/organization_q4"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "3册。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？",
+      "question": "organization_borrow_limit/organization_q5"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "赤枫读书会每本书可以借几天？",
+      "question": "organization_borrow_limit/organization_q6"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "画速写时固定用哪种笔？",
+      "question": "person_sketch_pen/person_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "需澄清",
+      "common": {
+        "auto_pass": 3,
+        "denominator": 3,
+        "final_pass": 3,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 3
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "clarification_required",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "画速写时固定用哪种笔？",
+      "question": "person_sketch_pen/person_q2"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 13,
+        "denominator": 13,
+        "final_pass": 13,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 13
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "炭笔。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "画速写时固定用哪种笔？",
+      "question": "person_sketch_pen/person_q3"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 13,
+        "denominator": 13,
+        "final_pass": 13,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 13
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "钢笔。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "冯序宁画速写时固定用哪种笔？",
+      "question": "person_sketch_pen/person_q4"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 13,
+        "denominator": 13,
+        "final_pass": 13,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 13
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "炭笔。",
+      "old_status": "source_linked_fact",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "冯砚川画速写拿的是哪种笔？",
+      "question": "person_sketch_pen/person_q5"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "证据不足",
+      "common": {
+        "auto_pass": 4,
+        "denominator": 4,
+        "final_pass": 4,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "insufficient_evidence",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "冯序宁画速写通常花多长时间？",
+      "question": "person_sketch_pen/person_q6"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "西班牙语。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "折页导航终端开机应显示哪种语言？",
+      "question": "task_isolation/task_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "意大利语。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "折页导航终端开机应显示哪种语言？",
+      "question": "task_isolation/task_q2"
+    },
+    {
+      "annotator_note": "task_q3 问法暗示意大利语，正确回答是不沿用、应为西班牙语。",
+      "blockers": [],
+      "category": "作答（存在旧值或他人/他物的值）",
+      "common": {
+        "auto_pass": 11,
+        "denominator": 11,
+        "final_pass": 11,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 11
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "西班牙语。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "继续潮汐展陈任务的展台演示配置：折页导航终端应沿用意大利语作为开机显示语言吗？",
+      "question": "task_isolation/task_q3"
+    },
+    {
+      "annotator_note": "提问时 conflict_s2 尚未出现，7 英寸当时正确（按其时点标注）。 wrong_source 保留：该来源在提问时尚不存在，答案不能以它为依据。",
+      "blockers": [],
+      "category": "作答（取值）",
+      "common": {
+        "auto_pass": 10,
+        "denominator": 10,
+        "final_pass": 10,
+        "question_auto_only_pass": true,
+        "question_final_pass": true
+      },
+      "counts": {
+        "auto_pass": 10
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [],
+      "label_status": "reviewed",
+      "old_answer": "7英寸。",
+      "old_status": "source_linked_model_answer",
+      "original": {
+        "dimension": "recall",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "栖风读书机的屏幕是几英寸？",
+      "question": "unresolved_conflict/conflict_q1"
+    },
+    {
+      "annotator_note": null,
+      "blockers": [],
+      "category": "冲突",
+      "common": {
+        "auto_pass": 5,
+        "denominator": 9,
+        "final_pass": 5,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 5,
+        "missing": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[0].sources"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[0].value"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[1].sources"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[1].value"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "conflicting_records",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "栖风读书机的屏幕到底是几英寸？",
+      "question": "unresolved_conflict/conflict_q2"
+    },
+    {
+      "annotator_note": "问法是“能否确定是 7 英寸”；正确处理是报告冲突，不能确认 7 英寸，也不能改答 8 英寸。",
+      "blockers": [],
+      "category": "冲突",
+      "common": {
+        "auto_pass": 5,
+        "denominator": 9,
+        "final_pass": 5,
+        "question_auto_only_pass": false,
+        "question_final_pass": false
+      },
+      "counts": {
+        "auto_pass": 5,
+        "missing": 4
+      },
+      "extras": [],
+      "failed": [],
+      "gaps": [
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[0].sources"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[0].value"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[1].sources"
+        },
+        {
+          "flag": "format_cannot_express",
+          "item": "conflicts[0].members[1].value"
+        }
+      ],
+      "label_status": "reviewed",
+      "old_answer": null,
+      "old_status": "conflicting_records",
+      "original": {
+        "dimension": "refusal",
+        "pass": true,
+        "problems": []
+      },
+      "pending_review": [],
+      "query": "能确定栖风读书机是7英寸屏幕吗？",
+      "question": "unresolved_conflict/conflict_q3"
+    }
+  ],
+  "summary": {
+    "by_category": {
+      "作答（取值）": {
+        "auto_only": 12,
+        "final": 12,
+        "n": 12,
+        "original_pass": 12
+      },
+      "作答（存在旧值或他人/他物的值）": {
+        "auto_only": 22,
+        "final": 23,
+        "n": 23,
+        "original_pass": 23
+      },
+      "冲突": {
+        "auto_only": 0,
+        "final": 0,
+        "n": 2,
+        "original_pass": 2
+      },
+      "日期计算": {
+        "auto_only": 0,
+        "final": 0,
+        "n": 6,
+        "original_pass": 6
+      },
+      "证据不足": {
+        "auto_only": 11,
+        "final": 11,
+        "n": 12,
+        "original_pass": 12
+      },
+      "需澄清": {
+        "auto_only": 8,
+        "final": 8,
+        "n": 8,
+        "original_pass": 8
+      }
+    },
+    "common": {
+      "auto_pass": 459,
+      "blockers": 0,
+      "final_pass": 483,
+      "items": 505,
+      "pending_review_items": 0,
+      "questions_auto_only_pass": 53,
+      "questions_failed": 1,
+      "questions_final_pass": 54,
+      "questions_with_gaps": 8,
+      "questions_with_pending_review": 0
+    },
+    "divergent": [
+      "lme_5e1b23de/q",
+      "lme_71017276/q",
+      "lme_af082822/q",
+      "lme_bcbe585f/q",
+      "lme_gpt4_6dc9b45b/q",
+      "lme_gpt4_b5700ca9/q",
+      "lme_gpt4_e072b769/q",
+      "unresolved_conflict/conflict_q2",
+      "unresolved_conflict/conflict_q3"
+    ],
+    "gap_fields": {
+      "computed.basis": 6,
+      "computed.endpoints": 6,
+      "conflicts.members.sources": 4,
+      "conflicts.members.value": 4
+    },
+    "original_recall": {
+      "pass": 42,
+      "total": 42
+    },
+    "original_refusal": {
+      "pass": 21,
+      "total": 21
+    },
+    "questions": 63
+  }
+}

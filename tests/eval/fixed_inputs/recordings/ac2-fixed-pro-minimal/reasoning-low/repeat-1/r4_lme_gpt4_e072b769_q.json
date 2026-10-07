@@ -1,0 +1,130 @@
+{
+  "id": "r4_lme_gpt4_e072b769_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 48256,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "just"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s1_t1"
+              },
+              "event_group": "ibotta_start",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t1"
+                  }
+                }
+              ],
+              "id": "ibotta_start",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "ibotta_start"
+          ],
+          "unit": "week"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t1"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "The user had just downloaded Ibotta on 2023-04-16, indicating they began using it around that date.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "just"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"just\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"},\"event_group\":\"ibotta_start\",\"evidence\":[{\"quote\":{\"text\":\"I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"id\":\"ibotta_start\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"ibotta_start\"],\"unit\":\"week\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"no\",\"evidence\":[{\"quote\":{\"text\":\"I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"polarity\":\"affirm\",\"record_ids\":[1],\"statement\":\"The user had just downloaded Ibotta on 2023-04-16, indicating they began using it around that date.\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"just\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:5d76b6ec75acbce7801f58c9a7421357c6018ed1d441f0471ebc14a22d16f181",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5251,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 2948,
+          "output_tokens_details": {
+            "reasoning_tokens": 2602
+          },
+          "total_tokens": 8199
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5251,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 2948,
+        "output_tokens_details": {
+          "reasoning_tokens": 2602
+        },
+        "total_tokens": 8199
+      }
+    }
+  ]
+}

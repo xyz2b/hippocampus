@@ -1,0 +1,440 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 25,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 29642,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3744,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1879,
+        "output_tokens_details": {
+          "reasoning_tokens": 1750
+        },
+        "total_tokens": 5623
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:correction_s1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2138,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1961,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2035
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2391,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2392,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 104,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2496
+      }
+    },
+    {
+      "elapsed_ms": 20085,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:correction_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 20070,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4625,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 184,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4809
+      }
+    }
+  ],
+  "case": "explicit_correction",
+  "elapsed_ms": 20412,
+  "steps": [
+    {
+      "message": "correction_s1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377703778000-52",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377703778000-52",
+            "duration_ms": 37,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377747136000-63",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377747136000-63",
+            "duration_ms": 11,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377682326000-30",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212377682326000-30",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568030,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377808950000-80",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377808950000-80",
+            "duration_ms": 5,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377832675000-91",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377832675000-91",
+            "duration_ms": 20224,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "correction_q1",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "墨湾相机使用多大容量的存储卡？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377682326000-30"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "墨湾相机目前使用的存储卡容量是64GB。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_mowan_camera"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "text": "墨湾相机目前使用的存储卡容量是64GB。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "墨湾相机目前使用的存储卡容量是64GB。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377682326000-30"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568030,
+          "context": [],
+          "query": "墨湾相机使用多大容量的存储卡？",
+          "request_id": "eval-explicit_correction-correction_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 1
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "correction_s1": "55832-1791212377682326000-30"
+      },
+      "source_state": {
+        "correction_s1": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

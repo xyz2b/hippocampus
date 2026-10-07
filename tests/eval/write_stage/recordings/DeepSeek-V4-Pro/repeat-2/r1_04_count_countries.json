@@ -1,0 +1,61 @@
+{
+  "id": "r1_04_count_countries",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "visited",
+            "time": null
+          },
+          "op": "count",
+          "unit": null
+        },
+        "relation": "visited",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "aggregate"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"visited\",\n      \"time\": null\n    },\n    \"op\": \"count\",\n    \"unit\": null\n  },\n  \"relation\": \"visited\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"aggregate\"\n}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:edbca9bffeb8200cd458a5d70378ac210e96a0eb3dc69a2957b9d6cbb85ed590",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2440,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 783,
+          "output_tokens_details": {
+            "reasoning_tokens": 681
+          },
+          "total_tokens": 3223
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2440,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 783,
+        "output_tokens_details": {
+          "reasoning_tokens": 681
+        },
+        "total_tokens": 3223
+      }
+    }
+  ]
+}

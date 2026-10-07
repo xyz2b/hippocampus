@@ -1214,8 +1214,29 @@
       "expect": {
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "annotator_note": "原文是收藏老相机三个月，不是老电影。",
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "three months",
+              "3 months"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "q",
       "query": "How long have I been collecting vintage films?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "unspecified"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

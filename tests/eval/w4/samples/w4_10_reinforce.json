@@ -1,0 +1,175 @@
+{
+  "id": "w4_10_reinforce",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "强化 reinforce：独立的新原文重复同一断言",
+  "boundary_with": "w4_11_preference_strength",
+  "sources": {
+    "s-111": {
+      "text": "我喜欢喝咖啡。",
+      "said_on": "2026-05-06"
+    },
+    "s-320": {
+      "text": "我还是喜欢喝咖啡。",
+      "said_on": "2026-09-24"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "preference",
+          "value": {
+            "kind": "text",
+            "text": "我还是喜欢喝咖啡。",
+            "quote": {
+              "text": "我还是喜欢喝咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我还是喜欢喝咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-320"
+        },
+        "said_on": "2026-09-24",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 31,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "preference",
+          "value": {
+            "kind": "text",
+            "text": "我喜欢喝咖啡。",
+            "quote": {
+              "text": "我喜欢喝咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我喜欢喝咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-111"
+            },
+            "quote": {
+              "text": "我喜欢喝咖啡。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-06",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "reinforce",
+        "targets": [
+          31
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-111",
+          "s-320"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "31": {
+          "stored_status": "active",
+          "reinforcement_count": "+1",
+          "evidence_added": [
+            "s-320"
+          ]
+        }
+      },
+      "new_records": 0,
+      "candidate_update": {
+        "status": "pending",
+        "reasons": [
+          "update_scope_incomplete"
+        ]
+      },
+      "recall": {
+        "current": [
+          "31（喜欢喝咖啡，两条原文依据）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得新增一条重复记录",
+      "同一来源重放不得再次增加计数",
+      "新旧任一方带强度表达（如“很喜欢”“有点喜欢”）而另一方不同或没有时，不得按同一断言强化（contracts 1.3），应按 w4_11 判断"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "new",
+      "why": "与 31 是同一偏好"
+    },
+    {
+      "action": "state_change",
+      "why": "偏好没有变化"
+    }
+  ],
+  "qualifier_marks": {}
+}

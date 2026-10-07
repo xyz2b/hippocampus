@@ -1,0 +1,770 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 152010,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 151953,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3771,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10510,
+        "output_tokens_details": {
+          "reasoning_tokens": 10198
+        },
+        "total_tokens": 14281
+      }
+    },
+    {
+      "elapsed_ms": 82086,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 82026,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1614,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 14061,
+        "output_tokens_details": {
+          "reasoning_tokens": 13961
+        },
+        "total_tokens": 15675
+      }
+    },
+    {
+      "elapsed_ms": 218844,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 218778,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4013,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 15148,
+        "output_tokens_details": {
+          "reasoning_tokens": 14412
+        },
+        "total_tokens": 19161
+      }
+    },
+    {
+      "elapsed_ms": 51486,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 51418,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2405,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9347,
+        "output_tokens_details": {
+          "reasoning_tokens": 9207
+        },
+        "total_tokens": 11752
+      }
+    },
+    {
+      "elapsed_ms": 36330,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 36260,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3960,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2591,
+        "output_tokens_details": {
+          "reasoning_tokens": 1982
+        },
+        "total_tokens": 6551
+      }
+    },
+    {
+      "elapsed_ms": 146406,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 146334,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4233,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10457,
+        "output_tokens_details": {
+          "reasoning_tokens": 9957
+        },
+        "total_tokens": 14690
+      }
+    },
+    {
+      "elapsed_ms": 93849,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 93774,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2158,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18542
+      }
+    },
+    {
+      "elapsed_ms": 23564,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 23486,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4337,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1497,
+        "output_tokens_details": {
+          "reasoning_tokens": 1484
+        },
+        "total_tokens": 5834
+      }
+    },
+    {
+      "elapsed_ms": 148621,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 148541,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4483,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10341,
+        "output_tokens_details": {
+          "reasoning_tokens": 9902
+        },
+        "total_tokens": 14824
+      }
+    },
+    {
+      "elapsed_ms": 35594,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 35516,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2464,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 6217,
+        "output_tokens_details": {
+          "reasoning_tokens": 6122
+        },
+        "total_tokens": 8681
+      }
+    },
+    {
+      "elapsed_ms": 16536,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 16445,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4549,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1014,
+        "output_tokens_details": {
+          "reasoning_tokens": 1001
+        },
+        "total_tokens": 5563
+      }
+    },
+    {
+      "elapsed_ms": 3577,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3494,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2245,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 227,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2472
+      }
+    },
+    {
+      "elapsed_ms": 2702,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2617,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5018,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 63,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5081
+      }
+    }
+  ],
+  "case": "lme_af082822",
+  "elapsed_ms": 1016215,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156180487886000-533",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791156180487886000-533",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156414928547000-626",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 3,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 4,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "coverage_gaps"
+          },
+          "source": {
+            "source_id": "80856-1791156414928547000-626",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156722366071000-706",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791156722366071000-706",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156963233606000-760",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791156963233606000-760",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156987248646000-764",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": null,
+                "reasons": [
+                  "unresolved_subject"
+                ],
+                "status": "unresolved",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791156987248646000-764",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157172365544000-809",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791157172365544000-809",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1669866480,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 6,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2022-12-01",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many weeks ago did I attend the friends and family sale at Nordstrom?"
+        },
+        "degraded_reasons": [
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?"
+            },
+            "said_on": "2022-11-18",
+            "sequence": 1,
+            "source_id": "80856-1791156180487886000-533"
+          },
+          {
+            "enrichment": "coverage_gaps",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?"
+            },
+            "said_on": "2022-11-18",
+            "sequence": 2,
+            "source_id": "80856-1791156414928547000-626"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates."
+            },
+            "said_on": "2022-11-18",
+            "sequence": 3,
+            "source_id": "80856-1791156722366071000-706"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?"
+            },
+            "said_on": "2022-11-18",
+            "sequence": 4,
+            "source_id": "80856-1791156963233606000-760"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm still considering the Sonos Beam, but I'm also open to other options. I've been doing some research and I came across the Yamaha YAS-209 soundbar. It seems like a good alternative to the Sonos Beam, and it's a bit more budget-friendly. Do you know anything about the Yamaha YAS-209?"
+            },
+            "said_on": "2022-11-18",
+            "sequence": 5,
+            "source_id": "80856-1791156987248646000-764"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I think I'll need to do some more research to decide between the two. But I'm glad I have some options to consider. Thanks for the help!"
+            },
+            "said_on": "2022-11-18",
+            "sequence": 6,
+            "source_id": "80856-1791157172365544000-809"
+          }
+        ],
+        "records": [],
+        "request": {
+          "at": 1669866480,
+          "context": [],
+          "query": "How many weeks ago did I attend the friends and family sale at Nordstrom?",
+          "request_id": "eval-lme_af082822-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 4,
+          "source_revision": 6
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791156180487886000-533",
+        "s1_t2": "80856-1791156414928547000-626",
+        "s1_t3": "80856-1791156722366071000-706",
+        "s1_t4": "80856-1791156963233606000-760",
+        "s1_t5": "80856-1791156987248646000-764",
+        "s1_t6": "80856-1791157172365544000-809"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

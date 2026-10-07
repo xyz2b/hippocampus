@@ -1,0 +1,125 @@
+{
+  "id": "w1_08_retraction",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "retraction",
+            "memory_type": "fact",
+            "polarity": "negate",
+            "relation": "works_at",
+            "sentence": {
+              "text": "之前说我在字节工作那个不对，收回。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": null
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"works_at\",\"sentence\":{\"text\":\"之前说我在字节工作那个不对，收回。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:5458fa619306efc8",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3540,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 5703,
+          "output_tokens_details": {
+            "reasoning_tokens": 5614
+          },
+          "total_tokens": 9243
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3540,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5703,
+        "output_tokens_details": {
+          "reasoning_tokens": 5614
+        },
+        "total_tokens": 9243
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "retraction",
+            "memory_type": "fact",
+            "polarity": "negate",
+            "relation": "works_at",
+            "sentence": {
+              "text": "之前说我在字节工作那个不对，收回。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": null
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"works_at\",\"sentence\":{\"text\":\"之前说我在字节工作那个不对，收回。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:4e0be85ee087705a",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3720,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2997,
+          "output_tokens_details": {
+            "reasoning_tokens": 2908
+          },
+          "total_tokens": 6717
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3720,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2997,
+        "output_tokens_details": {
+          "reasoning_tokens": 2908
+        },
+        "total_tokens": 6717
+      }
+    }
+  ]
+}

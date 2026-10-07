@@ -1,5 +1,7 @@
 # 召回记忆流程
 
+> 历史文档：下文保留原版本的实现描述、命令及结论，不是当前执行入口。旧写入及 legacy/local/assisted 召回已退出；当前路径、配置、备份与评测见 [架构索引](README.md)。0517000 仅作参考，不是上线门槛。
+
 本文描述一个问题如何找回相关记忆，以及系统如何决定哪些内容可以作为答案依据。入口有四个：`memory_recall`（普通或 bootstrap）、`memory_prepare` 的召回部分、`memory_validate_answer`，以及每个响应都附带的 `global_context`。
 
 ## 1. 入口与模式分派

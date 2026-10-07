@@ -1,0 +1,74 @@
+{
+  "id": "r1_07_compare_order",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "日语"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "韩语"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "fact",
+            "time": null
+          },
+          "op": "compare",
+          "unit": null
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "comparison"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"日语\"},\"resolved\":true},{\"quote\":{\"text\":\"韩语\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"fact\",\"time\":null},\"op\":\"compare\",\"unit\":null},\"relation\":\"fact\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"comparison\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:d94221def80d5ce6d41c0528c58d143f61554e09e211516bd64cab9ba6714fb0",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2444,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4139,
+          "output_tokens_details": {
+            "reasoning_tokens": 4053
+          },
+          "total_tokens": 6583
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2444,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4139,
+        "output_tokens_details": {
+          "reasoning_tokens": 4053
+        },
+        "total_tokens": 6583
+      }
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "id": "w4_16_pending_scope_incomplete",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "W4 返回 pending/scope_incomplete：结论依赖检索未覆盖的记录",
+  "boundary_with": "w4_08_scope_incomplete_no_records",
+  "sources": {
+    "s-305": {
+      "text": "我用的是一台 MacBook Air。",
+      "said_on": "2026-06-01"
+    },
+    "s-380": {
+      "text": "我现在只用这一台笔记本电脑了。",
+      "said_on": "2026-09-26"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我现在只用这一台笔记本电脑了。",
+            "quote": {
+              "text": "我现在只用这一台笔记本电脑了。"
+            }
+          },
+          "sentence": {
+            "text": "我现在只用这一台笔记本电脑了。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": {
+                "text": "现在"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-380"
+        },
+        "said_on": "2026-09-26",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 81,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我用的是一台 MacBook Air。",
+            "quote": {
+              "text": "我用的是一台 MacBook Air。"
+            }
+          },
+          "sentence": {
+            "text": "我用的是一台 MacBook Air。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-305"
+            },
+            "quote": {
+              "text": "我用的是一台 MacBook Air。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-06-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "pending",
+        "action": null,
+        "targets": [],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-380"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": "scope_incomplete"
+      }
+    ],
+    "after": {
+      "records": {
+        "81": {
+          "stored_status": "active",
+          "ended": "not_ended"
+        },
+        "new": {
+          "from_candidate": 0,
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          }
+        }
+      },
+      "recall": {
+        "current_note": "可返回新断言，但带 update.pending，不得据此结束未检索到的其他设备记录"
+      }
+    },
+    "must_not": [
+      "不得结束任何未送入 W4 的记录",
+      "不得把 81 以外的设备推断为已停用",
+      "不得改判为 conflict"
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "“只用这一台”意味着其他设备已不再使用，但检索范围不完整，这一结论不能成立；W3 支持的断言本身仍可提交（contracts 2.4）。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "现在"
+      ]
+    }
+  }
+}

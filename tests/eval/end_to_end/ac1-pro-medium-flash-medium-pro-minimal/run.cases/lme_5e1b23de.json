@@ -1,0 +1,776 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 12065,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 12031,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3735,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 627,
+        "output_tokens_details": {
+          "reasoning_tokens": 614
+        },
+        "total_tokens": 4362
+      }
+    },
+    {
+      "elapsed_ms": 37719,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 37686,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3835,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2384,
+        "output_tokens_details": {
+          "reasoning_tokens": 2262
+        },
+        "total_tokens": 6219
+      }
+    },
+    {
+      "elapsed_ms": 8575,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 8543,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1447,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1274,
+        "output_tokens_details": {
+          "reasoning_tokens": 1225
+        },
+        "total_tokens": 2721
+      }
+    },
+    {
+      "elapsed_ms": 44260,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 44227,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3929,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 2982,
+        "output_tokens_details": {
+          "reasoning_tokens": 2717
+        },
+        "total_tokens": 6911
+      }
+    },
+    {
+      "elapsed_ms": 10472,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 10439,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1706,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1888,
+        "output_tokens_details": {
+          "reasoning_tokens": 1815
+        },
+        "total_tokens": 3594
+      }
+    },
+    {
+      "elapsed_ms": 93697,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 93664,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3182,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6184,
+        "output_tokens_details": {
+          "reasoning_tokens": 5978
+        },
+        "total_tokens": 9366
+      }
+    },
+    {
+      "elapsed_ms": 151791,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 151754,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4105,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10926,
+        "output_tokens_details": {
+          "reasoning_tokens": 10236
+        },
+        "total_tokens": 15031
+      }
+    },
+    {
+      "elapsed_ms": 33620,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 33579,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2151,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 6172,
+        "output_tokens_details": {
+          "reasoning_tokens": 6078
+        },
+        "total_tokens": 8323
+      }
+    },
+    {
+      "elapsed_ms": 48453,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 48412,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3645,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3071,
+        "output_tokens_details": {
+          "reasoning_tokens": 2714
+        },
+        "total_tokens": 6716
+      }
+    },
+    {
+      "elapsed_ms": 108605,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 108560,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4231,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6982,
+        "output_tokens_details": {
+          "reasoning_tokens": 6845
+        },
+        "total_tokens": 11213
+      }
+    },
+    {
+      "elapsed_ms": 25649,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 25603,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1858,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4339,
+        "output_tokens_details": {
+          "reasoning_tokens": 4289
+        },
+        "total_tokens": 6197
+      }
+    },
+    {
+      "elapsed_ms": 41840,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 41794,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3552,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2638,
+        "output_tokens_details": {
+          "reasoning_tokens": 2536
+        },
+        "total_tokens": 6190
+      }
+    },
+    {
+      "elapsed_ms": 2400,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2351,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2240,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 103,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2343
+      }
+    },
+    {
+      "elapsed_ms": 3490,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3441,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4715,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 173,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4888
+      }
+    }
+  ],
+  "case": "lme_5e1b23de",
+  "elapsed_ms": 626689,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155357106289000-241",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791155357106289000-241",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155369294208000-246",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155369294208000-246",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155415900974000-268",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155415900974000-268",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155564963678000-305",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791155564963678000-305",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155799855018000-390",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155799855018000-390",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1706798460,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 2,
+          "pending_updates": 1,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2024-02-01",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many months ago did I attend the photography workshop?"
+        },
+        "degraded_reasons": [
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm looking for some photography inspiration and tips. Can you suggest some online resources or tutorials on night photography?"
+            },
+            "said_on": "2023-11-01",
+            "sequence": 1,
+            "source_id": "80856-1791155357106289000-241"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "That's really helpful, thank you!  I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography. I'm curious about dark frames and bias frames. Can you explain what they are and how they help in image stacking? Also, I've been thinking of getting a new camera lens, do you have any recommendations for a good wide-angle lens for astrophotography?"
+            },
+            "said_on": "2023-11-01",
+            "sequence": 4,
+            "source_id": "80856-1791155564963678000-305"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "visited",
+              "sentence": {
+                "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": 0,
+                    "unit": "day"
+                  },
+                  "quote": {
+                    "text": "today"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a 3-day photography workshop in a nearby city"
+                },
+                "text": "a 3-day photography workshop in a nearby city"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155564963678000-305"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-11-01",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1698854400,
+                "precision": "day",
+                "start": 1698768000,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1706798460,
+          "context": [],
+          "query": "How many months ago did I attend the photography workshop?",
+          "request_id": "eval-lme_5e1b23de-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 7,
+          "source_revision": 5
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791155357106289000-241",
+        "s1_t2": "80856-1791155369294208000-246",
+        "s1_t3": "80856-1791155415900974000-268",
+        "s1_t4": "80856-1791155564963678000-305",
+        "s1_t5": "80856-1791155799855018000-390"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

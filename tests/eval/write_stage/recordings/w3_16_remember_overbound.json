@@ -1,0 +1,49 @@
+{
+  "id": "w3_16_remember_overbound",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [
+          {
+            "request": 0,
+            "verdict": "contradicted"
+          }
+        ],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "low_value",
+            "problems": [],
+            "verdict": "supported"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[{\"request\":0,\"verdict\":\"contradicted\"}],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"},{\"candidate\":1,\"episode_value\":\"low_value\",\"problems\":[],\"verdict\":\"supported\"}]}",
+      "request": "fnv1a64:06276b5f3949a98e",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 1170,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5580,
+        "output_tokens_details": {
+          "reasoning_tokens": 5497
+        },
+        "total_tokens": 6750
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "id": "w4_09_new",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2893,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "new",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我在字节跳动工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-310"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\n  \"decisions\": [\n    {\n    \"action\": \"new\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"我在字节跳动工作。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-310\"\n    }\n    }\n    ],\n    \"candidate\": 0,\n    \"effective\": null,\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [],\n    \"status\": \"decided\",\n    \"targets\": []\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:595946b38a2df236",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2623,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 127,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2750
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2623,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 127,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2750
+      }
+    }
+  ]
+}

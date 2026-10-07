@@ -1379,8 +1379,47 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "通常去健身房的时间（当前）",
+            "sources": {
+              "all_of": [
+                "s2_t3"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "6:00 pm",
+              "6 pm"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "7:00 pm",
+              "7 pm"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "What time do I usually go to the gym?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

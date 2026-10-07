@@ -1,0 +1,2122 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 32602,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:event_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 32446,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3798,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2099,
+        "output_tokens_details": {
+          "reasoning_tokens": 1965
+        },
+        "total_tokens": 5897
+      }
+    },
+    {
+      "elapsed_ms": 2409,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:event_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2274,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2020,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2094
+      }
+    },
+    {
+      "elapsed_ms": 20176,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:event_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 20023,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3822,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1327,
+        "output_tokens_details": {
+          "reasoning_tokens": 1196
+        },
+        "total_tokens": 5149
+      }
+    },
+    {
+      "elapsed_ms": 2108,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:event_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1985,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2041,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2115
+      }
+    },
+    {
+      "elapsed_ms": 2560,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2433,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2440,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 75,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2515
+      }
+    },
+    {
+      "elapsed_ms": 4907,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4780,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4881,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 349,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5230
+      }
+    },
+    {
+      "elapsed_ms": 1996,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1870,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2447,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 75,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2522
+      }
+    },
+    {
+      "elapsed_ms": 4975,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4847,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4888,
+        "input_tokens_details": {
+          "cached_tokens": 4608
+        },
+        "output_tokens": 349,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5237
+      }
+    },
+    {
+      "elapsed_ms": 2661,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2505,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2449,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 66,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2515
+      }
+    },
+    {
+      "elapsed_ms": 3361,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3234,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4635,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 188,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4823
+      }
+    },
+    {
+      "elapsed_ms": 2345,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2217,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2446,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 67,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2513
+      }
+    },
+    {
+      "elapsed_ms": 3681,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3554,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4635,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 186,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4821
+      }
+    },
+    {
+      "elapsed_ms": 2466,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2336,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2449,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 66,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2515
+      }
+    },
+    {
+      "elapsed_ms": 1473,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1344,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4644,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4666
+      }
+    },
+    {
+      "elapsed_ms": 2169,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1963,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2445,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 66,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2511
+      }
+    },
+    {
+      "elapsed_ms": 1818,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:event_q6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1634,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4632,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4654
+      }
+    }
+  ],
+  "case": "event_registration_fee",
+  "elapsed_ms": 97541,
+  "steps": [
+    {
+      "message": "event_s1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203928867263000-1139",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203928867263000-1139",
+            "duration_ms": 32808,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203961679963000-1167",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203961679963000-1167",
+            "duration_ms": 2628,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791203928861158000-1137",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791203928861158000-1137",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "event_s2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203964355649000-1174",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203964355649000-1174",
+            "duration_ms": 20405,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203984770242000-1211",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203984770242000-1211",
+            "duration_ms": 2348,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791203964333349000-1172",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791203964333349000-1172",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203987184755000-1214",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203987184755000-1214",
+            "duration_ms": 2803,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203990004826000-1215",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203990004826000-1215",
+            "duration_ms": 5182,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "event_q1",
+      "reason": null,
+      "result": {
+        "clarification": {
+          "evidence": [
+            {
+              "quote": {
+                "text": "报名费是多少？"
+              },
+              "source": {
+                "kind": "current"
+              }
+            }
+          ],
+          "question": "你指的是海盐折纸工作坊、银杏折纸工作坊中的哪一位？"
+        },
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "报名费是多少？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "银杏折纸工作坊的报名费为58元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "海盐折纸工作坊的报名费为36元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "银杏折纸工作坊的报名费为58元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_yinxing_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "text": "银杏折纸工作坊的报名费为58元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "海盐折纸工作坊的报名费为36元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_haiyan_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "text": "海盐折纸工作坊的报名费为36元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "报名费是多少？",
+          "request_id": "eval-event_registration_fee-event_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "needs_clarification",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "event_s1": "33284-1791203928861158000-1137",
+        "event_s2": "33284-1791203964333349000-1172"
+      },
+      "source_state": {
+        "event_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "event_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203995222102000-1218",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203995222102000-1218",
+            "duration_ms": 2294,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203997533227000-1219",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203997533227000-1219",
+            "duration_ms": 5287,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "event_q2",
+      "reason": null,
+      "result": {
+        "clarification": {
+          "evidence": [
+            {
+              "quote": {
+                "text": "报名费是多少？"
+              },
+              "source": {
+                "kind": "current"
+              }
+            }
+          ],
+          "question": "你指的是海盐折纸工作坊、银杏折纸工作坊中的哪一位？"
+        },
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "报名费是多少？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "银杏折纸工作坊的报名费为58元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "海盐折纸工作坊的报名费为36元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "银杏折纸工作坊的报名费为58元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_yinxing_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "text": "银杏折纸工作坊的报名费为58元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "海盐折纸工作坊的报名费为36元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_haiyan_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "text": "海盐折纸工作坊的报名费为36元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我说的是折纸工作坊。"
+          ],
+          "query": "报名费是多少？",
+          "request_id": "eval-event_registration_fee-event_q2",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "needs_clarification",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "event_s1": "33284-1791203928861158000-1137",
+        "event_s2": "33284-1791203964333349000-1172"
+      },
+      "source_state": {
+        "event_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "event_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204002855841000-1223",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204002855841000-1223",
+            "duration_ms": 2998,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204005871818000-1228",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204005871818000-1228",
+            "duration_ms": 3721,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "event_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "报名费是多少？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "海盐折纸工作坊的报名费为36元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "海盐折纸工作坊的报名费为36元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_haiyan_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "text": "海盐折纸工作坊的报名费为36元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我说的是海盐折纸工作坊。"
+          ],
+          "query": "报名费是多少？",
+          "request_id": "eval-event_registration_fee-event_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "event_s1": "33284-1791203928861158000-1137",
+        "event_s2": "33284-1791203964333349000-1172"
+      },
+      "source_state": {
+        "event_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "event_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204009629138000-1231",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204009629138000-1231",
+            "duration_ms": 2731,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204012389407000-1232",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204012389407000-1232",
+            "duration_ms": 4095,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "event_q4",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "银杏折纸工作坊的报名费是多少？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "银杏折纸工作坊的报名费为58元。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "银杏折纸工作坊的报名费为58元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_yinxing_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "text": "银杏折纸工作坊的报名费为58元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "银杏折纸工作坊的报名费是多少？",
+          "request_id": "eval-event_registration_fee-event_q4",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "event_s1": "33284-1791203928861158000-1137",
+        "event_s2": "33284-1791203964333349000-1172"
+      },
+      "source_state": {
+        "event_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "event_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204016520654000-1235",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204016520654000-1235",
+            "duration_ms": 2885,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204019423740000-1236",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204019423740000-1236",
+            "duration_ms": 1959,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "event_q5",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "参加海盐折纸工作坊，报名要交多少钱？"
+        },
+        "degraded_reasons": [],
+        "facts": [],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "海盐折纸工作坊的报名费为36元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_haiyan_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "text": "海盐折纸工作坊的报名费为36元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "海盐折纸工作坊的报名费为36元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203928861158000-1137"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "参加海盐折纸工作坊，报名要交多少钱？",
+          "request_id": "eval-event_registration_fee-event_q5",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "event_s1": "33284-1791203928861158000-1137",
+        "event_s2": "33284-1791203964333349000-1172"
+      },
+      "source_state": {
+        "event_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "event_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204021421002000-1239",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204021421002000-1239",
+            "duration_ms": 2634,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204024073071000-1241",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204024073071000-1241",
+            "duration_ms": 2302,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "event_q6",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "银杏折纸工作坊最多招收多少人？"
+        },
+        "degraded_reasons": [],
+        "facts": [],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "银杏折纸工作坊的报名费为58元。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "event_yinxing_origami"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "text": "银杏折纸工作坊的报名费为58元。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "银杏折纸工作坊的报名费为58元。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203964333349000-1172"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "银杏折纸工作坊最多招收多少人？",
+          "request_id": "eval-event_registration_fee-event_q6",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "event_s1": "33284-1791203928861158000-1137",
+        "event_s2": "33284-1791203964333349000-1172"
+      },
+      "source_state": {
+        "event_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "event_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

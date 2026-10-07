@@ -1,0 +1,77 @@
+{
+  "id": "r4_11_corrected_not_history",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 40867,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我说错了，我在阿里工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-13"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              13
+            ],
+            "statement": "我说错了，我在阿里工作。",
+            "strength": null,
+            "supersedes_record_ids": [
+              12
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"no\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我说错了，我在阿里工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-13\"}}],\"polarity\":\"affirm\",\"record_ids\":[13],\"statement\":\"我说错了，我在阿里工作。\",\"strength\":null,\"supersedes_record_ids\":[12],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:8544095d78f77c761295cf2df8ba8119a374acece26bb9e4c14d7da2bce2f471",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1581,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 6445,
+          "output_tokens_details": {
+            "reasoning_tokens": 6336
+          },
+          "total_tokens": 8026
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1581,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 6445,
+        "output_tokens_details": {
+          "reasoning_tokens": 6336
+        },
+        "total_tokens": 8026
+      }
+    }
+  ]
+}

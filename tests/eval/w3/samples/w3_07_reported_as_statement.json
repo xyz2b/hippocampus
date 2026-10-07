@@ -1,0 +1,45 @@
+{
+ "id": "w3_07_reported_as_statement",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "转述被标成用户陈述",
+ "input": {
+  "text": "我妈说我小时候特别怕狗。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "我妈说我小时候特别怕狗。",
+    "sentence": "我妈说我小时候特别怕狗。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "speech"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

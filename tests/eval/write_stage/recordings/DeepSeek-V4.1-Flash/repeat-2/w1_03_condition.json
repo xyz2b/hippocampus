@@ -1,0 +1,83 @@
+{
+  "id": "w1_03_condition",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写的时候"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "uses",
+            "sentence": {
+              "text": "我画速写的时候固定用炭笔。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": {
+              "quote": {
+                "text": "固定"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "固定用炭笔"
+              },
+              "text": "炭笔"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\":  \t\t\t\t\t\t\t\t{\"text\":\"画速写的时候\"},\"resolved\":  \t\t\t\t\t\t\t\ttrue}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"uses\",\"sentence\":  \t\t\t\t\t\t\t\t{\"text\":\"我画速写的时候固定用炭笔。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":  \t\t\t\t\t\t\t\t{\"quote\":  \t\t\t\t\t\t\t\t{\"text\":\"固定\"  \t\t\t\t\t\t\t\t},\"resolved\":  \t\t\t\t\t\t\t\ttrue},\"value\":  \t\t\t\t\t\t\t\t{\"kind\":\"text\",\"quote\":  \t\t\t\t\t\t\t\t{\"text\":\"固定用炭笔\"  \t\t\t\t\t\t\t\t},\"text\":\"炭笔\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:85cdb366aa0f79e1",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1457,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 11302,
+          "output_tokens_details": {
+            "reasoning_tokens": 11129
+          },
+          "total_tokens": 12759
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1457,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 11302,
+        "output_tokens_details": {
+          "reasoning_tokens": 11129
+        },
+        "total_tokens": 12759
+      }
+    }
+  ]
+}

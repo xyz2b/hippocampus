@@ -1,0 +1,61 @@
+{
+  "id": "w1_08_retraction",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "retraction",
+            "memory_type": "fact",
+            "polarity": "negate",
+            "relation": "works_at",
+            "sentence": {
+              "text": "之前说我在字节工作那个不对，收回。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": null
+          }
+        ],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "forget",
+            "quote": {
+              "text": "收回"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "unknown",
+              "quote": {
+                "text": "之前说我在字节工作那个"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"retraction\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"works_at\",\"sentence\":{ \"text\": \"之前说我在字节工作那个不对，收回。\"\n  }, \"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":null}],\"memory_requests\":[{\"deadline\":null,\"kind\":\"forget\",\"quote\":{ \"text\": \"收回\"\n  },\"target\":{\"candidate_indices\":[],\"object\":\"unknown\",\"quote\":{ \"text\": \"之前说我在字节工作那个\"\n   }}}]}",
+      "request": "fnv1a64:1c7cc3baff4fca52",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1458,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4502,
+        "output_tokens_details": {
+          "reasoning_tokens": 4353
+        },
+        "total_tokens": 5960
+      }
+    }
+  ]
+}

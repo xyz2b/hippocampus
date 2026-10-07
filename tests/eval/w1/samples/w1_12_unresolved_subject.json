@@ -1,0 +1,92 @@
+{
+ "id": "w1_12_unresolved_subject",
+ "contract": "w1.v1",
+ "label_status": "reviewed",
+ "focus": "目录外指代用 unresolved，不编造 ID",
+ "input": {
+  "text": "他上周辞职了。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": {
+     "unresolved": "他"
+    },
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "他上周辞职了。",
+    "sentence": "他上周辞职了。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "上周",
+      "interp": {
+       "kind": "relative",
+       "unit": "week",
+       "offset": -1
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "subject 绑定为 self 或 e-laowang（没有任何依据）",
+  "编造不在目录中的 entity_id"
+ ],
+ "note": null
+}

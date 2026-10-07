@@ -1,0 +1,61 @@
+{
+  "id": "r1_01_lookup_residence",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "op": "lookup",
+          "unit": "location"
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"lives_in\",\"time\":null},\"op\":\"lookup\",\"unit\":\"location\"},\"relation\":\"lives_in\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"single\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:8a727b674ceb6f58ca8ea3c044b48038717d3fb96a2706b9424fb52d9c27e29c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 897,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 3539,
+          "output_tokens_details": {
+            "reasoning_tokens": 3470
+          },
+          "total_tokens": 4436
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 897,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3539,
+        "output_tokens_details": {
+          "reasoning_tokens": 3470
+        },
+        "total_tokens": 4436
+      }
+    }
+  ]
+}

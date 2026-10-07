@@ -1,0 +1,249 @@
+{
+  "id": "ce_new_forged_request_item",
+  "note": "由该题正确 recall.v3 夹具改写。",
+  "output": {
+    "clarification": null,
+    "completeness": {
+      "enrichment_gaps": 0,
+      "pending_related_sources": 0,
+      "pending_updates": 0,
+      "plan_complete": true,
+      "retrieval_truncated": false
+    },
+    "computed": {
+      "approximate": false,
+      "bound": "exact",
+      "exact_days": 92,
+      "items": [
+        {
+          "date": {
+            "anchor": "said_on",
+            "interp": {
+              "date": "2024-05-01",
+              "kind": "date"
+            },
+            "quote": {
+              "text": "today"
+            },
+            "role": "event"
+          },
+          "date_source": {
+            "kind": "stored",
+            "source_id": "src-350"
+          },
+          "event_group": null,
+          "evidence": [],
+          "id": "@request.at",
+          "quantity": null
+        },
+        {
+          "date": {
+            "anchor": "said_on",
+            "interp": {
+              "kind": "relative",
+              "offset": 0,
+              "unit": "day"
+            },
+            "quote": {
+              "text": "today"
+            },
+            "role": "event"
+          },
+          "date_source": {
+            "kind": "stored",
+            "source_id": "src-350"
+          },
+          "event_group": null,
+          "evidence": [
+            {
+              "quote": {
+                "text": "I went to a 3-day photography workshop in a nearby city today"
+              },
+              "source": {
+                "kind": "stored",
+                "source_id": "src-350"
+              }
+            }
+          ],
+          "id": "workshop",
+          "quantity": null
+        }
+      ],
+      "op": "elapsed",
+      "operands": [
+        "@request.at",
+        "workshop"
+      ],
+      "request_time": {
+        "at": 1706798460,
+        "local_date": "2024-02-01",
+        "precision": "day",
+        "tz_offset_seconds": 28800
+      },
+      "rounding": "complete_calendar_months",
+      "unit": "month",
+      "value": "3"
+    },
+    "conflicts": [],
+    "current_message": {
+      "enrichment": "not_stored",
+      "memory_requests": [],
+      "said_on": "2024-02-01",
+      "sequence": null,
+      "source_id": null,
+      "text": "How many months ago did I attend the photography workshop?"
+    },
+    "degraded_reasons": [],
+    "facts": [
+      {
+        "applies": "yes",
+        "conditions": [],
+        "current": "unknown",
+        "evidence": [
+          {
+            "quote": {
+              "text": "I went to a 3-day photography workshop in a nearby city today"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-350"
+            }
+          }
+        ],
+        "grade": "committed",
+        "polarity": "affirm",
+        "record_ids": [
+          5
+        ],
+        "statement": "2023-11-01（原文 today）参加了附近城市一个为期 3 天的摄影工作坊",
+        "strength": null,
+        "supersedes_record_ids": [],
+        "times": [
+          {
+            "anchor": "said_on",
+            "interp": {
+              "kind": "relative",
+              "offset": 0,
+              "unit": "day"
+            },
+            "quote": {
+              "text": "today"
+            },
+            "role": "event"
+          }
+        ],
+        "uncertainty": null,
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "history": [],
+    "raw": [],
+    "records": [
+      {
+        "candidate": {
+          "conditions": [],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "self"
+          },
+          "times": [
+            {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "today"
+              },
+              "role": "event"
+            }
+          ],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
+            },
+            "text": "I went to a 3-day photography workshop in a nearby city today where I learned about different techniques and styles of photography."
+          }
+        },
+        "ended": "not_ended",
+        "evidence": [
+          {
+            "quote": {
+              "text": "I went to a 3-day photography workshop in a nearby city today"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-350"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [],
+        "id": 5,
+        "open_relations": [],
+        "said_on": "2023-11-01",
+        "stored_status": "active",
+        "termination_reason": null,
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "request": {
+      "at": 1706798460,
+      "context": [],
+      "query": "How many months ago did I attend the photography workshop?",
+      "request_id": "op-5e1b",
+      "task_id": null
+    },
+    "semantic_judgment": "model",
+    "snapshot": {
+      "read_revision": 42,
+      "source_revision": 57
+    },
+    "status": "answered",
+    "version": "recall.v3"
+  },
+  "probe": "伪造 ID 为 @request.at 的计算条目",
+  "question": {
+    "case": "lme_5e1b23de",
+    "id": "q"
+  },
+  "side": "new",
+  "source_ids": {
+    "s1_t1": "src-311",
+    "s1_t4": "src-350"
+  },
+  "targets": [
+    {
+      "item": "computed.value",
+      "results": [
+        "auto_fail"
+      ]
+    },
+    {
+      "item": "computed.endpoints",
+      "results": [
+        "auto_fail"
+      ]
+    }
+  ]
+}

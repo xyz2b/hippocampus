@@ -1,0 +1,1732 @@
+{
+  "cases": [
+    {
+      "calls": [
+        {
+          "elapsed_ms": 3,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:event_s1",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 32446,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 3798,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 2099,
+            "output_tokens_details": {
+              "reasoning_tokens": 1965
+            },
+            "total_tokens": 5897
+          }
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:event_s1",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 2274,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W3",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2020,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 74,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2094
+          }
+        },
+        {
+          "elapsed_ms": 3,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:event_s2",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 20023,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 3822,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 1327,
+            "output_tokens_details": {
+              "reasoning_tokens": 1196
+            },
+            "total_tokens": 5149
+          }
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:event_s2",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 1985,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W3",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2041,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 74,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2115
+          }
+        },
+        {
+          "elapsed_ms": 1,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "recall:event_q5",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 2336,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "R1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2449,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 66,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2515
+          }
+        },
+        {
+          "elapsed_ms": 20689,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "recall:event_q5",
+          "origin": "live",
+          "reason": null,
+          "recorded_elapsed_ms": 20676,
+          "response_status": "completed",
+          "sends": 1,
+          "stage": "R4",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 4945,
+            "input_tokens_details": {
+              "cached_tokens": 4096
+            },
+            "output_tokens": 186,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 5131
+          }
+        }
+      ],
+      "case": "event_registration_fee",
+      "elapsed_ms": 21108,
+      "steps": [
+        {
+          "message": "event_s1",
+          "missing": null,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254431122838000-17",
+                "stage": "w1_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431122838000-17",
+                "duration_ms": 15,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431142586000-19",
+                "stage": "w3_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431142586000-19",
+                "duration_ms": 2,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "received": {
+            "enrichment": {
+              "candidates": [],
+              "memory_requests": [],
+              "retention_pending": false,
+              "status": "queued"
+            },
+            "source": {
+              "source_id": "81879-1791254431111594000-13",
+              "status": "stored"
+            }
+          },
+          "result": {
+            "Ok": {
+              "enrichment": {
+                "candidates": [
+                  {
+                    "index": 0,
+                    "memory_id": 1,
+                    "reasons": [],
+                    "status": "committed",
+                    "update": {
+                      "reasons": [],
+                      "status": "judged"
+                    }
+                  }
+                ],
+                "memory_requests": [],
+                "retention_pending": false,
+                "status": "committed"
+              },
+              "source": {
+                "source_id": "81879-1791254431111594000-13",
+                "status": "stored"
+              }
+            }
+          },
+          "step": "message"
+        },
+        {
+          "message": "event_s2",
+          "missing": null,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254431198477000-27",
+                "stage": "w1_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431198477000-27",
+                "duration_ms": 18,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431227027000-29",
+                "stage": "w3_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431227027000-29",
+                "duration_ms": 10,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "received": {
+            "enrichment": {
+              "candidates": [],
+              "memory_requests": [],
+              "retention_pending": false,
+              "status": "queued"
+            },
+            "source": {
+              "source_id": "81879-1791254431172923000-23",
+              "status": "stored"
+            }
+          },
+          "result": {
+            "Ok": {
+              "enrichment": {
+                "candidates": [
+                  {
+                    "index": 0,
+                    "memory_id": 2,
+                    "reasons": [],
+                    "status": "committed",
+                    "update": {
+                      "reasons": [],
+                      "status": "judged"
+                    }
+                  }
+                ],
+                "memory_requests": [],
+                "retention_pending": false,
+                "status": "committed"
+              },
+              "source": {
+                "source_id": "81879-1791254431172923000-23",
+                "status": "stored"
+              }
+            }
+          },
+          "step": "message"
+        },
+        {
+          "at": 1790568090,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254431309668000-33",
+                "stage": "r1_v1",
+                "timeout_ms": 180000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431309668000-33",
+                "duration_ms": 11,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "R1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "R1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431337915000-34",
+                "stage": "r4_v3",
+                "timeout_ms": 180000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431337915000-34",
+                "duration_ms": 20850,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "R4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "R4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "question": "event_q5",
+          "reason": null,
+          "result": {
+            "clarification": null,
+            "completeness": {
+              "enrichment_gaps": 0,
+              "pending_related_sources": 0,
+              "pending_updates": 0,
+              "plan_complete": true,
+              "retrieval_truncated": false
+            },
+            "computed": null,
+            "conflicts": [],
+            "current_message": {
+              "enrichment": "not_stored",
+              "memory_requests": [],
+              "said_on": "2026-09-28",
+              "sequence": null,
+              "source_id": null,
+              "text": "参加海盐折纸工作坊，报名要交多少钱？"
+            },
+            "degraded_reasons": [],
+            "facts": [
+              {
+                "applies": "yes",
+                "conditions": [],
+                "current": "yes",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "海盐折纸工作坊的报名费为36元。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431111594000-13"
+                    }
+                  }
+                ],
+                "grade": "committed",
+                "polarity": "affirm",
+                "record_ids": [
+                  1
+                ],
+                "statement": "海盐折纸工作坊的报名费为36元。",
+                "strength": null,
+                "supersedes_record_ids": [],
+                "times": [],
+                "uncertainty": null,
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "history": [],
+            "raw": [],
+            "records": [
+              {
+                "candidate": {
+                  "conditions": [],
+                  "kind": "assertion",
+                  "memory_type": "fact",
+                  "polarity": "affirm",
+                  "relation": "fact",
+                  "sentence": {
+                    "text": "海盐折纸工作坊的报名费为36元。"
+                  },
+                  "speech": "user_statement",
+                  "strength": null,
+                  "subject": {
+                    "entity_id": "event_haiyan_origami"
+                  },
+                  "times": [],
+                  "uncertainty": null,
+                  "value": {
+                    "kind": "text",
+                    "quote": {
+                      "text": "海盐折纸工作坊的报名费为36元。"
+                    },
+                    "text": "海盐折纸工作坊的报名费为36元。"
+                  }
+                },
+                "ended": "not_ended",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "海盐折纸工作坊的报名费为36元。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431111594000-13"
+                    }
+                  }
+                ],
+                "format": "current",
+                "grade": "committed",
+                "history": [],
+                "id": 1,
+                "open_relations": [],
+                "said_on": "2026-09-28",
+                "stored_status": "active",
+                "termination_reason": null,
+                "time_resolutions": [],
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "request": {
+              "at": 1790568090,
+              "context": [],
+              "query": "参加海盐折纸工作坊，报名要交多少钱？",
+              "request_id": "eval-event_registration_fee-event_q5",
+              "task_id": null
+            },
+            "semantic_judgment": "model",
+            "snapshot": {
+              "read_revision": 5,
+              "source_revision": 2
+            },
+            "status": "answered",
+            "version": "recall.v3"
+          },
+          "source_ids": {
+            "event_s1": "81879-1791254431111594000-13",
+            "event_s2": "81879-1791254431172923000-23"
+          },
+          "source_state": {
+            "event_s1": {
+              "deleted": false,
+              "linkable": true
+            },
+            "event_s2": {
+              "deleted": false,
+              "linkable": true
+            }
+          },
+          "state": "completed",
+          "step": "question"
+        }
+      ]
+    },
+    {
+      "calls": [
+        {
+          "elapsed_ms": 3,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:conflict_s1",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 21245,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 3746,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 1348,
+            "output_tokens_details": {
+              "reasoning_tokens": 1218
+            },
+            "total_tokens": 5094
+          }
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:conflict_s1",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 2663,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W3",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 1964,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 74,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2038
+          }
+        },
+        {
+          "elapsed_ms": 2,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:conflict_s2",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 153369,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 3846,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 9481,
+            "output_tokens_details": {
+              "reasoning_tokens": 9361
+            },
+            "total_tokens": 13327
+          }
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:conflict_s2",
+          "origin": "replay",
+          "reason": null,
+          "recorded_elapsed_ms": 2345,
+          "response_status": "completed",
+          "sends": 0,
+          "stage": "W3",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2054,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 48,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2102
+          }
+        },
+        {
+          "elapsed_ms": 50610,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "write:conflict_s2",
+          "origin": "live",
+          "reason": null,
+          "recorded_elapsed_ms": 50595,
+          "response_status": "completed",
+          "sends": 1,
+          "stage": "W4",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2863,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 2292,
+            "output_tokens_details": {
+              "reasoning_tokens": 2114
+            },
+            "total_tokens": 5155
+          }
+        },
+        {
+          "elapsed_ms": 1846,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "recall:conflict_q2",
+          "origin": "live",
+          "reason": null,
+          "recorded_elapsed_ms": 1835,
+          "response_status": "completed",
+          "sends": 1,
+          "stage": "R1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2393,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 65,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2458
+          }
+        },
+        {
+          "elapsed_ms": 5841,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "recall:conflict_q2",
+          "origin": "live",
+          "reason": null,
+          "recorded_elapsed_ms": 5829,
+          "response_status": "completed",
+          "sends": 1,
+          "stage": "R4",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 5036,
+            "input_tokens_details": {
+              "cached_tokens": 4096
+            },
+            "output_tokens": 403,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 5439
+          }
+        },
+        {
+          "elapsed_ms": 2213,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "recall:conflict_q3",
+          "origin": "live",
+          "reason": null,
+          "recorded_elapsed_ms": 2203,
+          "response_status": "completed",
+          "sends": 1,
+          "stage": "R1",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 2396,
+            "input_tokens_details": {
+              "cached_tokens": 2048
+            },
+            "output_tokens": 65,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2461
+          }
+        },
+        {
+          "elapsed_ms": 4215,
+          "error": null,
+          "http_status": 200,
+          "incomplete_details": null,
+          "operation": "recall:conflict_q3",
+          "origin": "live",
+          "reason": null,
+          "recorded_elapsed_ms": 4203,
+          "response_status": "completed",
+          "sends": 1,
+          "stage": "R4",
+          "transport_error": null,
+          "usage": {
+            "input_tokens": 5042,
+            "input_tokens_details": {
+              "cached_tokens": 4352
+            },
+            "output_tokens": 249,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 5291
+          }
+        }
+      ],
+      "case": "unresolved_conflict",
+      "elapsed_ms": 65858,
+      "steps": [
+        {
+          "message": "conflict_s1",
+          "missing": null,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254431120164000-16",
+                "stage": "w1_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431120164000-16",
+                "duration_ms": 17,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431142444000-18",
+                "stage": "w3_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431142444000-18",
+                "duration_ms": 3,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "received": {
+            "enrichment": {
+              "candidates": [],
+              "memory_requests": [],
+              "retention_pending": false,
+              "status": "queued"
+            },
+            "source": {
+              "source_id": "81879-1791254431111221000-11",
+              "status": "stored"
+            }
+          },
+          "result": {
+            "Ok": {
+              "enrichment": {
+                "candidates": [
+                  {
+                    "index": 0,
+                    "memory_id": 1,
+                    "reasons": [],
+                    "status": "committed",
+                    "update": {
+                      "reasons": [],
+                      "status": "judged"
+                    }
+                  }
+                ],
+                "memory_requests": [],
+                "retention_pending": false,
+                "status": "committed"
+              },
+              "source": {
+                "source_id": "81879-1791254431111221000-11",
+                "status": "stored"
+              }
+            }
+          },
+          "step": "message"
+        },
+        {
+          "message": "conflict_s2",
+          "missing": null,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254431197729000-26",
+                "stage": "w1_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431197729000-26",
+                "duration_ms": 8,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431215493000-28",
+                "stage": "w3_v1",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431215493000-28",
+                "duration_ms": 10,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W3",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431253276000-30",
+                "stage": "w4_v3",
+                "timeout_ms": 360000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254431253276000-30",
+                "duration_ms": 50736,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "W4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "W4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "received": {
+            "enrichment": {
+              "candidates": [],
+              "memory_requests": [],
+              "retention_pending": false,
+              "status": "queued"
+            },
+            "source": {
+              "source_id": "81879-1791254431172346000-22",
+              "status": "stored"
+            }
+          },
+          "result": {
+            "Ok": {
+              "enrichment": {
+                "candidates": [
+                  {
+                    "index": 0,
+                    "memory_id": null,
+                    "reasons": [
+                      "{\"Unprojectable\":{\"Polarity\":\"unknown\"}}"
+                    ],
+                    "status": "pending",
+                    "update": null
+                  }
+                ],
+                "memory_requests": [],
+                "retention_pending": false,
+                "status": "pending"
+              },
+              "source": {
+                "source_id": "81879-1791254431172346000-22",
+                "status": "stored"
+              }
+            }
+          },
+          "step": "message"
+        },
+        {
+          "at": 1790568090,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254482033335000-37",
+                "stage": "r1_v1",
+                "timeout_ms": 180000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254482033335000-37",
+                "duration_ms": 1989,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "R1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "R1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254484037170000-38",
+                "stage": "r4_v3",
+                "timeout_ms": 180000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254484037170000-38",
+                "duration_ms": 6021,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "R4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "R4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "question": "conflict_q2",
+          "reason": null,
+          "result": {
+            "clarification": null,
+            "completeness": {
+              "enrichment_gaps": 0,
+              "pending_related_sources": 1,
+              "pending_updates": 0,
+              "plan_complete": true,
+              "retrieval_truncated": false
+            },
+            "computed": null,
+            "conflicts": [],
+            "current_message": {
+              "enrichment": "not_stored",
+              "memory_requests": [],
+              "said_on": "2026-09-28",
+              "sequence": null,
+              "source_id": null,
+              "text": "栖风读书机的屏幕到底是几英寸？"
+            },
+            "degraded_reasons": [],
+            "facts": [
+              {
+                "applies": "yes",
+                "conditions": [],
+                "current": "yes",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431111221000-11"
+                    }
+                  }
+                ],
+                "grade": "committed",
+                "polarity": "affirm",
+                "record_ids": [
+                  1
+                ],
+                "statement": "栖风读书机的屏幕尺寸是7英寸。",
+                "strength": null,
+                "supersedes_record_ids": [],
+                "times": [],
+                "uncertainty": null,
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "applies": "yes",
+                "conditions": [],
+                "current": "yes",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431172346000-22"
+                    }
+                  }
+                ],
+                "grade": "uncommitted",
+                "polarity": "unknown",
+                "record_ids": [],
+                "statement": "栖风读书机的屏幕尺寸存在未解决的冲突：现有记录写7英寸，另一份资料写8英寸，尚未核实哪份正确。",
+                "strength": "unknown",
+                "supersedes_record_ids": [],
+                "times": [],
+                "uncertainty": {
+                  "quote": {
+                    "text": "我还没有核实哪份正确"
+                  },
+                  "resolved": false
+                },
+                "update": null
+              }
+            ],
+            "history": [],
+            "raw": [
+              {
+                "enrichment": "pending",
+                "grade": "uncommitted",
+                "memory_requests": [],
+                "quote": {
+                  "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                },
+                "said_on": "2026-09-28",
+                "sequence": 2,
+                "source_id": "81879-1791254431172346000-22"
+              }
+            ],
+            "records": [
+              {
+                "candidate": {
+                  "conditions": [],
+                  "kind": "assertion",
+                  "memory_type": "fact",
+                  "polarity": "affirm",
+                  "relation": "fact",
+                  "sentence": {
+                    "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  },
+                  "speech": "user_statement",
+                  "strength": null,
+                  "subject": {
+                    "entity_id": "device_qifeng_reader"
+                  },
+                  "times": [],
+                  "uncertainty": null,
+                  "value": {
+                    "kind": "text",
+                    "quote": {
+                      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                    },
+                    "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  }
+                },
+                "ended": "not_ended",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431111221000-11"
+                    }
+                  }
+                ],
+                "format": "current",
+                "grade": "committed",
+                "history": [],
+                "id": 1,
+                "open_relations": [],
+                "said_on": "2026-09-28",
+                "stored_status": "active",
+                "termination_reason": null,
+                "time_resolutions": [],
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "request": {
+              "at": 1790568090,
+              "context": [],
+              "query": "栖风读书机的屏幕到底是几英寸？",
+              "request_id": "eval-unresolved_conflict-conflict_q2",
+              "task_id": null
+            },
+            "semantic_judgment": "model",
+            "snapshot": {
+              "read_revision": 3,
+              "source_revision": 2
+            },
+            "status": "conflict",
+            "version": "recall.v3"
+          },
+          "source_ids": {
+            "conflict_s1": "81879-1791254431111221000-11",
+            "conflict_s2": "81879-1791254431172346000-22"
+          },
+          "source_state": {
+            "conflict_s1": {
+              "deleted": false,
+              "linkable": true
+            },
+            "conflict_s2": {
+              "deleted": false,
+              "linkable": true
+            }
+          },
+          "state": "completed",
+          "step": "question"
+        },
+        {
+          "at": 1790568090,
+          "model_diagnostics": [
+            {
+              "data": {
+                "call_id": "81879-1791254490095214000-41",
+                "stage": "r1_v1",
+                "timeout_ms": 180000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254490095214000-41",
+                "duration_ms": 2410,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "R1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "R1",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254492520429000-42",
+                "stage": "r4_v3",
+                "timeout_ms": 180000
+              },
+              "kind": "model_start"
+            },
+            {
+              "data": {
+                "call_id": "81879-1791254492520429000-42",
+                "duration_ms": 4420,
+                "error": null,
+                "local_outcome": "completed",
+                "parsing_status": "valid_json",
+                "status": "completed"
+              },
+              "kind": "model_end"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "decode",
+                "stage": "R4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            },
+            {
+              "data": {
+                "error": null,
+                "phase": "validate",
+                "stage": "R4",
+                "status": "completed"
+              },
+              "kind": "model_check"
+            }
+          ],
+          "question": "conflict_q3",
+          "reason": null,
+          "result": {
+            "clarification": null,
+            "completeness": {
+              "enrichment_gaps": 0,
+              "pending_related_sources": 1,
+              "pending_updates": 0,
+              "plan_complete": true,
+              "retrieval_truncated": false
+            },
+            "computed": null,
+            "conflicts": [],
+            "current_message": {
+              "enrichment": "not_stored",
+              "memory_requests": [],
+              "said_on": "2026-09-28",
+              "sequence": null,
+              "source_id": null,
+              "text": "能确定栖风读书机是7英寸屏幕吗？"
+            },
+            "degraded_reasons": [],
+            "facts": [
+              {
+                "applies": "yes",
+                "conditions": [],
+                "current": "yes",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431172346000-22"
+                    }
+                  }
+                ],
+                "grade": "uncommitted",
+                "polarity": "unknown",
+                "record_ids": [],
+                "statement": "栖风读书机屏幕尺寸存在未解决的冲突：现有记录写7英寸，另一份资料写8英寸，两份记录互相排斥，尚未核实哪份正确，7英寸和8英寸都不能当作最终结论。",
+                "strength": "unknown",
+                "supersedes_record_ids": [],
+                "times": [],
+                "uncertainty": null,
+                "update": null
+              }
+            ],
+            "history": [],
+            "raw": [
+              {
+                "enrichment": "pending",
+                "grade": "uncommitted",
+                "memory_requests": [],
+                "quote": {
+                  "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+                },
+                "said_on": "2026-09-28",
+                "sequence": 2,
+                "source_id": "81879-1791254431172346000-22"
+              }
+            ],
+            "records": [
+              {
+                "candidate": {
+                  "conditions": [],
+                  "kind": "assertion",
+                  "memory_type": "fact",
+                  "polarity": "affirm",
+                  "relation": "fact",
+                  "sentence": {
+                    "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  },
+                  "speech": "user_statement",
+                  "strength": null,
+                  "subject": {
+                    "entity_id": "device_qifeng_reader"
+                  },
+                  "times": [],
+                  "uncertainty": null,
+                  "value": {
+                    "kind": "text",
+                    "quote": {
+                      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                    },
+                    "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                  }
+                },
+                "ended": "not_ended",
+                "evidence": [
+                  {
+                    "quote": {
+                      "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                    },
+                    "source": {
+                      "kind": "stored",
+                      "source_id": "81879-1791254431111221000-11"
+                    }
+                  }
+                ],
+                "format": "current",
+                "grade": "committed",
+                "history": [],
+                "id": 1,
+                "open_relations": [],
+                "said_on": "2026-09-28",
+                "stored_status": "active",
+                "termination_reason": null,
+                "time_resolutions": [],
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "request": {
+              "at": 1790568090,
+              "context": [],
+              "query": "能确定栖风读书机是7英寸屏幕吗？",
+              "request_id": "eval-unresolved_conflict-conflict_q3",
+              "task_id": null
+            },
+            "semantic_judgment": "model",
+            "snapshot": {
+              "read_revision": 3,
+              "source_revision": 2
+            },
+            "status": "conflict",
+            "version": "recall.v3"
+          },
+          "source_ids": {
+            "conflict_s1": "81879-1791254431111221000-11",
+            "conflict_s2": "81879-1791254431172346000-22"
+          },
+          "source_state": {
+            "conflict_s1": {
+              "deleted": false,
+              "linkable": true
+            },
+            "conflict_s2": {
+              "deleted": false,
+              "linkable": true
+            }
+          },
+          "state": "completed",
+          "step": "question"
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "background_operation_limit": 3,
+    "domains": [],
+    "enrichment_mode": "deferred",
+    "fact_index_enabled": true,
+    "is_a": [
+      [
+        {
+          "Text": "latte"
+        },
+        {
+          "Text": "coffee"
+        }
+      ]
+    ],
+    "local_recall_budget": {
+      "candidate_k": 30,
+      "content_bytes": 24000,
+      "source_limit": 10
+    },
+    "memory_types": [
+      [
+        "code_example_language",
+        [
+          "Constraint",
+          "Preference"
+        ]
+      ]
+    ],
+    "predicates": [
+      {
+        "cardinality": "Single",
+        "predicate": "lives_in"
+      },
+      {
+        "cardinality": "Single",
+        "predicate": "works_at"
+      },
+      {
+        "cardinality": "Single",
+        "predicate": "job_title"
+      },
+      {
+        "cardinality": "Single",
+        "predicate": "response_language"
+      },
+      {
+        "cardinality": "Single",
+        "predicate": "code_example_language"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "response_style"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "likes"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "avoids"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "allergic_to"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "owns"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "uses"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "visited"
+      },
+      {
+        "cardinality": "Multiple",
+        "predicate": "fact"
+      }
+    ],
+    "recall_models": {
+      "r1": "ep-20261003130756-trhj6",
+      "r4": "ep-20261003130756-trhj6",
+      "r4_compute_reasoning_effort": "low",
+      "reasoning_effort": {
+        "r1": "minimal",
+        "r4": "minimal"
+      }
+    },
+    "recall_pipeline": "recall_v3",
+    "source_capture_enabled": true,
+    "utc_offset_seconds": 28800,
+    "value_kinds": [
+      [
+        "code_example_language",
+        [
+          "Text"
+        ]
+      ]
+    ],
+    "write_models": {
+      "reasoning_effort": {
+        "w1": "medium",
+        "w3": "minimal",
+        "w4": "medium"
+      },
+      "w1": "ep-20261003130756-trhj6",
+      "w3": "ep-20261003130756-trhj6",
+      "w4": "ep-20261003130756-trhj6"
+    },
+    "write_pipeline": "w4_runtime_v1"
+  },
+  "elapsed_ms": 65933,
+  "execution_mode": "live_or_mixed",
+  "jobs": 8,
+  "label": "ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low",
+  "pipeline": "v3",
+  "real_calls": 6,
+  "run_id": "81879-1791254431079802000-0",
+  "send_log": ".ai/log/af14-targeted/runs/81879-1791254431079802000-0.json"
+}

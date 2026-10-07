@@ -1,0 +1,91 @@
+{
+  "id": "w3_lme_10e09553_s2_t2",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 21881,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 2,
+            "episode_value": "unknown",
+            "problems": [
+              {
+                "aspect": "subject",
+                "quote": {
+                  "text": "they"
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          },
+          {
+            "candidate": 3,
+            "episode_value": "unknown",
+            "problems": [
+              {
+                "aspect": "time",
+                "quote": {
+                  "text": "7/22"
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          }
+        ]
+      },
+      "output_text": "{\n  \"coverage\": {\n    \"missing\": [],\n    \"status\": \"complete\"\n  },\n  \"request_reviews\": [],\n  \"reviews\": [\n    {\n    \"candidate\": 0,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [],\n    \"verdict\": \"supported\"\n  },\n    {\n    \"candidate\": 1,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [],\n    \"verdict\": \"supported\"\n  },\n    {\n    \"candidate\": 2,\n    \"episode_value\": \"unknown\",\n    \"problems\": [\n    {\n    \"aspect\": \"subject\",\n    \"quote\": {\n    \"text\": \"they\"\n  }\n  }\n  ],\n    \"verdict\": \"insufficient\"\n  },\n    {\n    \"candidate\": 3,\n    \"episode_value\": \"unknown\",\n    \"problems\": [\n    {\n    \"aspect\": \"time\",\n    \"quote\": {\n    \"text\": \"7/22\"\n  }\n  }\n  ],\n    \"verdict\": \"insufficient\"\n  }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:5646719a30f21f02092301cf72aa97707590fbf6e62bbe0cfe75533e894b8287",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3326,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 237,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3563
+        }
+      },
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 3326,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 237,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3563
+      }
+    }
+  ]
+}

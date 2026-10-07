@@ -902,8 +902,28 @@
       "expect": {
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "annotator_note": "原文每天 30 分钟练的是吉他，不是小提琴。",
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "30 minutes"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "q",
       "query": "How much time do I dedicate to practicing violin every day?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "unspecified"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

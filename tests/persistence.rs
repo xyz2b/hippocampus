@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use std::{
     path::PathBuf,
@@ -64,8 +65,8 @@ fn insert(store: &mut SqliteMemoryStore, candidate: CandidateMemory) -> MemoryId
     store
         .transaction(|state| {
             state.with_engine(registry(), |engine, _| {
-                match engine.ingest(common::grounded(candidate))? {
-                    IngestOutcome::Applied {
+                match engine.seed_fixture(common::grounded(candidate))? {
+                    FixtureOutcome::Applied {
                         memory_id: Some(id),
                         ..
                     } => Ok(id),
@@ -82,17 +83,7 @@ fn memory_list_is_a_management_directory_not_a_recall_fallback() {
     let saved = insert(&mut db.open("alice"), candidate("E2", "一台机器"));
     let mut pending = candidate("pending", "私密值");
     pending.subject = CandidateSubject::Unresolved("孩子".into());
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                assert!(matches!(
-                    engine.ingest_or_stage(common::grounded(pending), entities)?,
-                    CandidateIngestOutcome::Pending { .. }
-                ));
-                Ok(())
-            })
-        })
-        .unwrap();
+    common::stage_fixture(&db.open("alice"), pending);
 
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     let listing = service
@@ -136,29 +127,30 @@ fn restart_preserves_versions_evidence_ids_and_retrieval_counters() {
     assert_eq!(current.evidence[0].quote, "我住在北京");
     store
         .transaction(|state| {
-            state.with_engine(registry(), |engine, _| {
-                let runtime = RuntimeContext {
-                    owner_id: UserId::from("alice"),
-                    domain: None,
-                    entities: vec![],
-                    task_id: None,
-                    conditions: vec![],
-                    predicates: vec![],
-                    targets: vec![],
-                    temporal_intent: TemporalIntent::Current,
-                    temporal_filter: None,
-                    at: Timestamp(101),
-                    limit: 20,
-                };
-                let result =
-                    DefaultMemoryRetriever::new(&mut engine.repository, &engine.predicates)
-                        .retrieve(&runtime)?;
-                assert_eq!(result.facts.len(), 1);
-                assert_eq!(result.facts[0].id, second);
-                Ok(())
-            })
+            let mut memory = state.repository.get(second)?.unwrap();
+            memory.retrieval_count = 1;
+            memory.last_retrieved_at = Some(Timestamp(101));
+            state.repository.update(memory)?;
+            Ok(())
         })
         .unwrap();
+    let mut service = ChatMemoryService::new(store, ChatConfig::default()).unwrap();
+    let recalled = service
+        .call(
+            "memory_recall",
+            json!({"query":"我住在哪？", "request_id":"legacy-reopen", "offline":true, "at":101}),
+            || false,
+        )
+        .unwrap();
+    assert!(
+        recalled["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|r| r["id"] == second.0),
+        "{recalled}"
+    );
+    let store = db.open("alice");
     drop(store);
     assert_eq!(
         db.open("alice")
@@ -200,29 +192,49 @@ fn bootstrap_uses_local_store_and_filters_unrelated_scoped_and_expired_memories(
             state.with_engine(registry, |engine, _| {
                 for value in [language, style, scoped, expired, candidate("home", "上海")] {
                     assert!(matches!(
-                        engine.ingest(common::grounded(value))?,
-                        IngestOutcome::Applied { .. }
+                        engine.seed_fixture(common::grounded(value))?,
+                        FixtureOutcome::Applied { .. }
                     ));
                 }
                 Ok(())
             })
         })
         .unwrap();
-    let mut service = ChatMemoryService::new(store, ChatConfig::default()).unwrap();
+    let mut service = ChatMemoryService::new(
+        store,
+        ChatConfig {
+            ..Default::default()
+        },
+    )
+    .unwrap();
     let result = service
-        .call(
+        .call_with_global_context(
             "memory_recall",
-            json!({"query":"全局回答要求", "bootstrap":true}),
+            json!({"query":"全局回答要求", "bootstrap":true, "request_id":"bootstrap"}),
             || false,
         )
+        .structured_content
         .unwrap();
-    assert_eq!(result["result"]["mandatory"].as_array().unwrap().len(), 1);
-    assert_eq!(result["result"]["preferences"].as_array().unwrap().len(), 1);
     assert_eq!(
-        result["result"]["preferences"][0]["value"],
+        result["global_context"]["result"]["mandatory"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        result["global_context"]["result"]["preferences"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        result["global_context"]["result"]["preferences"][0]["value"],
         json!({"Text":"先给结论"})
     );
-    assert_eq!(result["result"]["facts"], json!([]));
+    assert_eq!(result["global_context"]["result"]["facts"], json!([]));
+    service.call("memory_list", json!({}), || false).unwrap();
     assert!(
         db.open("alice")
             .read()
@@ -248,7 +260,7 @@ fn failed_batch_rolls_back_supersession_and_allocated_ids() {
     };
     let result: PersistenceResult<()> = store.transaction(|state| {
         state.with_engine(registry(), |engine, _| {
-            engine.ingest(common::grounded(replacement))?;
+            engine.seed_fixture(common::grounded(replacement))?;
             // A later candidate or storage operation fails after ending the old version and inserting the new one.
             Err("injected failure before commit".into())
         })
@@ -325,51 +337,41 @@ fn concurrent_connections_serialize_updates_and_isolate_owners() {
 }
 
 #[test]
-fn pending_entities_and_clarification_receipts_survive_restart() {
+fn pending_entities_survive_restart_and_clarification_is_unsupported() {
     let db = TestDb::new();
     let mut candidate = candidate("one", "上海");
     candidate.subject = CandidateSubject::Unresolved("孩子".into());
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                assert!(matches!(
-                    engine.ingest_or_stage(common::grounded(candidate), entities)?,
-                    CandidateIngestOutcome::Pending { .. }
-                ));
-                Ok(())
-            })
-        })
-        .unwrap();
+    common::stage_fixture(&db.open("alice"), candidate);
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     service.call("memory_entity_upsert", json!({"id":"child", "canonical_name":"小明", "aliases":["孩子"], "entity_type":"Person"}), || false).unwrap();
     drop(service);
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     let request = json!({"staged_id":1,"entity_reference":"小明", "text":"孩子指的是小明", "session_id":"chat","turn_id":"two"});
-    let first = service
-        .call("memory_clarify", request.clone(), || false)
-        .unwrap();
+    let before = serde_json::to_value(db.open("alice").read().unwrap()).unwrap();
     assert!(
-        first["outcome"]["Ingested"]["Applied"].is_object(),
-        "{first}"
+        service
+            .call("memory_clarify", request.clone(), || false)
+            .unwrap_err()
+            .to_string()
+            .contains("no longer supported")
     );
     drop(service);
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
-    let replay = service
-        .call("memory_clarify", request.clone(), || false)
-        .unwrap();
-    assert_eq!(replay["replayed"], true);
-    let mut changed = request;
-    changed["text"] = json!("另一个孩子");
-    assert!(service.call("memory_clarify", changed, || false).is_err());
+    assert!(service.call("memory_clarify", request, || false).is_err());
     let state = db.open("alice").read().unwrap();
-    assert!(state.staging.is_empty());
-    let memories = state
-        .repository
-        .list_by_owner(&UserId::from("alice"))
+    assert_eq!(serde_json::to_value(&state).unwrap(), before);
+    assert_eq!(state.staging.list_by_owner(&UserId::from("alice")).len(), 1);
+    assert!(
+        state
+            .repository
+            .list_by_owner(&UserId::from("alice"))
+            .unwrap()
+            .is_empty()
+    );
+    service
+        .call("memory_forget", json!({"staged_id":1}), || false)
         .unwrap();
-    assert_eq!(memories.len(), 1);
-    assert_eq!(memories[0].subject_id, EntityId::from("child"));
-    assert_eq!(memories[0].evidence.len(), 2);
+    assert!(db.open("alice").read().unwrap().staging.is_empty());
 }
 
 #[test]
@@ -377,14 +379,7 @@ fn only_trusted_database_load_restores_matching_pending_source_support() {
     let db = TestDb::new();
     let mut pending = candidate("one", "上海");
     pending.subject = CandidateSubject::Unresolved("孩子".into());
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                engine.ingest_or_stage(common::grounded(pending), entities)?;
-                Ok(())
-            })
-        })
-        .unwrap();
+    common::stage_fixture(&db.open("alice"), pending);
     let restored = db.open("alice").read().unwrap();
     assert!(
         restored
@@ -450,26 +445,14 @@ fn only_trusted_database_load_restores_matching_pending_source_support() {
 }
 
 #[test]
-fn one_clarification_turn_can_resolve_multiple_pending_facts() {
+fn unsupported_clarification_preserves_each_pending_fact_for_deletion() {
     let db = TestDb::new();
-    db.open("alice")
-        .transaction(|state| {
-            state.with_engine(registry(), |engine, entities| {
-                for (turn, predicate, value) in
-                    [("one", "lives_in", "上海"), ("two", "owns", "书包")]
-                {
-                    let mut pending = candidate(turn, value);
-                    pending.predicate = Predicate::from(predicate);
-                    pending.subject = CandidateSubject::Unresolved("孩子".into());
-                    assert!(matches!(
-                        engine.ingest_or_stage(common::grounded(pending), entities)?,
-                        CandidateIngestOutcome::Pending { .. }
-                    ));
-                }
-                Ok(())
-            })
-        })
-        .unwrap();
+    for (turn, predicate, value) in [("one", "lives_in", "上海"), ("two", "owns", "书包")] {
+        let mut pending = candidate(turn, value);
+        pending.predicate = Predicate::from(predicate);
+        pending.subject = CandidateSubject::Unresolved("孩子".into());
+        common::stage_fixture(&db.open("alice"), pending);
+    }
     let mut service = ChatMemoryService::new(db.open("alice"), ChatConfig::default()).unwrap();
     service
         .call(
@@ -478,24 +461,29 @@ fn one_clarification_turn_can_resolve_multiple_pending_facts() {
             || false,
         )
         .unwrap();
+    let before = serde_json::to_value(db.open("alice").read().unwrap()).unwrap();
     for id in [1, 2] {
-        let result = service.call("memory_clarify", json!({"staged_id":id,"entity_reference":"小明", "text":"孩子指的是小明", "session_id":"chat","turn_id":"three"}), || false).unwrap();
-        assert!(
-            result["outcome"]["Ingested"]["Applied"].is_object(),
-            "{result}"
-        );
+        assert!(service.call("memory_clarify", json!({"staged_id":id,"entity_reference":"小明", "text":"孩子指的是小明", "session_id":"chat","turn_id":"three"}), || false).unwrap_err().to_string().contains("no longer supported"));
     }
-    drop(service);
-    let state = db.open("alice").read().unwrap();
-    assert!(state.staging.is_empty());
     assert_eq!(
-        state
-            .repository
-            .list_by_owner(&UserId::from("alice"))
-            .unwrap()
-            .len(),
-        2
+        serde_json::to_value(db.open("alice").read().unwrap()).unwrap(),
+        before
     );
+    service
+        .call("memory_forget", json!({"staged_id":1}), || false)
+        .unwrap();
+    assert!(
+        db.open("alice")
+            .read()
+            .unwrap()
+            .staging
+            .get(StagedCandidateId(2))
+            .is_some()
+    );
+    service
+        .call("memory_forget", json!({"staged_id":2}), || false)
+        .unwrap();
+    assert!(db.open("alice").read().unwrap().staging.is_empty());
 }
 
 #[test]

@@ -1,0 +1,423 @@
+"""Absolute expect_common scoring of eval.e2e.v3; 0517000 is reference only.
+
+python3 tests/eval/scoring/compare.py --run <run.json> --output <report-prefix>
+Absent recordings are unavailable comparisons, not model failures or passes.
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import copy
+import hashlib
+import json
+import pathlib
+
+import baseline
+import trial
+from adapters import adapt_recall, question_input
+from ledger import load_ledger
+from scoring import MISSING
+
+CLOCK = 1_790_568_000
+STAGES = ("W1", "W3", "W4", "R1", "R4")
+
+
+def load_send_log(path):
+    """Recover counts without run.json completion; recordings close the final fsync window."""
+    log = trial._load(path)
+    if log.get("version") != "eval.e2e.sends@1":
+        raise ValueError("unknown send log version")
+    for attempt in log["attempts"]:
+        if attempt["state"] != "started":
+            continue
+        recording_path = path.parent.parent / (attempt["case"] + ".json")
+        try:
+            doc = trial._load(recording_path)
+            row = doc["operations"][attempt["operation"]][attempt["position"]]
+            if (row.get("send_run") == log["run_id"] and row.get("send_index") == attempt["id"]
+                    and row.get("request") == attempt["request"]):
+                attempt["state"] = "recorded"
+        except (OSError, ValueError, KeyError, IndexError, TypeError):
+            pass
+    return log
+
+
+def trusted_question(question):
+    q = copy.deepcopy(question)
+    if q.get("at") is None:
+        q["at"] = CLOCK + 60 * (q["after"] - 1) + 30
+    return q
+
+
+def common_row(case, q, result):
+    """Exactly baseline.py's common counters, without inventing a new original score."""
+    return {
+        "question": f"{case['id']}/{q['id']}", "query": q["query"],
+        "category": baseline.category(q["expect_common"]),
+        "common": {k: result[k] for k in ("denominator", "auto_pass", "final_pass",
+                   "question_auto_only_pass", "question_final_pass")},
+        "counts": dict(collections.Counter(i["result"] for i in result["items"])),
+        "pending_review": [i["id"] for i in result["items"] + result["extras"]
+                           if i["final"] == "pending_review"],
+        "failed": [i["id"] for i in result["items"] + result["extras"] if i["final"] == "fail"],
+        "gaps": [{"item": i["id"], "flag": i.get("flag")} for i in result["items"] if i["result"] == MISSING],
+        "extras": [e["id"] for e in result["extras"]], "blockers": result["blockers"],
+    }
+
+
+def absolute_state(scored):
+    if scored["question_final_pass"]:
+        return "pass"
+    finals = [i["final"] for i in scored["items"] + scored["extras"]]
+    if any(s in ("fail", "missing") for s in finals):
+        return "fail"
+    if "pending_review" in finals:
+        return "pending_review"
+    return "fail"
+
+
+def local_calls(case):
+    """Actual caller outcomes, independent of late proxy responses and replay speed."""
+    outcomes = {}
+    for step in case.get("steps", []):
+        if not step.get("model_diagnostics"):
+            continue
+        operation = step.get("operation") or ("write:" + step["message"] if step["step"] == "message"
+                     else "recall:" + step["question"])
+        calls, latest = {}, {}
+        for event in step.get("model_diagnostics", []):
+            data = event["data"]
+            if event["kind"] == "model_start":
+                stage = data["stage"].split("_", 1)[0].upper()
+                row = {"stage": stage, "local_outcome": "unknown",
+                       "timeout_ms": data.get("timeout_ms"), "checks": []}
+                calls[data["call_id"]] = row
+                latest[stage] = row
+                outcomes.setdefault((operation, stage), []).append(row)
+            elif event["kind"] == "model_end" and data["call_id"] in calls:
+                calls[data["call_id"]].update(local_outcome=data.get("local_outcome", "unknown"),
+                    local_error=data.get("error"), local_elapsed_ms=data.get("duration_ms"))
+            elif event["kind"] == "model_check" and data["stage"] in latest:
+                row = latest[data["stage"]]
+                row["checks"].append(data)
+                if data["status"] == "failed" and row["local_outcome"] == "completed":
+                    row.update(local_outcome=("decode_failed" if data["phase"] == "decode"
+                                              else "validation_failed"),
+                               local_error=data.get("error"), phase=data["phase"])
+    return outcomes
+
+
+def failure_category(call):
+    if call.get("origin") == "not_recorded":
+        return "not_recorded"
+    if ((call.get("http_status") or 0) >= 400 or call.get("transport_error")
+            or call.get("error") or call.get("local_outcome") == "timeout"):
+        return "call_failure"
+    if call.get("local_outcome") in ("decode_failed", "validation_failed", "output_limit"):
+        return "model_invalid_output"
+    if call.get("response_status") == "incomplete":
+        return "incomplete_response"
+    return None
+
+
+def execution(document):
+    cases = []
+    for case in document.get("cases", []):
+        stages = {s: {"requests": 0, "sends": 0, "replays": 0, "not_recorded": 0,
+                      "elapsed_ms": 0, "recorded_elapsed_ms": None, "usage": {}, "diagnostics": []}
+                  for s in STAGES}
+        local = local_calls(case)
+        call_rows = []
+        for recorded in case.get("calls", []):
+            call = dict(recorded)
+            matches = local.get((call["operation"], call["stage"]), [])
+            call.update(matches.pop(0) if matches else {"local_outcome": "unknown"})
+            if call["origin"] == "not_recorded":
+                call["local_outcome"] = "not_recorded"
+            call["failure_category"] = failure_category(call)
+            call_rows.append(call)
+            s = stages[call["stage"]]
+            s["requests"] += 1
+            s["sends"] += call["sends"]
+            s["replays"] += call["origin"] == "replay"
+            s["not_recorded"] += call["origin"] == "not_recorded"
+            s["elapsed_ms"] += call["elapsed_ms"]
+            if call.get("recorded_elapsed_ms") is not None:
+                s["recorded_elapsed_ms"] = (s["recorded_elapsed_ms"] or 0) + call["recorded_elapsed_ms"]
+            for token in ("input_tokens", "output_tokens"):
+                value = (call.get("usage") or {}).get(token)
+                if value is not None:
+                    s["usage"][token] = s["usage"].get(token, 0) + value
+            if (call.get("reason") or call.get("transport_error") or call.get("error")
+                    or (call.get("http_status") or 0) >= 400
+                    or call.get("response_status") != "completed"
+                    or call["local_outcome"] not in ("completed", "unknown")):
+                s["diagnostics"].append({k: call.get(k) for k in
+                    ("operation", "origin", "http_status", "response_status", "incomplete_details",
+                     "transport_error", "error", "reason", "usage", "local_outcome", "local_error", "phase", "failure_category")})
+        runtime = []
+        for step in case.get("steps", []):
+            result = step.get("result") or {}
+            body = result.get("Ok", result)
+            status = (body.get("enrichment") or {}).get("status")
+            if result.get("Err") or body.get("error") or body.get("degraded_reasons") or status in (
+                    "failed", "budget_exhausted", "pending", "needs_rejudge", "coverage_gaps"):
+                runtime.append({"step": step["step"], "id": step.get("message") or step.get("question"),
+                                "error": result.get("Err") or body.get("error"),
+                                "enrichment": body.get("enrichment"),
+                                "degraded_reasons": body.get("degraded_reasons")})
+        cases.append({"case": case["case"], "elapsed_ms": case.get("elapsed_ms"),
+                      "stages": stages, "calls": call_rows, "runtime_diagnostics": runtime})
+    log = document.get("send_accounting")
+    attempts = log["attempts"] if log else []
+    origins = {call["origin"] for case in cases for call in case["calls"]}
+    mode = document.get("execution_mode") or ("replay" if origins and origins <= {"replay", "not_recorded"}
+                                               else "live_or_mixed" if "live" in origins else "unknown")
+    failures = collections.Counter(c["failure_category"] for case in cases for c in case["calls"] if c["failure_category"])
+    return {"mode": mode, "failure_counts": dict(failures), "jobs": document.get("jobs"), "elapsed_ms": document.get("elapsed_ms"),
+            "real_calls": len(attempts) if log else document.get("real_calls", 0),
+            "recorded_calls": sum(a["state"] == "recorded" for a in attempts) if log else None,
+            "uncompleted_calls": [a for a in attempts if a["state"] != "recorded"],
+            "send_log_available": log is not None,
+            "send_log": document.get("send_log"),
+            "proxy_errors": log.get("proxy_errors", []) if log else [], "cases": cases}
+
+
+def reference(questions, ledger):
+    """Reference failures cannot prevent reporting the new path's absolute score."""
+    try:
+        rows = baseline.run(ledger)
+        by_id = {r["question"]: r for r in rows}
+        comparisons, regressions = [], []
+        for row in questions:
+            ref = {"question": row["question"], "old": by_id[row["question"]],
+                   "transitions": [], "regressions": [], "incomplete": []}
+            if row["state"] == "completed":
+                case, q, meta, expect, view = trial.run_old(*row["question"].split("/"))
+                old = trial.evaluate("old", case, q, meta, expect, view, ledger)
+                transitions, regs, incomplete = trial.transitions(old, row["scored"], expect["status"])
+                ref.update(transitions=transitions, regressions=regs, incomplete=incomplete)
+                regressions.extend({"question": row["question"], **r} for r in regs)
+            comparisons.append(ref)
+        return {"baseline": "0517000", "state": "available", "summary": baseline.summarize(rows),
+                "questions": comparisons, "regressions": regressions, "acceptance_gate": False}
+    except (OSError, KeyError, ValueError, TypeError) as error:
+        return {"baseline": "0517000", "state": "unavailable", "reason": str(error), "acceptance_gate": False}
+
+
+def merge_runs(base, targeted, questions, base_name="AC2", targeted_name="定点运行"):
+    """Override selected questions even when missing; never disguise AC2 output as a new run."""
+    selected = set(questions)
+    valid = {f"{c['id']}/{q['id']}" for p in trial.CASES.glob("*.json")
+             for c in [trial._load(p)] for q in c["questions"]}
+    if not selected or not selected <= valid:
+        raise ValueError("合并题目集合为空或含未知题目")
+    def question_steps(document):
+        result = {}
+        for case in document.get("cases", []):
+            for step in case.get("steps", []):
+                if step["step"] != "question":
+                    continue
+                key = f"{case['case']}/{step['question']}"
+                if key in result or key not in valid:
+                    raise ValueError("运行包含重复或未知题目：" + key)
+                result[key] = step
+        return result
+    old, new = question_steps(base), question_steps(targeted)
+    if not new.keys() <= selected:
+        raise ValueError("定点运行包含选择范围之外的题目")
+    merged = copy.deepcopy(targeted)
+    merged["cases"] = []
+    merged["result_sources"] = {}
+    fresh_cases = {c["case"]: c for c in targeted.get("cases", [])}
+    for path in sorted(trial.CASES.glob("*.json")):
+        case = trial._load(path)
+        fresh = fresh_cases.get(case["id"], {})
+        steps = copy.deepcopy([s for s in fresh.get("steps", []) if s["step"] == "message"])
+        for question in case["questions"]:
+            key = f"{case['id']}/{question['id']}"
+            chosen = key in selected
+            step = (new if chosen else old).get(key)
+            if step is None:
+                step = {"step": "question", "question": question["id"], "state": "not_recorded",
+                        "reason": "定点运行未产出该题" if chosen else "AC2未产出该题"}
+            steps.append(copy.deepcopy(step))
+            merged["result_sources"][key] = {"kind": "targeted" if chosen else "ac2",
+                                           "run": targeted_name if chosen else base_name}
+        merged["cases"].append(dict(copy.deepcopy(fresh), case=case["id"], steps=steps))
+    merged["base_reference"] = {"run": base_name, "real_calls": base.get("real_calls"),
+                                "note": "AC2历史结果；不加入本轮发送计数"}
+    return merged
+
+
+def run(document=None):
+    document = document or {"cases": []}
+    ledger = load_ledger(trial.LEDGER)
+    steps = {(c["case"], s["question"]): s for c in document["cases"]
+             for s in c["steps"] if s["step"] == "question"}
+    questions, new_rows = [], []
+    for path in sorted(trial.CASES.glob("*.json")):
+        case = trial._load(path)
+        for question in case["questions"]:
+            name = f"{case['id']}/{question['id']}"
+            row = {"question": name, "query": question["query"], "category": baseline.category(question["expect_common"]),
+                   "state": "not_recorded", "absolute": "not_recorded", "reason": "未录制", "new": None}
+            if document.get("result_sources"):
+                row["result_source"] = document["result_sources"][name]
+            step = steps.get((case["id"], question["id"]))
+            if step and step["state"] == "completed":
+                q = trusted_question(question)
+                # Exported time cannot redefine the trusted question or weaken binding checks.
+                if step.get("at") != q["at"]:
+                    raise ValueError(f"{name}: exported trusted time differs")
+                raw = step["result"]
+                texts = trial.source_texts(case, q)
+                view = adapt_recall(question_input(case, q), q["query_meta"], raw,
+                                    step["source_ids"], source_texts=texts, source_state=step.get("source_state"))
+                new = trial.evaluate("new", case, q, q["query_meta"], q["expect_common"], view, ledger)
+                row.update(state="completed", reason=None, new=common_row(case, q, new),
+                           new_view=view, scored=new, absolute=absolute_state(new))
+                new_rows.append(row["new"])
+            elif step:
+                row["reason"] = step.get("reason") or "未录制"
+            questions.append(row)
+    # Reuse baseline's summary so counts/denominators/gaps cannot drift between implementations.
+    # Its original-score fields only describe legacy outputs and are excluded for the new side.
+    summary_input = [dict(r, original={"dimension": "recall", "pass": False}) for r in new_rows]
+    new_summary = baseline.summarize(summary_input)
+    for key in ("original_recall", "original_refusal", "divergent"):
+        new_summary.pop(key, None)
+    for category in new_summary["by_category"].values():
+        category.pop("original_pass", None)
+    states = ("pass", "fail", "pending_review", "not_recorded")
+    absolute = {s: sum(r["absolute"] == s for r in questions) for s in states}
+    absolute["questions"] = len(questions)
+    by_case = {}
+    for row in questions:
+        case = row["question"].split("/")[0]
+        by_case.setdefault(case, {s: 0 for s in states})[row["absolute"]] += 1
+    absolute["by_case"] = by_case
+    return {"scoring_version": "common.v1", "label": document.get("label"),
+            "absolute_summary": absolute, "new_summary": new_summary,
+            "not_recorded": sum(r["state"] == "not_recorded" for r in questions),
+            "questions": questions, "execution": execution(document), "reference": reference(questions, ledger),
+            "result_sources": document.get("result_sources"), "base_reference": document.get("base_reference"),
+            "coverage_note": "仅问答共同评分；27 个 LongMemEval 用例缺逐条入库标注，不能据此评价漏提或错误更新。未录制不计通过、不判模型失败；语义待复核不计最终通过。"}
+
+
+def render(report):
+    new, absolute = report["new_summary"], report["absolute_summary"]
+    lines = ["# 新路径端到端绝对评分（expect_common / common.v1）" + ("【回放】" if report["execution"]["mode"] == "replay" else ""), "", f"配置：{report['label'] or '未录制'}。", "",
+             f"通过 {absolute['pass']} / 失败 {absolute['fail']} / 待复核 {absolute['pending_review']} / 未录制 {absolute['not_recorded']}（共 {absolute['questions']} 题）。", "",
+             f"已评分 {new['questions']} / {len(report['questions'])}；未录制 {report['not_recorded']}。", "",
+             "已知失败或缺失必需项归为失败；没有已知失败但仍需语义确认的题归为待复核。未录制不计通过，待复核不计最终通过。", "",
+             f"共同判分项：{json.dumps(new['common'], ensure_ascii=False)}", "",
+             report["coverage_note"], "", "## 按用例", "",
+             "| 用例 | 通过 | 失败 | 待复核 | 未录制 |", "|---|---|---|---|---|"]
+    for case, scores in absolute["by_case"].items():
+        lines.append(f"| {case} | {scores['pass']} | {scores['fail']} | {scores['pending_review']} | {scores['not_recorded']} |")
+    merged = bool(report.get("result_sources"))
+    if merged:
+        origins = collections.Counter(v["kind"] for v in report["result_sources"].values())
+        lines += ["", f"定点合并：{origins['targeted']}题来自定点运行（缺结果仍记未录制），{origins['ac2']}题沿用AC2。不是63题全量重测；下方发送计数仅属本轮。"]
+    lines += ["", "## 逐题", "", "| 题 | " + ("结果来源 | " if merged else "") + "绝对结果 | 自动/最终/分母 | 缺口/待复核/判错 |",
+              "|---|" + ("---|" if merged else "") + "---|---|---|"]
+    for row in report["questions"]:
+        new = row["new"]["common"] if row["new"] else None
+        count = f"{new['auto_pass']}/{new['final_pass']}/{new['denominator']}" if new else "未录制"
+        detail = row["reason"] if not new else f"缺口 {len(row['new']['gaps'])}；待复核 {len(row['new']['pending_review'])}；判错 {'、'.join(row['new']['failed'])}"
+        source = (f"{row['result_source']['kind']}：{row['result_source']['run']} | " if merged else "")
+        lines.append(f"| {row['question']} | {source}{row['absolute']} | {count} | {detail} |")
+    metrics = report["execution"]
+    lines += ["", f"调用失败（非模型）：{metrics['failure_counts'].get('call_failure', 0)}；模型解码/核验/输出上限失败：{metrics['failure_counts'].get('model_invalid_output', 0)}；未完成响应：{metrics['failure_counts'].get('incomplete_response', 0)}。"]
+    lines += ["", "## 调用与耗时", "", f"EVAL_JOBS={metrics['jobs']}；本轮真实发送 {metrics['real_calls']}；批次墙钟 {metrics['elapsed_ms']} ms。", "",
+              (f"已落盘调用 {metrics['recorded_calls']}；未完成或未落盘 {len(metrics['uncompleted_calls'])}。发送日志：{metrics['send_log']}。"
+               if metrics["send_log_available"] else "没有发送日志；未完成调用数未知。"), "",
+              "发送前持久化计数；中断时的未完成项保守计入，可能在途或已计费，不能证明远端收到或具体账单。", "",
+              "当前耗时为本轮处理时间；历史录制耗时在回放时仍保留，两者分列。回放 usage 是历史账单，不是本轮费用。", ""]
+    if metrics["mode"] == "replay":
+        lines += ["回放：分数只表示现有录制经当前代码的结果；不是线上成功率。当前处理耗时不表示模型在线延迟。", ""]
+    lines += ["逐次诊断分开远端响应与本地接收/解码/核验；旧 live 数据未采集本地诊断时记 unknown，不从远端 completed 推定本地成功。", ""]
+    for attempt in metrics["uncompleted_calls"]:
+        lines.append(f"- 未完成/未落盘：{attempt['case']} / {attempt['operation']} / {attempt['stage']} / 发送编号 {attempt['id']}")
+    for diagnostic in metrics["proxy_errors"]:
+        lines.append(f"- 代理诊断：{json.dumps(diagnostic, ensure_ascii=False)}")
+    lines += ["", "| 用例 | 用例墙钟 ms | 阶段 | 请求/发送/回放/未录制 | 当前耗时 ms | 历史录制耗时 ms | usage 输入/输出 | 失败诊断 |", "|---|---|---|---|---|---|---|---|"]
+    for case in metrics["cases"]:
+        for stage, stats in case["stages"].items():
+            usage = stats["usage"]
+            diagnostic = json.dumps(stats['diagnostics'], ensure_ascii=False).replace('|', '\\|')
+            lines.append(f"| {case['case']} | {case['elapsed_ms']} | {stage} | {stats['requests']}/{stats['sends']}/{stats['replays']}/{stats['not_recorded']} | {stats['elapsed_ms']} | {stats['recorded_elapsed_ms']} | {usage.get('input_tokens', '未知')}/{usage.get('output_tokens', '未知')} | {diagnostic} |")
+    for case in metrics["cases"]:
+        for diagnostic in case["runtime_diagnostics"]:
+            lines.append(f"\n{case['case']} 运行时诊断：{json.dumps(diagnostic, ensure_ascii=False)}\n")
+    lines += ["", "## 逐次远端 / 本地结果", "",
+              "| 用例 / 操作 | 阶段 | 来源 | 远端状态 / 原因 | 本地结果 / 规则 | 本地耗时 / 超时 ms | 当前代理 / 历史远端耗时 ms |",
+              "|---|---|---|---|---|---|---|"]
+    for case in metrics["cases"]:
+        for call in case["calls"]:
+            remote = f"{call.get('response_status')} / {json.dumps(call.get('incomplete_details'), ensure_ascii=False)}"
+            remote = f"HTTP {call.get('http_status')} / {remote} / {call.get('error') or call.get('transport_error') or ''}"
+            local = f"{call['local_outcome']} / {call.get('local_error') or ''} / {call['failure_category'] or ''}"
+            lines.append(f"| {case['case']} / {call['operation']} | {call['stage']} | {call['origin']} | {remote} | {local.replace('|', chr(92)+'|')} | {call.get('local_elapsed_ms', '未知')} / {call.get('timeout_ms', '未知')} | {call['elapsed_ms']} / {call.get('recorded_elapsed_ms')} |")
+    ref = report["reference"]
+    lines += ["", "## 附录：0517000 旧基线参考", "", "旧基线与转移仅作参考，不作为新路径验收门槛。", ""]
+    if ref["state"] != "available":
+        lines.append(f"参考不可用：{ref['reason']}")
+        return "\n".join(lines) + "\n"
+    lines.append(f"旧共同评分：{json.dumps(ref['summary']['common'], ensure_ascii=False)}")
+    for r in ref["regressions"]:
+        lines.append(f"- {r['question']} / {r['item']}：{r['note']}")
+    for row in ref["questions"]:
+        for item in row["transitions"]:
+            lines.append(f"- {row['question']} / {item['item']}：{item['old']} → {item['new']}；{item['note'] or ''}")
+    return "\n".join(lines) + "\n"
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run", type=pathlib.Path, help="不存在的文件明确报告未录制")
+    parser.add_argument("--send-log", type=pathlib.Path, help="指定本次发送日志，含中断时的未完成调用")
+    parser.add_argument("--base-run", type=pathlib.Path, help="与AC2其余题合并，不覆盖原报告")
+    parser.add_argument("--target-plan", type=pathlib.Path, help="prepare生成的target-plan.json，确定定点覆盖范围")
+    parser.add_argument("--output", type=pathlib.Path, required=True)
+    args = parser.parse_args()
+    if bool(args.base_run) != bool(args.target_plan):
+        parser.error("--base-run 与 --target-plan 必须一起使用")
+    if args.base_run and any(args.output.with_suffix(s).exists() for s in (".json", ".md")):
+        parser.error("合并报告必须使用新输出路径，不覆盖已有报告")
+    document = trial._load(args.run) if args.run and args.run.exists() else {"cases": []}
+    log_path = args.send_log or (pathlib.Path(document["send_log"]) if document.get("send_log") else None)
+    if log_path and log_path.exists():
+        log = load_send_log(log_path)
+        if document.get("execution_mode") == "replay" and log["attempts"]:
+            parser.error("回放不得绑定真实发送日志；请分别报告 live 与回放")
+        if document.get("run_id") and document["run_id"] != log["run_id"]:
+            parser.error("run.json 与发送日志不是同一次运行；省略 --run 可仅核对发送数")
+        document["send_accounting"] = log
+        document["send_log"] = str(log_path)
+    elif args.send_log:
+        parser.error("发送日志不存在")
+    if args.base_run:
+        manifest = trial._load(args.target_plan)
+        if manifest.get("version") != "eval.e2e.targeted@1":
+            parser.error("未知定点计划版本")
+        if hashlib.sha256(args.base_run.read_bytes()).hexdigest() != manifest.get("source_run_sha256"):
+            parser.error("AC2运行与定点计划绑定不符")
+        document = merge_runs(trial._load(args.base_run), document, manifest["questions"],
+                              str(args.base_run), str(args.run))
+    report = run(document)
+    output_json = args.output.with_suffix(".json")
+    if report["execution"]["mode"] == "replay" and output_json.exists():
+        previous = trial._load(output_json)
+        if previous.get("execution", {}).get("real_calls", 0) > 0:
+            parser.error("回放不得覆盖 live 报告；请指定新的 --output")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    output_json.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    args.output.with_suffix(".md").write_text(render(report))
+    absolute = report["absolute_summary"]
+    print(f"expect_common：通过 {absolute['pass']} / 失败 {absolute['fail']} / 待复核 {absolute['pending_review']} / 未录制 {absolute['not_recorded']}；报告 {args.output}")
+
+
+if __name__ == "__main__":
+    main()

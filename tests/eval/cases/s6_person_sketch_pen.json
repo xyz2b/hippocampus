@@ -294,8 +294,20 @@
       "expect": {
         "kind": "clarify"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "clarify"
+      },
       "id": "person_q1",
       "query": "画速写时固定用哪种笔？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": []
     },
     {
@@ -306,8 +318,20 @@
       "expect": {
         "kind": "clarify"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "clarify"
+      },
       "id": "person_q2",
       "query": "画速写时固定用哪种笔？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": []
     },
     {
@@ -327,9 +351,59 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "conditions": [
+              {
+                "bound_by_query": true,
+                "text": "画速写时"
+              }
+            ],
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "冯砚川画速写时固定使用的笔",
+            "sources": {
+              "all_of": [
+                "person_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "person_feng_yanchuan",
+            "uncertainty": null,
+            "value_any": [
+              "炭笔"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "person_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "钢笔"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "person_q3",
       "note": "S6 已知失败：入库保留“画速写时”活动条件，查询未带入该条件，正确事实被 Scope 过滤。",
       "query": "画速写时固定用哪种笔？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -372,9 +446,59 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "conditions": [
+              {
+                "bound_by_query": true,
+                "text": "画速写时"
+              }
+            ],
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "冯序宁画速写时固定使用的笔",
+            "sources": {
+              "all_of": [
+                "person_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "person_feng_xuning",
+            "uncertainty": null,
+            "value_any": [
+              "钢笔"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "person_s1"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "炭笔"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "person_q4",
       "note": "S6 已知失败：同 person_q3，活动条件被过滤导致拒答。",
       "query": "冯序宁画速写时固定用哪种笔？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -417,9 +541,59 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "conditions": [
+              {
+                "bound_by_query": true,
+                "text": "画速写时"
+              }
+            ],
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "冯砚川画速写时固定使用的笔",
+            "sources": {
+              "all_of": [
+                "person_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "person_feng_yanchuan",
+            "uncertainty": null,
+            "value_any": [
+              "炭笔"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_subject_source",
+            "sources": [
+              "person_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "钢笔"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "person_q5",
       "note": "S6 已知失败：同 person_q3，活动条件被过滤导致拒答。",
       "query": "冯砚川画速写拿的是哪种笔？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -453,8 +627,28 @@
         ],
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "炭笔",
+              "钢笔"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "person_q6",
       "query": "冯序宁画速写通常花多长时间？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

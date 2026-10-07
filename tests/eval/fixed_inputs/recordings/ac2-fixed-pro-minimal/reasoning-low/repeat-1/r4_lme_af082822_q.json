@@ -1,0 +1,128 @@
+{
+  "id": "r4_lme_af082822_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 65295,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "Yesterday"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s1_t2"
+              },
+              "event_group": "nordstrom_friends_family_sale",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t2"
+                  }
+                }
+              ],
+              "id": "nordstrom_friends_family_sale_attendance",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "nordstrom_friends_family_sale_attendance"
+          ],
+          "unit": "week"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t2"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "I attended a friends and family sale at Nordstrom on 2022-11-17.",
+            "strength": "strong",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "Yesterday"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"day\"},\"quote\":{\"text\":\"Yesterday\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s1_t2\"},\"event_group\":\"nordstrom_friends_family_sale\",\"evidence\":[{\"quote\":{\"text\":\"Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t2\"}}],\"id\":\"nordstrom_friends_family_sale_attendance\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"nordstrom_friends_family_sale_attendance\"],\"unit\":\"week\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t2\"}}],\"polarity\":\"affirm\",\"record_ids\":[],\"statement\":\"I attended a friends and family sale at Nordstrom on 2022-11-17.\",\"strength\":\"strong\",\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"day\"},\"quote\":{\"text\":\"Yesterday\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:27c38b09a42fcaae4419cc6da6038ada344617b1b1294015fdfb0c8e8e431756",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5185,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 4033,
+          "output_tokens_details": {
+            "reasoning_tokens": 3688
+          },
+          "total_tokens": 9218
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5185,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 4033,
+        "output_tokens_details": {
+          "reasoning_tokens": 3688
+        },
+        "total_tokens": 9218
+      }
+    }
+  ]
+}

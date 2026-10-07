@@ -1,0 +1,2114 @@
+{
+  "case": "organization_borrow_limit",
+  "source_ids": {
+    "organization_s1": "83715-1790753234073708000-1338",
+    "organization_s2": "83715-1790753234107690000-1350"
+  },
+  "steps": [
+    {
+      "memories_after": {},
+      "message": "organization_s1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "白鹭读书会规定，每名会员同时最多可借3册书。",
+              "read_revision": 3,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 631,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1790568000,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "白鹭读书会规定，每名会员同时最多可借3册书。",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 6,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "organization_bailu_bookclub"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 64,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1790568000,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-organization_borrow_limit",
+                "source_id": "83715-1790753234073708000-1338",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "白鹭读书会规定，每名会员同时最多可借3册书。",
+                "turn_id": "organization_s1"
+              }
+            ],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "invalid_candidates",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "invalid_candidates",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 1,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753234080621000-1342",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753234073527000-1337",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 1,
+            "source_id": "83715-1790753234073708000-1338",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-organization_borrow_limit:organization_s2:0",
+              "quote": "赤枫读书会规定，每名会员同时最多可借5册书。",
+              "session_id": "eval-organization_borrow_limit",
+              "turn_id": "organization_s2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "organization_chifeng_bookclub",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568060,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "赤枫读书会规定，每名会员同时最多可借5册书。"
+          }
+        }
+      },
+      "message": "organization_s2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "白鹭读书会规定，每名会员同时最多可借3册书。"
+              ],
+              "query": "赤枫读书会规定，每名会员同时最多可借5册书。",
+              "read_revision": 4,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 2352,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1790568060,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "白鹭读书会规定，每名会员同时最多可借3册书。"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "赤枫读书会规定，每名会员同时最多可借5册书。",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 16,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 559,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2249
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3101,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "organization_bailu_bookclub"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "organization_chifeng_bookclub"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-organization_borrow_limit:organization_s2:0",
+                      "quote": "赤枫读书会规定，每名会员同时最多可借5册书。",
+                      "session_id": "eval-organization_borrow_limit",
+                      "turn_id": "organization_s2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "organization_chifeng_bookclub",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1790568060,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "赤枫读书会规定，每名会员同时最多可借5册书。"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 64,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-organization_borrow_limit:organization_s2:0",
+                    "matched_query_phrases": [
+                      "c4e66 c4f1a",
+                      "c4f1a c5458",
+                      "c4f1a c89c4",
+                      "c518c c4e66",
+                      "c53ef c501f",
+                      "c540c c65f6",
+                      "c540d c4f1a",
+                      "c5458 c540c",
+                      "c591a c53ef",
+                      "c65f6 c6700",
+                      "c6700 c591a",
+                      "c67ab c8bfb",
+                      "c6bcf c540d",
+                      "c89c4 c5b9a",
+                      "c8bfb c4e66",
+                      "c8d64 c67ab",
+                      "c8d64 c67ab c4f1a",
+                      "c8d64 c67ab c8bfb c4e66 c4f1a",
+                      "w000035"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      64
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1790568060,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-organization_borrow_limit",
+                "source_id": "83715-1790753234107690000-1350",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      64
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "赤枫读书会规定，每名会员同时最多可借5册书。",
+                "turn_id": "organization_s2"
+              }
+            ],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753234114639000-1354",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753234107431000-1349",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753234123640000-1358",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753234107431000-1349",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753234107690000-1350",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "organization_q1",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "每人同时最多能借几本书？",
+          "read_revision": 4,
+          "safe_answer": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "clarification_required",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "reason": "clarification_required",
+          "status": "not_requested"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "每人同时最多能借几本书？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete",
+          "clarification_required"
+        ],
+        "duration_ms": 13,
+        "evidence_status": "clarification_required",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 559,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2249
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3101,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "context_entity_ids": [],
+          "needs_clarification": true,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "needs_clarification",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "organization_q2",
+      "result": {
+        "answer_contract": {
+          "context": [
+            "我问的是那个读书会。"
+          ],
+          "query": "每人同时最多能借几本书？",
+          "read_revision": 4,
+          "safe_answer": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "clarification_required",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "reason": "clarification_required",
+          "status": "not_requested"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [
+              "我问的是那个读书会。"
+            ],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "每人同时最多能借几本书？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete",
+          "clarification_required"
+        ],
+        "duration_ms": 15,
+        "evidence_status": "clarification_required",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 559,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2249
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3101,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "context_entity_ids": [],
+          "needs_clarification": true,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "needs_clarification",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "organization_q3",
+      "result": {
+        "answer_contract": {
+          "context": [
+            "我问的是白鹭读书会。"
+          ],
+          "query": "每人同时最多能借几本书？",
+          "read_revision": 4,
+          "safe_answer": "3册。",
+          "safe_source_ids": [
+            "83715-1790753234073708000-1338"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "uncommitted",
+              "quote": "白鹭读书会规定，每名会员同时最多可借3册书。",
+              "source_id": "83715-1790753234073708000-1338"
+            }
+          ],
+          "status": "source_linked_model_answer",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "白鹭读书会 借阅规则 每人 可借 册数",
+            "白鹭读书会 同时借阅 上限 本",
+            "白鹭读书会 会员 外借 数量 限制"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [
+              "我问的是白鹭读书会。"
+            ],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "每人同时最多能借几本书？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 48,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 559,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2249
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3101,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "evidence_grade": "uncommitted",
+          "memory_id": null,
+          "quote": "白鹭读书会规定，每名会员同时最多可借3册书。",
+          "semantic_judgment": "model_proposed",
+          "source_id": "83715-1790753234073708000-1338",
+          "status": "verified_span",
+          "value": "3册"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234222151000-1386",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234204811000-1379",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753234277219000-1419",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234204811000-1379",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [
+            "organization_bailu_bookclub"
+          ],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "organization_q4",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "赤枫读书会每名会员同时最多能借几册书？",
+          "read_revision": 4,
+          "safe_answer": "5册。",
+          "safe_source_ids": [
+            "83715-1790753234107690000-1350"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "赤枫读书会规定，每名会员同时最多可借5册书。",
+              "source_id": "83715-1790753234107690000-1350"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [],
+          "status": "completed_empty"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "filtered_other_named_entity": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2271,
+          "coverage_complete": true,
+          "excluded": [],
+          "excluded_count": 0,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "赤枫读书会每名会员同时最多能借几册书？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 9,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 559,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2249
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3101,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234294179000-1431",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234286275000-1426",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "organization_chifeng_bookclub"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-organization_borrow_limit:organization_s2:0",
+                  "quote": "赤枫读书会规定，每名会员同时最多可借5册书。",
+                  "session_id": "eval-organization_borrow_limit",
+                  "turn_id": "organization_s2"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 1,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "organization_chifeng_bookclub",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568060,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "赤枫读书会规定，每名会员同时最多可借5册书。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 64,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-organization_borrow_limit:organization_s2:0",
+                "matched_query_phrases": [
+                  "c4e66 c4f1a",
+                  "c4f1a c5458",
+                  "c518c c4e66",
+                  "c540c c65f6",
+                  "c540d c4f1a",
+                  "c5458 c540c",
+                  "c65f6 c6700",
+                  "c6700 c591a",
+                  "c67ab c8bfb",
+                  "c6bcf c540d",
+                  "c8bfb c4e66",
+                  "c8d64 c67ab",
+                  "c8d64 c67ab c4f1a",
+                  "c8d64 c67ab c8bfb c4e66 c4f1a"
+                ],
+                "memory_id": 1,
+                "projection_revision": 4,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  64
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568060,
+            "received_sequence": 2,
+            "role": "user",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-organization_borrow_limit",
+            "source_id": "83715-1790753234107690000-1350",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 1,
+                "quote_byte_range": [
+                  0,
+                  64
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "赤枫读书会规定，每名会员同时最多可借5册书。",
+            "turn_id": "organization_s2",
+            "verified_fact": {
+              "memory_id": 1,
+              "relation": "每会员同时最多借册书",
+              "subject": "赤枫读书会",
+              "unique_in_snapshot": true,
+              "value": "5册"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "organization_q5",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？",
+          "read_revision": 4,
+          "safe_answer": "3册。",
+          "safe_source_ids": [
+            "83715-1790753234073708000-1338"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "uncommitted",
+              "quote": "白鹭读书会规定，每名会员同时最多可借3册书。",
+              "source_id": "83715-1790753234073708000-1338"
+            }
+          ],
+          "status": "source_linked_model_answer",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "白鹭读书会 会员 最多 借阅 图书",
+            "白鹭读书会 未归还 图书 不得 再借",
+            "白鹭读书会 借书 持有 上限"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 21,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 559,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2249
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3101,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "evidence_grade": "uncommitted",
+          "memory_id": null,
+          "quote": "白鹭读书会规定，每名会员同时最多可借3册书。",
+          "semantic_judgment": "model_proposed",
+          "source_id": "83715-1790753234073708000-1338",
+          "status": "verified_span",
+          "value": "3册"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234321734000-1446",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234311052000-1443",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753234346665000-1461",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234311052000-1443",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "organization_bailu_bookclub"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "organization_q6",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "赤枫读书会每本书可以借几天？",
+          "read_revision": 4,
+          "safe_answer": "现有记录证据不足，无法回答这个问题。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "insufficient_evidence",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "赤枫读书会 借阅规则 借期",
+            "赤枫读书会 图书借阅 可借天数",
+            "赤枫读书会 书籍归还 期限"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "赤枫读书会每本书可以借几天？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 10,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 559,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2249
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3101,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "status": "insufficient"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234355101000-1469",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234351501000-1466",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753234368070000-1474",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234351501000-1466",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "organization_chifeng_bookclub"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753234073708000-1338:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753234107690000-1350:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+ "id": "r1_15_tool_with_condition",
+ "contract": "r1.v1",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "带活动条件的当前偏好",
+ "input": {
+  "message": "我现在写代码用什么编辑器？",
+  "context": [],
+  "said_on": "2026-10-03",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-1",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-xiaowang-2",
+    "names": [
+     "小王"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "need": "judge",
+  "current_evidence": "query_only",
+  "type": "single",
+  "subject": "self",
+  "conditions": [
+   [
+    "写代码",
+    "写代码用"
+   ]
+  ],
+  "time": null,
+  "plan.op": "lookup",
+  "plan.filter.relation": [
+   "uses",
+   null
+  ]
+ },
+ "note": null
+}

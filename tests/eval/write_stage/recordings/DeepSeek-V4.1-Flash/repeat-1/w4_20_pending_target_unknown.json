@@ -1,0 +1,67 @@
+{
+  "id": "w4_20_pending_target_unknown",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": null,
+            "basis": [
+              {
+                "quote": {
+                  "text": "我之前说的那个住处不对，收回。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-410"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": "target_unknown",
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "pending",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":null,\"basis\":[{\"quote\":{\"text\":\"我之前说的那个住处不对，收回。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-410\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":\"target_unknown\",\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"pending\",\"targets\":[]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:52730da07411cc67",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1737,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 4299,
+          "output_tokens_details": {
+            "reasoning_tokens": 4213
+          },
+          "total_tokens": 6036
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1737,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4299,
+        "output_tokens_details": {
+          "reasoning_tokens": 4213
+        },
+        "total_tokens": 6036
+      }
+    }
+  ]
+}

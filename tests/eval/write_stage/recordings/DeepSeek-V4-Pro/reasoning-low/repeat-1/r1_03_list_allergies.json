@@ -1,0 +1,63 @@
+{
+  "id": "r1_03_list_allergies",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 6246,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "allergic_to",
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "allergic_to",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"allergic_to\",\n      \"time\": null\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"allergic_to\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"single\"\n}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:2c892396abf7095d1f4ad8dfb18d39c69b188d6863d1e2fa32a58448e2eb254b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2359,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 312,
+          "output_tokens_details": {
+            "reasoning_tokens": 206
+          },
+          "total_tokens": 2671
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2359,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 312,
+        "output_tokens_details": {
+          "reasoning_tokens": 206
+        },
+        "total_tokens": 2671
+      }
+    }
+  ]
+}

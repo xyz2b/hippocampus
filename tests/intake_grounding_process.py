@@ -12,17 +12,15 @@ import threading
 from pathlib import Path
 
 from mcp_smoke import Client
-from s5_normal_intake import candidate, settings
-from source_support_fixture import source_support_review
+from write_pipeline_process import frozen
 
 
 ROOT = Path(__file__).resolve().parents[1]
 OWNER = "intake-grounding-synthetic"
 SUBJECT = "霜叶31"
 OTHER = "青石82"
-REVIEW = "personal_memory_source_support_v1"
-EXTRACTION = "personal_memory_candidates_v1"
-CHECKS = "subject relation value polarity scope temporal intent source metadata".split()
+REVIEW = "w3_v3"
+EXTRACTION = "w1_v3"
 PAPER = "霜叶31默认用 A4 纸打印，纸张放在右侧纸盒。"
 # text, predicate, value kind, value, review verdict; all statements are synthetic.
 CASES = {
@@ -54,10 +52,47 @@ def active(db):
 
 def raw_candidate(case):
     text, predicate, kind, value, _ = case
-    result = candidate(SUBJECT, text, predicate=predicate)
-    result["value"] = dict(kind=kind, text=None, integer=None, boolean=None, entity_id=None)
-    result["value"]["entity_id" if kind == "entity" else kind] = value
-    return result
+    quote = str(value) if kind in ("text", "integer", "entity") else text
+    return {"kind": "assertion", "speech": "user_statement",
+            "subject": {"entity_id": SUBJECT}, "relation": predicate, "memory_type": "fact",
+            "value": {"kind": kind, "entity_id" if kind == "entity" else kind: value,
+                      "quote": {"text": quote}},
+            "sentence": {"text": text}, "polarity": "affirm", "strength": None,
+            "uncertainty": None, "conditions": [], "times": []}
+
+
+def model_output(request, case, db):
+    name = request["text"]["format"]["name"]
+    prompt = json.loads(request["input"])
+    text, predicate, kind, value, verdict = case
+    assert prompt["current_user_message"] == text
+    assert prompt["user_history"] == []
+    assert "model" not in prompt
+    assert request["model"] == "pro-fixture"
+    assert request["reasoning"]["effort"] == "low"
+    if name == EXTRACTION:
+        return {"candidates": [raw_candidate(case)], "memory_requests": []}
+    assert name == REVIEW, name
+    assert not active(db), "facts became Active before independent review"
+    assert {e["id"] for e in prompt["entities"]} >= {SUBJECT, OTHER}
+    assert "previous_output" not in prompt and "validation_feedback" not in prompt
+    candidates = prompt["candidates"]
+    assert len(candidates) == 1 and candidates[0]["index"] == 0, candidates
+    assert candidates[0]["status"] == "ok", candidates
+    assert candidates[0]["candidate"] == raw_candidate(case), candidates
+    assert prompt["memory_requests"] == []
+    return review_output(case)
+
+
+def review_output(case):
+    text, _, _, _, verdict = case
+    if verdict == "bad_format":
+        return {"reviews": "invalid review array"}
+    return {"reviews": [{"candidate": 0,
+            "verdict": "contradicted" if verdict == "contradicted" else "supported",
+            "problems": [{"aspect": "value", "quote": {"text": text}}]
+                        if verdict == "contradicted" else [], "episode_value": "not_applicable"}],
+            "coverage": {"status": "complete", "missing": []}, "request_reviews": []}
 
 
 class Fixture(http.server.BaseHTTPRequestHandler):
@@ -76,39 +111,10 @@ class Fixture(http.server.BaseHTTPRequestHandler):
             assert self.headers["Authorization"] == "Bearer local-fixture-key"
             name = request["text"]["format"]["name"]
             type(self).requests.append(name)
-            prompt = json.loads(request["input"])
-            text, predicate, kind, value, verdict = self.case
-            assert prompt["current_user_turn"] == text
-            assert prompt["conversation_history"] == []
-            if name == REVIEW:
-                assert not active(self.db), "facts became Active before independent review"
-                assert "known_entities" in prompt
-                assert "previous_output" not in prompt and "validation_feedback" not in prompt
-                frozen = prompt["frozen_candidates"]
-                assert len(frozen) == 1, frozen
-                assert frozen[0]["subject"] == {"Resolved": SUBJECT}, frozen
-                assert frozen[0]["predicate"] == predicate, frozen
-                expected = {dict(text="Text", integer="Integer", boolean="Boolean", entity="Entity")[kind]: value}
-                assert frozen[0]["value"] == expected, frozen
-                assert frozen[0]["evidence"][0]["quote"] == text, frozen
-                if verdict == "http_error":
-                    self.respond(503, {"error": {"message": "synthetic review unavailable"}})
-                    return
-                checks = dict.fromkeys(CHECKS, "supported")
-                if verdict == "contradicted":
-                    checks["value"] = "contradicted"
-                output = source_support_review(request)
-                output["reviews"][0]["checks"] = checks
-                if verdict == "contradicted":
-                    output["reviews"][0]["issues"] = [{"check":"value", "field":"value",
-                        "reason":"The proposed value differs from this USER statement.",
-                        "evidence":[{"turn_index":0,"quote":text}]}]
-                if verdict == "bad_format":
-                    output["reviews"] = "invalid review array"
-            else:
-                # The old implementation's repair request is answered without repairing anything.
-                assert name in (EXTRACTION, "personal_memory_candidates_verification_v1"), name
-                output = {"omission_reason": None, "candidates": [raw_candidate(self.case)]}
+            output = model_output(request, self.case, self.db)
+            if name == REVIEW and self.case[-1] == "http_error":
+                self.respond(503, {"error": {"message": "synthetic review unavailable"}})
+                return
             self.respond(200, {"status": "completed", "usage": {"input_tokens": 10, "output_tokens": 10},
                          "output": [{"type": "message", "content": [{"type": "output_text",
                          "text": json.dumps(output, ensure_ascii=False)}]}]})
@@ -125,108 +131,147 @@ class Fixture(http.server.BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-def tool(client, name, args):
-    result = client.rpc("tools/call", {"name": name, "arguments": args})
-    return result.get("structuredContent") or json.loads(result["content"][0]["text"])
+def cli(binary, db, config, env, *args, arguments=None, success=True):
+    if arguments is not None:
+        path = db.with_suffix(".arguments.json")
+        path.write_text(json.dumps(arguments, ensure_ascii=False))
+        args = (*args, "--arguments", str(path))
+    result = subprocess.run([str(binary), "--db", str(db), "--owner", OWNER,
+                             "--config", str(config), *args], env=env, text=True,
+                            capture_output=True, timeout=35)
+    assert (result.returncode == 0) == success, (result.stdout, result.stderr)
+    return json.loads(result.stdout) if success else result.stderr
 
 
 def run_case(binary, directory, env, mode, name):
     case = CASES[name]
     text, predicate, kind, value, verdict = case
-    expected_calls = 1 if verdict == "format_reject" else 2
-    expected_active = verdict == "supported"
-    capture = mode != "legacy"
+    capture = mode != "unauthorized"
+    expected_calls = (1 if verdict == "format_reject" else 2) if capture else 0
+    expected_active = capture and verdict == "supported"
     db = directory / f"{mode}-{name}.sqlite3"
     Fixture.case, Fixture.db = case, db
     before, errors_before = len(Fixture.requests), len(Fixture.errors)
-    config = settings(directory, f"{mode}-{name}", retrieval_mode="local", fact_index_enabled=True,
-                      enrichment_mode={"explicit": "off", "legacy": "inline"}.get(mode, mode),
-                      source_capture_enabled=capture, memory_types=[],
-                      predicates=[{"predicate": item, "cardinality": "Multiple" if item == "fact" else "Single"}
-                                  for item in ("fact", "material", "maintenance_budget", "owned_by", "duplex_enabled")],
-                      value_kinds=[["material", ["Text"]],
-                                   ["maintenance_budget", ["Integer"]], ["owned_by", ["Entity"]],
-                                   ["duplex_enabled", ["Boolean"]]],
-                      model_budget=dict(group_id=f"{mode}-{name}", max_calls=expected_calls,
-                                        max_operation_calls=2))
+    mode_value = {"explicit": "off", "unauthorized": "inline"}.get(mode, mode)
+    policy_calls = max(1, expected_calls)
+    config_data = dict(enrichment_mode=mode_value, fact_index_enabled=True,
+                       memory_types=[],
+                       predicates=[{"predicate": item, "cardinality": "Multiple" if item == "fact" else "Single"}
+                                   for item in ("fact", "material", "maintenance_budget", "owned_by", "duplex_enabled")],
+                       value_kinds=[["material", ["Text"]], ["maintenance_budget", ["Integer"]],
+                                    ["owned_by", ["Entity"]], ["duplex_enabled", ["Boolean"]]],
+                       model_budget=dict(group_id=f"{mode}-{name}", max_calls=policy_calls,
+                                         max_operation_calls=2))
+    config = directory / f"{mode}-{name}.json"
+    config.write_text(json.dumps(config_data))
+    # The read/setup host has no worker; CLI capture tests each actual accepted mode without races.
+    reader = directory / f"{mode}-{name}-reader.json"
+    reader.write_text(json.dumps(dict(config_data, enrichment_mode="off")))
     failures = []
 
     def check(condition, message):
         if not condition:
             failures.append(message)
 
-    with contextlib.closing(Client(binary, db, env, OWNER, config=config)) as client:
-        client.call("memory_recall", {"query": "全局回答要求", "bootstrap": True})
+    with contextlib.closing(Client(binary, db, env, OWNER, config=reader)) as client:
+        boot = client.call("memory_recall", {"query": "全局回答要求", "bootstrap": True,
+                                           "request_id": f"{mode}-{name}-bootstrap"})
+        check(boot["recall"]["semantic_judgment"] == "skipped", "bootstrap called a model")
         for entity in (SUBJECT, OTHER):
             client.call("memory_entity_upsert", {"id": entity, "canonical_name": entity,
                                                 "aliases": [], "entity_type": "Other"})
-        turn = dict(text=text, history=[], session_id="synthetic-grounding", turn_id=name,
-                    capture_source=capture)
+
+    turn = dict(text=text, history=[], session_id="synthetic-grounding", turn_id=name,
+                capture_source=capture)
+    tool = "memory_prepare" if mode == "inline" else "memory_remember"
+    arguments = {"user_turn": turn, "offline": True} if mode == "inline" else turn
+    initial = snapshot(db)
+    receipt = cli(binary, db, config, env, "--call", tool, arguments=arguments, success=capture)
+    if not capture:
+        check("capture_source_required" in receipt, "unauthorized write was not rejected")
+        check(snapshot(db) == initial and not active(db), "unauthorized write changed business state")
+    else:
+        queued = "not_requested" if mode == "explicit" else "queued"
         if mode == "inline":
-            prepared = tool(client, "memory_prepare", {"user_turn": turn})
-            receipt = prepared["remember"].get("result", prepared["remember"])
-            check(prepared["recall"]["status"] == "completed", "local recall failed")
-        else:
-            receipt = tool(client, "memory_remember", turn)
-        if mode in ("deferred", "explicit"):
-            check(not active(db) and len(Fixture.requests) == before, "capture performed model work")
-            source_id = receipt["source"]["source_id"]
-            batch_args = ["--drain-enrichment", "--max-jobs", "1"] if mode == "deferred" else ["--enrich-source", source_id]
-            completed = subprocess.run([str(binary), "--db", str(db), "--owner", OWNER,
-                                        "--config", str(config), *batch_args], env=env,
-                                       text=True, capture_output=True, timeout=30)
-            batch_ok = mode == "deferred" or verdict not in ("format_reject", "bad_format", "http_error")
-            check((completed.returncode == 0) == batch_ok, "unexpected batch exit: " + completed.stderr[:200])
-            if mode == "deferred":
-                check(json.loads(completed.stdout)["attempted"] == 1, "deferred batch did not process exactly one source")
-            after_batch = len(Fixture.requests)
-            receipt = tool(client, "memory_remember", turn)
-            check(receipt["replayed"] and len(Fixture.requests) == after_batch, "batch receipt replay sent another request")
+            check(receipt["recall"]["semantic_judgment"] == "skipped", "offline prepare ran a model")
+            check(any(r["source_id"] == receipt["source"]["source_id"] for r in receipt["recall"]["raw"]),
+                  "prepare cannot see the captured source")
+            receipt = {k: receipt[k] for k in ("source", "enrichment")}
+        frozen(receipt, queued)
+        check(not active(db) and len(Fixture.requests) == before, "capture performed model work")
+        source_id = receipt["source"]["source_id"]
+        args = ("--drain-enrichment", "--max-jobs", "1") if mode == "deferred" else ("--enrich-source", source_id)
+        processed = cli(binary, db, config, env, *args)
+        if mode == "deferred":
+            check(processed["attempted"] == 1, "deferred batch did not process exactly one source")
+            processed = processed["results"][0]["result"]
+        status = "committed" if expected_active else "failed" if verdict in ("bad_format", "http_error") else "pending"
+        frozen(processed, status)
+        if verdict not in ("bad_format", "http_error"):
+            candidate_result = processed["enrichment"]["candidates"][0]
+            check(candidate_result["status"] == ("committed" if expected_active else "rejected"),
+                  "candidate receipt disagrees with grounding result")
+            if verdict == "format_reject":
+                check("candidate_rejected:fact_sentence_mismatch" in candidate_result["reasons"],
+                      "fact format rejection lost its reason")
+            if verdict == "contradicted":
+                check("review_contradicted" in candidate_result["reasons"], "independent review verdict lost")
+        after_batch = len(Fixture.requests)
+        replay = cli(binary, db, config, env, "--call", "memory_remember", arguments=turn)
+        check(replay == processed and len(Fixture.requests) == after_batch, "receipt replay changed or sent another request")
 
-        memories = active(db)
-        check(len(memories) == int(expected_active), f"Active count {len(memories)}, expected {int(expected_active)}")
-        if memories and expected_active:
-            expected_value = {dict(text="Text", integer="Integer", boolean="Boolean", entity="Entity")[kind]: value}
-            check(memories[0]["value"] == expected_value, "committed value changed after extraction")
-            check(memories[0]["evidence"][0]["quote"] == text, "committed original quote changed")
-        state = snapshot(db)
+    memories = active(db)
+    check(len(memories) == int(expected_active), f"Active count {len(memories)}, expected {int(expected_active)}")
+    if memories and expected_active:
+        expected_value = {dict(text="Text", integer="Integer", boolean="Boolean", entity="Entity")[kind]: value}
+        check(memories[0]["value"] == expected_value, "committed value changed after extraction")
+        check(memories[0]["evidence"][0]["quote"] == text, "committed original quote changed")
+    state = snapshot(db)
+    if capture:
+        sources = list(state["sources"].values())
+        check(len(sources) == 1 and sources[0]["request"]["text"] == text, "original source not preserved")
+        query = {"fact_sentence": "霜叶31 A4 纸", "text": "霜叶31的材质是什么？",
+                 "integer": "霜叶31的维护预算是多少？", "entity": "霜叶31 所有者 青石82",
+                 "boolean": "霜叶31 自动双面打印"}.get(name, "霜叶31的维护预算是多少？")
+        with contextlib.closing(Client(binary, db, env, OWNER, config=reader)) as client:
+            recalled = client.call("memory_recall", {"query": query, "offline": True,
+                                                    "request_id": f"{mode}-{name}-recall"})["recall"]
+        check(recalled["semantic_judgment"] == "skipped" and recalled["facts"] == [],
+              "offline recall made a semantic answer")
+        if expected_active:
+            check(any(r["grade"] == "committed" and r["id"] == memories[0]["id"]
+                      for r in recalled["records"]), "committed fact missing from offline recall")
+        else:
+            check(not any(r["grade"] == "committed" for r in recalled["records"]),
+                  "unreviewed fact exposed as committed evidence")
+            check(any(r["source_id"] == source_id and r["quote"]["text"] == text for r in recalled["raw"]),
+                  "unreviewed raw source is no longer visible")
+    else:
+        check(not state["sources"], "unauthorized capture saved a raw source")
+
+    requests = Fixture.requests[before:]
+    expected_names = ([EXTRACTION] + ([REVIEW] if expected_calls == 2 else [])) if capture else []
+    check(requests == expected_names, f"requests {requests}, expected {expected_names}")
+    with sqlite3.connect(db) as connection:
+        ledger = connection.execute("SELECT operation_id, stage FROM model_calls ORDER BY created_at, rowid").fetchall()
+        policy_row = connection.execute("SELECT policy_json FROM model_budget_groups").fetchone()
+        policy = json.loads(policy_row[0]) if policy_row else None
         if capture:
-            sources = list(state["sources"].values())
-            check(len(sources) == 1 and sources[0]["request"]["text"] == text, "original source not preserved")
-            check(receipt["source"]["status"] == "stored", "source receipt is not stored")
-            check(receipt["index"]["status"] == "ready", "source index is not ready")
-            check((receipt["enrichment"]["status"] == "committed") == expected_active,
-                  "enrichment receipt disagrees with independent review")
-            query = {"fact_sentence": "霜叶31 A4 纸", "text": "霜叶31的材质是什么？",
-                     "integer": "霜叶31的维护预算是多少？", "entity": "霜叶31 所有者 青石82",
-                     "boolean": "霜叶31 自动双面打印"}.get(name, "霜叶31的维护预算是多少？")
-            recalled = client.call("memory_recall", {"query": query})
-            check(recalled["model_calls"] == [], "local recall consumed model budget")
-            if expected_active:
-                check(any(item["text"] == text for item in recalled["source_evidence"]),
-                      "correct committed fact is not available to recall")
-            else:
-                check(not recalled["source_evidence"], "unreviewed source exposed as answer evidence")
-        else:
-            check(not state["sources"], "legacy capture_source=false saved a raw source")
-
-        requests = Fixture.requests[before:]
-        expected_names = [EXTRACTION] + ([REVIEW] if expected_calls == 2 else [])
-        check(requests == expected_names, f"requests {requests}, expected {expected_names}")
-        with sqlite3.connect(db) as connection:
-            ledger = connection.execute("SELECT operation_id, stage FROM model_calls ORDER BY created_at, rowid").fetchall()
-            policy = json.loads(connection.execute("SELECT policy_json FROM model_budget_groups").fetchone()[0])
-            if capture:
-                indexed = connection.execute("SELECT text FROM source_segments WHERE owner_id=?", (OWNER,)).fetchall()
-                check(any(row[0] == text for row in indexed), "original text missing from source index")
-        check(len(ledger) == expected_calls, f"ledger count {len(ledger)}, expected {expected_calls}")
-        check(len({operation for operation, _ in ledger}) == 1, "intake split across model operations")
-        check(len(ledger) <= 2 and len(set(ledger)) == len(ledger), "operation or per-stage limit exceeded")
-        check([stage for _, stage in ledger] == ["extraction"] + (["extraction_review"] if expected_calls == 2 else []),
-              "ledger stage sequence differs from extraction plus review")
-        check(policy["per_stage_calls"] == 1 and policy["limits"]["max_calls"] == expected_calls
+            indexed = connection.execute("SELECT text FROM source_segments WHERE owner_id=?", (OWNER,)).fetchall()
+            check(any(row[0] == text for row in indexed), "original text missing from source index")
+    check(len(ledger) == expected_calls, f"ledger count {len(ledger)}, expected {expected_calls}")
+    check(len({operation for operation, _ in ledger}) == int(capture), "intake split across model operations")
+    check(len(ledger) <= 2 and len(set(ledger)) == len(ledger), "operation or per-stage limit exceeded")
+    expected_stages = (["w1"] + (["w3"] if expected_calls == 2 else [])) if capture else []
+    check([stage for _, stage in ledger] == expected_stages,
+          "ledger stage sequence differs from W1 plus W3")
+    if capture:
+        check(policy is not None and policy["per_stage_calls"] == 1
+              and policy["limits"]["max_calls"] == policy_calls
               and policy["limits"]["max_operation_calls"] == 2, "configured budget changed")
-        check(not Fixture.errors[errors_before:], "fixture errors: " + str(Fixture.errors[errors_before:]))
+    else:
+        check(policy is None, "unauthorized capture registered a model operation budget")
+    check(not Fixture.errors[errors_before:], "fixture errors: " + str(Fixture.errors[errors_before:]))
     return dict(mode=mode, case=name, expected_calls=expected_calls, actual_calls=len(requests),
                 active=len(memories), passed=not failures, failures=failures)
 
@@ -234,27 +279,36 @@ def run_case(binary, directory, env, mode, name):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, default=ROOT / "target/debug/pmr-mcp")
-    parser.add_argument("--modes", nargs="+", choices=["inline", "deferred", "explicit", "legacy"],
-                        default=["inline", "deferred", "explicit", "legacy"])
+    parser.add_argument("--modes", nargs="+", choices=["inline", "deferred", "explicit", "unauthorized"],
+                        default=["inline", "deferred", "explicit", "unauthorized"])
     parser.add_argument("--cases", nargs="+", choices=list(CASES), default=list(CASES))
     parser.add_argument("--max-calls", type=int, default=72, help="Fixed total loopback allowance; never auto-expanded")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--fixtures-json", action="store_true", help="Print synthetic stage outputs; no process or port")
     args = parser.parse_args()
-    predicted = len(args.modes) * sum(1 if CASES[name][-1] == "format_reject" else 2 for name in args.cases)
+    if args.fixtures_json:
+        print(json.dumps([{"name": name, "text": case[0], "verdict": case[-1],
+                           "w1": {"candidates": [raw_candidate(case)], "memory_requests": []},
+                           "w3": review_output(case)} for name, case in CASES.items()], ensure_ascii=False))
+        return
+    predicted = sum(mode != "unauthorized" for mode in args.modes) * sum(1 if CASES[name][-1] == "format_reject" else 2 for name in args.cases)
     assert predicted <= args.max_calls, f"predicted {predicted} calls exceed explicit allowance {args.max_calls}"
     binary = args.binary.resolve()
     assert binary.is_file(), f"build the MCP binary first: {binary}"
     Fixture.requests, Fixture.errors = [], []
     with contextlib.ExitStack() as stack:
         directory = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="pmr-grounding-")))
-        server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Fixture)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        stack.callback(server.server_close)
-        stack.callback(server.shutdown)
+        endpoint = "http://127.0.0.1:1/v1"
+        if predicted:
+            server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Fixture)
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            stack.callback(server.server_close)
+            stack.callback(server.shutdown)
+            endpoint = f"http://127.0.0.1:{server.server_port}/v1"
         clean = {key: value for key, value in os.environ.items()
                  if not key.startswith(("DEEPSEEK_", "OPENAI_", "PMR_"))}
-        env = dict(clean, PMR_MODEL_NETWORK="offline", DEEPSEEK_API_KEY="local-fixture-key",
-                   DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1",
+        env = dict(clean, PMR_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
+                   DEEPSEEK_BASE_URL=endpoint,
                    NO_PROXY="127.0.0.1,localhost")
         rows = [run_case(binary, directory, env, mode, name) for mode in args.modes for name in args.cases]
     report = dict(passed=all(row["passed"] for row in rows), cases=len(rows),

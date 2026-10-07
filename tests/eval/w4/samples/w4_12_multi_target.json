@@ -1,0 +1,238 @@
+{
+  "id": "w4_12_multi_target",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "多目标 state_change：两条旧的住址记录一起结束，只插入一个新版本",
+  "boundary_with": null,
+  "sources": {
+    "s-302": {
+      "text": "我住在北京。",
+      "said_on": "2026-02-01"
+    },
+    "s-303": {
+      "text": "我家在北京朝阳区。",
+      "said_on": "2026-05-01"
+    },
+    "s-340": {
+      "text": "我已经搬到深圳了。",
+      "said_on": "2026-09-25"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "深圳",
+            "quote": {
+              "text": "深圳"
+            }
+          },
+          "sentence": {
+            "text": "我已经搬到深圳了。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-340"
+        },
+        "said_on": "2026-09-25",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 62,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "北京",
+            "quote": {
+              "text": "北京"
+            }
+          },
+          "sentence": {
+            "text": "我住在北京。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-302"
+            },
+            "quote": {
+              "text": "我住在北京。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-02-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      },
+      {
+        "format": "current",
+        "id": 63,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "北京朝阳区",
+            "quote": {
+              "text": "北京朝阳区"
+            }
+          },
+          "sentence": {
+            "text": "我家在北京朝阳区。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-303"
+            },
+            "quote": {
+              "text": "我家在北京朝阳区。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          62,
+          63
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-302",
+          "s-303",
+          "s-340"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "62": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "63": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "new": {
+          "from_candidate": 0,
+          "history": [
+            62,
+            63
+          ],
+          "stored_status": "active",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "new_records": 1,
+      "recall": {
+        "current": [
+          "new（深圳）"
+        ],
+        "history": [
+          "62（北京）",
+          "63（北京朝阳区）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得只结束其中一条",
+      "不得插入两个新版本（W5：最多插入一次）",
+      "任一目标在提交前已变化时整组 needs_rejudge，不得部分成功（W5 代码验收项）"
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "lives_in 为目录内关系，同关系当前记录全部取得，范围完整。",
+  "qualifier_marks": {}
+}

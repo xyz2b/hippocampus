@@ -1,0 +1,82 @@
+{
+  "id": "r1_15_tool_with_condition",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "写代码"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "uses",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "anchor_quote": {
+                  "text": "现在"
+                },
+                "kind": "anchored",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "现在"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "uses",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{ \"text\": \"写代码\" }, \"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"uses\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"anchor_quote\":\t{ \"text\": \"现在\" }, \"kind\":\"anchored\"\t,\"offset\":0,\"unit\":\"day\"\t},\"quote\":\t{ \"text\": \"现在\" },\"role\":\"validity\"}},\"op\":\"lookup\"\t,\"unit\":null},\"relation\":\"uses\",\"subject\":{\"entity_id\":\"self\"\t},\"time\":null,\"type\":\"single\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:8b5af0a6db6de48303f3c3e2af3a6dd72e75b8c19c594a4d75eb64788b5d9584",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 899,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 11898,
+          "output_tokens_details": {
+            "reasoning_tokens": 11757
+          },
+          "total_tokens": 12797
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 899,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11898,
+        "output_tokens_details": {
+          "reasoning_tokens": 11757
+        },
+        "total_tokens": 12797
+      }
+    }
+  ]
+}

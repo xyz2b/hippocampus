@@ -1,0 +1,82 @@
+{
+  "id": "w1_01_simple_residence",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我现在住在杭州。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "现在"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "杭州"
+              },
+              "text": "杭州"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\": \t{\"text\":\"我现在住在杭州。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\": {\"text\":\"现在\"},\"role\":\"validity\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\": {\"text\":\"杭州\"},\"text\":\"杭州\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:636520c2bef288e3",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1453,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 7917,
+          "output_tokens_details": {
+            "reasoning_tokens": 7788
+          },
+          "total_tokens": 9370
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1453,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 7917,
+        "output_tokens_details": {
+          "reasoning_tokens": 7788
+        },
+        "total_tokens": 9370
+      }
+    }
+  ]
+}

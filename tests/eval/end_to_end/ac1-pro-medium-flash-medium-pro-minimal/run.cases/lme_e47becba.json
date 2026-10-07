@@ -1,0 +1,1104 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 61929,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 61840,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3775,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4027,
+        "output_tokens_details": {
+          "reasoning_tokens": 3917
+        },
+        "total_tokens": 7802
+      }
+    },
+    {
+      "elapsed_ms": 28191,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 28102,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1375,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4921,
+        "output_tokens_details": {
+          "reasoning_tokens": 4871
+        },
+        "total_tokens": 6296
+      }
+    },
+    {
+      "elapsed_ms": 194169,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 194084,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3917,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 13508,
+        "output_tokens_details": {
+          "reasoning_tokens": 13051
+        },
+        "total_tokens": 17425
+      }
+    },
+    {
+      "elapsed_ms": 93471,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 93380,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1908,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18292
+      }
+    },
+    {
+      "elapsed_ms": 29565,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 29470,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4015,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1975,
+        "output_tokens_details": {
+          "reasoning_tokens": 1829
+        },
+        "total_tokens": 5990
+      }
+    },
+    {
+      "elapsed_ms": 23483,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 23384,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1651,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4008,
+        "output_tokens_details": {
+          "reasoning_tokens": 3958
+        },
+        "total_tokens": 5659
+      }
+    },
+    {
+      "elapsed_ms": 58848,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 58704,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4105,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3973,
+        "output_tokens_details": {
+          "reasoning_tokens": 3823
+        },
+        "total_tokens": 8078
+      }
+    },
+    {
+      "elapsed_ms": 11031,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 10931,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1745,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1724,
+        "output_tokens_details": {
+          "reasoning_tokens": 1674
+        },
+        "total_tokens": 3469
+      }
+    },
+    {
+      "elapsed_ms": 13496,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 13396,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3222,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 850,
+        "output_tokens_details": {
+          "reasoning_tokens": 746
+        },
+        "total_tokens": 4072
+      }
+    },
+    {
+      "elapsed_ms": 202808,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 202706,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4248,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 14073,
+        "output_tokens_details": {
+          "reasoning_tokens": 13583
+        },
+        "total_tokens": 18321
+      }
+    },
+    {
+      "elapsed_ms": 71532,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 71427,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2294,
+        "input_tokens_details": {
+          "cached_tokens": 640
+        },
+        "output_tokens": 12912,
+        "output_tokens_details": {
+          "reasoning_tokens": 12790
+        },
+        "total_tokens": 15206
+      }
+    },
+    {
+      "elapsed_ms": 135366,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 135183,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4090,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9111,
+        "output_tokens_details": {
+          "reasoning_tokens": 8732
+        },
+        "total_tokens": 13201
+      }
+    },
+    {
+      "elapsed_ms": 81206,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 81083,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4370,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5399,
+        "output_tokens_details": {
+          "reasoning_tokens": 5279
+        },
+        "total_tokens": 9769
+      }
+    },
+    {
+      "elapsed_ms": 7651,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 7525,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1980,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1132,
+        "output_tokens_details": {
+          "reasoning_tokens": 1082
+        },
+        "total_tokens": 3112
+      }
+    },
+    {
+      "elapsed_ms": 2562,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2432,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2236,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 100,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2336
+      }
+    },
+    {
+      "elapsed_ms": 3822,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3692,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5764,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 187,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5951
+      }
+    }
+  ],
+  "case": "lme_e47becba",
+  "elapsed_ms": 1025162,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157235731681000-846",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157235731681000-846",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157326246039000-872",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791157326246039000-872",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157614341247000-962",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157614341247000-962",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157667961949000-976",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157667961949000-976",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157752347736000-1006",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"reported\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791157752347736000-1006",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791158163491034000-1217",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791158163491034000-1217",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1684840260,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 3,
+          "pending_updates": 3,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-23",
+          "sequence": null,
+          "source_id": null,
+          "text": "What degree did I graduate with?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157614341247000-962"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "The user graduated with a degree in Business Administration.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I think I'll try out Todoist and Trello. I've heard a lot of good things about them. By the way, do you have any tips on creating a routine for my new job? I'm still getting used to the 9-to-5 schedule and I want to make sure I'm staying on top of my tasks and responsibilities."
+            },
+            "said_on": "2023-05-21",
+            "sequence": 2,
+            "source_id": "80856-1791157326246039000-872"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of implementing a system to track my personal expenses as well, not just work-related ones. Do you have any recommendations for personal expense tracking apps or tools that can help me stay on top of my finances?"
+            },
+            "said_on": "2023-05-21",
+            "sequence": 4,
+            "source_id": "80856-1791157667961949000-976"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I think I'll try out Mint and Personal Capital to see which one I like better. I've heard great things about both of them. By the way, do you have any tips on how to save money on everyday expenses, like groceries and household items? I feel like I'm spending a lot on those things and I want to cut back."
+            },
+            "said_on": "2023-05-21",
+            "sequence": 5,
+            "source_id": "80856-1791157752347736000-1006"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
+                },
+                "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I graduated with a degree in Business Administration, which has definitely helped me in my new role."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157614341247000-962"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-05-21",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'm especially interested in meal prep, as I've heard it can be a game-changer for saving time and money."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "meal prep"
+                },
+                "text": "meal prep"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm especially interested in meal prep, as I've heard it can be a game-changer for saving time and money."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791158163491034000-1217"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-05-21",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I feel like I'm spending a lot on those things and I want to cut back."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": {
+                "quote": {
+                  "text": "I feel like"
+                },
+                "resolved": true
+              },
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I feel like I'm spending a lot on those things and I want to cut back."
+                },
+                "text": "I feel like I'm spending a lot on those things and I want to cut back."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I feel like I'm spending a lot on those things and I want to cut back."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157752347736000-1006"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-05-21",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "avoids",
+              "sentence": {
+                "text": "I feel like I'm spending a lot on those things and I want to cut back."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "spending a lot on those things"
+                },
+                "text": "spending a lot on those things"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I feel like I'm spending a lot on those things and I want to cut back."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157752347736000-1006"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-05-21",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've been using a planner, but I think I need something more digital."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a planner"
+                },
+                "text": "a planner"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been using a planner, but I think I need something more digital."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157235731681000-846"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-05-21",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1684840260,
+          "context": [],
+          "query": "What degree did I graduate with?",
+          "request_id": "eval-lme_e47becba-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 6,
+          "source_revision": 6
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791157235731681000-846",
+        "s1_t2": "80856-1791157326246039000-872",
+        "s1_t3": "80856-1791157614341247000-962",
+        "s1_t4": "80856-1791157667961949000-976",
+        "s1_t5": "80856-1791157752347736000-1006",
+        "s1_t6": "80856-1791158163491034000-1217"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

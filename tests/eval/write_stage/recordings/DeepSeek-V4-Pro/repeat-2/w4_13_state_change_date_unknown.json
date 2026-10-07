@@ -1,0 +1,87 @@
+{
+  "id": "w4_13_state_change_date_unknown",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我换工作了，现在在腾讯。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-350"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我在字节跳动工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-304"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "现在"
+              },
+              "role": "validity"
+            },
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              64
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我换工作了，现在在腾讯。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-350\"}},{\"quote\":{\"text\":\"我在字节跳动工作。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-304\"}}],\"candidate\":0,\"effective\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"现在\"},\"role\":\"validity\"},\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[64]}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:1b0e844b6d747c60",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2754,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 538,
+          "output_tokens_details": {
+            "reasoning_tokens": 403
+          },
+          "total_tokens": 3292
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2754,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 538,
+        "output_tokens_details": {
+          "reasoning_tokens": 403
+        },
+        "total_tokens": 3292
+      }
+    }
+  ]
+}

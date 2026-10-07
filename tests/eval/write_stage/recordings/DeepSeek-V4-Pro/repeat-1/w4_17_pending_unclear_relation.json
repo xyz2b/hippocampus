@@ -1,0 +1,76 @@
+{
+  "id": "w4_17_pending_unclear_relation",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "new",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我最近在学韩语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-390"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "validity"
+            },
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"new\",\"basis\":[{\"quote\":{\"text\":\"我最近在学韩语。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-390\"}}],\"candidate\":0,\"effective\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"最近\"},\"role\":\"validity\"},\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:766a7de127714902",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2761,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 7250,
+          "output_tokens_details": {
+            "reasoning_tokens": 7145
+          },
+          "total_tokens": 10011
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2761,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7250,
+        "output_tokens_details": {
+          "reasoning_tokens": 7145
+        },
+        "total_tokens": 10011
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "id": "r1_17_assistant_preference",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "用英文"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "response_language",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "以后"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "response_language",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "以后"
+          },
+          "role": "validity"
+        },
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"用英文\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":\"response_language\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"以后\"},\"role\":\"validity\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"response_language\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"以后\"},\"role\":\"validity\"},\"type\":\"open\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:e8205dabd44a991b4a264b657958b9faeb7f5a47e2518377116d3af93b5e5d22",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2441,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 8002,
+          "output_tokens_details": {
+            "reasoning_tokens": 7876
+          },
+          "total_tokens": 10443
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2441,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8002,
+        "output_tokens_details": {
+          "reasoning_tokens": 7876
+        },
+        "total_tokens": 10443
+      }
+    }
+  ]
+}

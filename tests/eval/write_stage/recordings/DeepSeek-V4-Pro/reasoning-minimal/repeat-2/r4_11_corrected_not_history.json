@@ -1,0 +1,208 @@
+{
+  "id": "r4_11_corrected_not_history",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 4655,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我在字节工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-12"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              12
+            ],
+            "statement": "用户曾在字节工作。",
+            "strength": "moderate",
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我说错了，我在阿里工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-13"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              13
+            ],
+            "statement": "用户当前在阿里工作。",
+            "strength": "moderate",
+            "supersedes_record_ids": [
+              12
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n  \"applies\": \"yes\",\n  \"conditions\": [],\n  \"current\": \"no\",\n  \"evidence\": [\n    {\n  \"quote\": {\n    \"text\": \"我在字节工作。\"\n  },\n  \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-12\"\n  }\n}\n  ],\n  \"polarity\": \"affirm\",\n  \"record_ids\": [\n    12\n  ],\n  \"statement\": \"用户曾在字节工作。\",\n  \"strength\": \"moderate\",\n  \"supersedes_record_ids\": [],\n  \"times\": [],\n  \"uncertainty\": null\n},\n    {\n  \"applies\": \"yes\",\n  \"conditions\": [],\n  \"current\": \"yes\",\n  \"evidence\": [\n    {\n  \"quote\": {\n    \"text\": \"我说错了，我在阿里工作。\"\n  },\n  \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-13\"\n  }\n}\n  ],\n  \"polarity\": \"affirm\",\n  \"record_ids\": [\n    13\n  ],\n  \"statement\": \"用户当前在阿里工作。\",\n  \"strength\": \"moderate\",\n  \"supersedes_record_ids\": [\n    12\n  ],\n  \"times\": [],\n  \"uncertainty\": null\n}\n  ],\n  \"verdict\": \"supported\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:3e73ee3449b28fe45f4c0fc641cbfe17ba807d9e201983b0749431097bd3a2bd",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3634,
+          "input_tokens_details": {
+            "cached_tokens": 2816
+          },
+          "output_tokens": 306,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3940
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3634,
+        "input_tokens_details": {
+          "cached_tokens": 2816
+        },
+        "output_tokens": 306,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3940
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 5083,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我在字节工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-12"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              12
+            ],
+            "statement": "用户曾在字节工作。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我说错了，我在阿里工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-13"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我在字节工作。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-12"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              13
+            ],
+            "statement": "用户当前在阿里工作。",
+            "strength": null,
+            "supersedes_record_ids": [
+              12
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"no\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我在字节工作。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-12\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    12\n    ],\n    \"statement\": \"用户曾在字节工作。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我说错了，我在阿里工作。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-13\"\n    }\n    },\n    {\n    \"quote\": {\n    \"text\": \"我在字节工作。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-12\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    13\n    ],\n    \"statement\": \"用户当前在阿里工作。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [\n    12\n    ],\n    \"times\": [],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"supported\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:95cc0da97ee940cec073a88e919e5fffcda855be591b0970508864cd3616ca41",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4550,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 352,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4902
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4550,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 352,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4902
+      }
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "r1_11_condition_hint",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "周二"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "visited",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "date": "2026-10-06",
+                "kind": "date"
+              },
+              "quote": {
+                "text": "周二"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "visited",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "date": "2026-10-06",
+            "kind": "date"
+          },
+          "quote": {
+            "text": "周二"
+          },
+          "role": "event"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"周二\"}\n\n\n\n\n\n\n\n\n,\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"visited\",\"time\":{\"anchor\": \"said_on\",\"interp\": {\"date\": \"2026-10-06\",\"kind\": \"date\"},\"quote\": {\"text\": \"周二\"}\n\n\n\n\n\n\n\n\n,\"role\": \"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\": \"visited\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\": \"said_on\",\"interp\": {\"date\": \"2026-10-06\",\"kind\": \"date\"},\"quote\": {\"text\": \"周二\"}\n\n\n\n\n\n\n\n\n,\"role\": \"event\"}\n\n\n\n\n\n\n\n\n,\"type\":\"temporal\" }",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:23f341ef1775bcf13d444093df42349c8a5d7ff7bc4318113615defa7378105d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 900,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 15470,
+          "output_tokens_details": {
+            "reasoning_tokens": 15298
+          },
+          "total_tokens": 16370
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 900,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 15470,
+        "output_tokens_details": {
+          "reasoning_tokens": 15298
+        },
+        "total_tokens": 16370
+      }
+    }
+  ]
+}

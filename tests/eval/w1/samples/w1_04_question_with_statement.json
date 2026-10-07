@@ -1,0 +1,92 @@
+{
+ "id": "w1_04_question_with_statement",
+ "contract": "w1.v1",
+ "label_status": "reviewed",
+ "focus": "问句里的个人陈述不能因整条是问句而丢掉",
+ "input": {
+  "text": "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "lives_in",
+    "memory_type": "fact",
+    "value": "成都",
+    "sentence": [
+     "我上个月刚搬到成都，",
+     "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
+    ],
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "上个月",
+      "interp": {
+       "kind": "relative",
+       "unit": "month",
+       "offset": -1
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "为“哪里的火锅好吃”生成 user_statement 候选"
+ ],
+ "note": "sentence 取到逗号或整句均可（可接受集合）。"
+}

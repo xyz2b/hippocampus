@@ -1,0 +1,70 @@
+{
+  "id": "w4_22_replace_conflict_members",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我已经搬到深圳了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-510"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              110,
+              111
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我已经搬到深圳了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-510\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\": \"decided\",\"targets\":[110,111]}]}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:58d4de99bf2d1725",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1820,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 10688,
+          "output_tokens_details": {
+            "reasoning_tokens": 10601
+          },
+          "total_tokens": 12508
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1820,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 10688,
+        "output_tokens_details": {
+          "reasoning_tokens": 10601
+        },
+        "total_tokens": 12508
+      }
+    }
+  ]
+}

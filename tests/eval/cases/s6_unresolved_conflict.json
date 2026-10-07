@@ -401,8 +401,48 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "提问时 conflict_s2 尚未出现，7 英寸当时正确（按其时点标注）。 wrong_source 保留：该来源在提问时尚不存在，答案不能以它为依据。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "屏幕尺寸（此时只有 conflict_s1）",
+            "sources": {
+              "all_of": [
+                "conflict_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "device_qifeng_reader",
+            "value_any": [
+              "7英寸",
+              "7",
+              "7 英寸"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "wrong_source",
+            "sources": [
+              "conflict_s2"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "conflict_q1",
       "query": "栖风读书机的屏幕是几英寸？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -460,8 +500,77 @@
       "expect": {
         "kind": "conflict"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [
+          {
+            "members": [
+              {
+                "sources": {
+                  "all_of": [],
+                  "any_of": [
+                    "conflict_s1",
+                    "conflict_s2"
+                  ]
+                },
+                "value_any": [
+                  "7英寸",
+                  "7"
+                ]
+              },
+              {
+                "sources": {
+                  "all_of": [
+                    "conflict_s2"
+                  ],
+                  "any_of": []
+                },
+                "value_any": [
+                  "8英寸",
+                  "8"
+                ]
+              }
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "7英寸",
+              "7"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "8英寸",
+              "8"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "conflict",
+        "conflict_report": {
+          "sources": {
+            "all_of": [
+              "conflict_s2"
+            ],
+            "any_of": []
+          },
+          "subject": "栖风读书机屏幕尺寸",
+          "relation_note": "有出处的未解决冲突说明，同时呈现7英寸与8英寸的相斥说法，保留资料归属及未核实状态，不确认任一尺寸为当前值。"
+        },
+        "annotator_note": "AF11：结构化冲突成员或status=conflict且引用conflict_s2的冲突说明fact均可；说明必须同时提到7和8英寸并明确尚无最终尺寸。语义走复核，原forbidden不变。"
+      },
       "id": "conflict_q2",
       "query": "栖风读书机的屏幕到底是几英寸？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -519,8 +628,77 @@
       "expect": {
         "kind": "conflict"
       },
+      "expect_common": {
+        "annotator_note": "问法是“能否确定是 7 英寸”；正确处理是报告冲突，不能确认 7 英寸，也不能改答 8 英寸。AF11：结构化冲突成员或status=conflict且引用conflict_s2的冲突说明fact均可；说明必须同时提到7和8英寸并明确尚无最终尺寸。语义走复核，原forbidden不变。",
+        "computed": null,
+        "conflicts": [
+          {
+            "members": [
+              {
+                "sources": {
+                  "all_of": [],
+                  "any_of": [
+                    "conflict_s1",
+                    "conflict_s2"
+                  ]
+                },
+                "value_any": [
+                  "7英寸",
+                  "7"
+                ]
+              },
+              {
+                "sources": {
+                  "all_of": [
+                    "conflict_s2"
+                  ],
+                  "any_of": []
+                },
+                "value_any": [
+                  "8英寸",
+                  "8"
+                ]
+              }
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "7英寸",
+              "7"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "8英寸",
+              "8"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "conflict",
+        "conflict_report": {
+          "sources": {
+            "all_of": [
+              "conflict_s2"
+            ],
+            "any_of": []
+          },
+          "subject": "栖风读书机屏幕尺寸",
+          "relation_note": "有出处的未解决冲突说明，同时呈现7英寸与8英寸的相斥说法，保留资料归属及未核实状态，不确认任一尺寸为当前值。"
+        }
+      },
       "id": "conflict_q3",
       "query": "能确定栖风读书机是7英寸屏幕吗？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

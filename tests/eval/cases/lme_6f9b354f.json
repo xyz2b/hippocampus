@@ -477,8 +477,39 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "卧室墙重新粉刷的颜色",
+            "sources": {
+              "all_of": [
+                "s1_t2"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "a lighter shade of gray",
+              "lighter shade of gray",
+              "a lighter gray"
+            ]
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "What color did I repaint my bedroom walls?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

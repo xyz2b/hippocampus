@@ -1,0 +1,1842 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 3,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 123489,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3820,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7892,
+        "output_tokens_details": {
+          "reasoning_tokens": 7695
+        },
+        "total_tokens": 11712
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 1704,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2105,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 48,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2153
+      }
+    },
+    {
+      "elapsed_ms": 5,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 155887,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3990,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 11170,
+        "output_tokens_details": {
+          "reasoning_tokens": 9774
+        },
+        "total_tokens": 15160
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 5484,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3218,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 415,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3633
+      }
+    },
+    {
+      "elapsed_ms": 38562,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 38549,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3718,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1561,
+        "output_tokens_details": {
+          "reasoning_tokens": 1165
+        },
+        "total_tokens": 5279
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 93066,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4056,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 6009,
+        "output_tokens_details": {
+          "reasoning_tokens": 5742
+        },
+        "total_tokens": 10065
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2501,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2341,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 92,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2433
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 122729,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4160,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7868,
+        "output_tokens_details": {
+          "reasoning_tokens": 7631
+        },
+        "total_tokens": 12028
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 11518,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2507,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 119,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2626
+      }
+    },
+    {
+      "elapsed_ms": 385,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 49474,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4256,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3107,
+        "output_tokens_details": {
+          "reasoning_tokens": 2956
+        },
+        "total_tokens": 7363
+      }
+    },
+    {
+      "elapsed_ms": 2097,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2084,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2513,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2587
+      }
+    },
+    {
+      "elapsed_ms": 18350,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 18335,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3367,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1147,
+        "output_tokens_details": {
+          "reasoning_tokens": 1011
+        },
+        "total_tokens": 4514
+      }
+    },
+    {
+      "elapsed_ms": 97756,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 97738,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4347,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6574,
+        "output_tokens_details": {
+          "reasoning_tokens": 6448
+        },
+        "total_tokens": 10921
+      }
+    },
+    {
+      "elapsed_ms": 2145,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2128,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2561,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 88,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2649
+      }
+    },
+    {
+      "elapsed_ms": 3207,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3189,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2364,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 164,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2528
+      }
+    },
+    {
+      "elapsed_ms": 85677,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 85656,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 6501,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 5405,
+        "output_tokens_details": {
+          "reasoning_tokens": 5075
+        },
+        "total_tokens": 11906
+      }
+    }
+  ],
+  "case": "lme_gpt4_e072b769",
+  "elapsed_ms": 252057,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377739582000-61",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377739582000-61",
+            "duration_ms": 10,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377753693000-68",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377753693000-68",
+            "duration_ms": 7,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377688045000-46",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212377688045000-46",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377838676000-94",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377838676000-94",
+            "duration_ms": 12,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377867165000-101",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377867165000-101",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377944317000-109",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377944317000-109",
+            "duration_ms": 38810,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377804343000-79",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 3,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 4,
+                "memory_id": 4,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 5,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 6,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212377804343000-79",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212416953103000-192",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212416953103000-192",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212416994333000-193",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212416994333000-193",
+            "duration_ms": 12,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212416877769000-190",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212416877769000-190",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212417200472000-197",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212417200472000-197",
+            "duration_ms": 18,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212417250106000-198",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212417250106000-198",
+            "duration_ms": 8,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212417111972000-195",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212417111972000-195",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212417564549000-202",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212417564549000-202",
+            "duration_ms": 392,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212417998529000-203",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212417998529000-203",
+            "duration_ms": 2346,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212420446185000-210",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212420446185000-210",
+            "duration_ms": 18616,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212417450042000-200",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "\"EpisodeNotAdmitted\""
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212417450042000-200",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212439307377000-221",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212439307377000-221",
+            "duration_ms": 98025,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212537379726000-250",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212537379726000-250",
+            "duration_ms": 2448,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212439175352000-219",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212439175352000-219",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1683321900,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212540063704000-256",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212540063704000-256",
+            "duration_ms": 3515,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212543641336000-257",
+            "stage": "r4_v3",
+            "timeout_ms": 240000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212543641336000-257",
+            "duration_ms": 86008,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 4,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-06",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many weeks ago did I start using the cashback app 'Ibotta'?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377688045000-46"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "On 2023-04-16, the user said they had just downloaded Ibotta, a cashback app.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "just downloaded"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377804343000-79"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [
+              4
+            ],
+            "statement": "On 2023-04-16, the user said they try to shop at places that offer cashback through Ibotta.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that."
+            },
+            "said_on": "2023-04-16",
+            "sequence": 2,
+            "source_id": "55832-1791212377804343000-79"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?"
+            },
+            "said_on": "2023-04-16",
+            "sequence": 3,
+            "source_id": "55832-1791212416877769000-190"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?"
+            },
+            "said_on": "2023-04-16",
+            "sequence": 5,
+            "source_id": "55832-1791212417450042000-200"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?"
+            },
+            "said_on": "2023-04-16",
+            "sequence": 6,
+            "source_id": "55832-1791212439175352000-219"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377688045000-46"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+                },
+                "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377804343000-79"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I feel good about not contributing to the plastic waste."
+              },
+              "speech": "user_statement",
+              "strength": "moderate",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "not contributing to the plastic waste"
+                },
+                "text": "not contributing to the plastic waste"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I feel good about not contributing to the plastic waste."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212417111972000-195"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+                },
+                "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377804343000-79"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "whenever I go shopping"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "reusable bags"
+                },
+                "text": "reusable bags"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212417111972000-195"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+                },
+                "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377804343000-79"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1683321900,
+          "context": [],
+          "query": "How many weeks ago did I start using the cashback app 'Ibotta'?",
+          "request_id": "eval-lme_gpt4_e072b769-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 7,
+          "source_revision": 6
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "55832-1791212377688045000-46",
+        "s1_t2": "55832-1791212377804343000-79",
+        "s1_t3": "55832-1791212416877769000-190",
+        "s1_t4": "55832-1791212417111972000-195",
+        "s1_t5": "55832-1791212417450042000-200",
+        "s1_t6": "55832-1791212439175352000-219"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

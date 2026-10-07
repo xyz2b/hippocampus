@@ -1,0 +1,137 @@
+{
+  "id": "w1_01_simple_residence",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我现在住在杭州。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "杭州"
+              },
+              "text": "杭州"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我现在住在杭州。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"杭州\"},\"text\":\"杭州\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:d456decb3be0d131",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3535,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4655,
+          "output_tokens_details": {
+            "reasoning_tokens": 4557
+          },
+          "total_tokens": 8190
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3535,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4655,
+        "output_tokens_details": {
+          "reasoning_tokens": 4557
+        },
+        "total_tokens": 8190
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我现在住在杭州。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "杭州"
+              },
+              "text": "杭州"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我现在住在杭州。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"杭州\"},\"text\":\"杭州\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:eb5f1fef0175d503",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3715,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 736,
+          "output_tokens_details": {
+            "reasoning_tokens": 638
+          },
+          "total_tokens": 4451
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3715,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 736,
+        "output_tokens_details": {
+          "reasoning_tokens": 638
+        },
+        "total_tokens": 4451
+      }
+    }
+  ]
+}

@@ -1,0 +1,2155 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 19807,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:device_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 19561,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3777,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1268,
+        "output_tokens_details": {
+          "reasoning_tokens": 1142
+        },
+        "total_tokens": 5045
+      }
+    },
+    {
+      "elapsed_ms": 2190,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:device_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2048,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1991,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2065
+      }
+    },
+    {
+      "elapsed_ms": 17825,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:device_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 17676,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3799,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1114,
+        "output_tokens_details": {
+          "reasoning_tokens": 987
+        },
+        "total_tokens": 4913
+      }
+    },
+    {
+      "elapsed_ms": 2481,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:device_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2331,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2014,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2088
+      }
+    },
+    {
+      "elapsed_ms": 2379,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2209,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2424,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 72,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2496
+      }
+    },
+    {
+      "elapsed_ms": 4593,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4383,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4866,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 347,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5213
+      }
+    },
+    {
+      "elapsed_ms": 3121,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2978,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2430,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 116,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2546
+      }
+    },
+    {
+      "elapsed_ms": 4855,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4718,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4872,
+        "input_tokens_details": {
+          "cached_tokens": 4608
+        },
+        "output_tokens": 347,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5219
+      }
+    },
+    {
+      "elapsed_ms": 2487,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2350,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2430,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 105,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2535
+      }
+    },
+    {
+      "elapsed_ms": 3416,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3276,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4623,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 182,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4805
+      }
+    },
+    {
+      "elapsed_ms": 2189,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2052,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2428,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 65,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2493
+      }
+    },
+    {
+      "elapsed_ms": 3689,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3550,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4627,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 184,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4811
+      }
+    },
+    {
+      "elapsed_ms": 2578,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2351,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2433,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 134,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2567
+      }
+    },
+    {
+      "elapsed_ms": 3984,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3718,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4650,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 184,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4834
+      }
+    },
+    {
+      "elapsed_ms": 2294,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2171,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2429,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 65,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2494
+      }
+    },
+    {
+      "elapsed_ms": 2444,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:device_q6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2319,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4629,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4651
+      }
+    }
+  ],
+  "case": "device_default_paper",
+  "elapsed_ms": 86749,
+  "steps": [
+    {
+      "message": "device_s1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203896133416000-1114",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203896133416000-1114",
+            "duration_ms": 20030,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203916168484000-1126",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203916168484000-1126",
+            "duration_ms": 2474,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791203896114078000-1112",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791203896114078000-1112",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "device_s2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203918689812000-1130",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203918689812000-1130",
+            "duration_ms": 18070,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203936768868000-1140",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203936768868000-1140",
+            "duration_ms": 2754,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791203918667639000-1128",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791203918667639000-1128",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203939590407000-1147",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203939590407000-1147",
+            "duration_ms": 2670,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203942277862000-1148",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203942277862000-1148",
+            "duration_ms": 4898,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "device_q1",
+      "reason": null,
+      "result": {
+        "clarification": {
+          "evidence": [
+            {
+              "quote": {
+                "text": "默认纸张规格是什么？"
+              },
+              "source": {
+                "kind": "current"
+              }
+            }
+          ],
+          "question": "你指的是青苔打印机、雾岚打印机中的哪一位？"
+        },
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "默认纸张规格是什么？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "青苔打印机的默认纸张规格是B5。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "雾岚打印机的默认纸张规格是A4。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "青苔打印机的默认纸张规格是B5。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qingtai_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "text": "青苔打印机的默认纸张规格是B5。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_wulan_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "默认纸张规格是什么？",
+          "request_id": "eval-device_default_paper-device_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "needs_clarification",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "device_s1": "33284-1791203896114078000-1112",
+        "device_s2": "33284-1791203918667639000-1128"
+      },
+      "source_state": {
+        "device_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "device_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203947211793000-1160",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203947211793000-1160",
+            "duration_ms": 3444,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203950673282000-1162",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203950673282000-1162",
+            "duration_ms": 5211,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "device_q2",
+      "reason": null,
+      "result": {
+        "clarification": {
+          "evidence": [
+            {
+              "quote": {
+                "text": "默认纸张规格是什么？"
+              },
+              "source": {
+                "kind": "current"
+              }
+            }
+          ],
+          "question": "你指的是青苔打印机、雾岚打印机中的哪一位？"
+        },
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 2,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "默认纸张规格是什么？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "青苔打印机的默认纸张规格是B5。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "雾岚打印机的默认纸张规格是A4。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "青苔打印机的默认纸张规格是B5。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qingtai_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "text": "青苔打印机的默认纸张规格是B5。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_wulan_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我指的是那台打印机。"
+          ],
+          "query": "默认纸张规格是什么？",
+          "request_id": "eval-device_default_paper-device_q2",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "needs_clarification",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "device_s1": "33284-1791203896114078000-1112",
+        "device_s2": "33284-1791203918667639000-1128"
+      },
+      "source_state": {
+        "device_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "device_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203955920476000-1165",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203955920476000-1165",
+            "duration_ms": 2858,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203958796698000-1166",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203958796698000-1166",
+            "duration_ms": 3827,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "device_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "默认纸张规格是什么？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "雾岚打印机的默认纸张规格是A4。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_wulan_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我指的是雾岚打印机。"
+          ],
+          "query": "默认纸张规格是什么？",
+          "request_id": "eval-device_default_paper-device_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "device_s1": "33284-1791203896114078000-1112",
+        "device_s2": "33284-1791203918667639000-1128"
+      },
+      "source_state": {
+        "device_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "device_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203962660457000-1170",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203962660457000-1170",
+            "duration_ms": 2595,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203965273135000-1175",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203965273135000-1175",
+            "duration_ms": 4175,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "device_q4",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "青苔打印机的默认纸张规格是什么？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              2
+            ],
+            "statement": "青苔打印机的默认纸张规格是B5。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "青苔打印机的默认纸张规格是B5。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qingtai_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "text": "青苔打印机的默认纸张规格是B5。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "青苔打印机的默认纸张规格是什么？",
+          "request_id": "eval-device_default_paper-device_q4",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "device_s1": "33284-1791203896114078000-1112",
+        "device_s2": "33284-1791203918667639000-1128"
+      },
+      "source_state": {
+        "device_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "device_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203969485713000-1178",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203969485713000-1178",
+            "duration_ms": 3103,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203972607524000-1184",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203972607524000-1184",
+            "duration_ms": 4424,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "device_q5",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "雾岚打印机的默认纸张规格是A4。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_wulan_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "text": "雾岚打印机的默认纸张规格是A4。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "雾岚打印机的默认纸张规格是A4。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203896114078000-1112"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
+          "request_id": "eval-device_default_paper-device_q5",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "device_s1": "33284-1791203896114078000-1112",
+        "device_s2": "33284-1791203918667639000-1128"
+      },
+      "source_state": {
+        "device_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "device_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203977069461000-1191",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203977069461000-1191",
+            "duration_ms": 2750,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203979837762000-1197",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203979837762000-1197",
+            "duration_ms": 2995,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "device_q6",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "青苔打印机使用什么型号的墨盒？"
+        },
+        "degraded_reasons": [],
+        "facts": [],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "青苔打印机的默认纸张规格是B5。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qingtai_printer"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "text": "青苔打印机的默认纸张规格是B5。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "青苔打印机的默认纸张规格是B5。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203918667639000-1128"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "青苔打印机使用什么型号的墨盒？",
+          "request_id": "eval-device_default_paper-device_q6",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "device_s1": "33284-1791203896114078000-1112",
+        "device_s2": "33284-1791203918667639000-1128"
+      },
+      "source_state": {
+        "device_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "device_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

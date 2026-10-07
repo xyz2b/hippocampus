@@ -1,0 +1,68 @@
+{
+  "id": "w1_19_response_language",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "constraint",
+            "polarity": "affirm",
+            "relation": "response_language",
+            "sentence": {
+              "text": "以后回答我请用英文。\u0000"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "anchor_quote": {
+                    "text": "以后回答我请用英文。\u0000"
+                  },
+                  "kind": "anchored",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "以后回答我请用英文。\u0000"
+                },
+                "role": "validity"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "以后回答我请用英文。\u0000"
+              },
+              "text": "以后回答我请用英文。\u0000"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\": \"assertion\",\"memory_type\":\"constraint\",\"polarity\":\"affirm\",\"relation\":\"response_language\",\"sentence\":  {\"text\":\"以后回答我请用英文。\\u0000\"  },\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\": \"said_on\",\"interp\":{\"anchor_quote\":  {\"text\":\"以后回答我请用英文。\\u0000\"  },\"kind\":\"anchored\",\"offset\":0,\"unit\":\"day\"},\"quote\":  {\"text\":\"以后回答我请用英文。\\u0000\"  },\"role\":\"validity\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":  {\"text\":\"以后回答我请用英文。\\u0000\"  },\"text\":\"以后回答我请用英文。\\u0000\"}}],\"memory_requests\":[]}",
+      "request": "fnv1a64:244639890351156d",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1455,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 8608,
+        "output_tokens_details": {
+          "reasoning_tokens": 8401
+        },
+        "total_tokens": 10063
+      }
+    }
+  ]
+}

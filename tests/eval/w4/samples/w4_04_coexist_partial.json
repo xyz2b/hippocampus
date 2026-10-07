@@ -1,0 +1,191 @@
+{
+  "id": "w4_04_coexist_partial",
+  "contract": "w4.v2",
+  "batch": 1,
+  "label_status": "draft",
+  "focus": "局部补充 coexist：只在新条件下成立，不结束较一般的旧事实",
+  "boundary_with": "w4_03_refine_whole",
+  "sources": {
+    "s-111": {
+      "text": "我喜欢喝咖啡。",
+      "said_on": "2026-05-06"
+    },
+    "s-241": {
+      "text": "周末的时候我更喜欢喝手冲咖啡。",
+      "said_on": "2026-09-15"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "preference",
+          "value": {
+            "kind": "text",
+            "text": "周末的时候我更喜欢喝手冲咖啡。",
+            "quote": {
+              "text": "周末的时候我更喜欢喝手冲咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "周末的时候我更喜欢喝手冲咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [
+            {
+              "quote": {
+                "text": "周末的时候"
+              },
+              "resolved": true
+            }
+          ],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-241"
+        },
+        "said_on": "2026-09-15",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 31,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "preference",
+          "value": {
+            "kind": "text",
+            "text": "我喜欢喝咖啡。",
+            "quote": {
+              "text": "我喜欢喝咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我喜欢喝咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-111"
+            },
+            "quote": {
+              "text": "我喜欢喝咖啡。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-06",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "coexist",
+        "targets": [],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-111",
+          "s-241"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "31": {
+          "stored_status": "active",
+          "termination_reason": null,
+          "ended": "not_ended"
+        },
+        "new": {
+          "from_candidate": 0,
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          },
+          "conditions": [
+            "周末的时候"
+          ]
+        }
+      },
+      "recall": {
+        "current": [
+          "31（喜欢喝咖啡）",
+          "new（周末更喜欢手冲，带条件）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得结束 31（现有 Refine 会结束旧版本，这里必须避免）",
+      "新记录不得丢掉“周末的时候”条件"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "refine",
+      "why": "新断言只覆盖周末，不能替代无条件的旧偏好"
+    },
+    {
+      "action": "conflict",
+      "why": "两者不互斥"
+    }
+  ],
+  "note": "通用 fact 范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "conditions": [
+        "周末的时候"
+      ]
+    }
+  }
+}

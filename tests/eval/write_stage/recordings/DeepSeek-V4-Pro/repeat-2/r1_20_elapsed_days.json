@@ -1,0 +1,68 @@
+{
+  "id": "r1_20_elapsed_days",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "上次"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "elapsed",
+          "unit": "day"
+        },
+        "relation": "体检",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "temporal"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"上次\"\n      },\n      \"resolved\": true\n    }\n  ],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": null,\n      \"time\": null\n    },\n    \"op\": \"elapsed\",\n    \"unit\": \"day\"\n  },\n  \"relation\": \"体检\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"temporal\"\n}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:eb87980c7803c6fce498b1e88959d2abe2feb129aed6d8fd9b229347baaf8492",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2442,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 6132,
+          "output_tokens_details": {
+            "reasoning_tokens": 6002
+          },
+          "total_tokens": 8574
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2442,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6132,
+        "output_tokens_details": {
+          "reasoning_tokens": 6002
+        },
+        "total_tokens": 8574
+      }
+    }
+  ]
+}

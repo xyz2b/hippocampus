@@ -1,0 +1,751 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 98907,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 98821,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3749,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6669,
+        "output_tokens_details": {
+          "reasoning_tokens": 6249
+        },
+        "total_tokens": 10418
+      }
+    },
+    {
+      "elapsed_ms": 46698,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 46611,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1560,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 8540,
+        "output_tokens_details": {
+          "reasoning_tokens": 8466
+        },
+        "total_tokens": 10100
+      }
+    },
+    {
+      "elapsed_ms": 92982,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 92895,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3821,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6192,
+        "output_tokens_details": {
+          "reasoning_tokens": 5680
+        },
+        "total_tokens": 10013
+      }
+    },
+    {
+      "elapsed_ms": 87706,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": {
+        "reason": "length"
+      },
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 87548,
+      "response_status": "incomplete",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1697,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16384,
+        "output_tokens_details": {
+          "reasoning_tokens": 16384
+        },
+        "total_tokens": 18081
+      }
+    },
+    {
+      "elapsed_ms": 105203,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 105109,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3915,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7233,
+        "output_tokens_details": {
+          "reasoning_tokens": 6870
+        },
+        "total_tokens": 11148
+      }
+    },
+    {
+      "elapsed_ms": 11678,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 11584,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1812,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1962,
+        "output_tokens_details": {
+          "reasoning_tokens": 1865
+        },
+        "total_tokens": 3774
+      }
+    },
+    {
+      "elapsed_ms": 106497,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 106400,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3284,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7167,
+        "output_tokens_details": {
+          "reasoning_tokens": 6886
+        },
+        "total_tokens": 10451
+      }
+    },
+    {
+      "elapsed_ms": 87738,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 87606,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3994,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6140,
+        "output_tokens_details": {
+          "reasoning_tokens": 5885
+        },
+        "total_tokens": 10134
+      }
+    },
+    {
+      "elapsed_ms": 56430,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 56329,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1780,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9839,
+        "output_tokens_details": {
+          "reasoning_tokens": 9716
+        },
+        "total_tokens": 11619
+      }
+    },
+    {
+      "elapsed_ms": 30477,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 30371,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4055,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1985,
+        "output_tokens_details": {
+          "reasoning_tokens": 1761
+        },
+        "total_tokens": 6040
+      }
+    },
+    {
+      "elapsed_ms": 129501,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 129397,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4134,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 9252,
+        "output_tokens_details": {
+          "reasoning_tokens": 8914
+        },
+        "total_tokens": 13386
+      }
+    },
+    {
+      "elapsed_ms": 30405,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 30225,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2006,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5142,
+        "output_tokens_details": {
+          "reasoning_tokens": 4611
+        },
+        "total_tokens": 7148
+      }
+    },
+    {
+      "elapsed_ms": 3842,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3730,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2244,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 249,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2493
+      }
+    },
+    {
+      "elapsed_ms": 4244,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 4126,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4569,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 270,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4839
+      }
+    }
+  ],
+  "case": "lme_ccb36322",
+  "elapsed_ms": 897219,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157196713945000-826",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157196713945000-826",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157342674582000-878",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791157342674582000-878",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157523781705000-933",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 4,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791157523781705000-933",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157748130138000-1002",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 7,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "coverage_gaps"
+          },
+          "source": {
+            "source_id": "80856-1791157748130138000-1002",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791157924023245000-1047",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "80856-1791157924023245000-1047",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1685139360,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 3,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-27",
+          "sequence": null,
+          "source_id": null,
+          "text": "What is the name of the music streaming service have I been using lately?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "lately"
+                },
+                "resolved": false
+              }
+            ],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been listening to their songs a lot on Spotify lately."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791157342674582000-878"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "The user has been listening to songs a lot on Spotify lately.",
+            "strength": "moderate",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "lately"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": null
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately."
+            },
+            "said_on": "2023-05-23",
+            "sequence": 2,
+            "source_id": "80856-1791157342674582000-878"
+          },
+          {
+            "enrichment": "coverage_gaps",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently."
+            },
+            "said_on": "2023-05-23",
+            "sequence": 4,
+            "source_id": "80856-1791157748130138000-1002"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm open to exploring local acts and music festivals with smaller stages. That sounds like a great way to discover new music and experience something different.\n\nBy the way, do you have any recommendations for music gear, like turntables or guitar equipment? I've been getting back into playing guitar and I'm looking to upgrade my setup."
+            },
+            "said_on": "2023-05-23",
+            "sequence": 5,
+            "source_id": "80856-1791157924023245000-1047"
+          }
+        ],
+        "records": [],
+        "request": {
+          "at": 1685139360,
+          "context": [],
+          "query": "What is the name of the music streaming service have I been using lately?",
+          "request_id": "eval-lme_ccb36322-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 8,
+          "source_revision": 5
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791157196713945000-826",
+        "s1_t2": "80856-1791157342674582000-878",
+        "s1_t3": "80856-1791157523781705000-933",
+        "s1_t4": "80856-1791157748130138000-1002",
+        "s1_t5": "80856-1791157924023245000-1047"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

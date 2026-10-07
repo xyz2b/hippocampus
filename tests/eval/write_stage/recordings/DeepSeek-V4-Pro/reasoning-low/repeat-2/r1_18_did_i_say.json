@@ -1,0 +1,70 @@
+{
+  "id": "r1_18_did_i_say",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 24389,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "花生"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "allergic_to",
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "allergic_to",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"花生\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"allergic_to\",\"time\":null},\"op\":\"lookup\",\"unit\":null},\"relation\":\"allergic_to\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:4cd6baebfafe84164d5d656ec98c744e4df3805b1a281ace6ab5964b0564e251",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2362,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1542,
+          "output_tokens_details": {
+            "reasoning_tokens": 1465
+          },
+          "total_tokens": 3904
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2362,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1542,
+        "output_tokens_details": {
+          "reasoning_tokens": 1465
+        },
+        "total_tokens": 3904
+      }
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+ "id": "r4_04_new_raw_overrides_old",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "新原文未整理，旧记录不能作为确定当前值（target-design 2.6）",
+ "input": {
+  "query": "我住在哪？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 4,
+    "sentence": "我住在上海。",
+    "said_on": "2026-01-10",
+    "source": "s-4",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [
+   {
+    "source": "s-40",
+    "text": "我上周已经搬到南京了。",
+    "said_on": "2026-09-30",
+    "enrichment": "queued"
+   }
+  ],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [],
+    "sources": [
+     "s-40"
+    ],
+    "must": {
+     "current": "yes"
+    }
+   },
+   {
+    "record_ids": [
+     4
+    ],
+    "sources": [
+     "s-4"
+    ],
+    "must": {
+     "current": "no"
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [
+  "上海 current=yes",
+  "忽略未整理的南京原文",
+  "判为 conflict（先后变化不是冲突）"
+ ],
+ "note": "用户裁定（2026-10-03）：原文明确“已经搬到”，必须 supported；南京来自未整理原文，grade 由代码标为 uncommitted。"
+}

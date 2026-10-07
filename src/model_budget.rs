@@ -18,10 +18,10 @@ pub struct ModelBudgetConfig {
     pub max_calls: u64,
     #[serde(default = "operation_limit")]
     pub max_operation_calls: u64,
-    /// Authorizes one coverage correction and its independent review in the same operation.
+    /// Historical coverage-repair authorization, preserved for existing groups.
     #[serde(default, skip_serializing_if = "is_false")]
     pub allow_coverage_repair: bool,
-    /// Authorizes one correction of a localized candidate error and its independent review.
+    /// Historical extraction-repair authorization, preserved for existing groups.
     #[serde(default, skip_serializing_if = "is_false")]
     pub allow_extraction_repair: bool,
     /// Full serialized provider request bytes; this is not a token count.
@@ -33,6 +33,12 @@ pub struct ModelBudgetConfig {
     pub review_output_tokens: u32,
     #[serde(default = "output_limit")]
     pub query_output_tokens: u32,
+    /// New recall R4 only: verified computation using low reasoning.
+    #[serde(
+        default = "r4_compute_limit",
+        skip_serializing_if = "is_r4_compute_default"
+    )]
+    pub r4_compute_output_tokens: u32,
 }
 
 fn operation_limit() -> u64 {
@@ -43,6 +49,12 @@ fn input_limit() -> usize {
 }
 fn output_limit() -> u32 {
     4096
+}
+fn r4_compute_limit() -> u32 {
+    16384
+}
+fn is_r4_compute_default(value: &u32) -> bool {
+    *value == r4_compute_limit()
 }
 fn is_false(value: &bool) -> bool {
     !value
@@ -60,6 +72,7 @@ impl Default for ModelBudgetConfig {
             extraction_output_tokens: output_limit(),
             review_output_tokens: output_limit(),
             query_output_tokens: output_limit(),
+            r4_compute_output_tokens: r4_compute_limit(),
         }
     }
 }
@@ -77,6 +90,7 @@ impl ModelBudgetConfig {
                 self.extraction_output_tokens,
                 self.review_output_tokens,
                 self.query_output_tokens,
+                self.r4_compute_output_tokens,
             ]
             .iter()
             .any(|v| !(1..=65536).contains(v))
@@ -89,10 +103,11 @@ impl ModelBudgetConfig {
 
 #[derive(Clone, Copy, Debug)]
 pub enum ModelStage {
-    Extraction,
-    ExtractionReview,
-    ExtractionRepair,
-    ExtractionRepairReview,
+    R1,
+    R4,
+    W1,
+    W3,
+    W4,
     Query,
     QueryReview,
     Assistance,
@@ -105,10 +120,11 @@ pub enum ModelStage {
 impl ModelStage {
     pub(crate) fn name(self) -> &'static str {
         match self {
-            Self::Extraction => "extraction",
-            Self::ExtractionReview => "extraction_review",
-            Self::ExtractionRepair => "extraction_repair",
-            Self::ExtractionRepairReview => "extraction_repair_review",
+            Self::R1 => "r1",
+            Self::R4 => "r4",
+            Self::W1 => "w1",
+            Self::W3 => "w3",
+            Self::W4 => "w4",
             Self::Query => "query",
             Self::QueryReview => "query_review",
             Self::Assistance => "assistance",
@@ -118,7 +134,11 @@ impl ModelStage {
         }
     }
     pub(crate) fn timeout(self, config: &ModelBudgetConfig) -> Duration {
-        Duration::from_secs(if matches!(self, Self::Query) {
+        Duration::from_secs(if matches!(self, Self::W1 | Self::W3 | Self::W4) {
+            // Background stages renew a 900s lease before each call. The recorded
+            // 242s maximum needs headroom without extending the foreground budget.
+            360
+        } else if matches!(self, Self::Query) {
             15
         } else if matches!(self, Self::Assistance | Self::Answer) {
             180
@@ -130,13 +150,12 @@ impl ModelStage {
     }
     pub fn output_tokens(self, config: &ModelBudgetConfig) -> u32 {
         match self {
-            Self::Extraction | Self::ExtractionRepair | Self::Reader => {
-                config.extraction_output_tokens
-            }
-            Self::ExtractionReview
-            | Self::ExtractionRepairReview
-            | Self::QueryReview
-            | Self::Judge => config.review_output_tokens,
+            Self::R1 => config.query_output_tokens,
+            Self::R4 => config.review_output_tokens,
+            Self::W1 => 32768,
+            Self::W3 | Self::W4 => 16384,
+            Self::Reader => config.extraction_output_tokens,
+            Self::QueryReview | Self::Judge => config.review_output_tokens,
             Self::Query | Self::Assistance | Self::Answer => config.query_output_tokens,
         }
     }
@@ -180,10 +199,72 @@ pub(crate) struct ModelBudget {
     path: PathBuf,
     owner: String,
     pub(crate) config: ModelBudgetConfig,
+    pub(crate) r4_compute: bool,
     operation_id: String,
+    max_background_operation_calls: Option<u64>,
 }
 
 impl ModelBudget {
+    pub(crate) fn output_tokens(&self, stage: ModelStage) -> u32 {
+        if matches!(stage, ModelStage::R4) && self.r4_compute {
+            self.config.r4_compute_output_tokens
+        } else {
+            stage.output_tokens(&self.config)
+        }
+    }
+
+    pub(crate) fn timeout(&self, stage: ModelStage) -> Duration {
+        if matches!(stage, ModelStage::R4) && self.r4_compute {
+            return Duration::from_secs(240);
+        }
+        let mut config = self.config.clone();
+        if matches!(stage, ModelStage::R4) {
+            config.review_output_tokens = self.output_tokens(stage);
+        }
+        stage.timeout(&config)
+    }
+
+    pub(crate) fn with_background_operation_limit(
+        mut self,
+        limit: u64,
+    ) -> Result<Self, OpenAiAdapterError> {
+        if !(1..=3).contains(&limit) {
+            return Err(budget_error("background operation limit must be 1..3"));
+        }
+        self.max_background_operation_calls = Some(limit);
+        Ok(self)
+    }
+
+    pub(crate) fn for_operation(
+        &self,
+        path: &Path,
+        owner: &str,
+        operation: &str,
+    ) -> Result<Self, OpenAiAdapterError> {
+        if self.owner != owner
+            || self.path.canonicalize().map_err(database_error)?
+                != path.canonicalize().map_err(database_error)?
+        {
+            return Err(budget_error(
+                "write provider budget must belong to this source database and owner",
+            ));
+        }
+        let mut budget = Self::new(path, owner.into(), self.config.clone(), operation.into())?;
+        budget.max_background_operation_calls = self.max_background_operation_calls;
+        Ok(budget)
+    }
+
+    /// A reservation survives a crash even when no stage output was saved.
+    pub(crate) fn has_call(&self, stage: ModelStage) -> Result<bool, OpenAiAdapterError> {
+        let db = self.connect(false)?;
+        let present: i64 = db.query_row(
+            "SELECT count(*) FROM model_calls WHERE owner_id=?1 AND operation_id=?2 AND stage=?3",
+            params![self.owner, self.operation_id, stage.name()],
+            |r| r.get(0),
+        ).map_err(database_error)?;
+        Ok(present != 0)
+    }
+
     pub(crate) fn new(
         path: &Path,
         owner: String,
@@ -210,7 +291,9 @@ impl ModelBudget {
             path,
             owner,
             config,
+            r4_compute: false,
             operation_id,
+            max_background_operation_calls: None,
         })
     }
 
@@ -245,14 +328,6 @@ impl ModelBudget {
         stage: ModelStage,
         request: &[u8],
     ) -> Result<ModelReservation, OpenAiAdapterError> {
-        if matches!(
-            stage,
-            ModelStage::ExtractionRepair | ModelStage::ExtractionRepairReview
-        ) && !self.config.allow_coverage_repair
-            && !self.config.allow_extraction_repair
-        {
-            return Err(budget_error("coverage repair is not authorized"));
-        }
         if request.len() > self.config.max_input_bytes {
             return Err(budget_error(format!(
                 "request exceeds {} input bytes",
@@ -264,7 +339,13 @@ impl ModelBudget {
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(database_error)?;
         create_schema(&tx).map_err(database_error)?;
-        let policy = json!({"version":1,"per_stage_calls":1,"limits":self.config});
+        let mut policy = json!({"version":1,"per_stage_calls":1,"limits":self.config});
+        if let Some(limit) = self.max_background_operation_calls {
+            policy["max_background_operation_calls"] = json!(limit);
+        }
+        let write_limits = json!({"w1":ModelStage::W1.output_tokens(&self.config),
+            "w3":ModelStage::W3.output_tokens(&self.config),
+            "w4":ModelStage::W4.output_tokens(&self.config)});
         let existing: Option<String> = tx
             .query_row(
                 "SELECT policy_json FROM model_budget_groups WHERE group_id=?1",
@@ -279,6 +360,15 @@ impl ModelBudget {
             .map(serde_json::from_str::<Value>)
             .transpose()
             .map_err(database_error)?;
+        // 新授权同时绑定后台输出额度。旧授权可继续旧阶段，不能静默提高后台额度。
+        if existing.is_none()
+            || matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4)
+            || persisted_policy
+                .as_ref()
+                .is_some_and(|old| old.get("write_output_tokens").is_some())
+        {
+            policy["write_output_tokens"] = write_limits;
+        }
         if persisted_policy.as_ref().is_some_and(|old| old != &policy) {
             return Err(budget_error(
                 "budget group policy differs from its persisted authorization",
@@ -291,31 +381,62 @@ impl ModelBudget {
             )
             .map_err(database_error)?;
         }
-        let (total, operation, stage_calls): (i64, i64, i64) = tx
+        let (total, mut operation, mut stage_calls): (i64, i64, i64) = tx
             .query_row(
-                "SELECT count(*), coalesce(sum(owner_id=?2 AND operation_id=?3),0),
+                "SELECT count(*), coalesce(sum(owner_id=?2 AND operation_id=?3
+                 AND (stage IN ('w1','w3','w4'))=?5),0),
              coalesce(sum(owner_id=?2 AND operation_id=?3 AND stage=?4),0)
              FROM model_calls WHERE group_id=?1",
                 params![
                     self.config.group_id,
                     self.owner,
                     self.operation_id,
-                    stage.name()
+                    stage.name(),
+                    matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4)
                 ],
                 |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
             )
             .map_err(database_error)?;
+        if matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4) {
+            (operation, stage_calls) = tx
+                .query_row(
+                    "SELECT count(*), coalesce(sum(stage=?3),0) FROM model_calls
+                 WHERE owner_id=?1 AND operation_id=?2 AND stage IN ('w1','w3','w4')",
+                    params![self.owner, self.operation_id, stage.name()],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .map_err(database_error)?;
+        }
+        // 新召回按请求跨授权组计数，换 group_id 也不能重做已尝试的阶段。
+        if matches!(stage, ModelStage::R1 | ModelStage::R4) {
+            (operation, stage_calls) = tx
+                .query_row(
+                    "SELECT count(*), coalesce(sum(stage=?3),0) FROM model_calls
+                 WHERE owner_id=?1 AND operation_id=?2 AND stage IN ('r1','r4')",
+                    params![self.owner, self.operation_id, stage.name()],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .map_err(database_error)?;
+        }
         if total >= self.config.max_calls as i64 {
             return Err(budget_error("budget group call limit reached"));
         }
-        if operation >= self.config.max_operation_calls as i64 {
+        let operation_limit = if matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4) {
+            self.max_background_operation_calls
+                .unwrap_or(self.config.max_operation_calls.min(3))
+        } else if matches!(stage, ModelStage::R1 | ModelStage::R4) {
+            self.config.max_operation_calls.min(2)
+        } else {
+            self.config.max_operation_calls
+        };
+        if operation >= operation_limit as i64 {
             return Err(budget_error("operation call limit reached"));
         }
         if stage_calls != 0 {
             return Err(budget_error("operation stage call limit reached"));
         }
         let id = crate::diagnostics::new_id();
-        let output_tokens = stage.output_tokens(&self.config);
+        let output_tokens = self.output_tokens(stage);
         // Stable, non-cryptographic diagnostic fingerprint; never used for authorization or deduplication.
         let fingerprint = request.iter().fold(0xcbf29ce484222325u64, |hash, byte| {
             (hash ^ u64::from(*byte)).wrapping_mul(0x100000001b3)
@@ -373,6 +494,18 @@ impl ModelReservation {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+
+    #[test]
+    fn write_stage_deadlines_fit_the_claim_lease_and_recorded_latency() {
+        let config = ModelBudgetConfig::default();
+        for stage in [ModelStage::W1, ModelStage::W3, ModelStage::W4] {
+            assert_eq!(stage.timeout(&config), Duration::from_secs(360));
+            assert!(stage.timeout(&config) > Duration::from_secs(242));
+            assert!(stage.timeout(&config) < Duration::from_secs(900));
+        }
+        assert_eq!(ModelStage::R1.timeout(&config), Duration::from_secs(180));
+        assert_eq!(ModelStage::R4.timeout(&config), Duration::from_secs(180));
+    }
     use crate::OpenAiClient;
 
     pub(crate) struct TestLedger {
@@ -450,106 +583,6 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn extraction_repair_three_stages_share_one_durable_allowance() {
-        for coverage in [false, true] {
-            let ledger = TestLedger::new();
-            let config: ModelBudgetConfig = serde_json::from_value(json!({
-                "group_id":"repair", "max_calls":3, "max_operation_calls":4,
-                "allow_extraction_repair":true, "allow_coverage_repair":coverage
-            }))
-            .unwrap();
-            let reopen = || {
-                ModelBudget::new(
-                    &ledger.path,
-                    "fixture".into(),
-                    config.clone(),
-                    "same-operation".into(),
-                )
-                .unwrap()
-            };
-            let stages = [
-                ModelStage::Extraction,
-                ModelStage::ExtractionRepair,
-                ModelStage::ExtractionRepairReview,
-            ];
-            for (index, stage) in stages.into_iter().enumerate() {
-                let receipt = reopen()
-                    .reserve(stage, b"request")
-                    .unwrap()
-                    .settle("completed", None)
-                    .unwrap();
-                assert_eq!(receipt["stage"], stage.name());
-                assert_eq!(receipt["operation_id"], "same-operation");
-                assert!(reopen().reserve(stage, b"repeat").is_err());
-                let db = Connection::open(&ledger.path).unwrap();
-                assert_eq!(
-                    db.query_row("SELECT count(*) FROM model_calls", [], |r| r
-                        .get::<_, i64>(0))
-                        .unwrap(),
-                    index as i64 + 1
-                );
-            }
-            assert!(matches!(
-                reopen().reserve(ModelStage::ExtractionReview, b"extra request"),
-                Err(OpenAiAdapterError::Budget(message)) if message == "budget group call limit reached"
-            ));
-        }
-    }
-
-    #[test]
-    fn extraction_repair_cannot_upgrade_old_or_coverage_only_groups() {
-        for coverage in [false, true] {
-            let ledger = TestLedger::new();
-            let config: ModelBudgetConfig = serde_json::from_value(json!({
-                "group_id":"repair", "max_calls":4, "allow_coverage_repair":coverage
-            }))
-            .unwrap();
-            let old = ModelBudget::new(
-                &ledger.path,
-                "fixture".into(),
-                config.clone(),
-                "original".into(),
-            )
-            .unwrap();
-            old.reserve(ModelStage::Extraction, b"original").unwrap();
-            let db = Connection::open(&ledger.path).unwrap();
-            let policy = || {
-                db.query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
-                    r.get::<_, String>(0)
-                })
-                .unwrap()
-            };
-            let before = policy();
-            let mut changed = serde_json::to_value(config).unwrap();
-            changed["allow_extraction_repair"] = json!(true);
-            let upgraded = ModelBudget::new(
-                &ledger.path,
-                "fixture".into(),
-                serde_json::from_value(changed).unwrap(),
-                "new-operation".into(),
-            )
-            .unwrap();
-            for stage in [
-                ModelStage::Extraction,
-                ModelStage::ExtractionRepair,
-                ModelStage::ExtractionRepairReview,
-            ] {
-                assert!(matches!(upgraded.reserve(stage, b"upgrade"),
-                    Err(OpenAiAdapterError::Budget(message)) if message.contains("persisted authorization")));
-            }
-            old.reserve(ModelStage::ExtractionReview, b"old review")
-                .unwrap();
-            assert_eq!(policy(), before);
-            assert_eq!(
-                db.query_row("SELECT count(*) FROM model_calls", [], |r| r
-                    .get::<_, i64>(0))
-                    .unwrap(),
-                2
-            );
-        }
-    }
-
-    #[test]
     fn coverage_repair_requires_explicit_four_call_authorization() {
         let legacy = json!({"group_id":"legacy", "max_calls":4});
         let config: ModelBudgetConfig = serde_json::from_value(legacy).unwrap();
@@ -585,146 +618,62 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn coverage_repair_is_denied_before_creating_a_ledger_without_opt_in() {
-        for stage in [
-            ModelStage::ExtractionRepair,
-            ModelStage::ExtractionRepairReview,
-        ] {
-            let ledger = TestLedger::new();
-            assert!(matches!(
-                ledger.budget("legacy", 4).reserve(stage, b"unauthorized repair"),
-                Err(OpenAiAdapterError::Budget(message)) if message.contains("coverage repair is not authorized")
-            ));
-            assert!(!ledger.path.exists());
-        }
-    }
-
-    #[test]
-    fn coverage_repair_stays_in_one_durable_four_call_operation() {
+    fn historical_repair_rows_and_policy_remain_spent_when_new_write_stages_run() {
         let ledger = TestLedger::new();
-        let config = ModelBudgetConfig {
-            group_id: "repair".into(),
-            max_calls: 5,
-            allow_coverage_repair: true,
-            extraction_output_tokens: 8192,
-            review_output_tokens: 16384,
-            ..Default::default()
-        };
-        let reopen = |operation: &str| {
-            ModelBudget::new(
-                &ledger.path,
-                "fixture".into(),
-                config.clone(),
-                operation.into(),
-            )
-            .unwrap()
-        };
-        let stages = [
-            ModelStage::Extraction,
-            ModelStage::ExtractionReview,
-            ModelStage::ExtractionRepair,
-            ModelStage::ExtractionRepairReview,
-        ];
-        for (index, stage) in stages.into_iter().enumerate() {
-            // Reopen the durable ledger between every stage, including the correction.
-            let budget = reopen("same-operation");
-            let receipt = budget
-                .reserve(stage, b"request")
-                .unwrap()
-                .settle(
-                    "completed",
-                    Some(&json!({"input_tokens":10,"output_tokens":2})),
-                )
-                .unwrap();
-            assert_eq!(receipt["group_id"], "repair");
-            assert_eq!(receipt["operation_id"], "same-operation");
-            assert_eq!(receipt["stage"], stage.name());
-            assert!(budget.reserve(stage, b"repeat").is_err());
-            let db = Connection::open(&ledger.path).unwrap();
-            assert_eq!(
-                db.query_row("SELECT count(*) FROM model_calls", [], |r| r
-                    .get::<_, i64>(0))
-                    .unwrap(),
-                index as i64 + 1
-            );
-        }
-        assert!(
-            matches!(reopen("same-operation").reserve(ModelStage::Query, b"fifth"),
-            Err(OpenAiAdapterError::Budget(message)) if message == "operation call limit reached")
-        );
-        // A distinct operation can use only the allowance genuinely left in this group.
-        reopen("next-operation")
-            .reserve(ModelStage::Extraction, b"last group call")
-            .unwrap();
-        assert!(
-            matches!(reopen("another-operation").reserve(ModelStage::Extraction, b"sixth"),
-            Err(OpenAiAdapterError::Budget(message)) if message == "budget group call limit reached")
-        );
-        let db = Connection::open(&ledger.path).unwrap();
-        let rows: Vec<(String, u32)> = db.prepare(
-            "SELECT stage, output_token_limit FROM model_calls WHERE operation_id='same-operation' ORDER BY rowid"
-        ).unwrap().query_map([], |r| Ok((r.get(0)?, r.get(1)?))).unwrap().map(Result::unwrap).collect();
-        assert_eq!(
-            rows,
-            vec![
-                ("extraction".into(), 8192),
-                ("extraction_review".into(), 16384),
-                ("extraction_repair".into(), 8192),
-                ("extraction_repair_review".into(), 16384),
-            ]
-        );
-    }
-
-    #[test]
-    fn coverage_repair_cannot_upgrade_an_existing_group_authorization() {
-        let ledger = TestLedger::new();
-        let legacy = ledger.budget("original", 4);
-        legacy
-            .reserve(ModelStage::Extraction, b"original request")
-            .unwrap();
-        let mut upgraded = legacy.config.clone();
-        upgraded.allow_coverage_repair = true;
-        let changed = ModelBudget::new(
-            &ledger.path,
-            "fixture".into(),
-            upgraded,
-            "new-operation".into(),
-        )
+        let config: ModelBudgetConfig = serde_json::from_value(json!({
+            "group_id":"historical-repair", "max_calls":2,
+            "allow_coverage_repair":true, "allow_extraction_repair":true
+        }))
         .unwrap();
-        for stage in [
-            ModelStage::Extraction,
-            ModelStage::ExtractionRepair,
-            ModelStage::ExtractionRepairReview,
-        ] {
-            assert!(matches!(changed.reserve(stage, b"changed authorization"),
-                Err(OpenAiAdapterError::Budget(message)) if message.contains("persisted authorization")));
-        }
-        // Legacy extraction/review still work against the unchanged old policy.
-        legacy
-            .reserve(ModelStage::ExtractionReview, b"old review")
+        let budget = |op: &str| {
+            ModelBudget::new(&ledger.path, "fixture".into(), config.clone(), op.into()).unwrap()
+        };
+        budget("old-operation")
+            .reserve(ModelStage::Reader, b"old request")
+            .unwrap()
+            .settle("completed", None)
             .unwrap();
-        assert!(
-            legacy
-                .reserve(ModelStage::ExtractionRepair, b"old flag")
-                .is_err()
-        );
         let db = Connection::open(&ledger.path).unwrap();
-        assert_eq!(
-            db.query_row("SELECT count(*) FROM model_calls", [], |r| r
-                .get::<_, i64>(0))
-                .unwrap(),
-            2
-        );
+        db.execute("UPDATE model_calls SET stage='extraction_repair'", [])
+            .unwrap();
         let policy: String = db
             .query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
                 r.get(0)
             })
             .unwrap();
+        budget("new-operation")
+            .reserve(ModelStage::W1, b"new request")
+            .unwrap()
+            .settle("completed", None)
+            .unwrap();
         assert!(
-            serde_json::from_str::<Value>(&policy).unwrap()["limits"]
-                .get("allow_coverage_repair")
-                .is_none()
+            budget("third-operation")
+                .reserve(ModelStage::W3, b"over allowance")
+                .is_err()
         );
+        assert_eq!(
+            db.query_row::<i64, _, _>("SELECT count(*) FROM model_calls", [], |r| r.get(0))
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            db.query_row::<String, _, _>(
+                "SELECT stage FROM model_calls WHERE operation_id='old-operation'",
+                [],
+                |r| r.get(0)
+            )
+            .unwrap(),
+            "extraction_repair"
+        );
+        assert_eq!(
+            db.query_row::<String, _, _>("SELECT policy_json FROM model_budget_groups", [], |r| r
+                .get(0))
+                .unwrap(),
+            policy
+        );
+        let stored: Value = serde_json::from_str(&policy).unwrap();
+        assert_eq!(stored["limits"]["allow_coverage_repair"], true);
+        assert_eq!(stored["limits"]["allow_extraction_repair"], true);
     }
 
     #[test]
@@ -732,7 +681,7 @@ pub(crate) mod tests {
         let ledger = TestLedger::new();
         ledger
             .budget("first", 4)
-            .reserve(ModelStage::Extraction, b"first")
+            .reserve(ModelStage::Reader, b"first")
             .unwrap();
         let db = Connection::open(&ledger.path).unwrap();
         let reordered = r#"{
@@ -745,7 +694,7 @@ pub(crate) mod tests {
             .unwrap();
         ledger
             .budget("reopened", 4)
-            .reserve(ModelStage::Extraction, b"second")
+            .reserve(ModelStage::Reader, b"second")
             .unwrap();
         assert_eq!(
             db.query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
@@ -779,7 +728,7 @@ pub(crate) mod tests {
             assert!(
                 ledger
                     .budget("rejected", 4)
-                    .reserve(ModelStage::Extraction, b"must not reserve")
+                    .reserve(ModelStage::Reader, b"must not reserve")
                     .is_err(),
                 "changed or corrupt authorization was accepted: {policy}"
             );
@@ -791,6 +740,151 @@ pub(crate) mod tests {
             2,
             "a rejected contract must not consume or reset allowance"
         );
+    }
+
+    #[test]
+    fn write_output_caps_bind_new_authorizations_and_preserve_legacy_defaults() {
+        let ledger = TestLedger::new();
+        let budget = ledger.budget("write-operation", 10);
+        for (stage, limit) in [
+            (ModelStage::W1, 32768),
+            (ModelStage::W3, 16384),
+            (ModelStage::W4, 16384),
+        ] {
+            assert_eq!(stage.output_tokens(&budget.config), limit);
+            let request = crate::structured_request(
+                stage,
+                "test",
+                "prompt",
+                json!({}),
+                json!({}),
+                &budget.config,
+            );
+            assert_eq!(request["max_output_tokens"], limit);
+            budget
+                .reserve(stage, b"write")
+                .unwrap()
+                .settle("completed", None)
+                .unwrap();
+        }
+        for stage in [
+            ModelStage::Reader,
+            ModelStage::Judge,
+            ModelStage::Query,
+            ModelStage::QueryReview,
+            ModelStage::Assistance,
+            ModelStage::Answer,
+            ModelStage::Reader,
+            ModelStage::Judge,
+        ] {
+            assert_eq!(stage.output_tokens(&ModelBudgetConfig::default()), 4096);
+        }
+        let db = Connection::open(&ledger.path).unwrap();
+        let rows: Vec<(String, u32, u32)> = db.prepare(
+            "SELECT stage,output_token_limit,reserved_output_tokens FROM model_calls ORDER BY rowid"
+        ).unwrap().query_map([], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?)))
+            .unwrap().map(Result::unwrap).collect();
+        assert_eq!(
+            rows,
+            vec![
+                ("w1".into(), 32768, 32768),
+                ("w3".into(), 16384, 16384),
+                ("w4".into(), 16384, 16384)
+            ]
+        );
+        // 模拟升级前授权：移除新额度绑定，重开仍可旧阶段，不准提高后台额度。
+        let policy: String = db
+            .query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        let mut old: Value = serde_json::from_str(&policy).unwrap();
+        old.as_object_mut().unwrap().remove("write_output_tokens");
+        db.execute(
+            "UPDATE model_budget_groups SET policy_json=?1",
+            [old.to_string()],
+        )
+        .unwrap();
+        let reopened = ledger.budget("reopened", 10);
+        reopened.reserve(ModelStage::Reader, b"legacy").unwrap();
+        assert!(
+            matches!(reopened.reserve(ModelStage::W1, b"unauthorized increase"),
+            Err(OpenAiAdapterError::Budget(message)) if message.contains("persisted authorization"))
+        );
+        assert_eq!(
+            db.query_row("SELECT count(*) FROM model_calls", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            4
+        );
+        let stored: String = db
+            .query_row("SELECT policy_json FROM model_budget_groups", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(stored, old.to_string());
+    }
+
+    #[test]
+    fn r4_compute_low_timeout_is_240_seconds_without_changing_other_stages() {
+        let ledger = TestLedger::new();
+        let mut budget = ledger.budget("timeout", 4);
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(180));
+        budget.r4_compute = true;
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(240));
+        assert!(budget.timeout(ModelStage::R4) < Duration::from_secs(900));
+        assert_eq!(budget.timeout(ModelStage::R1), Duration::from_secs(180));
+        assert_eq!(budget.timeout(ModelStage::Query), Duration::from_secs(15));
+        assert_eq!(budget.timeout(ModelStage::W3), Duration::from_secs(360));
+    }
+
+    #[test]
+    fn r4_compute_limit_records_actual_cap_without_changing_group_policy_or_legacy_limits() {
+        let ledger = TestLedger::new();
+        let mut budget = ledger.budget("compute", 4);
+        assert!(
+            serde_json::to_value(&budget.config)
+                .unwrap()
+                .get("r4_compute_output_tokens")
+                .is_none()
+        );
+        budget.reserve(ModelStage::R1, b"r1 request").unwrap();
+        budget.r4_compute = true;
+        assert_eq!(budget.output_tokens(ModelStage::R4), 16384);
+        assert_eq!(budget.output_tokens(ModelStage::QueryReview), 4096);
+        assert_eq!(budget.timeout(ModelStage::R4), Duration::from_secs(240));
+        budget.reserve(ModelStage::R4, b"r4 request").unwrap();
+        let db = Connection::open(&ledger.path).unwrap();
+        assert_eq!(
+            db.query_row(
+                "SELECT output_token_limit FROM model_calls WHERE stage='r4'",
+                [],
+                |r| r.get::<_, u32>(0)
+            )
+            .unwrap(),
+            16384
+        );
+        let mut changed = ledger.budget("custom-compute", 4);
+        changed.config.r4_compute_output_tokens = 24576;
+        assert!(
+            changed
+                .reserve(ModelStage::R1, b"new request")
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("policy differs")
+        );
+        assert_eq!(
+            db.query_row("SELECT count(*) FROM model_calls", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            2
+        );
+        changed.config.group_id = "new-compute-authorization".into();
+        changed.reserve(ModelStage::R1, b"new request").unwrap();
+        changed.r4_compute = true;
+        assert_eq!(changed.timeout(ModelStage::R4), Duration::from_secs(240));
+        changed.reserve(ModelStage::R4, b"new r4 request").unwrap();
     }
 
     #[test]
@@ -814,10 +908,8 @@ pub(crate) mod tests {
             config.query_output_tokens = valid;
             config.validate().unwrap();
             for stage in [
-                ModelStage::Extraction,
-                ModelStage::ExtractionReview,
-                ModelStage::ExtractionRepair,
-                ModelStage::ExtractionRepairReview,
+                ModelStage::Reader,
+                ModelStage::Judge,
                 ModelStage::QueryReview,
             ] {
                 assert_eq!(
@@ -850,7 +942,7 @@ pub(crate) mod tests {
 
         ledger
             .budget("original", 2)
-            .reserve(ModelStage::Extraction, b"old")
+            .reserve(ModelStage::Reader, b"old")
             .unwrap();
         let db = Connection::open(&ledger.path).unwrap();
         let original_policy: String = db
@@ -867,10 +959,8 @@ pub(crate) mod tests {
             "changed".into(),
         )
         .unwrap();
-        assert!(
-            matches!(changed.reserve(ModelStage::Extraction, b"rejected"),
-            Err(OpenAiAdapterError::Budget(message)) if message.contains("policy differs"))
-        );
+        assert!(matches!(changed.reserve(ModelStage::Reader, b"rejected"),
+            Err(OpenAiAdapterError::Budget(message)) if message.contains("policy differs")));
         assert_eq!(
             db.query_row(
                 "SELECT policy_json FROM model_budget_groups WHERE group_id='fixture'",
@@ -891,7 +981,7 @@ pub(crate) mod tests {
         config.max_calls = 1;
         let larger =
             ModelBudget::new(&ledger.path, "fixture".into(), config.clone(), "new".into()).unwrap();
-        let reservation = larger.reserve(ModelStage::Extraction, b"new").unwrap();
+        let reservation = larger.reserve(ModelStage::Reader, b"new").unwrap();
         let report = reservation.settle("failed", None).unwrap();
         assert_eq!(report["usage_status"], "unknown");
         assert_eq!(report["output_reservation_retained"], true);
@@ -907,7 +997,7 @@ pub(crate) mod tests {
         )
         .unwrap();
         assert!(
-            matches!(restarted.reserve(ModelStage::Extraction, b"over limit"),
+            matches!(restarted.reserve(ModelStage::Reader, b"over limit"),
             Err(OpenAiAdapterError::Budget(message)) if message.contains("group call limit"))
         );
         assert_eq!(
@@ -925,8 +1015,8 @@ pub(crate) mod tests {
     fn durable_limits_usage_and_failed_settlement() {
         let ledger = TestLedger::new();
         let budget = ledger.budget("one", 4);
-        let first = budget.reserve(ModelStage::Extraction, b"request").unwrap();
-        assert!(budget.reserve(ModelStage::Extraction, b"replay").is_err());
+        let first = budget.reserve(ModelStage::Reader, b"request").unwrap();
+        assert!(budget.reserve(ModelStage::Reader, b"replay").is_err());
         let known = first
             .settle(
                 "completed",
@@ -934,20 +1024,14 @@ pub(crate) mod tests {
             )
             .unwrap();
         assert_eq!(known["output_reservation_retained"], false);
-        let second = budget
-            .reserve(ModelStage::ExtractionReview, b"review")
-            .unwrap();
+        let second = budget.reserve(ModelStage::Judge, b"review").unwrap();
         assert_eq!(
             second.settle("failed", None).unwrap()["usage_status"],
             "unknown"
         );
         // Reopening the same persistent allowance cannot refund successful or failed attempts.
         let restarted = ledger.budget("one", 4);
-        assert!(
-            restarted
-                .reserve(ModelStage::ExtractionReview, b"retry")
-                .is_err()
-        );
+        assert!(restarted.reserve(ModelStage::Judge, b"retry").is_err());
         assert!(
             ledger
                 .budget("two", 5)
@@ -1001,12 +1085,12 @@ pub(crate) mod tests {
             "one".into(),
         )
         .unwrap();
-        assert!(budget.reserve(ModelStage::Extraction, b"too long").is_err());
+        assert!(budget.reserve(ModelStage::Reader, b"too long").is_err());
         assert!(
             !limited.path.exists(),
             "oversized input must not write a ledger"
         );
-        let reservation = budget.reserve(ModelStage::Extraction, b"small").unwrap();
+        let reservation = budget.reserve(ModelStage::Reader, b"small").unwrap();
         assert!(budget.reserve(ModelStage::Query, b"small").is_err());
         config.max_operation_calls = 2;
         assert!(
@@ -1059,7 +1143,7 @@ pub(crate) mod tests {
             format!("process-{}", std::process::id()),
         )
         .unwrap();
-        match budget.reserve(ModelStage::Extraction, b"race") {
+        match budget.reserve(ModelStage::Reader, b"race") {
             Ok(_) => (),
             Err(OpenAiAdapterError::Budget(message)) => {
                 assert!(message.contains("call limit reached"), "{message}")

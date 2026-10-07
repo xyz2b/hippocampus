@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "reinforce",
+      "targets": [
+        31
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-111"
+          },
+          "quote": {
+            "text": "我喜欢喝咖啡。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-320"
+          },
+          "quote": {
+            "text": "我还是喜欢喝咖啡。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+ "id": "w3_06_hypothetical_as_fact",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "假设被标成用户陈述",
+ "input": {
+  "text": "如果我以后去深圳工作，我会考虑租房。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "works_at",
+    "memory_type": "fact",
+    "value": "深圳",
+    "sentence": "如果我以后去深圳工作，我会考虑租房。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "speech"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": "value 也不被支持（并没有在深圳工作）；aspects 至少含 speech，是否另含 value 不扣分。"
+}

@@ -1,0 +1,45 @@
+{
+ "id": "w3_11_coverage_gap",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "漏提另一个断言",
+ "input": {
+  "text": "我对芒果过敏，而且最近在学游泳。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "allergic_to",
+    "memory_type": "fact",
+    "value": "芒果",
+    "sentence": "我对芒果过敏，而且最近在学游泳。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "gaps",
+   "missing_contains": [
+    "学游泳"
+   ]
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

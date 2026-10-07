@@ -1,0 +1,47 @@
+{
+  "id": "r4_12_end_unknown",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\": null, \"facts\": [], \"verdict\": \"insufficient\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:df1f9f54af95a0843b5f244c7d2cd94460291a980615adba6c03392168f8aa19",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1580,
+          "input_tokens_details": {
+            "cached_tokens": 1536
+          },
+          "output_tokens": 4498,
+          "output_tokens_details": {
+            "reasoning_tokens": 4478
+          },
+          "total_tokens": 6078
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1580,
+        "input_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "output_tokens": 4498,
+        "output_tokens_details": {
+          "reasoning_tokens": 4478
+        },
+        "total_tokens": 6078
+      }
+    }
+  ]
+}

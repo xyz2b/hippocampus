@@ -1,0 +1,38 @@
+{
+  "id": "w3_03_dropped_condition",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":0,\"episode_value\":\"not_applicable\",\"problems\":[],\"verdict\":\"supported\"}]}",
+      "request": "fnv1a64:9b00d3965f4009cb",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 962,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5068,
+        "output_tokens_details": {
+          "reasoning_tokens": 5016
+        },
+        "total_tokens": 6030
+      }
+    }
+  ]
+}

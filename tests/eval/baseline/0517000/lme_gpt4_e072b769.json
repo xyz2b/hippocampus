@@ -1,0 +1,3794 @@
+{
+  "case": "lme_gpt4_e072b769",
+  "source_ids": {
+    "s1_t1": "83715-1790753233503963000-1123",
+    "s1_t2": "83715-1790753233553894000-1152",
+    "s1_t3": "83715-1790753233638710000-1173",
+    "s1_t4": "83715-1790753233742084000-1193",
+    "s1_t5": "83715-1790753233850584000-1239",
+    "s1_t6": "83715-1790753233978582000-1298"
+  },
+  "steps": [
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591800,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+          }
+        }
+      },
+      "message": "s1_t1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "read_revision": 2,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 3277,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1681591800,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 14,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 599,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2559
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3443,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "self"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+                      "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                      "session_id": "eval-lme_gpt4_e072b769",
+                      "turn_id": "s1_t1"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1681591800,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 267,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_gpt4_e072b769:s1_t1:0",
+                    "matched_query_phrases": [
+                      "c6211",
+                      "c672c c4eba",
+                      "c7528 c6237 c672c c4eba",
+                      "c81ea c5df1",
+                      "w000061",
+                      "w00006100006e000064",
+                      "w000061000070000070",
+                      "w00006300006100007300006800006200006100006300006b",
+                      "w00006300006500007200007400006100006900006e",
+                      "w00006400006f00007700006e00006c00006f000061000064000065000064",
+                      "w000067000065000074",
+                      "w000067000069000076000065000073",
+                      "w00006700007200006f000063000065000072000079",
+                      "w000069",
+                      "w00006900006200006f000074000074000061",
+                      "w000069000074",
+                      "w00006900007400006500006d000073",
+                      "w00006a000075000073000074",
+                      "w00006d00006100006b000065",
+                      "w00006d000065",
+                      "w00006d00006f000073000074",
+                      "w00006f000066",
+                      "w00006f00006e",
+                      "w00006f000075000074",
+                      "w000072000065000062000061000074000065000073",
+                      "w000073000075000072000065",
+                      "w000074000068000061000074",
+                      "w000074000068000065",
+                      "w00007400006f",
+                      "w000076000065",
+                      "w00007700006100006e000074",
+                      "w00007900006f000075"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 2,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      267
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1681591800,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_gpt4_e072b769",
+                "source_id": "83715-1790753233503963000-1123",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      267
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233510420000-1126",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233503870000-1122",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233519409000-1138",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233503870000-1122",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753233503963000-1123",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591800,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:0",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "diet"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:2",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:3",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "shopping"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+          }
+        }
+      },
+      "message": "s1_t2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+              ],
+              "query": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "read_revision": 3,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 6807,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1681591860,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 31,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 4,
+                "hint_bytes": 2252,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 4,
+                "repository_memory_count": 4,
+                "segment_association_count": 4,
+                "skipped": {},
+                "token_bytes": 9498
+              },
+              "eligible_segment_association_count": 4,
+              "generation": 1,
+              "index_bytes": 12887,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_gpt4_e072b769:s1_t2:0",
+                      "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                      "session_id": "eval-lme_gpt4_e072b769",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "Durable",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "grocery",
+                    "diet"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1681591860,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_gpt4_e072b769:s1_t2:2",
+                      "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                      "session_id": "eval-lme_gpt4_e072b769",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 3,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "Durable",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "grocery"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1681591860,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_gpt4_e072b769:s1_t2:3",
+                      "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                      "session_id": "eval-lme_gpt4_e072b769",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 4,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "Durable",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "grocery",
+                    "shopping"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1681591860,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+                      "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                      "session_id": "eval-lme_gpt4_e072b769",
+                      "turn_id": "s1_t1"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1681591800,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 267,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_gpt4_e072b769:s1_t1:0",
+                    "matched_query_phrases": [
+                      "c6211",
+                      "c672c c4eba",
+                      "c7528 c6237 c672c c4eba",
+                      "c81ea c5df1",
+                      "w000061",
+                      "w00006100006e000064",
+                      "w000061000070000070",
+                      "w000061000074",
+                      "w00006300006100007300006800006200006100006300006b",
+                      "w00006300006500007200007400006100006900006e",
+                      "w00006400006f00007700006e00006c00006f000061000064000065000064",
+                      "w000067000065000074",
+                      "w000067000069000076000065000073",
+                      "w00006700007200006f000063000065000072000079",
+                      "w000069",
+                      "w00006900006200006f000074000074000061",
+                      "w000069000074",
+                      "w00006900007400006500006d000073",
+                      "w00006a000075000073000074",
+                      "w00006d00006100006b000065",
+                      "w00006d000065",
+                      "w00006d00006f000073000074",
+                      "w00006f000066",
+                      "w00006f00006e",
+                      "w00006f000075000074",
+                      "w000072000065000062000061000074000065000073",
+                      "w000073000075000072000065",
+                      "w000074000068000061000074",
+                      "w000074000068000065",
+                      "w00007400006f",
+                      "w000076000065",
+                      "w00007700006100006e000074",
+                      "w00007900006f000075"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      267
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1681591800,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_gpt4_e072b769",
+                "source_id": "83715-1790753233503963000-1123",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      267
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233563935000-1155",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233553425000-1151",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233576832000-1160",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233553425000-1151",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 2,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Duplicate": {
+                    "evidence_id": "eval-lme_gpt4_e072b769:s1_t2:1",
+                    "memory_id": 2
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 3,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 4,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Duplicate": {
+                    "evidence_id": "eval-lme_gpt4_e072b769:s1_t2:4",
+                    "memory_id": 4
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753233553894000-1152",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591800,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:0",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "diet"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:2",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:3",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "shopping"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+          }
+        }
+      },
+      "message": "s1_t3",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that."
+              ],
+              "query": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
+              "read_revision": 3,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 3,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 4,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1681591920,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                  "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 33,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 4,
+                "hint_bytes": 2252,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 4,
+                "repository_memory_count": 4,
+                "segment_association_count": 4,
+                "skipped": {},
+                "token_bytes": 9498
+              },
+              "eligible_segment_association_count": 4,
+              "generation": 1,
+              "index_bytes": 12887,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 3,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233638710000-1173:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 3
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "source_coverage_incomplete",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "source_coverage_incomplete",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 3,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753233663652000-1178",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753233637144000-1171",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753233677572000-1185",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753233637144000-1171",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 3,
+            "source_id": "83715-1790753233638710000-1173",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591800,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:0",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "diet"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:2",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:3",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "shopping"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t4:0",
+              "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+          }
+        },
+        "6": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t4:1",
+              "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 6,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "not contributing to the plastic waste"
+          }
+        }
+      },
+      "message": "s1_t4",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?"
+              ],
+              "query": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "read_revision": 4,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 4,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 6
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 6,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1681591980,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                  "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                  "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 47,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 6,
+                "hint_bytes": 3309,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 6,
+                "repository_memory_count": 6,
+                "segment_association_count": 6,
+                "skipped": {},
+                "token_bytes": 13914
+              },
+              "eligible_segment_association_count": 6,
+              "generation": 1,
+              "index_bytes": 18930,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 4,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "self"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233742084000-1193:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233638710000-1173:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 4
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 4,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233755392000-1196",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233741046000-1192",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233764976000-1198",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233741046000-1192",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 5,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 6,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 4,
+              "source_id": "83715-1790753233742084000-1193",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591800,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:0",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "diet"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:2",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:3",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "shopping"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t4:0",
+              "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+          }
+        },
+        "6": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t4:1",
+              "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 6,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "not contributing to the plastic waste"
+          }
+        }
+      },
+      "message": "s1_t5",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
+                "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?"
+              ],
+              "query": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?",
+              "read_revision": 4,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 5,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 6
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 6,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1681592040,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                  "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                  "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
+                  "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 59,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 6,
+                "hint_bytes": 3309,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 6,
+                "repository_memory_count": 6,
+                "segment_association_count": 6,
+                "skipped": {},
+                "token_bytes": 13914
+              },
+              "eligible_segment_association_count": 6,
+              "generation": 1,
+              "index_bytes": 18930,
+              "rebuild_ms": 2,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 5,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233850584000-1239:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233638710000-1173:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233742084000-1193:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 5
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 5,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233869082000-1251",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233848017000-1237",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233878686000-1259",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233848017000-1237",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 5,
+              "source_id": "83715-1790753233850584000-1239",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t1:0",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591800,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:0",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "diet"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:2",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t2:3",
+              "quote": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "Durable",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "grocery",
+            "shopping"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591860,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t4:0",
+              "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+          }
+        },
+        "6": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t4:1",
+              "quote": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 6,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681591980,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "not contributing to the plastic waste"
+          }
+        },
+        "7": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_gpt4_e072b769:s1_t6:0",
+              "quote": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?",
+              "session_id": "eval-lme_gpt4_e072b769",
+              "turn_id": "s1_t6"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 7,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "diet",
+            "organic",
+            "natural"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1681592100,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet."
+          }
+        }
+      },
+      "message": "s1_t6",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
+                "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+                "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?"
+              ],
+              "query": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?",
+              "read_revision": 5,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 6,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 6
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 7
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 7,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1681592100,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+                  "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that.",
+                  "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?",
+                  "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now. I feel good about not contributing to the plastic waste. Do you think I could also use these reusable bags for bulk shopping at places like Costco?",
+                  "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 76,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 7,
+                "hint_bytes": 3890,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 7,
+                "repository_memory_count": 7,
+                "segment_association_count": 7,
+                "skipped": {},
+                "token_bytes": 16395
+              },
+              "eligible_segment_association_count": 7,
+              "generation": 1,
+              "index_bytes": 22276,
+              "rebuild_ms": 2,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 5,
+              "source_revision": 6,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 5,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 5,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "self"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233978582000-1298:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233638710000-1173:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233742084000-1193:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233850584000-1239:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 6
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 6,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233994723000-1307",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233977007000-1297",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753234004992000-1311",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233977007000-1297",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 7,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 6,
+              "source_id": "83715-1790753233978582000-1298",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "q",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "How many weeks ago did I start using the cashback app 'Ibotta'?",
+          "read_revision": 5,
+          "safe_answer": "3 weeks ago（2023-04-16）。",
+          "safe_source_ids": [
+            "83715-1790753233503963000-1123"
+          ],
+          "source_revision": 6,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+              "source_id": "83715-1790753233503963000-1123"
+            }
+          ],
+          "status": "source_linked_computed_elapsed",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "started using Ibotta",
+            "began using Ibotta cashback app",
+            "downloaded Ibotta"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 9,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 6
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 7
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 5
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 3
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 4
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 7,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1683321900,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "How many weeks ago did I start using the cashback app 'Ibotta'?",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 138,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 7,
+            "hint_bytes": 3890,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 7,
+            "repository_memory_count": 7,
+            "segment_association_count": 7,
+            "skipped": {},
+            "token_bytes": 16395
+          },
+          "eligible_segment_association_count": 7,
+          "generation": 1,
+          "index_bytes": 22276,
+          "rebuild_ms": 2,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 6,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "event_date": "2023-04-16",
+          "evidence_grade": "committed",
+          "memory_id": 1,
+          "quote": "I'm trying to plan my next grocery trip and I was wondering if you could help me make a list of essentials I should pick up. I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it.",
+          "semantic_judgment": "model_proposed",
+          "source_id": "83715-1790753233503963000-1123",
+          "status": "computed_elapsed",
+          "time_text": "just",
+          "value": "3 weeks ago"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234177699000-1373",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234123942000-1359",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753234323198000-1447",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234123942000-1359",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233978582000-1298:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233850584000-1239:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233742084000-1193:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233638710000-1173:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233978582000-1298:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233978582000-1298:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233503963000-1123:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233553894000-1152:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233978582000-1298:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 6
+      },
+      "step": "question"
+    }
+  ]
+}

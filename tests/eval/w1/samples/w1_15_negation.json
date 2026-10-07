@@ -1,0 +1,86 @@
+{
+ "id": "w1_15_negation",
+ "contract": "w1.v1",
+ "label_status": "reviewed",
+ "focus": "否定偏好的极性",
+ "input": {
+  "text": "我不吃香菜。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": [
+     "avoids",
+     "likes"
+    ],
+    "memory_type": [
+     "preference",
+     "constraint"
+    ],
+    "value": "香菜",
+    "sentence": "我不吃香菜。",
+    "polarity": [
+     "affirm",
+     "negate"
+    ],
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [],
+ "note": "只接受 avoids+affirm 或 likes+negate 两种组合。fact 不在可接受集合：fact 的 value 须为整句，与 value=香菜 不能同时成立。"
+}

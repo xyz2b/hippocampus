@@ -963,8 +963,29 @@
       "expect": {
         "kind": "insufficient_evidence"
       },
+      "expect_common": {
+        "annotator_note": "原文的柠檬蓝莓蛋糕是给侄女/外甥女的生日会做的，不是叔叔。",
+        "computed": null,
+        "forbidden": [
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "lemon blueberry cake",
+              "a lemon blueberry cake"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "insufficient"
+      },
       "id": "q",
       "query": "What did I bake for my uncle's birthday party?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "unspecified"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

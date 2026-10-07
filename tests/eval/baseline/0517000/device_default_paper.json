@@ -1,0 +1,2521 @@
+{
+  "case": "device_default_paper",
+  "source_ids": {
+    "device_s1": "83715-1790753233850802000-1241",
+    "device_s2": "83715-1790753233900918000-1272"
+  },
+  "steps": [
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-device_default_paper:device_s1:0",
+              "quote": "雾岚打印机的默认纸张规格是A4。",
+              "session_id": "eval-device_default_paper",
+              "turn_id": "device_s1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "device_wulan_printer",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "雾岚打印机的默认纸张规格是A4。"
+          }
+        }
+      },
+      "message": "device_s1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "雾岚打印机的默认纸张规格是A4。",
+              "read_revision": 4,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "filtered_other_named_entity": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 2150,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1790568000,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "雾岚打印机的默认纸张规格是A4。",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 12,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 512,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2069
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 2863,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "device_wulan_printer"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-device_default_paper:device_s1:0",
+                      "quote": "雾岚打印机的默认纸张规格是A4。",
+                      "session_id": "eval-device_default_paper",
+                      "turn_id": "device_s1"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "device_wulan_printer",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1790568000,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "雾岚打印机的默认纸张规格是A4。"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 44,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-device_default_paper:device_s1:0",
+                    "matched_query_phrases": [
+                      "c5370 c673a",
+                      "c5c9a c6253",
+                      "c5f20 c89c4",
+                      "c6253 c5370",
+                      "c673a c7684",
+                      "c683c c662f",
+                      "c7684 c9ed8",
+                      "c7eb8 c5f20",
+                      "c89c4 c683c",
+                      "c8ba4 c7eb8",
+                      "c96fe c5c9a",
+                      "c96fe c5c9a c6253 c5370 c673a",
+                      "c9ed8 c8ba4",
+                      "w000061000034"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1790568000,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-device_default_paper",
+                "source_id": "83715-1790753233850802000-1241",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "雾岚打印机的默认纸张规格是A4。",
+                "turn_id": "device_s1"
+              }
+            ],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233856663000-1245",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233850683000-1240",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233867218000-1250",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233850683000-1240",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753233850802000-1241",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-device_default_paper:device_s1:0",
+              "quote": "雾岚打印机的默认纸张规格是A4。",
+              "session_id": "eval-device_default_paper",
+              "turn_id": "device_s1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "device_wulan_printer",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "雾岚打印机的默认纸张规格是A4。"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-device_default_paper:device_s2:0",
+              "quote": "青苔打印机的默认纸张规格是B5。",
+              "session_id": "eval-device_default_paper",
+              "turn_id": "device_s2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "device_qingtai_printer",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1790568060,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "青苔打印机的默认纸张规格是B5。"
+          }
+        }
+      },
+      "message": "device_s2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "雾岚打印机的默认纸张规格是A4。"
+              ],
+              "query": "青苔打印机的默认纸张规格是B5。",
+              "read_revision": 5,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 2171,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1790568060,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "雾岚打印机的默认纸张规格是A4。"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "青苔打印机的默认纸张规格是B5。",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 12,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 2,
+                "hint_bytes": 1028,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 2,
+                "repository_memory_count": 2,
+                "segment_association_count": 2,
+                "skipped": {},
+                "token_bytes": 4162
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 5753,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 5,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 5,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 5,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [
+                "device_wulan_printer"
+              ],
+              "needs_clarification": false,
+              "query_entity_ids": [
+                "device_qingtai_printer"
+              ],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-device_default_paper:device_s2:0",
+                      "quote": "青苔打印机的默认纸张规格是B5。",
+                      "session_id": "eval-device_default_paper",
+                      "turn_id": "device_s2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "device_qingtai_printer",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1790568060,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "青苔打印机的默认纸张规格是B5。"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "subject_mismatch",
+                "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 44,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-device_default_paper:device_s2:0",
+                    "matched_query_phrases": [
+                      "c5370 c673a",
+                      "c5f20 c89c4",
+                      "c6253 c5370",
+                      "c673a c7684",
+                      "c683c c662f",
+                      "c7684 c9ed8",
+                      "c7eb8 c5f20",
+                      "c82d4 c6253",
+                      "c89c4 c683c",
+                      "c8ba4 c7eb8",
+                      "c9752 c82d4",
+                      "c9752 c82d4 c6253 c5370 c673a",
+                      "c9ed8 c8ba4",
+                      "w000062000035"
+                    ],
+                    "memory_id": 2,
+                    "projection_revision": 5,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1790568060,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-device_default_paper",
+                "source_id": "83715-1790753233900918000-1272",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 2,
+                    "quote_byte_range": [
+                      0,
+                      44
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "青苔打印机的默认纸张规格是B5。",
+                "turn_id": "device_s2"
+              }
+            ],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233910187000-1276",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233900412000-1271",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233920735000-1278",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233900412000-1271",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 2,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753233900918000-1272",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "device_q1",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "默认纸张规格是什么？",
+          "read_revision": 5,
+          "safe_answer": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "clarification_required",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "reason": "clarification_required",
+          "status": "not_requested"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "默认纸张规格是什么？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "clarification_required"
+        ],
+        "duration_ms": 11,
+        "evidence_status": "clarification_required",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1028,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4162
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5753,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "context_entity_ids": [],
+          "needs_clarification": true,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "needs_clarification",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "device_q2",
+      "result": {
+        "answer_contract": {
+          "context": [
+            "我指的是那台打印机。"
+          ],
+          "query": "默认纸张规格是什么？",
+          "read_revision": 5,
+          "safe_answer": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "clarification_required",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "reason": "clarification_required",
+          "status": "not_requested"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [
+              "我指的是那台打印机。"
+            ],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "默认纸张规格是什么？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "clarification_required"
+        ],
+        "duration_ms": 10,
+        "evidence_status": "clarification_required",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1028,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4162
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5753,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": "你说的是哪个人、事物或哪次事件？请说明具体所指。",
+          "context_entity_ids": [],
+          "needs_clarification": true,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "needs_clarification",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "unbound_reference",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "device_q3",
+      "result": {
+        "answer_contract": {
+          "context": [
+            "我指的是雾岚打印机。"
+          ],
+          "query": "默认纸张规格是什么？",
+          "read_revision": 5,
+          "safe_answer": "A4。",
+          "safe_source_ids": [
+            "83715-1790753233850802000-1241"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "雾岚打印机的默认纸张规格是A4。",
+              "source_id": "83715-1790753233850802000-1241"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "雾岚打印机 默认纸张规格 A4",
+            "雾岚打印机 纸张大小 默认设置 A4",
+            "雾岚打印机 默认用纸 A4"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2115,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [
+              "我指的是雾岚打印机。"
+            ],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "默认纸张规格是什么？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 51,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1028,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4162
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5753,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234012849000-1313",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753233994522000-1306",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [
+            "device_wulan_printer"
+          ],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-device_default_paper:device_s1:0",
+                  "quote": "雾岚打印机的默认纸张规格是A4。",
+                  "session_id": "eval-device_default_paper",
+                  "turn_id": "device_s1"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 1,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "device_wulan_printer",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568000,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "雾岚打印机的默认纸张规格是A4。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 44,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "explicit_context",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-device_default_paper:device_s1:0",
+                "matched_query_phrases": [
+                  "c5370 c673a",
+                  "c5c9a c6253",
+                  "c5f20 c89c4",
+                  "c6253 c5370",
+                  "c683c c662f",
+                  "c7eb8 c5f20",
+                  "c89c4 c683c",
+                  "c8ba4 c7eb8",
+                  "c96fe c5c9a",
+                  "c96fe c5c9a c6253 c5370 c673a",
+                  "c9ed8 c8ba4"
+                ],
+                "memory_id": 1,
+                "projection_revision": 5,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  44
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568000,
+            "received_sequence": 1,
+            "role": "user",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-device_default_paper",
+            "source_id": "83715-1790753233850802000-1241",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 1,
+                "quote_byte_range": [
+                  0,
+                  44
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "雾岚打印机的默认纸张规格是A4。",
+            "turn_id": "device_s1",
+            "verified_fact": {
+              "memory_id": 1,
+              "relation": "默认纸张规格",
+              "subject": "雾岚打印机",
+              "unique_in_snapshot": true,
+              "value": "A4"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "device_q4",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "青苔打印机的默认纸张规格是什么？",
+          "read_revision": 5,
+          "safe_answer": "B5。",
+          "safe_source_ids": [
+            "83715-1790753233900918000-1272"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "青苔打印机的默认纸张规格是B5。",
+              "source_id": "83715-1790753233900918000-1272"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [],
+          "status": "completed_empty"
+        },
+        "assistance_search": {
+          "candidate_count": 0,
+          "filtered_other_named_entity": 0,
+          "per_query_limit": 0,
+          "status": "not_requested",
+          "total_limit": 0
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2126,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "青苔打印机的默认纸张规格是什么？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 15,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1028,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4162
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5753,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234092882000-1346",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234076535000-1341",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "device_qingtai_printer"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-device_default_paper:device_s2:0",
+                  "quote": "青苔打印机的默认纸张规格是B5。",
+                  "session_id": "eval-device_default_paper",
+                  "turn_id": "device_s2"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 2,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "device_qingtai_printer",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568060,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "青苔打印机的默认纸张规格是B5。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 44,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-device_default_paper:device_s2:0",
+                "matched_query_phrases": [
+                  "c5370 c673a",
+                  "c5f20 c89c4",
+                  "c6253 c5370",
+                  "c673a c7684",
+                  "c683c c662f",
+                  "c7684 c9ed8",
+                  "c7eb8 c5f20",
+                  "c82d4 c6253",
+                  "c89c4 c683c",
+                  "c8ba4 c7eb8",
+                  "c9752 c82d4",
+                  "c9752 c82d4 c6253 c5370 c673a",
+                  "c9ed8 c8ba4"
+                ],
+                "memory_id": 2,
+                "projection_revision": 5,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  44
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568060,
+            "received_sequence": 2,
+            "role": "user",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-device_default_paper",
+            "source_id": "83715-1790753233900918000-1272",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 2,
+                "quote_byte_range": [
+                  0,
+                  44
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "青苔打印机的默认纸张规格是B5。",
+            "turn_id": "device_s2",
+            "verified_fact": {
+              "memory_id": 2,
+              "relation": "默认纸张规格",
+              "subject": "青苔打印机",
+              "unique_in_snapshot": true,
+              "value": "B5"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "device_q5",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
+          "read_revision": 5,
+          "safe_answer": "A4。",
+          "safe_source_ids": [
+            "83715-1790753233850802000-1241"
+          ],
+          "source_revision": 2,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "雾岚打印机的默认纸张规格是A4。",
+              "source_id": "83715-1790753233850802000-1241"
+            }
+          ],
+          "status": "source_linked_fact",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "雾岚打印机 默认纸张规格 A4",
+            "雾岚打印机 出厂默认纸型 尺寸",
+            "雾岚打印机 纸张设置 默认值"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 2026,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          },
+          {
+            "current_override": false,
+            "fields": [
+              "default_setting"
+            ],
+            "query": "不改纸张设置时，雾岚打印机会按哪种尺寸打印？",
+            "setting": "纸张",
+            "source": "explicit_unchanged_setting_requires_default_assertion",
+            "strength": "certificate_only"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 53,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1028,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4162
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5753,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234138694000-1361",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234121140000-1357",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "device_wulan_printer"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [
+            {
+              "certainty": "High",
+              "evidence": [
+                {
+                  "id": "eval-device_default_paper:device_s1:0",
+                  "quote": "雾岚打印机的默认纸张规格是A4。",
+                  "session_id": "eval-device_default_paper",
+                  "turn_id": "device_s1"
+                }
+              ],
+              "explicit_memory_request": false,
+              "extraction_confidence": "High",
+              "id": 1,
+              "last_reinforced_at": null,
+              "last_retrieved_at": null,
+              "memory_type": "Fact",
+              "owner_id": "eval",
+              "polarity": null,
+              "predicate": "fact",
+              "reinforcement_count": 0,
+              "retention_tier": "LongTerm",
+              "retrieval_count": 0,
+              "scope": {
+                "conditions": [],
+                "domain": null
+              },
+              "status": "Active",
+              "strength": null,
+              "subject_id": "device_wulan_printer",
+              "supersede_reason": null,
+              "superseded_by": null,
+              "supersedes": null,
+              "tags": [],
+              "temporal": {
+                "expires_at": null,
+                "observed_at": 1790568000,
+                "reference": null,
+                "valid_from": null,
+                "valid_to": null
+              },
+              "value": {
+                "Text": "雾岚打印机的默认纸张规格是A4。"
+              }
+            }
+          ],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "selected",
+            "lane": "source_evidence",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [
+          {
+            "byte_end": 44,
+            "byte_start": 0,
+            "channels": [
+              "lexical_original",
+              "committed_fact_hint"
+            ],
+            "enrichment": "committed",
+            "evidence_kind": "source_linked_quote",
+            "fact_hint_matches": [
+              {
+                "evidence_id": "eval-device_default_paper:device_s1:0",
+                "matched_query_phrases": [
+                  "c5370 c673a",
+                  "c5c9a c6253",
+                  "c6253 c5370",
+                  "c7eb8 c5f20",
+                  "c96fe c5c9a",
+                  "c96fe c5c9a c6253 c5370 c673a"
+                ],
+                "memory_id": 1,
+                "projection_revision": 5,
+                "provenance": "committed_memory_projection",
+                "quote_byte_range": [
+                  0,
+                  44
+                ],
+                "renderer_version": "committed-fact-key-v2"
+              }
+            ],
+            "instruction_authority": "none",
+            "mapping_uncertain": false,
+            "observed_at": 1790568000,
+            "received_sequence": 1,
+            "role": "user",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0",
+            "segment_version": 1,
+            "semantic_status": "literal_relation_checked",
+            "session_id": "eval-device_default_paper",
+            "source_id": "83715-1790753233850802000-1241",
+            "source_origin": "mcp_received",
+            "state_annotations": [
+              {
+                "association": "exact_quote",
+                "decision": "Selected",
+                "memory_id": 1,
+                "quote_byte_range": [
+                  0,
+                  44
+                ]
+              }
+            ],
+            "task_id": null,
+            "text": "雾岚打印机的默认纸张规格是A4。",
+            "turn_id": "device_s1",
+            "verified_fact": {
+              "memory_id": 1,
+              "relation": "默认纸张规格",
+              "subject": "雾岚打印机",
+              "unique_in_snapshot": true,
+              "value": "A4"
+            }
+          }
+        ],
+        "source_revision": 2
+      },
+      "step": "question"
+    },
+    {
+      "question": "device_q6",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "青苔打印机使用什么型号的墨盒？",
+          "read_revision": 5,
+          "safe_answer": "现有记录证据不足，无法回答这个问题。",
+          "safe_source_ids": [],
+          "source_revision": 2,
+          "sources": [],
+          "status": "insufficient_evidence",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "青苔打印机 用的 墨盒 型号",
+            "青苔打印机 配备 墨盒 型号",
+            "青苔打印机 耗材 墨盒 规格"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 3,
+          "filtered_other_named_entity": 3,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1790568090,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "青苔打印机使用什么型号的墨盒？",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": false,
+        "degraded_reasons": [],
+        "duration_ms": 52,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 2,
+            "hint_bytes": 1028,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 2,
+            "repository_memory_count": 2,
+            "segment_association_count": 2,
+            "skipped": {},
+            "token_bytes": 4162
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 5753,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 2,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "status": "insufficient"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753234223395000-1387",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234206416000-1380",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753234282078000-1423",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753234206416000-1380",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [
+            "device_qingtai_printer"
+          ],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233850802000-1241:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233900918000-1272:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 2
+      },
+      "step": "question"
+    }
+  ]
+}

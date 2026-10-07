@@ -1,0 +1,891 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 26,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:organization_s1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 17023,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3796,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1078,
+        "output_tokens_details": {
+          "reasoning_tokens": 932
+        },
+        "total_tokens": 4874
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:organization_s1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2455,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2030,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2104
+      }
+    },
+    {
+      "elapsed_ms": 8,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:organization_s2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 17686,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3830,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1187,
+        "output_tokens_details": {
+          "reasoning_tokens": 979
+        },
+        "total_tokens": 5017
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:organization_s2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2349,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2064,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2138
+      }
+    },
+    {
+      "elapsed_ms": 3,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:organization_q3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2242,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2439,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 65,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2504
+      }
+    },
+    {
+      "elapsed_ms": 20243,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:organization_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 20215,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4652,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 192,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4844
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:organization_q5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2795,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2440,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 133,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2573
+      }
+    },
+    {
+      "elapsed_ms": 3818,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:organization_q5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3795,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4674,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 221,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4895
+      }
+    }
+  ],
+  "case": "organization_borrow_limit",
+  "elapsed_ms": 24989,
+  "steps": [
+    {
+      "message": "organization_s1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377710505000-55",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377710505000-55",
+            "duration_ms": 32,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377748451000-65",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377748451000-65",
+            "duration_ms": 11,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377686020000-37",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212377686020000-37",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "organization_s2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377837540000-93",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377837540000-93",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377867697000-103",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377867697000-103",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377802811000-78",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212377802811000-78",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212378012234000-121",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378012234000-121",
+            "duration_ms": 11,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378042743000-124",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378042743000-124",
+            "duration_ms": 20419,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "organization_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "每人同时最多能借几本书？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686020000-37"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "白鹭读书会规定，每名会员同时最多可借3册书。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "constraint",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_bailu_bookclub"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                },
+                "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686020000-37"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [
+            "我问的是白鹭读书会。"
+          ],
+          "query": "每人同时最多能借几本书？",
+          "request_id": "eval-organization_borrow_limit-organization_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "organization_s1": "55832-1791212377686020000-37",
+        "organization_s2": "55832-1791212377802811000-78"
+      },
+      "source_state": {
+        "organization_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "organization_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212398612479000-159",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398612479000-159",
+            "duration_ms": 6,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398636541000-163",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398636541000-163",
+            "duration_ms": 3990,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "organization_q5",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "同时"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686020000-37"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "白鹭读书会规定，每名会员同时最多可借3册书。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "constraint",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "organization_bailu_bookclub"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                },
+                "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "白鹭读书会规定，每名会员同时最多可借3册书。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686020000-37"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "在白鹭读书会，一名会员手上最多可以有几本尚未归还的书？",
+          "request_id": "eval-organization_borrow_limit-organization_q5",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 5,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "organization_s1": "55832-1791212377686020000-37",
+        "organization_s2": "55832-1791212377802811000-78"
+      },
+      "source_state": {
+        "organization_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "organization_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

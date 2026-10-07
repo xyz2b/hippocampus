@@ -1,0 +1,900 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 34027,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 33989,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3747,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 1133,
+        "output_tokens_details": {
+          "reasoning_tokens": 1120
+        },
+        "total_tokens": 4880
+      }
+    },
+    {
+      "elapsed_ms": 103479,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 103466,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3849,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 7046,
+        "output_tokens_details": {
+          "reasoning_tokens": 6660
+        },
+        "total_tokens": 10895
+      }
+    },
+    {
+      "elapsed_ms": 89317,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 89300,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1788,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 16174,
+        "output_tokens_details": {
+          "reasoning_tokens": 16063
+        },
+        "total_tokens": 17962
+      }
+    },
+    {
+      "elapsed_ms": 63687,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 63669,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3977,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4433,
+        "output_tokens_details": {
+          "reasoning_tokens": 3916
+        },
+        "total_tokens": 8410
+      }
+    },
+    {
+      "elapsed_ms": 46429,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 46411,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2050,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 8283,
+        "output_tokens_details": {
+          "reasoning_tokens": 8116
+        },
+        "total_tokens": 10333
+      }
+    },
+    {
+      "elapsed_ms": 125027,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 125004,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3690,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8264,
+        "output_tokens_details": {
+          "reasoning_tokens": 7974
+        },
+        "total_tokens": 11954
+      }
+    },
+    {
+      "elapsed_ms": 27823,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 27796,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4029,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1649,
+        "output_tokens_details": {
+          "reasoning_tokens": 1636
+        },
+        "total_tokens": 5678
+      }
+    },
+    {
+      "elapsed_ms": 155591,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 155565,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4103,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10172,
+        "output_tokens_details": {
+          "reasoning_tokens": 9846
+        },
+        "total_tokens": 14275
+      }
+    },
+    {
+      "elapsed_ms": 35130,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 35103,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1828,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5961,
+        "output_tokens_details": {
+          "reasoning_tokens": 5883
+        },
+        "total_tokens": 7789
+      }
+    },
+    {
+      "elapsed_ms": 64451,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 64419,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4231,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4030,
+        "output_tokens_details": {
+          "reasoning_tokens": 3850
+        },
+        "total_tokens": 8261
+      }
+    },
+    {
+      "elapsed_ms": 15019,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 14983,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4175,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 838,
+        "output_tokens_details": {
+          "reasoning_tokens": 825
+        },
+        "total_tokens": 5013
+      }
+    },
+    {
+      "elapsed_ms": 2489,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2455,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2237,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 102,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2339
+      }
+    },
+    {
+      "elapsed_ms": 1857,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1822,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5275,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5297
+      }
+    }
+  ],
+  "case": "lme_19b5f2b3_abs",
+  "elapsed_ms": 768367,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791154720822316000-40",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791154720822316000-40",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791154755040237000-66",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791154755040237000-66",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791154948145471000-120",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791154948145471000-120",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155184015812000-196",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791155184015812000-196",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155212234100000-202",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"reported\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "80856-1791155212234100000-202",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155468528429000-275",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791155468528429000-275",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1685179500,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 6,
+          "pending_updates": 2,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-27",
+          "sequence": null,
+          "source_id": null,
+          "text": "How long was I in Korea for?"
+        },
+        "degraded_reasons": [],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning a trip to Asia and I'm considering visiting Japan. Can you recommend some must-see attractions in Kyoto?"
+            },
+            "said_on": "2023-05-23",
+            "sequence": 1,
+            "source_id": "80856-1791154720822316000-40"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago. I spent two weeks traveling solo around the country and it was an incredible experience. Can you recommend some good places to stay in Kyoto that are budget-friendly?"
+            },
+            "said_on": "2023-05-23",
+            "sequence": 2,
+            "source_id": "80856-1791154755040237000-66"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I stayed in small hostels and guesthouses during my solo trip to Japan, and it was a great way to meet other travelers. Speaking of which, do you have any recommendations for good onsen (hot springs) in the Kyoto area? I visited one in the mountains during my trip and it was amazing."
+            },
+            "said_on": "2023-05-23",
+            "sequence": 3,
+            "source_id": "80856-1791154948145471000-120"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm actually considering visiting other parts of Asia after Japan. Do you have any recommendations for must-see destinations in Asia?"
+            },
+            "said_on": "2023-05-23",
+            "sequence": 4,
+            "source_id": "80856-1791155184015812000-196"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm actually thinking of visiting South Korea. I've heard great things about Seoul and the food there. Do you have any recommendations for must-try dishes or restaurants in Seoul?"
+            },
+            "said_on": "2023-05-23",
+            "sequence": 5,
+            "source_id": "80856-1791155212234100000-202"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of visiting the Demilitarized Zone (DMZ) between North and South Korea. Do you have any recommendations for guided tours or attractions in the area?"
+            },
+            "said_on": "2023-05-23",
+            "sequence": 6,
+            "source_id": "80856-1791155468528429000-275"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "visited",
+              "sentence": {
+                "text": "I visited one in the mountains during my trip and it was amazing."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "one in the mountains during my trip"
+                },
+                "text": "one in the mountains during my trip"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I visited one in the mountains during my trip and it was amazing."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791154948145471000-120"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "visited",
+              "sentence": {
+                "text": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "a few months ago"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Fushimi Inari Shrine"
+                },
+                "text": "Fushimi Inari Shrine"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I actually visited Fushimi Inari Shrine when I was in Japan a few months ago."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791154755040237000-66"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-05-23",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1685179500,
+          "context": [],
+          "query": "How long was I in Korea for?",
+          "request_id": "eval-lme_19b5f2b3_abs-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 6,
+          "source_revision": 6
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791154720822316000-40",
+        "s1_t2": "80856-1791154755040237000-66",
+        "s1_t3": "80856-1791154948145471000-120",
+        "s1_t4": "80856-1791155184015812000-196",
+        "s1_t5": "80856-1791155212234100000-202",
+        "s1_t6": "80856-1791155468528429000-275"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

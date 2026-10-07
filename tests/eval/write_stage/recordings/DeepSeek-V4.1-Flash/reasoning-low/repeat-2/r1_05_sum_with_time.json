@@ -1,0 +1,35 @@
+{
+  "id": "r1_05_sum_with_time",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 64095,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "error": "response is not completed; not recorded",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:9b91574a1d61f76c996dd7abdf3f769b8ceea9d3662188f2003871c8fd46eef9",
+      "response": {
+        "incomplete_details": {
+          "reason": "length"
+        },
+        "status": "incomplete",
+        "usage": {
+          "input_tokens": 902,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 16384,
+          "output_tokens_details": {
+            "reasoning_tokens": 5404
+          },
+          "total_tokens": 17286
+        }
+      },
+      "schema": "r1_v1"
+    }
+  ]
+}

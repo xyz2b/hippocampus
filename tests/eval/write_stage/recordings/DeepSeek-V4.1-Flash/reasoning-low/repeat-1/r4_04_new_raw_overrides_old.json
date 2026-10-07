@@ -1,0 +1,84 @@
+{
+  "id": "r4_04_new_raw_overrides_old",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 58050,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我上周已经搬到南京了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-40"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在上海。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-4"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "用户住在南京。",
+            "strength": null,
+            "supersedes_record_ids": [
+              4
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我上周已经搬到南京了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-40\"}},{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-4\"}}],\"polarity\":\"affirm\",\"record_ids\":[],\"statement\":\"用户住在南京。\",\"strength\":null,\"supersedes_record_ids\":[4],\"times\":[],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:5189346d755e3dae7ab8442c2f0752fa141a1268a6e166025540d631000c04ed",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1428,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 10381,
+          "output_tokens_details": {
+            "reasoning_tokens": 10254
+          },
+          "total_tokens": 11809
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1428,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 10381,
+        "output_tokens_details": {
+          "reasoning_tokens": 10254
+        },
+        "total_tokens": 11809
+      }
+    }
+  ]
+}

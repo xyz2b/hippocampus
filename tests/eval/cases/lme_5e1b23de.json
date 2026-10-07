@@ -797,8 +797,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": {
+          "approximate": false,
+          "bound": "exact",
+          "end": {
+            "date": "2024-02-01",
+            "source": "request.at"
+          },
+          "exact_days": 92,
+          "op": "elapsed",
+          "rounding": "complete_calendar_months",
+          "start": {
+            "date": "2023-11-01",
+            "role": "event",
+            "source": "s1_t4"
+          },
+          "unit": "month",
+          "value": "3"
+        },
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "去附近城市参加了一个 3 天的摄影工作坊（s1_t4 原文 today）",
+            "sources": {
+              "all_of": [
+                "s1_t4"
+              ],
+              "any_of": []
+            },
+            "subject": "self"
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many months ago did I attend the photography workshop?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

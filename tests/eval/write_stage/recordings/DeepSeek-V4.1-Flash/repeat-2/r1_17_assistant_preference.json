@@ -1,0 +1,72 @@
+{
+  "id": "r1_17_assistant_preference",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "response_language",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "以后"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "response_language",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[],\"current_evidence\":\"assertion_present\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":\"response_language\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{ \"text\": \"以后\" },\"role\":\"validity\"} },\"op\":\"lookup\",\"unit\":null},\"relation\": \"response_language\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"open\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:456bb9cfa09830f6cdfc2a66cc058289e9677cc198f96ddc7325e69bf6c7f5da",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 900,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 10931,
+          "output_tokens_details": {
+            "reasoning_tokens": 10824
+          },
+          "total_tokens": 11831
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 900,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 10931,
+        "output_tokens_details": {
+          "reasoning_tokens": 10824
+        },
+        "total_tokens": 11831
+      }
+    }
+  ]
+}

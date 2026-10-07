@@ -1,0 +1,45 @@
+{
+ "id": "w3_10_value_not_supported",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "值超出原文",
+ "input": {
+  "text": "我住在杭州附近。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "lives_in",
+    "memory_type": "fact",
+    "value": "杭州",
+    "sentence": "我住在杭州附近。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "insufficient",
+    "aspects": [
+     "value"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": "“杭州附近”不能证明住在杭州，也不能证明不住在杭州：草稿按 insufficient。"
+}

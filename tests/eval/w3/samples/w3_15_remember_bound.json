@@ -1,0 +1,60 @@
+{
+ "id": "w3_15_remember_bound",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "remember 请求绑定正确",
+ "input": {
+  "text": "记住：我的车牌是浙A12345。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "owns",
+    "memory_type": "fact",
+    "value": "浙A12345",
+    "sentence": "我的车牌是浙A12345。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": [
+   {
+    "kind": "remember",
+    "quote": "记住",
+    "target": {
+     "object": "facts",
+     "candidate_indices": [
+      0
+     ]
+    },
+    "deadline": null
+   }
+  ]
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": [
+   {
+    "request": 0,
+    "verdict": "supported"
+   }
+  ]
+ },
+ "note": null
+}

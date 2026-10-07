@@ -1,0 +1,162 @@
+{
+  "id": "w1_05_hypothetical",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "如果我以后去深圳工作"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            },
+            "speech": "hypothetical",
+            "strength": "weak",
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "以后"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "如果我以后去深圳工作，我会考虑租房。"
+              },
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\":{\"text\":\"如果我以后去深圳工作\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"speech\":\"hypothetical\",\"strength\":\"weak\",\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"以后\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"text\":\"如果我以后去深圳工作，我会考虑租房。\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:23063f9b4bf71716",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3541,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 7382,
+          "output_tokens_details": {
+            "reasoning_tokens": 7223
+          },
+          "total_tokens": 10923
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3541,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7382,
+        "output_tokens_details": {
+          "reasoning_tokens": 7223
+        },
+        "total_tokens": 10923
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "如果我以后去深圳工作"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            },
+            "speech": "hypothetical",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "如果我以后去深圳工作，我会考虑租房。"
+              },
+              "text": "如果我以后去深圳工作，我会考虑租房。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\":{\"text\":\"如果我以后去深圳工作\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"speech\":\"hypothetical\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"如果我以后去深圳工作，我会考虑租房。\"},\"text\":\"如果我以后去深圳工作，我会考虑租房。\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:69d3342bde1bf3fc",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3721,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 4061,
+          "output_tokens_details": {
+            "reasoning_tokens": 3926
+          },
+          "total_tokens": 7782
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3721,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4061,
+        "output_tokens_details": {
+          "reasoning_tokens": 3926
+        },
+        "total_tokens": 7782
+      }
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "id": "w4_23_rejudge_merge",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "重判已提交断言为 reinforce：值与限定语相同、来源不同，证据并入旧记录，已提交记录退出投影",
+  "boundary_with": "w4_14_rejudge_committed",
+  "sources": {
+    "s-112": {
+      "text": "我每天喝一杯咖啡。",
+      "said_on": "2026-05-06"
+    },
+    "s-362": {
+      "text": "我每天喝一杯咖啡。",
+      "said_on": "2026-09-26"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": 70,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我每天喝一杯咖啡。",
+            "quote": {
+              "text": "我每天喝一杯咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我每天喝一杯咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每天"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-362"
+        },
+        "said_on": "2026-09-26",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 55,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我每天喝一杯咖啡。",
+            "quote": {
+              "text": "我每天喝一杯咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我每天喝一杯咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每天"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-112"
+            },
+            "quote": {
+              "text": "我每天喝一杯咖啡。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-06",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "reinforce",
+        "targets": [
+          55
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-112",
+          "s-362"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "55": {
+          "stored_status": "active",
+          "reinforcement_count": "+1",
+          "evidence_added": [
+            "s-362"
+          ]
+        },
+        "70": {
+          "from_candidate": 0,
+          "merged_into": 55,
+          "projected": false
+        }
+      },
+      "new_records": 0,
+      "candidate_update": {
+        "status": "pending",
+        "reasons": [
+          "update_scope_incomplete"
+        ]
+      },
+      "receipt": {
+        "replacement_map": {
+          "70": 55
+        }
+      },
+      "recall": {
+        "current": [
+          "55（每天一杯，两条原文依据）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得同时返回 55 与 70 两份等效记录",
+      "s-362 的证据只计一次，同一来源重放不再增加计数",
+      "不得把 70 归并到自身",
+      "不得把值或限定语不同的断言按此方式归并（见 w4_14、w4_10）"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "state_change",
+      "why": "值与限定语都没有变化"
+    },
+    {
+      "action": "new",
+      "why": "与 55 是同一断言"
+    }
+  ],
+  "note": "70 首次提交时范围不完整、带 update.pending；后台检索到 55 后重判。二者值与限定语相同、来源不同，按 contracts 2.5 归并：证据按来源幂等并入 55，回执保存 70→55 的替代映射。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "每天"
+      ]
+    },
+    "record:55": {
+      "times": [
+        "每天"
+      ]
+    }
+  }
+}

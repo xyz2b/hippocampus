@@ -1,0 +1,70 @@
+{
+  "id": "r1_18_did_i_say",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 20384,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "花生过敏"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "allergic_to",
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "allergic_to",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"花生过敏\"\n      },\n      \"resolved\": true\n    }\n  ],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"allergic_to\",\n      \"time\": null\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"allergic_to\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"single\"\n}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:4cd6baebfafe84164d5d656ec98c744e4df3805b1a281ace6ab5964b0564e251",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2362,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1141,
+          "output_tokens_details": {
+            "reasoning_tokens": 1007
+          },
+          "total_tokens": 3503
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2362,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1141,
+        "output_tokens_details": {
+          "reasoning_tokens": 1007
+        },
+        "total_tokens": 3503
+      }
+    }
+  ]
+}

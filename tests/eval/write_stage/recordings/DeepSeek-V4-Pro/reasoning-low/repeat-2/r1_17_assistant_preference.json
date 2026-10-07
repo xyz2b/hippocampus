@@ -1,0 +1,79 @@
+{
+  "id": "r1_17_assistant_preference",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 43847,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "用英文"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "response_language",
+            "time": null
+          },
+          "op": "list",
+          "unit": null
+        },
+        "relation": "response_language",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "以后"
+          },
+          "role": "event"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"用英文\"},\"resolved\":true}],\"current_evidence\":\"assertion_present\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":\"response_language\",\"time\":null},\"op\":\"list\",\"unit\":null},\"relation\":\"response_language\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"以后\"},\"role\":\"event\"},\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:d677bef40cd7d64dd18159a0f40388953c408ab60c830625e8a96233e62ea3e6",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2362,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2628,
+          "output_tokens_details": {
+            "reasoning_tokens": 2526
+          },
+          "total_tokens": 4990
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2362,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2628,
+        "output_tokens_details": {
+          "reasoning_tokens": 2526
+        },
+        "total_tokens": 4990
+      }
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use serde_json::{Value, json};
@@ -60,45 +61,21 @@ fn insert(
                     quote,
                 ),
             );
-            s.with_engine(registry(), |e, _| match e.ingest(common::grounded(c))? {
-                IngestOutcome::Applied {
-                    memory_id: Some(id),
-                    ..
-                } => Ok(id),
-                o => Err(format!("{o:?}").into()),
+            s.with_engine(registry(), |e, _| {
+                match e.seed_fixture(common::grounded(c))? {
+                    FixtureOutcome::Applied {
+                        memory_id: Some(id),
+                        ..
+                    } => Ok(id),
+                    o => Err(format!("{o:?}").into()),
+                }
             })
         })
         .unwrap()
 }
-fn recall(store: &SqliteMemoryStore, query: &str, task: Option<&str>) -> Value {
-    let mut ctx = RuntimeContext::current(store.owner().clone(), Timestamp(200));
-    ctx.task_id = task.map(TaskId::from);
-    store
-        .recall_local(
-            query,
-            &[],
-            &ctx,
-            registry(),
-            &InMemorySemanticRelationRegistry::default(),
-            &LocalRecallBudget {
-                candidate_k: 1,
-                source_limit: 1,
-                ..Default::default()
-            },
-        )
-        .unwrap()
-}
-fn ids(v: &Value) -> Vec<String> {
-    v["source_evidence"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|s| s["source_id"].as_str().unwrap().into())
-        .collect()
-}
 
 #[test]
-fn canonical_hints_and_old_renderer_require_explicit_rebuild() {
+fn canonical_hints_and_old_renderer_preserve_read_only_data_until_rebuild() {
     let db = Db::new();
     let mut store = db.open("alice");
     store.set_fact_index_enabled(true);
@@ -141,14 +118,6 @@ fn canonical_hints_and_old_renderer_require_explicit_rebuild() {
     let before = std::fs::read(&db.0).unwrap();
     let mut ro = SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).unwrap();
     ro.set_fact_index_enabled(true);
-    let fallback = recall(&ro, "literal", None);
-    assert_eq!(ids(&fallback), ["canonical"]);
-    assert_eq!(fallback["fact_index"]["status"], "unavailable");
-    assert_eq!(
-        fallback["fact_index"]["reason"],
-        "fact_index_version_mismatch"
-    );
-    assert!(ids(&recall(&ro, "semanticbridge", None)).is_empty());
     drop(ro);
     assert_eq!(before, std::fs::read(&db.0).unwrap());
     let mut store = db.open("alice");
@@ -157,79 +126,9 @@ fn canonical_hints_and_old_renderer_require_explicit_rebuild() {
         store.rebuild_fact_index().unwrap()["renderer_version"],
         "committed-fact-key-v2"
     );
-    let restored = recall(&store, "semanticbridge", None);
-    assert_eq!(restored["fact_index"]["status"], "ready");
-    assert_eq!(ids(&restored), ["canonical"]);
     assert_eq!(
         business_before,
         serde_json::to_value(store.read().unwrap()).unwrap()
-    );
-}
-
-#[test]
-fn hints_expand_keys_keep_raw_values_and_respect_owner_task_and_rule_quota() {
-    let db = Db::new();
-    let mut store = db.open("alice");
-    store.set_fact_index_enabled(true);
-    insert(
-        &mut store,
-        "alice-good",
-        "a literal statement",
-        "a literal statement",
-        "semanticbridge",
-        Some("task-a"),
-    );
-    let excluded = insert(
-        &mut store,
-        "alice-excluded",
-        "newer unrelated text",
-        "newer unrelated text",
-        "semanticbridge",
-        Some("task-a"),
-    );
-    store
-        .transaction(|s| {
-            let mut m = s.repository.get(excluded)?.unwrap();
-            m.status = MemoryStatus::Expired;
-            s.repository.update(m)?;
-            Ok(())
-        })
-        .unwrap();
-    insert(
-        &mut store,
-        "alice-other-task",
-        "newest foreign task",
-        "newest foreign task",
-        "semanticbridge",
-        Some("task-b"),
-    );
-    let mut other = db.open("bob");
-    other.set_fact_index_enabled(true);
-    insert(
-        &mut other,
-        "bob-source",
-        "private text",
-        "private text",
-        "semanticbridge",
-        Some("task-a"),
-    );
-    store.set_fact_index_enabled(false);
-    assert!(ids(&recall(&store, "semanticbridge", Some("task-a"))).is_empty());
-    store.set_fact_index_enabled(true);
-    let v = recall(&store, "semanticbridge", Some("task-a"));
-    assert_eq!(ids(&v), ["alice-good"]);
-    assert_eq!(v["fact_index"]["status"], "ready");
-    assert_eq!(v["source_evidence"][0]["text"], "a literal statement");
-    assert_eq!(
-        v["source_evidence"][0]["fact_hint_matches"][0]["provenance"],
-        "committed_memory_projection"
-    );
-    assert_eq!(v["backend_generation_calls_in_recall"], 0);
-    assert!(
-        store.search_sources("semanticbridge", None, 10).unwrap()["candidates"]
-            .as_array()
-            .unwrap()
-            .is_empty()
     );
 }
 
@@ -266,42 +165,26 @@ fn refresh_failure_corruption_and_new_versions_fall_back_until_explicit_rebuild(
             .value,
         MemoryValue::from("afterword")
     );
-    assert!(ids(&recall(&store, "beforeword", None)).is_empty());
-    let raw = recall(&store, "literal", None);
-    assert_eq!(ids(&raw), ["old"]);
-    assert_eq!(raw["fact_index"]["status"], "unavailable");
+    // A broken auxiliary projection cannot roll back the committed authoritative value.
+    let before = serde_json::to_value(store.read().unwrap()).unwrap();
     db.sql("DROP TRIGGER fail_fact_refresh;");
-    store.rebuild_fact_index().unwrap();
-    assert_eq!(ids(&recall(&store, "afterword", None)), ["old"]);
+    assert_eq!(
+        store.rebuild_fact_index().unwrap()["renderer_version"],
+        "committed-fact-key-v2"
+    );
+    assert_eq!(before, serde_json::to_value(store.read().unwrap()).unwrap());
     db.sql("UPDATE fact_indexes SET hints_json='[]' WHERE owner_id='alice';");
-    assert_eq!(
-        recall(&store, "afterword", None)["fact_index"]["status"],
-        "unavailable"
-    );
     store.rebuild_fact_index().unwrap();
-    store.set_fact_index_enabled(false);
-    store
-        .transaction(|s| {
-            s.sources.get_mut("old").unwrap().enrichment = "clarified".into();
-            Ok(())
-        })
+    let encoded: String = rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .query_row(
+            "SELECT hints_json FROM fact_indexes WHERE owner_id='alice'",
+            [],
+            |r| r.get(0),
+        )
         .unwrap();
-    store.set_fact_index_enabled(true);
-    assert_eq!(
-        recall(&store, "afterword", None)["fact_index"]["status"],
-        "unavailable"
-    );
-    store.rebuild_fact_index().unwrap();
-    store
-        .transaction(|s| {
-            let mut m = s.repository.get(id)?.unwrap();
-            m.status = MemoryStatus::Deleted;
-            s.repository.update(m)?;
-            Ok(())
-        })
-        .unwrap();
-    assert!(ids(&recall(&store, "afterword", None)).is_empty());
-    assert_eq!(ids(&recall(&store, "literal", None)), ["old"]);
+    assert!(encoded.contains("afterword"));
+    assert!(!encoded.contains("beforeword"));
 }
 
 #[test]
@@ -357,111 +240,53 @@ fn exact_quotes_whole_items_and_read_only_no_repair() {
     let before = std::fs::read(&db.0).unwrap();
     let mut ro = SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).unwrap();
     ro.set_fact_index_enabled(true);
-    for q in ["ambiguouskey", "oversizedkey", "crossingkey"] {
-        assert!(ids(&recall(&ro, q, None)).is_empty());
-    }
     assert!(ro.rebuild_fact_index().is_err());
     drop(ro);
     assert_eq!(before, std::fs::read(&db.0).unwrap());
     db.sql("DROP TABLE fact_indexes;");
-    let mut ro = SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).unwrap();
-    ro.set_fact_index_enabled(true);
-    assert_eq!(
-        recall(&ro, "echo", None)["fact_index"]["status"],
-        "unavailable"
+    // New recall ignores the old auxiliary fact index, even if it is absent.
+    let ro = SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).unwrap();
+    let request = hippocampus::recall::Request {
+        binding: hippocampus::contract::RecallRequest {
+            request_id: "legacy-index-absent".into(),
+            query: "全部记录".into(),
+            context: vec![],
+            task_id: None,
+            at: 200,
+        },
+        owner: "alice".into(),
+        subject_ids: None,
+        said_on: "1970-01-01".into(),
+        utc_offset_seconds: 0,
+        bootstrap: false,
+    };
+    let plan = hippocampus::r1::not_understood(&hippocampus::r1::Context {
+        query: &request.binding.query,
+        context: &[],
+        entities: &[],
+        relations: &[],
+        subject_ids: None,
+        task_id: None,
+        said_on: &request.said_on,
+        utc_offset_seconds: 0,
+        supported_units: &[],
+    })
+    .unwrap();
+    let assembly = hippocampus::recall::assemble(&ro, &request, &plan, Default::default()).unwrap();
+    assert_eq!(assembly.evidence.records.len(), 3);
+    assert!(
+        assembly
+            .evidence
+            .records
+            .iter()
+            .all(|v| matches!(v, hippocampus::contract::RecordView::Legacy(_)))
     );
     drop(ro);
     db.sql("CREATE TABLE fact_indexes(owner_id TEXT PRIMARY KEY);");
-    let mut ro = SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).unwrap();
-    ro.set_fact_index_enabled(true);
-    assert!(
-        ro.recall_local(
-            "echo",
-            &[],
-            &RuntimeContext::current(UserId::from("alice"), Timestamp(300)),
-            registry(),
-            &InMemorySemanticRelationRegistry::default(),
-            &LocalRecallBudget::default(),
-        )
-        .is_err(),
-        "a malformed fact index table must still surface a SQLite error"
-    );
-}
-
-#[test]
-fn retention_clock_and_source_deletion_never_resurrect_keys() {
-    let db = Db::new();
     let mut store = db.open("alice");
-    store.set_fact_index_enabled(true);
-    insert(
-        &mut store,
-        "stable",
-        "stable literal",
-        "stable literal",
-        "sharedhint",
-        None,
-    );
-    let expires = insert(
-        &mut store,
-        "expires",
-        "temporary literal",
-        "temporary literal",
-        "sharedhint",
-        None,
-    );
-    store
-        .transaction(|s| {
-            let mut m = s.repository.get(expires)?.unwrap();
-            m.temporal.expires_at = Some(Timestamp(250));
-            m.retention_tier = RetentionTier::ShortTerm;
-            s.repository.update(m)?;
-            Ok(())
-        })
-        .unwrap();
-    assert_eq!(ids(&recall(&store, "sharedhint", None)), ["expires"]);
-    let late = store
-        .recall_local(
-            "sharedhint",
-            &[],
-            &RuntimeContext::current(UserId::from("alice"), Timestamp(300)),
-            registry(),
-            &InMemorySemanticRelationRegistry::default(),
-            &LocalRecallBudget {
-                candidate_k: 1,
-                source_limit: 1,
-                ..Default::default()
-            },
-        )
-        .unwrap();
-    assert_eq!(late["fact_index"]["status"], "ready");
-    assert_eq!(ids(&late), ["stable"]);
-    assert_eq!(
-        store
-            .read()
-            .unwrap()
-            .repository
-            .get(expires)
-            .unwrap()
-            .unwrap()
-            .status,
-        MemoryStatus::Active
-    );
-    store
-        .transaction(|s| {
-            s.sources.get_mut("stable").unwrap().request = None;
-            Ok(())
-        })
-        .unwrap();
-    store.rebuild_fact_index().unwrap();
-    assert!(ids(&recall(&store, "stable", None)).is_empty());
-    let state = store.read().unwrap();
-    assert!(state.sources["stable"].request.is_none());
     assert!(
-        !store.search_sources("stable", None, 10).unwrap()["candidates"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|s| s["source_id"] == "stable")
+        store.rebuild_fact_index().is_err(),
+        "explicit legacy-index maintenance must surface malformed schema"
     );
 }
 
@@ -506,15 +331,39 @@ fn correction_and_complete_negative_scoped_rendering() {
                     reason: SupersedeReason::Correction,
                 };
                 assert!(matches!(
-                    e.ingest(common::grounded(c))?,
-                    IngestOutcome::Applied { .. }
+                    e.seed_fixture(common::grounded(c))?,
+                    FixtureOutcome::Applied { .. }
                 ));
                 Ok(())
             })
         })
         .unwrap();
-    assert!(ids(&recall(&store, "wrongbridge", None)).is_empty());
-    assert_eq!(ids(&recall(&store, "rightbridge", None)), ["corrected"]);
+    let encoded: String = rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .query_row(
+            "SELECT hints_json FROM fact_indexes WHERE owner_id='alice'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let hints: Value = serde_json::from_str(&encoded).unwrap();
+    let rendered: Vec<Value> = hints
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|h| serde_json::from_str(h["text"].as_str().unwrap()).unwrap())
+        .collect();
+    let corrected = rendered
+        .iter()
+        .find(|m| m["value"]["Text"] == "wrongbridge")
+        .unwrap();
+    assert_eq!(corrected["status"], "Superseded");
+    assert_eq!(corrected["supersede_reason"], "Correction");
+    assert!(
+        rendered
+            .iter()
+            .any(|m| m["value"]["Text"] == "rightbridge" && m["status"] == "Active")
+    );
     store
         .transaction(|s| {
             let mut m = s

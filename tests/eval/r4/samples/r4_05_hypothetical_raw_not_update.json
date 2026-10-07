@@ -1,0 +1,70 @@
+{
+ "id": "r4_05_hypothetical_raw_not_update",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "新原文只是假设，不更新旧值",
+ "input": {
+  "query": "我住在哪？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "lives_in"
+  },
+  "records": [
+   {
+    "id": 5,
+    "sentence": "我住在上海。",
+    "said_on": "2026-01-10",
+    "source": "s-5",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [
+   {
+    "source": "s-50",
+    "text": "如果明年搬去南京，我得换工作。",
+    "said_on": "2026-09-30",
+    "enrichment": "queued"
+   }
+  ],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     5
+    ],
+    "sources": [
+     "s-5"
+    ],
+    "must": {
+     "current": [
+      "yes",
+      "unknown"
+     ]
+    }
+   }
+  ],
+  "compute": null
+ },
+ "must_not": [
+  "南京作为当前住址",
+  "上海 current=no"
+ ],
+ "note": null
+}

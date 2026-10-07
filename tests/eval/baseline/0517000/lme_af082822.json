@@ -1,0 +1,2555 @@
+{
+  "case": "lme_af082822",
+  "source_ids": {
+    "s1_t1": "83715-1790753232255457000-606",
+    "s1_t2": "83715-1790753232293573000-623",
+    "s1_t3": "83715-1790753232359559000-648",
+    "s1_t4": "83715-1790753232452884000-676",
+    "s1_t5": "83715-1790753232538800000-731",
+    "s1_t6": "83715-1790753232654421000-775"
+  },
+  "steps": [
+    {
+      "memories_after": {},
+      "message": "s1_t1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+              "read_revision": 1,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1668721620,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 5,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 0,
+                "hint_bytes": 0,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 0,
+                "repository_memory_count": 0,
+                "segment_association_count": 0,
+                "skipped": {},
+                "token_bytes": 0
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 2,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 1,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 1,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 1,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753232261159000-609",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232255361000-605",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753232268356000-615",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232255361000-605",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753232255457000-606",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_af082822:s1_t2:0",
+              "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "session_id": "eval-lme_af082822",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "television",
+            "living_room"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1668721680,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+          }
+        }
+      },
+      "message": "s1_t2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?"
+              ],
+              "query": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "read_revision": 2,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1668721680,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 24,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 563,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2373
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3215,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753232301437000-626",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232293327000-622",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753232312403000-627",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232293327000-622",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753232293573000-623",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_af082822:s1_t2:0",
+              "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "session_id": "eval-lme_af082822",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "television",
+            "living_room"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1668721680,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+          }
+        }
+      },
+      "message": "s1_t3",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?"
+              ],
+              "query": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+              "read_revision": 2,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 3,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 5277,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1668721740,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                  "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 46,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 563,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2373
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3215,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 3,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_af082822:s1_t2:0",
+                      "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                      "session_id": "eval-lme_af082822",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "television",
+                    "living_room"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1668721680,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 520,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721740,
+                "received_sequence": 3,
+                "role": "user",
+                "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232359559000-648",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                "turn_id": "s1_t3"
+              },
+              {
+                "byte_end": 492,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_af082822:s1_t2:0",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w00006100006300007400007500006100006c00006c000079",
+                      "w00006100006e000064",
+                      "w000061000074",
+                      "w000062000065",
+                      "w00006600007500006c00006c",
+                      "w00006700006f00006900006e000067",
+                      "w000069",
+                      "w00006900006e",
+                      "w00006c00006900007600006900006e000067",
+                      "w00006d",
+                      "w00006d00006f00007400006900006f00006e",
+                      "w00006d00006f00007500006e000074",
+                      "w00006d000079",
+                      "w000070000065000072000066000065000063000074",
+                      "w00007200006f00006f00006d",
+                      "w000074000068000065",
+                      "w00007400006800006900006e00006b",
+                      "w00007400006f",
+                      "w000074000076",
+                      "w00007500007300006900006e000067",
+                      "w00007700006f00007500006c000064"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 2,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      492
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1668721680,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232293573000-623",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      492
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                "turn_id": "s1_t2"
+              },
+              {
+                "byte_end": 173,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "completed_rejected",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721620,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232255457000-606",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 3
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "invalid_candidates",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "invalid_candidates",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 3,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753232370481000-656",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753232359018000-647",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753232380799000-659",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753232359018000-647",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 3,
+            "source_id": "83715-1790753232359559000-648",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_af082822:s1_t2:0",
+              "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "session_id": "eval-lme_af082822",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "television",
+            "living_room"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1668721680,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+          }
+        }
+      },
+      "message": "s1_t4",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates."
+              ],
+              "query": "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?",
+              "read_revision": 2,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 4,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1668721800,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                  "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                  "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 37,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 563,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2373
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3215,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 4,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232452884000-676:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 4
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_no_facts"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 4,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753232463920000-678",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232452105000-675",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753232473229000-680",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232452105000-675",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 4,
+              "source_id": "83715-1790753232452884000-676",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_af082822:s1_t2:0",
+              "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "session_id": "eval-lme_af082822",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "television",
+            "living_room"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1668721680,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+          }
+        }
+      },
+      "message": "s1_t5",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?"
+              ],
+              "query": "I'm still considering the Sonos Beam, but I'm also open to other options. I've been doing some research and I came across the Yamaha YAS-209 soundbar. It seems like a good alternative to the Sonos Beam, and it's a bit more budget-friendly. Do you know anything about the Yamaha YAS-209?",
+              "read_revision": 2,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 5,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1668721860,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                  "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                  "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                  "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm still considering the Sonos Beam, but I'm also open to other options. I've been doing some research and I came across the Yamaha YAS-209 soundbar. It seems like a good alternative to the Sonos Beam, and it's a bit more budget-friendly. Do you know anything about the Yamaha YAS-209?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 65,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 563,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2373
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3215,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 5,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232452884000-676:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 5
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "source_coverage_incomplete",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "source_coverage_incomplete",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 5,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753232550067000-739",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753232537016000-728",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753232557924000-742",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753232537016000-728",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 5,
+            "source_id": "83715-1790753232538800000-731",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_af082822:s1_t2:0",
+              "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "session_id": "eval-lme_af082822",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "television",
+            "living_room"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1668721680,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+          }
+        }
+      },
+      "message": "s1_t6",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?",
+                "I'm still considering the Sonos Beam, but I'm also open to other options. I've been doing some research and I came across the Yamaha YAS-209 soundbar. It seems like a good alternative to the Sonos Beam, and it's a bit more budget-friendly. Do you know anything about the Yamaha YAS-209?"
+              ],
+              "query": "I think I'll need to do some more research to decide between the two. But I'm glad I have some options to consider. Thanks for the help!",
+              "read_revision": 2,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 6,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 7627,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1668721920,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                  "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                  "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                  "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?",
+                  "I'm still considering the Sonos Beam, but I'm also open to other options. I've been doing some research and I came across the Yamaha YAS-209 soundbar. It seems like a good alternative to the Sonos Beam, and it's a bit more budget-friendly. Do you know anything about the Yamaha YAS-209?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I think I'll need to do some more research to decide between the two. But I'm glad I have some options to consider. Thanks for the help!",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 53,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 563,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2373
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 3215,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 6,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_af082822:s1_t2:0",
+                      "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                      "session_id": "eval-lme_af082822",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "television",
+                    "living_room"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1668721680,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect."
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232654421000-775:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232452884000-676:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 136,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "completed_no_facts",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721920,
+                "received_sequence": 6,
+                "role": "user",
+                "segment_id": "83715-1790753232654421000-775:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232654421000-775",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I think I'll need to do some more research to decide between the two. But I'm glad I have some options to consider. Thanks for the help!",
+                "turn_id": "s1_t6"
+              },
+              {
+                "byte_end": 286,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721860,
+                "received_sequence": 5,
+                "role": "user",
+                "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232538800000-731",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm still considering the Sonos Beam, but I'm also open to other options. I've been doing some research and I came across the Yamaha YAS-209 soundbar. It seems like a good alternative to the Sonos Beam, and it's a bit more budget-friendly. Do you know anything about the Yamaha YAS-209?",
+                "turn_id": "s1_t5"
+              },
+              {
+                "byte_end": 492,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_af082822:s1_t2:0",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w00006100006300007400007500006100006c00006c000079",
+                      "w00006100006e000064",
+                      "w000061000074",
+                      "w000062000065",
+                      "w00006600007500006c00006c",
+                      "w00006700006f00006900006e000067",
+                      "w000069",
+                      "w00006900006e",
+                      "w00006c00006900007600006900006e000067",
+                      "w00006d",
+                      "w00006d00006f00007400006900006f00006e",
+                      "w00006d00006f00007500006e000074",
+                      "w00006d000079",
+                      "w000070000065000072000066000065000063000074",
+                      "w00007200006f00006f00006d",
+                      "w000074000068000065",
+                      "w00007400006800006900006e00006b",
+                      "w00007400006f",
+                      "w000074000076",
+                      "w00007500007300006900006e000067",
+                      "w00007700006f00007500006c000064"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 2,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      492
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1668721680,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232293573000-623",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      492
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+                "turn_id": "s1_t2"
+              },
+              {
+                "byte_end": 218,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "completed_no_facts",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721800,
+                "received_sequence": 4,
+                "role": "user",
+                "segment_id": "83715-1790753232452884000-676:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232452884000-676",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "Yeah, I've actually been thinking about getting a soundbar to improve the audio quality. I've heard great things about the Sonos Beam, but I'm not sure if it's the right fit for my setup. Do you know anything about it?",
+                "turn_id": "s1_t4"
+              },
+              {
+                "byte_end": 520,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721740,
+                "received_sequence": 3,
+                "role": "user",
+                "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232359559000-648",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm actually planning to use it for a bit of everything - gaming, movie nights, and casual viewing. I've got a pretty big family, so we'll definitely be using it for family gatherings and holidays. Speaking of which, I've been doing some holiday shopping lately and scored some great deals. I went to the annual holiday market in our city and picked up some unique gifts for my siblings, including a handmade candle and a customized phone case. I also got a few stocking stuffers, like cozy socks and gourmet chocolates.",
+                "turn_id": "s1_t3"
+              },
+              {
+                "byte_end": 173,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "completed_rejected",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1668721620,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_af082822",
+                "source_id": "83715-1790753232255457000-606",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm looking for some advice on TV mounts. I recently got a new 4K TV during Black Friday, and I want to make sure I get a good mount for it. Do you have any recommendations?",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 6
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_no_facts"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 6,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753232666988000-786",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232653473000-773",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753232675612000-794",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232653473000-773",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 6,
+              "source_id": "83715-1790753232654421000-775",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "q",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "How many weeks ago did I attend the friends and family sale at Nordstrom?",
+          "read_revision": 2,
+          "safe_answer": "2 weeks ago（2022-11-17）。",
+          "safe_source_ids": [
+            "83715-1790753232293573000-623"
+          ],
+          "source_revision": 6,
+          "sources": [
+            {
+              "grade": "committed",
+              "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+              "source_id": "83715-1790753232293573000-623"
+            }
+          ],
+          "status": "source_linked_computed_elapsed",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "went to Nordstrom friends and family sale",
+            "attended Nordstrom friends and family sale",
+            "Nordstrom friends and family event purchase"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 14,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 1,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1669866480,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "How many weeks ago did I attend the friends and family sale at Nordstrom?",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 135,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 1,
+            "hint_bytes": 563,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 1,
+            "repository_memory_count": 1,
+            "segment_association_count": 1,
+            "skipped": {},
+            "token_bytes": 2373
+          },
+          "eligible_segment_association_count": 1,
+          "generation": 1,
+          "index_bytes": 3215,
+          "rebuild_ms": 0,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 2,
+          "source_revision": 6,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 2,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "event_date": "2022-11-17",
+          "evidence_grade": "committed",
+          "memory_id": 1,
+          "quote": "I'm actually going to be using the TV in my living room, and I think a full-motion mount would be perfect. I've been doing some shopping lately and scored some great deals, by the way. Yesterday, I attended a friends and family sale at Nordstrom and picked up a few dresses and tops for 20% off. I also got a $20 gift card for making a purchase over $100, which was a nice bonus. Anyway, back to the TV mount - what do you think about the Sanus VMF408? Is it a good option for my living room?",
+          "semantic_judgment": "model_proposed",
+          "source_id": "83715-1790753232293573000-623",
+          "status": "computed_elapsed",
+          "time_text": "Yesterday",
+          "value": "2 weeks ago"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753232808902000-845",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753232760173000-832",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753232951878000-907",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753232760173000-832",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 2,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232654421000-775:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232452884000-676:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232654421000-775:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232452884000-676:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232293573000-623:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232359559000-648:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232538800000-731:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753232255457000-606:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 6
+      },
+      "step": "question"
+    }
+  ]
+}

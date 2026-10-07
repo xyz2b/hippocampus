@@ -1,0 +1,43 @@
+{
+ "id": "w3_01_supported_simple",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "正确候选应 supported",
+ "input": {
+  "text": "我现在住在杭州。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "lives_in",
+    "memory_type": "fact",
+    "value": "杭州",
+    "sentence": "我现在住在杭州。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

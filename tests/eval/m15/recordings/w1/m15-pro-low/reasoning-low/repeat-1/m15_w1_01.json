@@ -1,0 +1,73 @@
+{
+  "id": "m15_w1_01",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 14382,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-low",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "likes",
+            "sentence": {
+              "text": "我女儿小栎喜欢拼陶片。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "child-demo"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "拼陶片"
+              },
+              "text": "拼陶片"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"likes\",\"sentence\":{\"text\":\"我女儿小栎喜欢拼陶片。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"child-demo\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"拼陶片\"},\"text\":\"拼陶片\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:fbe07704ba8796ca84b21cce8a0f7392b56072047a95759a9d0cdf543e437383",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3741,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 890,
+          "output_tokens_details": {
+            "reasoning_tokens": 780
+          },
+          "total_tokens": 4631
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3741,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 890,
+        "output_tokens_details": {
+          "reasoning_tokens": 780
+        },
+        "total_tokens": 4631
+      }
+    }
+  ]
+}

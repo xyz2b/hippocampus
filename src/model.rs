@@ -80,13 +80,6 @@ impl Evidence {
         }
     }
 
-    pub(crate) fn is_complete(&self) -> bool {
-        !self.id.0.trim().is_empty()
-            && !self.session_id.0.trim().is_empty()
-            && !self.turn_id.0.trim().is_empty()
-            && !self.quote.trim().is_empty()
-    }
-
     pub(crate) fn same_turn(&self, other: &Self) -> bool {
         self.session_id == other.session_id && self.turn_id == other.turn_id
     }
@@ -223,16 +216,6 @@ pub struct Scope {
     pub conditions: Vec<ScopeCondition>,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
-pub enum ScopeRelation {
-    Equal,
-    MoreSpecific,
-    MoreGeneral,
-    Disjoint,
-    Overlap,
-    Unknown,
-}
-
 #[derive(
     serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd,
 )]
@@ -275,17 +258,6 @@ pub struct DatedValue {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
-/// 已解析的现实时间区间，统一使用左闭右开语义。
-pub struct TemporalRange {
-    /// 区间起点（包含）。
-    pub start: Timestamp,
-    /// 区间终点（不包含）。
-    pub end: Timestamp,
-    /// 绝对日期来自明示，还是由相对表达式推断。
-    pub source: TemporalSource,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 /// 相对于某个事件边界的位置。
 pub enum TemporalRelation {
     /// 在已知状态变化开始之前；只有能唯一关联到版本链时才换算边界。
@@ -313,15 +285,6 @@ pub enum TemporalReference {
         /// 固定为 `TemporalSource::Unknown`。
         source: TemporalSource,
     },
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
-/// 相对时间解析后的两种安全结果。
-pub enum TemporalResolution {
-    /// 已换算成绝对时间区间。
-    Range(TemporalRange),
-    /// 仍依赖事件或未知信息的结构化引用。
-    Reference(TemporalReference),
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -354,35 +317,6 @@ impl Temporal {
         self.reference.is_none()
             && self.valid_from.is_none_or(|from| from.at <= at)
             && self.valid_to.is_none_or(|to| at < to.at)
-    }
-
-    /// 将解析结果应用到新建的 Temporal；不会同时保留绝对区间与未解析引用。
-    pub fn apply_resolution(&mut self, resolution: TemporalResolution) {
-        match resolution {
-            TemporalResolution::Range(range) => {
-                self.valid_from = Some(DatedValue {
-                    at: range.start,
-                    source: range.source,
-                });
-                self.valid_to = Some(DatedValue {
-                    at: range.end,
-                    source: range.source,
-                });
-                self.reference = None;
-            }
-            TemporalResolution::Reference(reference) => {
-                self.valid_from = None;
-                self.valid_to = None;
-                self.reference = Some(reference);
-            }
-        }
-    }
-
-    /// 检查 Memory 的现实有效期是否与查询区间相交。
-    pub fn overlaps(&self, range: TemporalRange) -> bool {
-        self.reference.is_none()
-            && self.valid_from.is_none_or(|from| from.at < range.end)
-            && self.valid_to.is_none_or(|to| range.start < to.at)
     }
 }
 
@@ -589,36 +523,9 @@ impl CandidateMemory {
     }
 
     /// Only the runtime's source verifier or checked entity rebinding may issue approval.
+    #[cfg(test)]
     pub(crate) fn bind_source_support(&mut self) {
         self.source_support = Some(self.source_support_snapshot());
-    }
-
-    /// The generic slot retains a complete USER sentence, including its qualifiers.
-    /// Dedicated predicates may carry typed values approved by semantic source review.
-    pub(crate) fn has_complete_fact_value(&self) -> bool {
-        if self.predicate.0 != "fact" {
-            return true;
-        }
-        let MemoryValue::Text(value) = &self.value else {
-            return false;
-        };
-        let value = fact_terminal(value);
-        !value.is_empty()
-            && self.evidence.iter().any(|evidence| {
-                fact_terminal(&evidence.quote) == value
-                    || sentence_runs(&evidence.quote)
-                        .into_iter()
-                        .any(|run| fact_terminal(run) == value)
-            })
-    }
-
-    pub(crate) fn has_complete_evidence(&self) -> bool {
-        let mut ids = std::collections::HashSet::new();
-        !self.evidence.is_empty()
-            && self
-                .evidence
-                .iter()
-                .all(|evidence| evidence.is_complete() && ids.insert(&evidence.id))
     }
 }
 
@@ -710,177 +617,5 @@ impl Memory {
             last_retrieved_at: None,
             tags: candidate.tags.clone(),
         }
-    }
-
-    pub fn same_assertion(&self, candidate: &CandidateMemory) -> bool {
-        self.value == candidate.value
-            && self.polarity == candidate.polarity
-            && self.strength == candidate.strength
-    }
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
-pub enum TemporalIntent {
-    Current,
-    Historical,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
-/// Query understanding 的结构化结果，是 retrieval 的唯一上下文输入。
-pub struct RuntimeContext {
-    /// 本次查询访问的用户记忆库。
-    pub owner_id: UserId,
-    /// 当前问题涉及的领域。
-    pub domain: Option<Domain>,
-    /// 主 Entity 与上下文相关 Entity；优先于纯语义相似度。
-    pub entities: Vec<EntityId>,
-    /// 当前任务标识；仅匹配相同 `ScopeCondition::Task`。
-    pub task_id: Option<TaskId>,
-    /// 当前查询实际满足的 scope conditions。
-    pub conditions: Vec<ScopeCondition>,
-    /// 可选 predicate 白名单；为空表示不按 predicate 预过滤。
-    pub predicates: Vec<Predicate>,
-    /// 当前查询涉及的候选项或类别，用于判断父类别 Constraint 是否适用。
-    pub targets: Vec<MemoryValue>,
-    /// Current 只看 Active；Historical 可查看有效的旧版本。
-    pub temporal_intent: TemporalIntent,
-    /// 显式时间过滤；为空时 Current 按 `at` 查当前，Historical 查截至 `at` 的历史。
-    pub temporal_filter: Option<TemporalResolution>,
-    /// 查询的现实时间锚点。
-    pub at: Timestamp,
-    /// 普通候选的最大数量，不包含 mandatory memories。
-    pub limit: usize,
-}
-
-impl RuntimeContext {
-    pub fn current(owner_id: UserId, at: Timestamp) -> Self {
-        Self {
-            owner_id,
-            domain: None,
-            entities: Vec::new(),
-            task_id: None,
-            conditions: Vec::new(),
-            predicates: Vec::new(),
-            targets: Vec::new(),
-            temporal_intent: TemporalIntent::Current,
-            temporal_filter: None,
-            at,
-            limit: 20,
-        }
-    }
-}
-
-/// 把自然语言 conversation 拆成 atomic candidate memories 的适配器接口。
-pub trait MemoryExtractor {
-    type Error;
-
-    fn extract(&self, conversation: &str) -> Result<Vec<CandidateMemory>, Self::Error>;
-}
-
-/// 把自然语言 query 转成 retrieval 所需 `RuntimeContext` 的适配器接口。
-pub trait RuntimeContextBuilder {
-    type Error;
-
-    fn build(&self, query: &str) -> Result<RuntimeContext, Self::Error>;
-}
-
-fn fact_terminal(text: &str) -> &str {
-    text.trim()
-        .trim_end_matches(['。', '.', '！', '!', '？', '?', ';', '；', '\n', '\r'])
-        .trim()
-}
-
-/// USER sentences in order, each with its closing mark; a '.' closes only before space or end.
-fn user_sentences(quote: &str) -> impl Iterator<Item = &str> {
-    let mut start = 0;
-    let mut marks = quote.char_indices().peekable();
-    std::iter::from_fn(move || {
-        while let Some((at, mark)) = marks.next() {
-            let end = at + mark.len_utf8();
-            let boundary = matches!(mark, '。' | '！' | '!' | '？' | '?' | ';' | '；' | '\n' | '\r')
-                || mark == '.' && marks.peek().is_none_or(|(_, next)| next.is_whitespace());
-            if boundary {
-                let sentence = &quote[start..end];
-                start = end;
-                return Some(sentence);
-            }
-        }
-        let rest = &quote[start..];
-        start = quote.len();
-        (!fact_terminal(rest).is_empty()).then_some(rest)
-    })
-    .filter(|sentence| !fact_terminal(sentence).is_empty())
-}
-
-/// Every run of consecutive whole USER sentences, as slices of the quote.
-fn sentence_runs(quote: &str) -> Vec<&str> {
-    let bounds: Vec<(usize, usize)> = user_sentences(quote)
-        .map(|sentence| {
-            let start = sentence.as_ptr() as usize - quote.as_ptr() as usize;
-            (start, start + sentence.len())
-        })
-        .collect();
-    // ponytail: O(n²) runs per quote; USER turns are a few dozen sentences at most.
-    (0..bounds.len())
-        .flat_map(|i| (i..bounds.len()).map(move |j| (i, j)))
-        .map(|(i, j)| &quote[bounds[i].0..bounds[j].1])
-        .collect()
-}
-
-/// The generic fact value is runtime-owned: the complete USER sentence (or run of consecutive
-/// whole sentences) the model pointed at.
-/// A text fragment selects the one sentence containing it; any other value kind is only
-/// unambiguous when the quote is a single sentence. Otherwise the value is left unchanged.
-pub(crate) fn complete_fact_sentence(value: MemoryValue, quote: &str) -> MemoryValue {
-    // Whitespace is not USER content: a model copy with extra or missing spaces still points
-    // at the same sentence, and the stored value is always the USER's own text.
-    let squash = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
-    let whole = squash(fact_terminal(quote));
-    let pick = |fragment: Option<&str>| {
-        let mut hits = user_sentences(quote).filter(|sentence| {
-            fragment.is_none_or(|f| squash(fact_terminal(sentence)).contains(f))
-        });
-        let hit = hits.next()?;
-        hits.next().is_none().then(|| hit.trim().to_owned())
-    };
-    let chosen = match &value {
-        MemoryValue::Text(text) => {
-            let text = squash(fact_terminal(text));
-            if text.is_empty() {
-                None
-            } else if text == whole {
-                Some(quote.trim().to_owned())
-            } else if let Some(sentence) = sentence_runs(quote)
-                .into_iter()
-                .find(|s| squash(fact_terminal(s)) == text)
-            {
-                // Store the USER's exact sentence(s), not the model's copy with stray marks.
-                Some(sentence.trim().to_owned())
-            } else {
-                pick(Some(&text))
-            }
-        }
-        _ => pick(None),
-    };
-    chosen.map_or(value, MemoryValue::Text)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{MemoryValue, complete_fact_sentence};
-
-    #[test]
-    fn generic_fact_accepts_consecutive_whole_sentences_only() {
-        let quote = "Books help. I stop emails by 7 pm. It helps me relax. Any tips?";
-        let fact = |text: &str| complete_fact_sentence(MemoryValue::Text(text.into()), quote);
-        assert_eq!(
-            fact("I stop emails by 7 pm. It helps me relax."),
-            MemoryValue::Text("I stop emails by 7 pm. It helps me relax.".into())
-        );
-        // Not consecutive: left unchanged, so the completeness check rejects it.
-        assert_eq!(
-            fact("Books help. It helps me relax."),
-            MemoryValue::Text("Books help. It helps me relax.".into())
-        );
     }
 }

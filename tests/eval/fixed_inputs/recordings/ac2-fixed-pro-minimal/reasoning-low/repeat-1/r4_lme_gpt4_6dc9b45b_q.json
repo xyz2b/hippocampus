@@ -1,0 +1,139 @@
+{
+  "id": "r4_lme_gpt4_6dc9b45b_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 135281,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [
+            {
+              "date": {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              },
+              "date_source": {
+                "kind": "stored",
+                "source_id": "s1_t1"
+              },
+              "event_group": "siff_attendance_event",
+              "evidence": [
+                {
+                  "quote": {
+                    "text": "I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing."
+                  },
+                  "source": {
+                    "kind": "stored",
+                    "source_id": "s1_t1"
+                  }
+                }
+              ],
+              "id": "siff_attendance",
+              "quantity": null
+            }
+          ],
+          "op": "elapsed",
+          "operands": [
+            "@request.at",
+            "siff_attendance"
+          ],
+          "unit": "month"
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I just saw \"Coda\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t1"
+                }
+              },
+              {
+                "quote": {
+                  "text": "As someone who's attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s1_t4"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              3
+            ],
+            "statement": "The user attended the Seattle International Film Festival (SIFF); on 2021-06-01 they were at SIFF and saw \"Coda\" there.",
+            "strength": "strong",
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": 0,
+                  "unit": "day"
+                },
+                "quote": {
+                  "text": "today"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":{\"coverage\":\"complete\",\"items\":[{\"date\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"},\"date_source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"},\"event_group\":\"siff_attendance_event\",\"evidence\":[{\"quote\":{\"text\":\"I just saw \\\"Coda\\\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}}],\"id\":\"siff_attendance\",\"quantity\":null}],\"op\":\"elapsed\",\"operands\":[\"@request.at\",\"siff_attendance\"],\"unit\":\"month\"},\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"I just saw \\\"Coda\\\" at the Seattle International Film Festival today, and I loved it. I attended SIFF for a week, watched 8 films, and even sat in on a panel discussion about film distribution and marketing.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t1\"}},{\"quote\":{\"text\":\"As someone who's attended several festivals, including SIFF, I've seen firsthand how these events can launch careers and generate buzz around new films.\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s1_t4\"}}],\"polarity\":\"affirm\",\"record_ids\":[3],\"statement\":\"The user attended the Seattle International Film Festival (SIFF); on 2021-06-01 they were at SIFF and saw \\\"Coda\\\" there.\",\"strength\":\"strong\",\"supersedes_record_ids\":[],\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":0,\"unit\":\"day\"},\"quote\":{\"text\":\"today\"},\"role\":\"event\"}],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:43ed8850824afc476876beb2c3cb2e1be8ee172a947f8a05e86e63b1f0cc5174",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 6189,
+          "input_tokens_details": {
+            "cached_tokens": 6144
+          },
+          "output_tokens": 8919,
+          "output_tokens_details": {
+            "reasoning_tokens": 8484
+          },
+          "total_tokens": 15108
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 6189,
+        "input_tokens_details": {
+          "cached_tokens": 6144
+        },
+        "output_tokens": 8919,
+        "output_tokens_details": {
+          "reasoning_tokens": 8484
+        },
+        "total_tokens": 15108
+      }
+    }
+  ]
+}

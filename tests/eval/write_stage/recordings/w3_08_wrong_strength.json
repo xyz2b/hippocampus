@@ -1,0 +1,45 @@
+{
+  "id": "w3_08_wrong_strength",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 1,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "strength",
+                "quote": {
+                  "text": "我有点喜欢爬山。"
+                }
+              }
+            ],
+            "verdict": "contradicted"
+          }
+        ]
+      },
+      "output_text": "{\"coverage\":{\"missing\":[],\"status\":\"complete\"},\"request_reviews\":[],\"reviews\":[{\"candidate\":1,\"episode_value\":\"not_applicable\",\"problems\":[{\"aspect\":\"strength\",\"quote\":{\"text\":\"我有点喜欢爬山。\"}}],\"verdict\":\"contradicted\"}]}",
+      "request": "fnv1a64:3c325ab98340cd6e",
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 953,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 721,
+        "output_tokens_details": {
+          "reasoning_tokens": 655
+        },
+        "total_tokens": 1674
+      }
+    }
+  ]
+}

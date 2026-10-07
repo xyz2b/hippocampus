@@ -1,0 +1,2521 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 105029,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 104991,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3789,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 5855,
+        "output_tokens_details": {
+          "reasoning_tokens": 5732
+        },
+        "total_tokens": 9644
+      }
+    },
+    {
+      "elapsed_ms": 1909,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1894,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2000,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2074
+      }
+    },
+    {
+      "elapsed_ms": 258689,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 258672,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3933,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 17415,
+        "output_tokens_details": {
+          "reasoning_tokens": 16911
+        },
+        "total_tokens": 21348
+      }
+    },
+    {
+      "elapsed_ms": 2776,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2754,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2626,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 152,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2778
+      }
+    },
+    {
+      "elapsed_ms": 9329,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 9305,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3991,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 451,
+        "output_tokens_details": {
+          "reasoning_tokens": 438
+        },
+        "total_tokens": 4442
+      }
+    },
+    {
+      "elapsed_ms": 27036,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 27011,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4075,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1721,
+        "output_tokens_details": {
+          "reasoning_tokens": 1590
+        },
+        "total_tokens": 5796
+      }
+    },
+    {
+      "elapsed_ms": 1936,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1913,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2294,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 48,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2342
+      }
+    },
+    {
+      "elapsed_ms": 10886,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 10860,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3256,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 639,
+        "output_tokens_details": {
+          "reasoning_tokens": 542
+        },
+        "total_tokens": 3895
+      }
+    },
+    {
+      "elapsed_ms": 38439,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 38413,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4143,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2295,
+        "output_tokens_details": {
+          "reasoning_tokens": 2282
+        },
+        "total_tokens": 6438
+      }
+    },
+    {
+      "elapsed_ms": 80844,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 80817,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4195,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4938,
+        "output_tokens_details": {
+          "reasoning_tokens": 4925
+        },
+        "total_tokens": 9133
+      }
+    },
+    {
+      "elapsed_ms": 177112,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 177080,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4327,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 11714,
+        "output_tokens_details": {
+          "reasoning_tokens": 10948
+        },
+        "total_tokens": 16041
+      }
+    },
+    {
+      "elapsed_ms": 3046,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3013,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3030,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 146,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3176
+      }
+    },
+    {
+      "elapsed_ms": 131082,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 131046,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4394,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8770,
+        "output_tokens_details": {
+          "reasoning_tokens": 8394
+        },
+        "total_tokens": 13164
+      }
+    },
+    {
+      "elapsed_ms": 5394,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 5352,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4359,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 210,
+        "output_tokens_details": {
+          "reasoning_tokens": 197
+        },
+        "total_tokens": 4569
+      }
+    },
+    {
+      "elapsed_ms": 151884,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 151844,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4431,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9627,
+        "output_tokens_details": {
+          "reasoning_tokens": 9464
+        },
+        "total_tokens": 14058
+      }
+    },
+    {
+      "elapsed_ms": 2161,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2116,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2701,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 77,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2778
+      }
+    },
+    {
+      "elapsed_ms": 26173,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 26127,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4726,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1555,
+        "output_tokens_details": {
+          "reasoning_tokens": 1432
+        },
+        "total_tokens": 6281
+      }
+    },
+    {
+      "elapsed_ms": 174720,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 174671,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4567,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 11451,
+        "output_tokens_details": {
+          "reasoning_tokens": 11074
+        },
+        "total_tokens": 16018
+      }
+    },
+    {
+      "elapsed_ms": 2915,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2862,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3083,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 139,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3222
+      }
+    },
+    {
+      "elapsed_ms": 63032,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 62975,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4979,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3949,
+        "output_tokens_details": {
+          "reasoning_tokens": 3738
+        },
+        "total_tokens": 8928
+      }
+    },
+    {
+      "elapsed_ms": 3036,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2978,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2373,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 167,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2540
+      }
+    },
+    {
+      "elapsed_ms": 128651,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 128592,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 7258,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 8248,
+        "output_tokens_details": {
+          "reasoning_tokens": 7881
+        },
+        "total_tokens": 15506
+      }
+    }
+  ],
+  "case": "lme_10e09553",
+  "elapsed_ms": 1415714,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791200820410213000-53",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791200820410213000-53",
+            "duration_ms": 105120,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791200925536406000-80",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791200925536406000-80",
+            "duration_ms": 2003,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791200820397703000-32",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791200820397703000-32",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791200927588338000-85",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791200927588338000-85",
+            "duration_ms": 258863,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201186463046000-168",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201186463046000-168",
+            "duration_ms": 2926,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791200927566406000-83",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791200927566406000-83",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201189524752000-172",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201189524752000-172",
+            "duration_ms": 9498,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201189472140000-170",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "33284-1791201189472140000-170",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201199149768000-181",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201199149768000-181",
+            "duration_ms": 27237,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201226408467000-190",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201226408467000-190",
+            "duration_ms": 2135,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201228599804000-191",
+            "stage": "w4_v2",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201228599804000-191",
+            "duration_ms": 11105,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201199091135000-179",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791201199091135000-179",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201239868796000-195",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201239868796000-195",
+            "duration_ms": 38723,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201239789966000-193",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "33284-1791201239789966000-193",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201278780849000-206",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201278780849000-206",
+            "duration_ms": 81105,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201278696394000-204",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "33284-1791201278696394000-204",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201360088256000-250",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201360088256000-250",
+            "duration_ms": 177506,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201537630485000-301",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201537630485000-301",
+            "duration_ms": 3376,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201541109278000-303",
+            "stage": "w4_v2",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201541109278000-303",
+            "duration_ms": 131409,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201359997498000-248",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 5,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791201359997498000-248",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201672822165000-347",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201672822165000-347",
+            "duration_ms": 5743,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201672693286000-345",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "33284-1791201672693286000-345",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201678862868000-351",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201678862868000-351",
+            "duration_ms": 152259,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201831170880000-411",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201831170880000-411",
+            "duration_ms": 2552,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201833850549000-412",
+            "stage": "w4_v2",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201833850549000-412",
+            "duration_ms": 26563,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201678729255000-349",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791201678729255000-349",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791201860704038000-426",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791201860704038000-426",
+            "duration_ms": 175159,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202035919474000-495",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202035919474000-495",
+            "duration_ms": 3362,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202039435225000-496",
+            "stage": "w4_v2",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202039435225000-496",
+            "duration_ms": 63520,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791201860548245000-424",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 6,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [
+              {
+                "deadline": null,
+                "deadline_resolution": null,
+                "executed": false,
+                "final_candidate_indices": [],
+                "index": 0,
+                "kind": "remember",
+                "quote": {
+                  "text": "Remember that trip when we caught 9 largemouth bass with Alex?"
+                },
+                "rejected_candidate_indices": [],
+                "resolved_target": null,
+                "status": "insufficient",
+                "target": {
+                  "candidate_indices": [],
+                  "object": "facts",
+                  "quote": {
+                    "text": "that trip when we caught 9 largemouth bass with Alex"
+                  }
+                },
+                "verdict": "insufficient"
+              }
+            ],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791201860548245000-424",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1702383120,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791202103234889000-529",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202103234889000-529",
+            "duration_ms": 3535,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202106848515000-534",
+            "stage": "r4_v3",
+            "timeout_ms": 240000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791202106848515000-534",
+            "duration_ms": 129186,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 8,
+          "pending_updates": 5,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-12-12",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many largemouth bass did I catch with Alex on the earlier fishing trip to Lake Michigan before the 7/22 trip?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791200927566406000-83"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [
+              2,
+              3
+            ],
+            "statement": "The user caught 7 largemouth bass on a fishing trip to Lake Michigan with Alex on 7/10.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "on 7/10"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791201359997498000-248"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [
+              5
+            ],
+            "statement": "The user and Alex caught 9 largemouth bass on a 7/22 trip.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "on 7/22"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I was thinking of getting a tree stand for deer hunting this season. Can you tell me what to consider when buying one, and do you have any recommendations for a good beginner stand? Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+            },
+            "said_on": "2023-08-11",
+            "sequence": 2,
+            "source_id": "33284-1791200927566406000-83"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "What are some good resources for learning about deer hunting strategies and tactics, like using tree stands, setting up trail cameras, and calling deer?"
+            },
+            "said_on": "2023-08-11",
+            "sequence": 3,
+            "source_id": "33284-1791201189472140000-170"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I've been thinking about trying out some new lures for bass fishing. Do you have any recommendations for lures that are good for catching largemouth bass?"
+            },
+            "said_on": "2023-08-11",
+            "sequence": 5,
+            "source_id": "33284-1791201239789966000-193"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of planning another fishing trip to Lake Michigan, what's the current water temperature and fishing forecast for the area?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 6,
+            "source_id": "33284-1791201278696394000-204"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to fish from Illinois, probably around the Waukegan harbor area. By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
+            },
+            "said_on": "2023-11-30",
+            "sequence": 7,
+            "source_id": "33284-1791201359997498000-248"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "What's the best way to set up a tree stand for deer hunting?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 8,
+            "source_id": "33284-1791201672693286000-345"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm planning to help Alex set up some more tree stands on his property soon. Do you have any recommendations for the best types of deer calls to use during hunting season?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 9,
+            "source_id": "33284-1791201678729255000-349"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [
+              {
+                "deadline": null,
+                "kind": "remember",
+                "quote": {
+                  "text": "Remember that trip when we caught 9 largemouth bass with Alex?"
+                },
+                "target": {
+                  "candidate_indices": [],
+                  "object": "facts",
+                  "quote": {
+                    "text": "that trip when we caught 9 largemouth bass with Alex"
+                  }
+                }
+              }
+            ],
+            "quote": {
+              "text": "I'm planning to try out some of those deer calls during our next hunting trip. By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan. Remember that trip when we caught 9 largemouth bass with Alex?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 10,
+            "source_id": "33284-1791201860548245000-424"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "visited",
+              "sentence": {
+                "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "on 7/10"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Lake Michigan"
+                },
+                "text": "Lake Michigan"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791200927566406000-83"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "on 7/10"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+                },
+                "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "Oh, and by the way, I caught 7 largemouth bass on my trip to Lake Michigan with Alex on 7/10 - that was a great day!"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791200927566406000-83"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan."
+                },
+                "text": "By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791201860548245000-424"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "on 7/22"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
+                },
+                "text": "By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I'm thinking of using spinnerbaits and plastic worms as lures again, since they worked so well when I was there with Alex on 7/22 - we caught 9 largemouth bass that day."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791201359997498000-248"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I've been getting back into fishing and hunting, and I'm trying to keep track of my gear and experiences."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "fishing and hunting"
+                },
+                "text": "fishing and hunting"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been getting back into fishing and hunting, and I'm trying to keep track of my gear and experiences."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791200820397703000-32"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've been trying to learn more about tree stand setup and placement."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've been trying to learn more about tree stand setup and placement."
+                },
+                "text": "I've been trying to learn more about tree stand setup and placement."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been trying to learn more about tree stand setup and placement."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791201199091135000-179"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1702383120,
+          "context": [],
+          "query": "How many largemouth bass did I catch with Alex on the earlier fishing trip to Lake Michigan before the 7/22 trip?",
+          "request_id": "eval-lme_10e09553-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 7,
+          "source_revision": 10
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "33284-1791200820397703000-32",
+        "s1_t2": "33284-1791200927566406000-83",
+        "s1_t3": "33284-1791201189472140000-170",
+        "s1_t4": "33284-1791201199091135000-179",
+        "s1_t5": "33284-1791201239789966000-193",
+        "s2_t1": "33284-1791201278696394000-204",
+        "s2_t2": "33284-1791201359997498000-248",
+        "s2_t3": "33284-1791201672693286000-345",
+        "s2_t4": "33284-1791201678729255000-349",
+        "s2_t5": "33284-1791201860548245000-424"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t5": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

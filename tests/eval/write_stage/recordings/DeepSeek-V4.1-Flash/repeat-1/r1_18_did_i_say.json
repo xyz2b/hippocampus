@@ -1,0 +1,68 @@
+{
+  "id": "r1_18_did_i_say",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "花生"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "allergic_to",
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "allergic_to",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"花生\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"allergic_to\",\"time\":null},\"op\":\"lookup\",\"unit\":null},\"relation\":\"allergic_to\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"single\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:697cf2e23ca7aef41ebae028ea52f765f22ed1558f662f61e6cfdf627d6367fa",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 900,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 8148,
+          "output_tokens_details": {
+            "reasoning_tokens": 8068
+          },
+          "total_tokens": 9048
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 900,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 8148,
+        "output_tokens_details": {
+          "reasoning_tokens": 8068
+        },
+        "total_tokens": 9048
+      }
+    }
+  ]
+}

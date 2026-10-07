@@ -1,0 +1,85 @@
+{
+  "id": "r4_10_superseded_history",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 53003,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我住在上海。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-10"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我搬到杭州了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-11"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              10,
+              11
+            ],
+            "statement": "我以前住在上海。",
+            "strength": "moderate",
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"no\",\"evidence\":[{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-10\"}},{\"quote\":{\"text\":\"我搬到杭州了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-11\"}}],\"polarity\":\"affirm\",\"record_ids\":[10,11],\"statement\":\"我以前住在上海。\",\"strength\":\"moderate\",\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:7fcdde7eaa03073e6d7aa429d2f4479c246047347958adade7d8156e6a344fb9",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3627,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3122,
+          "output_tokens_details": {
+            "reasoning_tokens": 2994
+          },
+          "total_tokens": 6749
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3627,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3122,
+        "output_tokens_details": {
+          "reasoning_tokens": 2994
+        },
+        "total_tokens": 6749
+      }
+    }
+  ]
+}

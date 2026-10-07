@@ -1,0 +1,86 @@
+{
+  "id": "r1_10_context_binds_name",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "最近"
+            },
+            "resolved": false
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "unknown"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "works_at",
+        "subject": {
+          "entity_id": "e-laowang"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "unknown"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "event"
+        },
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"最近\"}, \"resolved\": false}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\": \"said_on\",\"interp\": {\"kind\": \"unknown\"     \n    },\"quote\": \t{\"text\": \"最近\"    \n    },\"role\": \"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\": \"works_at\",\"subject\":{\"entity_id\":\"e-laowang\"            \t\t\t},\"time\":{\"anchor\": \"said_on\",\"interp\": {\"kind\": \"unknown\"     \n    },\"quote\": \t{\"text\": \"最近\"    \n    },\"role\": \"event\"},\"type\":\"open\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:caa0a783d5651aec836d45da1cc88d7552a846c0e2053d32bfe9ab164c406ac3",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 905,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 8661,
+          "output_tokens_details": {
+            "reasoning_tokens": 8500
+          },
+          "total_tokens": 9566
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 905,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 8661,
+        "output_tokens_details": {
+          "reasoning_tokens": 8500
+        },
+        "total_tokens": 9566
+      }
+    }
+  ]
+}

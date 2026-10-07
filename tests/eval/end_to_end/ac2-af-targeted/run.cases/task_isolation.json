@@ -1,0 +1,619 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 88183,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3789,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5673,
+        "output_tokens_details": {
+          "reasoning_tokens": 5523
+        },
+        "total_tokens": 9462
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 1961,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2027,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 48,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2075
+      }
+    },
+    {
+      "elapsed_ms": 144,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 52078,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3791,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3398,
+        "output_tokens_details": {
+          "reasoning_tokens": 3265
+        },
+        "total_tokens": 7189
+      }
+    },
+    {
+      "elapsed_ms": 115,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:task_s2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2013,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2012,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2086
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2531,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2401,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 106,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2507
+      }
+    },
+    {
+      "elapsed_ms": 3980,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:task_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3967,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4652,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 244,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4896
+      }
+    }
+  ],
+  "case": "task_isolation",
+  "elapsed_ms": 4703,
+  "steps": [
+    {
+      "message": "task_s1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212398102813000-143",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398102813000-143",
+            "duration_ms": 17,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398123388000-144",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398123388000-144",
+            "duration_ms": 6,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212398093905000-141",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"reported\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212398093905000-141",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "task_s2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212398162917000-148",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398162917000-148",
+            "duration_ms": 150,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398325344000-149",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398325344000-149",
+            "duration_ms": 126,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212398146132000-146",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212398146132000-146",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212398610100000-157",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398610100000-157",
+            "duration_ms": 8,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398635430000-162",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212398635430000-162",
+            "duration_ms": 4137,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "task_q2",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "折页导航终端开机应显示哪种语言？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "在高原路演任务中"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212398146132000-146"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "在高原路演任务中，该折页导航终端的开机显示语言要求设为意大利语。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "constraint",
+              "polarity": "affirm",
+              "relation": "response_language",
+              "sentence": {
+                "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_zheye_terminal"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "意大利语"
+                },
+                "text": "意大利语"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "在高原路演任务中，我们正在为同一台折页导航终端配置巡回演示；该任务要求它的开机显示语言设为意大利语。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212398146132000-146"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "折页导航终端开机应显示哪种语言？",
+          "request_id": "eval-task_isolation-task_q2",
+          "task_id": "s6-plateau-demo"
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "task_s1": "55832-1791212398093905000-141",
+        "task_s2": "55832-1791212398146132000-146"
+      },
+      "source_state": {
+        "task_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "task_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

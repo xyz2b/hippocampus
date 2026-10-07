@@ -1607,8 +1607,50 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "知识更新：5 次（s1_t3）→ 10 次（s2_t1/t4/t6）。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "自 Emma 教会后在家做 Negroni 的次数（最新）",
+            "sources": {
+              "all_of": [],
+              "any_of": [
+                "s2_t1",
+                "s2_t4",
+                "s2_t6"
+              ]
+            },
+            "subject": "self",
+            "value_any": [
+              "10",
+              "10 times"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "5",
+              "5 times"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many times have I tried making a Negroni at home since my friend Emma showed me how to make it?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

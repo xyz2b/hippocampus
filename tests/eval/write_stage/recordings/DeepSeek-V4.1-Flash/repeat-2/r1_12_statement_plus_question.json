@@ -1,0 +1,80 @@
+{
+  "id": "r1_12_statement_plus_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "杭州"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "附近"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "好吃的"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "list",
+          "unit": null
+        },
+        "relation": "context_only",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{ \"text\": \"杭州\" }, \"resolved\": true},{\"quote\": { \"text\": \"附近\" }, \"resolved\": true},{\"quote\": { \"text\": \"好吃的\" }, \"resolved\": true}],\"current_evidence\":\"assertion_present\",\"need\":\"context_only\",\"plan\":{ \"filter\": { \"relation\": null, \"time\": null }, \"op\":\"list\",\"unit\":null},\"relation\": \"context_only\",\"subject\": { \"entity_id\": \"self\" },\"time\": null,\"type\":\"open\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:fec8923c99a41e6feaa79b235319a7fca4b4e5168d73d5efd0ab3be505382ca3",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 902,
+          "input_tokens_details": {
+            "cached_tokens": 896
+          },
+          "output_tokens": 12178,
+          "output_tokens_details": {
+            "reasoning_tokens": 12055
+          },
+          "total_tokens": 13080
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 902,
+        "input_tokens_details": {
+          "cached_tokens": 896
+        },
+        "output_tokens": 12178,
+        "output_tokens_details": {
+          "reasoning_tokens": 12055
+        },
+        "total_tokens": 13080
+      }
+    }
+  ]
+}

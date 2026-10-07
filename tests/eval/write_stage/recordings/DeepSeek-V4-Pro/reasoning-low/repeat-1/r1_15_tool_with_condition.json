@@ -1,0 +1,90 @@
+{
+  "id": "r1_15_tool_with_condition",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 33543,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "写代码"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "uses",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "date": "2026-10-03",
+                "kind": "date"
+              },
+              "quote": {
+                "text": "现在"
+              },
+              "role": "validity"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "uses",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "date": "2026-10-03",
+            "kind": "date"
+          },
+          "quote": {
+            "text": "现在"
+          },
+          "role": "validity"
+        },
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"写代码\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"uses\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2026-10-03\",\"kind\":\"date\"},\"quote\":{\"text\":\"现在\"},\"role\":\"validity\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"uses\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2026-10-03\",\"kind\":\"date\"},\"quote\":{\"text\":\"现在\"},\"role\":\"validity\"},\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:29b6f0cf74d3856a6efee1c2d94ae3d7bc498b3e13ff9deea0e6e3d7e0886c9c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2361,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2002,
+          "output_tokens_details": {
+            "reasoning_tokens": 1862
+          },
+          "total_tokens": 4363
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2361,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2002,
+        "output_tokens_details": {
+          "reasoning_tokens": 1862
+        },
+        "total_tokens": 4363
+      }
+    }
+  ]
+}

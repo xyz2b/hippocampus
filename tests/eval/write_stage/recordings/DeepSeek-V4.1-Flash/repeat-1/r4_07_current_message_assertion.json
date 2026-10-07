@@ -1,0 +1,81 @@
+{
+  "id": "r4_07_current_message_assertion",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我现在住在苏州"
+                },
+                "source": {
+                  "kind": "current"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在杭州。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-7"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [],
+            "statement": "我现在住在苏州",
+            "strength": null,
+            "supersedes_record_ids": [
+              7
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "supported"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我现在住在苏州\"},\"source\":{\"kind\":\"current\"}},{\"quote\":{\"text\":\"我住在杭州。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-7\"}}],\"polarity\":\"affirm\",\"record_ids\":[],\"statement\":\"我现在住在苏州\",\"strength\":null,\"supersedes_record_ids\":[7],\"times\":[],\"uncertainty\":null}],\"verdict\":\"supported\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:cedd98d5f99a3a9b7f2ff7c6eed98a1030d8ec000793472160451109f7cdb15d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1387,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 11487,
+          "output_tokens_details": {
+            "reasoning_tokens": 11370
+          },
+          "total_tokens": 12874
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1387,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 11487,
+        "output_tokens_details": {
+          "reasoning_tokens": 11370
+        },
+        "total_tokens": 12874
+      }
+    }
+  ]
+}

@@ -1,0 +1,1095 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 21452,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:conflict_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 21245,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3746,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1348,
+        "output_tokens_details": {
+          "reasoning_tokens": 1218
+        },
+        "total_tokens": 5094
+      }
+    },
+    {
+      "elapsed_ms": 2803,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:conflict_s1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2663,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1964,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2038
+      }
+    },
+    {
+      "elapsed_ms": 2929,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:conflict_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2784,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2393,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 105,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2498
+      }
+    },
+    {
+      "elapsed_ms": 3741,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:conflict_q1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3595,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4631,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 184,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4815
+      }
+    },
+    {
+      "elapsed_ms": 153511,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:conflict_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 153369,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3846,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9481,
+        "output_tokens_details": {
+          "reasoning_tokens": 9361
+        },
+        "total_tokens": 13327
+      }
+    },
+    {
+      "elapsed_ms": 2490,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:conflict_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2345,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2054,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 48,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2102
+      }
+    },
+    {
+      "elapsed_ms": 49982,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:conflict_s2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 49833,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2872,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3102,
+        "output_tokens_details": {
+          "reasoning_tokens": 2922
+        },
+        "total_tokens": 5974
+      }
+    },
+    {
+      "elapsed_ms": 223,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204352288ff228b459645a66c98f2a46916338f8e76d517",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "recall:conflict_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 75,
+      "response_status": null,
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": null
+    },
+    {
+      "elapsed_ms": 245,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204352829ff228b459645a66c98f2a46916338f8efac727",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "recall:conflict_q2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 95,
+      "response_status": null,
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": null
+    },
+    {
+      "elapsed_ms": 222,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204353432ff228b459645a66c98f2a46916338f8e2c0f1a",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "recall:conflict_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 74,
+      "response_status": null,
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": null
+    },
+    {
+      "elapsed_ms": 668,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 0217912043544878f4f8ecdaf0d8a16803f1d267b7ea40d9e48db",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "recall:conflict_q3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 100,
+      "response_status": null,
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": null
+    }
+  ],
+  "case": "unresolved_conflict",
+  "elapsed_ms": 241732,
+  "steps": [
+    {
+      "message": "conflict_s1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204113199875000-1339",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204113199875000-1339",
+            "duration_ms": 21663,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204134866939000-1351",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204134866939000-1351",
+            "duration_ms": 3022,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791204113193765000-1337",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791204113193765000-1337",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568030,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204137925301000-1354",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204137925301000-1354",
+            "duration_ms": 3151,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204141086816000-1355",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204141086816000-1355",
+            "duration_ms": 3998,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "conflict_q1",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 0,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "栖风读书机的屏幕是几英寸？"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791204113193765000-1337"
+                }
+              }
+            ],
+            "grade": "committed",
+            "polarity": "affirm",
+            "record_ids": [
+              1
+            ],
+            "statement": "栖风读书机的屏幕尺寸是7英寸。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null,
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qifeng_reader"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791204113193765000-1337"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568030,
+          "context": [],
+          "query": "栖风读书机的屏幕是几英寸？",
+          "request_id": "eval-unresolved_conflict-conflict_q1",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 1
+        },
+        "status": "insufficient",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "conflict_s1": "33284-1791204113193765000-1337"
+      },
+      "source_state": {
+        "conflict_s1": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "message": "conflict_s2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204145117552000-1359",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204145117552000-1359",
+            "duration_ms": 153794,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204298922712000-1407",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204298922712000-1407",
+            "duration_ms": 2788,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204301736327000-1408",
+            "stage": "w4_v2",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204301736327000-1408",
+            "duration_ms": 50305,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791204145095672000-1357",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"Polarity\":\"unknown\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791204145095672000-1357",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204352085147000-1415",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204352085147000-1415",
+            "duration_ms": 526,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204352288ff228b459645a66c98f2a46916338f8e76d517",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204352625825000-1416",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204352625825000-1416",
+            "duration_ms": 574,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204352829ff228b459645a66c98f2a46916338f8efac727",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        }
+      ],
+      "question": "conflict_q2",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 1,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "栖风读书机的屏幕到底是几英寸？"
+        },
+        "degraded_reasons": [
+          "r1_not_understood",
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+            },
+            "said_on": "2026-09-28",
+            "sequence": 2,
+            "source_id": "33284-1791204145095672000-1357"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qifeng_reader"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791204113193765000-1337"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "栖风读书机的屏幕到底是几英寸？",
+          "request_id": "eval-unresolved_conflict-conflict_q2",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "conflict_s1": "33284-1791204113193765000-1337",
+        "conflict_s2": "33284-1791204145095672000-1357"
+      },
+      "source_state": {
+        "conflict_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "conflict_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    },
+    {
+      "at": 1790568090,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204353233631000-1419",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204353233631000-1419",
+            "duration_ms": 622,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204353432ff228b459645a66c98f2a46916338f8e2c0f1a",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204353871113000-1420",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204353871113000-1420",
+            "duration_ms": 1031,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 0217912043544878f4f8ecdaf0d8a16803f1d267b7ea40d9e48db",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        }
+      ],
+      "question": "conflict_q3",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 1,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2026-09-28",
+          "sequence": null,
+          "source_id": null,
+          "text": "能确定栖风读书机是7英寸屏幕吗？"
+        },
+        "degraded_reasons": [
+          "r1_not_understood",
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。两份记录互相排斥，我还没有核实哪份正确，7英寸和8英寸都不能当作最终结论。"
+            },
+            "said_on": "2026-09-28",
+            "sequence": 2,
+            "source_id": "33284-1791204145095672000-1357"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "device_qifeng_reader"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791204113193765000-1337"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2026-09-28",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1790568090,
+          "context": [],
+          "query": "能确定栖风读书机是7英寸屏幕吗？",
+          "request_id": "eval-unresolved_conflict-conflict_q3",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 3,
+          "source_revision": 2
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "conflict_s1": "33284-1791204113193765000-1337",
+        "conflict_s2": "33284-1791204145095672000-1357"
+      },
+      "source_state": {
+        "conflict_s1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "conflict_s2": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "retract",
+      "targets": [
+        40
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-120"
+          },
+          "quote": {
+            "text": "我每周三晚上去游泳。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-250"
+          },
+          "quote": {
+            "text": "我之前说每周三晚上去游泳，那句不对，收回。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}

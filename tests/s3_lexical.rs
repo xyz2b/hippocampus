@@ -1,4 +1,5 @@
 mod common;
+use common::{FixtureOutcome, LegacyFixture};
 
 use hippocampus::*;
 use rusqlite::{Connection, params};
@@ -403,7 +404,7 @@ fn v2_migration_backfills_live_sources_but_read_only_open_does_not_migrate() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 5);
+    assert_eq!(version, 10);
     assert_eq!(candidates(&search(&store, "孩子")).len(), 1);
     assert!(candidates(&search(&store, "房子")).is_empty());
     assert!(candidates(&search(&store, "秘密关键词")).is_empty());
@@ -615,7 +616,7 @@ fn partial_correction_preserves_distinct_atomic_links_and_exact_quote_positions(
         )
     };
     let id = |outcome| match outcome {
-        IngestOutcome::Applied {
+        FixtureOutcome::Applied {
             memory_id: Some(id),
             ..
         } => id,
@@ -633,14 +634,14 @@ fn partial_correction_preserves_distinct_atomic_links_and_exact_quote_positions(
             registry.register(Predicate::from("lives_in"), Cardinality::Single);
             registry.register(Predicate::from("uses"), Cardinality::Single);
             state.with_engine(registry, |engine, _| {
-                let old_id = id(engine.ingest(common::grounded(fact(
+                let old_id = id(engine.seed_fixture(common::grounded(fact(
                     "one",
                     "lives_in",
                     "上海",
                     "我住在上海",
                     100,
                 )))?);
-                let rust_id = id(engine.ingest(common::grounded(fact(
+                let rust_id = id(engine.seed_fixture(common::grounded(fact(
                     "one",
                     "uses",
                     "Rust",
@@ -652,7 +653,7 @@ fn partial_correction_preserves_distinct_atomic_links_and_exact_quote_positions(
                     target: Some(old_id),
                     reason: SupersedeReason::Correction,
                 };
-                let new_id = id(engine.ingest(common::grounded(corrected))?);
+                let new_id = id(engine.seed_fixture(common::grounded(corrected))?);
                 Ok((old_id, rust_id, new_id))
             })
         })

@@ -1,0 +1,177 @@
+{
+  "id": "w4_02_correction",
+  "contract": "w4.v2",
+  "batch": 1,
+  "label_status": "draft",
+  "focus": "纠错 correction：旧值从来不对",
+  "boundary_with": "w4_01_state_change",
+  "sources": {
+    "s-102": {
+      "text": "我住在苏州。",
+      "said_on": "2026-04-01"
+    },
+    "s-230": {
+      "text": "之前说错了，我住在杭州，不是苏州。",
+      "said_on": "2026-09-12"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "杭州",
+            "quote": {
+              "text": "杭州"
+            }
+          },
+          "sentence": {
+            "text": "之前说错了，我住在杭州，不是苏州。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-230"
+        },
+        "said_on": "2026-09-12",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 21,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "苏州",
+            "quote": {
+              "text": "苏州"
+            }
+          },
+          "sentence": {
+            "text": "我住在苏州。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-102"
+            },
+            "quote": {
+              "text": "我住在苏州。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-04-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "correction",
+        "targets": [
+          21
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-102",
+          "s-230"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "21": {
+          "stored_status": "superseded",
+          "termination_reason": "Correction",
+          "ended": "end_unknown"
+        },
+        "new": {
+          "from_candidate": 0,
+          "history": [
+            21
+          ],
+          "stored_status": "active",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "new（杭州）"
+        ],
+        "history": [],
+        "audit_only": [
+          "21（苏州，被纠正）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得标为 StateChanged",
+      "苏州不得作为“曾经住过”的历史事实出现（不变量 7）",
+      "不得删除 s-102 原文（纠错不是删除）"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "state_change",
+      "why": "“说错了”“不是苏州”表明旧值从未成立，不是现实变化"
+    }
+  ],
+  "qualifier_marks": {}
+}

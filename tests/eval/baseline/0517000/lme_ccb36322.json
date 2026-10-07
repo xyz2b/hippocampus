@@ -1,0 +1,2882 @@
+{
+  "case": "lme_ccb36322",
+  "source_ids": {
+    "s1_t1": "83715-1790753232966654000-919",
+    "s1_t2": "83715-1790753233010061000-938",
+    "s1_t3": "83715-1790753233053206000-962",
+    "s1_t4": "83715-1790753233120848000-987",
+    "s1_t5": "83715-1790753233211421000-1016"
+  },
+  "steps": [
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t1:0",
+              "quote": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Episode",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [
+              {
+                "Activity": "concert"
+              }
+            ],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "The 1975",
+            "concert"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826640,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I just got back from seeing The 1975 live and I'm itching to see more shows."
+          }
+        }
+      },
+      "message": "s1_t1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+              "read_revision": 2,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684826640,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 6,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 558,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2335
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 3176,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753232971749000-924",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232966564000-918",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753232982428000-928",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753232966564000-918",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753232966654000-919",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t1:0",
+              "quote": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Episode",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [
+              {
+                "Activity": "concert"
+              }
+            ],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "The 1975",
+            "concert"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826640,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I just got back from seeing The 1975 live and I'm itching to see more shows."
+          }
+        }
+      },
+      "message": "s1_t2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?"
+              ],
+              "query": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+              "read_revision": 2,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 1741,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684826700,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 7,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 558,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2335
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 3176,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [
+              {
+                "kind": "source_with_state_caveats",
+                "source": {
+                  "byte_end": 139,
+                  "byte_start": 0,
+                  "channels": [
+                    "lexical_original",
+                    "explicit_context"
+                  ],
+                  "enrichment": "committed",
+                  "evidence_kind": "raw_statement",
+                  "instruction_authority": "none",
+                  "mapping_uncertain": false,
+                  "observed_at": 1684826640,
+                  "received_sequence": 1,
+                  "role": "user",
+                  "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0",
+                  "segment_version": 1,
+                  "semantic_status": "mixed_or_historical_do_not_treat_as_current",
+                  "session_id": "eval-lme_ccb36322",
+                  "source_id": "83715-1790753232966654000-919",
+                  "source_origin": "mcp_received",
+                  "state_annotations": [
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 1,
+                      "quote_byte_range": [
+                        0,
+                        139
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    }
+                  ],
+                  "task_id": null,
+                  "text": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                  "turn_id": "s1_t1"
+                }
+              }
+            ],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "historical_or_conflicting",
+                "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 166,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1684826700,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_ccb36322",
+                "source_id": "83715-1790753233010061000-938",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                "turn_id": "s1_t2"
+              }
+            ],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "source_coverage_incomplete",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "source_coverage_incomplete",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 2,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753233016450000-944",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753233009521000-936",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753233022197000-947",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753233009521000-936",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 2,
+            "source_id": "83715-1790753233010061000-938",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t1:0",
+              "quote": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Episode",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [
+              {
+                "Activity": "concert"
+              }
+            ],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "The 1975",
+            "concert"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826640,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I just got back from seeing The 1975 live and I'm itching to see more shows."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t3:0",
+              "quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "Medium",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "ShortTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": "music"
+          },
+          "status": "Active",
+          "strength": "Strong",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "live music",
+            "concert",
+            "energy",
+            "crowd interaction"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826760,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "the energy of live shows, especially when the lead singer interacts with the crowd"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t3:2",
+              "quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": "music"
+          },
+          "status": "Active",
+          "strength": "Moderate",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "live music",
+            "setlist",
+            "old and new material"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826760,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "bands playing a good mix of old and new material"
+          }
+        }
+      },
+      "message": "s1_t3",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately."
+              ],
+              "query": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "read_revision": 3,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 3,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 3070,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684826760,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                  "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 18,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 3,
+                "hint_bytes": 1644,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 3,
+                "repository_memory_count": 3,
+                "segment_association_count": 3,
+                "skipped": {},
+                "token_bytes": 6875
+              },
+              "eligible_segment_association_count": 0,
+              "generation": 1,
+              "index_bytes": 9370,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 3,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [
+              {
+                "kind": "source_with_state_caveats",
+                "source": {
+                  "byte_end": 208,
+                  "byte_start": 0,
+                  "channels": [
+                    "lexical_original",
+                    "explicit_context"
+                  ],
+                  "enrichment": "committed",
+                  "evidence_kind": "raw_statement",
+                  "instruction_authority": "none",
+                  "mapping_uncertain": false,
+                  "observed_at": 1684826760,
+                  "received_sequence": 3,
+                  "role": "user",
+                  "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0",
+                  "segment_version": 1,
+                  "semantic_status": "mixed_or_historical_do_not_treat_as_current",
+                  "session_id": "eval-lme_ccb36322",
+                  "source_id": "83715-1790753233053206000-962",
+                  "source_origin": "mcp_received",
+                  "state_annotations": [
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 2,
+                      "quote_byte_range": [
+                        0,
+                        208
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    },
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 3,
+                      "quote_byte_range": [
+                        0,
+                        208
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    }
+                  ],
+                  "task_id": null,
+                  "text": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+                  "turn_id": "s1_t3"
+                }
+              },
+              {
+                "kind": "source_with_state_caveats",
+                "source": {
+                  "byte_end": 139,
+                  "byte_start": 0,
+                  "channels": [
+                    "lexical_original",
+                    "explicit_context"
+                  ],
+                  "enrichment": "committed",
+                  "evidence_kind": "raw_statement",
+                  "instruction_authority": "none",
+                  "mapping_uncertain": false,
+                  "observed_at": 1684826640,
+                  "received_sequence": 1,
+                  "role": "user",
+                  "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0",
+                  "segment_version": 1,
+                  "semantic_status": "mixed_or_historical_do_not_treat_as_current",
+                  "session_id": "eval-lme_ccb36322",
+                  "source_id": "83715-1790753232966654000-919",
+                  "source_origin": "mcp_received",
+                  "state_annotations": [
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 1,
+                      "quote_byte_range": [
+                        0,
+                        139
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    }
+                  ],
+                  "task_id": null,
+                  "text": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                  "turn_id": "s1_t1"
+                }
+              }
+            ],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "historical_or_conflicting",
+                "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "historical_or_conflicting",
+                "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 166,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1684826700,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_ccb36322",
+                "source_id": "83715-1790753233010061000-938",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                "turn_id": "s1_t2"
+              }
+            ],
+            "source_revision": 3
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 3,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233063054000-968",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233052774000-961",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233072621000-971",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233052774000-961",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 2,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 3,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 3,
+              "source_id": "83715-1790753233053206000-962",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t1:0",
+              "quote": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Episode",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [
+              {
+                "Activity": "concert"
+              }
+            ],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "The 1975",
+            "concert"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826640,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I just got back from seeing The 1975 live and I'm itching to see more shows."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t3:0",
+              "quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "Medium",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "ShortTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": "music"
+          },
+          "status": "Active",
+          "strength": "Strong",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "live music",
+            "concert",
+            "energy",
+            "crowd interaction"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826760,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "the energy of live shows, especially when the lead singer interacts with the crowd"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t3:2",
+              "quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": "music"
+          },
+          "status": "Active",
+          "strength": "Moderate",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "live music",
+            "setlist",
+            "old and new material"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826760,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "bands playing a good mix of old and new material"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t4:0",
+              "quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": "Moderate",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "smaller, local venues"
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t4:1",
+              "quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "visited",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "the local music venue downtown"
+          }
+        }
+      },
+      "message": "s1_t4",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material."
+              ],
+              "query": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+              "read_revision": 4,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 4,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 7017,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684826820,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                  "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                  "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 34,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 5,
+                "hint_bytes": 2631,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 5,
+                "repository_memory_count": 5,
+                "segment_association_count": 5,
+                "skipped": {},
+                "token_bytes": 10933
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 14975,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 4,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [
+              {
+                "kind": "source_with_state_caveats",
+                "source": {
+                  "byte_end": 139,
+                  "byte_start": 0,
+                  "channels": [
+                    "lexical_original",
+                    "explicit_context"
+                  ],
+                  "enrichment": "committed",
+                  "evidence_kind": "raw_statement",
+                  "instruction_authority": "none",
+                  "mapping_uncertain": false,
+                  "observed_at": 1684826640,
+                  "received_sequence": 1,
+                  "role": "user",
+                  "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0",
+                  "segment_version": 1,
+                  "semantic_status": "mixed_or_historical_do_not_treat_as_current",
+                  "session_id": "eval-lme_ccb36322",
+                  "source_id": "83715-1790753232966654000-919",
+                  "source_origin": "mcp_received",
+                  "state_annotations": [
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 1,
+                      "quote_byte_range": [
+                        0,
+                        139
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    }
+                  ],
+                  "task_id": null,
+                  "text": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                  "turn_id": "s1_t1"
+                }
+              },
+              {
+                "kind": "source_with_state_caveats",
+                "source": {
+                  "byte_end": 208,
+                  "byte_start": 0,
+                  "channels": [
+                    "lexical_original",
+                    "explicit_context"
+                  ],
+                  "enrichment": "committed",
+                  "evidence_kind": "raw_statement",
+                  "instruction_authority": "none",
+                  "mapping_uncertain": false,
+                  "observed_at": 1684826760,
+                  "received_sequence": 3,
+                  "role": "user",
+                  "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0",
+                  "segment_version": 1,
+                  "semantic_status": "mixed_or_historical_do_not_treat_as_current",
+                  "session_id": "eval-lme_ccb36322",
+                  "source_id": "83715-1790753233053206000-962",
+                  "source_origin": "mcp_received",
+                  "state_annotations": [
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 2,
+                      "quote_byte_range": [
+                        0,
+                        208
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    },
+                    {
+                      "association": "exact_quote",
+                      "decision": {
+                        "Filtered": "Scope"
+                      },
+                      "interpretation": "applies only to linked assertion; other text remains unverified",
+                      "memory_id": 3,
+                      "quote_byte_range": [
+                        0,
+                        208
+                      ],
+                      "replacement": null,
+                      "status": "Active",
+                      "supersede_reason": null
+                    }
+                  ],
+                  "task_id": null,
+                  "text": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+                  "turn_id": "s1_t3"
+                }
+              }
+            ],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_ccb36322:s1_t4:1",
+                      "quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+                      "session_id": "eval-lme_ccb36322",
+                      "turn_id": "s1_t4"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 5,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "visited",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684826820,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "the local music venue downtown"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_ccb36322:s1_t4:0",
+                      "quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+                      "session_id": "eval-lme_ccb36322",
+                      "turn_id": "s1_t4"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 4,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Preference",
+                  "owner_id": "eval",
+                  "polarity": "Positive",
+                  "predicate": "likes",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": "Moderate",
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684826820,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "smaller, local venues"
+                  }
+                }
+              ],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "historical_or_conflicting",
+                "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "historical_or_conflicting",
+                "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 177,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_ccb36322:s1_t4:0",
+                    "matched_query_phrases": [
+                      "w000061000074",
+                      "w00006600007200006f00006d",
+                      "w000069",
+                      "w00006c00006f00006300006100006c",
+                      "w00007300006d00006100006c00006c000065000072",
+                      "w00007400006f",
+                      "w00007600006500006e000075000065000073"
+                    ],
+                    "memory_id": 4,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      177
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_ccb36322:s1_t4:1",
+                    "matched_query_phrases": [
+                      "w000061000074",
+                      "w00006400006f00007700006e00007400006f00007700006e",
+                      "w00006600007200006f00006d",
+                      "w000069",
+                      "w00006c00006f00006300006100006c",
+                      "w00006d000075000073000069000063",
+                      "w000074000068000065",
+                      "w00007400006f",
+                      "w00007600006500006e000075000065"
+                    ],
+                    "memory_id": 5,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      177
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684826820,
+                "received_sequence": 4,
+                "role": "user",
+                "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_ccb36322",
+                "source_id": "83715-1790753233120848000-987",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 4,
+                    "quote_byte_range": [
+                      0,
+                      177
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 5,
+                    "quote_byte_range": [
+                      0,
+                      177
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+                "turn_id": "s1_t4"
+              },
+              {
+                "byte_end": 166,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "failed",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1684826700,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_ccb36322",
+                "source_id": "83715-1790753233010061000-938",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                "turn_id": "s1_t2"
+              }
+            ],
+            "source_revision": 4
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 4,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753233132708000-994",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233120008000-986",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753233142600000-996",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753233120008000-986",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 4,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 5,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 4,
+              "source_id": "83715-1790753233120848000-987",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t1:0",
+              "quote": "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Episode",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [
+              {
+                "Activity": "concert"
+              }
+            ],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "The 1975",
+            "concert"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826640,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I just got back from seeing The 1975 live and I'm itching to see more shows."
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t3:0",
+              "quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "Medium",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "ShortTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": "music"
+          },
+          "status": "Active",
+          "strength": "Strong",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "live music",
+            "concert",
+            "energy",
+            "crowd interaction"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826760,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "the energy of live shows, especially when the lead singer interacts with the crowd"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t3:2",
+              "quote": "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t3"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": "music"
+          },
+          "status": "Active",
+          "strength": "Moderate",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "live music",
+            "setlist",
+            "old and new material"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826760,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "bands playing a good mix of old and new material"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t4:0",
+              "quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Preference",
+          "owner_id": "eval",
+          "polarity": "Positive",
+          "predicate": "likes",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": "Moderate",
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "smaller, local venues"
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_ccb36322:s1_t4:1",
+              "quote": "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently.",
+              "session_id": "eval-lme_ccb36322",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "visited",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684826820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "the local music venue downtown"
+          }
+        }
+      },
+      "message": "s1_t5",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+                "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently."
+              ],
+              "query": "I'm open to exploring local acts and music festivals with smaller stages. That sounds like a great way to discover new music and experience something different.\n\nBy the way, do you have any recommendations for music gear, like turntables or guitar equipment? I've been getting back into playing guitar and I'm looking to upgrade my setup.",
+              "read_revision": 4,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 5,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                }
+              ],
+              "excluded_count": 2,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684826880,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some concert recommendations. I just got back from seeing The 1975 live and I'm itching to see more shows. Any suggestions?",
+                  "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+                  "I love the energy of live shows, especially when the lead singer interacts with the crowd. That's what made The 1975's concert so amazing. I also appreciate when bands play a good mix of old and new material.",
+                  "I usually stick to smaller, local venues since they offer a more intimate experience. I've had some great times at the local music venue downtown, where I saw The 1975 recently."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm open to exploring local acts and music festivals with smaller stages. That sounds like a great way to discover new music and experience something different.\n\nBy the way, do you have any recommendations for music gear, like turntables or guitar equipment? I've been getting back into playing guitar and I'm looking to upgrade my setup.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 44,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 5,
+                "hint_bytes": 2631,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 5,
+                "repository_memory_count": 5,
+                "segment_association_count": 5,
+                "skipped": {},
+                "token_bytes": 10933
+              },
+              "eligible_segment_association_count": 2,
+              "generation": 1,
+              "index_bytes": 14975,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 5,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233211421000-1016:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 5
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "source_coverage_incomplete",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "source_coverage_incomplete",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 5,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753233225792000-1020",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753233210224000-1014",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753233234423000-1022",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753233210224000-1014",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 5,
+            "source_id": "83715-1790753233211421000-1016",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "q",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "What is the name of the music streaming service have I been using lately?",
+          "read_revision": 4,
+          "safe_answer": "Spotify。",
+          "safe_source_ids": [
+            "83715-1790753233010061000-938"
+          ],
+          "source_revision": 5,
+          "sources": [
+            {
+              "grade": "uncommitted",
+              "quote": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+              "source_id": "83715-1790753233010061000-938"
+            }
+          ],
+          "status": "source_linked_model_answer",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "I've been using lately",
+            "I've been using music streaming service",
+            "listening to music on streaming service"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 14,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 4
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 5
+              }
+            }
+          ],
+          "excluded_count": 2,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1685139360,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "What is the name of the music streaming service have I been using lately?",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 102,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 5,
+            "hint_bytes": 2631,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 5,
+            "repository_memory_count": 5,
+            "segment_association_count": 5,
+            "skipped": {},
+            "token_bytes": 10933
+          },
+          "eligible_segment_association_count": 2,
+          "generation": 1,
+          "index_bytes": 14975,
+          "rebuild_ms": 1,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 4,
+          "source_revision": 5,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 4,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "evidence_grade": "uncommitted",
+          "memory_id": null,
+          "quote": "I'm really into indie and alternative rock right now, so Arctic Monkeys and The Neighbourhood sound great. I've been listening to their songs a lot on Spotify lately.",
+          "semantic_judgment": "model_proposed",
+          "source_id": "83715-1790753233010061000-938",
+          "status": "verified_span",
+          "value": "Spotify"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753233344256000-1061",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753233316192000-1044",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753233453996000-1103",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753233316192000-1044",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 4,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233211421000-1016:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233211421000-1016:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233211421000-1016:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233053206000-962:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233211421000-1016:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753233120848000-987:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753233010061000-938:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753232966654000-919:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 5
+      },
+      "step": "question"
+    }
+  ]
+}

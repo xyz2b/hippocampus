@@ -1,0 +1,4469 @@
+{
+  "case": "lme_15745da0_abs",
+  "source_ids": {
+    "s1_t1": "83715-1790753231159656000-31",
+    "s1_t2": "83715-1790753231210472000-81",
+    "s1_t3": "83715-1790753231279416000-145",
+    "s1_t4": "83715-1790753231354726000-199",
+    "s1_t5": "83715-1790753231446295000-247",
+    "s1_t6": "83715-1790753231553709000-292"
+  },
+  "steps": [
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t1:0",
+              "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "vintage_cameras",
+            "collection"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a growing collection of vintage cameras"
+          }
+        }
+      },
+      "message": "s1_t1",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [],
+              "query": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "read_revision": 2,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 1,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 1,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684805820,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 12,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 1,
+                "hint_bytes": 496,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 1,
+                "repository_memory_count": 1,
+                "segment_association_count": 1,
+                "skipped": {},
+                "token_bytes": 2051
+              },
+              "eligible_segment_association_count": 1,
+              "generation": 1,
+              "index_bytes": 2829,
+              "rebuild_ms": 0,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 2,
+              "source_revision": 1,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 2,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 2,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 1
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 1,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231168221000-42",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231159437000-27",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231174769000-49",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231159437000-27",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 1,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 1,
+              "source_id": "83715-1790753231159656000-31",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t1:0",
+              "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "vintage_cameras",
+            "collection"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a growing collection of vintage cameras"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:0",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "17 cameras"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:1",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "Brownie Hawkeye"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:2",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:3",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+          }
+        }
+      },
+      "message": "s1_t2",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?"
+              ],
+              "query": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "read_revision": 3,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 2,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 10443,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684805880,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 24,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 5,
+                "hint_bytes": 2542,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 5,
+                "repository_memory_count": 5,
+                "segment_association_count": 5,
+                "skipped": {},
+                "token_bytes": 10519
+              },
+              "eligible_segment_association_count": 5,
+              "generation": 1,
+              "index_bytes": 14467,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 2,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:0",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "17 cameras"
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:1",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 3,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "Brownie Hawkeye"
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:2",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 4,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:3",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 5,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t1:0",
+                      "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t1"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "vintage_cameras",
+                    "collection"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805820,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "a growing collection of vintage cameras"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 253,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:0",
+                    "matched_query_phrases": [
+                      "w000031000037",
+                      "w00006300006100006d000065000072000061000073",
+                      "w000069",
+                      "w00007400006f"
+                    ],
+                    "memory_id": 2,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:1",
+                    "matched_query_phrases": [
+                      "w00006200007200006f00007700006e000069000065",
+                      "w00006800006100007700006b000065000079000065",
+                      "w000069",
+                      "w00007400006f"
+                    ],
+                    "memory_id": 3,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:2",
+                    "matched_query_phrases": [
+                      "w000031000037",
+                      "w00006100006e000064",
+                      "w00006200007200006f00007700006e000069000065",
+                      "w00006300006100006d000065000072000061000073",
+                      "w00006300006f00006c00006c00006500006300007400006900006f00006e",
+                      "w00006700006f000074",
+                      "w000068000061000076000065",
+                      "w00006800006100007700006b000065000079000065",
+                      "w000069",
+                      "w00006900006e00006300006c00007500006400006900006e000067",
+                      "w00006c000061000073000074",
+                      "w00006d000079",
+                      "w00006e000065000077",
+                      "w00006e00006f000077",
+                      "w00006f00007200006700006100006e00006900007a000065000064",
+                      "w00007200006500006300006500006e00007400006c000079",
+                      "w000074000068000065",
+                      "w00007400006f",
+                      "w00007700006500006500006b"
+                    ],
+                    "memory_id": 4,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:3",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w000062000065000073000074",
+                      "w000062000075000074",
+                      "w00006700006f000074",
+                      "w000069",
+                      "w000069000066",
+                      "w00006d",
+                      "w00006e00006f000074",
+                      "w00006f000066000066",
+                      "w00006f00006e",
+                      "w000073",
+                      "w00007300006800006500006c000066",
+                      "w00007300006800006f000077",
+                      "w000073000075000072000065",
+                      "w000074000068000061000074",
+                      "w000074000068000065",
+                      "w00007400006800006500006d",
+                      "w00007400006f",
+                      "w000076000065",
+                      "w000077000061000079"
+                    ],
+                    "memory_id": 5,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684805880,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_15745da0_abs",
+                "source_id": "83715-1790753231210472000-81",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 2,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 3,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 4,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 5,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "turn_id": "s1_t2"
+              },
+              {
+                "byte_end": 186,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t1:0",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w00006300006100006d000065000072000061000073",
+                      "w00006300006f00006c00006c00006500006300007400006900006f00006e",
+                      "w00006700007200006f00007700006900006e000067",
+                      "w000069",
+                      "w00006f000066",
+                      "w00007400006f",
+                      "w00007600006900006e000074000061000067000065"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 3,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      186
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684805820,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_15745da0_abs",
+                "source_id": "83715-1790753231159656000-31",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      186
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "turn_id": "s1_t1"
+              }
+            ],
+            "source_revision": 2
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 2,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231217828000-93",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231209806000-79",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231225645000-99",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231209806000-79",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 2,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 3,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 4,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 5,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 2,
+              "source_id": "83715-1790753231210472000-81",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t1:0",
+              "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "vintage_cameras",
+            "collection"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a growing collection of vintage cameras"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:0",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "17 cameras"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:1",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "Brownie Hawkeye"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:2",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:3",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+          }
+        }
+      },
+      "message": "s1_t3",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+              ],
+              "query": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+              "read_revision": 3,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 3,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 5,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684805940,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                  "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 18,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 5,
+                "hint_bytes": 2542,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 5,
+                "repository_memory_count": 5,
+                "segment_association_count": 5,
+                "skipped": {},
+                "token_bytes": 10519
+              },
+              "eligible_segment_association_count": 5,
+              "generation": 1,
+              "index_bytes": 14467,
+              "rebuild_ms": 2,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 3,
+              "source_revision": 3,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 3,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 3,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 3
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "completed_rejected"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 3,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231294104000-153",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231278405000-141",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231305430000-155",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231278405000-141",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 3,
+              "source_id": "83715-1790753231279416000-145",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t1:0",
+              "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "vintage_cameras",
+            "collection"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a growing collection of vintage cameras"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:0",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "17 cameras"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:1",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "Brownie Hawkeye"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:2",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:3",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+          }
+        },
+        "6": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t4:0",
+              "quote": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 6,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684806000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a large collection of Funko POP! figures, including the entire set of Marvel Cinematic Universe figures"
+          }
+        }
+      },
+      "message": "s1_t4",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?"
+              ],
+              "query": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+              "read_revision": 4,
+              "safe_answer": null,
+              "safe_source_ids": [],
+              "source_revision": 4,
+              "sources": [],
+              "status": "not_applicable",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 14184,
+              "coverage_complete": true,
+              "excluded": [],
+              "excluded_count": 0,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684806000,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                  "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                  "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": false,
+            "degraded_reasons": [],
+            "duration_ms": 33,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 6,
+                "hint_bytes": 3102,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 6,
+                "repository_memory_count": 6,
+                "segment_association_count": 6,
+                "skipped": {},
+                "token_bytes": 12902
+              },
+              "eligible_segment_association_count": 6,
+              "generation": 1,
+              "index_bytes": 17692,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 4,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t4:0",
+                      "quote": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t4"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 6,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684806000,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "a large collection of Funko POP! figures, including the entire set of Marvel Cinematic Universe figures"
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:0",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 2,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "17 cameras"
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:1",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 3,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "Brownie Hawkeye"
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:2",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 4,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t2:3",
+                      "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t2"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 5,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "fact",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805880,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+                  }
+                },
+                {
+                  "certainty": "High",
+                  "evidence": [
+                    {
+                      "id": "eval-lme_15745da0_abs:s1_t1:0",
+                      "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                      "session_id": "eval-lme_15745da0_abs",
+                      "turn_id": "s1_t1"
+                    }
+                  ],
+                  "explicit_memory_request": false,
+                  "extraction_confidence": "High",
+                  "id": 1,
+                  "last_reinforced_at": null,
+                  "last_retrieved_at": null,
+                  "memory_type": "Fact",
+                  "owner_id": "eval",
+                  "polarity": null,
+                  "predicate": "owns",
+                  "reinforcement_count": 0,
+                  "retention_tier": "LongTerm",
+                  "retrieval_count": 0,
+                  "scope": {
+                    "conditions": [],
+                    "domain": null
+                  },
+                  "status": "Active",
+                  "strength": null,
+                  "subject_id": "self",
+                  "supersede_reason": null,
+                  "superseded_by": null,
+                  "supersedes": null,
+                  "tags": [
+                    "vintage_cameras",
+                    "collection"
+                  ],
+                  "temporal": {
+                    "expires_at": null,
+                    "observed_at": 1684805820,
+                    "reference": null,
+                    "valid_from": null,
+                    "valid_to": null
+                  },
+                  "value": {
+                    "Text": "a growing collection of vintage cameras"
+                  }
+                }
+              ],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231354726000-199:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "selected",
+                "lane": "source_evidence",
+                "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [
+              {
+                "byte_end": 258,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t4:0",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w00006300006900006e00006500006d000061000074000069000063",
+                      "w00006300006f00006c00006c00006500006300007400006900006f00006e",
+                      "w00006500006e000074000069000072000065",
+                      "w000066000069000067000075000072000065000073",
+                      "w00006600007500006e00006b00006f",
+                      "w000069",
+                      "w00006900006e00006300006c00007500006400006900006e000067",
+                      "w00006c000061000072000067000065",
+                      "w00006d00006100007200007600006500006c",
+                      "w00006f000066",
+                      "w00007000006f000070",
+                      "w000073000065000074",
+                      "w000074000068000065",
+                      "w00007400006f",
+                      "w00007500006e000069000076000065000072000073000065"
+                    ],
+                    "memory_id": 6,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      258
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684806000,
+                "received_sequence": 4,
+                "role": "user",
+                "segment_id": "83715-1790753231354726000-199:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_15745da0_abs",
+                "source_id": "83715-1790753231354726000-199",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 6,
+                    "quote_byte_range": [
+                      0,
+                      258
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+                "turn_id": "s1_t4"
+              },
+              {
+                "byte_end": 253,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:0",
+                    "matched_query_phrases": [
+                      "w000031000037",
+                      "w00006300006100006d000065000072000061000073",
+                      "w000069",
+                      "w00007400006f"
+                    ],
+                    "memory_id": 2,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:1",
+                    "matched_query_phrases": [
+                      "w00006200007200006f00007700006e000069000065",
+                      "w00006800006100007700006b000065000079000065",
+                      "w000069",
+                      "w00007400006f"
+                    ],
+                    "memory_id": 3,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:2",
+                    "matched_query_phrases": [
+                      "w000031000037",
+                      "w00006100006e000064",
+                      "w00006200007200006f00007700006e000069000065",
+                      "w00006300006100006d000065000072000061000073",
+                      "w00006300006f00006c00006c00006500006300007400006900006f00006e",
+                      "w00006700006f000074",
+                      "w000068000061000076000065",
+                      "w00006800006100007700006b000065000079000065",
+                      "w000069",
+                      "w00006900006e00006300006c00007500006400006900006e000067",
+                      "w00006c000061000073000074",
+                      "w00006d000079",
+                      "w00006e000065000077",
+                      "w00006e00006f000077",
+                      "w00006f00007200006700006100006e00006900007a000065000064",
+                      "w00007200006500006300006500006e00007400006c000079",
+                      "w000074000068000065",
+                      "w00007400006f",
+                      "w00007700006500006500006b"
+                    ],
+                    "memory_id": 4,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  },
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t2:3",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w000062000065000073000074",
+                      "w000062000075000074",
+                      "w00006700006f000074",
+                      "w000069",
+                      "w000069000066",
+                      "w00006d",
+                      "w00006e00006f000074",
+                      "w00006f000066000066",
+                      "w00006f00006e",
+                      "w000073",
+                      "w00007300006800006500006c000066",
+                      "w00007300006800006f000077",
+                      "w000073000075000072000065",
+                      "w000074000068000061000074",
+                      "w000074000068000065",
+                      "w00007400006800006500006d",
+                      "w00007400006f",
+                      "w000076000065",
+                      "w000077000061000079"
+                    ],
+                    "memory_id": 5,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684805880,
+                "received_sequence": 2,
+                "role": "user",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_15745da0_abs",
+                "source_id": "83715-1790753231210472000-81",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 2,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 3,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 4,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  },
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 5,
+                    "quote_byte_range": [
+                      0,
+                      253
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "turn_id": "s1_t2"
+              },
+              {
+                "byte_end": 186,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context",
+                  "committed_fact_hint"
+                ],
+                "enrichment": "committed",
+                "evidence_kind": "raw_statement",
+                "fact_hint_matches": [
+                  {
+                    "evidence_id": "eval-lme_15745da0_abs:s1_t1:0",
+                    "matched_query_phrases": [
+                      "w000061",
+                      "w00006300006100006d000065000072000061000073",
+                      "w00006300006f00006c00006c00006500006300007400006900006f00006e",
+                      "w00006700007200006f00007700006900006e000067",
+                      "w000069",
+                      "w00006f000066",
+                      "w00007400006f",
+                      "w00007600006900006e000074000061000067000065"
+                    ],
+                    "memory_id": 1,
+                    "projection_revision": 4,
+                    "provenance": "committed_memory_projection",
+                    "quote_byte_range": [
+                      0,
+                      186
+                    ],
+                    "renderer_version": "committed-fact-key-v2"
+                  }
+                ],
+                "instruction_authority": "none",
+                "mapping_uncertain": false,
+                "observed_at": 1684805820,
+                "received_sequence": 1,
+                "role": "user",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_15745da0_abs",
+                "source_id": "83715-1790753231159656000-31",
+                "source_origin": "mcp_received",
+                "state_annotations": [
+                  {
+                    "association": "exact_quote",
+                    "decision": "Selected",
+                    "interpretation": "applies only to linked assertion; other text remains unverified",
+                    "memory_id": 1,
+                    "quote_byte_range": [
+                      0,
+                      186
+                    ],
+                    "replacement": null,
+                    "status": "Active",
+                    "supersede_reason": null
+                  }
+                ],
+                "task_id": null,
+                "text": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "turn_id": "s1_t1"
+              },
+              {
+                "byte_end": 226,
+                "byte_start": 0,
+                "channels": [
+                  "lexical_original",
+                  "explicit_context"
+                ],
+                "enrichment": "completed_rejected",
+                "evidence_kind": "raw_statement",
+                "instruction_authority": "none",
+                "mapping_uncertain": true,
+                "observed_at": 1684805940,
+                "received_sequence": 3,
+                "role": "user",
+                "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0",
+                "segment_version": 1,
+                "semantic_status": "unverified_source_statement",
+                "session_id": "eval-lme_15745da0_abs",
+                "source_id": "83715-1790753231279416000-145",
+                "source_origin": "mcp_received",
+                "state_annotations": [],
+                "task_id": null,
+                "text": "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                "turn_id": "s1_t3"
+              }
+            ],
+            "source_revision": 4
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 4,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231367142000-201",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231353497000-198",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231377363000-202",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231353497000-198",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 6,
+                    "target": null
+                  }
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 4,
+              "source_id": "83715-1790753231354726000-199",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t1:0",
+              "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "vintage_cameras",
+            "collection"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a growing collection of vintage cameras"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:0",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "17 cameras"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:1",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "Brownie Hawkeye"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:2",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:3",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+          }
+        },
+        "6": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t4:0",
+              "quote": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 6,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684806000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a large collection of Funko POP! figures, including the entire set of Marvel Cinematic Universe figures"
+          }
+        }
+      },
+      "message": "s1_t5",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely."
+              ],
+              "query": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?",
+              "read_revision": 4,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 5,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 6
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 6,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684806060,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                  "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                  "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                  "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely."
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 44,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 6,
+                "hint_bytes": 3102,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 6,
+                "repository_memory_count": 6,
+                "segment_association_count": 6,
+                "skipped": {},
+                "token_bytes": 12902
+              },
+              "eligible_segment_association_count": 6,
+              "generation": 1,
+              "index_bytes": 17692,
+              "rebuild_ms": 1,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 4,
+              "source_revision": 5,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 4,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 4,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231446295000-247:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231354726000-199:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 5
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "enrichment": {
+            "error": "source_coverage_incomplete",
+            "status": "failed"
+          },
+          "enrichment_mode": "inline",
+          "error": "source_coverage_incomplete",
+          "index": {
+            "generation": 1,
+            "processing_version": "cjk-position-v1",
+            "source_revision": 5,
+            "source_version": 1,
+            "status": "ready"
+          },
+          "model_calls": [
+            {
+              "call_id": "83715-1790753231461739000-253",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753231444892000-246",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction",
+              "usage_status": "known"
+            },
+            {
+              "call_id": "83715-1790753231470622000-255",
+              "group_id": "eval-intake",
+              "input_tokens": 0,
+              "operation_id": "83715-1790753231444892000-246",
+              "outcome": "completed",
+              "output_reservation_retained": false,
+              "output_tokens": 0,
+              "pricing_status": "unknown",
+              "stage": "extraction_review",
+              "usage_status": "known"
+            }
+          ],
+          "replayed": false,
+          "source": {
+            "message_id_trust": "client_supplied",
+            "provenance": "mcp_received",
+            "received_sequence": 5,
+            "source_id": "83715-1790753231446295000-247",
+            "status": "stored"
+          },
+          "status": "failed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "memories_after": {
+        "1": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t1:0",
+              "quote": "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t1"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 1,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "vintage_cameras",
+            "collection"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805820,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a growing collection of vintage cameras"
+          }
+        },
+        "2": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:0",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 2,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "17 cameras"
+          }
+        },
+        "3": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:1",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 3,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "Brownie Hawkeye"
+          }
+        },
+        "4": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:2",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 4,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week."
+          }
+        },
+        "5": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t2:3",
+              "quote": "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t2"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 5,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "fact",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684805880,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "I've got them on a shelf, but I'm not sure if that's the best way to show them off."
+          }
+        },
+        "6": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t4:0",
+              "quote": "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t4"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 6,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684806000,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "a large collection of Funko POP! figures, including the entire set of Marvel Cinematic Universe figures"
+          }
+        },
+        "7": {
+          "certainty": "High",
+          "evidence": [
+            {
+              "id": "eval-lme_15745da0_abs:s1_t6:0",
+              "quote": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?",
+              "session_id": "eval-lme_15745da0_abs",
+              "turn_id": "s1_t6"
+            }
+          ],
+          "explicit_memory_request": false,
+          "extraction_confidence": "High",
+          "id": 7,
+          "last_reinforced_at": null,
+          "last_retrieved_at": null,
+          "memory_type": "Fact",
+          "owner_id": "eval",
+          "polarity": null,
+          "predicate": "owns",
+          "reinforcement_count": 0,
+          "retention_tier": "LongTerm",
+          "retrieval_count": 0,
+          "scope": {
+            "conditions": [],
+            "domain": null
+          },
+          "status": "Active",
+          "strength": null,
+          "subject_id": "self",
+          "supersede_reason": null,
+          "superseded_by": null,
+          "supersedes": null,
+          "tags": [
+            "posters",
+            "art prints"
+          ],
+          "temporal": {
+            "expires_at": null,
+            "observed_at": 1684806120,
+            "reference": null,
+            "valid_from": null,
+            "valid_to": null
+          },
+          "value": {
+            "Text": "posters and art prints"
+          }
+        }
+      },
+      "message": "s1_t6",
+      "result": {
+        "enrichment_mode": "inline",
+        "recall": {
+          "result": {
+            "answer_contract": {
+              "context": [
+                "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+                "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?"
+              ],
+              "query": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?",
+              "read_revision": 5,
+              "safe_answer": "现有记录证据不足，无法回答这个问题。",
+              "safe_source_ids": [],
+              "source_revision": 6,
+              "sources": [],
+              "status": "insufficient_evidence",
+              "task_id": null,
+              "version": 1
+            },
+            "assistance": {
+              "status": "not_requested"
+            },
+            "assistance_search": {
+              "candidate_count": 0,
+              "per_query_limit": 0,
+              "status": "not_requested",
+              "total_limit": 0
+            },
+            "backend_generation_calls_in_recall": 0,
+            "budget": {
+              "config": {
+                "candidate_k": 30,
+                "content_bytes": 24000,
+                "source_limit": 10
+              },
+              "content_bytes": 0,
+              "coverage_complete": true,
+              "excluded": [
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 7
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 6
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 2
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 3
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 4
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 5
+                  }
+                },
+                {
+                  "reason": "relevance_or_ambiguity",
+                  "reference": {
+                    "memory_id": 1
+                  }
+                }
+              ],
+              "excluded_count": 7,
+              "unit": "serialized_utf8_bytes_not_tokens"
+            },
+            "comparison_evidence": null,
+            "conditions_provenance": [
+              {
+                "fields": [
+                  "owner",
+                  "task",
+                  "at",
+                  "runtime_filters"
+                ],
+                "source": "trusted_runtime",
+                "strength": "hard",
+                "value": {
+                  "at": 1684806120,
+                  "conditions": [],
+                  "domain": null,
+                  "entities": [],
+                  "limit": 20,
+                  "owner_id": "eval",
+                  "predicates": [],
+                  "targets": [],
+                  "task_id": null,
+                  "temporal_filter": null,
+                  "temporal_intent": "Current"
+                }
+              },
+              {
+                "context": [
+                  "I'm looking for some advice on how to properly store and maintain my growing collection of vintage cameras. Do you have any tips on how to keep them in good condition and prevent damage?",
+                  "I'm also curious about the best way to display my cameras. I recently organized my collection and have 17 cameras now, including the new Brownie Hawkeye I got last week. I've got them on a shelf, but I'm not sure if that's the best way to show them off.",
+                  "I've been collecting vintage cameras for three months now, and I've already amassed a pretty impressive collection. Do you have any advice on how to keep my cameras organized and easily accessible for maintenance and cleaning?",
+                  "I'm also curious about the best way to store and display my Funko POP! figures. I've got a large collection of them, including the entire set of Marvel Cinematic Universe figures, and I want to make sure they're displayed in a way that showcases them nicely.",
+                  "I've also been thinking about displaying my vinyl record collection. I recently scored a rare 1978 pressing of Fleetwood Mac's Rumours, and I want to make sure it's displayed prominently. Do you have any advice on how to store and display my vinyl records in a way that showcases them nicely?"
+                ],
+                "fields": [
+                  "query",
+                  "context"
+                ],
+                "query": "I've also been thinking about displaying my posters and art prints. I recently got a new poster from Mondo featuring an illustration of the Hogwarts castle from Harry Potter, and I want to make sure it's displayed nicely. Do you have any advice on how to store and display my posters and art prints in a way that showcases them nicely?",
+                "source": "explicit_user_validated",
+                "strength": "search_text_only"
+              },
+              {
+                "fields": [
+                  "aliases",
+                  "bigrams"
+                ],
+                "source": "deterministic_parse",
+                "strength": "soft",
+                "version": "natural-v2"
+              },
+              {
+                "fields": [
+                  "unbound_subject",
+                  "unparsed_time",
+                  "unparsed_scope"
+                ],
+                "source": "unknown",
+                "strength": "none"
+              }
+            ],
+            "degraded": true,
+            "degraded_reasons": [
+              "structured_enrichment_incomplete"
+            ],
+            "duration_ms": 58,
+            "evidence_status": "sufficiency_not_verified",
+            "fact_index": {
+              "coverage": {
+                "exact_quote_evidence_count": 7,
+                "hint_bytes": 3581,
+                "limits": {
+                  "associations": 4096,
+                  "hint_bytes": 4096,
+                  "hints_per_segment": 16
+                },
+                "projected_memory_count": 7,
+                "repository_memory_count": 7,
+                "segment_association_count": 7,
+                "skipped": {},
+                "token_bytes": 14859
+              },
+              "eligible_segment_association_count": 7,
+              "generation": 1,
+              "index_bytes": 20410,
+              "rebuild_ms": 2,
+              "renderer_version": "committed-fact-key-v2",
+              "revision": 5,
+              "source_revision": 6,
+              "status": "ready"
+            },
+            "global_context": {
+              "coverage_complete": true,
+              "read_revision": 5,
+              "result": {
+                "conflicts": [],
+                "constraints": [],
+                "episodes": [],
+                "facts": [],
+                "mandatory": [],
+                "preferences": [],
+                "trace": []
+              },
+              "source": "local_read_snapshot",
+              "status": "available"
+            },
+            "historical_or_conflicting": [],
+            "index_status": "completed",
+            "model_calls": [],
+            "read_revision": 5,
+            "recall_status": "completed",
+            "reference_resolution": {
+              "clarification_question": null,
+              "context_entity_ids": [],
+              "needs_clarification": false,
+              "query_entity_ids": [],
+              "semantic_resolution": "not_performed",
+              "status": "unconfirmed",
+              "task_scope": null
+            },
+            "result": {
+              "conflicts": [],
+              "constraints": [],
+              "episodes": [],
+              "facts": [],
+              "mandatory": [],
+              "preferences": [],
+              "trace": []
+            },
+            "retrieval_mode": "local",
+            "source_decisions": [
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231553709000-292:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231446295000-247:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231354726000-199:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "no_verified_relation",
+                "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+              },
+              {
+                "decision": "filtered",
+                "reason": "source_not_committed",
+                "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+              }
+            ],
+            "source_evidence": [],
+            "source_revision": 6
+          },
+          "status": "completed"
+        },
+        "remember": {
+          "result": {
+            "enrichment": {
+              "error": null,
+              "status": "committed"
+            },
+            "enrichment_mode": "inline",
+            "index": {
+              "generation": 1,
+              "processing_version": "cjk-position-v1",
+              "source_revision": 6,
+              "source_version": 1,
+              "status": "ready"
+            },
+            "model_calls": [
+              {
+                "call_id": "83715-1790753231569403000-295",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231552239000-291",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction",
+                "usage_status": "known"
+              },
+              {
+                "call_id": "83715-1790753231579388000-297",
+                "group_id": "eval-intake",
+                "input_tokens": 0,
+                "operation_id": "83715-1790753231552239000-291",
+                "outcome": "completed",
+                "output_reservation_retained": false,
+                "output_tokens": 0,
+                "pricing_status": "unknown",
+                "stage": "extraction_review",
+                "usage_status": "known"
+              }
+            ],
+            "outcomes": [
+              {
+                "Ingested": {
+                  "Applied": {
+                    "action": "New",
+                    "memory_id": 7,
+                    "target": null
+                  }
+                }
+              },
+              {
+                "Ingested": {
+                  "Rejected": "source review did not support this candidate"
+                }
+              }
+            ],
+            "replayed": false,
+            "source": {
+              "message_id_trust": "client_supplied",
+              "provenance": "mcp_received",
+              "received_sequence": 6,
+              "source_id": "83715-1790753231553709000-292",
+              "status": "stored"
+            },
+            "status": "completed"
+          },
+          "status": "completed"
+        },
+        "retrieval_mode": "local"
+      },
+      "step": "intake"
+    },
+    {
+      "question": "q",
+      "result": {
+        "answer_contract": {
+          "context": [],
+          "query": "How long have I been collecting vintage films?",
+          "read_revision": 5,
+          "safe_answer": "现有记录证据不足，无法回答这个问题。",
+          "safe_source_ids": [],
+          "source_revision": 6,
+          "sources": [],
+          "status": "insufficient_evidence",
+          "task_id": null,
+          "version": 1
+        },
+        "assistance": {
+          "queries": [
+            "started collecting vintage films",
+            "vintage film collection since",
+            "been collecting vintage movies"
+          ],
+          "source": "llm_inferred",
+          "status": "completed",
+          "strength": "soft"
+        },
+        "assistance_search": {
+          "candidate_count": 11,
+          "per_query_limit": 10,
+          "status": "completed",
+          "total_limit": 30
+        },
+        "backend_generation_calls_in_recall": 0,
+        "budget": {
+          "config": {
+            "candidate_k": 30,
+            "content_bytes": 24000,
+            "source_limit": 10
+          },
+          "content_bytes": 0,
+          "coverage_complete": true,
+          "excluded": [
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 7
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 6
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 2
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 3
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 4
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 5
+              }
+            },
+            {
+              "reason": "relevance_or_ambiguity",
+              "reference": {
+                "memory_id": 1
+              }
+            }
+          ],
+          "excluded_count": 7,
+          "unit": "serialized_utf8_bytes_not_tokens"
+        },
+        "comparison_evidence": null,
+        "conditions_provenance": [
+          {
+            "fields": [
+              "owner",
+              "task",
+              "at",
+              "runtime_filters"
+            ],
+            "source": "trusted_runtime",
+            "strength": "hard",
+            "value": {
+              "at": 1684936440,
+              "conditions": [],
+              "domain": null,
+              "entities": [],
+              "limit": 20,
+              "owner_id": "eval",
+              "predicates": [],
+              "targets": [],
+              "task_id": null,
+              "temporal_filter": null,
+              "temporal_intent": "Current"
+            }
+          },
+          {
+            "context": [],
+            "fields": [
+              "query",
+              "context"
+            ],
+            "query": "How long have I been collecting vintage films?",
+            "source": "explicit_user_validated",
+            "strength": "search_text_only"
+          },
+          {
+            "fields": [
+              "aliases",
+              "bigrams"
+            ],
+            "source": "deterministic_parse",
+            "strength": "soft",
+            "version": "natural-v2"
+          },
+          {
+            "fields": [
+              "unbound_subject",
+              "unparsed_time",
+              "unparsed_scope"
+            ],
+            "source": "unknown",
+            "strength": "none"
+          }
+        ],
+        "degraded": true,
+        "degraded_reasons": [
+          "structured_enrichment_incomplete"
+        ],
+        "duration_ms": 122,
+        "evidence_status": "sufficiency_not_verified",
+        "fact_index": {
+          "coverage": {
+            "exact_quote_evidence_count": 7,
+            "hint_bytes": 3581,
+            "limits": {
+              "associations": 4096,
+              "hint_bytes": 4096,
+              "hints_per_segment": 16
+            },
+            "projected_memory_count": 7,
+            "repository_memory_count": 7,
+            "segment_association_count": 7,
+            "skipped": {},
+            "token_bytes": 14859
+          },
+          "eligible_segment_association_count": 7,
+          "generation": 1,
+          "index_bytes": 20410,
+          "rebuild_ms": 2,
+          "renderer_version": "committed-fact-key-v2",
+          "revision": 5,
+          "source_revision": 6,
+          "status": "ready"
+        },
+        "global_context": {
+          "coverage_complete": true,
+          "read_revision": 5,
+          "result": {
+            "conflicts": [],
+            "constraints": [],
+            "episodes": [],
+            "facts": [],
+            "mandatory": [],
+            "preferences": [],
+            "trace": []
+          },
+          "source": "local_read_snapshot",
+          "status": "available"
+        },
+        "historical_or_conflicting": [],
+        "index_status": "completed",
+        "model_answer": {
+          "status": "insufficient"
+        },
+        "model_calls": [
+          {
+            "call_id": "83715-1790753231726812000-345",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753231676964000-338",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "assistance",
+            "usage_status": "known"
+          },
+          {
+            "call_id": "83715-1790753231856913000-412",
+            "group_id": "eval-recall",
+            "input_tokens": 0,
+            "operation_id": "83715-1790753231676964000-338",
+            "outcome": "completed",
+            "output_reservation_retained": false,
+            "output_tokens": 0,
+            "pricing_status": "unknown",
+            "stage": "answer",
+            "usage_status": "known"
+          }
+        ],
+        "read_revision": 5,
+        "recall_status": "completed",
+        "reference_resolution": {
+          "clarification_question": null,
+          "context_entity_ids": [],
+          "needs_clarification": false,
+          "query_entity_ids": [],
+          "semantic_resolution": "not_performed",
+          "status": "unconfirmed",
+          "task_scope": null
+        },
+        "result": {
+          "conflicts": [],
+          "constraints": [],
+          "episodes": [],
+          "facts": [],
+          "mandatory": [],
+          "preferences": [],
+          "trace": []
+        },
+        "retrieval_mode": "assisted",
+        "source_decisions": [
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231553709000-292:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231446295000-247:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231354726000-199:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231446295000-247:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231210472000-81:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231354726000-199:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231279416000-145:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231553709000-292:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "source_not_committed",
+            "segment_id": "83715-1790753231446295000-247:1:cjk-position-v1:1:0"
+          },
+          {
+            "decision": "filtered",
+            "reason": "no_verified_relation",
+            "segment_id": "83715-1790753231159656000-31:1:cjk-position-v1:1:0"
+          }
+        ],
+        "source_evidence": [],
+        "source_revision": 6
+      },
+      "step": "question"
+    }
+  ]
+}

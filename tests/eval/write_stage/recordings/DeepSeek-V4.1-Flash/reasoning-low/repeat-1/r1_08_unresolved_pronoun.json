@@ -1,0 +1,92 @@
+{
+  "id": "r1_08_unresolved_pronoun",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 44409,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "最近"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": -1,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "最近"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "最近",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": -1,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "event"
+        },
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\": \"最近\"}, \"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":null,\"time\":{\"anchor\": \t\"said_on\", \"interp\": \t{\"kind\": \"relative\", \"offset\": -1, \"unit\": \"day\"}, \"quote\": \t{\"text\": \"最近\" },\"role\": \"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\": \t\"最近\",\"subject\":{\"entity_id\": \t\"self\"},\"time\": {\"anchor\": \t\"said_on\",\"interp\": {\"kind\": \"relative\",\"offset\": -1,\"unit\": \"day\"},\"quote\": \t{\"text\": \"最近\"},\"role\": \"event\" },\"type\":\"open\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:1876ac68b2166164370732877b4722a05e5c53ad215d4bbb1925cc60ade05ddf",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 897,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 7721,
+          "output_tokens_details": {
+            "reasoning_tokens": 7544
+          },
+          "total_tokens": 8618
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 897,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7721,
+        "output_tokens_details": {
+          "reasoning_tokens": 7544
+        },
+        "total_tokens": 8618
+      }
+    }
+  ]
+}

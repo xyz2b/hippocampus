@@ -1,0 +1,195 @@
+{
+  "id": "w4_13_state_change_date_unknown",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "现实变化、没有生效时间：旧记录结束时间未知",
+  "boundary_with": "w4_01_state_change",
+  "sources": {
+    "s-304": {
+      "text": "我在字节跳动工作。",
+      "said_on": "2026-01-15"
+    },
+    "s-350": {
+      "text": "我换工作了，现在在腾讯。",
+      "said_on": "2026-09-25"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "腾讯",
+            "quote": {
+              "text": "腾讯"
+            }
+          },
+          "sentence": {
+            "text": "我换工作了，现在在腾讯。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": {
+                "text": "现在"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-350"
+        },
+        "said_on": "2026-09-25",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 64,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "字节跳动",
+            "quote": {
+              "text": "字节跳动"
+            }
+          },
+          "sentence": {
+            "text": "我在字节跳动工作。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-304"
+            },
+            "quote": {
+              "text": "我在字节跳动工作。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-01-15",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          64
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-304",
+          "s-350"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "64": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown",
+          "valid_to": null
+        },
+        "new": {
+          "from_candidate": 0,
+          "history": [
+            64
+          ],
+          "stored_status": "active",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "new（腾讯）"
+        ],
+        "history": [
+          "64（字节跳动，结束时间未知）"
+        ]
+      }
+    },
+    "must_not": [
+      "结束时间不得回填为接收日 2026-09-25（W5）",
+      "历史查询中不得把 64 当作一直有效（contracts 2.5 end_unknown）"
+    ]
+  },
+  "rejected_alternatives": [],
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "现在"
+      ]
+    }
+  }
+}

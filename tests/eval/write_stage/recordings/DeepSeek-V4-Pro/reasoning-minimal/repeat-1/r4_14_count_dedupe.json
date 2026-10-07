@@ -1,0 +1,424 @@
+{
+  "id": "r4_14_count_dedupe",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 8110,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "count",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我三月去了北京出差。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-18"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              18
+            ],
+            "statement": "我三月去了北京出差。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 3,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "我三月去了北京出差。"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "三月那次北京出差挺累的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-19"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              19
+            ],
+            "statement": "三月那次北京出差挺累的。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 3,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "三月那次北京出差挺累的。"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我八月又去了一趟北京。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-20"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              20
+            ],
+            "statement": "我八月又去了一趟北京。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 8,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "我八月又去了一趟北京。"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"count\",\n    \"operands\": [],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我三月去了北京出差。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-18\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    18\n    ],\n    \"statement\": \"我三月去了北京出差。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 3,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"我三月去了北京出差。\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"三月那次北京出差挺累的。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-19\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    19\n    ],\n    \"statement\": \"三月那次北京出差挺累的。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 3,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"三月那次北京出差挺累的。\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我八月又去了一趟北京。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-20\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    20\n    ],\n    \"statement\": \"我八月又去了一趟北京。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 8,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"我八月又去了一趟北京。\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:931cc425462fe714278aa08e067259c710281ce77b233b62c12de89b12fe5eaf",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3856,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 702,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4558
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3856,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 702,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4558
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 6302,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "count",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我三月去了北京出差。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-18"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              18
+            ],
+            "statement": "用户在三月去了北京出差。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 3,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "三月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我八月又去了一趟北京。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-20"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              20
+            ],
+            "statement": "用户在八月又去了一趟北京。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 8,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "八月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"count\",\n    \"operands\": [],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"unknown\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我三月去了北京出差。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-18\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    18\n    ],\n    \"statement\": \"用户在三月去了北京出差。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 3,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"三月\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"unknown\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我八月又去了一趟北京。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-20\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    20\n    ],\n    \"statement\": \"用户在八月又去了一趟北京。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 8,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"八月\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:2458e1f54bfeecff71b1a049b06df7eab8dd22c66657c41e838ddb9421fe6717",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4772,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 474,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5246
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4772,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 474,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5246
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 6182,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": {
+          "coverage": "incomplete",
+          "items": [],
+          "op": "count",
+          "operands": [],
+          "unit": null
+        },
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我三月去了北京出差。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-18"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              18
+            ],
+            "statement": "用户在三月去北京出差。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 3,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "三月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          },
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我八月又去了一趟北京。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-20"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              20
+            ],
+            "statement": "用户在八月又去了一趟北京。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "month",
+                  "month": 8,
+                  "year_offset": 0
+                },
+                "quote": {
+                  "text": "八月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"incomplete\",\n    \"items\": [\n    ],\n    \"op\": \"count\",\n    \"operands\": [],\n    \"unit\": null\n  },\n  \"facts\": [\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我三月去了北京出差。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-18\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    18\n    ],\n    \"statement\": \"用户在三月去北京出差。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 3,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"三月\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    },\n    {\n    \"applies\": \"yes\",\n    \"conditions\": [],\n    \"current\": \"yes\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"我八月又去了一趟北京。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-20\"\n    }\n    }\n    ],\n    \"polarity\": \"affirm\",\n    \"record_ids\": [\n    20\n    ],\n    \"statement\": \"用户在八月又去了一趟北京。\",\n    \"strength\": null,\n    \"supersedes_record_ids\": [],\n    \"times\": [\n    {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"month\",\n    \"month\": 8,\n    \"year_offset\": 0\n    },\n    \"quote\": {\n    \"text\": \"八月\"\n    },\n    \"role\": \"event\"\n    }\n    ],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:0e97143632eb58681ed293a4bfb7918d90b64883ec1360f0bd56cb1a6f26237c",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 5294,
+          "input_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "output_tokens": 474,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5768
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 5294,
+        "input_tokens_details": {
+          "cached_tokens": 4352
+        },
+        "output_tokens": 474,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5768
+      }
+    }
+  ]
+}

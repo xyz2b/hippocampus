@@ -1,0 +1,80 @@
+{
+  "id": "w4_18_legacy_gaps",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3729,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我搬到成都了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-400"
+                }
+              },
+              {
+                "quote": {
+                  "text": "广州"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-400"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              95
+            ]
+          }
+        ]
+      },
+      "output_text": "{\n  \"decisions\": [\n    {\n    \"action\": \"state_change\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"我搬到成都了。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-400\"\n    }\n    },\n    {\n    \"quote\": {\n    \"text\": \"广州\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-400\"\n    }\n    }\n    ],\n    \"candidate\": 0,\n    \"effective\": null,\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [],\n    \"status\": \"decided\",\n    \"targets\": [\n    95\n    ]\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:a7782d3ef43acbb0",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2667,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 176,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2843
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 2667,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 176,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2843
+      }
+    }
+  ]
+}

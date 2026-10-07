@@ -1,0 +1,90 @@
+{
+  "id": "r1_02_plain_statement",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "健身房"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "visited",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": 0,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "今天"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "visited",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": 0,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "今天"
+          },
+          "role": "event"
+        },
+        "type": "single"
+      },
+      "output_text": "{\n  \"conditions\": [\n    {\n      \"quote\": {\n        \"text\": \"健身房\"\n      },\n      \"resolved\": true\n    }\n  ],\n  \"current_evidence\": \"assertion_present\",\n  \"need\": \"context_only\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"visited\",\n      \"time\": {\n        \"anchor\": \"said_on\",\n        \"interp\": {\n          \"kind\": \"relative\",\n          \"offset\": 0,\n          \"unit\": \"day\"\n        },\n        \"quote\": {\n          \"text\": \"今天\"\n        },\n        \"role\": \"event\"\n      }\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"visited\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n      \"kind\": \"relative\",\n      \"offset\": 0,\n      \"unit\": \"day\"\n    },\n    \"quote\": {\n      \"text\": \"今天\"\n    },\n    \"role\": \"event\"\n  },\n  \"type\": \"single\"\n}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:a1bf37c7798befd795bce53ed56e5376e5d734a7aa025956dc84f6a84121e3aa",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2438,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 8045,
+          "output_tokens_details": {
+            "reasoning_tokens": 7796
+          },
+          "total_tokens": 10483
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2438,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8045,
+        "output_tokens_details": {
+          "reasoning_tokens": 7796
+        },
+        "total_tokens": 10483
+      }
+    }
+  ]
+}

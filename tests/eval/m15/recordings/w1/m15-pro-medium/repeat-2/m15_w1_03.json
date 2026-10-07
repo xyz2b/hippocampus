@@ -1,0 +1,75 @@
+{
+  "id": "m15_w1_03",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 26256,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-medium",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "owns",
+            "sentence": {
+              "text": "我姐姐有一把橘色小提琴。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "unresolved": {
+                "text": "我姐姐"
+              }
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "一把橘色小提琴"
+              },
+              "text": "一把橘色小提琴"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"owns\",\"sentence\":{\"text\":\"我姐姐有一把橘色小提琴。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"unresolved\":{\"text\":\"我姐姐\"}},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"一把橘色小提琴\"},\"text\":\"一把橘色小提琴\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "medium",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:48bed3e321c2fdf6261eecd1eaba898bd6fb173c4f8a5dbe77df6b62e8b6d15e",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3780,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1709,
+          "output_tokens_details": {
+            "reasoning_tokens": 1598
+          },
+          "total_tokens": 5489
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3780,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1709,
+        "output_tokens_details": {
+          "reasoning_tokens": 1598
+        },
+        "total_tokens": 5489
+      }
+    }
+  ]
+}

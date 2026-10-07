@@ -1,0 +1,82 @@
+{
+  "id": "r4_03_condition_applies_unknown",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 26218,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "no",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "画速写的时候"
+                },
+                "resolved": true
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我画速写的时候固定用炭笔。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-3"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              3
+            ],
+            "statement": "我画速写的时候固定用炭笔。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"no\",\"conditions\":[{\"quote\":{\"text\":\"画速写的时候\"},\"resolved\":true}],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我画速写的时候固定用炭笔。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-3\"}}],\"polarity\":\"affirm\",\"record_ids\":[3],\"statement\":\"我画速写的时候固定用炭笔。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:af4beab56c2af0c3906eb0a679ae5805d81be62c36224bc2fee7f3df9e67c98d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3467,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1432,
+          "output_tokens_details": {
+            "reasoning_tokens": 1306
+          },
+          "total_tokens": 4899
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3467,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1432,
+        "output_tokens_details": {
+          "reasoning_tokens": 1306
+        },
+        "total_tokens": 4899
+      }
+    }
+  ]
+}

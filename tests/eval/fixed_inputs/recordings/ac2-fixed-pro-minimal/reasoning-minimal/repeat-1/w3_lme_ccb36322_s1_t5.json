@@ -1,0 +1,85 @@
+{
+  "id": "w3_lme_ccb36322_s1_t5",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 4131,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "coverage": {
+          "missing": [],
+          "status": "complete"
+        },
+        "request_reviews": [],
+        "reviews": [
+          {
+            "candidate": 0,
+            "episode_value": "not_applicable",
+            "problems": [],
+            "verdict": "supported"
+          },
+          {
+            "candidate": 1,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "value",
+                "quote": {
+                  "text": "That sounds like a great way to discover new music and experience something different."
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          },
+          {
+            "candidate": 2,
+            "episode_value": "not_applicable",
+            "problems": [
+              {
+                "aspect": "value",
+                "quote": {
+                  "text": "I've been getting back into playing guitar and I'm looking to upgrade my setup."
+                }
+              }
+            ],
+            "verdict": "insufficient"
+          }
+        ]
+      },
+      "output_text": "{\n  \"coverage\": {\n    \"missing\": [\n    ],\n    \"status\": \"complete\"\n  },\n  \"request_reviews\": [],\n  \"reviews\": [\n    {\n    \"candidate\": 0,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [],\n    \"verdict\": \"supported\"\n  },\n    {\n    \"candidate\": 1,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [\n    {\n    \"aspect\": \"value\",\n    \"quote\": {\n    \"text\": \"That sounds like a great way to discover new music and experience something different.\"\n  }\n  }\n  ],\n    \"verdict\": \"insufficient\"\n  },\n    {\n    \"candidate\": 2,\n    \"episode_value\": \"not_applicable\",\n    \"problems\": [\n    {\n    \"aspect\": \"value\",\n    \"quote\": {\n    \"text\": \"I've been getting back into playing guitar and I'm looking to upgrade my setup.\"\n  }\n  }\n  ],\n    \"verdict\": \"insufficient\"\n  }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:399805a3c8d9a375f46b9c596ebf68a5ea20ceb3bd60216b4e6908b228ab63cf",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2595,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 234,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2829
+        }
+      },
+      "schema": "w3_v1",
+      "usage": {
+        "input_tokens": 2595,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 234,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2829
+      }
+    }
+  ]
+}

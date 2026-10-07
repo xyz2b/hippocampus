@@ -1,0 +1,78 @@
+{
+  "id": "r1_06_elapsed_since_move",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "成都"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "op": "elapsed",
+          "unit": null
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "date": "2026-10-03",
+            "kind": "date"
+          },
+          "quote": {
+            "text": "2026-10-03"
+          },
+          "role": "event"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"成都\"},\"resolved\":true}],\"current_evidence\":\"assertion_present\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"lives_in\",\"time\":null},\"op\":\"elapsed\",\"unit\":null},\"relation\":\"lives_in\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"date\":\"2026-10-03\",\"kind\":\"date\"},\"quote\":{\"text\":\"2026-10-03\"},\"role\":\"event\"},\"type\":\"temporal\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:9b4944fb5f2f7deee580c30fdb84c61e80da53947a0519f627a1e5b27656c879",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2440,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 2695,
+          "output_tokens_details": {
+            "reasoning_tokens": 2578
+          },
+          "total_tokens": 5135
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2440,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2695,
+        "output_tokens_details": {
+          "reasoning_tokens": 2578
+        },
+        "total_tokens": 5135
+      }
+    }
+  ]
+}

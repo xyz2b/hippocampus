@@ -1,0 +1,114 @@
+{
+  "id": "w4_21_confirm_conflict_side",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 5365,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "decisions": [
+          {
+            "action": "correction",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-371"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-130"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [
+              "rel-1"
+            ],
+            "status": "decided",
+            "targets": [
+              50
+            ]
+          },
+          {
+            "action": "retract",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-371"
+                }
+              },
+              {
+                "quote": {
+                  "text": "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-261"
+                }
+              }
+            ],
+            "candidate": 1,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              51
+            ]
+          }
+        ]
+      },
+      "output_text": "{\n  \"decisions\": [\n    {\n    \"action\": \"correction\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-371\"\n    }\n    },\n    {\n    \"quote\": {\n    \"text\": \"我已确认栖风读书机的屏幕尺寸是7英寸。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-130\"\n    }\n    }\n    ],\n    \"candidate\": 0,\n    \"effective\": null,\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [\n    \"rel-1\"\n    ],\n    \"status\": \"decided\",\n    \"targets\": [\n    50\n    ]\n    },\n    {\n    \"action\": \"retract\",\n    \"basis\": [\n    {\n    \"quote\": {\n    \"text\": \"我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-371\"\n    }\n    },\n    {\n    \"quote\": {\n    \"text\": \"另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"s-261\"\n    }\n    }\n    ],\n    \"candidate\": 1,\n    \"effective\": null,\n    \"pending_reason\": null,\n    \"relation_scope\": null,\n    \"resolves_relations\": [],\n    \"status\": \"decided\",\n    \"targets\": [\n    51\n    ]\n    }\n  ]\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "fnv1a64:7f8611ed423b3ad3",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3314,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 410,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3724
+        }
+      },
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 3314,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 410,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3724
+      }
+    }
+  ]
+}

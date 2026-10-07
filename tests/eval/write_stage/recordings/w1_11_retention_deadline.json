@@ -1,0 +1,78 @@
+{
+  "id": "w1_11_retention_deadline",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "constraint",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "这个手机号只保留到明天：13800001111。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": ".invalid"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "这个手机号只保留到明天：13800001111。"
+              },
+              "text": "这个手机号只保留到明天：13800001111。"
+            }
+          }
+        ],
+        "memory_requests": [
+          {
+            "deadline": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "relative",
+                "offset": 1,
+                "unit": "day"
+              },
+              "quote": {
+                "text": "明天"
+              },
+              "role": "retention"
+            },
+            "kind": "retention",
+            "quote": {
+              "text": "只保留到明天"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "unknown",
+              "quote": {
+                "text": "这个手机号"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"constraint\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{ \"text\":\"这个手机号只保留到明天：13800001111。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\".invalid\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{ \"text\":\"这个手机号只保留到明天：13800001111。\"},\"text\":\"这个手机号只保留到明天：13800001111。\"}}],\"memory_requests\":[{\"deadline\":{\"anchor\": \"said_on\", \"interp\":{\"kind\":\"relative\",\"offset\":1,\"unit\":\"day\"},\"quote\":{\"text\":\"明天\"},\"role\":\"retention\"},\"kind\":\"retention\",\"quote\":{\"text\":\"只保留到明天\"},\"target\":{\"candidate_indices\":[],\"object\":\"unknown\",\"quote\":{\"text\":\"这个手机号\"}}}]}",
+      "request": "fnv1a64:4086b262bef7b74e",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1464,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 20871,
+        "output_tokens_details": {
+          "reasoning_tokens": 20660
+        },
+        "total_tokens": 22335
+      }
+    }
+  ]
+}

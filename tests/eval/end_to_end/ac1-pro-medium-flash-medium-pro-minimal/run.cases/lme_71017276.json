@@ -1,0 +1,936 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 120060,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 120018,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3887,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 8310,
+        "output_tokens_details": {
+          "reasoning_tokens": 7980
+        },
+        "total_tokens": 12197
+      }
+    },
+    {
+      "elapsed_ms": 15719,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 15676,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1774,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2592,
+        "output_tokens_details": {
+          "reasoning_tokens": 2518
+        },
+        "total_tokens": 4366
+      }
+    },
+    {
+      "elapsed_ms": 32872,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 32825,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3979,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2126,
+        "output_tokens_details": {
+          "reasoning_tokens": 2113
+        },
+        "total_tokens": 6105
+      }
+    },
+    {
+      "elapsed_ms": 78323,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 78275,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4087,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5209,
+        "output_tokens_details": {
+          "reasoning_tokens": 5042
+        },
+        "total_tokens": 9296
+      }
+    },
+    {
+      "elapsed_ms": 11430,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 11382,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1744,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 1842,
+        "output_tokens_details": {
+          "reasoning_tokens": 1792
+        },
+        "total_tokens": 3586
+      }
+    },
+    {
+      "elapsed_ms": 71892,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 71841,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4175,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4651,
+        "output_tokens_details": {
+          "reasoning_tokens": 4505
+        },
+        "total_tokens": 8826
+      }
+    },
+    {
+      "elapsed_ms": 16480,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 16429,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1811,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2865,
+        "output_tokens_details": {
+          "reasoning_tokens": 2815
+        },
+        "total_tokens": 4676
+      }
+    },
+    {
+      "elapsed_ms": 46102,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 46048,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4257,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2874,
+        "output_tokens_details": {
+          "reasoning_tokens": 2861
+        },
+        "total_tokens": 7131
+      }
+    },
+    {
+      "elapsed_ms": 118707,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 118651,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4367,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7527,
+        "output_tokens_details": {
+          "reasoning_tokens": 7338
+        },
+        "total_tokens": 11894
+      }
+    },
+    {
+      "elapsed_ms": 31230,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 31172,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 1986,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 5242,
+        "output_tokens_details": {
+          "reasoning_tokens": 5193
+        },
+        "total_tokens": 7228
+      }
+    },
+    {
+      "elapsed_ms": 17473,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 17413,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3654,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1131,
+        "output_tokens_details": {
+          "reasoning_tokens": 956
+        },
+        "total_tokens": 4785
+      }
+    },
+    {
+      "elapsed_ms": 3699,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3640,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2248,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 224,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2472
+      }
+    },
+    {
+      "elapsed_ms": 3693,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 3630,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5727,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 151,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5878
+      }
+    }
+  ],
+  "case": "lme_71017276",
+  "elapsed_ms": 571767,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155750071666000-362",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155750071666000-362",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155886161895000-425",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791155886161895000-425",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791155919260896000-432",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 3,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791155919260896000-432",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156009501214000-472",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791156009501214000-472",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156098556251000-493",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "no_candidates_unreviewed"
+          },
+          "source": {
+            "source_id": "80856-1791156098556251000-493",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "80856-1791156145075540000-513",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "80856-1791156145075540000-513",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1680353760,
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 2,
+          "pending_updates": 1,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-04-01",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many weeks ago did I meet up with my aunt and receive the crystal chandelier?"
+        },
+        "degraded_reasons": [
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also thinking of doing some research on the history of my great-grandmother's crystal chandelier. Do you know of any online resources or databases where I can find information about antique crystal chandeliers and their makers?"
+            },
+            "said_on": "2023-03-04",
+            "sequence": 2,
+            "source_id": "80856-1791155886161895000-425"
+          },
+          {
+            "enrichment": "no_candidates_unreviewed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of visiting some local antique dealers in my area to see if they have any information about the estate sale where I found my vintage armchair. Do you think that's a good idea?"
+            },
+            "said_on": "2023-03-04",
+            "sequence": 5,
+            "source_id": "80856-1791156098556251000-493"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": 0,
+                    "unit": "day"
+                  },
+                  "quote": {
+                    "text": "today"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a stunning crystal chandelier"
+                },
+                "text": "a stunning crystal chandelier"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I also got a stunning crystal chandelier from my aunt today, which used to belong to my great-grandmother - it's got intricate etchings and sparkling droplets that catch the light."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155750071666000-362"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-03-04",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1677945600,
+                "precision": "day",
+                "start": 1677859200,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a beautiful vintage armchair from the 1950s"
+                },
+                "text": "a beautiful vintage armchair from the 1950s"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I recently acquired a beautiful vintage armchair from the 1950s and I want to make sure I'm taking good care of it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155750071666000-362"
+                }
+              },
+              {
+                "quote": {
+                  "text": "I'm going to visit some local antique dealers in my area to see if they have any information about the estate sale where I found my vintage armchair."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156145075540000-513"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-03-04",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'm also interested in learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung"
+                },
+                "text": "learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm also interested in learning more about the history of my great-grandmother's estate, particularly the mansion where the chandelier originally hung."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791155919260896000-432"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-03-04",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I'm also curious about the history of the estate sale where I found my vintage armchair."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I'm also curious about the history of the estate sale where I found my vintage armchair."
+                },
+                "text": "I'm also curious about the history of the estate sale where I found my vintage armchair."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm also curious about the history of the estate sale where I found my vintage armchair."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "80856-1791156009501214000-472"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-03-04",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1680353760,
+          "context": [],
+          "query": "How many weeks ago did I meet up with my aunt and receive the crystal chandelier?",
+          "request_id": "eval-lme_71017276-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 6,
+          "source_revision": 6
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "80856-1791155750071666000-362",
+        "s1_t2": "80856-1791155886161895000-425",
+        "s1_t3": "80856-1791155919260896000-432",
+        "s1_t4": "80856-1791156009501214000-472",
+        "s1_t5": "80856-1791156098556251000-493",
+        "s1_t6": "80856-1791156145075540000-513"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

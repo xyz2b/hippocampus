@@ -1,0 +1,163 @@
+{
+  "id": "w1_04_question_with_statement",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我上个月刚搬到成都"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "上个月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "成都"
+              },
+              "text": "成都"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\n  \"candidates\": [\n    {\n      \"conditions\": [],\n      \"kind\": \"assertion\",\n      \"memory_type\": \"fact\",\n      \"polarity\": \"affirm\",\n      \"relation\": \"lives_in\",\n      \"sentence\": {\n        \"text\": \"我上个月刚搬到成都\"\n      },\n      \"speech\": \"user_statement\",\n      \"strength\": null,\n      \"subject\": {\n        \"entity_id\": \"self\"\n      },\n      \"times\": [\n        {\n          \"anchor\": \"said_on\",\n          \"interp\": {\n            \"kind\": \"relative\",\n            \"offset\": -1,\n            \"unit\": \"month\"\n          },\n          \"quote\": {\n            \"text\": \"上个月\"\n          },\n          \"role\": \"event\"\n        }\n      ],\n      \"uncertainty\": null,\n      \"value\": {\n        \"kind\": \"text\",\n        \"quote\": {\n          \"text\": \"成都\"\n        },\n        \"text\": \"成都\"\n      }\n    }\n  ],\n  \"memory_requests\": []\n}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:c7187a69767b8c71",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3547,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3089,
+          "output_tokens_details": {
+            "reasoning_tokens": 2863
+          },
+          "total_tokens": 6636
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3547,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3089,
+        "output_tokens_details": {
+          "reasoning_tokens": 2863
+        },
+        "total_tokens": 6636
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我上个月刚搬到成都"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "relative",
+                  "offset": -1,
+                  "unit": "month"
+                },
+                "quote": {
+                  "text": "上个月"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "成都"
+              },
+              "text": "成都"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我上个月刚搬到成都\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"relative\",\"offset\":-1,\"unit\":\"month\"},\"quote\":{\"text\":\"上个月\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"成都\"},\"text\":\"成都\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:9ac80984e2564443",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3727,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3393,
+          "output_tokens_details": {
+            "reasoning_tokens": 3259
+          },
+          "total_tokens": 7120
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3727,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3393,
+        "output_tokens_details": {
+          "reasoning_tokens": 3259
+        },
+        "total_tokens": 7120
+      }
+    }
+  ]
+}

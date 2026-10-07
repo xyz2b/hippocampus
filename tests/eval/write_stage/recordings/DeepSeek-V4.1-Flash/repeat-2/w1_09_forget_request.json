@@ -1,0 +1,61 @@
+{
+  "id": "w1_09_forget_request",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [],
+        "memory_requests": [
+          {
+            "deadline": null,
+            "kind": "forget",
+            "quote": {
+              "text": "把我住址那条忘掉吧"
+            },
+            "target": {
+              "candidate_indices": [],
+              "object": "facts",
+              "quote": {
+                "text": "我住址那条"
+              }
+            }
+          }
+        ]
+      },
+      "output_text": "{\"candidates\":[],\"memory_requests\":[{\"deadline\":null,\"kind\": \"forget\",\"quote\": \t{\"text\":\"把我住址那条忘掉吧\"},\"target\": {\"candidate_indices\": [],\"object\": \"facts\",\"quote\": {\"text\":\"我住址那条\"}}}]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:46f5de21bfc8992b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1456,
+          "input_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "output_tokens": 4298,
+          "output_tokens_details": {
+            "reasoning_tokens": 4230
+          },
+          "total_tokens": 5754
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1456,
+        "input_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "output_tokens": 4298,
+        "output_tokens_details": {
+          "reasoning_tokens": 4230
+        },
+        "total_tokens": 5754
+      }
+    }
+  ]
+}

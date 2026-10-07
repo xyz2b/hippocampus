@@ -1,0 +1,48 @@
+{
+  "id": "w4_04_coexist_partial",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "coexist",
+            "basis": [
+              {
+                "quote": {
+                  "text": "周末的时候我更喜欢喝手冲咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-241"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": []
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"coexist\",\"basis\":[{\"quote\":{\"text\":\"周末的时候我更喜欢喝手冲咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-241\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[]}]}",
+      "request": "fnv1a64:4a3572937f28bcdf",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1553,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4411,
+        "output_tokens_details": {
+          "reasoning_tokens": 4327
+        },
+        "total_tokens": 5964
+      }
+    }
+  ]
+}

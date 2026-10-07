@@ -1,0 +1,107 @@
+{
+  "id": "ce_old_current",
+  "note": "由 0517000 归档中该题的真实 answer_contract 改写，仅改 status/safe_answer/来源。",
+  "output": {
+    "answer_contract": {
+      "context": [],
+      "query": "What time do I usually go to the gym?",
+      "read_revision": 4,
+      "safe_answer": "7:00 pm。",
+      "safe_source_ids": [
+        "83715-1790753231257332000-115"
+      ],
+      "source_revision": 11,
+      "sources": [
+        {
+          "grade": "committed",
+          "quote": "I'm leaning towards Todoist since I already use it for task management, but I want to make sure it can fit into my daily routine. Can you suggest the best way to set reminders for my gym sessions, which I usually go to at 7:00 pm on Mondays, Wednesdays, and Fridays?",
+          "source_id": "83715-1790753231257332000-115"
+        }
+      ],
+      "status": "source_linked_model_answer",
+      "task_id": null,
+      "version": 1
+    },
+    "budget": {
+      "config": {
+        "candidate_k": 30,
+        "content_bytes": 24000,
+        "source_limit": 10
+      },
+      "content_bytes": 0,
+      "coverage_complete": true,
+      "excluded": [
+        {
+          "reason": "relevance_or_ambiguity",
+          "reference": {
+            "memory_id": 6
+          }
+        },
+        {
+          "reason": "relevance_or_ambiguity",
+          "reference": {
+            "memory_id": 1
+          }
+        },
+        {
+          "reason": "relevance_or_ambiguity",
+          "reference": {
+            "memory_id": 2
+          }
+        },
+        {
+          "reason": "relevance_or_ambiguity",
+          "reference": {
+            "memory_id": 4
+          }
+        },
+        {
+          "reason": "relevance_or_ambiguity",
+          "reference": {
+            "memory_id": 3
+          }
+        }
+      ],
+      "excluded_count": 5,
+      "unit": "serialized_utf8_bytes_not_tokens"
+    },
+    "degraded_reasons": [
+      "structured_enrichment_incomplete"
+    ],
+    "evidence_status": "sufficiency_not_verified",
+    "historical_or_conflicting": []
+  },
+  "probe": "错误当前结论（旧值 7 pm）",
+  "question": {
+    "case": "lme_59524333",
+    "id": "q"
+  },
+  "side": "old",
+  "source_ids": {
+    "s1_t1": "83715-1790753231159552000-29",
+    "s1_t2": "83715-1790753231205711000-68",
+    "s1_t3": "83715-1790753231257332000-115",
+    "s1_t4": "83715-1790753231326637000-166",
+    "s1_t5": "83715-1790753231411897000-226",
+    "s2_t1": "83715-1790753231495120000-265",
+    "s2_t2": "83715-1790753231596998000-308",
+    "s2_t3": "83715-1790753231727174000-346",
+    "s2_t4": "83715-1790753231873790000-422",
+    "s2_t5": "83715-1790753232020728000-502",
+    "s2_t6": "83715-1790753232103753000-539"
+  },
+  "targets": [
+    {
+      "item": "facts[0].sources",
+      "results": [
+        "auto_fail"
+      ]
+    },
+    {
+      "item": "forbidden[0]",
+      "results": [
+        "auto_fail"
+      ]
+    }
+  ]
+}

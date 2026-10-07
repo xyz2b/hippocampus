@@ -1,0 +1,45 @@
+{
+ "id": "w3_08_wrong_strength",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "偏好强度夸大",
+ "input": {
+  "text": "我有点喜欢爬山。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "likes",
+    "memory_type": "preference",
+    "value": "爬山",
+    "sentence": "我有点喜欢爬山。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": "strong"
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "strength"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

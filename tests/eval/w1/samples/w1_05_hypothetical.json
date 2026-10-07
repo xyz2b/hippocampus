@@ -1,0 +1,81 @@
+{
+ "id": "w1_05_hypothetical",
+ "contract": "w1.v1",
+ "label_status": "reviewed",
+ "focus": "假设不能冒充用户事实",
+ "input": {
+  "text": "如果我以后去深圳工作，我会考虑租房。",
+  "history": [],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "hypothetical",
+    "subject": "self",
+    "relation": [
+     "fact",
+     "works_at"
+    ],
+    "memory_type": "fact",
+    "value": "如果我以后去深圳工作，我会考虑租房。",
+    "sentence": "如果我以后去深圳工作，我会考虑租房。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [
+  "speech 为 user_statement",
+  "生成 works_at=深圳 的 user_statement 候选"
+ ],
+ "note": null
+}

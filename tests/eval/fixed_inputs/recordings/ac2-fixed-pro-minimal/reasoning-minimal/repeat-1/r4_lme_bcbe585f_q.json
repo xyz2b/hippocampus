@@ -1,0 +1,55 @@
+{
+  "id": "r4_lme_bcbe585f_q",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 1853,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "ac2-fixed-pro-minimal",
+      "output": {
+        "compute": {
+          "coverage": "complete",
+          "items": [],
+          "op": "elapsed",
+          "operands": [],
+          "unit": "week"
+        },
+        "facts": [],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": {\n    \"coverage\": \"complete\",\n    \"items\": [\n    ],\n    \"op\": \"elapsed\",\n    \"operands\": [\n    ],\n    \"unit\": \"week\"\n  },\n  \"facts\": [\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:226b5b0e424e5e9f3850f385227788f01afe04255f626c7d3d2700be371e0969",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4948,
+          "input_tokens_details": {
+            "cached_tokens": 4096
+          },
+          "output_tokens": 63,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5011
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4948,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 63,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5011
+      }
+    }
+  ]
+}

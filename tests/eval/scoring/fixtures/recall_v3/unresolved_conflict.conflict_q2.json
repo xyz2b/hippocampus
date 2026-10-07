@@ -1,0 +1,188 @@
+{
+  "case": "unresolved_conflict",
+  "note": "手写 recall.v3 夹具：按 contracts.md 3.4 表达本题的正确输出，用于演练适配与判分；不是任何实现的运行结果。source_ids 为假设的运行时 ID。",
+  "question": "conflict_q2",
+  "recall": {
+    "clarification": null,
+    "completeness": {
+      "enrichment_gaps": 0,
+      "pending_related_sources": 0,
+      "pending_updates": 0,
+      "plan_complete": true,
+      "retrieval_truncated": false
+    },
+    "computed": null,
+    "conflicts": [
+      {
+        "basis": [
+          {
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1414"
+            }
+          },
+          {
+            "quote": {
+              "text": "两份记录互相排斥，我还没有核实哪份正确"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1459"
+            }
+          }
+        ],
+        "conditions": [],
+        "id": "rel-1",
+        "kind": "conflict",
+        "members": [
+          1,
+          2
+        ],
+        "resolution": null,
+        "status": "open",
+        "times": []
+      }
+    ],
+    "current_message": {
+      "enrichment": "not_stored",
+      "memory_requests": [],
+      "said_on": "2026-09-28",
+      "sequence": null,
+      "source_id": null,
+      "text": "栖风读书机的屏幕到底是几英寸？"
+    },
+    "degraded_reasons": [],
+    "facts": [],
+    "history": [],
+    "raw": [],
+    "records": [
+      {
+        "candidate": {
+          "conditions": [],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "times": [],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            },
+            "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+          }
+        },
+        "ended": "not_ended",
+        "evidence": [
+          {
+            "quote": {
+              "text": "我已确认栖风读书机的屏幕尺寸是7英寸。"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1414"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [],
+        "id": 1,
+        "open_relations": [
+          "rel-1"
+        ],
+        "said_on": "2026-09-28",
+        "stored_status": "active",
+        "termination_reason": null,
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      },
+      {
+        "candidate": {
+          "conditions": [],
+          "kind": "assertion",
+          "memory_type": "fact",
+          "polarity": "affirm",
+          "relation": "fact",
+          "sentence": {
+            "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。"
+          },
+          "speech": "user_statement",
+          "strength": null,
+          "subject": {
+            "entity_id": "device_qifeng_reader"
+          },
+          "times": [],
+          "uncertainty": null,
+          "value": {
+            "kind": "text",
+            "quote": {
+              "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。"
+            },
+            "text": "栖风读书机这同一块屏幕的尺寸出现未解决的冲突：现有记录写7英寸，另一份资料写8英寸。"
+          }
+        },
+        "ended": "not_ended",
+        "evidence": [
+          {
+            "quote": {
+              "text": "另一份资料写8英寸"
+            },
+            "source": {
+              "kind": "stored",
+              "source_id": "src-1459"
+            }
+          }
+        ],
+        "format": "current",
+        "grade": "committed",
+        "history": [],
+        "id": 2,
+        "open_relations": [
+          "rel-1"
+        ],
+        "said_on": "2026-09-28",
+        "stored_status": "active",
+        "termination_reason": null,
+        "time_resolutions": [],
+        "update": {
+          "reasons": [],
+          "status": "judged"
+        }
+      }
+    ],
+    "request": {
+      "at": null,
+      "context": [],
+      "query": "栖风读书机的屏幕到底是几英寸？",
+      "request_id": "op-cq2",
+      "task_id": null
+    },
+    "semantic_judgment": "model",
+    "snapshot": {
+      "read_revision": 42,
+      "source_revision": 57
+    },
+    "status": "conflict",
+    "version": "recall.v3"
+  },
+  "source_ids": {
+    "conflict_s1": "src-1414",
+    "conflict_s2": "src-1459"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "w4_05_retract",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "retract",
+            "basis": [],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              40
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"retract\",\"basis\":[],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[40]}]}",
+      "request": "fnv1a64:dd949161b8b6755a",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1625,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 4844,
+        "output_tokens_details": {
+          "reasoning_tokens": 4784
+        },
+        "total_tokens": 6469
+      }
+    }
+  ]
+}

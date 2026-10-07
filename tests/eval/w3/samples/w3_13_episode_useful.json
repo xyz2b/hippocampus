@@ -1,0 +1,53 @@
+{
+ "id": "w3_13_episode_useful",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "有跨轮价值的经历",
+ "input": {
+  "text": "我今天第一次跑完了半程马拉松，用时2小时05分。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "fact",
+    "memory_type": "episode",
+    "value": "我今天第一次跑完了半程马拉松，用时2小时05分。",
+    "sentence": "我今天第一次跑完了半程马拉松，用时2小时05分。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "今天",
+      "interp": {
+       "kind": "relative",
+       "unit": "day",
+       "offset": 0
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "useful"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

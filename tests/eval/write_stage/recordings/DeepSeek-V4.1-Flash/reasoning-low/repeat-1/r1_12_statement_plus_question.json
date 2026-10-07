@@ -1,0 +1,76 @@
+{
+  "id": "r1_12_statement_plus_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 53671,
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "附近"
+            },
+            "resolved": true
+          },
+          {
+            "quote": {
+              "text": "好吃的"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "assertion_present",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "list",
+          "unit": null
+        },
+        "relation": "type",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "open"
+      },
+      "output_text": "{\"conditions\":[{\"quote\": \t{\"text\":\"附近\"},\"resolved\":true},{\"quote\": \t{\"text\":\"好吃的\"},\"resolved\":true}],\"current_evidence\":\"assertion_present\",\"need\":\"context_only\",\"plan\":{\"filter\":{\"relation\":null,\"time\":null},\"op\":\"list\",\"unit\":null},\"relation\": \t\"type\", \"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\": \t\"open\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:063c32998e7dde57290d63937e2b99b3227bbb6385d6e1e1d8f66499a2985f73",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 902,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 9395,
+          "output_tokens_details": {
+            "reasoning_tokens": 9296
+          },
+          "total_tokens": 10297
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 902,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 9395,
+        "output_tokens_details": {
+          "reasoning_tokens": 9296
+        },
+        "total_tokens": 10297
+      }
+    }
+  ]
+}

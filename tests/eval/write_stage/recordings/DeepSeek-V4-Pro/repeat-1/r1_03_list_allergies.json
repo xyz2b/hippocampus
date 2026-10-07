@@ -1,0 +1,61 @@
+{
+  "id": "r1_03_list_allergies",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "context_only",
+        "plan": {
+          "filter": {
+            "relation": "allergic_to",
+            "time": null
+          },
+          "op": "list",
+          "unit": null
+        },
+        "relation": "allergic_to",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"context_only\",\n  \"plan\": {\n    \"filter\": {\n      \"relation\": \"allergic_to\",\n      \"time\": null\n    },\n    \"op\": \"list\",\n    \"unit\": null\n  },\n  \"relation\": \"allergic_to\",\n  \"subject\": {\n    \"entity_id\": \"self\"\n  },\n  \"time\": null,\n  \"type\": \"single\"\n}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:c620b0007a92663b5a227369269089d43cd40714ae4a6632b1080ba80b2cc394",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2438,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1909,
+          "output_tokens_details": {
+            "reasoning_tokens": 1804
+          },
+          "total_tokens": 4347
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2438,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1909,
+        "output_tokens_details": {
+          "reasoning_tokens": 1804
+        },
+        "total_tokens": 4347
+      }
+    }
+  ]
+}

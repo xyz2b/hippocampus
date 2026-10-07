@@ -243,8 +243,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "潮汐展陈任务中的开机显示语言",
+            "sources": {
+              "all_of": [
+                "task_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "device_zheye_terminal",
+            "value_any": [
+              "西班牙语"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "source_out_of_scope",
+            "sources": [
+              "task_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "意大利语"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "task_q1",
       "query": "折页导航终端开机应显示哪种语言？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -312,8 +355,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "高原路演任务中的开机显示语言",
+            "sources": {
+              "all_of": [
+                "task_s2"
+              ],
+              "any_of": []
+            },
+            "subject": "device_zheye_terminal",
+            "value_any": [
+              "意大利语"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "source_out_of_scope",
+            "sources": [
+              "task_s1"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "西班牙语"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "task_q2",
       "query": "折页导航终端开机应显示哪种语言？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",
@@ -381,8 +467,52 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "task_q3 问法暗示意大利语，正确回答是不沿用、应为西班牙语。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "潮汐展陈任务中的开机显示语言",
+            "sources": {
+              "all_of": [
+                "task_s1"
+              ],
+              "any_of": []
+            },
+            "subject": "device_zheye_terminal",
+            "value_any": [
+              "西班牙语"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "source_out_of_scope",
+            "sources": [
+              "task_s2"
+            ]
+          },
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "意大利语"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "task_q3",
       "query": "继续潮汐展陈任务的展台演示配置：折页导航终端应沿用意大利语作为开机显示语言吗？",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

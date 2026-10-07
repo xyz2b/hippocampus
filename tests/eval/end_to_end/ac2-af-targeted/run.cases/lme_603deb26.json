@@ -1,0 +1,3583 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 3,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 232870,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3801,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 15193,
+        "output_tokens_details": {
+          "reasoning_tokens": 14444
+        },
+        "total_tokens": 18994
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 3558,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2475,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 195,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2670
+      }
+    },
+    {
+      "elapsed_ms": 5,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 95908,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3961,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6051,
+        "output_tokens_details": {
+          "reasoning_tokens": 5913
+        },
+        "total_tokens": 10012
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 1846,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2187,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 80,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2267
+      }
+    },
+    {
+      "elapsed_ms": 65709,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 65698,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3023,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 3110,
+        "output_tokens_details": {
+          "reasoning_tokens": 2928
+        },
+        "total_tokens": 6133
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 183092,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4203,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 12230,
+        "output_tokens_details": {
+          "reasoning_tokens": 11881
+        },
+        "total_tokens": 16433
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2827,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2662,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 111,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2773
+      }
+    },
+    {
+      "elapsed_ms": 50653,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 50638,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3402,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3405,
+        "output_tokens_details": {
+          "reasoning_tokens": 3169
+        },
+        "total_tokens": 6807
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 139530,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4373,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9721,
+        "output_tokens_details": {
+          "reasoning_tokens": 9354
+        },
+        "total_tokens": 14094
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2785,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2716,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 117,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2833
+      }
+    },
+    {
+      "elapsed_ms": 57729,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 57711,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4456,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3884,
+        "output_tokens_details": {
+          "reasoning_tokens": 3681
+        },
+        "total_tokens": 8340
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 123939,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4475,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 10688,
+        "output_tokens_details": {
+          "reasoning_tokens": 10465
+        },
+        "total_tokens": 15163
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2593,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2808,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 117,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2925
+      }
+    },
+    {
+      "elapsed_ms": 56199,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 56181,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4008,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3791,
+        "output_tokens_details": {
+          "reasoning_tokens": 3592
+        },
+        "total_tokens": 7799
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 95444,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4611,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6412,
+        "output_tokens_details": {
+          "reasoning_tokens": 6181
+        },
+        "total_tokens": 11023
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2074,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2949,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 73,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3022
+      }
+    },
+    {
+      "elapsed_ms": 36602,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 36581,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3721,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 2484,
+        "output_tokens_details": {
+          "reasoning_tokens": 2267
+        },
+        "total_tokens": 6205
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 59942,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4697,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3736,
+        "output_tokens_details": {
+          "reasoning_tokens": 3630
+        },
+        "total_tokens": 8433
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t2",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2202,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2899,
+        "input_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "output_tokens": 78,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2977
+      }
+    },
+    {
+      "elapsed_ms": 3,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 75561,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4769,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 4732,
+        "output_tokens_details": {
+          "reasoning_tokens": 4559
+        },
+        "total_tokens": 9501
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2023,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3030,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 80,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3110
+      }
+    },
+    {
+      "elapsed_ms": 10422,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 10400,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4596,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 629,
+        "output_tokens_details": {
+          "reasoning_tokens": 522
+        },
+        "total_tokens": 5225
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 258810,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4975,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 17613,
+        "output_tokens_details": {
+          "reasoning_tokens": 17109
+        },
+        "total_tokens": 22588
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 3554,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3630,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 152,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3782
+      }
+    },
+    {
+      "elapsed_ms": 79650,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 79627,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5723,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5486,
+        "output_tokens_details": {
+          "reasoning_tokens": 5075
+        },
+        "total_tokens": 11209
+      }
+    },
+    {
+      "elapsed_ms": 116,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 141976,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5135,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9648,
+        "output_tokens_details": {
+          "reasoning_tokens": 9520
+        },
+        "total_tokens": 14783
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2259,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3351,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 76,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3427
+      }
+    },
+    {
+      "elapsed_ms": 14770,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 14748,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3826,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 894,
+        "output_tokens_details": {
+          "reasoning_tokens": 787
+        },
+        "total_tokens": 4720
+      }
+    },
+    {
+      "elapsed_ms": 3,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t6",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 258622,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 5327,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 17711,
+        "output_tokens_details": {
+          "reasoning_tokens": 17000
+        },
+        "total_tokens": 23038
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t6",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 4266,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4252,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 253,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4505
+      }
+    },
+    {
+      "elapsed_ms": 156884,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s2_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 156860,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 8458,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 11621,
+        "output_tokens_details": {
+          "reasoning_tokens": 11068
+        },
+        "total_tokens": 20079
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "replay",
+      "reason": null,
+      "recorded_elapsed_ms": 2384,
+      "response_status": "completed",
+      "sends": 0,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2369,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 113,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2482
+      }
+    },
+    {
+      "elapsed_ms": 135703,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 135676,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 8776,
+        "input_tokens_details": {
+          "cached_tokens": 4096
+        },
+        "output_tokens": 9247,
+        "output_tokens_details": {
+          "reasoning_tokens": 8854
+        },
+        "total_tokens": 18023
+      }
+    }
+  ],
+  "case": "lme_603deb26",
+  "elapsed_ms": 677349,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377727844000-57",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377727844000-57",
+            "duration_ms": 23,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377755789000-70",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377755789000-70",
+            "duration_ms": 6,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377686252000-40",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"question\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 1,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": 3,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212377686252000-40",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212377957955000-110",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212377957955000-110",
+            "duration_ms": 23,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378008019000-119",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378008019000-119",
+            "duration_ms": 11,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378073069000-125",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212378073069000-125",
+            "duration_ms": 66194,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212377867328000-102",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212377867328000-102",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212444406356000-226",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212444406356000-226",
+            "duration_ms": 20,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212444450283000-227",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212444450283000-227",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212444527602000-228",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212444527602000-228",
+            "duration_ms": 51148,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212444340857000-224",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 4,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212444340857000-224",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212495903400000-238",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212495903400000-238",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212495952675000-239",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212495952675000-239",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212496058951000-240",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212496058951000-240",
+            "duration_ms": 58233,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212495806602000-236",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": null,
+                "reasons": [
+                  "candidate_rejected:subject_not_found"
+                ],
+                "status": "rejected",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212495806602000-236",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212554520244000-261",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212554520244000-261",
+            "duration_ms": 12,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212554575779000-262",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212554575779000-262",
+            "duration_ms": 3,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212554690335000-263",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212554690335000-263",
+            "duration_ms": 56734,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212554398798000-259",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212554398798000-259",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212611745402000-279",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212611745402000-279",
+            "duration_ms": 10,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212611807937000-280",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212611807937000-280",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212611953079000-281",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212611953079000-281",
+            "duration_ms": 37358,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212611594433000-277",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 7,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212611594433000-277",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212649715876000-301",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212649715876000-301",
+            "duration_ms": 14,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212649794369000-302",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212649794369000-302",
+            "duration_ms": 9,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212649529988000-299",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "unresolved_subject"
+                ],
+                "status": "unresolved",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212649529988000-299",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212650239186000-306",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212650239186000-306",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212650321841000-307",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212650321841000-307",
+            "duration_ms": 12,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212650503527000-308",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212650503527000-308",
+            "duration_ms": 10985,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212650043867000-304",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212650043867000-304",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212661888491000-312",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212661888491000-312",
+            "duration_ms": 23,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212661988184000-313",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212661988184000-313",
+            "duration_ms": 13,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212662195386000-314",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212662195386000-314",
+            "duration_ms": 80225,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212661674404000-310",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 8,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 7,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212661674404000-310",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212743063523000-335",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743063523000-335",
+            "duration_ms": 131,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743289446000-337",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743289446000-337",
+            "duration_ms": 8,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743524354000-338",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212743524354000-338",
+            "duration_ms": 15366,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212742794798000-333",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 9,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "55832-1791212742794798000-333",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s2_t6",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212759508546000-342",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212759508546000-342",
+            "duration_ms": 23,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212759631897000-343",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212759631897000-343",
+            "duration_ms": 6,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212759896350000-344",
+            "stage": "w4_v3",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212759896350000-344",
+            "duration_ms": 157516,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "55832-1791212759219858000-340",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 10,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              },
+              {
+                "index": 2,
+                "memory_id": 11,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": 2,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 4,
+                "memory_id": 7,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "55832-1791212759219858000-340",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1703824860,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "55832-1791212918223577000-347",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212918223577000-347",
+            "duration_ms": 4,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212918395831000-348",
+            "stage": "r4_v3",
+            "timeout_ms": 240000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "55832-1791212918395831000-348",
+            "duration_ms": 136444,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "R4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 7,
+          "pending_updates": 0,
+          "plan_complete": true,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-12-29",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many times have I tried making a Negroni at home since my friend Emma showed me how to make it?"
+        },
+        "degraded_reasons": [],
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [
+              {
+                "quote": {
+                  "text": "since my friend Emma showed me how to make it"
+                },
+                "resolved": false
+              }
+            ],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've also been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212661674404000-310"
+                }
+              },
+              {
+                "quote": {
+                  "text": "By the way, speaking of gin, I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212759219858000-340"
+                }
+              }
+            ],
+            "grade": "uncommitted",
+            "polarity": "affirm",
+            "record_ids": [
+              7
+            ],
+            "statement": "The user has tried making a Negroni at home 10 times since their friend Emma showed them how to make it.",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "since my friend Emma showed me how to make it"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm looking for some inspiration for new cocktails to try. Do you have any recommendations for summer drinks that incorporate fresh herbs from my garden? By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+            },
+            "said_on": "2023-08-11",
+            "sequence": 1,
+            "source_id": "55832-1791212377686252000-40"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "That's really interesting, I'll definitely try out some of those bitter liqueurs and see how they change the flavor profile of my Negroni. I've been meaning to experiment with a White Negroni, actually. I've heard it's a great way to showcase the gin and bitter liqueur. Do you have a good recipe for a White Negroni, or any tips on how to balance the flavors?"
+            },
+            "said_on": "2023-08-11",
+            "sequence": 4,
+            "source_id": "55832-1791212495806602000-236"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also curious about using different types of citrus in my cocktails. I've been experimenting with grapefruit and lemon, but I want to try out some other options. Do you have any recommendations for citrus fruits that pair well with gin and lavender?"
+            },
+            "said_on": "2023-08-11",
+            "sequence": 5,
+            "source_id": "55832-1791212554398798000-259"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "These recipes sound amazing! I'm definitely going to try the Lavender Gin Fizz and Grapefruit Basil Martini. Do you have any recommendations for infusing spirits with flavors like lavender or grapefruit?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 7,
+            "source_id": "55832-1791212649529988000-299"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of experimenting with infusing gin with cucumber and mint, like the flavors in a Cucumber Gimlet. Do you have any tips on how to do that?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 8,
+            "source_id": "55832-1791212650043867000-304"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "That's really helpful! I think I'll start with infusing gin with cucumber and mint separately to see how the flavors develop. By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit. I've also been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other classic cocktails that I should try making?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 9,
+            "source_id": "55832-1791212661674404000-310"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm excited to try out the Bee's Knees with my homemade honey syrup. I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying. By the way, speaking of gin, I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it. Do you have any recommendations for other gin-based cocktails that I should try making?"
+            },
+            "said_on": "2023-11-30",
+            "sequence": 11,
+            "source_id": "55832-1791212759219858000-340"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "since my friend Emma showed me how to make it"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "text": "By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212611594433000-277"
+                }
+              },
+              {
+                "quote": {
+                  "text": "I've also been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212661674404000-310"
+                }
+              },
+              {
+                "quote": {
+                  "text": "By the way, speaking of gin, I've tried making a Negroni at home 10 times now since my friend Emma showed me how to make it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212759219858000-340"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [
+              5
+            ],
+            "id": 7,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right."
+                },
+                "text": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right."
+              }
+            },
+            "ended": "end_unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've tried making it at home for 5 times now since Emma teached me how to make it, and I'm getting closer to getting it just right."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212444340857000-224"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "superseded",
+            "termination_reason": "StateChanged",
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Hendrick's gin"
+                },
+                "text": "Hendrick's gin"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686252000-40"
+                }
+              },
+              {
+                "quote": {
+                  "text": "By the way, speaking of gin, I've been experimenting with different Negroni recipes at home, and I've found that the Hendrick's gin really brings out the flavors."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377867328000-102"
+                }
+              },
+              {
+                "quote": {
+                  "text": "I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212759219858000-340"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'll also have to give the Bee's Knees a shot, since I love the combination of gin and honey."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the combination of gin and honey"
+                },
+                "text": "the combination of gin and honey"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'll also have to give the Bee's Knees a shot, since I love the combination of gin and honey."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212742794798000-333"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 9,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "my Negroni recipe"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Hendrick's gin and Carpano Antica vermouth"
+                },
+                "text": "Hendrick's gin and Carpano Antica vermouth"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, speaking of experimenting with cocktails, I've been trying to perfect my Negroni recipe and I've found that using Hendrick's gin and Carpano Antica vermouth really brings out the flavors."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212444340857000-224"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I'm excited to try out the Bee's Knees with my homemade honey syrup."
+              },
+              "speech": "user_statement",
+              "strength": "strong",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "the Bee's Knees"
+                },
+                "text": "the Bee's Knees"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I'm excited to try out the Bee's Knees with my homemade honey syrup."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212759219858000-340"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 10,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "a bottle of Hendrick's gin"
+                },
+                "text": "a bottle of Hendrick's gin"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've also been experimenting with different types of gin, and I recently picked up a bottle of Hendrick's gin, which I'm really enjoying."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212759219858000-340"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 11,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "episode",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "unknown"
+                  },
+                  "quote": {
+                    "text": "recently"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit."
+                },
+                "text": "By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, speaking of gin, I recently hosted a dinner party and served a Cranberry Sparkler, which was a huge hit."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212661674404000-310"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 8,
+            "open_relations": [],
+            "said_on": "2023-11-30",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": null,
+                "precision": "unknown",
+                "start": null,
+                "status": "unknown"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've been experimenting with grapefruit and lemon, but I want to try out some other options."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "grapefruit and lemon"
+                },
+                "text": "grapefruit and lemon"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been experimenting with grapefruit and lemon, but I want to try out some other options."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212554398798000-259"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "different gin brands"
+                },
+                "text": "different gin brands"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686252000-40"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "owns",
+              "sentence": {
+                "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [
+                {
+                  "anchor": "said_on",
+                  "interp": {
+                    "kind": "relative",
+                    "offset": -1,
+                    "unit": "week"
+                  },
+                  "quote": {
+                    "text": "last week"
+                  },
+                  "role": "event"
+                }
+              ],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "Hendrick's gin"
+                },
+                "text": "Hendrick's gin"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "By the way, I've been experimenting with different gin brands, and I've really been enjoying the Hendrick's gin I picked up last week."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "55832-1791212377686252000-40"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-08-11",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [
+              {
+                "end_exclusive": 1691164800,
+                "precision": "day",
+                "start": 1691078400,
+                "status": "resolved"
+              }
+            ],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          }
+        ],
+        "request": {
+          "at": 1703824860,
+          "context": [],
+          "query": "How many times have I tried making a Negroni at home since my friend Emma showed me how to make it?",
+          "request_id": "eval-lme_603deb26-q",
+          "task_id": null
+        },
+        "semantic_judgment": "model",
+        "snapshot": {
+          "read_revision": 16,
+          "source_revision": 11
+        },
+        "status": "answered",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "55832-1791212377686252000-40",
+        "s1_t2": "55832-1791212377867328000-102",
+        "s1_t3": "55832-1791212444340857000-224",
+        "s1_t4": "55832-1791212495806602000-236",
+        "s1_t5": "55832-1791212554398798000-259",
+        "s2_t1": "55832-1791212611594433000-277",
+        "s2_t2": "55832-1791212649529988000-299",
+        "s2_t3": "55832-1791212650043867000-304",
+        "s2_t4": "55832-1791212661674404000-310",
+        "s2_t5": "55832-1791212742794798000-333",
+        "s2_t6": "55832-1791212759219858000-340"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s2_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

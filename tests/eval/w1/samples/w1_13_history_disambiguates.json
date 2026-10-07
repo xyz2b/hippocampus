@@ -1,0 +1,92 @@
+{
+ "id": "w1_13_history_disambiguates",
+ "contract": "w1.v1",
+ "label_status": "reviewed",
+ "focus": "历史明确点名时可绑定指代",
+ "input": {
+  "text": "他上周辞职了。",
+  "history": [
+   "我同事老王最近压力很大。"
+  ],
+  "said_on": "2026-09-20",
+  "entities": [
+   {
+    "id": "self",
+    "names": [
+     "我"
+    ]
+   },
+   {
+    "id": "e-daughter",
+    "names": [
+     "女儿",
+     "小雨"
+    ]
+   },
+   {
+    "id": "e-laowang",
+    "names": [
+     "老王"
+    ]
+   },
+   {
+    "id": "e-mom",
+    "names": [
+     "我妈",
+     "妈妈"
+    ]
+   }
+  ],
+  "relations": [
+   "lives_in",
+   "works_at",
+   "job_title",
+   "response_language",
+   "code_example_language",
+   "response_style",
+   "likes",
+   "avoids",
+   "allergic_to",
+   "owns",
+   "uses",
+   "visited",
+   "fact"
+  ],
+  "task_id": null
+ },
+ "expect": {
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "e-laowang",
+    "relation": "fact",
+    "memory_type": [
+     "fact",
+     "episode"
+    ],
+    "value": "他上周辞职了。",
+    "sentence": "他上周辞职了。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "上周",
+      "interp": {
+       "kind": "relative",
+       "unit": "week",
+       "offset": -1
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "memory_requests": []
+ },
+ "must_not": [],
+ "note": "用户裁定（2026-10-02）：历史中明确点名的对象可作为绑定依据；仅凭目录唯一性仍不得绑定（见 w1_12）。"
+}

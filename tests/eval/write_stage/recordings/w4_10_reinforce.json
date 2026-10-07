@@ -1,0 +1,59 @@
+{
+  "id": "w4_10_reinforce",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "reinforce",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我还是喜欢喝咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-320"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我喜欢喝咖啡。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-111"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              31
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"reinforce\",\"basis\":[{\"quote\":{\"text\":\"我还是喜欢喝咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-320\"}},{\"quote\":{\"text\":\"我喜欢喝咖啡。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-111\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[31]}]}",
+      "request": "fnv1a64:16c35660ff4f3a55",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1524,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 6202,
+        "output_tokens_details": {
+          "reasoning_tokens": 6095
+        },
+        "total_tokens": 7726
+      }
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "id": "r4_09_legacy_gap",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2956,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "legacy"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "9"
+                }
+              }
+            ],
+            "polarity": "unknown",
+            "record_ids": [
+              9
+            ],
+            "statement": "记录 9 的值为 legacy，但缺少可验证来源与限定信息，无法确认用户养过什么宠物。",
+            "strength": "unknown",
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [\n    {\n    \"applies\": \"unknown\",\n    \"conditions\": [],\n    \"current\": \"unknown\",\n    \"evidence\": [\n    {\n    \"quote\": {\n    \"text\": \"legacy\"\n    },\n    \"source\": {\n    \"kind\": \"stored\",\n    \"source_id\": \"9\"\n    }\n    }\n    ],\n    \"polarity\": \"unknown\",\n    \"record_ids\": [\n    9\n    ],\n    \"statement\": \"记录 9 的值为 legacy，但缺少可验证来源与限定信息，无法确认用户养过什么宠物。\",\n    \"strength\": \"unknown\",\n    \"supersedes_record_ids\": [],\n    \"times\": [],\n    \"uncertainty\": null\n    }\n  ],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:559c80517bfb5f4eb05e2c851f1ff8293d86e0b7116762b4564c345f3cc495a9",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3447,
+          "input_tokens_details": {
+            "cached_tokens": 2816
+          },
+          "output_tokens": 177,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3624
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3447,
+        "input_tokens_details": {
+          "cached_tokens": 2816
+        },
+        "output_tokens": 177,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3624
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 1874,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:a5c9a8ca7ea35db135fb4ec97cc7baf27db957300a080b85796348dbc743b4ff",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4363,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 22,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4385
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4363,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4385
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 1884,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\n  \"compute\": null,\n  \"facts\": [],\n  \"verdict\": \"insufficient\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:59b6c2bd482e1d35430bac0765487cfeeaa2fff302713a89e5c259c594348cc0",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4885,
+          "input_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "output_tokens": 22,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4907
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 4885,
+        "input_tokens_details": {
+          "cached_tokens": 4352
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4907
+      }
+    }
+  ]
+}

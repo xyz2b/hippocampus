@@ -1,0 +1,86 @@
+{
+  "id": "r1_11_condition_hint",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "健身房"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": "visited",
+            "time": {
+              "anchor": "said_on",
+              "interp": {
+                "kind": "recurring"
+              },
+              "quote": {
+                "text": "周二"
+              },
+              "role": "event"
+            }
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "visited",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "recurring"
+          },
+          "quote": {
+            "text": "周二"
+          },
+          "role": "event"
+        },
+        "type": "temporal"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"健身房\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":\"visited\",\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"recurring\"},\"quote\":{\"text\":\"周二\"},\"role\":\"event\"}},\"op\":\"lookup\",\"unit\":null},\"relation\":\"visited\",\"subject\":{\"entity_id\":\"self\"},\"time\":{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"recurring\"},\"quote\":{\"text\":\"周二\"},\"role\":\"event\"},\"type\":\"temporal\"}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:873c04729bbb6ebc62fca4b5b8424c2e79266471114c7703db8e86ef1c164136",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2441,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 9277,
+          "output_tokens_details": {
+            "reasoning_tokens": 9153
+          },
+          "total_tokens": 11718
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2441,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 9277,
+        "output_tokens_details": {
+          "reasoning_tokens": 9153
+        },
+        "total_tokens": 11718
+      }
+    }
+  ]
+}

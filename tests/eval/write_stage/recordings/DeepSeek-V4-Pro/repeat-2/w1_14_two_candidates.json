@@ -1,0 +1,209 @@
+{
+  "id": "w1_14_two_candidates",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我住在上海"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "上海"
+              },
+              "text": "上海"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "job_title",
+            "sentence": {
+              "text": "在一家银行做产品经理"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "产品经理"
+              },
+              "text": "产品经理"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我住在上海\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"上海\"},\"text\":\"上海\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"job_title\",\"sentence\":{\"text\":\"在一家银行做产品经理\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"产品经理\"},\"text\":\"产品经理\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:39b39cfcc89a0f5b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3541,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3629,
+          "output_tokens_details": {
+            "reasoning_tokens": 3443
+          },
+          "total_tokens": 7170
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3541,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3629,
+        "output_tokens_details": {
+          "reasoning_tokens": 3443
+        },
+        "total_tokens": 7170
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "lives_in",
+            "sentence": {
+              "text": "我住在上海，在一家银行做产品经理。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "上海"
+              },
+              "text": "上海"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "works_at",
+            "sentence": {
+              "text": "我住在上海，在一家银行做产品经理。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "一家银行"
+              },
+              "text": "一家银行"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "job_title",
+            "sentence": {
+              "text": "我住在上海，在一家银行做产品经理。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "产品经理"
+              },
+              "text": "产品经理"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"lives_in\",\"sentence\":{\"text\":\"我住在上海，在一家银行做产品经理。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"上海\"},\"text\":\"上海\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"works_at\",\"sentence\":{\"text\":\"我住在上海，在一家银行做产品经理。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"一家银行\"},\"text\":\"一家银行\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"job_title\",\"sentence\":{\"text\":\"我住在上海，在一家银行做产品经理。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"产品经理\"},\"text\":\"产品经理\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:ba433426464abef1",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3721,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1565,
+          "output_tokens_details": {
+            "reasoning_tokens": 1272
+          },
+          "total_tokens": 5286
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3721,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1565,
+        "output_tokens_details": {
+          "reasoning_tokens": 1272
+        },
+        "total_tokens": 5286
+      }
+    }
+  ]
+}

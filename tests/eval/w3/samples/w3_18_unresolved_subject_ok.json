@@ -1,0 +1,55 @@
+{
+ "id": "w3_18_unresolved_subject_ok",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "如实保留的未解析主体应 supported",
+ "input": {
+  "text": "他上周辞职了。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": {
+     "unresolved": "他"
+    },
+    "relation": "fact",
+    "memory_type": "fact",
+    "value": "他上周辞职了。",
+    "sentence": "他上周辞职了。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [
+     {
+      "role": "event",
+      "quote": "上周",
+      "interp": {
+       "kind": "relative",
+       "unit": "week",
+       "offset": -1
+      }
+     }
+    ],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

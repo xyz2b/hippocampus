@@ -1121,8 +1121,67 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "annotator_note": "知识更新：4 部（s1_t3）→ 5 部（s2_t1，同句 12 部是全部电影）。 AF3：给出正确数字且保留未证实前提的适用性时，answer 或 insufficient 均接受；事实期望不变。 AF3 补充：滚动窗口内前提未证实时 current=unknown 亦接受。",
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "conditions": [
+              {
+                "bound_by_query": true,
+                "text": "in the last 3 months"
+              }
+            ],
+            "current": [
+              "yes",
+              "unknown"
+            ],
+            "polarity": "affirm",
+            "relation_note": "最近三个月看过的 MCU 电影数（最新）",
+            "sources": {
+              "all_of": [
+                "s2_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "5",
+              "5 MCU films"
+            ]
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "value_as_current",
+            "value_any": [
+              "4",
+              "4 MCU films"
+            ]
+          },
+          {
+            "kind": "wrong_value",
+            "value_any": [
+              "12",
+              "12 films"
+            ]
+          }
+        ],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": [
+          "answer",
+          "insufficient"
+        ]
+      },
       "id": "q",
       "query": "How many MCU films did I watch in the last 3 months?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

@@ -1,0 +1,159 @@
+{
+  "id": "w1_17_unknown_time",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "owns",
+            "sentence": {
+              "text": "我以前养过一只猫。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "以前"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "一只猫"
+              },
+              "text": "一只猫"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"owns\",\"sentence\":{\"text\":\"我以前养过一只猫。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"以前\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"一只猫\"},\"text\":\"一只猫\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:63e598cffa0083f6",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3536,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 1057,
+          "output_tokens_details": {
+            "reasoning_tokens": 933
+          },
+          "total_tokens": 4593
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3536,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1057,
+        "output_tokens_details": {
+          "reasoning_tokens": 933
+        },
+        "total_tokens": 4593
+      }
+    },
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "owns",
+            "sentence": {
+              "text": "我以前养过一只猫。"
+            },
+            "speech": "user_statement",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [
+              {
+                "anchor": "said_on",
+                "interp": {
+                  "kind": "unknown"
+                },
+                "quote": {
+                  "text": "以前"
+                },
+                "role": "event"
+              }
+            ],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "一只猫"
+              },
+              "text": "一只猫"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"owns\",\"sentence\":{\"text\":\"我以前养过一只猫。\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[{\"anchor\":\"said_on\",\"interp\":{\"kind\":\"unknown\"},\"quote\":{\"text\":\"以前\"},\"role\":\"event\"}],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"一只猫\"},\"text\":\"一只猫\"}}],\"memory_requests\":[]}",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "fnv1a64:2feeca5663e9f8dc",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3716,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3690,
+          "output_tokens_details": {
+            "reasoning_tokens": 3566
+          },
+          "total_tokens": 7406
+        }
+      },
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 3716,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3690,
+        "output_tokens_details": {
+          "reasoning_tokens": 3566
+        },
+        "total_tokens": 7406
+      }
+    }
+  ]
+}

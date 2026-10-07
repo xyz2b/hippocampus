@@ -1,0 +1,351 @@
+"""Report tests use labelled adapter fixtures, never claim they are model recordings."""
+import copy
+import json
+import pathlib
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import compare
+import trial
+
+
+class EndToEndReport(unittest.TestCase):
+    def test_targeted_merge_marks_sources_and_never_falls_back_for_missing_target(self):
+        base = self.document()
+        base["real_calls"] = 583
+        key = "person_sketch_pen/person_q4"
+        fresh = copy.deepcopy(base)
+        fresh["real_calls"] = 2
+        fresh["cases"][0]["steps"][0]["result"]["status"] = "insufficient"
+        merged = compare.merge_runs(base, fresh, [key], "AC2-original", "target-new")
+        report = compare.run(merged)
+        row = next(r for r in report["questions"] if r["question"] == key)
+        self.assertEqual(row["result_source"], {"kind":"targeted", "run":"target-new"})
+        self.assertEqual(row["new_view"]["status"], "insufficient")
+        self.assertEqual(report["execution"]["real_calls"], 2)
+        self.assertIn("1题来自定点运行", compare.render(report))
+        self.assertEqual(sum(v["kind"] == "ac2" for v in merged["result_sources"].values()), 62)
+        missing = compare.run(compare.merge_runs(base, {"cases":[], "real_calls":0}, [key]))
+        self.assertEqual(next(r for r in missing["questions"] if r["question"] == key)["state"], "not_recorded")
+        self.assertEqual(base["cases"][0]["steps"][0]["result"]["status"], "answered")
+        with self.assertRaisesRegex(ValueError, "选择范围之外"):
+            compare.merge_runs(base, fresh, ["person_sketch_pen/person_q1"])
+
+    def test_merged_report_cannot_overwrite_existing_ac2_report(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            base = root / "base.json"
+            base.write_text(json.dumps(self.document()))
+            plan = root / "target-plan.json"
+            plan.write_text(json.dumps({"version":"eval.e2e.targeted@1", "questions":["person_sketch_pen/person_q4"]}))
+            output = root / "AC2-report"
+            output.with_suffix(".md").write_text("original AC2 report")
+            cli = subprocess.run([sys.executable, str(pathlib.Path(compare.__file__)), "--base-run", str(base),
+                "--target-plan", str(plan), "--output", str(output)], capture_output=True, text=True)
+            self.assertNotEqual(cli.returncode, 0)
+            self.assertIn("不覆盖已有报告", cli.stderr)
+            self.assertEqual(output.with_suffix(".md").read_text(), "original AC2 report")
+
+    def test_http_account_error_is_not_a_model_validation_failure(self):
+        doc = self.document()
+        case = doc["cases"][0]
+        case["calls"] = [{"operation": "recall:q", "stage": "R4", "origin": "replay",
+            "sends": 0, "elapsed_ms": 1, "http_status": 403,
+            "error": "AccountOverdueError", "response_status": None}]
+        report = compare.run(doc)
+        self.assertEqual(report["execution"]["failure_counts"], {"call_failure": 1})
+        self.assertEqual(report["execution"]["cases"][0]["calls"][0]["failure_category"], "call_failure")
+        self.assertIn("调用失败（非模型）：1", compare.render(report))
+        self.assertIn("AccountOverdueError", compare.render(report))
+    def test_empty_is_not_recorded_not_pass_or_model_failure(self):
+        report = compare.run()
+        self.assertEqual(report["not_recorded"], 63)
+        self.assertEqual(report["new_summary"]["questions"], 0)
+        self.assertEqual(report["new_summary"]["common"]["items"], 0)
+        self.assertEqual(report["reference"]["regressions"], [])
+        self.assertEqual(report["reference"]["summary"], compare.baseline.summarize(compare.baseline.run()))
+        self.assertEqual(report["absolute_summary"]["not_recorded"],63)
+        self.assertEqual(sum(report["absolute_summary"][s] for s in ("pass","fail","pending_review")),0)
+        self.assertIn("未录制", compare.render(report))
+
+    def document(self):
+        case, q, *_ = trial.resolve_question("person_sketch_pen", "person_q4")
+        fixture = trial.new_fixture(case["id"], q["id"])
+        raw = copy.deepcopy(fixture["recall"])
+        at = compare.trusted_question(q)["at"]
+        raw["request"]["at"] = at
+        return {"label": "adapter-fixture-only", "cases": [{"case": case["id"], "steps": [
+            {"step": "question", "question": q["id"], "state": "completed", "at": at,
+             "result": raw, "source_ids": fixture["source_ids"]}]}]}
+
+    def test_output_uses_common_adapter_and_same_denominator(self):
+        report = compare.run(self.document())
+        self.assertEqual(report["not_recorded"], 62)
+        row = next(r for r in report["questions"] if r["state"] == "completed")
+        ref = next(r for r in report["reference"]["questions"] if r["question"] == row["question"])
+        self.assertEqual(ref["old"]["common"]["denominator"], row["new"]["common"]["denominator"])
+        self.assertTrue(ref["transitions"])
+        self.assertEqual(row["new_view"]["adapter"], "recall_v3@1")
+        self.assertEqual(compare.trusted_question({"after": 2, "at": None})["at"],
+                         compare.CLOCK + 90)
+
+    def test_pass_to_fail_is_separate_and_time_binding_is_not_relaxed(self):
+        doc = self.document()
+        step = doc["cases"][0]["steps"][0]
+        step["result"]["status"] = "insufficient"
+        step["result"]["facts"] = []
+        report = compare.run(doc)
+        row = next(r for r in report["questions"] if r["state"] == "completed")
+        self.assertEqual(row["absolute"],"fail")
+        self.assertTrue(report["reference"]["regressions"])
+        step["at"] += 1
+        with self.assertRaisesRegex(ValueError, "trusted time"):
+            compare.run(doc)
+
+    def test_absolute_score_does_not_depend_on_reference_availability(self):
+        available = compare.run(self.document())
+        self.assertEqual(available["absolute_summary"]["pending_review"],1)
+        with patch.object(compare.baseline,"run",side_effect=FileNotFoundError("reference absent")):
+            absent = compare.run(self.document())
+        self.assertEqual(available["absolute_summary"],absent["absolute_summary"])
+        self.assertEqual(available["new_summary"],absent["new_summary"])
+        self.assertEqual(absent["reference"]["state"],"unavailable")
+        self.assertFalse(absent["reference"]["acceptance_gate"])
+        text=compare.render(available)
+        self.assertLess(text.index("逐题"),text.index("附录：0517000"))
+
+    def test_case_stage_metrics_keep_replay_cost_and_failures_separate(self):
+        doc=self.document()
+        doc.update(jobs=8,elapsed_ms=500,real_calls=2)
+        case=doc["cases"][0]
+        case["elapsed_ms"]=400
+        case["calls"]=[
+            {"operation":"write:m1","stage":"W1","origin":"live","sends":1,"elapsed_ms":21,
+             "recorded_elapsed_ms":20,"http_status":200,"response_status":"incomplete",
+             "incomplete_details":{"reason":"max_output_tokens"},"usage":{"output_tokens":4096}},
+            {"operation":"write:m1","stage":"W3","origin":"replay","sends":0,"elapsed_ms":1,
+             "recorded_elapsed_ms":22000,"http_status":429,"response_status":None,"error":"rate limit"},
+            {"operation":"write:m2","stage":"W4","origin":"live","sends":1,"elapsed_ms":22,
+             "recorded_elapsed_ms":22,"http_status":503,"response_status":None,"transport_error":"connection closed"},
+            {"operation":"recall:q","stage":"R1","origin":"not_recorded","sends":0,"elapsed_ms":0,
+             "reason":"额度耗尽（EVAL_RECORD）"},
+            {"operation":"recall:q","stage":"R4","origin":"replay","sends":0,"elapsed_ms":1,
+             "recorded_elapsed_ms":2000,"http_status":200,"response_status":"completed",
+             "usage":{"input_tokens":10,"output_tokens":20}},
+        ]
+        case["steps"].append({"step":"message","message":"m1","result":{"Err":"attempt_failed"}})
+        report=compare.run(doc)
+        metrics=report["execution"]["cases"][0]
+        self.assertEqual(sum(s["sends"] for s in metrics["stages"].values()),2)
+        self.assertEqual(metrics["stages"]["W3"]["elapsed_ms"],1)
+        self.assertEqual(metrics["stages"]["W3"]["recorded_elapsed_ms"],22000)
+        self.assertEqual(metrics["stages"]["W1"]["diagnostics"][0]["incomplete_details"]["reason"],"max_output_tokens")
+        self.assertEqual(metrics["stages"]["W4"]["diagnostics"][0]["transport_error"],"connection closed")
+        self.assertEqual(metrics["stages"]["R1"]["not_recorded"],1)
+        self.assertEqual(metrics["stages"]["R4"]["diagnostics"],[])
+        self.assertEqual(metrics["runtime_diagnostics"][0]["error"],"attempt_failed")
+        self.assertIn("max_output_tokens",compare.render(report))
+
+    def test_local_outcomes_do_not_follow_remote_completed_or_replay_latency(self):
+        doc = self.document()
+        doc["execution_mode"] = "replay"
+        case = doc["cases"][0]
+        case["calls"] = []
+        for index, outcome in enumerate(("timeout", "output_limit", "decode_failed", "validation_failed", "completed")):
+            mid = f"m{index}"
+            call_id = str(index)
+            events = [{"kind": "model_start", "data": {"stage": "w3_v1", "call_id": call_id, "timeout_ms": 360000}},
+                      {"kind": "model_end", "data": {"call_id": call_id,
+                       "local_outcome": outcome if index < 2 else "completed", "duration_ms": 1}}]
+            if index in (2, 3):
+                events.append({"kind": "model_check", "data": {"stage": "W3", "status": "failed",
+                               "phase": "decode" if index == 2 else "validate", "error": "specific rule"}})
+            case["steps"].append({"step": "message", "message": mid, "model_diagnostics": events})
+            case["calls"].append({"operation": f"write:{mid}", "stage": "W3", "origin": "replay",
+                "sends": 0, "elapsed_ms": 1, "recorded_elapsed_ms": 242154,
+                "http_status": 200, "response_status": "completed"})
+        report = compare.run(doc)
+        calls = report["execution"]["cases"][0]["calls"]
+        self.assertEqual([c["local_outcome"] for c in calls],
+                         ["timeout", "output_limit", "decode_failed", "validation_failed", "completed"])
+        self.assertEqual(len(report["execution"]["cases"][0]["stages"]["W3"]["diagnostics"]), 4)
+        text = compare.render(report)
+        self.assertIn("【回放】", text)
+        self.assertIn("不是线上成功率", text)
+        self.assertIn("specific rule", text)
+        self.assertIn("timeout", text)
+        case["steps"] = case["steps"][:1]
+        self.assertEqual(compare.execution(doc)["cases"][0]["calls"][0]["local_outcome"], "unknown")
+
+    def test_replay_cannot_overwrite_a_live_report(self):
+        with tempfile.TemporaryDirectory(prefix="eval-live-report-") as directory:
+            root = pathlib.Path(directory)
+            doc = self.document()
+            doc["execution_mode"] = "replay"
+            run_path = root / "run-replay.json"
+            run_path.write_text(json.dumps(doc))
+            prefix = root / "live-report"
+            before = json.dumps({"execution": {"real_calls": 552}})
+            prefix.with_suffix(".json").write_text(before)
+            prefix.with_suffix(".md").write_text("original live report")
+            cli = subprocess.run([sys.executable, str(pathlib.Path(compare.__file__)), "--run", str(run_path),
+                                  "--output", str(prefix)], capture_output=True, text=True)
+            self.assertNotEqual(cli.returncode, 0)
+            self.assertIn("不得覆盖 live", cli.stderr)
+            self.assertEqual(prefix.with_suffix(".json").read_text(), before)
+            self.assertEqual(prefix.with_suffix(".md").read_text(), "original live report")
+
+    def test_replay_cannot_attach_historical_send_counts(self):
+        with tempfile.TemporaryDirectory(prefix="eval-replay-binding-") as directory:
+            root = pathlib.Path(directory)
+            run_path = root / "run-replay.json"
+            doc = self.document()
+            doc["execution_mode"] = "replay"
+            run_path.write_text(json.dumps(doc))
+            log = root / "sends.json"
+            log.write_text(json.dumps({"version":"eval.e2e.sends@1", "run_id":"old-live",
+                "attempts":[{"id":0,"state":"recorded"}]}))
+            cli = subprocess.run([sys.executable, str(pathlib.Path(compare.__file__)), "--run", str(run_path),
+                                  "--send-log", str(log), "--output", str(root / "report")], capture_output=True, text=True)
+            self.assertNotEqual(cli.returncode, 0)
+            self.assertIn("回放不得绑定真实发送日志", cli.stderr)
+            self.assertFalse((root / "report.json").exists())
+
+    def test_interrupted_send_log_reports_counts_without_completed_run(self):
+        with tempfile.TemporaryDirectory(prefix="eval-send-report-") as directory:
+            root=pathlib.Path(directory)
+            (root/"runs").mkdir()
+            path=root/"runs"/"run-a.json"
+            attempts=[{"id":i,"case":"case","operation":"write:m1","position":i,
+                       "stage":"w1_v1","state":"started","request":f"fp-{i}"} for i in range(2)]
+            log={"version":"eval.e2e.sends@1","run_id":"run-a","attempts":attempts,
+                 "proxy_errors":[{"case":"case","error":"response write failed"}]}
+            path.write_text(json.dumps(log))
+            # First recording reached disk; its journal completion did not. The second
+            # row belongs to another send, so it cannot close this run's in-flight entry.
+            (root/"case.json").write_text(json.dumps({"operations":{"write:m1":[
+                {"request":"fp-0","send_run":"run-a","send_index":0},
+                {"request":"fp-1","send_run":"another-run","send_index":1}]}}))
+            recovered=compare.load_send_log(path)
+            self.assertEqual([a["state"] for a in recovered["attempts"]],["recorded","started"])
+            self.assertEqual(json.loads(path.read_text())["attempts"][0]["state"],"started")
+            prefix=root/"report"
+            cli=subprocess.run([sys.executable,str(pathlib.Path(compare.__file__)),"--send-log",str(path),
+                                "--output",str(prefix)],capture_output=True,text=True)
+            self.assertEqual(cli.returncode,0,cli.stderr)
+            report=json.loads(prefix.with_suffix(".json").read_text())
+            self.assertEqual(report["execution"]["real_calls"],2)
+            self.assertEqual(report["execution"]["recorded_calls"],1)
+            self.assertEqual(len(report["execution"]["uncompleted_calls"]),1)
+            self.assertEqual(report["absolute_summary"]["not_recorded"],63)
+            text=prefix.with_suffix(".md").read_text()
+            self.assertIn("未完成或未落盘 1",text)
+            self.assertIn("response write failed",text)
+            self.assertIn("不能证明远端收到",text)
+            run_path=root/"run.json"
+            run_path.write_text(json.dumps({"run_id":"another-run","cases":[]}))
+            wrong=subprocess.run([sys.executable,str(pathlib.Path(compare.__file__)),"--run",str(run_path),
+                                  "--send-log",str(path),"--output",str(prefix)],capture_output=True,text=True)
+            self.assertNotEqual(wrong.returncode,0)
+            self.assertIn("不是同一次运行",wrong.stderr)
+
+
+
+
+class TargetedPlan(unittest.TestCase):
+    def test_preparation_keeps_exact_prefixes_and_does_not_change_ac2(self):
+        import importlib.util
+        import hashlib
+        root = pathlib.Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location('targeted_plan', root / 'targeted_plan.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        source = module.SOURCE
+        def snapshot():
+            return {str(p.relative_to(source)):hashlib.sha256(p.read_bytes()).hexdigest()
+                    for p in source.rglob('*') if p.is_file()}
+        before = snapshot()
+        with tempfile.TemporaryDirectory() as temp:
+            destination = pathlib.Path(temp) / 'target'
+            manifest = module.prepare(source, destination)
+            self.assertEqual(manifest['retained'], dict(W1=43,W3=39,W4=0,R1=12,R4=0))
+            self.assertEqual(manifest['removed'], dict(W1=2,W3=2,W4=21,R1=4,R4=15))
+            self.assertEqual(manifest['call_ceiling'], 58)
+            self.assertEqual(len(list(destination.glob('*.json'))), 11)
+            for cid, case in manifest['cases'].items():
+                original = json.loads((source / (cid+'.json')).read_text())
+                prepared = json.loads((destination / (cid+'.json')).read_text())
+                for op, hashes in case['prefixes'].items():
+                    self.assertEqual(prepared['operations'][op], original['operations'][op][:len(hashes)])
+                    self.assertTrue(all(row['http_status']==200 for row in prepared['operations'][op]))
+            module.dry_run(destination, 58)
+            with self.assertRaisesRegex(ValueError, '整批拒绝'):
+                module.dry_run(destination, 57)
+            with self.assertRaisesRegex(ValueError, '新目录'):
+                module.prepare(source, destination)
+        self.assertEqual(snapshot(), before)
+
+    def test_late_completed_local_timeout_removes_dependency_suffix(self):
+        import importlib.util
+        root = pathlib.Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location('targeted_plan', root / 'targeted_plan.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        original = json.loads((module.SOURCE/'explicit_correction.json').read_text())
+        op = 'write:correction_s1'
+        doc = copy.deepcopy(original)
+        doc['operations'] = {op:doc['operations'][op]}
+        tail = copy.deepcopy(doc['operations'][op][-1])
+        tail['schema'] = 'w4_v2'
+        doc['operations'][op].append(tail)
+        with tempfile.TemporaryDirectory() as temp:
+            source = pathlib.Path(temp)/'source'
+            source.mkdir()
+            (source/'explicit_correction.json').write_text(json.dumps(doc))
+            (source/'run.json').write_text(json.dumps({'cases':[{'case':'explicit_correction','steps':[
+                {'step':'message','message':'correction_s1','model_diagnostics':[
+                    {'kind':'model_start','data':{'stage':'w3_v1','call_id':'late'}},
+                    {'kind':'model_end','data':{'call_id':'late','local_outcome':'timeout'}}]}]}]}))
+            destination = pathlib.Path(temp)/'out'
+            result = module.prepare(source,destination,['explicit_correction/correction_q1'])
+            self.assertEqual(result['removed']['W3'],1)
+            self.assertEqual(result['removed']['W4'],1)
+            self.assertEqual(result['removal_reasons']['本地timeout'],2)
+            kept=json.loads((destination/'explicit_correction.json').read_text())['operations'][op]
+            self.assertEqual(kept,original['operations'][op][:1])
+
+    def test_targeted_cases_preserve_upstream_messages_and_drop_other_questions(self):
+        import importlib.util
+        path = pathlib.Path(__file__).resolve().parent.parent / 'targeted_plan.py'
+        spec = importlib.util.spec_from_file_location('targeted_plan', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        cases = module.selected_cases(['explicit_correction/correction_q1'])
+        self.assertEqual(len(cases), 1)
+        self.assertEqual(len(cases[0]['messages']), 1)
+        self.assertEqual([q['id'] for q in cases[0]['questions']], ['correction_q1'])
+        with self.assertRaises(ValueError):
+            module.selected_cases(['explicit_correction/missing'])
+
+
+    def test_targeted_capacity_estimates_failed_usage_including_low_r4(self):
+        import importlib.util
+        root = pathlib.Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location('targeted_plan', root / 'targeted_plan.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        directory = root / 'end_to_end/ac2-pro-medium-pro-minimal-pro-minimal-r4-compute-low'
+        run = json.loads((directory / 'run.json').read_text())
+        result = module.plan(run, module.GROUPS['account'], directory)
+        self.assertEqual(result['failed']['R1'], 4)
+        self.assertEqual(result['rerecord_capacity']['W1'], 2)
+        self.assertEqual(result['rerecord_capacity']['W3'], 4)
+        self.assertGreater(result['estimate']['W1'][1], 0)
+        self.assertGreater(result['estimate']['R4'][1], 8000)
+
+
+if __name__ == "__main__":
+    unittest.main()

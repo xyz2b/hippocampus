@@ -1,0 +1,73 @@
+{
+  "id": "r4_17_elapsed_month_precision",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20260923215039-vxgxg",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "yes",
+            "conditions": [],
+            "current": "unknown",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我七月搬到成都的。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-24"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              24
+            ],
+            "statement": "我七月搬到成都的。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"yes\",\"conditions\":[],\"current\":\"unknown\",\"evidence\":[{\"quote\":{\"text\":\"我七月搬到成都的。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-24\"}}],\"polarity\":\"affirm\",\"record_ids\":[24],\"statement\":\"我七月搬到成都的。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:63641e2f455cffb8be2b862051da8105f2159daca55053a94e2ef5412780df1b",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 1388,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 10198,
+          "output_tokens_details": {
+            "reasoning_tokens": 10093
+          },
+          "total_tokens": 11586
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 1388,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 10198,
+        "output_tokens_details": {
+          "reasoning_tokens": 10093
+        },
+        "total_tokens": 11586
+      }
+    }
+  ]
+}

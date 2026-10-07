@@ -1,0 +1,70 @@
+{
+  "id": "r1_13_hypothetical_question",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 60499,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [
+          {
+            "quote": {
+              "text": "如果我搬去深圳"
+            },
+            "resolved": true
+          }
+        ],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "lives_in",
+        "subject": {
+          "entity_id": "self"
+        },
+        "time": null,
+        "type": "single"
+      },
+      "output_text": "{\"conditions\":[{\"quote\":{\"text\":\"如果我搬去深圳\"},\"resolved\":true}],\"current_evidence\":\"query_only\",\"need\":\"judge\",\"plan\":{\"filter\":{\"relation\":null,\"time\":null},\"op\":\"lookup\",\"unit\":null},\"relation\":\"lives_in\",\"subject\":{\"entity_id\":\"self\"},\"time\":null,\"type\":\"single\"}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 2,
+      "request": "sha256:b0b0eafa7a212e16cd606c2c165e0e8908b8e84cec76c160aa9689574315ec2d",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2365,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 3672,
+          "output_tokens_details": {
+            "reasoning_tokens": 3594
+          },
+          "total_tokens": 6037
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2365,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3672,
+        "output_tokens_details": {
+          "reasoning_tokens": 3594
+        },
+        "total_tokens": 6037
+      }
+    }
+  ]
+}

@@ -795,8 +795,40 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "新三星电视的尺寸",
+            "sources": {
+              "all_of": [
+                "s1_t3"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "55-inch",
+              "55 inch",
+              "55 inches"
+            ]
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "What size is my new Samsung TV?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

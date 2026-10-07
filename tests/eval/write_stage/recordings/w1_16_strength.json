@@ -1,0 +1,57 @@
+{
+  "id": "w1_16_strength",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "preference",
+            "polarity": "affirm",
+            "relation": "likes",
+            "sentence": {
+              "text": "我超级喜欢爬山。"
+            },
+            "speech": "user_statement",
+            "strength": "strong",
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": {
+              "quote": {
+                "text": "我超级喜欢爬山。"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "爬山"
+              },
+              "text": "爬山"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"preference\",\"polarity\":\"affirm\",\"relation\":\"likes\",\"sentence\":\t{\"text\":\"我超级喜欢爬山。\"},\"speech\":\"user_statement\",\"strength\":\"strong\",\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":\t{\"quote\":\t{\"text\":\"我超级喜欢爬山。\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":\t{\"text\":\"爬山\"},\"text\":\"爬山\"}\t}],\"memory_requests\":[]}",
+      "request": "fnv1a64:67cd13c2fd768f28",
+      "schema": "w1_v1",
+      "usage": {
+        "input_tokens": 1453,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 7353,
+        "output_tokens_details": {
+          "reasoning_tokens": 7230
+        },
+        "total_tokens": 8806
+      }
+    }
+  ]
+}

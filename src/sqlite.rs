@@ -30,21 +30,82 @@ pub struct PersistedMemoryState {
     pub last_applied_source_sequence: u64,
     #[serde(default)]
     pub source_less_barrier_sequence: u64,
+    /// W5 提交回执，按依赖组 ID 保存；重放同一组不产生变更。
+    #[serde(default)]
+    pub w5_receipts: BTreeMap<String, W5Receipt>,
+    /// 冲突关系，按关系 ID（`rel-<n>`，owner 内唯一）保存；与 Memory 生命周期分开。
+    #[serde(default)]
+    pub relations: BTreeMap<String, StoredRelation>,
+    /// 下一个关系编号；单调递增，不复用。分配与关系写入在同一事务。
+    #[serde(default)]
+    pub next_relation: u64,
+    /// W5 产生或重判过的记录的更新状态；没有条目表示未知（召回为 null），不是 judged。
+    /// 不放进 Memory：Memory 的序列化形状是冻结的 LegacyMemory。
+    #[serde(default)]
+    pub record_updates: BTreeMap<MemoryId, UpdateState>,
+    /// Set by an operation whose business change belongs to the source that is already the
+    /// last applied one (a later W5 group of the same source). Not persisted; without it the
+    /// change would count as source-less and invalidate that source's own running task.
+    #[serde(skip)]
+    pub(crate) source_attributed_change: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(default)]
 pub struct EnrichmentTask {
+    #[serde(skip_serializing_if = "is_zero_generation")]
+    pub generation: u64,
     pub processing_version: Option<String>,
     pub attempt_count: u32,
     pub attempt_id: Option<String>,
     pub lease_until: Option<i64>,
     pub claim_revision: Option<u64>,
     pub accepted_mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub round: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rejudge: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_sequence: Option<u64>,
+}
+
+fn is_zero_generation(value: &u64) -> bool {
+    *value == 0
+}
+
+/// Source controls are separate from model decisions and never rewrite USER text.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct SourceManagement {
+    pub provenance: Option<Value>,
+    pub time_anchor: Option<Value>,
+    pub confirmations: Vec<SubjectConfirmation>,
+    pub audits: Vec<Value>,
+    pub selection: Option<(u32, usize)>,
+}
+impl SourceManagement {
+    fn is_empty(&self) -> bool {
+        self == &Self::default()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SubjectConfirmation {
+    pub generation: u64,
+    pub candidate_index: usize,
+    pub candidate_identity: String,
+    pub original_subject: crate::contract::Subject,
+    pub entity_id: EntityId,
+    pub evidence: crate::contract::EvidenceRef,
+    pub evidence_binding: Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SourceRecord {
+    #[serde(default, skip_serializing_if = "SourceManagement::is_empty")]
+    pub management: SourceManagement,
     pub id: String,
     pub session_id: String,
     pub turn_id: String,
@@ -63,14 +124,48 @@ pub struct SourceRecord {
 }
 
 impl SourceRecord {
+    pub(crate) fn is_history_import(&self) -> bool {
+        self.management
+            .provenance
+            .as_ref()
+            .is_some_and(|p| p["kind"] == "history_import")
+    }
+
+    /// Explicit null remains unknown; reception is only a fallback for ordinary legacy sources.
+    pub(crate) fn said_on(&self, offset: i32) -> PersistenceResult<Option<String>> {
+        if let Some(anchor) = &self.management.time_anchor {
+            return match &anchor["said_on"] {
+                Value::Null => Ok(None),
+                Value::String(date) if crate::temporal::parse_iso_date(date).is_some() => {
+                    Ok(Some(date.clone()))
+                }
+                _ => Err("invalid source time anchor".into()),
+            };
+        }
+        if self.is_history_import() {
+            return Ok(None);
+        }
+        Ok(Some(
+            time::OffsetDateTime::from_unix_timestamp(self.observed_at)?
+                .to_offset(time::UtcOffset::from_whole_seconds(offset)?)
+                .date()
+                .to_string(),
+        ))
+    }
+
+    /// 重判取得新的写入排序序号，原文接收顺序与时间保持不变。
+    pub fn order_sequence(&self) -> u64 {
+        self.task.order_sequence.unwrap_or(self.received_sequence)
+    }
+
     pub fn status(&self) -> Value {
         serde_json::json!({
             "source": {
                 "status": if self.request.is_some() { "stored" } else { "deleted" },
                 "source_id": self.id,
                 "received_sequence": self.received_sequence,
-                "provenance": "mcp_received",
-                "message_id_trust": "client_supplied"
+                "provenance": if self.is_history_import() { "history_import" } else { "mcp_received" },
+                "message_id_trust": if self.is_history_import() { "server_generated" } else { "client_supplied" }
             },
             "index": if self.request.is_none() { serde_json::json!({"status":"deleted"}) }
                 else if self.index.is_object() { self.index.clone() }
@@ -87,6 +182,19 @@ pub(crate) struct TurnReceipt {
 }
 
 impl PersistedMemoryState {
+    /// 原文接收与显式重判共用一个 owner 内的序号空间。
+    pub fn next_source_sequence(&self) -> PersistenceResult<u64> {
+        self.sources
+            .values()
+            .map(|s| s.received_sequence.max(s.order_sequence()))
+            .max()
+            .unwrap_or(0)
+            .max(self.last_applied_source_sequence)
+            .max(self.source_less_barrier_sequence)
+            .checked_add(1)
+            .ok_or_else(|| "source sequence overflow".into())
+    }
+
     /// Restore both stores even if the operation returns an error; the SQLite transaction rolls back.
     pub fn with_engine<T>(
         &mut self,
@@ -153,7 +261,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=5 => (),
+            1..=10 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -195,6 +303,54 @@ impl SqliteMemoryStore {
             }
             tx.pragma_update(None, "user_version", 5)?;
         }
+        if version < 6 {
+            // W5 receipts live in the owner snapshot. Older binaries would drop them when
+            // rewriting it and then re-apply committed groups, so they must reject version 6.
+            tx.pragma_update(None, "user_version", 6)?;
+        }
+        if version < 7 {
+            // v6 receipts (W5 A1–A3) carry no status and were all committed; decoding fills in
+            // Committed. A v6 binary would drop the status (and turn a needs_rejudge group into
+            // a committed one) when rewriting the snapshot, so it must reject version 7. The
+            // rewrite that stores the status explicitly is the version 8 step below, in the same
+            // transaction: one decode/save writes both the status and the receipt form.
+            tx.pragma_update(None, "user_version", 7)?;
+        }
+        if version < 8 {
+            // Relations, update states and receipt fields live in the owner snapshot; a v7
+            // binary would drop them when rewriting it (conflicts vanish, pending turns into
+            // unknown), so it must reject version 8. Rewrite every profile with receipts so
+            // each receipt's `form` is stored explicitly as pre8: after this rewrite the
+            // receipt also carries `updates`, so the absence of a field can no longer tell
+            // which group form its fingerprint was taken from. The same rewrite stores the
+            // status of v6 receipts explicitly (see the version 7 step).
+            let profiles = {
+                let mut statement =
+                    tx.prepare("SELECT owner_id, state_json FROM memory_profiles")?;
+                statement
+                    .query_map([], |row| {
+                        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                    })?
+                    .collect::<Result<Vec<_>, _>>()?
+            };
+            for (owner_id, json) in profiles {
+                let profile = Self::decode_trusted_state(&json)?;
+                if !profile.w5_receipts.is_empty() {
+                    Self::save(&tx, &UserId(owner_id), &profile)?;
+                }
+            }
+            tx.pragma_update(None, "user_version", 8)?;
+        }
+        if version < 9 {
+            // v8 writers would drop round/operation/order fields when saving the snapshot.
+            // Missing optional fields remain absent; do not enroll legacy tasks or rewrite receipts.
+            tx.pragma_update(None, "user_version", 9)?;
+        }
+        if version < 10 {
+            // All owners decode missing source controls as ordinary provenance/generation 0.
+            // No enrollment or receipt rewrite: v9 writers must reject this version.
+            tx.pragma_update(None, "user_version", 10)?;
+        }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
         if crate::lexical::initialize(&tx, &owner, &mut state)? && !state.sources.is_empty() {
@@ -224,6 +380,38 @@ impl SqliteMemoryStore {
         &self.path
     }
 
+    /// A foreground operation connects only to an initialized database; no migration or index repair.
+    pub fn open_operation(path: impl AsRef<Path>, owner: UserId) -> PersistenceResult<Self> {
+        if owner.0.trim().is_empty() {
+            return Err("owner must not be empty".into());
+        }
+        let path = path.as_ref();
+        let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)?;
+        connection.busy_timeout(Duration::from_secs(5))?;
+        let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
+        if version != 10 {
+            return Err(format!(
+                "operation connection requires initialized database version 10; found {version}"
+            )
+            .into());
+        }
+        let journal: String =
+            connection.pragma_query_value(None, "journal_mode", |row| row.get(0))?;
+        if journal != "wal" {
+            return Err("operation connection requires initialized WAL database".into());
+        }
+        connection.pragma_update(None, "synchronous", "FULL")?;
+        let store = Self {
+            connection,
+            owner,
+            source_search_enabled: true,
+            fact_index_enabled: false,
+            path: std::fs::canonicalize(path)?,
+        };
+        store.read()?;
+        Ok(store)
+    }
+
     /// Internal search/inspection never migrates, backfills or repairs a database.
     pub fn open_read_only(path: impl AsRef<Path>, owner: UserId) -> PersistenceResult<Self> {
         if owner.0.trim().is_empty() {
@@ -233,9 +421,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=5).contains(&version) {
+        if !(3..=10).contains(&version) {
             return Err(format!(
-                "source search requires database version 3, 4 or 5; found {version}; migrate explicitly"
+                "source search requires database version 3 to 10; found {version}; migrate explicitly"
             )
             .into());
         }
@@ -253,6 +441,20 @@ impl SqliteMemoryStore {
 
     pub fn read(&self) -> PersistenceResult<PersistedMemoryState> {
         Self::load(&self.connection, &self.owner)
+    }
+
+    /// 短发布边界：加载与发布期间阻止其他连接提交删除；不保存或推进任何版本。
+    /// 回调内不得调用模型、等待工作者或开启另一个写事务。
+    pub(crate) fn read_for_publication<T>(
+        &self,
+        publish: impl FnOnce(&PersistedMemoryState) -> PersistenceResult<T>,
+    ) -> PersistenceResult<T> {
+        let tx =
+            rusqlite::Transaction::new_unchecked(&self.connection, TransactionBehavior::Immediate)?;
+        let state = Self::load(&tx, &self.owner)?;
+        let result = publish(&state)?;
+        tx.commit()?;
+        Ok(result)
     }
 
     // Only snapshots read from the local database may restore staged source approval.
@@ -310,8 +512,15 @@ impl SqliteMemoryStore {
         let read_revision = state.revision;
         let applied_before = state.last_applied_source_sequence;
         // ponytail: compare one owner's full business snapshot; use indexed revisions if profiles grow large.
-        let business_before =
-            serde_json::to_value((&state.repository, &state.entities, &state.staging))?;
+        // Relations and update states are business data too: their change advances the
+        // revision and triggers the ordering barrier like a record change.
+        let business_before = serde_json::to_value((
+            &state.repository,
+            &state.entities,
+            &state.staging,
+            &state.relations,
+            &state.record_updates,
+        ))?;
         let before = crate::diagnostics::enabled()
             .then(|| serde_json::to_value(&state).ok())
             .flatten();
@@ -325,8 +534,14 @@ impl SqliteMemoryStore {
                 return Err(error);
             }
         };
-        let business_changed = business_before
-            != serde_json::to_value((&state.repository, &state.entities, &state.staging))?;
+        let business_after = serde_json::to_value((
+            &state.repository,
+            &state.entities,
+            &state.staging,
+            &state.relations,
+            &state.record_updates,
+        ))?;
+        let business_changed = business_before != business_after;
         state.revision = if business_changed {
             read_revision
                 .checked_add(1)
@@ -335,13 +550,21 @@ impl SqliteMemoryStore {
             read_revision
         };
         if business_changed {
-            if state.last_applied_source_sequence == applied_before {
+            if state.last_applied_source_sequence == applied_before
+                && !state.source_attributed_change
+                && !pure_entity_addition(
+                    &business_before,
+                    &business_after,
+                    &state.entities,
+                    &self.owner,
+                )
+            {
                 // ponytail: owner-wide barrier; split by semantic slot only if unrelated jobs are measurably blocked.
                 state.source_less_barrier_sequence = state.source_less_barrier_sequence.max(
                     state
                         .sources
                         .values()
-                        .map(|source| source.received_sequence)
+                        .map(SourceRecord::order_sequence)
                         .max()
                         .unwrap_or(0),
                 );
@@ -354,9 +577,9 @@ impl SqliteMemoryStore {
                 {
                     continue;
                 }
-                let reason = if source.received_sequence <= barrier {
+                let reason = if source.order_sequence() <= barrier {
                     Some("source_less_authority_changed")
-                } else if source.received_sequence < applied {
+                } else if source.order_sequence() < applied {
                     Some("newer_source_applied")
                 } else {
                     None
@@ -385,4 +608,40 @@ impl SqliteMemoryStore {
         self.refresh_fact_index_after_commit();
         Ok(result)
     }
+}
+
+/// AF78: compare identities and directory resolution, never infer a person's meaning.
+fn pure_entity_addition(
+    before: &Value,
+    after: &Value,
+    entities: &InMemoryEntityRepository,
+    owner: &UserId,
+) -> bool {
+    if [0, 2, 3, 4].into_iter().any(|i| before[i] != after[i]) {
+        return false;
+    }
+    let (Some(old), Some(new)) = (
+        before[1]["entities"].as_object(),
+        after[1]["entities"].as_object(),
+    ) else {
+        return false;
+    };
+    let Ok(previous_entities) =
+        serde_json::from_value::<InMemoryEntityRepository>(before[1].clone())
+    else {
+        return false;
+    };
+    new.len() > old.len()
+        && old.iter().all(|(id, entity)| new.get(id) == Some(entity))
+        && new.keys().filter(|id| !old.contains_key(*id)).all(|id| {
+            let Some(entity) = entities.get(&EntityId::from(id.as_str())) else {
+                return false;
+            };
+            &entity.owner_id == owner
+                && std::iter::once(&entity.canonical_name)
+                    .chain(&entity.aliases)
+                    .all(|name| {
+                        previous_entities.resolve(owner, name) == EntityResolution::NotFound
+                    })
+        })
 }

@@ -1,0 +1,45 @@
+{
+ "id": "w3_05_wrong_subject",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "主体错绑为用户本人",
+ "input": {
+  "text": "我妈对青霉素过敏。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "allergic_to",
+    "memory_type": "fact",
+    "value": "青霉素",
+    "sentence": "我妈对青霉素过敏。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "contradicted",
+    "aspects": [
+     "subject"
+    ],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": null
+}

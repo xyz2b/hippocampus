@@ -942,8 +942,38 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": null,
+        "conflicts": [],
+        "facts": [
+          {
+            "current": "yes",
+            "polarity": "affirm",
+            "relation_note": "最近在用的音乐流媒体",
+            "sources": {
+              "all_of": [
+                "s1_t2"
+              ],
+              "any_of": []
+            },
+            "subject": "self",
+            "value_any": [
+              "Spotify"
+            ]
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "What is the name of the music streaming service have I been using lately?",
+      "query_meta": {
+        "operation": "lookup",
+        "time_focus": "current"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

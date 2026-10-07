@@ -1,0 +1,59 @@
+{
+  "id": "w4_11_preference_strength",
+  "recorded": [
+    {
+      "endpoint": "ep-20260923215039-vxgxg",
+      "model": "DeepSeek-V4.1-Flash",
+      "output": {
+        "decisions": [
+          {
+            "action": "state_change",
+            "basis": [
+              {
+                "quote": {
+                  "text": "我现在特别喜欢爵士乐。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-330"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我有点喜欢爵士乐。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-121"
+                }
+              }
+            ],
+            "candidate": 0,
+            "effective": null,
+            "pending_reason": null,
+            "relation_scope": null,
+            "resolves_relations": [],
+            "status": "decided",
+            "targets": [
+              41
+            ]
+          }
+        ]
+      },
+      "output_text": "{\"decisions\":[{\"action\":\"state_change\",\"basis\":[{\"quote\":{\"text\":\"我现在特别喜欢爵士乐。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-330\"}},{\"quote\":{\"text\":\"我有点喜欢爵士乐。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-121\"}}],\"candidate\":0,\"effective\":null,\"pending_reason\":null,\"relation_scope\":null,\"resolves_relations\":[],\"status\":\"decided\",\"targets\":[41]}]}",
+      "request": "fnv1a64:7c5460cfa69e7c89",
+      "schema": "w4_v2",
+      "usage": {
+        "input_tokens": 1578,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 2501,
+        "output_tokens_details": {
+          "reasoning_tokens": 2392
+        },
+        "total_tokens": 4079
+      }
+    }
+  ]
+}

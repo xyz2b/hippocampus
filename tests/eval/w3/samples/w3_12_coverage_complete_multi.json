@@ -1,0 +1,63 @@
+{
+ "id": "w3_12_coverage_complete_multi",
+ "contract": "w3.v1",
+ "label_status": "reviewed",
+ "focus": "多个候选全部正确",
+ "input": {
+  "text": "我住在上海，在一家银行做产品经理。",
+  "said_on": "2026-09-20",
+  "candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "lives_in",
+    "memory_type": "fact",
+    "value": "上海",
+    "sentence": "我住在上海，在一家银行做产品经理。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   },
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "job_title",
+    "memory_type": "fact",
+    "value": "产品经理",
+    "sentence": "我住在上海，在一家银行做产品经理。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ],
+  "requests": []
+ },
+ "expect": {
+  "reviews": [
+   {
+    "candidate": 0,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   },
+   {
+    "candidate": 1,
+    "verdict": "supported",
+    "aspects": [],
+    "episode_value": "not_applicable"
+   }
+  ],
+  "coverage": {
+   "status": "complete",
+   "missing_contains": []
+  },
+  "request_reviews": []
+ },
+ "note": "用户确认：“在一家银行”不算漏提，coverage 为 complete。"
+}

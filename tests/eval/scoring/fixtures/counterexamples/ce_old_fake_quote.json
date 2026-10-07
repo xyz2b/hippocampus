@@ -1,0 +1,71 @@
+{
+  "id": "ce_old_fake_quote",
+  "note": "真实 answer_contract 改写：引用片段改成原文不存在的内容。",
+  "output": {
+    "answer_contract": {
+      "context": [],
+      "query": "冯序宁画速写时固定用哪种笔？",
+      "read_revision": 5,
+      "safe_answer": "钢笔。",
+      "safe_source_ids": [
+        "83715-1790753234282039000-1422"
+      ],
+      "source_revision": 2,
+      "sources": [
+        {
+          "grade": "committed",
+          "quote": "冯序宁画速写时固定使用签字笔。",
+          "source_id": "83715-1790753234282039000-1422"
+        }
+      ],
+      "status": "source_linked_model_answer",
+      "task_id": null,
+      "version": 1
+    },
+    "budget": {
+      "config": {
+        "candidate_k": 30,
+        "content_bytes": 24000,
+        "source_limit": 10
+      },
+      "content_bytes": 1977,
+      "coverage_complete": true,
+      "excluded": [],
+      "excluded_count": 0,
+      "unit": "serialized_utf8_bytes_not_tokens"
+    },
+    "degraded_reasons": [],
+    "evidence_status": "sufficiency_not_verified",
+    "historical_or_conflicting": []
+  },
+  "probe": "旧答案引用片段不在原文中",
+  "question": {
+    "case": "person_sketch_pen",
+    "id": "person_q4"
+  },
+  "side": "old",
+  "source_ids": {
+    "person_s1": "83715-1790753234237682000-1396",
+    "person_s2": "83715-1790753234282039000-1422"
+  },
+  "targets": [
+    {
+      "item": "facts[0].sources",
+      "results": [
+        "auto_fail"
+      ]
+    },
+    {
+      "item": "facts[0].current",
+      "results": [
+        "review"
+      ]
+    },
+    {
+      "item": "facts[0].semantic",
+      "results": [
+        "review"
+      ]
+    }
+  ]
+}

@@ -763,8 +763,51 @@
         ],
         "kind": "answer"
       },
+      "expect_common": {
+        "computed": {
+          "approximate": true,
+          "bound": "exact",
+          "end": {
+            "date": "2023-05-01",
+            "source": "request.at"
+          },
+          "exact_days": 30,
+          "op": "elapsed",
+          "rounding": "nearest_week",
+          "start": {
+            "date": "2023-04-01",
+            "role": "event",
+            "source": "s1_t1"
+          },
+          "unit": "week",
+          "value": "4"
+        },
+        "conflicts": [],
+        "facts": [
+          {
+            "polarity": "affirm",
+            "relation_note": "参加当地 Audubon 学会观鸟工作坊（s1_t1 原文 today）",
+            "sources": {
+              "all_of": [
+                "s1_t1"
+              ],
+              "any_of": []
+            },
+            "subject": "self"
+          }
+        ],
+        "forbidden": [],
+        "label_status": "reviewed",
+        "not_measurable": [],
+        "scoring_version": "common.v1",
+        "status": "answer"
+      },
       "id": "q",
       "query": "How many weeks ago did I attend a bird watching workshop at the local Audubon society?",
+      "query_meta": {
+        "operation": "elapsed",
+        "time_focus": "past"
+      },
       "recorded": [
         {
           "endpoint": "ep-20260923215039-vxgxg",

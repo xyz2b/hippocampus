@@ -1,0 +1,63 @@
+{
+  "id": "r1_10_context_binds_name",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 2558,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "fact",
+        "subject": {
+          "entity_id": "e-laowang"
+        },
+        "time": null,
+        "type": "open"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n    \"relation\": null,\n    \"time\": null\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"fact\",\n  \"subject\": {\n    \"entity_id\": \"e-laowang\"\n  },\n  \"time\": null,\n  \"type\": \"open\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:f337494e6e7b70ddf47e806ce5f1cb64c4a927f418602bb04db4d443faaa0f31",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2367,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 103,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2470
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2367,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 103,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2470
+      }
+    }
+  ]
+}

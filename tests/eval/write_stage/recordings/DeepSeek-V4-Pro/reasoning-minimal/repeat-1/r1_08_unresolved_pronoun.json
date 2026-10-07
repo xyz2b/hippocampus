@@ -1,0 +1,77 @@
+{
+  "id": "r1_08_unresolved_pronoun",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 3145,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "conditions": [],
+        "current_evidence": "query_only",
+        "need": "judge",
+        "plan": {
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "op": "lookup",
+          "unit": null
+        },
+        "relation": "fact",
+        "subject": {
+          "ambiguous": [
+            "e-xiaowang-1",
+            "e-xiaowang-2"
+          ]
+        },
+        "time": {
+          "anchor": "said_on",
+          "interp": {
+            "kind": "relative",
+            "offset": 0,
+            "unit": "day"
+          },
+          "quote": {
+            "text": "最近"
+          },
+          "role": "event"
+        },
+        "type": "open"
+      },
+      "output_text": "{\n  \"conditions\": [],\n  \"current_evidence\": \"query_only\",\n  \"need\": \"judge\",\n  \"plan\": {\n    \"filter\": {\n    \"relation\": null,\n    \"time\": null\n    },\n    \"op\": \"lookup\",\n    \"unit\": null\n  },\n  \"relation\": \"fact\",\n  \"subject\": {\n    \"ambiguous\": [\n    \"e-xiaowang-1\",\n    \"e-xiaowang-2\"\n    ]\n  },\n  \"time\": {\n    \"anchor\": \"said_on\",\n    \"interp\": {\n    \"kind\": \"relative\",\n    \"offset\": 0,\n    \"unit\": \"day\"\n    },\n    \"quote\": {\n    \"text\": \"最近\"\n    },\n    \"role\": \"event\"\n  },\n  \"type\": \"open\"\n}",
+      "reasoning_effort": "minimal",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:a14219bc384e3ee22d346f7fa814eb822a1a0c159d99a6977f4ebe62618aab29",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2359,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 178,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2537
+        }
+      },
+      "schema": "r1_v1",
+      "usage": {
+        "input_tokens": 2359,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 178,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2537
+      }
+    }
+  ]
+}

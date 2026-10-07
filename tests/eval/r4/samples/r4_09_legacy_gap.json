@@ -1,0 +1,49 @@
+{
+ "id": "r4_09_legacy_gap",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "legacy 缺来源时不能新增 supported 事实",
+ "input": {
+  "query": "我养过什么宠物？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "aggregate",
+   "op": "list",
+   "relation": "owns"
+  },
+  "records": [
+   {
+    "id": 9,
+    "sentence": null,
+    "said_on": "2025-12-01",
+    "source": null,
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": null,
+    "legacy_gaps": [
+     "source_missing"
+    ],
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "insufficient",
+  "facts": [],
+  "compute": null
+ },
+ "must_not": [
+  "用无来源的 legacy 片段给出 supported 事实"
+ ],
+ "note": null
+}

@@ -1,0 +1,69 @@
+{
+ "id": "r4_13_open_conflict",
+ "contract": "r4.v3",
+ "label_status": "reviewed",
+ "split": "dev",
+ "focus": "未解决冲突两条都返回",
+ "input": {
+  "query": "我的血型是什么？",
+  "at": "2026-10-03",
+  "current_evidence": "query_only",
+  "plan": {
+   "type": "single",
+   "op": "lookup",
+   "relation": "fact"
+  },
+  "records": [
+   {
+    "id": 16,
+    "sentence": "我是 A 型血。",
+    "said_on": "2025-05-01",
+    "source": "s-16",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   },
+   {
+    "id": 17,
+    "sentence": "我是 O 型血。",
+    "said_on": "2026-05-01",
+    "source": "s-17",
+    "status": "active",
+    "ended": "not_ended",
+    "termination": null,
+    "update": "judged",
+    "legacy_gaps": null,
+    "conditions": [],
+    "times": []
+   }
+  ],
+  "raw": [],
+  "relations": [
+   {
+    "id": "rel-1",
+    "members": [
+     16,
+     17
+    ],
+    "status": "open"
+   }
+  ],
+  "completeness": {
+   "retrieval_truncated": false,
+   "plan_complete": true
+  }
+ },
+ "expect": {
+  "verdict": "conflict",
+  "facts": [],
+  "compute": null
+ },
+ "must_not": [
+  "选出一个作为唯一答案"
+ ],
+ "note": null
+}

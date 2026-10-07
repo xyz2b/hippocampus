@@ -1,0 +1,110 @@
+{
+  "id": "r4_12_end_unknown",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 16384,
+      "model": "DeepSeek-V4-Pro",
+      "output": {
+        "compute": null,
+        "facts": [
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "no",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我住在上海。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-14"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              14
+            ],
+            "statement": "我住在上海。",
+            "strength": null,
+            "supersedes_record_ids": [],
+            "times": [],
+            "uncertainty": null
+          },
+          {
+            "applies": "unknown",
+            "conditions": [],
+            "current": "yes",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "我已经搬到杭州了。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-15"
+                }
+              },
+              {
+                "quote": {
+                  "text": "我住在上海。"
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "s-14"
+                }
+              }
+            ],
+            "polarity": "affirm",
+            "record_ids": [
+              15,
+              14
+            ],
+            "statement": "我已经搬到杭州了。",
+            "strength": null,
+            "supersedes_record_ids": [
+              14
+            ],
+            "times": [],
+            "uncertainty": null
+          }
+        ],
+        "verdict": "insufficient"
+      },
+      "output_text": "{\"compute\":null,\"facts\":[{\"applies\":\"unknown\",\"conditions\":[],\"current\":\"no\",\"evidence\":[{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-14\"}}],\"polarity\":\"affirm\",\"record_ids\":[14],\"statement\":\"我住在上海。\",\"strength\":null,\"supersedes_record_ids\":[],\"times\":[],\"uncertainty\":null},{\"applies\":\"unknown\",\"conditions\":[],\"current\":\"yes\",\"evidence\":[{\"quote\":{\"text\":\"我已经搬到杭州了。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-15\"}},{\"quote\":{\"text\":\"我住在上海。\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-14\"}}],\"polarity\":\"affirm\",\"record_ids\":[15,14],\"statement\":\"我已经搬到杭州了。\",\"strength\":null,\"supersedes_record_ids\":[14],\"times\":[],\"uncertainty\":null}],\"verdict\":\"insufficient\"}",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:cbcf87f4008ac429a431cb60d737c166869cab213f7e29b521659a935f09ca82",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3712,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 5517,
+          "output_tokens_details": {
+            "reasoning_tokens": 5305
+          },
+          "total_tokens": 9229
+        }
+      },
+      "schema": "r4_v3",
+      "usage": {
+        "input_tokens": 3712,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 5517,
+        "output_tokens_details": {
+          "reasoning_tokens": 5305
+        },
+        "total_tokens": 9229
+      }
+    }
+  ]
+}

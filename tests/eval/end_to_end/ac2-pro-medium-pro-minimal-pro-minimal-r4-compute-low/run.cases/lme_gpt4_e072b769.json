@@ -1,0 +1,1559 @@
+{
+  "calls": [
+    {
+      "elapsed_ms": 123625,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 123489,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3820,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7892,
+        "output_tokens_details": {
+          "reasoning_tokens": 7695
+        },
+        "total_tokens": 11712
+      }
+    },
+    {
+      "elapsed_ms": 1948,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t1",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 1704,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2105,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 48,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2153
+      }
+    },
+    {
+      "elapsed_ms": 156021,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 155887,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3990,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 11170,
+        "output_tokens_details": {
+          "reasoning_tokens": 9774
+        },
+        "total_tokens": 15160
+      }
+    },
+    {
+      "elapsed_ms": 5735,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 5484,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3218,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 415,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3633
+      }
+    },
+    {
+      "elapsed_ms": 16710,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t2",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 16578,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W4",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 3730,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 1171,
+        "output_tokens_details": {
+          "reasoning_tokens": 591
+        },
+        "total_tokens": 4901
+      }
+    },
+    {
+      "elapsed_ms": 93204,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 93066,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4056,
+        "input_tokens_details": {
+          "cached_tokens": 3072
+        },
+        "output_tokens": 6009,
+        "output_tokens_details": {
+          "reasoning_tokens": 5742
+        },
+        "total_tokens": 10065
+      }
+    },
+    {
+      "elapsed_ms": 2643,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t3",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 2501,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2341,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 92,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2433
+      }
+    },
+    {
+      "elapsed_ms": 122876,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 122729,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4160,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 7868,
+        "output_tokens_details": {
+          "reasoning_tokens": 7631
+        },
+        "total_tokens": 12028
+      }
+    },
+    {
+      "elapsed_ms": 11666,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t4",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 11518,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 2507,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 119,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2626
+      }
+    },
+    {
+      "elapsed_ms": 49622,
+      "error": null,
+      "http_status": 200,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 49474,
+      "response_status": "completed",
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": {
+        "input_tokens": 4256,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 3107,
+        "output_tokens_details": {
+          "reasoning_tokens": 2956
+        },
+        "total_tokens": 7363
+      }
+    },
+    {
+      "elapsed_ms": 222,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204360725e78c31fe06d4434dfef0260629e4a08bec5ce9",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "write:s1_t5",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 74,
+      "response_status": null,
+      "sends": 1,
+      "stage": "W3",
+      "transport_error": null,
+      "usage": null
+    },
+    {
+      "elapsed_ms": 249,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204361457e78c31fe06d4434dfef0260629e4a08b16e2ba",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "write:s1_t6",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 100,
+      "response_status": null,
+      "sends": 1,
+      "stage": "W1",
+      "transport_error": null,
+      "usage": null
+    },
+    {
+      "elapsed_ms": 225,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204362163e78c31fe06d4434dfef0260629e4a08ba115b1",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 76,
+      "response_status": null,
+      "sends": 1,
+      "stage": "R1",
+      "transport_error": null,
+      "usage": null
+    },
+    {
+      "elapsed_ms": 260,
+      "error": {
+        "code": "AccountOverdueError",
+        "message": "The request failed because your account has an overdue balance. Request id: 021791204362830e78c31fe06d4434dfef0260629e4a08b1f0723",
+        "param": "",
+        "type": "Forbidden"
+      },
+      "http_status": 403,
+      "incomplete_details": null,
+      "operation": "recall:q",
+      "origin": "live",
+      "reason": null,
+      "recorded_elapsed_ms": 111,
+      "response_status": null,
+      "sends": 1,
+      "stage": "R4",
+      "transport_error": null,
+      "usage": null
+    }
+  ],
+  "case": "lme_gpt4_e072b769",
+  "elapsed_ms": 590958,
+  "steps": [
+    {
+      "message": "s1_t1",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203772425444000-1067",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203772425444000-1067",
+            "duration_ms": 123833,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203896263777000-1115",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203896263777000-1115",
+            "duration_ms": 2175,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791203772419015000-1065",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 1,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791203772419015000-1065",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t2",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791203898486504000-1119",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791203898486504000-1119",
+            "duration_ms": 156391,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204054891834000-1279",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204054891834000-1279",
+            "duration_ms": 5987,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204060921403000-1281",
+            "stage": "w4_v2",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204060921403000-1281",
+            "duration_ms": 17072,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W4",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791203898463962000-1117",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 1,
+                "memory_id": 2,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 2,
+                "memory_id": 3,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 3,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 4,
+                "memory_id": 4,
+                "reasons": [
+                  "update_scope_incomplete"
+                ],
+                "status": "committed",
+                "update": {
+                  "reasons": [
+                    "update_scope_incomplete"
+                  ],
+                  "status": "pending"
+                }
+              },
+              {
+                "index": 5,
+                "memory_id": null,
+                "reasons": [
+                  "review_contradicted"
+                ],
+                "status": "rejected",
+                "update": null
+              },
+              {
+                "index": 6,
+                "memory_id": null,
+                "reasons": [
+                  "{\"Unprojectable\":{\"NotUserStatement\":\"plan\"}}"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791203898463962000-1117",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t3",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204078194268000-1304",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204078194268000-1304",
+            "duration_ms": 93496,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204171718892000-1366",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204171718892000-1366",
+            "duration_ms": 2961,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791204078118085000-1302",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": null,
+                "reasons": [
+                  "review_insufficient"
+                ],
+                "status": "pending",
+                "update": null
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "pending"
+          },
+          "source": {
+            "source_id": "33284-1791204078118085000-1302",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t4",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204174870991000-1371",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204174870991000-1371",
+            "duration_ms": 123224,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204298128309000-1406",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204298128309000-1406",
+            "duration_ms": 12016,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W3",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791204174784103000-1369",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [
+              {
+                "index": 0,
+                "memory_id": 5,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              },
+              {
+                "index": 1,
+                "memory_id": 6,
+                "reasons": [],
+                "status": "committed",
+                "update": {
+                  "reasons": [],
+                  "status": "judged"
+                }
+              }
+            ],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "committed"
+          },
+          "source": {
+            "source_id": "33284-1791204174784103000-1369",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t5",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204310447435000-1412",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204310447435000-1412",
+            "duration_ms": 50039,
+            "error": null,
+            "local_outcome": "completed",
+            "parsing_status": "valid_json",
+            "status": "completed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "decode",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "error": null,
+            "phase": "validate",
+            "stage": "W1",
+            "status": "completed"
+          },
+          "kind": "model_check"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204360528450000-1421",
+            "stage": "w3_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204360528450000-1421",
+            "duration_ms": 577,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204360725e78c31fe06d4434dfef0260629e4a08bec5ce9",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791204310334371000-1410",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "33284-1791204310334371000-1410",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "message": "s1_t6",
+      "missing": null,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204361260656000-1425",
+            "stage": "w1_v1",
+            "timeout_ms": 360000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204361260656000-1425",
+            "duration_ms": 626,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204361457e78c31fe06d4434dfef0260629e4a08b16e2ba",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        }
+      ],
+      "received": {
+        "enrichment": {
+          "candidates": [],
+          "memory_requests": [],
+          "retention_pending": false,
+          "status": "queued"
+        },
+        "source": {
+          "source_id": "33284-1791204361141534000-1423",
+          "status": "stored"
+        }
+      },
+      "result": {
+        "Ok": {
+          "enrichment": {
+            "candidates": [],
+            "memory_requests": [],
+            "retention_pending": false,
+            "status": "failed"
+          },
+          "source": {
+            "source_id": "33284-1791204361141534000-1423",
+            "status": "stored"
+          }
+        }
+      },
+      "step": "message"
+    },
+    {
+      "at": 1683321900,
+      "model_diagnostics": [
+        {
+          "data": {
+            "call_id": "33284-1791204361957341000-1428",
+            "stage": "r1_v1",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204361957341000-1428",
+            "duration_ms": 617,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204362163e78c31fe06d4434dfef0260629e4a08ba115b1",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204362629197000-1429",
+            "stage": "r4_v3",
+            "timeout_ms": 180000
+          },
+          "kind": "model_start"
+        },
+        {
+          "data": {
+            "call_id": "33284-1791204362629197000-1429",
+            "duration_ms": 691,
+            "error": "DeepSeek API returned HTTP 403: The request failed because your account has an overdue balance. Request id: 021791204362830e78c31fe06d4434dfef0260629e4a08b1f0723",
+            "local_outcome": "transport_failed",
+            "parsing_status": "not_run",
+            "status": "failed"
+          },
+          "kind": "model_end"
+        }
+      ],
+      "question": "q",
+      "reason": null,
+      "result": {
+        "clarification": null,
+        "completeness": {
+          "enrichment_gaps": 0,
+          "pending_related_sources": 4,
+          "pending_updates": 4,
+          "plan_complete": false,
+          "retrieval_truncated": false
+        },
+        "computed": null,
+        "conflicts": [],
+        "current_message": {
+          "enrichment": "not_stored",
+          "memory_requests": [],
+          "said_on": "2023-05-06",
+          "sequence": null,
+          "source_id": null,
+          "text": "How many weeks ago did I start using the cashback app 'Ibotta'?"
+        },
+        "degraded_reasons": [
+          "r1_not_understood",
+          "model_invalid_output"
+        ],
+        "facts": [],
+        "history": [],
+        "raw": [
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household. I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks. I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta. I've been eyeing that rebate on eggs, so I'll probably prioritize that."
+            },
+            "said_on": "2023-04-16",
+            "sequence": 2,
+            "source_id": "33284-1791203898463962000-1117"
+          },
+          {
+            "enrichment": "pending",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm also thinking of trying to reduce my plastic usage, so do you think I could get some reusable bags or containers that would be suitable for grocery shopping?"
+            },
+            "said_on": "2023-04-16",
+            "sequence": 3,
+            "source_id": "33284-1791204078118085000-1302"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I was thinking of trying out a new grocery delivery service, something similar to FreshToDoor, which I tried a few weeks ago. Do you know of any other services that offer similar promotions or discounts, especially for first-time users?"
+            },
+            "said_on": "2023-04-16",
+            "sequence": 5,
+            "source_id": "33284-1791204310334371000-1410"
+          },
+          {
+            "enrichment": "failed",
+            "grade": "uncommitted",
+            "memory_requests": [],
+            "quote": {
+              "text": "I'm thinking of trying out Thrive Market, as I've been trying to incorporate more organic and natural products into my diet. Do you think I could get cashback on my Thrive Market purchases through Ibotta?"
+            },
+            "said_on": "2023-04-16",
+            "sequence": 6,
+            "source_id": "33284-1791204361141534000-1423"
+          }
+        ],
+        "records": [
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've just downloaded Ibotta, a cashback app that gives you rebates on certain grocery items, and I want to make sure I get the most out of it."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203772419015000-1065"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 1,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+                },
+                "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I don't have a preferred store, but I do try to shop at places that offer cashback through Ibotta."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203898463962000-1117"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 4,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "preference",
+              "polarity": "affirm",
+              "relation": "likes",
+              "sentence": {
+                "text": "I feel good about not contributing to the plastic waste."
+              },
+              "speech": "user_statement",
+              "strength": "moderate",
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "not contributing to the plastic waste"
+                },
+                "text": "not contributing to the plastic waste"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I feel good about not contributing to the plastic waste."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791204174784103000-1369"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 6,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+                },
+                "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I don't have any dietary restrictions or preferences, and I'm the only one in my household."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203898463962000-1117"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 2,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [
+                {
+                  "quote": {
+                    "text": "whenever I go shopping"
+                  },
+                  "resolved": true
+                }
+              ],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "uses",
+              "sentence": {
+                "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "reusable bags"
+                },
+                "text": "reusable bags"
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I've been carrying reusable bags with me whenever I go shopping, and it's become a habit now."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791204174784103000-1369"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 5,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [],
+              "status": "judged"
+            }
+          },
+          {
+            "candidate": {
+              "conditions": [],
+              "kind": "assertion",
+              "memory_type": "fact",
+              "polarity": "affirm",
+              "relation": "fact",
+              "sentence": {
+                "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+              },
+              "speech": "user_statement",
+              "strength": null,
+              "subject": {
+                "entity_id": "self"
+              },
+              "times": [],
+              "uncertainty": null,
+              "value": {
+                "kind": "text",
+                "quote": {
+                  "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+                },
+                "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+              }
+            },
+            "ended": "not_ended",
+            "evidence": [
+              {
+                "quote": {
+                  "text": "I usually buy a mix of everything, like fresh produce, meat, dairy, canned goods, and snacks."
+                },
+                "source": {
+                  "kind": "stored",
+                  "source_id": "33284-1791203898463962000-1117"
+                }
+              }
+            ],
+            "format": "current",
+            "grade": "committed",
+            "history": [],
+            "id": 3,
+            "open_relations": [],
+            "said_on": "2023-04-16",
+            "stored_status": "active",
+            "termination_reason": null,
+            "time_resolutions": [],
+            "update": {
+              "reasons": [
+                "update_scope_incomplete"
+              ],
+              "status": "pending"
+            }
+          }
+        ],
+        "request": {
+          "at": 1683321900,
+          "context": [],
+          "query": "How many weeks ago did I start using the cashback app 'Ibotta'?",
+          "request_id": "eval-lme_gpt4_e072b769-q",
+          "task_id": null
+        },
+        "semantic_judgment": "failed",
+        "snapshot": {
+          "read_revision": 7,
+          "source_revision": 6
+        },
+        "status": "degraded",
+        "version": "recall.v3"
+      },
+      "source_ids": {
+        "s1_t1": "33284-1791203772419015000-1065",
+        "s1_t2": "33284-1791203898463962000-1117",
+        "s1_t3": "33284-1791204078118085000-1302",
+        "s1_t4": "33284-1791204174784103000-1369",
+        "s1_t5": "33284-1791204310334371000-1410",
+        "s1_t6": "33284-1791204361141534000-1423"
+      },
+      "source_state": {
+        "s1_t1": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t2": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t3": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t4": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t5": {
+          "deleted": false,
+          "linkable": true
+        },
+        "s1_t6": {
+          "deleted": false,
+          "linkable": true
+        }
+      },
+      "state": "completed",
+      "step": "question"
+    }
+  ]
+}

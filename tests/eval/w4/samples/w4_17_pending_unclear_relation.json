@@ -1,0 +1,202 @@
+{
+  "id": "w4_17_pending_unclear_relation",
+  "contract": "w4.v2",
+  "batch": 2,
+  "label_status": "draft",
+  "focus": "W4 返回 pending/unclear_relation：可能改学、也可能同时在学",
+  "boundary_with": null,
+  "sources": {
+    "s-306": {
+      "text": "我在学日语。",
+      "said_on": "2026-03-20"
+    },
+    "s-390": {
+      "text": "我最近在学韩语。",
+      "said_on": "2026-09-27"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我最近在学韩语。",
+            "quote": {
+              "text": "我最近在学韩语。"
+            }
+          },
+          "sentence": {
+            "text": "我最近在学韩语。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": {
+                "text": "最近"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-390"
+        },
+        "said_on": "2026-09-27",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 90,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我在学日语。",
+            "quote": {
+              "text": "我在学日语。"
+            }
+          },
+          "sentence": {
+            "text": "我在学日语。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-306"
+            },
+            "quote": {
+              "text": "我在学日语。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-03-20",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": false,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "pending",
+        "action": null,
+        "targets": [
+          90
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-306",
+          "s-390"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": "unclear_relation"
+      }
+    ],
+    "after": {
+      "records": {
+        "90": {
+          "stored_status": "active",
+          "ended": "not_ended"
+        },
+        "new": {
+          "from_candidate": 0,
+          "stored_status": "active",
+          "update": {
+            "status": "pending",
+            "reasons": [
+              "update_relation_unclear",
+              "update_scope_incomplete"
+            ]
+          }
+        }
+      },
+      "recall": {
+        "current": [
+          "90（学日语）",
+          "new（学韩语）"
+        ],
+        "note": "两条都带待判定标注，不断言已放弃日语"
+      }
+    },
+    "must_not": [
+      "不得结束 90",
+      "不得判为 conflict（两者并不互斥）",
+      "不得判为 coexist 并标 judged 而掩盖关系不明"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "action": "state_change",
+      "why": "原文没说不学日语了"
+    },
+    {
+      "action": "coexist",
+      "why": "也没说两门同时在学，关系不能确定"
+    }
+  ],
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "最近"
+      ]
+    }
+  }
+}

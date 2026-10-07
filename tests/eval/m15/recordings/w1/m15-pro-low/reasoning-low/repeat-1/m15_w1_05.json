@@ -1,0 +1,109 @@
+{
+  "id": "m15_w1_05",
+  "recorded": [
+    {
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "elapsed_ms": 98933,
+      "endpoint": "ep-20261003130756-trhj6",
+      "max_output_tokens": 32768,
+      "model": "m15-pro-low",
+      "output": {
+        "candidates": [
+          {
+            "conditions": [
+              {
+                "quote": {
+                  "text": "如果雾散了"
+                },
+                "resolved": true
+              }
+            ],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "affirm",
+            "relation": "fact",
+            "sentence": {
+              "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。"
+            },
+            "speech": "hypothetical",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": {
+              "quote": {
+                "text": "可能"
+              },
+              "resolved": true
+            },
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。"
+              },
+              "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。"
+            }
+          },
+          {
+            "conditions": [],
+            "kind": "assertion",
+            "memory_type": "fact",
+            "polarity": "negate",
+            "relation": "fact",
+            "sentence": {
+              "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。"
+            },
+            "speech": "plan",
+            "strength": null,
+            "subject": {
+              "entity_id": "self"
+            },
+            "times": [],
+            "uncertainty": null,
+            "value": {
+              "kind": "text",
+              "quote": {
+                "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。"
+              },
+              "text": "如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。"
+            }
+          }
+        ],
+        "memory_requests": []
+      },
+      "output_text": "{\"candidates\":[{\"conditions\":[{\"quote\":{\"text\":\"如果雾散了\"},\"resolved\":true}],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"fact\",\"sentence\":{\"text\":\"如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。\"},\"speech\":\"hypothetical\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":{\"quote\":{\"text\":\"可能\"},\"resolved\":true},\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。\"},\"text\":\"如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。\"}},{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"negate\",\"relation\":\"fact\",\"sentence\":{\"text\":\"如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。\"},\"speech\":\"plan\",\"strength\":null,\"subject\":{\"entity_id\":\"self\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。\"},\"text\":\"如果雾散了，我可能去西岗拍鸟，但我不打算租摩托艇。\"}}],\"memory_requests\":[]}",
+      "reasoning_effort": "low",
+      "recording_version": 2,
+      "repeat": 1,
+      "request": "sha256:8cf0f6bc30b423a76ebf3a2afd033a51b803a1b9e71fe20d48b7e4402c0eedc2",
+      "response": {
+        "incomplete_details": null,
+        "status": "completed",
+        "usage": {
+          "input_tokens": 3712,
+          "input_tokens_details": {
+            "cached_tokens": 2048
+          },
+          "output_tokens": 6406,
+          "output_tokens_details": {
+            "reasoning_tokens": 6103
+          },
+          "total_tokens": 10118
+        }
+      },
+      "schema": "w1_v2",
+      "usage": {
+        "input_tokens": 3712,
+        "input_tokens_details": {
+          "cached_tokens": 2048
+        },
+        "output_tokens": 6406,
+        "output_tokens_details": {
+          "reasoning_tokens": 6103
+        },
+        "total_tokens": 10118
+      }
+    }
+  ]
+}
