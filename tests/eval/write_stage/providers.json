@@ -9,7 +9,11 @@
       "thinking": null
     },
     "effort": "medium",
-    "max_output_tokens": 8192,
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
     "timeout_seconds": 360
   },
   {
@@ -22,7 +26,11 @@
       "thinking": null
     },
     "effort": "medium",
-    "max_output_tokens": 8192,
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
     "timeout_seconds": 360
   },
   {
@@ -35,7 +43,11 @@
       "thinking": null
     },
     "effort": "medium",
-    "max_output_tokens": 8192,
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
     "timeout_seconds": 360
   },
   {
@@ -48,7 +60,11 @@
       "thinking": true
     },
     "effort": "medium",
-    "max_output_tokens": 8192,
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
     "timeout_seconds": 360
   },
   {
@@ -68,8 +84,12 @@
       }
     },
     "effort": "omit",
-    "max_output_tokens": 8192,
-    "timeout_seconds": 360
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 1800
   },
   {
     "id": "qwen-27b-nothink",
@@ -88,7 +108,11 @@
       }
     },
     "effort": "omit",
-    "max_output_tokens": 8192,
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
     "timeout_seconds": 360
   },
   {
@@ -108,8 +132,12 @@
       }
     },
     "effort": "omit",
-    "max_output_tokens": 8192,
-    "timeout_seconds": 360
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 1800
   },
   {
     "id": "qwen-9b-nothink",
@@ -128,7 +156,11 @@
       }
     },
     "effort": "omit",
-    "max_output_tokens": 8192,
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
     "timeout_seconds": 360
   }
 ]

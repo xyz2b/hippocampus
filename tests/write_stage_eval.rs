@@ -1214,6 +1214,7 @@ fn provider_options_from_env() -> Result<Option<ProviderOptions>, String> {
 }
 
 const SMOKE_ROOT: &str = "target/eval-providers/smoke-af122";
+const SMOKE_CURRENT_ROOT: &str = "target/eval-providers/smoke-af128";
 const SMOKE_CAP: usize = 8;
 const SMOKE_SAMPLE: &str = "w1_01_simple_residence";
 const SMOKE_IDS: [&str; SMOKE_CAP] = [
@@ -1234,7 +1235,7 @@ struct SmokeProfile {
     model: String,
     provider: ProviderConfig,
     effort: ReasoningEffort,
-    max_output_tokens: u32,
+    max_output_tokens: std::collections::BTreeMap<String, u32>,
     timeout_seconds: u64,
 }
 fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
@@ -1252,8 +1253,13 @@ fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
         }
         .validate()?;
         let local = profile.provider.protocol == ProviderProtocol::OpenaiChat;
-        if profile.max_output_tokens != 8192
-            || profile.timeout_seconds != 360
+        if json!(profile.max_output_tokens) != json!({"w1":32768,"w3":16384,"w4":16384})
+            || profile.timeout_seconds
+                != if local && profile.provider.thinking == Some(true) {
+                    1800
+                } else {
+                    360
+                }
             || profile.effort
                 != if local {
                     ReasoningEffort::Omit
@@ -1301,9 +1307,31 @@ fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
     }
     Ok(profiles)
 }
+fn smoke_selection(value: Option<&str>) -> Result<Vec<String>, String> {
+    let requested: Vec<_> = value.map_or_else(
+        || SMOKE_IDS.to_vec(),
+        |s| s.split(',').map(str::trim).collect(),
+    );
+    let distinct: std::collections::BTreeSet<_> = requested.iter().copied().collect();
+    if requested.is_empty()
+        || requested.len() != distinct.len()
+        || requested.iter().any(|id| !SMOKE_IDS.contains(id))
+    {
+        return Err("EVAL_SMOKE_PROFILES requires distinct known profile IDs".into());
+    }
+    // Preserve the approved serial order regardless of the command's spelling order.
+    Ok(SMOKE_IDS
+        .iter()
+        .filter(|id| distinct.contains(**id))
+        .map(|id| (*id).to_owned())
+        .collect())
+}
+fn smoke_root(base: &Path, selected: &[String]) -> PathBuf {
+    base.join(SMOKE_CURRENT_ROOT).join(selected.join("--"))
+}
 fn smoke_options(
     variable: impl Fn(&str) -> Option<String>,
-) -> Result<(bool, Option<usize>), String> {
+) -> Result<(bool, Option<usize>, Vec<String>), String> {
     if variable("EVAL_SMOKE").as_deref() != Some("1") {
         return Err("EVAL_SMOKE must be 1".into());
     }
@@ -1329,14 +1357,20 @@ fn smoke_options(
             return Err(format!("AF122 fixed smoke does not accept {key}"));
         }
     }
+    let selected = smoke_selection(variable("EVAL_SMOKE_PROFILES").as_deref())?;
     let dry = variable("EVAL_DRY_RUN").as_deref() == Some("1");
     let limit = match variable("EVAL_RECORD").as_deref() {
         None => None,
         Some("0") => Some(0),
-        Some("8") => Some(SMOKE_CAP),
-        _ => return Err("AF122 EVAL_RECORD must be absent, 0 (cached only), or 8".into()),
+        Some(s) if s.parse::<usize>().ok() == Some(selected.len()) => Some(selected.len()),
+        _ => {
+            return Err(format!(
+                "EVAL_RECORD must be absent, 0 (cached only), or {} for this cohort",
+                selected.len()
+            ));
+        }
     };
-    Ok((dry, limit))
+    Ok((dry, limit, selected))
 }
 fn smoke_plan(
     root: &Path,
@@ -1371,7 +1405,8 @@ fn smoke_plan(
             .provider
             .endpoint(model.base.as_deref().unwrap())
             .map_err(|e| e.to_string())?;
-        let mut request = stage_request_with_output_tokens("w1", &sample, p.max_output_tokens)?;
+        let mut request =
+            stage_request_with_output_tokens("w1", &sample, p.max_output_tokens["w1"])?;
         request["model"] = json!(p.model);
         p.effort.apply(&mut request);
         cases.push(case_from_request_with_provider(
@@ -1382,24 +1417,28 @@ fn smoke_plan(
             1,
             request,
             Some(&options),
+            Some(p.timeout_seconds),
         )?);
     }
-    if cases.len() != SMOKE_CAP
+    if cases.is_empty()
         || cases
             .iter()
             .map(|c| campaign_slot(c).to_string())
             .collect::<std::collections::BTreeSet<_>>()
             .len()
-            != SMOKE_CAP
+            != profiles.len()
     {
-        return Err("AF122 must contain eight distinct W1 slots".into());
+        return Err("smoke requires distinct nonempty W1 slots".into());
     }
     Ok(cases)
 }
 fn smoke_dry_plan(cases: &[Case]) -> String {
     let mut lines = vec![
-        "AF122 provider 冒烟干跑（不发送请求）".to_owned(),
-        format!("样本: {SMOKE_SAMPLE}；8 档 × W1 × 1 次；W3/W4/R1/R4=0。"),
+        "AF128 provider 冒烟干跑（不发送请求）".to_owned(),
+        format!(
+            "样本: {SMOKE_SAMPLE}；{} 档 × W1 × 1 次；W3/W4/R1/R4=0。",
+            cases.len()
+        ),
         "档案 | 模型 | effort | thinking | 输出上限 | 超时秒 | 预检".into(),
     ];
     for c in cases {
@@ -1407,17 +1446,20 @@ fn smoke_dry_plan(cases: &[Case]) -> String {
         let status = match &c.replay {
             Replay::Rejected(s) => format!("拒绝: {s}"),
             Replay::Output(_) | Replay::Failed(_) => "可回放".into(),
+            Replay::Stale => "录制过期（需新录制）".into(),
             _ => "待录制".into(),
         };
         lines.push(format!(
-            "{} | {} | {} | {} | 8192 | 360 | {status}",
+            "{} | {} | {} | {} | {} | {} | {status}",
             c.model.label,
             c.model.model.as_deref().unwrap(),
             serde_json::to_value(c.model.effort)
                 .unwrap()
                 .as_str()
                 .unwrap(),
-            p.thinking.map(|b| b.to_string()).unwrap_or("null".into())
+            p.thinking.map(|b| b.to_string()).unwrap_or("null".into()),
+            c.request["max_output_tokens"],
+            c.timeout_seconds.unwrap()
         ));
     }
     let rejected = cases
@@ -1429,11 +1471,38 @@ fn smoke_dry_plan(cases: &[Case]) -> String {
         .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
         .count();
     lines.push(format!(
-        "固定槽位/累计授权上限: 8；待录制: {missing}；发送前拒绝: {rejected}。"
+        "固定槽位/累计授权上限: {}；待录制: {missing}；发送前拒绝: {rejected}。",
+        cases.len()
     ));
-    lines.push("输出预留上限: 65536 token（含思考）；串行，无自动重试。".into());
+    lines.push(format!(
+        "独立 campaign: {}",
+        campaign_root(cases).unwrap().unwrap().display()
+    ));
+    let tokens: u64 = cases
+        .iter()
+        .map(|c| c.request["max_output_tokens"].as_u64().unwrap())
+        .sum();
+    lines.push(format!(
+        "输出预留上限: {tokens} token（含思考）；串行，无自动重试。"
+    ));
     lines.push("本次真实调用: 0；不读取密钥，不创建录制/额度/报告文件。".into());
     lines.join("\n")
+}
+fn smoke_plan_with_history(
+    root: &Path,
+    history: &Path,
+    profiles: &[SmokeProfile],
+    variable: impl Fn(&str) -> Option<String> + Copy,
+) -> Result<Vec<Case>, String> {
+    let mut current = smoke_plan(root, profiles, variable)?;
+    let previous = smoke_plan(history, profiles, variable)?;
+    for (case, old) in current.iter_mut().zip(previous) {
+        // Historical artifacts stay read-only; only advertise their strict binding mismatch.
+        if matches!(case.replay, Replay::Missing) && matches!(old.replay, Replay::Stale) {
+            case.replay = Replay::Stale;
+        }
+    }
+    Ok(current)
 }
 fn smoke_credentials(
     cases: &[Case],
@@ -1475,12 +1544,17 @@ fn smoke_http_request(
         .endpoint(c.model.base.as_deref().ok_or("missing endpoint")?)
         .map_err(|e| e.to_string())?;
     hippocampus::provider_http_request(http, &url, key, provider.protocol)
-        .timeout(std::time::Duration::from_secs(360))
+        .timeout(std::time::Duration::from_secs(
+            c.timeout_seconds.ok_or("missing smoke timeout")?,
+        ))
         .json(&c.wire_request)
         .build()
         .map_err(|e| e.to_string())
 }
 fn smoke_preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
+    if limit.is_some_and(|n| n > 0 && n != cases.len()) {
+        return Err("smoke allowance must equal the selected slot count".into());
+    }
     if limit.is_some()
         && cases
             .iter()
@@ -1515,7 +1589,7 @@ fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
                 "profile": c.model.label, "model": c.model.model, "protocol": provider.protocol,
                 "endpoint": provider.endpoint(c.model.base.as_deref().unwrap()).unwrap(),
                 "effort": c.model.effort, "thinking": provider.thinking,
-                "max_output_tokens": 8192, "timeout_seconds": 360,
+                "max_output_tokens": c.request["max_output_tokens"], "timeout_seconds": c.timeout_seconds,
                 "status": r["status"], "error": r["error"],
                 "provider_output_valid": wire_valid,
                 "mechanical_valid": (!checks.is_empty()).then(|| checks.iter().all(|f| f["passed"] == true)),
@@ -1532,10 +1606,14 @@ fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
 }
 fn provider_smoke_from_env() -> Result<(), String> {
     let variable = |name: &str| std::env::var(name).ok();
-    let (dry, limit) = smoke_options(variable)?;
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(SMOKE_ROOT);
-    let profiles = smoke_profiles(include_str!("eval/write_stage/providers.json"))?;
-    let cases = smoke_plan(&root, &profiles, variable)?;
+    let (dry, limit, selected) = smoke_options(variable)?;
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = smoke_root(base, &selected);
+    let profiles: Vec<_> = smoke_profiles(include_str!("eval/write_stage/providers.json"))?
+        .into_iter()
+        .filter(|p| selected.contains(&p.id))
+        .collect();
+    let cases = smoke_plan_with_history(&root, &base.join(SMOKE_ROOT), &profiles, variable)?;
     if dry {
         println!("{}", smoke_dry_plan(&cases));
         return Ok(());
@@ -1613,6 +1691,7 @@ struct Case {
     model: EvalModel,
     repeat: usize,
     w3_trial_root: Option<PathBuf>,
+    timeout_seconds: Option<u64>,
 }
 
 fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String> {
@@ -1722,6 +1801,7 @@ fn plan_repeated_with_provider(
                 repeat,
                 request,
                 options,
+                None,
             )?);
         }
     }
@@ -1755,7 +1835,7 @@ fn case_from_request(
     repeat: usize,
     request: Value,
 ) -> Result<Case, String> {
-    case_from_request_with_provider(stage, sample, root, model, repeat, request, None)
+    case_from_request_with_provider(stage, sample, root, model, repeat, request, None, None)
 }
 fn case_from_request_with_provider(
     stage: String,
@@ -1765,12 +1845,13 @@ fn case_from_request_with_provider(
     repeat: usize,
     request: Value,
     options: Option<&ProviderOptions>,
+    timeout_seconds: Option<u64>,
 ) -> Result<Case, String> {
     let provider = options.map(|o| &o.provider);
     let prepared = model_provider::provider_request(provider, &request);
     let rejection = prepared.as_ref().err().map(ToString::to_string);
     let wire_request = prepared.unwrap_or_else(|_| request.clone());
-    let binding = eval_provider_binding(model, &wire_request, provider);
+    let binding = eval_provider_binding(model, &wire_request, provider, timeout_seconds);
     let path = root.join(format!("{}.json", sample["id"].as_str().unwrap()));
     let file: Value = match std::fs::read_to_string(&path) {
         Ok(text) => serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?,
@@ -1787,7 +1868,15 @@ fn case_from_request_with_provider(
         .filter(|r| r["model"] == model.label)
         .collect();
     let record = current.iter().rev().find(|r| {
-        r["request"] == eval_request_fingerprint(&sample, &request, model, &wire_request, provider)
+        r["request"]
+            == eval_request_fingerprint(
+                &sample,
+                &request,
+                model,
+                &wire_request,
+                provider,
+                timeout_seconds,
+            )
             && r["schema"] == request["text"]["format"]["name"]
             && r["max_output_tokens"] == request["max_output_tokens"]
             && r["base_url"] == json!(model.base)
@@ -1835,6 +1924,7 @@ fn case_from_request_with_provider(
         model: model.clone(),
         repeat,
         w3_trial_root: None,
+        timeout_seconds,
     })
 }
 
@@ -1842,11 +1932,16 @@ fn eval_provider_binding(
     model: &EvalModel,
     wire: &Value,
     provider: Option<&ProviderConfig>,
+    timeout_seconds: Option<u64>,
 ) -> Value {
     provider.map_or(Value::Null, |provider| {
-        json!({"adapter":model_provider::ADAPTER_VERSION,
+        let mut binding = json!({"adapter":model_provider::ADAPTER_VERSION,
         "provider":provider,"endpoint":provider.endpoint(model.base.as_deref().unwrap()).unwrap(),
-        "model":model.model,"effort":model.effort,"request":wire})
+        "model":model.model,"effort":model.effort,"request":wire});
+        if let Some(seconds) = timeout_seconds {
+            binding["timeout_seconds"] = json!(seconds);
+        }
+        binding
     })
 }
 fn eval_request_fingerprint(
@@ -1855,12 +1950,13 @@ fn eval_request_fingerprint(
     model: &EvalModel,
     wire: &Value,
     provider: Option<&ProviderConfig>,
+    timeout_seconds: Option<u64>,
 ) -> Value {
     if provider.is_none() {
         recording_fingerprint(sample, canonical)
     } else {
         json!(hippocampus::recall_models::fingerprint(
-            &eval_provider_binding(model, wire, provider)
+            &eval_provider_binding(model, wire, provider, timeout_seconds)
         ))
     }
 }
@@ -1871,6 +1967,7 @@ fn case_fingerprint(case: &Case) -> Value {
         &case.model,
         &case.wire_request,
         case.provider.as_ref(),
+        case.timeout_seconds,
     )
 }
 fn campaign_slot(case: &Case) -> Value {
@@ -2066,8 +2163,12 @@ fn save_recording_timed(
         record["error"] = json!(error);
     }
     if case.provider.is_some() {
-        record["provider_binding"] =
-            eval_provider_binding(&case.model, &case.wire_request, case.provider.as_ref());
+        record["provider_binding"] = eval_provider_binding(
+            &case.model,
+            &case.wire_request,
+            case.provider.as_ref(),
+            case.timeout_seconds,
+        );
     }
     w3_trial_metadata(&mut record, case);
     recorded.push(record); // Includes failed attempts; reruns replay them instead of picking a success.
@@ -5725,7 +5826,8 @@ fn af123_profiles_are_fixed_and_dry_planning_never_reads_keys_or_writes() {
     assert_eq!(profiles[5].model, profiles[4].model);
     for broken in [
         "[]".to_owned(),
-        include_str!("eval/write_stage/providers.json").replace("8192", "1024"),
+        include_str!("eval/write_stage/providers.json").replace("32768", "8192"),
+        include_str!("eval/write_stage/providers.json").replace("16384", "8192"),
         include_str!("eval/write_stage/providers.json").replace("0.40.0", "0.39.0"),
         include_str!("eval/write_stage/providers.json").replace("131072", "65536"),
     ] {
@@ -5765,7 +5867,7 @@ fn af123_profiles_are_fixed_and_dry_planning_never_reads_keys_or_writes() {
     assert!(
         cases
             .iter()
-            .all(|c| c.stage == "w1" && c.repeat == 1 && c.request["max_output_tokens"] == 8192)
+            .all(|c| c.stage == "w1" && c.repeat == 1 && c.request["max_output_tokens"] == 32768)
     );
     assert!(!root.exists());
     assert!(cases.iter().all(|c| matches!(c.replay, Replay::Missing)));
@@ -5788,7 +5890,7 @@ fn smoke_fixture_variable(name: &str) -> Option<String> {
         match name {
             "DEEPSEEK_BASE_URL" => "https://ds.fixture.invalid/v1",
             "OPENAI_BASE_URL" => "https://gpt.fixture.invalid/v1",
-            "ANTHROPIC_BASE_URL" => "https://opus.fixture.invalid/v1",
+            "ANTHROPIC_BASE_URL" => "https://opus.fixture.invalid",
             "QWEN_BASE_URL" => "http://127.0.0.1:11434/v1",
             "DEEPSEEK_API_KEY" => "fixture-ds-key",
             "OPENAI_API_KEY" => "fixture-gpt-key",
@@ -5828,7 +5930,7 @@ fn af123_mixed_smoke_routes_each_slot_and_strictly_replays_one_shared_campaign()
         let request = smoke_http_request(&http, c, &keys[&c.model.label]).unwrap();
         assert_eq!(
             request.timeout().copied(),
-            Some(std::time::Duration::from_secs(360))
+            Some(std::time::Duration::from_secs(c.timeout_seconds.unwrap()))
         );
         assert_eq!(
             request.headers()[reqwest::header::USER_AGENT],
@@ -5840,9 +5942,10 @@ fn af123_mixed_smoke_routes_each_slot_and_strictly_replays_one_shared_campaign()
         match c.provider.as_ref().unwrap().protocol {
             ProviderProtocol::AnthropicMessages => {
                 assert_eq!(request.url().host_str(), Some("opus.fixture.invalid"));
+                assert_eq!(request.url().path(), "/v1/messages");
                 assert_eq!(request.headers()["x-api-key"], "fixture-opus-key");
                 assert!(request.headers().get("authorization").is_none());
-                assert_eq!(body["max_tokens"], 8192);
+                assert_eq!(body["max_tokens"], 32768);
             }
             ProviderProtocol::OpenaiChat => {
                 assert_eq!(
@@ -5858,7 +5961,7 @@ fn af123_mixed_smoke_routes_each_slot_and_strictly_replays_one_shared_campaign()
                         "none"
                     }
                 );
-                assert_eq!(body["max_tokens"], 8192);
+                assert_eq!(body["max_tokens"], 32768);
             }
             ProviderProtocol::OpenaiResponses => {
                 let gpt = c.model.label == "gpt-6.1-sol";
@@ -5878,7 +5981,7 @@ fn af123_mixed_smoke_routes_each_slot_and_strictly_replays_one_shared_campaign()
                         "Bearer fixture-ds-key"
                     }
                 );
-                assert_eq!(body["max_output_tokens"], 8192);
+                assert_eq!(body["max_output_tokens"], 32768);
                 assert!(body["instructions"].is_string());
             }
         }
@@ -5975,4 +6078,125 @@ fn af123_context_rejection_and_crash_consume_no_extra_slots() {
         evaluate_cases(&resumed, None, &mut |_| panic!("offline crash replay")).unwrap()["sent_calls"],
         0
     );
+}
+
+#[test]
+fn af128_selected_smoke_has_its_own_allowance_and_preserves_expired_history() {
+    let selected_text = "ds-flash,opus-5.5,qwen-27b-think,qwen-9b-think";
+    let (dry, limit, selected) = smoke_options(|name| match name {
+        "EVAL_SMOKE" | "EVAL_DRY_RUN" => Some("1".into()),
+        "EVAL_SMOKE_PROFILES" => Some(selected_text.into()),
+        "EVAL_RECORD" => Some("4".into()),
+        _ => None,
+    })
+    .unwrap();
+    assert!(dry);
+    assert_eq!(limit, Some(4));
+    assert_eq!(selected.join(","), selected_text);
+    assert_eq!(
+        smoke_selection(Some("qwen-9b-think,ds-flash,opus-5.5,qwen-27b-think")).unwrap(),
+        selected
+    );
+    for bad in ["", "ds-flash,ds-flash", "unknown", "ds-flash,"] {
+        assert!(smoke_selection(Some(bad)).is_err());
+    }
+    assert!(
+        smoke_options(|name| match name {
+            "EVAL_SMOKE" => Some("1".into()),
+            "EVAL_SMOKE_PROFILES" => Some(selected_text.into()),
+            "EVAL_RECORD" => Some("8".into()),
+            _ => None,
+        })
+        .is_err()
+    );
+
+    let temp = TempRecords::new();
+    let history = temp.0.join(SMOKE_ROOT);
+    let profiles = smoke_fixture_profiles();
+    let mut old_profiles = profiles.clone();
+    for p in &mut old_profiles {
+        p.max_output_tokens.insert("w1".into(), 8192);
+        p.timeout_seconds = 360;
+    }
+    let old = smoke_plan(&history, &old_profiles, smoke_fixture_variable).unwrap();
+    evaluate_cases(&old, Some(8), &mut |c| Ok(smoke_fixture_response(c))).unwrap();
+    let mut old_paths: Vec<_> = old.iter().map(|c| c.path.clone()).collect();
+    old_paths.push(history.join("campaign/authorization.json"));
+    old_paths.extend(
+        std::fs::read_dir(history.join("campaign/sends"))
+            .unwrap()
+            .map(|p| p.unwrap().path()),
+    );
+    let original: Vec<_> = old_paths
+        .iter()
+        .map(|p| std::fs::read(p).unwrap())
+        .collect();
+    let profiles: Vec<_> = profiles
+        .into_iter()
+        .filter(|p| selected.contains(&p.id))
+        .collect();
+    let root = smoke_root(&temp.0, &selected);
+    let cases =
+        smoke_plan_with_history(&root, &history, &profiles, smoke_fixture_variable).unwrap();
+    assert!(cases.iter().all(|c| matches!(c.replay, Replay::Stale)));
+    assert_eq!(
+        cases
+            .iter()
+            .map(|c| c.timeout_seconds.unwrap())
+            .collect::<Vec<_>>(),
+        [360, 360, 1800, 1800]
+    );
+    assert_eq!(smoke_preflight(&cases, Some(4)).unwrap(), 4);
+    assert!(smoke_preflight(&cases, Some(8)).is_err());
+    assert_ne!(cases[0].campaign, old[0].campaign);
+    let plan = smoke_dry_plan(&cases);
+    assert!(plan.contains("4 档 × W1 × 1 次"));
+    assert!(plan.contains("累计授权上限: 4；待录制: 4；发送前拒绝: 0"));
+    assert!(plan.contains("输出预留上限: 131072 token"));
+    assert!(!root.exists());
+    let http = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    let keys = smoke_credentials(&cases, smoke_fixture_variable).unwrap();
+    let report = evaluate_cases(&cases, Some(4), &mut |c| {
+        let request = smoke_http_request(&http, c, &keys[&c.model.label]).unwrap();
+        assert_eq!(
+            request.timeout().copied(),
+            Some(std::time::Duration::from_secs(c.timeout_seconds.unwrap()))
+        );
+        assert_eq!(c.request["max_output_tokens"], 32768);
+        Ok(smoke_fixture_response(c))
+    })
+    .unwrap();
+    assert_eq!(report["sent_calls"], 4);
+    let auth: Value =
+        serde_json::from_slice(&std::fs::read(root.join("campaign/authorization.json")).unwrap())
+            .unwrap();
+    assert_eq!(auth["limit"], 4);
+    assert_eq!(items(&auth["requests"]).len(), 4);
+    assert_eq!(count_sends([root.join("campaign/sends")]).unwrap(), 4);
+    let replay =
+        smoke_plan_with_history(&root, &history, &profiles, smoke_fixture_variable).unwrap();
+    assert!(replay.iter().all(|c| matches!(c.replay, Replay::Output(_))));
+    assert_eq!(
+        evaluate_cases(&replay, Some(0), &mut |_| panic!("must strictly replay")).unwrap()["sent_calls"],
+        0
+    );
+    let mut changed_timeout = profiles;
+    changed_timeout[2].timeout_seconds += 1;
+    let changed = smoke_plan(&root, &changed_timeout, smoke_fixture_variable).unwrap();
+    assert_eq!(changed[2].wire_request, replay[2].wire_request);
+    assert_ne!(case_fingerprint(&changed[2]), case_fingerprint(&replay[2]));
+    assert!(matches!(changed[2].replay, Replay::Stale));
+    assert!(
+        smoke_preflight(&changed, Some(4))
+            .unwrap_err()
+            .contains("identity")
+    );
+    for (path, bytes) in old_paths.iter().zip(original) {
+        assert_eq!(std::fs::read(path).unwrap(), bytes);
+    }
+    assert_eq!(count_sends([history.join("campaign/sends")]).unwrap(), 8);
+    assert_eq!(count_sends([root.join("campaign/sends")]).unwrap(), 4);
 }

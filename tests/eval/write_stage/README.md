@@ -17,6 +17,10 @@ cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
 OpenAI 使用 openai_responses、gpt-6.1-sol、OPENAI_BASE_URL/OPENAI_API_KEY。
+Responses/Chat 将 base_url 视为完整 API 前缀，分别追加 `/responses`、
+`/chat/completions`：传根地址不会自动加 `/v1`，传 `/v1` 或 `/api/v3` 则保留该前缀。
+这保留已验证的 DeepSeek `/api/v3/responses` 与 OpenAI 代理 `/responses`。
+Anthropic 按 SDK 根地址约定追加 `/v1/messages`；也接受已带 `/v1` 的基址，不重复添加。
 Qwen 使用 openai_chat、上述完整 Ollama 模型名、QWEN_BASE_URL、effort=omit、
 thinking=true/false；还须提供实际 context_tokens、model_revision 和已核实的 context_proof
 （含 tokenizer_revision、byte_level_bpe、template_token_bound），详见
@@ -25,7 +29,7 @@ thinking=true/false；还须提供实际 context_tokens、model_revision 和已�
 
 只有明确设置 EVAL_RECORD=N 才允许真实发送；localhost 也受此限制。
 EVAL_API_KEY/EVAL_BASE_URL 可显式覆盖配置引用，未设置时只读取该 provider 指定的变量，
-不回落到另一 provider 的 key。普通新 provider 请求超时为 360 秒；本轮测试全部为注入请求。
+不回落到另一 provider 的 key。普通分阶段入口请求超时为 360 秒；冒烟按下述档案执行。
 
 每个新 campaign 的 EVAL_CAMPAIGN_DIR 保存固定授权上限与槽位身份，进程间加锁；
 发送前 fsync started，逐调用持久化录制后再标记 responded。续跑累计所有 started/responded，
@@ -33,13 +37,16 @@ EVAL_API_KEY/EVAL_BASE_URL 可显式覆盖配置引用，未设置时只读取�
 严格回放不发送、不要求 key。模型/endpoint/版本/schema/思考/强度/上限变化使录制过期，
 不能靠目录标签复用。不得在历史 AC2 目录生成新产物；历史合并 59/4 保持单独核验。
 
-### 八档通路冒烟（AF123）
+### provider 通路冒烟（AF123、AF128）
 
 `providers.json` 固定八档，按 DS Pro、DS Flash、GPT、Opus、27B 开/关思考、
 9B 开/关思考的顺序串行执行。每档仅使用已有虚构样本
 `w1_01_simple_residence` 发一次 W1；随后离线跑原 schema、decode、W2 和样本评分，
 不调用 W3 或其他阶段、不提交记忆。报告分列结构化输出有效性、机械核验与语义评分，
-用于核实通路，不作为模型质量排名。每槽输出上限 8192（含思考），超时 360 秒。
+用于核实通路，不作为模型质量排名。档案按生产阶段列出输出上限：W1 32768、
+W3/W4 16384（含思考）；冒烟只使用 W1 上限。云端和本地关闭思考档超时 360 秒，
+本地开启思考档超时 1800 秒。输出上限进入发送正文，超时进入请求绑定和指纹，
+不作为字段发给模型。旧的 8192/360 秒录制如实过期，不修改旧指纹。
 
 Qwen 证明来自 Claude 在 Ollama 0.40.0 的本地探测：tokenizer 为 gpt2 字节级 BPE
 （pre=qwen35）；system+user 两条消息的模板开销为 19 token（关闭思考）或 17 token
@@ -56,7 +63,8 @@ SHA256 前缀 `b507b9c2f6ca642b`。模板证据只有前缀，不声称已取得
 干跑不要求密钥、不创建产物（即使设置了录制额度也不发送）：
 
 ```sh
-EVAL_SMOKE=1 EVAL_DRY_RUN=1 \
+EVAL_SMOKE=1 EVAL_SMOKE_PROFILES=ds-flash,opus-5.5,qwen-27b-think,qwen-9b-think \
+EVAL_DRY_RUN=1 \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -65,22 +73,30 @@ cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 本地 Qwen 不读取密钥，也不回落到远程 key。录制命令（本任务未执行）：
 
 ```sh
-EVAL_SMOKE=1 EVAL_RECORD=8 \
+EVAL_SMOKE=1 EVAL_SMOKE_PROFILES=ds-flash,opus-5.5,qwen-27b-think,qwen-9b-think \
+EVAL_RECORD=4 \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-全部产物在 `target/eval-providers/smoke-af122/`：`recordings/<profile>/`、
-共享 `campaign/authorization.json` 与逐次发送记录、`report.json`。
-八槽位一次装配后冻结为总额度 8；逐槽选择 endpoint 和认证，不自动重试。
+`EVAL_SMOKE_PROFILES` 是已知档案 ID 的逗号列表，拒绝空列表、未知 ID 和重复项；
+按档案固定顺序执行，不受列表顺序影响。省略时选择全部八档。
+`EVAL_RECORD` 必须为所选档数（上例 4）；不接受选择四档却授权 8 的组合。
+
+新产物在 `target/eval-providers/smoke-af128/<按固定顺序以--连接的档案ID>/`：
+`recordings/<profile>/`、共享 `campaign/authorization.json` 与逐次发送记录、`report.json`。
+每个所选集合一次装配后冻结为总额度（上例 4），与旧八槽 campaign 独立；
+逐槽选择 endpoint 和认证，不自动重试。相同集合换顺序仍命中同一目录与账本。
+旧 `smoke-af122/` 下的八次录制、发送账本与报告保持只读，包括已通过的四档。
+干跑读取旧录制并如实提示过期，不复制或改写，不将其当作新配置的有效回放。
 发送前持久化 started，每次调用落盘后写 responded，失败也占用额度且保留结果。
-续跑用相同命令与相同 endpoint：复用已有录制，只发送未发送槽位，不重新授权 8 次。
+续跑用相同命令与相同 endpoint：复用已有录制，只发送未发送槽位，不重新授权整批。
 若某槽已 started 但缺录制，则拒绝自动重发，需单独裁决；不得删除额度文件重置计数。
 
 严格离线回放保留相同 endpoint 环境变量，但不需要 key；报告只打印到 stdout，
 不修改录制、额度或报告文件：
 
 ```sh
-EVAL_SMOKE=1 \
+EVAL_SMOKE=1 EVAL_SMOKE_PROFILES=ds-flash,opus-5.5,qwen-27b-think,qwen-9b-think \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 

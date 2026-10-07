@@ -18,7 +18,7 @@ impl ProviderProtocol {
     pub fn path(self) -> &'static str {
         match self {
             Self::OpenaiResponses => "responses",
-            Self::AnthropicMessages => "messages",
+            Self::AnthropicMessages => "v1/messages",
             Self::OpenaiChat => "chat/completions",
         }
     }
@@ -114,11 +114,16 @@ impl ProviderConfig {
     }
 
     pub fn endpoint(&self, base: &str) -> Result<String, Error> {
-        let endpoint = format!(
-            "{}/{}",
-            base.trim().trim_end_matches('/'),
+        // Responses/Chat bases are complete API prefixes, including any version path.
+        // Anthropic uses an SDK-style root; accept an explicit /v1 without duplicating it.
+        let base = base.trim().trim_end_matches('/');
+        let path = if self.protocol == ProviderProtocol::AnthropicMessages && base.ends_with("/v1")
+        {
+            "messages"
+        } else {
             self.protocol.path()
-        );
+        };
+        let endpoint = format!("{base}/{path}");
         let url = reqwest::Url::parse(&endpoint)
             .map_err(|_| Error::InvalidContext("invalid provider URL".into()))?;
         if !matches!(url.scheme(), "http" | "https")
@@ -450,6 +455,58 @@ mod tests {
             crate::write_models::object(&[("count", crate::write_models::index())]),
             &ModelBudgetConfig::default(),
         )
+    }
+    #[test]
+    fn provider_endpoints_handle_roots_and_api_prefixes_without_duplication() {
+        for (protocol, base, expected) in [
+            (
+                ProviderProtocol::AnthropicMessages,
+                "https://fixture.invalid",
+                "https://fixture.invalid/v1/messages",
+            ),
+            (
+                ProviderProtocol::AnthropicMessages,
+                "https://fixture.invalid/",
+                "https://fixture.invalid/v1/messages",
+            ),
+            (
+                ProviderProtocol::AnthropicMessages,
+                "https://fixture.invalid/v1/",
+                "https://fixture.invalid/v1/messages",
+            ),
+            (
+                ProviderProtocol::AnthropicMessages,
+                "https://fixture.invalid/proxy",
+                "https://fixture.invalid/proxy/v1/messages",
+            ),
+            (
+                ProviderProtocol::OpenaiResponses,
+                "https://fixture.invalid",
+                "https://fixture.invalid/responses",
+            ),
+            (
+                ProviderProtocol::OpenaiResponses,
+                "https://fixture.invalid/v1/",
+                "https://fixture.invalid/v1/responses",
+            ),
+            (
+                ProviderProtocol::OpenaiResponses,
+                "https://ark.cn-beijing.volces.com/api/v3/",
+                "https://ark.cn-beijing.volces.com/api/v3/responses",
+            ),
+            (
+                ProviderProtocol::OpenaiChat,
+                "https://fixture.invalid/",
+                "https://fixture.invalid/chat/completions",
+            ),
+            (
+                ProviderProtocol::OpenaiChat,
+                "http://127.0.0.1:11434/v1/",
+                "http://127.0.0.1:11434/v1/chat/completions",
+            ),
+        ] {
+            assert_eq!(config(protocol).endpoint(base).unwrap(), expected);
+        }
     }
     #[test]
     fn all_five_anthropic_schemas_only_drop_integer_bounds() {
