@@ -698,6 +698,161 @@ fn m15_history_resolves_identity_but_never_bypasses_w3_insufficiency() {
 }
 
 #[test]
+fn af97_history_reference_controls_preserve_w3_gating_and_independent_candidates() {
+    let samples: Json = serde_json::from_str(include_str!("../tests/eval/m15/w3.json")).unwrap();
+    for sample in samples.as_array().unwrap() {
+        let db = Db::new();
+        let entities: Vec<_> = sample["input"]["entities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|e| Entity {
+                id: e["id"].as_str().unwrap().into(),
+                owner_id: "alice".into(),
+                entity_type: EntityType::Person,
+                canonical_name: e["names"][0].as_str().unwrap().into(),
+                aliases: e["names"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|n| n.as_str().unwrap().into())
+                    .collect(),
+            })
+            .collect();
+        db.open()
+            .transaction(|state| {
+                for entity in &entities {
+                    state.entities.upsert(entity.clone());
+                }
+                Ok(())
+            })
+            .unwrap();
+        let text = sample["input"]["text"].as_str().unwrap();
+        let history: Vec<_> = sample["input"]["history"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|h| h.as_str().unwrap())
+            .collect();
+        let key = db.start_turn(text, sample["id"].as_str().unwrap(), &history);
+        let candidates = sample["input"]["candidates"].as_array().unwrap();
+        let mut extraction = w1(text);
+        extraction["candidates"] = json!(
+            candidates
+                .iter()
+                .map(|c| {
+                    let mut candidate =
+                        w1(c["sentence"].as_str().unwrap())["candidates"][0].clone();
+                    candidate["speech"] = c["speech"].clone();
+                    candidate["subject"] = json!({"entity_id":c["subject"]});
+                    candidate
+                })
+                .collect::<Vec<_>>()
+        );
+        let expected = sample["expect"]["reviews"].as_array().unwrap();
+        let review = json!({"reviews":expected.iter().map(|e|json!({"candidate":e["candidate"],
+            "verdict":e["verdict"],"episode_value":"not_applicable",
+            "problems":if e["verdict"]=="supported" {json!([])} else {
+                json!([{"aspect":"subject","quote":{"text":candidates[0]["sentence"]}}])
+            }})).collect::<Vec<_>>(),"coverage":{"status":"complete","missing":[]},"request_reviews":[]});
+        let (mut provider, sent) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&extraction.to_string())),
+                Ok(envelope(&review.to_string())),
+            ],
+        );
+        provider.context.known_entities = entities;
+        let result = run_all(&db, &key, &provider);
+        let requests = sent.lock().unwrap();
+        assert_eq!(requests.len(), 2);
+        let input: Json = serde_json::from_str(requests[1]["input"].as_str().unwrap()).unwrap();
+        assert_eq!(input["user_history"], json!(history));
+        assert_eq!(input["current_user_message"], text);
+        assert!(
+            input["candidates"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|c| c["status"] == "ok")
+        );
+        for e in expected {
+            let index = e["candidate"].as_u64().unwrap() as usize;
+            assert_eq!(
+                result["enrichment"]["candidates"][index]["status"],
+                if e["verdict"] == "supported" {
+                    "committed"
+                } else {
+                    "pending"
+                }
+            );
+        }
+        assert_eq!(
+            db.open()
+                .read()
+                .unwrap()
+                .repository
+                .list_by_owner(&UserId::from("alice"))
+                .unwrap()
+                .len(),
+            expected
+                .iter()
+                .filter(|e| e["verdict"] == "supported")
+                .count()
+        );
+    }
+}
+
+#[test]
+fn af97_w3_reference_rules_and_fictional_inputs_do_not_leak() {
+    for rule in [
+        "For the subject aspect",
+        "missing explicit reference",
+        "multiple indeterminate referents",
+        "Contradictions among factual values",
+        "do not by themselves",
+        "new assertion or replacement value must be supported by",
+        "Resolving the subject does not make the whole candidate supported",
+        "every other aspect",
+        "not by itself insufficient subject support",
+        "it must not be supported",
+    ] {
+        assert!(W3_PROMPT.contains(rule), "{rule}");
+    }
+    let samples: Json = serde_json::from_str(include_str!("../tests/eval/m15/w3.json")).unwrap();
+    let old = include_str!("../tests/eval/m15/w3-old-91a068a.txt");
+    for sample in samples.as_array().unwrap() {
+        let mut texts = vec![
+            sample["id"].as_str().unwrap(),
+            sample["focus"].as_str().unwrap(),
+            sample["input"]["text"].as_str().unwrap(),
+        ];
+        texts.extend(
+            sample["input"]["history"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|h| h.as_str().unwrap()),
+        );
+        texts.extend(
+            sample["input"]["candidates"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|c| c["sentence"].as_str().unwrap()),
+        );
+        for text in texts {
+            for prompt in [W1_PROMPT, W3_PROMPT, W4_PROMPT, old] {
+                assert!(
+                    !prompt.contains(text),
+                    "AF96 input/label leaked into prompt"
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn m15_w1_low_default_preserves_explicit_override_and_rule_only_prompts() {
     let mut models = WriteModels::default();
     assert_eq!(models.effort("w1"), ReasoningEffort::Low);

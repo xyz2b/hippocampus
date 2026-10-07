@@ -1,0 +1,277 @@
+[
+  {
+    "id": "af96_w3_01",
+    "contract": "w3.v3",
+    "fictional": true,
+    "label_status": "reviewed",
+    "focus": "明确先行语",
+    "input": {
+      "text": "刚才保管箱编号记错了，应为63。",
+      "history": [
+        "哥哥青垒的保管箱编号是28。"
+      ],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "sibling-demo",
+          "names": [
+            "青垒",
+            "哥哥"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "said_on": "2026-10-07",
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "sibling-demo",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "刚才保管箱编号记错了，应为63。",
+          "sentence": "刚才保管箱编号记错了，应为63。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    },
+    "note": "虚构固定 W2 输入；标签只用于报告，不进入模型请求。"
+  },
+  {
+    "id": "af96_w3_02",
+    "contract": "w3.v3",
+    "fictional": true,
+    "label_status": "reviewed",
+    "focus": "历史值矛盾但主体明确",
+    "input": {
+      "text": "刚才保管箱编号记错了，应为63。",
+      "history": [
+        "哥哥青垒的保管箱只有一个编号，却同时记成28和47。"
+      ],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "sibling-demo",
+          "names": [
+            "青垒",
+            "哥哥"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "said_on": "2026-10-07",
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "sibling-demo",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "刚才保管箱编号记错了，应为63。",
+          "sentence": "刚才保管箱编号记错了，应为63。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    },
+    "note": "虚构固定 W2 输入；标签只用于报告，不进入模型请求。"
+  },
+  {
+    "id": "af96_w3_03",
+    "contract": "w3.v3",
+    "fictional": true,
+    "label_status": "reviewed",
+    "focus": "两个可能主体",
+    "input": {
+      "text": "刚才保管箱编号记错了，应为63。我打算修理纸灯罩。",
+      "history": [
+        "哥哥青垒的保管箱编号是28；我的保管箱编号是47。"
+      ],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "sibling-demo",
+          "names": [
+            "青垒",
+            "哥哥"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "said_on": "2026-10-07",
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "sibling-demo",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "刚才保管箱编号记错了，应为63。",
+          "sentence": "刚才保管箱编号记错了，应为63。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        },
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我打算修理纸灯罩。",
+          "sentence": "我打算修理纸灯罩。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "insufficient",
+          "aspects": [
+            "subject"
+          ],
+          "episode_value": "not_applicable"
+        },
+        {
+          "candidate": 1,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    },
+    "note": "虚构固定 W2 输入；标签只用于报告，不进入模型请求。"
+  },
+  {
+    "id": "af96_w3_04",
+    "contract": "w3.v3",
+    "fictional": true,
+    "label_status": "reviewed",
+    "focus": "没有先行语且目录唯一",
+    "input": {
+      "text": "刚才保管箱编号记错了，应为63。",
+      "history": [],
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "said_on": "2026-10-07",
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "刚才保管箱编号记错了，应为63。",
+          "sentence": "刚才保管箱编号记错了，应为63。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "insufficient",
+          "aspects": [
+            "subject"
+          ],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    },
+    "note": "虚构固定 W2 输入；标签只用于报告，不进入模型请求。"
+  }
+]

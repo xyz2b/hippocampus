@@ -4,6 +4,52 @@
 `mvp.json` 和 `w1.json` 全部 `fictional=true`，标注状态以各文件的 `label_status` 为准，由 Claude 审核、用户确认。
 确认时只改标注，不能把标签或预期结果加进请求。默认测试仍是原 63 题的严格离线回放；历史合并 59/4 单独核验。
 
+## AF96：W3 更正主体的旧/新提示词对照
+
+`w3.json` 是四个独立虚构场景：明确先行语、历史事实矛盾但主体明确、多个可能主体、
+无先行语且目录唯一。负例也绑定目录内实体，使 W2=ok；指代是否成立由 W3 判断。
+两个正例都指向明确登记的非 self 主体，避免默认绑定用户本人造成假阳性。
+多个主体场景另含独立计划，检查局部不足不阻断无关候选。标签为 draft，Claude 验收后复核；
+不靠提高 supported 数判好坏，正例须支持、负例须拒收。
+
+旧臂来自 `91a068a:src/write_models.rs` 的 `W3_PROMPT` 原始 UTF-8 字节，保存在
+`w3-old-91a068a.txt`（6838 字节，`fnv1a64:e20f41189ca2159c`），不加末尾换行，
+不从 HEAD 或当前常量获取。新臂使用当前生产 `W3_PROMPT`。两臂都经生产 `structured_request`
+构造，公共指令前缀、schema 和输入相同。每场景 W2 仅装配一次、无 W1 调用；
+完整输入复制至两臂和两次重复。arm、repeat、focus、标签和预期不进模型输入。
+
+固定 Pro（`ep-20261003130756-trhj6`）、minimal、w3.v3、said_on=2026-10-07、UTC+8、
+max_output_tokens=16384。四场景 × 旧/新两臂 × 两次 = 16 个槽位；按场景交错，
+第1次 old→new、第2次 new→old。两次仅供定点诊断，不证明统计显著。
+
+```sh
+# 本实施只执行下列零调用检查。干跑不读密钥、不创建录制。
+EVAL_M15=w3 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 无 EVAL_RECORD：严格回放，默认只报告，不因模型分数中止。
+EVAL_M15=w3 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# AF96 已批准，仍须 Claude 验收后执行；本实施不执行。
+EVAL_M15=w3 EVAL_RECORD=16 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+请求完整指纹保留提示词、schema、完整输入（含时钟）、模型、effort、输出上限；
+另核 base URL、arm、repeat。旧/新录制分目录，不能跨臂或重复借用响应。
+根目录固定为 `target/eval-m15/w3-af96/`，报告为其 `report.json`，发送日志共用根目录 `sends/`。
+此模式拒绝 EVAL_M15_DIR/OUTPUT、CASE/STAGE 筛选、FIXED_INPUTS/HISTORY、MODEL/LABEL、
+REASONING_EFFORT、REPEAT、MAX_OUTPUT_TOKENS 覆盖；可提供同一服务的 BASE_URL/API_KEY。
+保持同一 base URL 以复用；改变地址须如实报过期，不能获得额外额度。
+
+EVAL_RECORD=15 且首次缺口16时，在读取密钥/建客户端前整批拒绝。
+累计成功、失败、无响应 started 均占独立16次额度；发送前 fsync started，响应逐次原子保存并 fsync。
+成功和失败响应均按严格绑定复用、不自动重试。累计发送/在途 + 缺口 >16 时拒绝，
+中断导致额度不足时保留缺口，不能删除日志/换目录补发。整个发送批持有同一 OS 文件锁；
+并发执行者拒绝发送，进程退出或崩溃后锁由 OS 释放，累计账本保留。
+报告按臂、场景、repeat 展示结果、延迟和 usage（输出含推理 token），旧臂失败也全部报告，
+默认 EVAL_GATE=0；只在显式 EVAL_GATE=1 时因评分失败退出。该配置不改变默认普通评测。
+
+生产同轮 W3 阶段缓存不绑定提示词，本轮不改变其失效政策，也不自动处理已有 pending。
+上述对照直接构造独立阶段请求，不使用生产阶段缓存或生产数据。
+
 ## 零调用检查和干跑
 
 ```sh

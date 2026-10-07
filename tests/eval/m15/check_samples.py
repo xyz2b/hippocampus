@@ -26,10 +26,25 @@ def inputs(value):
 def check():
     mvp = json.loads((ROOT / "mvp.json").read_text())
     w1 = json.loads((ROOT / "w1.json").read_text())
+    w3 = json.loads((ROOT / "w3.json").read_text())
     assert mvp["label_status"] in ("draft", "reviewed") and mvp["fictional"]
     assert len(mvp["messages"]) == 4 and len(mvp["questions"]) == 2
     assert len(w1) == 6 and all(s["label_status"] == "draft" and s["fictional"] for s in w1)
-    new = list(inputs(mvp)) + list(inputs(w1))
+    assert len(w3) == 4 and all(s["label_status"] in ("draft", "reviewed") and s["fictional"] for s in w3)
+    assert len({s["id"] for s in w3}) == 4
+    for sample in w3:
+        entity_ids = {e["id"] for e in sample["input"]["entities"]}
+        for candidate in sample["input"]["candidates"]:
+            assert candidate["subject"] in entity_ids, "W3 negative control must pass mechanical subject lookup"
+            assert candidate["value"] == candidate["sentence"]
+            assert candidate["sentence"] in sample["input"]["text"]
+        assert len(sample["expect"]["reviews"]) == len(sample["input"]["candidates"])
+    old = (ROOT / "w3-old-91a068a.txt").read_bytes()
+    digest = 0xcbf29ce484222325
+    for byte in old:
+        digest = ((digest ^ byte) * 0x100000001b3) & ((1 << 64) - 1)
+    assert f"fnv1a64:{digest:016x}" == "fnv1a64:e20f41189ca2159c", "old W3 prompt snapshot changed"
+    new = list(inputs(mvp)) + list(inputs(w1)) + list(inputs(w3))
     for text in new:
         assert not any(word in text for word in PRIVATE_TOPICS), "private production topic in fictional input"
     # Deliberately exclude recordings and the new directory. Compare authored
