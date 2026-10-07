@@ -700,6 +700,17 @@ fn m15_history_resolves_identity_but_never_bypasses_w3_insufficiency() {
 #[test]
 fn af97_history_reference_controls_preserve_w3_gating_and_independent_candidates() {
     let samples: Json = serde_json::from_str(include_str!("../tests/eval/m15/w3.json")).unwrap();
+    assert_w3_history_reference_controls(samples);
+}
+
+#[test]
+fn af101_effort_samples_pass_w2_and_preserve_w3_subject_gating() {
+    let samples: Json =
+        serde_json::from_str(include_str!("../tests/eval/m15/w3-effort.json")).unwrap();
+    assert_w3_history_reference_controls(samples);
+}
+
+fn assert_w3_history_reference_controls(samples: Json) {
     for sample in samples.as_array().unwrap() {
         let db = Db::new();
         let entities: Vec<_> = sample["input"]["entities"]
@@ -819,9 +830,15 @@ fn af97_w3_reference_rules_and_fictional_inputs_do_not_leak() {
     ] {
         assert!(W3_PROMPT.contains(rule), "{rule}");
     }
-    let samples: Json = serde_json::from_str(include_str!("../tests/eval/m15/w3.json")).unwrap();
+    let samples: Vec<Json> = [
+        include_str!("../tests/eval/m15/w3.json"),
+        include_str!("../tests/eval/m15/w3-effort.json"),
+    ]
+    .into_iter()
+    .flat_map(|text| serde_json::from_str::<Vec<Json>>(text).unwrap())
+    .collect();
     let old = include_str!("../tests/eval/m15/w3-old-91a068a.txt");
-    for sample in samples.as_array().unwrap() {
+    for sample in &samples {
         let mut texts = vec![
             sample["id"].as_str().unwrap(),
             sample["focus"].as_str().unwrap(),

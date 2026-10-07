@@ -27,12 +27,22 @@ def check():
     mvp = json.loads((ROOT / "mvp.json").read_text())
     w1 = json.loads((ROOT / "w1.json").read_text())
     w3 = json.loads((ROOT / "w3.json").read_text())
+    w3_effort = json.loads((ROOT / "w3-effort.json").read_text())
     assert mvp["label_status"] in ("draft", "reviewed") and mvp["fictional"]
     assert len(mvp["messages"]) == 4 and len(mvp["questions"]) == 2
     assert len(w1) == 6 and all(s["label_status"] == "draft" and s["fictional"] for s in w1)
     assert len(w3) == 4 and all(s["label_status"] in ("draft", "reviewed") and s["fictional"] for s in w3)
     assert len({s["id"] for s in w3}) == 4
-    for sample in w3:
+    assert len(w3_effort) == 4 and all(
+        s["label_status"] in ("draft", "reviewed") and s["fictional"] for s in w3_effort
+    )
+    assert len({s["id"] for s in w3 + w3_effort}) == 8
+    for prior, revised in zip(w3, w3_effort):
+        assert revised["input"]["text"] == prior["input"]["text"].replace("应为63", "是63")
+        assert revised["expect"] == prior["expect"]
+        assert revised["input"]["history"] == prior["input"]["history"]
+    assert "编号所属的人" in w3_effort[3]["focus"]
+    for sample in w3 + w3_effort:
         entity_ids = {e["id"] for e in sample["input"]["entities"]}
         for candidate in sample["input"]["candidates"]:
             assert candidate["subject"] in entity_ids, "W3 negative control must pass mechanical subject lookup"
@@ -44,7 +54,7 @@ def check():
     for byte in old:
         digest = ((digest ^ byte) * 0x100000001b3) & ((1 << 64) - 1)
     assert f"fnv1a64:{digest:016x}" == "fnv1a64:e20f41189ca2159c", "old W3 prompt snapshot changed"
-    new = list(inputs(mvp)) + list(inputs(w1)) + list(inputs(w3))
+    new = list(inputs(mvp)) + list(inputs(w1)) + list(inputs(w3)) + list(inputs(w3_effort))
     for text in new:
         assert not any(word in text for word in PRIVATE_TOPICS), "private production topic in fictional input"
     # Deliberately exclude recordings and the new directory. Compare authored

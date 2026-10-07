@@ -50,6 +50,43 @@ EVAL_RECORD=15 且首次缺口16时，在读取密钥/建客户端前整批拒�
 生产同轮 W3 阶段缓存不绑定提示词，本轮不改变其失效政策，也不自动处理已有 pending。
 上述对照直接构造独立阶段请求，不使用生产阶段缓存或生产数据。
 
+## AF101：W3 minimal / low 强度对照
+
+独立入口 `EVAL_M15=w3-effort` 使用 `w3-effort.json` 的四个虚构场景。原话及第一条
+候选的 sentence/value 同步用“是63”，03 保留独立计划；04 核验的是编号所属的人，
+不能将记错编号或更正发言的人推作所属实体，保持 insufficient[subject]。新标签 draft，
+由 Claude 确认；报告按标签计分时仍显示 draft，不作为已确认验收结论。
+原 `w3.json`、AF96 录制和累计账本保留，不能改写旧结果。措辞改变后 AF96 minimal
+响应也不能充当新对照，因此冷启动需要完整 16 次。
+
+两臂固定 dc604f8 的当前 W3 提示词，字节指纹 `fnv1a64:a20cc11e24e4d855`；
+代码对当前常量校验该指纹，提示词改变则拒绝执行本组，不能静默切换版本。
+固定 Pro、w3.v3、said_on=2026-10-07、UTC+8、max_output_tokens=16384；每场景 W2
+仅装配一次并复制，两臂请求仅 reasoning.effort（minimal/low）不同。每场景第一遍
+minimal→low，第二遍 low→minimal。标签、focus、effort_arm、repeat 不进入模型输入。
+
+完整指纹显式绑定整个请求（包括 effort、模型、提示词、schema、输入、时钟及输出上限），
+另核 base URL、试验身份、arm、repeat、提示词字节指纹。根目录固定为
+`target/eval-m15/w3-af101/`，臂与重复分目录；报告 `report.json`，共享累计账本 `sends/`。
+新增独立累计上限 16，AF96 已花费的 16 次不重置、不转用。与 AF96 相同的环境覆盖限制、
+整批预检、OS 锁、发送前 fsync、逐次保存、失败/无响应计费及严格续跑规则继续适用。
+15 次额度不足时先于密钥/客户端拒绝；不自动重试，不删除日志或换目录补发。
+
+```sh
+# 干跑：零调用、无密钥、无录制写入。
+EVAL_M15=w3-effort EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 默认严格回放：只报告缺口，不发请求；报告写 target/。
+EVAL_M15=w3-effort cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 追加 16 次已授权，Claude 验收并确认标签后执行；Codex 本轮不执行。
+EVAL_M15=w3-effort EVAL_RECORD=16 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+报告提供每候选 verdict/aspects/引用、每臂每场景每次结果、延迟及 usage（输出含推理 token）。
+输出容量合计 262144 token 是配置上限，不能用旧 minimal 平均约 110 token 预测 low 成本。
+默认 EVAL_GATE=0，显式 1 才因模型评分失败退出。对 low 的定点改善要求两次均满足：
+01/02 supported，04 insufficient[subject]，03 的主体负例及独立计划不退步；不能仅比较
+supported 数量。两次重复不证明统计显著；切生产缺省需另行决定，不由工具自动修改。
+
 ## 零调用检查和干跑
 
 ```sh

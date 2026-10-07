@@ -19,6 +19,7 @@ use std::path::{Path, PathBuf};
 const MODEL: &str = "DeepSeek-V4.1-Flash";
 const W3_OLD_PROMPT: &str = include_str!("eval/m15/w3-old-91a068a.txt");
 const W3_OLD_FINGERPRINT: &str = "fnv1a64:e20f41189ca2159c";
+const W3_EFFORT_PROMPT_FINGERPRINT: &str = "fnv1a64:a20cc11e24e4d855";
 const W3_TRIAL_CAP: usize = 16;
 
 fn items(value: &Value) -> &[Value] {
@@ -752,6 +753,17 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             .unwrap_or(Value::Null);
         report["manual_review"] = json!({"must_not":"pending","unlabelled_semantics":"pending"});
     }
+    if sample["w3_effort_arm"].is_string() {
+        let raw: Value = text
+            .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
+            .unwrap_or(Value::Null);
+        report["candidate_reviews"] = json!(items(&raw["reviews"]).iter().map(|r| json!({
+            "candidate":r["candidate"], "verdict":r["verdict"],
+            "aspects":items(&r["problems"]).iter().map(|p|p["aspect"].clone()).collect::<Vec<_>>(),
+            "problems":r["problems"], "episode_value":r["episode_value"]
+        })).collect::<Vec<_>>());
+        report["raw_output"] = raw;
+    }
     if stage == "r4" {
         report["validated_output"] = result
             .as_ref()
@@ -1044,6 +1056,7 @@ fn recording_fingerprint(sample: &Value, request: &Value) -> Value {
     if sample["fixed_input"] != true
         && sample["m15_review"] != true
         && sample["w3_prompt_arm"].is_null()
+        && sample["w3_effort_arm"].is_null()
     {
         return fingerprint(request);
     }
@@ -1293,6 +1306,11 @@ fn case_from_request(
             && r["endpoint"] == request["model"]
             && r["recording_version"] == 2
             && (sample["w3_prompt_arm"].is_null() || r["prompt_arm"] == sample["w3_prompt_arm"])
+            && (sample["w3_effort_arm"].is_null()
+                || (r["effort_arm"] == sample["w3_effort_arm"]
+                    && r["trial"] == "af101-w3-effort"
+                    && r["baseline_commit"] == "dc604f8"
+                    && r["prompt_byte_fingerprint"] == W3_EFFORT_PROMPT_FINGERPRINT))
     });
     let replay = if let Some(r) = record {
         if r.get("error").is_some() {
@@ -1352,7 +1370,7 @@ fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
         let previous = w3_sent_before(root)?;
         if previous.saturating_add(needed) > W3_TRIAL_CAP {
             return Err(format!(
-                "AF96 W3 整批拒绝：累计已发送/在途 {previous} + 缺口 {needed} > 批准上限 {W3_TRIAL_CAP}"
+                "W3 对照整批拒绝：累计已发送/在途 {previous} + 缺口 {needed} > 批准上限 {W3_TRIAL_CAP}"
             ));
         }
     }
@@ -1422,12 +1440,7 @@ fn save_recording_timed(
     if let Some(error) = error {
         record["error"] = json!(error);
     }
-    if case.w3_trial_root.is_some() {
-        record["prompt_arm"] = case.sample["w3_prompt_arm"].clone();
-        record["baseline_commit"] = json!("91a068a");
-        record["prompt_byte_fingerprint"] =
-            json!(w3_prompt_fingerprint(w3_arm_prompt(&case.sample)));
-    }
+    w3_trial_metadata(&mut record, case);
     recorded.push(record); // Includes failed attempts; reruns replay them instead of picking a success.
     file["recorded"] = json!(recorded);
     if case.sample["m15_review"] == true || case.w3_trial_root.is_some() {
@@ -1497,10 +1510,10 @@ fn evaluate(
                         "elapsed_ms":elapsed_ms,"usage":envelope["usage"],"status":envelope["status"],"error":response.as_ref().err()});
                     if case.w3_trial_root.is_some() {
                         entry["sample"] = case.sample["id"].clone();
-                        entry["prompt_arm"] = case.sample["w3_prompt_arm"].clone();
                         entry["repeat"] = json!(case.repeat);
                         entry["model"] = case.request["model"].clone();
                         entry["reasoning_effort"] = json!(case.model.effort);
+                        w3_trial_metadata(&mut entry, case);
                     }
                     m15_write_json(&path, &entry)?;
                 }
@@ -1545,11 +1558,7 @@ fn evaluate(
         result["repeat"] = json!(case.repeat);
         result["max_output_tokens"] = case.request["max_output_tokens"].clone();
         result["request"] = recording_fingerprint(&case.sample, &case.request);
-        if case.w3_trial_root.is_some() {
-            result["prompt_arm"] = case.sample["w3_prompt_arm"].clone();
-            result["prompt_byte_fingerprint"] =
-                json!(w3_prompt_fingerprint(w3_arm_prompt(&case.sample)));
-        }
+        w3_trial_metadata(&mut result, case);
         results.push(result);
     }
     let summary = stage_summaries(&results, cases);
@@ -1703,8 +1712,11 @@ fn historical_reports() -> Result<Value, String> {
 fn write_stage_eval_suite() {
     let m15 = std::env::var("EVAL_M15").as_deref() == Ok("w1");
     let w3_trial = std::env::var("EVAL_M15").as_deref() == Ok("w3");
+    let w3_effort = std::env::var("EVAL_M15").as_deref() == Ok("w3-effort");
     if std::env::var("EVAL_DRY_RUN").as_deref() == Ok("1") {
-        if w3_trial {
+        if w3_effort {
+            w3_effort_dry_run();
+        } else if w3_trial {
             w3_comparison_dry_run();
         } else if m15 {
             m15_dry_run();
@@ -1713,7 +1725,9 @@ fn write_stage_eval_suite() {
         }
         return;
     }
-    if w3_trial {
+    if w3_effort {
+        w3_trial_options("AF101").unwrap();
+    } else if w3_trial {
         w3_comparison_options().unwrap();
     }
     if std::env::var("EVAL_HISTORY").as_deref() == Ok("1") {
@@ -1724,7 +1738,9 @@ fn write_stage_eval_suite() {
         return;
     }
     let gate = eval_gate(std::env::var("EVAL_GATE").ok().as_deref()).unwrap();
-    let cases = if w3_trial {
+    let cases = if w3_effort {
+        w3_effort_from_env().unwrap()
+    } else if w3_trial {
         w3_comparison_from_env().unwrap()
     } else if m15 {
         m15_w1_plan(&m15_root()).unwrap()
@@ -1791,7 +1807,12 @@ fn write_stage_eval_suite() {
         response.json().map_err(|e| e.to_string())
     })
     .unwrap();
-    if w3_trial {
+    if w3_effort {
+        report["effort_comparison"] = w3_effort_report(&report);
+        let path = w3_effort_root().join("report.json");
+        m15_write_json(&path, &report).unwrap();
+        println!("AF101 W3 强度对照报告：{}", path.display());
+    } else if w3_trial {
         report["prompt_comparison"] = w3_comparison_report(&report);
         let path = w3_comparison_root().join("report.json");
         m15_write_json(&path, &report).unwrap();
@@ -1966,11 +1987,31 @@ fn w3_arm_prompt(sample: &Value) -> &'static str {
     }
 }
 
+fn w3_trial_metadata(row: &mut Value, case: &Case) {
+    if case.w3_trial_root.is_none() {
+        return;
+    }
+    if case.sample["w3_effort_arm"].is_string() {
+        row["trial"] = json!("af101-w3-effort");
+        row["effort_arm"] = case.sample["w3_effort_arm"].clone();
+        row["baseline_commit"] = json!("dc604f8");
+        row["prompt_byte_fingerprint"] = json!(W3_EFFORT_PROMPT_FINGERPRINT);
+    } else {
+        row["prompt_arm"] = case.sample["w3_prompt_arm"].clone();
+        row["baseline_commit"] = json!("91a068a");
+        row["prompt_byte_fingerprint"] = json!(w3_prompt_fingerprint(w3_arm_prompt(&case.sample)));
+    }
+}
+
 fn w3_comparison_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-m15/w3-af96")
 }
 
 fn w3_comparison_options() -> Result<(), String> {
+    w3_trial_options("AF96")
+}
+
+fn w3_trial_options(trial: &str) -> Result<(), String> {
     // This authorization covers one fixed cohort; filtering/config changes need a new approval.
     for key in [
         "EVAL_M15_DIR",
@@ -1986,7 +2027,7 @@ fn w3_comparison_options() -> Result<(), String> {
         "EVAL_MAX_OUTPUT_TOKENS",
     ] {
         if std::env::var_os(key).is_some() {
-            return Err(format!("AF96 W3 配置固定，不接受 {key}"));
+            return Err(format!("{trial} W3 配置固定，不接受 {key}"));
         }
     }
     Ok(())
@@ -2068,7 +2109,7 @@ fn w3_trial_root(cases: &[Case]) -> Result<Option<&Path>, String> {
             .iter()
             .any(|c| c.w3_trial_root.as_deref() != Some(root))
     {
-        return Err("AF96 trial cannot mix roots or unrelated cases".into());
+        return Err("W3 trial cannot mix roots or unrelated cases".into());
     }
     Ok(root)
 }
@@ -2087,25 +2128,24 @@ fn w3_trial_lock(root: &Path) -> Result<std::fs::File, String> {
         .open(root.join("trial.lock"))
         .map_err(|e| e.to_string())?;
     file.try_lock()
-        .map_err(|e| format!("AF96 W3 试验已被另一执行者锁定：{e}"))?;
+        .map_err(|e| format!("W3 试验已被另一执行者锁定：{e}"))?;
     Ok(file)
 }
 
 fn w3_start_send(case: &Case) -> Result<PathBuf, String> {
     let root = case.w3_trial_root.as_deref().unwrap();
     if w3_sent_before(root)? >= W3_TRIAL_CAP {
-        return Err("AF96 W3 cumulative send allowance exhausted".into());
+        return Err("W3 cumulative send allowance exhausted".into());
     }
     let path = root
         .join("sends")
         .join(format!("{}.json", hippocampus::diagnostics::new_id()));
-    m15_write_json(
-        &path,
-        &json!({"state":"started","sample":case.sample["id"],
-        "prompt_arm":case.sample["w3_prompt_arm"],"repeat":case.repeat,
+    let mut entry = json!({"state":"started","sample":case.sample["id"],
+        "repeat":case.repeat,
         "model":case.request["model"],"reasoning_effort":case.model.effort,
-        "request":recording_fingerprint(&case.sample,&case.request)}),
-    )?;
+        "request":recording_fingerprint(&case.sample,&case.request)});
+    w3_trial_metadata(&mut entry, case);
+    m15_write_json(&path, &entry)?;
     Ok(path)
 }
 
@@ -2155,6 +2195,404 @@ fn w3_comparison_dry_run() {
         "录制/额度根目录：target/eval-m15/w3-af96；报告：target/eval-m15/w3-af96/report.json。"
     );
     println!("录制模式预检计划 {sends}；干跑实际发送 0，未读取密钥、未创建录制。");
+}
+
+fn w3_effort_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-m15/w3-af101")
+}
+
+fn w3_effort_from_env() -> Result<Vec<Case>, String> {
+    w3_trial_options("AF101")?;
+    let base = std::env::var("EVAL_BASE_URL")
+        .ok()
+        .or_else(|| std::env::var("DEEPSEEK_BASE_URL").ok())
+        .map(|s| s.trim_end_matches('/').to_owned());
+    w3_effort_plan(&w3_effort_root(), base)
+}
+
+fn w3_effort_plan(root: &Path, base: Option<String>) -> Result<Vec<Case>, String> {
+    if w3_prompt_fingerprint(write_models::W3_PROMPT) != W3_EFFORT_PROMPT_FINGERPRINT {
+        return Err("AF101 W3 提示词不再是固定的 dc604f8 字节，禁止变更本组试验".into());
+    }
+    let samples: Vec<Value> =
+        serde_json::from_str(include_str!("eval/m15/w3-effort.json")).map_err(|e| e.to_string())?;
+    if samples.len() != 4 || samples.iter().any(|s| s["fictional"] != true) {
+        return Err("AF101 requires four fictional W3 scenarios".into());
+    }
+    let mut model = EvalModel {
+        label: "af101-pro-minimal".into(),
+        model: Some("ep-20261003130756-trhj6".into()),
+        base,
+        effort: ReasoningEffort::Minimal,
+    };
+    model.validate()?;
+    let mut cases = Vec::new();
+    for sample in samples {
+        // Assemble W2 once. Only the top-level reasoning effort differs between arms.
+        let mut frozen = stage_request_with_output_tokens("w3", &sample, 16384)?;
+        frozen["model"] = json!(model.model);
+        for repeat in 1..=2 {
+            let arms = if repeat == 1 {
+                [ReasoningEffort::Minimal, ReasoningEffort::Low]
+            } else {
+                [ReasoningEffort::Low, ReasoningEffort::Minimal]
+            };
+            for effort in arms {
+                let arm = serde_json::to_value(effort).unwrap();
+                let arm = arm.as_str().unwrap();
+                model.effort = effort;
+                model.label = format!("af101-pro-{arm}");
+                let mut request = frozen.clone();
+                effort.apply(&mut request);
+                let mut sample = sample.clone();
+                sample["w3_effort_arm"] = json!(arm);
+                let mut case = case_from_request(
+                    "w3".into(),
+                    sample,
+                    &root.join(arm).join(format!("repeat-{repeat}")),
+                    &model,
+                    repeat,
+                    request,
+                )?;
+                case.w3_trial_root = Some(root.to_owned());
+                cases.push(case);
+            }
+        }
+    }
+    Ok(cases)
+}
+
+fn w3_effort_report(report: &Value) -> Value {
+    let results = items(&report["results"]);
+    let arms = ["minimal", "low"].map(|arm| {
+        let rows: Vec<_> = results.iter().filter(|r| r["effort_arm"] == arm).cloned().collect();
+        json!({"arm":arm,"total":rows.len(),
+            "passed":rows.iter().filter(|r|r["status"]=="通过").count(),
+            "failed":rows.iter().filter(|r|matches!(r["status"].as_str(),Some("失败"|"调用失败"))).count(),
+            "missing":rows.iter().filter(|r|r["status"]=="未录制").count(),
+            "stale":rows.iter().filter(|r|r["status"]=="录制过期").count(),
+            "draft":rows.iter().filter(|r|r["label_status"]=="draft").count(),
+            "metrics":stage_metrics(&rows),"per_sample":per_sample(&rows),
+            "usage_totals":{
+                "available":rows.iter().filter(|r|r["usage"].is_object()).count(),
+                "input_tokens":rows.iter().filter_map(|r|r["usage"]["input_tokens"].as_u64()).sum::<u64>(),
+                "output_tokens_including_reasoning":rows.iter().filter_map(|r|r["usage"]["output_tokens"].as_u64()).sum::<u64>(),
+                "reasoning_tokens":rows.iter().filter_map(|r|r["usage"]["output_tokens_details"]["reasoning_tokens"].as_u64()).sum::<u64>()}})
+    });
+    json!({"trial":"af101-w3-effort","baseline_commit":"dc604f8",
+        "prompt_byte_fingerprint":W3_EFFORT_PROMPT_FINGERPRINT,"authorized_calls":W3_TRIAL_CAP,
+        "note":"新样本标签 draft，由 Claude 确认；每场景两次仅供定点诊断，不证明统计显著。",
+        "arms":arms})
+}
+
+fn w3_effort_dry_run() {
+    let cases = w3_effort_from_env().unwrap();
+    let limit = std::env::var("EVAL_RECORD")
+        .ok()
+        .map(|s| s.parse().expect("EVAL_RECORD integer"));
+    preflight(&cases, limit).unwrap();
+    let needed = cases
+        .iter()
+        .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
+        .count();
+    println!(
+        "AF101 W3 强度对照：同一提示词 × 4 虚构场景 × minimal/low × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。"
+    );
+    println!(
+        "固定 Pro、w3.v3、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
+    );
+    println!("固定提示词：dc604f8，字节指纹 {W3_EFFORT_PROMPT_FINGERPRINT}。");
+    println!(
+        "严格可复用 {}；缺口 {needed}；本组累计已发送/在途 {}；追加批准上限 16（AF96 账本保留）。",
+        cases.len() - needed,
+        w3_sent_before(&w3_effort_root()).unwrap()
+    );
+    println!("配对顺序：每场景第1次 minimal→low，第2次 low→minimal。");
+    println!("输出配置容量合计 262144 token（含推理，非预期用量）；low 实际用量未知。");
+    println!("干跑：真实调用 0；未读取密钥、未创建录制。新标签 draft，须 Claude 确认。");
+}
+
+#[test]
+fn af101_w3_effort_plan_is_frozen_and_rejects_fifteen_before_output() {
+    let temp = TempRecords::new();
+    let cases = w3_effort_plan(&temp.0, None).unwrap();
+    assert_eq!(cases.len(), 16);
+    assert!(preflight(&cases, Some(15)).is_err());
+    assert_eq!(preflight(&cases, Some(16)).unwrap(), 16);
+    assert_eq!(preflight(&cases, None).unwrap(), 0);
+    assert!(!temp.0.exists());
+    assert_ne!(w3_effort_root(), w3_comparison_root());
+    assert_eq!(
+        w3_prompt_fingerprint(write_models::W3_PROMPT),
+        W3_EFFORT_PROMPT_FINGERPRINT
+    );
+    assert_eq!(
+        cases
+            .iter()
+            .map(|c| &c.path)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len(),
+        16
+    );
+    for pair in cases.chunks_exact(4) {
+        assert_eq!(
+            pair.iter()
+                .map(|c| c.sample["w3_effort_arm"].as_str().unwrap())
+                .collect::<Vec<_>>(),
+            ["minimal", "low", "low", "minimal"]
+        );
+        for case in pair {
+            assert_eq!(case.stage, "w3");
+            assert_eq!(
+                case.request["reasoning"]["effort"],
+                case.sample["w3_effort_arm"]
+            );
+            assert_eq!(case.request["model"], "ep-20261003130756-trhj6");
+            assert_eq!(case.request["max_output_tokens"], 16384);
+            assert_eq!(case.request["text"]["format"]["name"], "w3_v3");
+            assert!(matches!(
+                case.sample["label_status"].as_str(),
+                Some("draft" | "reviewed")
+            ));
+            let mut a = case.request.clone();
+            let mut b = pair[0].request.clone();
+            a.as_object_mut().unwrap().remove("reasoning");
+            b.as_object_mut().unwrap().remove("reasoning");
+            assert_eq!(a, b);
+            let input: Value =
+                serde_json::from_str(case.request["input"].as_str().unwrap()).unwrap();
+            for key in [
+                "model",
+                "focus",
+                "expect",
+                "repeat",
+                "w3_effort_arm",
+                "w3_prompt_arm",
+                "fictional",
+                "label_status",
+            ] {
+                assert!(input.get(key).is_none(), "{key}");
+            }
+            assert_eq!(input["user_history"], case.sample["input"]["history"]);
+            assert_eq!(input["said_on"], "2026-10-07");
+            assert_eq!(input["utc_offset_seconds"], 28_800);
+            assert!(
+                items(&input["candidates"])
+                    .iter()
+                    .all(|c| c["status"] == "ok")
+            );
+            assert!(
+                case.request["instructions"]
+                    .as_str()
+                    .unwrap()
+                    .ends_with(write_models::W3_PROMPT)
+            );
+        }
+    }
+}
+
+#[test]
+fn af101_w3_effort_full_fingerprint_and_metadata_never_borrow_responses() {
+    let temp = TempRecords::new();
+    let cases = w3_effort_plan(&temp.0, None).unwrap();
+    let case = &cases[0];
+    let original = recording_fingerprint(&case.sample, &case.request);
+    assert_ne!(
+        original,
+        recording_fingerprint(&cases[1].sample, &cases[1].request)
+    );
+    for path in [
+        "/instructions",
+        "/model",
+        "/text/format/schema",
+        "/input",
+        "/reasoning/effort",
+        "/max_output_tokens",
+    ] {
+        let mut changed = case.request.clone();
+        *changed.pointer_mut(path).unwrap() = if path == "/input" {
+            json!(json!({"changed":true}).to_string())
+        } else {
+            json!("changed")
+        };
+        assert_ne!(
+            recording_fingerprint(&case.sample, &changed),
+            original,
+            "{path}"
+        );
+    }
+    let mut changed = case.request.clone();
+    let mut input: Value = serde_json::from_str(changed["input"].as_str().unwrap()).unwrap();
+    input["trusted_at"] = json!("full clock binding");
+    changed["input"] = json!(input.to_string());
+    assert_ne!(recording_fingerprint(&case.sample, &changed), original);
+    let output = fake_w3(&case.sample);
+    save_recording(
+        case,
+        &fake_envelope(output.clone()),
+        Some(&output.to_string()),
+        None,
+    )
+    .unwrap();
+    let ready = w3_effort_plan(&temp.0, None).unwrap();
+    assert!(matches!(ready[0].replay, Replay::Output(_)));
+    for i in [1, 3] {
+        // Even copying an otherwise valid response into a different slot must not borrow it.
+        m15_write_json(&ready[i].path, &ready[0].file).unwrap();
+        assert!(!matches!(
+            w3_effort_plan(&temp.0, None).unwrap()[i].replay,
+            Replay::Output(_)
+        ));
+    }
+    for (key, wrong) in [
+        ("effort_arm", json!("low")),
+        ("repeat", json!(2)),
+        ("trial", json!("af96")),
+        ("baseline_commit", json!("91a068a")),
+        ("prompt_byte_fingerprint", json!(W3_OLD_FINGERPRINT)),
+    ] {
+        let mut file = ready[0].file.clone();
+        file["recorded"][0][key] = wrong;
+        m15_write_json(&case.path, &file).unwrap();
+        assert!(
+            matches!(
+                w3_effort_plan(&temp.0, None).unwrap()[0].replay,
+                Replay::Stale
+            ),
+            "{key}"
+        );
+    }
+    m15_write_json(&case.path, &ready[0].file).unwrap();
+    assert!(matches!(
+        w3_effort_plan(&temp.0, Some("https://example.invalid".into())).unwrap()[0].replay,
+        Replay::Stale
+    ));
+    let old = w3_comparison_plan(&temp.0.join("af96"), None).unwrap();
+    let output = fake_w3(&old[0].sample);
+    save_recording(
+        &old[0],
+        &fake_envelope(output.clone()),
+        Some(&output.to_string()),
+        None,
+    )
+    .unwrap();
+    let old = w3_comparison_plan(&temp.0.join("af96"), None).unwrap();
+    m15_write_json(&case.path, &old[0].file).unwrap();
+    assert!(!matches!(
+        w3_effort_plan(&temp.0, None).unwrap()[0].replay,
+        Replay::Output(_)
+    ));
+}
+
+#[test]
+fn af101_w3_effort_failure_budget_and_candidate_report_replay_without_retry() {
+    let temp = TempRecords::new();
+    let cases = w3_effort_plan(&temp.0, None).unwrap();
+    let mut outputs = cases.iter().enumerate().map(|(i,c)| {
+        if i == 0 { Err("injected failure".into()) }
+        else if i == 1 { Ok(json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},
+            "usage":{"input_tokens":20,"output_tokens":16384,"output_tokens_details":{"reasoning_tokens":16000}}})) }
+        else {
+            let mut envelope = fake_envelope(fake_w3(&c.sample));
+            envelope["usage"] = json!({"input_tokens":2000,"output_tokens":150,
+                "output_tokens_details":{"reasoning_tokens":40}});
+            Ok(envelope)
+        }
+    });
+    let report = evaluate(&cases, Some(16), &mut |_| outputs.next().unwrap()).unwrap();
+    assert_eq!(report["sent_calls"], 16);
+    assert_eq!(w3_sent_before(&temp.0).unwrap(), 16);
+    assert_eq!(report["results"][0]["status"], "调用失败");
+    assert_eq!(
+        report["results"][1]["response"]["incomplete_details"]["reason"],
+        "max_output_tokens"
+    );
+    assert_eq!(
+        report["results"][8]["candidate_reviews"][0]["verdict"],
+        "insufficient"
+    );
+    assert_eq!(
+        report["results"][8]["candidate_reviews"][0]["aspects"],
+        json!(["subject"])
+    );
+    assert_eq!(
+        report["results"][8]["candidate_reviews"][1]["verdict"],
+        "supported"
+    );
+    assert_eq!(
+        report["results"][12]["candidate_reviews"][0]["aspects"],
+        json!(["subject"])
+    );
+    let comparison = w3_effort_report(&report);
+    assert_eq!(comparison["arms"][0]["failed"], 1);
+    assert_eq!(comparison["arms"][1]["failed"], 1);
+    assert_eq!(
+        comparison["arms"][1]["usage_totals"]["output_tokens_including_reasoning"],
+        17434
+    );
+    assert_eq!(
+        comparison["arms"][1]["usage_totals"]["reasoning_tokens"],
+        16280
+    );
+    for entry in std::fs::read_dir(temp.0.join("sends")).unwrap() {
+        let log: Value =
+            serde_json::from_slice(&std::fs::read(entry.unwrap().path()).unwrap()).unwrap();
+        assert_eq!(log["state"], "responded");
+        assert_eq!(log["trial"], "af101-w3-effort");
+        assert!(matches!(
+            log["effort_arm"].as_str(),
+            Some("minimal" | "low")
+        ));
+        assert!(log["prompt_arm"].is_null());
+    }
+    let ready = w3_effort_plan(&temp.0, None).unwrap();
+    let replay = evaluate(&ready, Some(0), &mut |_| {
+        panic!("must not retry any response")
+    })
+    .unwrap();
+    assert_eq!(replay["sent_calls"], 0);
+    assert_eq!(replay["results"], report["results"]);
+    std::fs::remove_file(&ready[1].path).unwrap();
+    let gap = w3_effort_plan(&temp.0, None).unwrap();
+    assert!(preflight(&gap, Some(16)).is_err());
+    assert!(preflight(&gap[1..2], Some(16)).is_err());
+}
+
+#[test]
+fn af101_w3_effort_resume_crash_lock_and_af96_ledger_are_independent() {
+    let temp = TempRecords::new();
+    let old_root = temp.0.join("af96");
+    let new_root = temp.0.join("af101");
+    let old = w3_comparison_plan(&old_root, None).unwrap();
+    for case in &old {
+        w3_start_send(case).unwrap();
+    }
+    assert_eq!(w3_sent_before(&old_root).unwrap(), 16);
+    assert!(preflight(&old, Some(16)).is_err());
+    let cases = w3_effort_plan(&new_root, None).unwrap();
+    assert_eq!(preflight(&cases, Some(16)).unwrap(), 16);
+    let lock = w3_trial_lock(&new_root).unwrap();
+    assert!(evaluate(&cases, Some(16), &mut |_| panic!("concurrent send")).is_err());
+    drop(lock);
+    let mut outputs = cases[..2]
+        .iter()
+        .map(|c| Ok(fake_envelope(fake_w3(&c.sample))));
+    evaluate(&cases[..2], Some(2), &mut |_| outputs.next().unwrap()).unwrap();
+    let resumed = w3_effort_plan(&new_root, None).unwrap();
+    assert_eq!(preflight(&resumed, Some(14)).unwrap(), 14);
+    let path = w3_start_send(&resumed[2]).unwrap();
+    assert_eq!(w3_sent_before(&new_root).unwrap(), 3);
+    let log: Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+    assert_eq!(log["state"], "started");
+    assert_eq!(log["effort_arm"], "low");
+    assert!(preflight(&resumed, Some(16)).is_err());
+    let replay = evaluate(&resumed, None, &mut |_| panic!("offline crash replay")).unwrap();
+    assert_eq!(replay["sent_calls"], 0);
+    assert_eq!(replay["results"][2]["status"], "未录制");
+    assert_eq!(w3_sent_before(&old_root).unwrap(), 16);
+    let mut mixed = old;
+    mixed.extend(cases);
+    assert!(preflight(&mixed, Some(32)).is_err());
 }
 
 #[test]
