@@ -146,3 +146,109 @@ HTTP 非 2xx 错误正文最多读取 64 KiB 加一个溢出判定字节；录�
 只保留 HTTP 状态、白名单错误类型、受限的响应头请求 ID、固定安全失败码及数字用量。
 语法超限记为 `schema_grammar_too_large`；未知、非 JSON、超大或不可读正文分别分类，
 不保存自由文本，防止服务商回显原话或凭据。无 usage 记未知，不退款、不自动重试。
+
+### 七档 W1/W3 对比（AF137–AF139）
+
+`EVAL_COMPARE=af137` 是独立入口，复用八档 `providers.json` 中的七档：
+DS Pro、DS Flash、GPT、Opus、27B 开/关思考、9B 关思考。9B 开思考的历史
+冒烟档案与产物保留，本轮不运行。W1/W3 各 20 个 reviewed 样本；六档各重复
+两次（80 槽），27B 开思考一次（40 槽），完整授权为 520 槽：云端 320、本地 200。
+不运行 W4，不调用真实写入管线、不提交记忆。
+
+固定请求使用当前 W1/W3 v3 提示词与 schema，报告同时保留样本标注版本 v1。
+仅 AF137 将模型可见的 `source_snapshot.eval_sample` 替换为 `s-<16 位 SHA-256>`：
+对固定域 `af137-sample.v1` 与样本 ID 求哈希，同一样本跨档案/重复保持一致，40 项
+预检拒绝碰撞。通过报告 `matrix` 中的 `eval_sample` 与真实 `id` 配对反查，不将
+报告映射、题型 ID、文件名、focus、expect、标签或注释发给模型。W2 的机械状态、
+原因、候选索引、时间解析与原始语义输入保留，不能把它们误当评分标签删除。
+盲化发生在协议转换和指纹计算前，未经盲化的 AF137 请求/录制按严格指纹过期，
+已有发送账本不能因盲化而重置或自动重发。
+
+历史普通阶段评测及冒烟输入中的语义样本 ID 存在题型提示泄漏，历史分数应据此
+审慎解释；沿用该构造的 M1.5、AF96/AF101 也未在本轮追溯修改。AC2 固定输入、
+M1.5、AF96/AF101、冒烟及其他历史入口均保持原请求字节与指纹，现有有效录制
+不会因 AF137 盲化而过期。旧数据只回放，不追溯改写。
+
+W3 输入由既有适配器展开并通过 W2；W1 主分数按 W2 最终候选计算。云端 medium、
+本地 effort=omit 和档案中的思考开关保持固定；此配置不同于生产 W1/W3 默认 low。
+输出上限 W1 32768、W3 16384；云端及本地关闭思考超时 360 秒，27B 开思考
+1800 秒。输出上限、实际请求、模式、部署证明与超时进入绑定及严格指纹。
+Opus 仅此固定评测档案使用 prompt_schema，报告标注未使用约束解码；仍执行原 schema
+完整核验，不修补 JSON、不重试。
+
+干跑无需 endpoint 或密钥，不创建任何评测产物，即使设置录制额度也不发送：
+
+```sh
+EVAL_COMPARE=af137 EVAL_DRY_RUN=1 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+用户已按 AF139 批准 520 次，真实运行由 Claude 执行。沿用上文的四个 BASE_URL
+和三个云端 KEY；不打印密钥。本地调用同样计入授权，不得额外预热或探测。建议分批：
+
+```sh
+# 云端四档，单进程串行。
+EVAL_COMPARE=af137 EVAL_COMPARE_PROFILES=ds-pro,ds-flash,gpt-6.1-sol,opus-5.5 \
+EVAL_RECORD=320 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# 本地三档，单进程串行。
+EVAL_COMPARE=af137 EVAL_COMPARE_PROFILES=qwen-27b-think,qwen-27b-nothink,qwen-9b-nothink \
+EVAL_RECORD=200 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+也可分成独立进程：DeepSeek 两档合计 `EVAL_RECORD=160`，GPT 或 Opus 单档各为
+80，27B 思考单档 40，两档本地关闭思考各为 80。不同云端 provider 可并行；
+DeepSeek 两档共用执行锁，三个本地档共用执行锁，避免同时占用同一服务。
+锁被占用时拒绝当前执行，不等待、不发送；待另一个进程完成后用原命令续跑。
+
+`EVAL_COMPARE_PROFILES` 接受已知七档 ID 的非空、无重复列表，按固定顺序执行。
+可用 `EVAL_COMPARE_CASES` 选择样本完整 ID（不接受前缀、未知或重复项）先试跑：
+
+```sh
+EVAL_COMPARE=af137 EVAL_COMPARE_PROFILES=qwen-27b-think \
+EVAL_COMPARE_CASES=w3_01_supported_simple EVAL_RECORD=40 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+上例发送一个尚未录制槽位，但首次发送前冻结该档全部 40 槽身份及累计额度。
+子集、续跑必须继续使用完整档案额度，不能将 `EVAL_RECORD` 改成剩余缺口或子集大小；
+除缺省（只回放）、0（所选槽位必须已录制）外，只接受所选档案完整额度之和。
+未知档案、参数覆盖、额度不符与已有授权身份变化均在发送前拒绝。
+输入上下文超限项单独列为发送前拒绝，不发送、不冒充语义失败。
+
+所有新产物仅在 `target/eval-providers/compare-af137/`：
+
+- `recordings/<profile>/repeat-<n>/<sample-id>.json`：逐调用原结果与绑定。
+- `campaigns/<profile>/authorization.json`、`sends/`：完整 80/40 槽清单及累计发送账本。
+- `locks/<resource>/`：DeepSeek、本地 Qwen 或独立云端档的执行锁。
+- `reports/<所选档案按固定顺序连接>/report.json`：有新发送时保存的报告。
+
+发送前 fsync started；录制持久化后标 responded。失败也计费占槽，不退款、不重试。
+续跑复用有效成功或失败录制；已发送却缺录制的槽位阻止该档自动续跑，须另行裁决。
+禁止删除账本、换目录或修改指纹来重置额度。AF122/128/132、AC2 与历史 59/4 不变。
+
+严格离线汇总（保留原 endpoint 环境变量，不需要密钥）只打印 stdout，不改产物：
+
+```sh
+EVAL_COMPARE=af137 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+默认只报告，不因模型评分失败而退出失败；`EVAL_GATE=1` 才要求本次所选档案/样本
+全部通过。其他参数/账本错误仍正常报错。`EVAL_RECORD=0` 则要求本次所选槽位
+全部有效，缺录制或过期时不发送并报错。
+
+报告读入七档当前可用录制，包含逐样本矩阵、逐次契约/机械/引用/语义失败、重复
+不一致、各档各阶段延迟和 usage；缺失的推理用量为未知。并行运行期间汇总可能尚不
+完整，全部进程完成后再离线汇总。两次结果写作 2/2、1/2、0/2，不挑最好一次；
+27B 思考的 1/1 明确标为“单次，稳定性未验证”。分层仅表示本轮观测：本地两次通过、
+需 DeepSeek、本轮仅 GPT 或 Opus 通过、全部失败；缺数据/调用失败不能证明仅强档
+具备能力，重复不一致或本地仅单次通过时暂不作排他分层。全部失败不自动归因为标注
+或契约错误。W3 固定候选的通过不代表能补救对应模型 W1 的漏提或错误；未测 W4，
+不能据此选择完整写入组合。已参与提示词迭代的 40 个样本也不是独立留出集。
+
+完整输出额度上界 12779520 token（云端 7864320 / 本地 4915200，含思考），
+不是预计实际用量，输入另计。27B 思考按已有 603 秒冒烟推算，40 次已约 6.7 小时，
+尚未包含两档关闭思考；W3 耗时尚未测定，不能保证本地总计 8 小时。

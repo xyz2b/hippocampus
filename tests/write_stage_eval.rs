@@ -1701,6 +1701,573 @@ fn provider_smoke_from_env() -> Result<(), String> {
     Ok(())
 }
 
+const COMPARE_ROOT: &str = "target/eval-providers/compare-af137";
+const COMPARE_IDS: [&str; 7] = [
+    "ds-pro",
+    "ds-flash",
+    "gpt-6.1-sol",
+    "opus-5.5",
+    "qwen-27b-think",
+    "qwen-27b-nothink",
+    "qwen-9b-nothink",
+];
+
+struct CompareOptions {
+    dry: bool,
+    limit: Option<usize>,
+    profiles: Vec<String>,
+    cases: Vec<String>,
+    gate: bool,
+}
+fn compare_quota(id: &str) -> usize {
+    if id == "qwen-27b-think" { 40 } else { 80 }
+}
+fn compare_sample_id(id: &str) -> String {
+    let hash = hippocampus::recall_models::fingerprint(&json!(["af137-sample.v1", id]));
+    format!("s-{}", &hash[7..23])
+}
+fn compare_request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String> {
+    let mut request = stage_request_with_output_tokens(stage, sample, tokens)?;
+    let mut input: Value =
+        serde_json::from_str(request["input"].as_str().ok_or("missing AF137 input")?)
+            .map_err(|e| e.to_string())?;
+    // Only AF137 blinds this evaluator-owned identifier. History and actual W2 input stay intact.
+    input["source_snapshot"]["eval_sample"] = json!(compare_sample_id(
+        sample["id"].as_str().ok_or("missing AF137 sample ID")?
+    ));
+    request["input"] = json!(input.to_string());
+    Ok(request)
+}
+fn compare_selection(value: Option<&str>, allowed: &[&str]) -> Result<Vec<String>, String> {
+    let requested: Vec<_> = value.map_or_else(
+        || allowed.to_vec(),
+        |s| s.split(',').map(str::trim).collect(),
+    );
+    let distinct: std::collections::BTreeSet<_> = requested.iter().copied().collect();
+    if requested.is_empty()
+        || requested.len() != distinct.len()
+        || requested.iter().any(|id| !allowed.contains(id))
+    {
+        return Err("AF137 selection requires distinct, nonempty, known IDs".into());
+    }
+    Ok(allowed
+        .iter()
+        .filter(|id| distinct.contains(**id))
+        .map(|id| (*id).to_owned())
+        .collect())
+}
+fn compare_samples() -> Result<Vec<(String, Value)>, String> {
+    let mut result = Vec::new();
+    for stage in ["w1", "w3"] {
+        let samples = samples(stage);
+        if samples.len() != 20 || samples.iter().any(|s| s["label_status"] != "reviewed") {
+            return Err(format!("AF137 requires 20 reviewed {stage} samples"));
+        }
+        result.extend(samples.into_iter().map(|s| (stage.into(), s)));
+    }
+    let ids: std::collections::BTreeSet<_> = result.iter().map(|(_, s)| s["id"].as_str()).collect();
+    if ids.len() != 40 || ids.iter().any(|id| id.is_none_or(str::is_empty)) {
+        return Err("AF137 requires 40 distinct nonempty sample IDs".into());
+    }
+    if ids
+        .iter()
+        .map(|id| compare_sample_id(id.unwrap()))
+        .collect::<std::collections::BTreeSet<_>>()
+        .len()
+        != 40
+    {
+        return Err("AF137 opaque sample ID collision".into());
+    }
+    Ok(result)
+}
+fn compare_options(variable: impl Fn(&str) -> Option<String>) -> Result<CompareOptions, String> {
+    if variable("EVAL_COMPARE").as_deref() != Some("af137") {
+        return Err("EVAL_COMPARE must be af137".into());
+    }
+    for key in [
+        "EVAL_SMOKE",
+        "EVAL_SMOKE_PROFILES",
+        "EVAL_M15",
+        "EVAL_HISTORY",
+        "EVAL_FIXED_INPUTS",
+        "EVAL_STAGES",
+        "EVAL_CASES",
+        "EVAL_MODEL",
+        "EVAL_MODEL_LABEL",
+        "EVAL_REASONING_EFFORT",
+        "EVAL_PROVIDER_CONFIG",
+        "EVAL_REPEAT",
+        "EVAL_MAX_OUTPUT_TOKENS",
+        "EVAL_PROVIDER_DIR",
+        "EVAL_CAMPAIGN_DIR",
+        "EVAL_BASE_URL",
+        "EVAL_API_KEY",
+    ] {
+        if variable(key).is_some() {
+            return Err(format!("AF137 fixed comparison does not accept {key}"));
+        }
+    }
+    let profiles = compare_selection(variable("EVAL_COMPARE_PROFILES").as_deref(), &COMPARE_IDS)?;
+    let samples = compare_samples()?;
+    let ids: Vec<_> = samples
+        .iter()
+        .map(|(_, s)| s["id"].as_str().unwrap())
+        .collect();
+    let cases = compare_selection(variable("EVAL_COMPARE_CASES").as_deref(), &ids)?;
+    let quota: usize = profiles.iter().map(|id| compare_quota(id)).sum();
+    let limit = match variable("EVAL_RECORD").as_deref() {
+        None => None,
+        Some("0") => Some(0),
+        Some(s) if s.parse::<usize>().ok() == Some(quota) => Some(quota),
+        _ => {
+            return Err(format!(
+                "AF137 EVAL_RECORD must be absent, 0, or {quota}; subsets retain the full profile allowance"
+            ));
+        }
+    };
+    Ok(CompareOptions {
+        dry: variable("EVAL_DRY_RUN").as_deref() == Some("1"),
+        limit,
+        profiles,
+        cases,
+        gate: eval_gate(variable("EVAL_GATE").as_deref())?,
+    })
+}
+fn compare_plan(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<Vec<Vec<Case>>, String> {
+    let selected = compare_samples()?;
+    let mut groups = Vec::new();
+    for id in COMPARE_IDS {
+        let p = profiles
+            .iter()
+            .find(|p| p.id == id)
+            .ok_or("missing AF137 profile")?;
+        let base = variable(&p.provider.base_url_env).unwrap_or_else(|| {
+            format!(
+                "https://{}.invalid/v1",
+                p.provider.base_url_env.to_ascii_lowercase()
+            )
+        });
+        let model = EvalModel {
+            label: p.id.clone(),
+            model: Some(p.model.clone()),
+            base: Some(base),
+            effort: p.effort,
+        };
+        model.validate()?;
+        p.provider
+            .check_model(&p.model, p.effort)
+            .map_err(|e| e.to_string())?;
+        let options = ProviderOptions {
+            provider: p.provider.clone(),
+            campaign: root.join("campaigns").join(id),
+        };
+        let mut cases = Vec::new();
+        for (stage, sample) in &selected {
+            let mut request = compare_request(stage, sample, p.max_output_tokens[stage])?;
+            request["model"] = json!(p.model);
+            p.effort.apply(&mut request);
+            for repeat in 1..=compare_quota(id) / 40 {
+                cases.push(case_from_request_with_provider(
+                    stage.clone(),
+                    sample.clone(),
+                    &root
+                        .join("recordings")
+                        .join(id)
+                        .join(format!("repeat-{repeat}")),
+                    &model,
+                    repeat,
+                    request.clone(),
+                    Some(&options),
+                    Some(p.timeout_seconds),
+                )?);
+            }
+        }
+        if cases
+            .iter()
+            .map(campaign_slot)
+            .map(|s| s.to_string())
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            != compare_quota(id)
+        {
+            return Err("AF137 duplicate slots".into());
+        }
+        groups.push(cases);
+    }
+    Ok(groups)
+}
+fn compare_subset(cases: &[Case], options: &CompareOptions) -> Vec<Case> {
+    cases
+        .iter()
+        .filter(|c| options.cases.iter().any(|id| c.sample["id"] == *id))
+        .cloned()
+        .collect()
+}
+fn compare_preflight(groups: &[Vec<Case>], options: &CompareOptions) -> Result<usize, String> {
+    let quota: usize = options.profiles.iter().map(|id| compare_quota(id)).sum();
+    if options.limit.is_some_and(|n| n != 0 && n != quota) {
+        return Err(format!("AF137 allowance must equal {quota}"));
+    }
+    let mut sends = 0;
+    for group in groups
+        .iter()
+        .filter(|g| options.profiles.contains(&g[0].model.label))
+    {
+        let id = &group[0].model.label;
+        let limit = options
+            .limit
+            .map(|n| if n == 0 { 0 } else { compare_quota(id) });
+        if limit.is_some_and(|n| n > 0) {
+            campaign_check(group, compare_quota(id))?;
+        }
+        sends += preflight(&compare_subset(group, options), limit)?;
+    }
+    Ok(sends)
+}
+fn compare_freeze(group: &[Case]) -> Result<(), String> {
+    let root = campaign_root(group)?.ok_or("AF137 campaign missing")?;
+    let _lock = w3_trial_lock(root)?;
+    let quota = compare_quota(&group[0].model.label);
+    campaign_check(group, quota)?;
+    let path = root.join("authorization.json");
+    if !path.exists() {
+        m15_write_json(
+            &path,
+            &json!({"limit":quota,"requests":group.iter().map(campaign_slot).collect::<Vec<_>>()}),
+        )?;
+    }
+    Ok(())
+}
+fn compare_resource(id: &str) -> &str {
+    if id.starts_with("ds-") {
+        "deepseek"
+    } else if id.starts_with("qwen-") {
+        "qwen"
+    } else {
+        id
+    }
+}
+fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> String {
+    let mut lines = vec![
+        "AF137 写入侧多模型比较干跑（不发送请求）".into(),
+        "固定样本: W1 20 + W3 20（reviewed，标注 v1 / 请求 v3）；W4/R1/R4=0。".into(),
+        "档案 | 完整槽位/累计上限 | 本次所选 | 待录制 | 可回放 | 过期 | 拒绝 | 输出 token 上界 | 超时秒".into(),
+    ];
+    let mut selected_slots = 0;
+    let mut needed = 0;
+    let mut rejected = 0;
+    let mut reserved = 0;
+    let mut cloud_reserved = 0;
+    for group in groups {
+        let id = &group[0].model.label;
+        let subset = if options.profiles.contains(id) {
+            compare_subset(group, options)
+        } else {
+            vec![]
+        };
+        let missing = subset
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
+            .count();
+        let stale = subset
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Stale))
+            .count();
+        let refused = subset
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Rejected(_)))
+            .count();
+        let cached = subset
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+            .count();
+        let tokens: u64 = group
+            .iter()
+            .map(|c| c.request["max_output_tokens"].as_u64().unwrap())
+            .sum();
+        selected_slots += subset.len();
+        needed += missing;
+        rejected += refused;
+        reserved += tokens;
+        if !id.starts_with("qwen-") {
+            cloud_reserved += tokens;
+        }
+        lines.push(format!(
+            "{id} | {} | {} | {missing} | {cached} | {stale} | {refused} | {tokens} | {}",
+            group.len(),
+            subset.len(),
+            group[0].timeout_seconds.unwrap()
+        ));
+    }
+    lines.push(format!("完整固定槽位: 520（云端 320 / 本地 200）；本次所选: {selected_slots}；待录制: {needed}；发送前拒绝: {rejected}。"));
+    lines.push(format!("完整输出额度上界: {reserved} token（云端 {cloud_reserved} / 本地 {}，含思考）；不是预计用量，输入另计。", reserved - cloud_reserved));
+    lines.push("每档独立 campaign: target/eval-providers/compare-af137/campaigns/<profile>；子集沿用完整 80/40 槽额度。".into());
+    lines.push("仅 AF137 标识盲化: source_snapshot.eval_sample=s-<16 位 SHA-256>；报告保留真实样本 ID 对照。".into());
+    lines.push(
+        "各档串行；DeepSeek 两档共用执行锁，本地三档共用执行锁；不同 provider 可独立进程并行。"
+            .into(),
+    );
+    lines.push("Opus prompt_schema：未使用约束解码，原 schema 完整核验、不修补；27B 思考仅一次，稳定性未验证。".into());
+    lines.push("本次真实调用: 0；不读取密钥，不创建录制/额度/报告文件。".into());
+    lines.join("\n")
+}
+fn compare_mechanical(row: &Value) -> Vec<String> {
+    let reason = match row["status"].as_str() {
+        Some("未录制") => Some("missing"),
+        Some("录制过期") => Some("stale"),
+        Some("发送前拒绝") => Some("preflight_rejected"),
+        Some("输入无效") => Some("invalid_input"),
+        Some("调用失败") => {
+            let error = row["error"].as_str().unwrap_or("").to_ascii_lowercase();
+            Some(
+                if error.contains("timeout") || error.contains("timed out") {
+                    "timeout"
+                } else if error.contains("json") || error.contains("schema") {
+                    "decode/schema"
+                } else {
+                    "call_failed"
+                },
+            )
+        }
+        _ => None,
+    };
+    let mut reasons: Vec<_> = reason.into_iter().map(str::to_owned).collect();
+    for f in items(&row["fields"])
+        .iter()
+        .filter(|f| f["passed"] == false)
+    {
+        let field = f["field"].as_str().unwrap_or("");
+        if f["category"] == "contract" {
+            reasons.push(field.to_owned());
+        }
+    }
+    reasons
+}
+fn compare_tier(cells: &[Value]) -> &str {
+    let stable = |c: &Value| c["total"] == 2 && c["passed"] == 2;
+    if cells
+        .iter()
+        .filter(|c| c["profile"].as_str().unwrap().starts_with("qwen-"))
+        .any(stable)
+    {
+        return "本地即可（本轮两次均通过）";
+    }
+    if cells.iter().any(|c| c["complete"] != true) {
+        return "证据不足，暂不分层";
+    }
+    if cells.iter().any(|c| c["total"] == 1 && c["passed"] == 1) {
+        return "本地单次通过，稳定性未验证";
+    }
+    if cells.iter().any(|c| c["unstable"] == true) {
+        return "重复不一致，暂不分层";
+    }
+    if cells
+        .iter()
+        .filter(|c| c["profile"].as_str().unwrap().starts_with("ds-"))
+        .any(stable)
+    {
+        return "需 DeepSeek（本轮）";
+    }
+    if cells
+        .iter()
+        .filter(|c| matches!(c["profile"].as_str(), Some("gpt-6.1-sol" | "opus-5.5")))
+        .any(stable)
+    {
+        return "本轮仅 GPT 或 Opus 通过";
+    }
+    "全部失败（不自动归因）"
+}
+fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value {
+    let mut matrix = Vec::new();
+    for (stage, sample) in compare_samples().unwrap() {
+        let mut cells = Vec::new();
+        for (group, report) in groups.iter().zip(reports) {
+            let rows: Vec<_> = items(&report["results"])
+                .iter()
+                .filter(|r| r["stage"] == stage && r["id"] == sample["id"])
+                .collect();
+            let passed = rows.iter().filter(|r| r["status"] == "通过").count();
+            let complete = rows
+                .iter()
+                .all(|r| matches!(r["status"].as_str(), Some("通过" | "失败")));
+            let observed = rows
+                .iter()
+                .filter(|r| matches!(r["status"].as_str(), Some("通过" | "失败" | "调用失败")))
+                .count();
+            let distinct: std::collections::BTreeSet<_> =
+                rows.iter().map(|r| r["status"].as_str()).collect();
+            let mode = group[0].provider.as_ref().unwrap().structured_mode;
+            let attempts: Vec<_> = rows.iter().map(|r| json!({
+                "repeat":r["repeat"],"status":r["status"],"mechanical_failures":compare_mechanical(r),
+                "contract_failures":r["categories"]["contract"]["failures"],
+                "reference_failures":r["categories"]["reference"]["failures"],
+                "semantic_failures":r["categories"]["semantic"]["failures"],
+                "error":r["error"],"elapsed_ms":r["elapsed_ms"],"usage":r["usage"],
+                "request":r["request"],
+            })).collect();
+            cells.push(json!({"profile":group[0].model.label,"passed":passed,"total":rows.len(),
+                "score":format!("{passed}/{}",rows.len()),"complete":complete,
+                "observed_attempts":observed,"unstable":observed==rows.len() && distinct.len()>1,
+                "stability":if rows.len()==1 {"单次，稳定性未验证"} else {"仅两次观测"},
+                "structured_mode":mode,"constrained_decoding":mode==StructuredMode::NativeSchema,"attempts":attempts}));
+        }
+        matrix.push(
+            json!({"stage":stage,"id":sample["id"],"label_contract":sample["contract"],
+            "eval_sample":compare_sample_id(sample["id"].as_str().unwrap()),
+            "request_contract":format!("{stage}.v3"),"tier":compare_tier(&cells),"profiles":cells}),
+        );
+    }
+    let profile_reports: Vec<_> = groups.iter().zip(reports).map(|(group, report)| {
+        let mut metrics = report["metrics"].clone();
+        for metric in metrics.as_array_mut().unwrap() {
+            let rows: Vec<_> = items(&report["results"]).iter().filter(|r| r["stage"] == metric["stage"]).collect();
+            let usage: Value = ["input_tokens","output_tokens","reasoning_tokens"].into_iter().map(|key| {
+                let path = if key == "reasoning_tokens" {"/usage/output_tokens_details/reasoning_tokens".to_owned()} else {format!("/usage/{key}")};
+                let known: Vec<_> = rows.iter().filter_map(|r| r.pointer(&path).and_then(Value::as_u64)).collect();
+                (key.to_owned(),json!({"known":known.len(),"unknown":rows.len()-known.len(),"known_total":(!known.is_empty()).then(||known.iter().sum::<u64>())}))
+            }).collect();
+            metric["usage"] = usage;
+            metric["failure_categories"] = json!({
+                "mechanical":rows.iter().filter(|r| !compare_mechanical(r).is_empty()).count(),
+                "reference":rows.iter().filter(|r| r["categories"]["reference"]["passed"]==false).count(),
+                "semantic":rows.iter().filter(|r| r["categories"]["semantic"]["passed"]==false).count(),
+            });
+        }
+        let provider = group[0].provider.as_ref().unwrap();
+        json!({"profile":group[0].model.label,"model":group[0].model.model,"protocol":provider.protocol,
+            "effort":group[0].model.effort,"thinking":provider.thinking,"structured_mode":provider.structured_mode,
+            "timeout_seconds":group[0].timeout_seconds,"fixed_slots":group.len(),
+            "summary":report["summary"],"metrics":metrics})
+    }).collect();
+    let unstable: Vec<_> = matrix
+        .iter()
+        .filter(|r| items(&r["profiles"]).iter().any(|c| c["unstable"] == true))
+        .map(|r| r["id"].clone())
+        .collect();
+    json!({"comparison":"af137","purpose":"W1/W3 stage screening, not end-to-end reliability",
+        "fixed_slots":520,"sent_calls":sent,"profiles":profile_reports,"matrix":matrix,"unstable_samples":unstable,
+        "results":reports.iter().flat_map(|r|items(&r["results"]).iter().cloned()).collect::<Vec<_>>()})
+}
+fn provider_comparison_from_env() -> Result<(), String> {
+    let variable = |name: &str| std::env::var(name).ok();
+    let options = compare_options(variable)?;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(COMPARE_ROOT);
+    let profiles = smoke_profiles(include_str!("eval/write_stage/providers.json"))?;
+    let groups = compare_plan(&root, &profiles, variable)?;
+    if options.dry {
+        println!("{}", compare_dry_plan(&groups, &options));
+        return Ok(());
+    }
+    // Check every selected campaign before any client, credentials or physical sends.
+    let sends = compare_preflight(&groups, &options)?;
+    let selected_cases: Vec<_> = groups
+        .iter()
+        .filter(|g| options.profiles.contains(&g[0].model.label))
+        .flat_map(|g| compare_subset(g, &options))
+        .collect();
+    let keys = if sends > 0 {
+        smoke_credentials(&selected_cases, variable)?
+    } else {
+        Default::default()
+    };
+    if sends > 0 {
+        for group in groups
+            .iter()
+            .filter(|g| options.profiles.contains(&g[0].model.label))
+        {
+            compare_freeze(group)?; // The full manifest is frozen even when only a few samples run.
+        }
+    }
+    let http = if sends > 0 {
+        Some(
+            reqwest::blocking::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .retry(reqwest::retry::never())
+                .build()
+                .map_err(|e| e.to_string())?,
+        )
+    } else {
+        None
+    };
+    let mut sent = 0;
+    for group in groups
+        .iter()
+        .filter(|g| options.profiles.contains(&g[0].model.label))
+    {
+        let id = &group[0].model.label;
+        let subset = compare_subset(group, &options);
+        let limit = options
+            .limit
+            .map(|n| if n == 0 { 0 } else { compare_quota(id) });
+        let pending = preflight(&subset, limit)?;
+        // Separate processes may run different cloud providers; DS and Ollama cannot overlap.
+        let _resource = if pending > 0 {
+            Some(w3_trial_lock(
+                &root.join("locks").join(compare_resource(id)),
+            )?)
+        } else {
+            None
+        };
+        let report = evaluate_cases(&subset, limit, &mut |c| {
+            let request = smoke_http_request(
+                http.as_ref().ok_or("offline comparison cannot send")?,
+                c,
+                &keys[&c.model.label],
+            )?;
+            let response = http.as_ref().unwrap().execute(request).map_err(|e| {
+                if e.is_timeout() {
+                    "provider_timeout".into()
+                } else {
+                    e.to_string()
+                }
+            })?;
+            model_provider::read_http_response(response, c.provider.as_ref().unwrap().protocol)
+                .map(|(_, envelope)| envelope)
+                .map_err(|e| e.to_string())
+        })?;
+        sent += report["sent_calls"].as_u64().unwrap() as usize;
+    }
+    // Refresh after recording, also including unselected profiles' existing recordings.
+    let groups = compare_plan(&root, &profiles, variable)?;
+    let reports: Vec<_> = groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("offline comparison sent")))
+        .collect::<Result<_, _>>()?;
+    let report = compare_report(&groups, &reports, sent);
+    if sent > 0 {
+        m15_write_json(
+            &root
+                .join("reports")
+                .join(options.profiles.join("--"))
+                .join("report.json"),
+            &report,
+        )?;
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
+    );
+    compare_check_report(&report, &options)?;
+    Ok(())
+}
+fn compare_check_report(report: &Value, options: &CompareOptions) -> Result<(), String> {
+    // Gate only the selected attempts, never unselected profiles or samples.
+    if options.gate
+        && items(&report["results"]).iter().any(|r| {
+            options.profiles.iter().any(|id| r["model"] == *id)
+                && options.cases.iter().any(|id| r["id"] == *id)
+                && r["status"] != "通过"
+        })
+    {
+        return Err("AF137 selected model scores failed (EVAL_GATE=1)".into());
+    }
+    Ok(())
+}
+
 fn repeat_count(value: Option<&str>) -> Result<usize, String> {
     value
         .unwrap_or("1")
@@ -1710,6 +2277,7 @@ fn repeat_count(value: Option<&str>) -> Result<usize, String> {
         .ok_or_else(|| "EVAL_REPEAT must be a positive integer".into())
 }
 
+#[derive(Clone)]
 enum Replay {
     Missing,
     Stale,
@@ -1718,6 +2286,7 @@ enum Replay {
     Rejected(String),
 }
 
+#[derive(Clone)]
 struct Case {
     stage: String,
     sample: Value,
@@ -2567,6 +3136,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_COMPARE").is_some() {
+        provider_comparison_from_env().unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_SMOKE").is_some() {
         provider_smoke_from_env().unwrap();
         return;
@@ -6472,5 +7045,522 @@ fn af132_non_json_http_errors_preserve_reported_usage_and_do_not_echo_text() {
             .unwrap()["results"],
             report["results"]
         );
+    }
+}
+
+fn compare_fixture_options(
+    profiles: Option<&str>,
+    cases: Option<&str>,
+    limit: Option<&str>,
+) -> CompareOptions {
+    compare_options(|key| match key {
+        "EVAL_COMPARE" => Some("af137".into()),
+        "EVAL_COMPARE_PROFILES" => profiles.map(str::to_owned),
+        "EVAL_COMPARE_CASES" => cases.map(str::to_owned),
+        "EVAL_RECORD" => limit.map(str::to_owned),
+        _ => None,
+    })
+    .unwrap()
+}
+fn compare_fixture_response(c: &Case) -> Value {
+    let output = if c.stage == "w3" {
+        fake_w3(&c.sample)
+    } else {
+        json!({"candidates":[],"memory_requests":[]})
+    };
+    let text = output.to_string();
+    match c.provider.as_ref().unwrap().protocol {
+        ProviderProtocol::OpenaiResponses => fake_envelope(output),
+        ProviderProtocol::AnthropicMessages => {
+            json!({"stop_reason":"end_turn","usage":{"input_tokens":12,"output_tokens":7},"content":[{"type":"text","text":text}]})
+        }
+        ProviderProtocol::OpenaiChat => {
+            json!({"usage":{"prompt_tokens":12,"completion_tokens":7},"choices":[{"finish_reason":"stop","message":{"content":text}}]})
+        }
+    }
+}
+#[test]
+fn af137_plan_has_520_fixed_slots_and_key_free_dry_run() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let groups = compare_plan(&temp.0, &profiles, |_| None).unwrap();
+    let options = compare_fixture_options(None, None, None);
+    assert_eq!(groups.iter().map(Vec::len).sum::<usize>(), 520);
+    assert_eq!(
+        groups
+            .iter()
+            .map(|g| g[0].model.label.as_str())
+            .collect::<Vec<_>>(),
+        COMPARE_IDS
+    );
+    let slots: std::collections::BTreeSet<_> = groups
+        .iter()
+        .flatten()
+        .map(|c| campaign_slot(c).to_string())
+        .collect();
+    assert_eq!(slots.len(), 520);
+    let dry = compare_dry_plan(&groups, &options);
+    for text in [
+        "12779520",
+        "7864320",
+        "4915200",
+        "待录制: 520",
+        "发送前拒绝: 0",
+        "本次真实调用: 0",
+    ] {
+        assert!(dry.contains(text), "{text}\n{dry}");
+    }
+    assert!(!temp.0.exists());
+    assert_eq!(compare_preflight(&groups, &options).unwrap(), 0);
+    for bad in ["519", "521", "-1"] {
+        assert!(
+            compare_options(|key| match key {
+                "EVAL_COMPARE" => Some("af137".into()),
+                "EVAL_RECORD" => Some(bad.into()),
+                _ => None,
+            })
+            .is_err()
+        );
+    }
+    for bad in ["", "qwen-9b-think", "ds-pro,ds-pro", "unknown"] {
+        assert!(compare_selection(Some(bad), &COMPARE_IDS).is_err());
+    }
+    let cloud = compare_fixture_options(
+        Some("opus-5.5,ds-pro,gpt-6.1-sol,ds-flash"),
+        None,
+        Some("320"),
+    );
+    assert_eq!(cloud.profiles, &COMPARE_IDS[..4]);
+    let local = compare_fixture_options(
+        Some("qwen-27b-think,qwen-27b-nothink,qwen-9b-nothink"),
+        None,
+        Some("200"),
+    );
+    assert_eq!(local.limit, Some(200));
+    assert!(!temp.0.exists());
+}
+#[test]
+fn af137_routes_both_stages_and_freezes_full_manifests_before_subset_resume() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let groups = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    let ids = format!(
+        "{},{}",
+        samples("w1")[0]["id"].as_str().unwrap(),
+        samples("w3")[0]["id"].as_str().unwrap()
+    );
+    let options = compare_fixture_options(None, Some(&ids), Some("520"));
+    assert_eq!(compare_preflight(&groups, &options).unwrap(), 26);
+    let http = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    let mut sent = 0;
+    for group in &groups {
+        compare_freeze(group).unwrap();
+    }
+    for group in &groups {
+        let id = &group[0].model.label;
+        let full_auth: Value = serde_json::from_slice(
+            &std::fs::read(
+                group[0]
+                    .campaign
+                    .as_ref()
+                    .unwrap()
+                    .join("authorization.json"),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(full_auth["limit"], compare_quota(id));
+        assert_eq!(items(&full_auth["requests"]).len(), compare_quota(id));
+        let subset = compare_subset(group, &options);
+        let keys = smoke_credentials(&subset, smoke_fixture_variable).unwrap();
+        let report = evaluate_cases(&subset, Some(compare_quota(id)), &mut |c| {
+            let request = smoke_http_request(&http, c, &keys[&c.model.label]).unwrap();
+            assert_eq!(
+                request.timeout().copied(),
+                Some(std::time::Duration::from_secs(
+                    if c.model.label == "qwen-27b-think" {
+                        1800
+                    } else {
+                        360
+                    }
+                ))
+            );
+            let body: Value =
+                serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+            let tokens = if c.stage == "w1" { 32768 } else { 16384 };
+            let p = c.provider.as_ref().unwrap();
+            assert_eq!(
+                request.url().as_str(),
+                p.endpoint(c.model.base.as_deref().unwrap()).unwrap()
+            );
+            assert_eq!(body["model"], c.model.model.as_deref().unwrap());
+            assert_eq!(
+                body[if p.protocol == ProviderProtocol::OpenaiResponses {
+                    "max_output_tokens"
+                } else {
+                    "max_tokens"
+                }],
+                tokens
+            );
+            if p.protocol == ProviderProtocol::AnthropicMessages {
+                assert_eq!(request.headers()["x-api-key"], "fixture-opus-key");
+                assert!(
+                    body.get("output_config")
+                        .is_none_or(|v| v.get("format").is_none())
+                );
+                assert!(
+                    body["system"]
+                        .as_str()
+                        .unwrap()
+                        .contains("prompt-schema.v1")
+                );
+            } else if p.protocol == ProviderProtocol::OpenaiChat {
+                assert!(request.headers().get("authorization").is_none());
+            } else {
+                assert_eq!(
+                    request.headers()["authorization"],
+                    if c.model.label.starts_with("ds-") {
+                        "Bearer fixture-ds-key"
+                    } else {
+                        "Bearer fixture-gpt-key"
+                    }
+                );
+            }
+            assert_eq!(
+                eval_provider_binding(
+                    &c.model,
+                    &c.wire_request,
+                    c.provider.as_ref(),
+                    c.timeout_seconds
+                )["timeout_seconds"],
+                c.timeout_seconds.unwrap()
+            );
+            sent += 1;
+            // Failure recordings consume their slots and are replayed, never retried.
+            if c.model.label == "ds-flash" && c.stage == "w1" {
+                Err("fixture timed out".into())
+            } else {
+                Ok(compare_fixture_response(c))
+            }
+        })
+        .unwrap();
+        assert_eq!(report["sent_calls"], subset.len());
+        assert_eq!(
+            count_sends([group[0].campaign.as_ref().unwrap().join("sends")]).unwrap(),
+            subset.len()
+        );
+    }
+    assert_eq!(sent, 26);
+    let resumed = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    assert_eq!(compare_preflight(&resumed, &options).unwrap(), 0);
+    for group in &resumed {
+        let subset = compare_subset(group, &options);
+        assert!(
+            smoke_credentials(&subset, |_| panic!("cached subset read a key"))
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            evaluate_cases(&subset, Some(0), &mut |_| panic!("cached subset sent")).unwrap()["sent_calls"],
+            0
+        );
+    }
+    let full = compare_fixture_options(None, None, Some("520"));
+    assert_eq!(compare_preflight(&resumed, &full).unwrap(), 494);
+    let reports: Vec<_> = resumed
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("report sent")).unwrap())
+        .collect();
+    let report = compare_report(&resumed, &reports, sent);
+    assert_eq!(items(&report["matrix"]).len(), 40);
+    assert_eq!(items(&report["results"]).len(), 520);
+    assert_eq!(report["matrix"][0]["label_contract"], "w1.v1");
+    assert_eq!(report["matrix"][0]["request_contract"], "w1.v3");
+    assert_eq!(
+        report["matrix"][0]["profiles"][3]["constrained_decoding"],
+        false
+    );
+    assert_eq!(
+        report["profiles"][3]["metrics"][0]["usage"]["reasoning_tokens"]["known_total"],
+        Value::Null
+    );
+    assert_eq!(report["matrix"][1]["tier"], "证据不足，暂不分层");
+    assert_eq!(
+        report["matrix"][0]["profiles"][1]["attempts"][0]["mechanical_failures"],
+        json!(["timeout"])
+    );
+    let mut changed = profiles.clone();
+    changed[0].timeout_seconds += 1;
+    let stale = compare_plan(&temp.0, &changed, smoke_fixture_variable).unwrap();
+    assert!(matches!(stale[0][0].replay, Replay::Stale));
+    assert!(
+        compare_preflight(&stale, &full)
+            .unwrap_err()
+            .contains("identity")
+    );
+    changed = profiles;
+    changed[0].max_output_tokens.insert("w3".into(), 16000);
+    let stale = compare_plan(&temp.0, &changed, smoke_fixture_variable).unwrap();
+    assert!(matches!(stale[0][40].replay, Replay::Stale));
+}
+#[test]
+fn af137_crash_blocks_resend_and_provider_locks_do_not_overlap() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let groups = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    compare_freeze(&groups[0]).unwrap();
+    let subset = groups[0][..2].to_vec();
+    let mut sent = 0;
+    let crash = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        evaluate_cases(&subset, Some(80), &mut |c| {
+            sent += 1;
+            if sent == 2 {
+                panic!("fixture crash after started")
+            }
+            Ok(compare_fixture_response(c))
+        })
+        .unwrap();
+    }));
+    assert!(crash.is_err());
+    let resumed = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    let options = compare_fixture_options(Some("ds-pro"), None, Some("80"));
+    assert!(
+        compare_preflight(&resumed, &options)
+            .unwrap_err()
+            .contains("already sent")
+    );
+    assert_eq!(
+        count_sends([temp.0.join("campaigns/ds-pro/sends")]).unwrap(),
+        2
+    );
+    let root = temp.0.join("locks");
+    let ds = w3_trial_lock(&root.join(compare_resource("ds-pro"))).unwrap();
+    assert!(w3_trial_lock(&root.join(compare_resource("ds-flash"))).is_err());
+    let qwen = w3_trial_lock(&root.join(compare_resource("qwen-27b-think"))).unwrap();
+    for id in ["qwen-27b-nothink", "qwen-9b-nothink"] {
+        assert!(w3_trial_lock(&root.join(compare_resource(id))).is_err());
+    }
+    assert!(w3_trial_lock(&root.join(compare_resource("opus-5.5"))).is_ok());
+    drop(ds);
+    drop(qwen);
+    assert!(w3_trial_lock(&root.join(compare_resource("ds-flash"))).is_ok());
+}
+#[test]
+fn af137_tiers_distinguish_single_pass_instability_and_missing_data() {
+    let mut cells: Vec<_> = COMPARE_IDS.iter().map(|id|json!({"profile":id,"total":compare_quota(id)/40,"passed":0,"complete":true,"unstable":false})).collect();
+    assert_eq!(compare_tier(&cells), "全部失败（不自动归因）");
+    cells[2]["passed"] = json!(2);
+    assert_eq!(compare_tier(&cells), "本轮仅 GPT 或 Opus 通过");
+    cells[0]["complete"] = json!(false);
+    assert_eq!(compare_tier(&cells), "证据不足，暂不分层");
+    cells[0]["complete"] = json!(true);
+    cells[0]["passed"] = json!(2);
+    assert_eq!(compare_tier(&cells), "需 DeepSeek（本轮）");
+    cells[4]["passed"] = json!(1);
+    assert_eq!(compare_tier(&cells), "本地单次通过，稳定性未验证");
+    cells[4]["passed"] = json!(0);
+    cells[6]["passed"] = json!(1);
+    cells[6]["unstable"] = json!(true);
+    assert_eq!(compare_tier(&cells), "重复不一致，暂不分层");
+    cells[5]["passed"] = json!(2);
+    assert_eq!(compare_tier(&cells), "本地即可（本轮两次均通过）");
+}
+
+#[test]
+fn af137_report_marks_timeout_inconsistency_and_gates_only_selected_attempts() {
+    let temp = TempRecords::new();
+    let groups = compare_plan(&temp.0, &smoke_fixture_profiles(), |_| None).unwrap();
+    let mut reports: Vec<_> = groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("report sent")).unwrap())
+        .collect();
+    reports[0]["results"][0]["status"] = json!("通过");
+    reports[0]["results"][1]["status"] = json!("调用失败");
+    reports[0]["results"][1]["error"] = json!("operation timed out");
+    let report = compare_report(&groups, &reports, 0);
+    assert_eq!(report["matrix"][0]["profiles"][0]["unstable"], true);
+    assert_eq!(report["matrix"][0]["profiles"][0]["observed_attempts"], 2);
+    assert_eq!(report["matrix"][0]["profiles"][0]["complete"], false);
+    assert_eq!(report["matrix"][0]["tier"], "证据不足，暂不分层");
+    assert_eq!(report["unstable_samples"][0], groups[0][0].sample["id"]);
+    let mut options = compare_fixture_options(
+        Some("ds-pro"),
+        Some(groups[0][0].sample["id"].as_str().unwrap()),
+        None,
+    );
+    assert!(compare_check_report(&report, &options).is_ok());
+    options.gate = true;
+    assert!(compare_check_report(&report, &options).is_err());
+    let mut report = report;
+    report["results"][1]["status"] = json!("通过");
+    // The other 518 missing/unselected attempts are not an explicit gate failure.
+    assert!(compare_check_report(&report, &options).is_ok());
+    assert!(!temp.0.exists());
+}
+
+#[test]
+fn af137_wire_inputs_are_blind_and_reports_keep_the_reverse_lookup() {
+    let temp = TempRecords::new();
+    let samples = compare_samples().unwrap();
+    let groups = compare_plan(&temp.0, &smoke_fixture_profiles(), |_| None).unwrap();
+    let allowed = [
+        "contract",
+        "source_snapshot",
+        "current_user_message",
+        "user_history",
+        "entities",
+        "relations",
+        "said_on",
+        "utc_offset_seconds",
+        "task_id",
+        "candidates",
+        "memory_requests",
+    ];
+    let annotations = [
+        "label_status",
+        "focus",
+        "expect",
+        "expected",
+        "must_not",
+        "note",
+        "filename",
+        "file_name",
+        "path",
+        "label",
+    ];
+    fn annotation_free(value: &Value, forbidden: &[&str]) {
+        match value {
+            Value::Object(fields) => {
+                for (key, value) in fields {
+                    assert!(!forbidden.contains(&key.as_str()), "annotation key {key}");
+                    annotation_free(value, forbidden);
+                }
+            }
+            Value::Array(values) => values.iter().for_each(|v| annotation_free(v, forbidden)),
+            _ => {}
+        }
+    }
+    let mut opaque = std::collections::BTreeSet::new();
+    for c in groups.iter().flatten() {
+        let input: Value = serde_json::from_str(c.request["input"].as_str().unwrap()).unwrap();
+        assert!(
+            input
+                .as_object()
+                .unwrap()
+                .keys()
+                .all(|k| allowed.contains(&k.as_str()))
+        );
+        annotation_free(&input, &annotations);
+        let token = input["source_snapshot"]["eval_sample"].as_str().unwrap();
+        assert_eq!(token, compare_sample_id(c.sample["id"].as_str().unwrap()));
+        assert_eq!(token.len(), 18);
+        assert!(token.starts_with("s-") && token[2..].bytes().all(|b| b.is_ascii_hexdigit()));
+        opaque.insert(token.to_owned());
+        // All three physical protocols, including the Opus schema suffix, must be blind.
+        let wire = c.wire_request.to_string();
+        for (_, sample) in &samples {
+            assert!(!wire.contains(sample["id"].as_str().unwrap()));
+            assert!(!wire.contains(sample["focus"].as_str().unwrap()));
+        }
+        for word in [
+            "reviewed",
+            "draft",
+            "label_status",
+            "must_not",
+            "tests/eval/",
+        ] {
+            assert!(!wire.contains(word), "{word} in {}", c.model.label);
+        }
+    }
+    assert_eq!(opaque.len(), 40);
+    for (stage, sample) in &samples {
+        let mut poisoned = sample.clone();
+        for key in annotations {
+            poisoned[key] = json!("AF137_ANNOTATION_CANARY");
+            poisoned["input"][key] = json!("AF137_ANNOTATION_CANARY");
+        }
+        let request = compare_request(stage, &poisoned, 16384).unwrap();
+        assert!(!request.to_string().contains("AF137_ANNOTATION_CANARY"));
+    }
+    let reports: Vec<_> = groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("blind report sent")).unwrap())
+        .collect();
+    let report = compare_report(&groups, &reports, 0);
+    for row in items(&report["matrix"]) {
+        assert_eq!(
+            row["eval_sample"],
+            compare_sample_id(row["id"].as_str().unwrap())
+        );
+        assert_eq!(
+            items(&report["matrix"])
+                .iter()
+                .filter(|r| r["eval_sample"] == row["eval_sample"])
+                .count(),
+            1
+        );
+    }
+    assert!(!temp.0.exists());
+}
+#[test]
+fn af137_blinding_changes_only_comparison_requests_and_keeps_legacy_replay_valid() {
+    let temp = TempRecords::new();
+    for stage in ["w1", "w3"] {
+        let sample = samples(stage).remove(0);
+        let ordinary = stage_request_with_output_tokens(stage, &sample, 16384).unwrap();
+        let mut blinded = compare_request(stage, &sample, 16384).unwrap();
+        let mut input: Value = serde_json::from_str(blinded["input"].as_str().unwrap()).unwrap();
+        assert_eq!(
+            input["source_snapshot"]["eval_sample"],
+            compare_sample_id(sample["id"].as_str().unwrap())
+        );
+        assert_ne!(fingerprint(&ordinary), fingerprint(&blinded));
+        input["source_snapshot"]["eval_sample"] = sample["id"].clone();
+        blinded["input"] = json!(input.to_string());
+        assert_eq!(ordinary, blinded); // No original message, W2 field, catalogue or other request change.
+        let model = EvalModel::default_model();
+        let old = case_from_request(
+            stage.into(),
+            sample.clone(),
+            &temp.0,
+            &model,
+            1,
+            ordinary.clone(),
+        )
+        .unwrap();
+        let response = if stage == "w1" {
+            fake_w1(&sample)
+        } else {
+            fake_w3(&sample)
+        };
+        save_recording(
+            &old,
+            &fake_envelope(response.clone()),
+            Some(&response.to_string()),
+            None,
+        )
+        .unwrap();
+        let fresh = stage_request_with_output_tokens(stage, &sample, 16384).unwrap();
+        assert_eq!(fresh, ordinary);
+        let replay = case_from_request(stage.into(), sample, &temp.0, &model, 1, fresh).unwrap();
+        assert!(matches!(replay.replay, Replay::Output(_)));
+        assert_eq!(case_fingerprint(&old), case_fingerprint(&replay));
+        assert_eq!(
+            evaluate_cases(&[replay], Some(0), &mut |_| panic!("legacy replay sent")).unwrap()["sent_calls"],
+            0
+        );
+    }
+    // Every historic entry using the generic constructor keeps its original, semantic ID.
+    let mut historical =
+        smoke_plan(&temp.0.join("smoke"), &smoke_fixture_profiles(), |_| None).unwrap();
+    historical.extend(m15_w1_plan(&temp.0.join("m15")).unwrap());
+    historical.extend(w3_comparison_plan(&temp.0.join("af96"), None).unwrap());
+    historical.extend(w3_effort_plan(&temp.0.join("af101"), None).unwrap());
+    for c in historical {
+        let input: Value = serde_json::from_str(c.request["input"].as_str().unwrap()).unwrap();
+        assert_eq!(input["source_snapshot"]["eval_sample"], c.sample["id"]);
     }
 }
