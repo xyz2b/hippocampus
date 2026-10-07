@@ -8,6 +8,7 @@ mod recall_adapter;
 #[path = "eval/fixed_inputs/adapter.rs"]
 mod fixed_adapter;
 
+use hippocampus::model_provider::{self, ProviderConfig, ProviderProtocol};
 use hippocampus::{
     EntityId, MemoryType, ModelBudgetConfig, ModelStage, ReasoningEffort, contract::*,
     structured_request, w2, w4, write_models,
@@ -1090,6 +1091,11 @@ fn stages_from_env() -> String {
 }
 
 fn recording_root() -> PathBuf {
+    if std::env::var_os("EVAL_PROVIDER_CONFIG").is_some() {
+        return std::env::var_os("EVAL_PROVIDER_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("target/eval-providers"));
+    }
     Path::new(env!("CARGO_MANIFEST_DIR")).join(if fixed_inputs_enabled() {
         "tests/eval/fixed_inputs/recordings"
     } else {
@@ -1114,14 +1120,36 @@ impl EvalModel {
         }
     }
     fn from_env() -> Result<Self, String> {
+        let provider: Option<ProviderConfig> = std::env::var("EVAL_PROVIDER_CONFIG")
+            .ok()
+            .map(|s| {
+                serde_json::from_str(&s).map_err(|e| format!("invalid EVAL_PROVIDER_CONFIG: {e}"))
+            })
+            .transpose()?;
+        let provider_base = provider
+            .as_ref()
+            .and_then(|p| std::env::var(&p.base_url_env).ok());
         let mut model = Self {
             label: std::env::var("EVAL_MODEL_LABEL").unwrap_or_else(|_| MODEL.into()),
             model: std::env::var("EVAL_MODEL").ok(),
             base: std::env::var("EVAL_BASE_URL")
                 .ok()
-                .or_else(|| std::env::var("DEEPSEEK_BASE_URL").ok())
+                .or(provider_base)
+                .or_else(|| {
+                    if provider.is_none() {
+                        std::env::var("DEEPSEEK_BASE_URL").ok()
+                    } else {
+                        None
+                    }
+                })
                 .map(|s| s.trim_end_matches('/').to_owned()),
             effort: match std::env::var("EVAL_REASONING_EFFORT").ok() {
+                None if provider
+                    .as_ref()
+                    .is_some_and(|p| p.protocol == ProviderProtocol::OpenaiChat) =>
+                {
+                    ReasoningEffort::Omit
+                }
                 None => ReasoningEffort::Medium,
                 Some(s) => serde_json::from_value(json!(s))
                     .map_err(|_| "invalid EVAL_REASONING_EFFORT".to_owned())?,
@@ -1168,6 +1196,23 @@ impl EvalModel {
         Ok(())
     }
 }
+#[derive(Clone)]
+struct ProviderOptions {
+    provider: ProviderConfig,
+    campaign: PathBuf,
+}
+fn provider_options_from_env() -> Result<Option<ProviderOptions>, String> {
+    let Some(value) = std::env::var("EVAL_PROVIDER_CONFIG").ok() else {
+        return Ok(None);
+    };
+    let provider =
+        serde_json::from_str(&value).map_err(|e| format!("invalid EVAL_PROVIDER_CONFIG: {e}"))?;
+    let campaign = std::env::var_os("EVAL_CAMPAIGN_DIR")
+        .map(PathBuf::from)
+        .ok_or("new provider requires EVAL_CAMPAIGN_DIR")?;
+    Ok(Some(ProviderOptions { provider, campaign }))
+}
+
 fn repeat_count(value: Option<&str>) -> Result<usize, String> {
     value
         .unwrap_or("1")
@@ -1182,12 +1227,16 @@ enum Replay {
     Stale,
     Output(String),
     Failed(Value),
+    Rejected(String),
 }
 
 struct Case {
     stage: String,
     sample: Value,
     request: Value,
+    wire_request: Value,
+    provider: Option<ProviderConfig>,
+    campaign: Option<PathBuf>,
     path: PathBuf,
     file: Value,
     replay: Replay,
@@ -1213,6 +1262,36 @@ fn plan_repeated(
     model: &EvalModel,
     repeats: usize,
 ) -> Result<Vec<Case>, String> {
+    plan_repeated_with_provider(selected, root, model, repeats, None)
+}
+fn plan_repeated_with_provider(
+    selected: Vec<(String, Value)>,
+    root: &Path,
+    model: &EvalModel,
+    repeats: usize,
+    options: Option<&ProviderOptions>,
+) -> Result<Vec<Case>, String> {
+    if let Some(options) = options {
+        options
+            .provider
+            .check_model(
+                model
+                    .model
+                    .as_deref()
+                    .ok_or("new provider requires EVAL_MODEL")?,
+                model.effort,
+            )
+            .map_err(|e| e.to_string())?;
+        options
+            .provider
+            .endpoint(
+                model
+                    .base
+                    .as_deref()
+                    .ok_or("new provider requires endpoint")?,
+            )
+            .map_err(|e| e.to_string())?;
+    }
     model.validate()?;
     if repeats == 0 {
         return Err("EVAL_REPEAT must be positive".into());
@@ -1225,7 +1304,7 @@ fn plan_repeated(
     let mut cases = Vec::new();
     for case in selected {
         let mut selected_model = model.clone();
-        if case.0 == "r4" && case.1["fixed_input"] == true {
+        if options.is_none() && case.0 == "r4" && case.1["fixed_input"] == true {
             // 首轮冻结 payload 中的计划已过 R1 核验；不重新调用 R1，也不读取 R4 答案。
             let models = hippocampus::recall_models::RecallModels {
                 reasoning_effort: [("r4".into(), model.effort)].into(),
@@ -1234,7 +1313,23 @@ fn plan_repeated(
             selected_model.effort = models.r4_effort(Some(fixed_r4_op(&case.1)?));
         }
         for repeat in 1..=repeats {
-            let mut dir = root.join(&selected_model.label);
+            let mut dir = if let Some(options) = options {
+                let provider = &options.provider;
+                root.join(
+                    serde_json::to_value(provider.protocol)
+                        .unwrap()
+                        .as_str()
+                        .unwrap(),
+                )
+                .join(&selected_model.label)
+                .join(match provider.thinking {
+                    Some(true) => "thinking-on",
+                    Some(false) => "thinking-off",
+                    None => "thinking-default",
+                })
+            } else {
+                root.join(&selected_model.label)
+            };
             if selected_model.effort != ReasoningEffort::Medium {
                 dir = dir.join(format!(
                     "reasoning-{}",
@@ -1244,11 +1339,20 @@ fn plan_repeated(
                         .unwrap()
                 ));
             }
-            cases.extend(plan_once(
-                vec![case.clone()],
+            let (stage, sample) = case.clone();
+            let mut request = stage_request(&stage, &sample)?;
+            if let Some(id) = &selected_model.model {
+                request["model"] = json!(id);
+            }
+            selected_model.effort.apply(&mut request);
+            cases.push(case_from_request_with_provider(
+                stage,
+                sample,
                 &dir.join(format!("repeat-{repeat}")),
                 &selected_model,
                 repeat,
+                request,
+                options,
             )?);
         }
     }
@@ -1282,6 +1386,22 @@ fn case_from_request(
     repeat: usize,
     request: Value,
 ) -> Result<Case, String> {
+    case_from_request_with_provider(stage, sample, root, model, repeat, request, None)
+}
+fn case_from_request_with_provider(
+    stage: String,
+    sample: Value,
+    root: &Path,
+    model: &EvalModel,
+    repeat: usize,
+    request: Value,
+    options: Option<&ProviderOptions>,
+) -> Result<Case, String> {
+    let provider = options.map(|o| &o.provider);
+    let prepared = model_provider::provider_request(provider, &request);
+    let rejection = prepared.as_ref().err().map(ToString::to_string);
+    let wire_request = prepared.unwrap_or_else(|_| request.clone());
+    let binding = eval_provider_binding(model, &wire_request, provider);
     let path = root.join(format!("{}.json", sample["id"].as_str().unwrap()));
     let file: Value = match std::fs::read_to_string(&path) {
         Ok(text) => serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?,
@@ -1298,13 +1418,14 @@ fn case_from_request(
         .filter(|r| r["model"] == model.label)
         .collect();
     let record = current.iter().rev().find(|r| {
-        r["request"] == recording_fingerprint(&sample, &request)
+        r["request"] == eval_request_fingerprint(&sample, &request, model, &wire_request, provider)
             && r["schema"] == request["text"]["format"]["name"]
             && r["max_output_tokens"] == request["max_output_tokens"]
             && r["base_url"] == json!(model.base)
             && r["repeat"] == repeat
             && r["endpoint"] == request["model"]
-            && r["recording_version"] == 2
+            && r["recording_version"] == if provider.is_some() { 3 } else { 2 }
+            && (provider.is_none() || r["provider_binding"] == binding)
             && (sample["w3_prompt_arm"].is_null() || r["prompt_arm"] == sample["w3_prompt_arm"])
             && (sample["w3_effort_arm"].is_null()
                 || (r["effort_arm"] == sample["w3_effort_arm"]
@@ -1312,7 +1433,9 @@ fn case_from_request(
                     && r["baseline_commit"] == "dc604f8"
                     && r["prompt_byte_fingerprint"] == W3_EFFORT_PROMPT_FINGERPRINT))
     });
-    let replay = if let Some(r) = record {
+    let replay = if let Some(reason) = rejection {
+        Replay::Rejected(reason)
+    } else if let Some(r) = record {
         if r.get("error").is_some() {
             Replay::Failed((*r).clone())
         } else if let Some(text) = r["output_text"].as_str() {
@@ -1333,6 +1456,9 @@ fn case_from_request(
         stage,
         sample,
         request,
+        wire_request,
+        provider: provider.cloned(),
+        campaign: options.map(|o| o.campaign.clone()),
         path,
         file,
         replay,
@@ -1343,10 +1469,131 @@ fn case_from_request(
     })
 }
 
+fn eval_provider_binding(
+    model: &EvalModel,
+    wire: &Value,
+    provider: Option<&ProviderConfig>,
+) -> Value {
+    provider.map_or(Value::Null, |provider| {
+        json!({"adapter":model_provider::ADAPTER_VERSION,
+        "provider":provider,"endpoint":provider.endpoint(model.base.as_deref().unwrap()).unwrap(),
+        "model":model.model,"effort":model.effort,"request":wire})
+    })
+}
+fn eval_request_fingerprint(
+    sample: &Value,
+    canonical: &Value,
+    model: &EvalModel,
+    wire: &Value,
+    provider: Option<&ProviderConfig>,
+) -> Value {
+    if provider.is_none() {
+        recording_fingerprint(sample, canonical)
+    } else {
+        json!(hippocampus::recall_models::fingerprint(
+            &eval_provider_binding(model, wire, provider)
+        ))
+    }
+}
+fn case_fingerprint(case: &Case) -> Value {
+    eval_request_fingerprint(
+        &case.sample,
+        &case.request,
+        &case.model,
+        &case.wire_request,
+        case.provider.as_ref(),
+    )
+}
+fn campaign_slot(case: &Case) -> Value {
+    json!({"request":case_fingerprint(case),"id":case.sample["id"],"stage":case.stage,"repeat":case.repeat})
+}
+
+fn campaign_root(cases: &[Case]) -> Result<Option<&Path>, String> {
+    let root = cases.iter().find_map(|c| c.campaign.as_deref());
+    if let Some(root) = root
+        && cases.iter().any(|c| c.campaign.as_deref() != Some(root))
+    {
+        return Err("cannot mix campaigns".into());
+    }
+    Ok(root)
+}
+fn campaign_check(cases: &[Case], limit: usize) -> Result<(), String> {
+    let Some(root) = campaign_root(cases)? else {
+        return Ok(());
+    };
+    let path = root.join("authorization.json");
+    if !path.exists() {
+        return Ok(());
+    }
+    let authorization: Value =
+        serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+    if authorization["limit"] != limit {
+        return Err("campaign allowance differs from persisted authorization".into());
+    }
+    for case in cases {
+        if !items(&authorization["requests"]).contains(&campaign_slot(case)) {
+            return Err("campaign request identity changed".into());
+        }
+    }
+    let sends = root.join("sends");
+    if sends.exists() {
+        for entry in std::fs::read_dir(sends).map_err(|e| e.to_string())? {
+            let path = entry.map_err(|e| e.to_string())?.path();
+            if path.extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+            let log: Value =
+                serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+                    .map_err(|e| e.to_string())?;
+            if cases.iter().any(|c| {
+                matches!(c.replay, Replay::Missing | Replay::Stale)
+                    && log["slot"] == campaign_slot(c)
+            }) {
+                return Err(
+                    "campaign slot already sent but recording missing; no automatic resend".into(),
+                );
+            }
+        }
+    }
+    Ok(())
+}
+fn campaign_start(case: &Case) -> Result<PathBuf, String> {
+    let root = case.campaign.as_ref().ok_or("missing campaign")?;
+    let path = root
+        .join("sends")
+        .join(format!("{}.json", hippocampus::diagnostics::new_id()));
+    m15_write_json(
+        &path,
+        &json!({"state":"started","slot":campaign_slot(case),"request":case_fingerprint(case),"sample":case.sample["id"],"repeat":case.repeat}),
+    )?;
+    Ok(path)
+}
+fn normalized_envelope(provider: Option<&ProviderConfig>, envelope: &Value) -> Value {
+    let Some(provider) = provider else {
+        return envelope.clone();
+    };
+    let result = model_provider::provider_output(provider.protocol, envelope);
+    let usage = model_provider::normalized_usage(provider.protocol, envelope);
+    match result {
+        Ok(text) => {
+            json!({"status":"completed","usage":usage,"output":[{"content":[{"type":"output_text","text":text}]}]})
+        }
+        Err(e) => {
+            json!({"status":"failed","usage":usage,"error":e.to_string(),"incomplete_details":{"reason":e.to_string()}})
+        }
+    }
+}
+
 fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
     let needed = cases
         .iter()
-        .filter(|c| !matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+        .filter(|c| {
+            !matches!(
+                c.replay,
+                Replay::Output(_) | Replay::Failed(_) | Replay::Rejected(_)
+            )
+        })
         .count();
     let sends = if limit.is_some() { needed } else { 0 };
     println!(
@@ -1379,6 +1626,15 @@ fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
         if previous + needed > 24 {
             return Err(format!(
                 "M1.5 W1 整批拒绝：累计已发送/在途 {previous} + 缺口 {needed} > 批准上限 24"
+            ));
+        }
+    }
+    if let (Some(limit), Some(root)) = (limit.filter(|n| *n > 0), campaign_root(cases)?) {
+        campaign_check(cases, limit)?;
+        let previous = count_sends([root.join("sends")])?;
+        if previous.saturating_add(needed) > limit {
+            return Err(format!(
+                "campaign cumulative {previous} + missing {needed} exceeds {limit}"
             ));
         }
     }
@@ -1426,11 +1682,11 @@ fn save_recording_timed(
 ) -> Result<(), String> {
     let mut file = case.file.clone();
     let mut recorded = items(&file["recorded"]).to_vec();
-    let mut record = json!({"recording_version":2,"model":case.model.label,"repeat":case.repeat,
+    let mut record = json!({"recording_version":if case.provider.is_some() {3} else {2},"model":case.model.label,"repeat":case.repeat,
         "reasoning_effort":case.model.effort,"elapsed_ms":elapsed_ms,
         "schema":case.request["text"]["format"]["name"],"endpoint":case.request["model"],
         "base_url":case.model.base,"max_output_tokens":case.request["max_output_tokens"],
-        "request":recording_fingerprint(&case.sample, &case.request),"response":{
+        "request":case_fingerprint(case),"response":{
             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}});
     if let Some(text) = text {
         record["output"] = serde_json::from_str(text).unwrap_or(json!(text));
@@ -1439,6 +1695,10 @@ fn save_recording_timed(
     }
     if let Some(error) = error {
         record["error"] = json!(error);
+    }
+    if case.provider.is_some() {
+        record["provider_binding"] =
+            eval_provider_binding(&case.model, &case.wire_request, case.provider.as_ref());
     }
     w3_trial_metadata(&mut record, case);
     recorded.push(record); // Includes failed attempts; reruns replay them instead of picking a success.
@@ -1483,6 +1743,22 @@ fn evaluate(
     if _trial_lock.is_some() {
         planned = preflight(cases, limit)?;
     }
+    let _campaign_lock = if planned > 0 {
+        campaign_root(cases)?.map(w3_trial_lock).transpose()?
+    } else {
+        None
+    };
+    if _campaign_lock.is_some() {
+        planned = preflight(cases, limit)?;
+        let root = campaign_root(cases)?.unwrap();
+        let path = root.join("authorization.json");
+        if !path.exists() {
+            m15_write_json(
+                &path,
+                &json!({"limit":limit,"requests":cases.iter().map(campaign_slot).collect::<Vec<_>>()}),
+            )?;
+        }
+    }
     let mut sent = 0;
     let mut results = Vec::new();
     for case in cases {
@@ -1490,10 +1766,15 @@ fn evaluate(
         let mut result = match &case.replay {
             Replay::Output(text) => score(&case.stage, &case.sample, Some(text)),
             Replay::Failed(record) => failed_score(case, record),
+            Replay::Rejected(reason) => {
+                json!({"id":case.sample["id"],"stage":case.stage,"status":"发送前拒绝","error":reason,"sent":false})
+            }
             _ if limit.is_some() => {
                 // A durable started entry precedes the physical send. A crash
                 // without a response remains a possibly billed attempt.
-                let attempt = if case.w3_trial_root.is_some() {
+                let attempt = if case.campaign.is_some() {
+                    Some(campaign_start(case)?)
+                } else if case.w3_trial_root.is_some() {
                     Some(w3_start_send(case)?)
                 } else if case.sample["m15_review"] == true {
                     Some(m15_start_send(case)?)
@@ -1502,11 +1783,15 @@ fn evaluate(
                 };
                 sent += 1;
                 let started = std::time::Instant::now();
-                let response = send(&case.request);
+                let response = send(&case.wire_request);
                 let elapsed_ms = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
-                let envelope = response.as_ref().ok().cloned().unwrap_or(Value::Null);
-                if let Some(path) = attempt {
-                    let mut entry = json!({"state":"responded","request":recording_fingerprint(&case.sample,&case.request),
+                let envelope = response
+                    .as_ref()
+                    .ok()
+                    .map(|e| normalized_envelope(case.provider.as_ref(), e))
+                    .unwrap_or(Value::Null);
+                let pending_log = if let Some(path) = attempt {
+                    let mut entry = json!({"state":"responded","request":case_fingerprint(case),
                         "elapsed_ms":elapsed_ms,"usage":envelope["usage"],"status":envelope["status"],"error":response.as_ref().err()});
                     if case.w3_trial_root.is_some() {
                         entry["sample"] = case.sample["id"].clone();
@@ -1515,11 +1800,31 @@ fn evaluate(
                         entry["reasoning_effort"] = json!(case.model.effort);
                         w3_trial_metadata(&mut entry, case);
                     }
-                    m15_write_json(&path, &entry)?;
-                }
+                    if case.campaign.is_some() {
+                        entry["slot"] = campaign_slot(case);
+                    }
+                    Some((path, entry))
+                } else {
+                    None
+                };
                 metrics = json!({"elapsed_ms":elapsed_ms,"usage":envelope["usage"]});
-                let text = response.and_then(|e| completed_text(&e));
-                match text {
+                let text = response.and_then(|e| {
+                    if let Some(provider) = &case.provider {
+                        let text = model_provider::provider_output(provider.protocol, &e)
+                            .map_err(|e| e.to_string())?;
+                        let parsed = serde_json::from_str(&text)
+                            .map_err(|e| format!("invalid JSON: {e}"))?;
+                        model_provider::check_output(
+                            &case.request["text"]["format"]["schema"],
+                            &parsed,
+                        )
+                        .map_err(|e| e.to_string())?;
+                        Ok(text)
+                    } else {
+                        completed_text(&e)
+                    }
+                });
+                let scored = match text {
                     Ok(text) => {
                         save_recording_timed(case, &envelope, Some(&text), None, Some(elapsed_ms))?;
                         score(&case.stage, &case.sample, Some(&text))
@@ -1538,7 +1843,11 @@ fn evaluate(
                             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}}),
                         )
                     }
+                };
+                if let Some((path, entry)) = pending_log {
+                    m15_write_json(&path, &entry)?;
                 }
+                scored
             }
             Replay::Missing => score(&case.stage, &case.sample, None),
             Replay::Stale => {
@@ -1557,7 +1866,7 @@ fn evaluate(
             .unwrap_or_else(|| metrics["response"]["usage"].clone());
         result["repeat"] = json!(case.repeat);
         result["max_output_tokens"] = case.request["max_output_tokens"].clone();
-        result["request"] = recording_fingerprint(&case.sample, &case.request);
+        result["request"] = case_fingerprint(case);
         w3_trial_metadata(&mut result, case);
         results.push(result);
     }
@@ -1579,6 +1888,9 @@ fn evaluate(
             "reasoning_effort":cases.first().filter(|first|cases.iter().all(|c|c.model.effort==first.model.effort)).map(|c|c.model.effort),
             "reasoning_efforts":cases.iter().map(|c|serde_json::to_value(c.model.effort).unwrap().as_str().unwrap().to_owned()).collect::<std::collections::BTreeSet<_>>(),
             "metrics":stage_metrics(&results),
+            "preflight_rejections":{"context_exceeded":results.iter().filter(|r|r["error"]=="model_context_exceeded").count(),
+                "context_unproven":results.iter().filter(|r|r["error"]=="model_context_unproven").count(),
+                "total":results.iter().filter(|r|r["status"]=="发送前拒绝").count()},
             "raw_summary":stage_summaries(&raw_results,cases),"raw_splits":split_reports(&raw_results),
             "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
     )
@@ -1753,14 +2065,23 @@ fn write_stage_eval_suite() {
         let root = recording_root();
         let model = EvalModel::from_env().unwrap();
         let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
-        plan_repeated(selected, &root, &model, repeats).unwrap()
+        plan_repeated_with_provider(
+            selected,
+            &root,
+            &model,
+            repeats,
+            provider_options_from_env().unwrap().as_ref(),
+        )
+        .unwrap()
     };
     let limit = std::env::var("EVAL_RECORD").ok().map(|s| {
         s.parse::<usize>()
             .expect("EVAL_RECORD must be a nonnegative integer")
     });
     let sends = preflight(&cases, limit).unwrap();
-    let model = &cases.first().expect("nonempty stage plan").model;
+    let first = cases.first().expect("nonempty stage plan");
+    let model = &first.model;
+    let provider = first.provider.as_ref();
     // No client or credentials when there are no sends, including fully cached EVAL_RECORD=0.
     let live = (sends > 0).then(|| {
         let base = model
@@ -1768,13 +2089,27 @@ fn write_stage_eval_suite() {
             .as_ref()
             .expect("EVAL_RECORD requires EVAL_BASE_URL or DEEPSEEK_BASE_URL");
         let key = std::env::var("EVAL_API_KEY")
-            .or_else(|_| std::env::var("DEEPSEEK_API_KEY"))
+            .or_else(|_| {
+                if let Some(provider) = provider {
+                    provider
+                        .api_key_env
+                        .as_ref()
+                        .map_or(Ok(String::new()), |name| std::env::var(name))
+                } else {
+                    std::env::var("DEEPSEEK_API_KEY")
+                }
+            })
             .expect("EVAL_RECORD requires EVAL_API_KEY or DEEPSEEK_API_KEY");
         assert!(
-            !key.trim().is_empty(),
+            !key.trim().is_empty()
+                || provider.is_some_and(|p| p.protocol == ProviderProtocol::OpenaiChat),
             "evaluation API key must not be empty"
         );
-        let url = format!("{}/responses", base.trim_end_matches('/'));
+        let url = if let Some(provider) = provider {
+            provider.endpoint(base).unwrap()
+        } else {
+            format!("{}/responses", base.trim_end_matches('/'))
+        };
         let parsed = reqwest::Url::parse(&url).expect("DEEPSEEK_BASE_URL must be a valid URL");
         assert!(
             matches!(parsed.scheme(), "http" | "https"),
@@ -1790,11 +2125,10 @@ fn write_stage_eval_suite() {
     });
     let mut report = evaluate(&cases, limit, &mut |request| {
         let (http, url, key) = live.as_ref().expect("offline replay must never send");
-        let response = http
-            .post(url)
-            .bearer_auth(key)
+        let protocol = provider.map_or(ProviderProtocol::OpenaiResponses, |p| p.protocol);
+        let response = hippocampus::provider_http_request(http, url, key, protocol)
             .json(request)
-            .timeout(if m15 {
+            .timeout(if m15 || provider.is_some() {
                 std::time::Duration::from_secs(360)
             } else {
                 eval_request_timeout(request)
@@ -1880,7 +2214,12 @@ fn m15_dry_run() {
     preflight(&cases, limit).unwrap();
     let needed = cases
         .iter()
-        .filter(|c| !matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+        .filter(|c| {
+            !matches!(
+                c.replay,
+                Replay::Output(_) | Replay::Failed(_) | Replay::Rejected(_)
+            )
+        })
         .count();
     let bytes: usize = cases
         .iter()
@@ -3361,7 +3700,36 @@ fn dry_run_plan() {
     let root = recording_root();
     let model = EvalModel::from_env().unwrap();
     let repeats = repeat_count(std::env::var("EVAL_REPEAT").ok().as_deref()).unwrap();
-    let cases = plan_repeated(selected(&stages, &prefix).unwrap(), &root, &model, repeats).unwrap();
+    let cases = plan_repeated_with_provider(
+        selected(&stages, &prefix).unwrap(),
+        &root,
+        &model,
+        repeats,
+        provider_options_from_env().unwrap().as_ref(),
+    )
+    .unwrap();
+    if cases.iter().any(|c| c.provider.is_some()) {
+        println!(
+            "provider: {:?}；发送前拒绝 {}（上下文超限 {}，无法证明 {}）。",
+            cases[0].provider.as_ref().unwrap().protocol,
+            cases
+                .iter()
+                .filter(|c| matches!(c.replay, Replay::Rejected(_)))
+                .count(),
+            cases
+                .iter()
+                .filter(|c| matches!(&c.replay,Replay::Rejected(s) if s=="model_context_exceeded"))
+                .count(),
+            cases
+                .iter()
+                .filter(|c| matches!(&c.replay,Replay::Rejected(s) if s=="model_context_unproven"))
+                .count()
+        );
+        let limit = std::env::var("EVAL_RECORD")
+            .ok()
+            .map(|s| s.parse().expect("EVAL_RECORD integer"));
+        preflight(&cases, limit).unwrap();
+    }
     let mut total = 0;
     println!("分阶段评测干跑计划（不发送请求）");
     println!(
@@ -3440,7 +3808,10 @@ fn dry_run_plan() {
         "本次需录制: {}",
         cases
             .iter()
-            .filter(|c| !matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
+            .filter(|c| !matches!(
+                c.replay,
+                Replay::Output(_) | Replay::Failed(_) | Replay::Rejected(_)
+            ))
             .count()
     );
     println!("本次真实调用: 0");
@@ -4797,4 +5168,169 @@ fn m15_w1_fingerprint_covers_complete_request_without_stripping_fields() {
     input["observed_at"] = json!(1);
     changed["input"] = json!(input.to_string());
     assert_ne!(original, recording_fingerprint(&c.sample, &changed));
+}
+
+fn provider_eval_fixture(
+    temp: &TempRecords,
+    protocol: ProviderProtocol,
+) -> (EvalModel, ProviderOptions) {
+    let mut model = EvalModel::default_model();
+    model.label = "fixture-provider".into();
+    model.base = Some("https://fixture.invalid/v1".into());
+    model.model = Some(
+        match protocol {
+            ProviderProtocol::OpenaiResponses => "gpt-6.1-sol",
+            ProviderProtocol::AnthropicMessages => "claude-opus-5-5",
+            ProviderProtocol::OpenaiChat => "qwen3.8:27b-q4_K_M",
+        }
+        .into(),
+    );
+    if protocol == ProviderProtocol::OpenaiChat {
+        model.effort = ReasoningEffort::Omit;
+    }
+    let options = ProviderOptions {
+        campaign: temp.0.join("campaign"),
+        provider: ProviderConfig {
+            protocol,
+            base_url_env: "FIXTURE_BASE".into(),
+            api_key_env: None,
+            model_revision: Some("fixture-model-digest".into()),
+            thinking: if protocol == ProviderProtocol::OpenaiChat {
+                Some(false)
+            } else {
+                None
+            },
+            context_tokens: if protocol == ProviderProtocol::OpenaiChat {
+                Some(65536)
+            } else {
+                None
+            },
+            context_proof: Some(model_provider::ContextProof {
+                tokenizer_revision: "fixture-tokenizer".into(),
+                template_token_bound: 64,
+                byte_level_bpe: true,
+            }),
+        },
+    };
+    (model, options)
+}
+#[test]
+fn af119_stage_providers_record_and_strictly_replay_without_thinking_bodies() {
+    for protocol in [
+        ProviderProtocol::OpenaiResponses,
+        ProviderProtocol::AnthropicMessages,
+        ProviderProtocol::OpenaiChat,
+    ] {
+        let temp = TempRecords::new();
+        let (model, options) = provider_eval_fixture(&temp, protocol);
+        let chosen = selected("w1", "w1_01").unwrap();
+        let cases = plan_repeated_with_provider(chosen.clone(), &temp.0, &model, 1, Some(&options))
+            .unwrap();
+        assert!(!options.campaign.exists());
+        let output = "{\"candidates\":[],\"memory_requests\":[]}";
+        let report=evaluate(&cases,Some(1),&mut |wire| {
+            assert_eq!(wire["model"],model.model.as_deref().unwrap());
+            Ok(match protocol {
+                ProviderProtocol::OpenaiResponses=>json!({"status":"completed","usage":{"input_tokens":1,"output_tokens":2},"output":[{"content":[{"type":"output_text","text":output}]}]}),
+                ProviderProtocol::AnthropicMessages=>json!({"stop_reason":"end_turn","usage":{"input_tokens":1,"cache_read_input_tokens":3,"output_tokens":2},"content":[{"type":"thinking","thinking":"PRIVATE_THOUGHT"},{"type":"text","text":output}]}),
+                ProviderProtocol::OpenaiChat=>json!({"usage":{"prompt_tokens":1,"completion_tokens":2},"choices":[{"finish_reason":"stop","message":{"content":output,"reasoning":"PRIVATE_THOUGHT"}}]}),
+            })
+        }).unwrap();
+        assert_eq!(report["sent_calls"], 1);
+        let stored = std::fs::read_to_string(&cases[0].path).unwrap();
+        assert!(!stored.contains("PRIVATE_THOUGHT"));
+        let stored: Value = serde_json::from_str(&stored).unwrap();
+        assert_eq!(stored["recorded"][0]["recording_version"], 3);
+        assert_eq!(
+            stored["recorded"][0]["provider_binding"]["provider"]["protocol"],
+            serde_json::to_value(protocol).unwrap()
+        );
+        let replay =
+            plan_repeated_with_provider(chosen.clone(), &temp.0, &model, 1, Some(&options))
+                .unwrap();
+        assert!(matches!(replay[0].replay, Replay::Output(_)));
+        assert_eq!(
+            evaluate(&replay, None, &mut |_| panic!(
+                "offline replay must not send"
+            ))
+            .unwrap()["sent_calls"],
+            0
+        );
+        let mut changed = options.clone();
+        changed.provider.model_revision = Some("changed".into());
+        let stale =
+            plan_repeated_with_provider(chosen, &temp.0, &model, 1, Some(&changed)).unwrap();
+        assert!(matches!(stale[0].replay, Replay::Stale));
+        assert!(preflight(&stale, Some(1)).is_err());
+    }
+}
+#[test]
+fn af119_stage_context_rejections_never_send_or_create_campaign() {
+    let temp = TempRecords::new();
+    let (model, mut options) = provider_eval_fixture(&temp, ProviderProtocol::OpenaiChat);
+    for (tokens, proof, code) in [
+        (1, true, "model_context_exceeded"),
+        (65536, false, "model_context_unproven"),
+    ] {
+        options.provider.context_tokens = Some(tokens);
+        if !proof {
+            options.provider.context_proof = None;
+        }
+        let cases = plan_repeated_with_provider(
+            selected("w1", "w1_01").unwrap(),
+            &temp.0,
+            &model,
+            1,
+            Some(&options),
+        )
+        .unwrap();
+        let report = evaluate(&cases, Some(0), &mut |_| {
+            panic!("context rejection cannot call model")
+        })
+        .unwrap();
+        assert_eq!(report["sent_calls"], 0);
+        assert_eq!(report["results"][0]["error"], code);
+        assert_eq!(report["preflight_rejections"]["total"], 1);
+        assert!(!options.campaign.exists());
+    }
+}
+#[test]
+fn af119_campaign_retains_started_allowance_and_never_resends_missing_recordings() {
+    let temp = TempRecords::new();
+    let (model, options) = provider_eval_fixture(&temp, ProviderProtocol::OpenaiResponses);
+    let chosen = selected("w1", "w1_01").unwrap();
+    let cases =
+        plan_repeated_with_provider(chosen.clone(), &temp.0, &model, 1, Some(&options)).unwrap();
+    m15_write_json(
+        &options.campaign.join("authorization.json"),
+        &json!({"limit":2,"requests":cases.iter().map(campaign_slot).collect::<Vec<_>>()}),
+    )
+    .unwrap();
+    campaign_start(&cases[0]).unwrap();
+    assert_eq!(count_sends([options.campaign.join("sends")]).unwrap(), 1);
+    assert!(
+        preflight(&cases, Some(2))
+            .unwrap_err()
+            .contains("already sent")
+    );
+    assert!(
+        evaluate(&cases, Some(2), &mut |_| panic!(
+            "unknown attempt cannot be retried"
+        ))
+        .is_err()
+    );
+    assert!(
+        preflight(&cases, Some(3))
+            .unwrap_err()
+            .contains("allowance")
+    );
+    // Even a valid recording lost after a completed response must not cause an implicit resend.
+    let other = TempRecords::new();
+    let (model, options) = provider_eval_fixture(&other, ProviderProtocol::OpenaiResponses);
+    let cases =
+        plan_repeated_with_provider(chosen.clone(), &other.0, &model, 1, Some(&options)).unwrap();
+    evaluate(&cases,Some(2),&mut |_|Ok(json!({"status":"completed","output":[{"content":[{"type":"output_text","text":"{\"candidates\":[],\"memory_requests\":[]}"}]}]}))).unwrap();
+    std::fs::remove_file(&cases[0].path).unwrap();
+    let missing = plan_repeated_with_provider(chosen, &other.0, &model, 1, Some(&options)).unwrap();
+    assert!(preflight(&missing, Some(2)).is_err());
 }

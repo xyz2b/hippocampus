@@ -204,3 +204,54 @@ AE15 最新计算类 low 固定输入8次，中位延迟84.4秒（含1次180秒�
 ### AF78 引用资格与宿主路由
 
 R4 strict schema 按已核验 R1 计划生成：query_only 时 facts/compute 的 evidence 及 date_source 只允许 stored；assertion_present、unknown（含 R1 失败）仍允许 current。FactView.current 字段不变，最终核验仍拒绝违规引用。生产和两份阶段评测适配器共用构造函数，实际 schema 进入请求指纹和阶段摘要；这是现有资格规则的执行，当时不升 r4.v5/recall.v5，旧录制按实际指纹报告过期。引用保留原文 Markdown/符号，现有空白与引号归一不变。宿主先明确登记人物再 prepare，检查保存及召回结果/状态，没有新问题时不重复原陈述召回。
+
+## 显式多模型接入（AF119）
+
+生产角色缺省不变。`write_models.providers`（w1/w3/w4）与
+`recall_models.providers`（r1/r4）可按角色选择协议；未配置的角色继续使用
+DeepSeek 环境变量。模型字段仍是字符串；凭据配置仅保存环境变量名，不保存 key 值。
+例如单独把 W3 换成 Anthropic：
+
+```json
+{
+  "write_models": {
+    "w3": "claude-opus-5-5",
+    "providers": {
+      "w3": {
+        "protocol": "anthropic_messages",
+        "base_url_env": "ANTHROPIC_BASE_URL",
+        "api_key_env": "ANTHROPIC_API_KEY"
+      }
+    }
+  }
+}
+```
+
+| 协议 | 本版支持模型 | 强度/思考 | 请求 |
+|---|---|---|---|
+| openai_responses | DeepSeek ep-*、gpt-6.1-sol | DeepSeek 沿用；GPT low/medium/high | instructions + text.format strict |
+| anthropic_messages | claude-opus-5-5 | low/medium/high，adaptive 思考不可关 | system + output_config.format |
+| openai_chat | qwen3.5:9b-q8_0、qwen3.8:27b-q4_K_M | effort=omit，thinking=true/false | response_format；布尔开关通过 Ollama 的 reasoning_effort medium/none 兼容值发送 |
+
+显式 GPT/Opus 角色省略强度时为 medium（R4 计算分支亦如此）；Qwen 为 omit，
+必须显式给出 thinking。显式不支持的强度或模型组合发送前失败，不自动映射或回退。
+各协议都带固定 User-Agent；Responses 总是发送 instructions。Anthropic 发送 schema
+副本仅删除整数 minimum/maximum；原 schema 和业务核验不变，未知不支持关键字拒绝。
+只取最终正文，拒绝、截断、空正文及额外字段失败，不提取或记录思考正文，不重试。
+
+本地模型必须配置实际 `context_tokens`（本轮部署 27B=65536、9B=131072）、
+`model_revision` 及 `context_proof`。证明字段为 `tokenizer_revision`、
+`byte_level_bpe=true`、`template_token_bound`：由部署方核实该固定版本使用字节级 BPE，
+并给出包含模板文本和特殊 token 的上界；没有证明不能填写猜测值。
+运行时使用完整请求序列化 UTF-8 字节数作为输入 token 保守上界，再加模板上界与输出预留
+（已含思考）。这会保守拒绝一部分可容纳的请求；不是精确 tokenizer。
+无法证明返回 model_context_unproven，超出窗口返回 model_context_exceeded；均不发送、不消耗调用额度、不截断证据。
+本轮未读取本地模型元数据，未提供自动生成上述证明的功能。
+
+显式 provider 必须在 `PMR_MODEL_NETWORK=live` 下才可发送；offline 的 loopback 夹具
+例外不适用于真实本地模型。所有角色沿用同一操作预算，换 provider 不增加阶段次数。
+台账输出预留等于实际请求上限；Anthropic 输入合计缓存写/读，输出总量已含思考，未知 usage 保留预留。
+provider 身份不加入 budget policy_json，但进入写入检查点和召回请求绑定
+（协议、endpoint、模型/版本、发送 schema、强度/思考、上限及适配器版本）。
+缺省 DeepSeek 请求和 AC2 指纹保留；旧绑定不能用于显式新 provider。
+本项不改变 DB v10、业务契约及对外协议版本。

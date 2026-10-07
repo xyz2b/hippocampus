@@ -4084,3 +4084,56 @@ fn af83_w1_diagnostics_are_private_and_do_not_retry() {
     }
     assert!(!diagnostics::incomplete());
 }
+
+#[test]
+fn af119_provider_identity_is_checked_before_reusing_write_stages() {
+    let db = Db::new();
+    let key = db.start("我使用玻璃茶壶。");
+    let upstream = w1("我使用玻璃茶壶。");
+    let (mut first, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    first.models.w1 = "gpt-6.1-sol".into();
+    first.models.w3 = "gpt-6.1-sol".into();
+    first.models.reasoning_effort = [
+        ("w1".into(), ReasoningEffort::Medium),
+        ("w3".into(), ReasoningEffort::Medium),
+    ]
+    .into();
+    first.client.provider = Some(super::super::model_provider::ProviderConfig {
+        protocol: super::super::model_provider::ProviderProtocol::OpenaiResponses,
+        base_url_env: "FIXTURE_BASE".into(),
+        api_key_env: None,
+        model_revision: Some("revision-one".into()),
+        thinking: None,
+        context_tokens: None,
+        context_proof: None,
+    });
+    let claim = w4_claim_round(&mut db.open(), &key).unwrap();
+    let (ctx, source) = inputs(&db.open(), &key, &claim);
+    first
+        .provide(&mut db.open(), &claim, &ctx, &source)
+        .unwrap();
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    first
+        .provide(&mut db.open(), &claim, &ctx, &source)
+        .unwrap();
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    assert_eq!(stages["w1"]["binding"]["provider"]["model"], "gpt-6.1-sol");
+    assert_eq!(stages["w1"]["binding"]["provider"]["schema"], w1_schema());
+    first.client.provider.as_mut().unwrap().model_revision = Some("revision-two".into());
+    assert!(
+        first
+            .provide(&mut db.open(), &claim, &ctx, &source)
+            .unwrap_err()
+            .to_string()
+            .contains("needs_rejudge")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}

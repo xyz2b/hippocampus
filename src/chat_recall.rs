@@ -41,7 +41,7 @@ impl ChatMemoryService {
             return Ok(Some(provider.clone()));
         }
         // 缺凭据与关闭网络均使用已有完全离线边界；缺预算由运行时明确降级。
-        let client = match self.model_client(operation) {
+        let client = match self.model_client_for_stage(operation, ModelStage::R1) {
             Ok(c) => c,
             Err(e)
                 if e.downcast_ref::<OpenAiAdapterError>().is_some_and(|e| {

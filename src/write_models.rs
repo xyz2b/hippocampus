@@ -281,6 +281,8 @@ pub struct WriteModels {
     pub w4: String,
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub reasoning_effort: BTreeMap<String, ReasoningEffort>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub providers: BTreeMap<String, super::model_provider::ProviderConfig>,
 }
 
 impl Default for WriteModels {
@@ -290,12 +292,25 @@ impl Default for WriteModels {
             w3: super::DEEPSEEK_MODEL.into(),
             w4: super::DEEPSEEK_MODEL.into(),
             reasoning_effort: BTreeMap::new(),
+            providers: BTreeMap::new(),
         }
     }
 }
 
 impl WriteModels {
     pub fn validate(&self) -> PersistenceResult<()> {
+        for (role, provider) in &self.providers {
+            if !["w1", "w3", "w4"].contains(&role.as_str()) {
+                return Err("unknown provider role".into());
+            }
+            let model = match role.as_str() {
+                "w1" => &self.w1,
+                "w3" => &self.w3,
+                "w4" => &self.w4,
+                _ => unreachable!(),
+            };
+            provider.check_model(model, self.effort(role))?;
+        }
         if self
             .reasoning_effort
             .keys()
@@ -340,6 +355,10 @@ impl WriteModelProvider {
 
     pub fn with_models(mut self, models: WriteModels) -> PersistenceResult<Self> {
         models.validate()?;
+        self.client = self.client.clone().with_role_providers(
+            models.providers.clone(),
+            self.client.default_base_url.clone(),
+        );
         self.models = models;
         Ok(self)
     }
@@ -424,9 +443,19 @@ impl WriteModelProvider {
                 );
             }
         }
-        let client = self.operation_client(store, ctx)?;
+        let client = self
+            .operation_client(store, ctx)?
+            .for_stage(ModelStage::W1)?;
         let mut w1_binding = json!({"contract":"w1.v3","model":self.models.w1,"input":input});
         self.models.effort("w1").bind(&mut w1_binding);
+        if let Some(identity) = client.provider_binding(
+            &self.models.w1,
+            self.models.effort("w1"),
+            ModelStage::W1,
+            w1_schema(),
+        )? {
+            w1_binding["provider"] = identity;
+        }
         // Even when the full batch exists, compare the stage binding before reusing it.
         let saved_w1 = if confirming {
             None
@@ -446,6 +475,14 @@ impl WriteModelProvider {
                     .as_ref()
                     .and_then(|r| r["w4_model_stages"]["w1"]["binding"]["model"].as_str())
                     .unwrap_or(super::DEEPSEEK_MODEL);
+                let prior_binding = &state.sources[&ctx.source_key]
+                    .result
+                    .as_ref()
+                    .map(|r| &r["w4_model_stages"]["w1"]["binding"])
+                    .unwrap_or(&Json::Null);
+                if prior_binding["provider"] != w1_binding["provider"] {
+                    return Err("needs_rejudge: frozen W1 provider changed".into());
+                }
                 if prior_model != self.models.w1 {
                     return Err("needs_rejudge: frozen W1 model changed".into());
                 }
@@ -544,10 +581,21 @@ impl WriteModelProvider {
                 review: None,
             });
         }
+        let client = self
+            .operation_client(store, ctx)?
+            .for_stage(ModelStage::W3)?;
         input["contract"] = json!("w3.v3");
         let mut w3_binding =
             json!({"contract":"w3.v3","model":self.models.w3,"input":input,"final_w2":batch});
         self.models.effort("w3").bind(&mut w3_binding);
+        if let Some(identity) = client.provider_binding(
+            &self.models.w3,
+            self.models.effort("w3"),
+            ModelStage::W3,
+            w3_schema(),
+        )? {
+            w3_binding["provider"] = identity;
+        }
         let output = match crate::commit::w4_load_model_stage(store, claim, "w3", &w3_binding)? {
             Some(output) => {
                 crate::diagnostics::checked("W3", "decode", W3Output::decode(&output.to_string()))?
@@ -608,12 +656,22 @@ impl WriteModelProvider {
         if self.context.owner_id != ctx.owner {
             return Err("attempt_failed: write catalogue owner differs".into());
         }
-        let client = self.operation_client(store, ctx)?;
+        let client = self
+            .operation_client(store, ctx)?
+            .for_stage(ModelStage::W4)?;
         let payload = json!({"contract":"w4.v4","w4_input":input,"sources":sources});
         // 模型 ID 只绑定阶段结果，不能进入模型可见输入；保留现有检查点结构。
         let mut stage_binding = payload.clone();
         stage_binding["model"] = json!(self.models.w4);
         self.models.effort("w4").bind(&mut stage_binding);
+        if let Some(identity) = client.provider_binding(
+            &self.models.w4,
+            self.models.effort("w4"),
+            ModelStage::W4,
+            w4_schema(),
+        )? {
+            stage_binding["provider"] = identity;
+        }
         let failed_binding = |operation: &str| {
             let mut binding = stage_binding.clone();
             binding["invalid_operation_id"] = json!(operation);

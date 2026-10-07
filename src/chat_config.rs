@@ -25,6 +25,28 @@ pub(super) fn role_defaults(mut value: Value, write: bool) -> PersistenceResult<
             object.insert((*role).into(), json!(PRO_MODEL_DEFAULT));
         }
     }
+    let provider_defaults = object
+        .get("providers")
+        .and_then(Value::as_object)
+        .map(|providers| {
+            providers
+                .iter()
+                .map(|(role, value)| {
+                    let effort = if value["protocol"] == "openai_chat" {
+                        "omit"
+                    } else {
+                        "medium"
+                    };
+                    (role.clone(), effort)
+                })
+                .collect::<std::collections::BTreeMap<_, _>>()
+        })
+        .unwrap_or_default();
+    if !write && let Some(effort) = provider_defaults.get("r4") {
+        object
+            .entry("r4_compute_reasoning_effort")
+            .or_insert_with(|| json!(effort));
+    }
     let efforts = object
         .entry("reasoning_effort")
         .or_insert_with(|| json!({}));
@@ -32,7 +54,9 @@ pub(super) fn role_defaults(mut value: Value, write: bool) -> PersistenceResult<
         .as_object_mut()
         .ok_or("reasoning_effort must be an object")?;
     for (role, effort) in defaults {
-        efforts.entry(*role).or_insert_with(|| json!(effort));
+        efforts
+            .entry(*role)
+            .or_insert_with(|| json!(provider_defaults.get(*role).unwrap_or(effort)));
     }
     Ok(value)
 }
@@ -195,5 +219,44 @@ mod tests {
         ] {
             assert!(serde_json::from_value::<ChatConfig>(invalid).is_err());
         }
+    }
+    #[test]
+    fn af119_new_providers_get_explicit_role_defaults_without_changing_production_defaults() {
+        let config: ChatConfig=serde_json::from_value(json!({"write_models":{
+            "w1":"gpt-6.1-sol","w3":"claude-opus-5-5","w4":"qwen3.8:27b-q4_K_M",
+            "providers":{"w1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL","api_key_env":"OPENAI_API_KEY"},
+                "w3":{"protocol":"anthropic_messages","base_url_env":"ANTHROPIC_BASE_URL","api_key_env":"ANTHROPIC_API_KEY"},
+                "w4":{"protocol":"openai_chat","base_url_env":"QWEN_BASE_URL","thinking":false,"context_tokens":65536}}},
+            "recall_models":{"r1":"gpt-6.1-sol","r4":"claude-opus-5-5","providers":{
+                "r1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL","api_key_env":"OPENAI_API_KEY"},
+                "r4":{"protocol":"anthropic_messages","base_url_env":"ANTHROPIC_BASE_URL","api_key_env":"ANTHROPIC_API_KEY"}}}})).unwrap();
+        let write = config.write_models_for(None).unwrap();
+        assert_eq!(write.effort("w1"), Medium);
+        assert_eq!(write.effort("w3"), Medium);
+        assert_eq!(write.effort("w4"), crate::ReasoningEffort::Omit);
+        let recall = config.recall_models_for(None).unwrap();
+        assert_eq!(recall.effort("r1"), Medium);
+        assert_eq!(recall.r4_compute_reasoning_effort, Medium);
+        let reopened: ChatConfig =
+            serde_json::from_value(serde_json::to_value(&config).unwrap()).unwrap();
+        assert_eq!(
+            reopened.write_models_for(None).unwrap().providers,
+            write.providers
+        );
+        for invalid in [
+            json!({"write_models":{"w1":"gpt-6.1-sol","reasoning_effort":{"w1":"minimal"},
+            "providers":{"w1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL"}}}}),
+            json!({"recall_models":{"r4":"claude-opus-5-5","providers":{"r4":{"protocol":"anthropic_messages","base_url_env":"ANTHROPIC_BASE_URL","thinking":false}}}}),
+            json!({"write_models":{"w1":"gpt-6.1-sol","providers":{"w1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL","api_key":"secret"}}}}),
+        ] {
+            assert!(serde_json::from_value::<ChatConfig>(invalid).is_err());
+        }
+        let old: ChatConfig = serde_json::from_value(json!({})).unwrap();
+        assert!(
+            serde_json::to_value(old.write_models_for(Some("pro")).unwrap())
+                .unwrap()
+                .get("providers")
+                .is_none()
+        );
     }
 }

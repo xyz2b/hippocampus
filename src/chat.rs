@@ -986,12 +986,13 @@ impl ChatMemoryService {
             self.store.owner().clone(),
             state.entities.list_by_owner(self.store.owner()),
         )?;
-        let client = match self.model_client(
+        let client = match self.model_client_for_stage(
             source
                 .task
                 .operation_id
                 .as_deref()
                 .ok_or("round operation missing")?,
+            ModelStage::W1,
         ) {
             Ok(client) => client,
             Err(_) => {
@@ -1273,13 +1274,40 @@ impl ChatMemoryService {
     }
 
     fn model_client(&self, operation_id: &str) -> PersistenceResult<OpenAiClient> {
+        self.model_client_for_stage(operation_id, ModelStage::W1)
+    }
+
+    fn model_client_for_stage(
+        &self,
+        operation_id: &str,
+        stage: ModelStage,
+    ) -> PersistenceResult<OpenAiClient> {
         // MCP authorization belongs to this config, owner and operation, never ambient budget IDs.
         #[cfg(test)]
         let injected = self.model_client_override.clone();
         #[cfg(not(test))]
         let injected: Option<OpenAiClient> = None;
+        let providers = match stage {
+            ModelStage::W1 => self
+                .config
+                .write_models
+                .as_ref()
+                .map(|m| m.providers.clone())
+                .unwrap_or_default(),
+            _ => self
+                .config
+                .recall_models
+                .as_ref()
+                .map(|m| m.providers.clone())
+                .unwrap_or_default(),
+        };
         let client = if let Some(client) = injected {
             client
+        } else if !providers.is_empty() {
+            // Placeholder is never sent: resolve the first actual role before testing network availability.
+            OpenAiClient::new("https://unconfigured.invalid/v1", "unconfigured")?
+                .with_role_providers(providers, self.config.model_base_url.clone())
+                .for_stage(stage)?
         } else {
             let base_url = match &self.config.model_base_url {
                 Some(url) => url.clone(),

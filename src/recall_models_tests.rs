@@ -3178,3 +3178,51 @@ fn af83_r1_diagnostics_are_private_and_preserve_broad_recall() {
     }
     assert!(!diagnostics::incomplete());
 }
+
+#[test]
+fn af119_provider_endpoint_and_revision_invalidate_recall_cache_without_resending() {
+    let db = Db::new();
+    let (mut p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    p.recall_models.r1 = "gpt-6.1-sol".into();
+    p.recall_models.r4 = "gpt-6.1-sol".into();
+    p.client.provider = Some(super::super::model_provider::ProviderConfig {
+        protocol: super::super::model_provider::ProviderProtocol::OpenaiResponses,
+        base_url_env: "FIXTURE_BASE".into(),
+        api_key_env: None,
+        model_revision: Some("revision-one".into()),
+        thinking: None,
+        context_tokens: None,
+        context_proof: None,
+    });
+    let runtime = RecallRuntime::default();
+    let req = request("provider-cache");
+    let first = runtime
+        .run(&mut db.open(), &req, Budget::default(), Some(&p))
+        .unwrap();
+    assert_eq!(
+        runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap(),
+        first
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let endpoint = p.client.responses_url.clone();
+    p.client.responses_url = "https://other-fixture.invalid/v1/responses".into();
+    assert!(
+        runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("mismatch")
+    );
+    p.client.responses_url = endpoint;
+    p.client.provider.as_mut().unwrap().model_revision = Some("revision-two".into());
+    assert!(
+        runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("mismatch")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}

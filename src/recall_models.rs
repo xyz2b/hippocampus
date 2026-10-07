@@ -267,6 +267,8 @@ pub struct RecallModels {
     pub r4_compute_reasoning_effort: ReasoningEffort,
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub reasoning_effort: BTreeMap<String, ReasoningEffort>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub providers: BTreeMap<String, super::model_provider::ProviderConfig>,
 }
 impl Default for RecallModels {
     fn default() -> Self {
@@ -275,11 +277,23 @@ impl Default for RecallModels {
             r4: DEEPSEEK_MODEL.into(),
             r4_compute_reasoning_effort: ReasoningEffort::Low,
             reasoning_effort: BTreeMap::new(),
+            providers: BTreeMap::new(),
         }
     }
 }
 impl RecallModels {
     pub fn validate(&self) -> PersistenceResult<()> {
+        for (role, provider) in &self.providers {
+            if !["r1", "r4"].contains(&role.as_str()) {
+                return Err("unknown provider role".into());
+            }
+            let model = match role.as_str() {
+                "r1" => &self.r1,
+                "r4" => &self.r4,
+                _ => unreachable!(),
+            };
+            provider.check_model(model, self.effort(role))?;
+        }
         if self
             .reasoning_effort
             .keys()
@@ -291,6 +305,9 @@ impl RecallModels {
             if model.trim().is_empty() {
                 return Err(format!("recall_models.{role} must be nonempty").into());
             }
+        }
+        if let Some(provider) = self.providers.get("r4") {
+            provider.check_model(&self.r4, self.r4_compute_reasoning_effort)?;
         }
         Ok(())
     }
@@ -476,6 +493,10 @@ impl RecallModelProvider {
     }
     pub fn with_models(mut self, models: RecallModels) -> PersistenceResult<Self> {
         models.validate()?;
+        self.client = self.client.clone().with_role_providers(
+            models.providers.clone(),
+            self.client.default_base_url.clone(),
+        );
         self.recall_models = models;
         Ok(self)
     }
@@ -615,7 +636,7 @@ fn request_binding(
     budget: Budget,
     provider: Option<&RecallModelProvider>,
     bootstrap: bool,
-) -> String {
+) -> PersistenceResult<String> {
     let mut binding = fingerprint(&json!([
         request.binding,
         request.subject_ids,
@@ -645,7 +666,32 @@ fn request_binding(
             "r4_compute":p.recall_models.r4_compute_reasoning_effort,
             "r4_compute_output_tokens":p.client.budget.as_ref().map(|b| b.config.r4_compute_output_tokens)} ]));
     }
-    binding
+    if let Some(p) = provider
+        && (!p.recall_models.providers.is_empty() || p.client.provider.is_some())
+    {
+        let mut identities = Vec::new();
+        for (stage, model, effort, schema) in [
+            (
+                ModelStage::R1,
+                &p.recall_models.r1,
+                p.recall_models.effort("r1"),
+                r1_schema(),
+            ),
+            (
+                ModelStage::R4,
+                &p.recall_models.r4,
+                p.recall_models.effort("r4"),
+                r4_schema(),
+            ),
+        ] {
+            identities.push(
+                p.client
+                    .stage_provider_binding(stage, model, effort, schema)?,
+            );
+        }
+        binding = fingerprint(&json!([binding, p.recall_models, identities]));
+    }
+    Ok(binding)
 }
 
 #[derive(Clone)]
@@ -890,7 +936,7 @@ impl RecallRuntime {
                     freeze_clock(&mut effective, at)?;
                 }
             }
-            let binding = request_binding(&effective, budget, provider, bootstrap.is_some());
+            let binding = request_binding(&effective, budget, provider, bootstrap.is_some())?;
             if let Some(flight) = flights.get(&key) {
                 if flight.binding != binding {
                     return Err("recall_request_mismatch".into());
@@ -984,7 +1030,7 @@ impl RecallRuntime {
             request.owner.0.clone(),
             operation.clone(),
         );
-        let binding = request_binding(request, budget, provider, bootstrap.is_some());
+        let binding = request_binding(request, budget, provider, bootstrap.is_some())?;
         let attempt = crate::diagnostics::new_id();
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
@@ -1028,15 +1074,17 @@ impl RecallRuntime {
             let mut r1_failure = None;
             if let Some(client) = &client {
                 check_cancelled(cancelled)?;
-                let response = client.structured_output_for_model_with_effort(
-                    &provider.unwrap().recall_models.r1,
-                    provider.unwrap().recall_models.effort("r1"),
-                    ModelStage::R1,
-                    "r1_v2",
-                    R1_PROMPT,
-                    r1_input(&ctx, &entities),
-                    r1_schema(),
-                );
+                let response = client.for_stage(ModelStage::R1).and_then(|client| {
+                    client.structured_output_for_model_with_effort(
+                        &provider.unwrap().recall_models.r1,
+                        provider.unwrap().recall_models.effort("r1"),
+                        ModelStage::R1,
+                        "r1_v2",
+                        R1_PROMPT,
+                        r1_input(&ctx, &entities),
+                        r1_schema(),
+                    )
+                });
                 match response {
                     Ok(text) => {
                         plan = crate::diagnostics::checked("R1", "decode", r1::decode(&text))
@@ -1097,19 +1145,21 @@ impl RecallRuntime {
                 check_cancelled(cancelled)?;
                 let models = &provider.unwrap().recall_models;
                 let op = plan.output.as_ref().map(|o| o.plan.op);
-                let mut client = client.clone();
-                if let Some(budget) = &mut client.budget {
-                    budget.r4_compute = models.r4_compute_low(op);
-                }
-                let response = client.structured_output_for_model_with_effort(
-                    &models.r4,
-                    models.r4_effort(op),
-                    ModelStage::R4,
-                    "r4_v6",
-                    R4_PROMPT,
-                    r4_input(&assembly, request.utc_offset_seconds),
-                    r4_schema_for_plan(&plan),
-                );
+                let client = client.for_stage(ModelStage::R4);
+                let response = client.and_then(|mut client| {
+                    if let Some(budget) = &mut client.budget {
+                        budget.r4_compute = models.r4_compute_low(op);
+                    }
+                    client.structured_output_for_model_with_effort(
+                        &models.r4,
+                        models.r4_effort(op),
+                        ModelStage::R4,
+                        "r4_v6",
+                        R4_PROMPT,
+                        r4_input(&assembly, request.utc_offset_seconds),
+                        r4_schema_for_plan(&plan),
+                    )
+                });
                 check_cancelled(cancelled)?;
                 match response {
                     Ok(text) => {
