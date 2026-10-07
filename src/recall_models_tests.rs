@@ -1167,7 +1167,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v5");
+    assert_eq!(out["version"], "recall.v6");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1256,7 +1256,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v5");
+        assert_eq!(result["recall"]["version"], "recall.v6");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1271,7 +1271,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v5");
+    assert_eq!(body["recall"]["version"], "recall.v6");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -2789,12 +2789,12 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
     for rule in [
         "Kinship refers to the related person",
         "never default it to self",
-        "r1.v1",
+        "r1.v2",
     ] {
         assert!(R1_PROMPT.contains(rule), "{rule}");
     }
     for rule in [
-        "r4.v5",
+        "r4.v6",
         "candidate.speech",
         "latest supported plan version",
         "otherwise remains insufficient",
@@ -2809,7 +2809,7 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
 
 #[test]
 fn r4_unknown_original_time_keeps_v4_and_never_uses_the_receiving_day() {
-    assert!(R4_PROMPT.contains("r4.v5"));
+    assert!(R4_PROMPT.contains("r4.v6"));
     assert_eq!(
         R4_PROMPT.matches("trusted original utterance time").count(),
         2
@@ -2938,7 +2938,7 @@ fn af83_recall_requests_bind_nonempty_schema_in_both_current_branches() {
         );
         let requests = sent.lock().unwrap();
         assert_eq!(requests.len(), 2);
-        for (request, name) in requests.iter().zip(["r1_v1", "r4_v5"]) {
+        for (request, name) in requests.iter().zip(["r1_v2", "r4_v6"]) {
             assert_eq!(request["text"]["format"]["name"], name);
             crate::write_models::tests::assert_nonempty_model_request(request);
         }
@@ -2958,6 +2958,121 @@ fn af83_recall_requests_bind_nonempty_schema_in_both_current_branches() {
     ] {
         assert!(R4_PROMPT.contains(rule), "{rule}");
     }
+}
+
+#[test]
+fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
+    for unknown_source_anchor in [false, true] {
+        let db = Db::new();
+        let text = "我计划11月18日修篱笆。";
+        db.open()
+            .transaction(|state| {
+                let source = state.sources.get_mut("s-purple").unwrap();
+                source.request.as_mut().unwrap()["text"] = json!(text);
+                source.observed_at = AT - 365 * 86400;
+                if unknown_source_anchor {
+                    source.management.provenance = Some(json!({"kind":"history_import"}));
+                    source.management.time_anchor =
+                        Some(json!({"said_on":null,"utc_offset_seconds":28800}));
+                }
+                Ok(())
+            })
+            .unwrap();
+        let mut req = request("date-clocks");
+        req.binding.query = "那次计划是什么？".into();
+        req.binding.context = vec!["请查11月18日的计划。".into()];
+        let mut understanding = r1_out("judge");
+        understanding["time"] = json!({"role":"event","quote":{"text":"11月18日"},"anchor":"said_on","interp":{"kind":"unknown"}});
+        let mut judgment = r4_out();
+        judgment["facts"][0]["statement"] = json!(text);
+        judgment["facts"][0]["evidence"][0]["quote"]["text"] = json!(text);
+        judgment["facts"][0]["times"] = json!([{"role":"event","quote":{"text":"11月18日"},"anchor":"said_on",
+            "interp":if unknown_source_anchor { json!({"kind":"unknown"}) } else { json!({"kind":"date","date":"2025-11-18"}) }}]);
+        let (provider, sent) = mocked(&db, vec![envelope(understanding), envelope(judgment)]);
+        let runtime = RecallRuntime::default();
+        let result = runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&provider))
+            .unwrap();
+        assert_eq!(result.version, "recall.v6");
+        assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
+        let requests = sent.lock().unwrap();
+        for (i, (schema, contract, old_schema, old_contract)) in [
+            ("r1_v2", "r1.v2", "r1_v1", "r1.v1"),
+            ("r4_v6", "r4.v6", "r4_v5", "r4.v5"),
+        ]
+        .iter()
+        .enumerate()
+        {
+            assert_eq!(requests[i]["text"]["format"]["name"], *schema);
+            let payload: Value =
+                serde_json::from_str(requests[i]["input"].as_str().unwrap()).unwrap();
+            assert_eq!(payload["contract"], *contract);
+            assert!(payload.get("model").is_none());
+            if i == 0 {
+                assert_eq!(payload["said_on"], req.said_on);
+                assert_eq!(payload["context"], json!(req.binding.context));
+            } else {
+                assert_eq!(
+                    payload["evidence"]["raw"][0]["said_on"],
+                    if unknown_source_anchor {
+                        Value::Null
+                    } else {
+                        json!("2025-10-03")
+                    }
+                );
+            }
+            let mut prior = requests[i].clone();
+            prior["text"]["format"]["name"] = json!(old_schema);
+            let mut old_payload = payload;
+            old_payload["contract"] = json!(old_contract);
+            prior["input"] = json!(old_payload.to_string());
+            assert_ne!(fingerprint(&requests[i]), fingerprint(&prior));
+        }
+        let r4_digest = fingerprint(&json!([R4_PROMPT, requests[1]["text"]["format"]["schema"]]));
+        drop(requests);
+        let operation =
+            json!(["recall.v6", fingerprint(&json!(req.binding.request_id))]).to_string();
+        let state = db.open().read().unwrap();
+        let receipt = &state.receipts[&operation];
+        assert_eq!(
+            receipt.request["stages"]["r1"],
+            fingerprint(&json!([R1_PROMPT, r1_schema()]))
+        );
+        assert_eq!(receipt.request["stages"]["r4"], r4_digest);
+        assert_eq!(
+            runtime
+                .retained(&db.open(), &req.binding.request_id)
+                .unwrap(),
+            result
+        );
+        assert_eq!(
+            runtime
+                .run(&mut db.open(), &req, Budget::default(), Some(&provider))
+                .unwrap(),
+            result
+        );
+        assert_eq!(sent.lock().unwrap().len(), 2);
+    }
+}
+
+#[test]
+fn af90_recall_prompts_use_expression_anchors_without_guessing_years() {
+    for prompt in [R1_PROMPT, R4_PROMPT] {
+        for rule in [
+            "event direction, not speech",
+            "explicit years",
+            "continuous interval as a whole",
+            "precision",
+            "unknown",
+        ] {
+            assert!(prompt.contains(rule), "{rule}");
+        }
+        assert!(!prompt.contains("For example"));
+    }
+    assert!(R1_PROMPT.contains("trusted request clock"));
+    assert!(R1_PROMPT.contains("must not borrow that current clock"));
+    assert!(R4_PROMPT.contains("source containing that time"));
+    assert!(R4_PROMPT.contains("Never borrow another source's date"));
 }
 
 #[test]

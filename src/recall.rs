@@ -365,7 +365,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v5".into(),
+                version: "recall.v6".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -625,7 +625,7 @@ impl Assembly {
         let clarification =
             (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v5".into(),
+            version: "recall.v6".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly

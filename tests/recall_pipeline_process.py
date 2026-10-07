@@ -26,12 +26,12 @@ class Fixture(Responses):
         assert body["model"] == "pro-fixture"
         assert body["reasoning"]["effort"] == "minimal"
         name = body["text"]["format"]["name"]
-        if name == "r1_v1":
+        if name == "r1_v2":
             output = {"need":"judge", "current_evidence":"query_only", "type":"single",
                       "subject":{"entity_id":"self"}, "relation":"灯色", "conditions":[], "time":None,
                       "plan":{"op":"lookup", "filter":{"relation":"fact","time":None},"unit":None}}
         else:
-            assert name == "r4_v5"
+            assert name == "r4_v6"
             output = {"verdict":"supported", "facts":[{
                 "statement":TEXT, "evidence":[{"source":{"kind":"stored","source_id":self.source_id},"quote":{"text":TEXT}}],
                 "record_ids":[],"polarity":"affirm","strength":None,"uncertainty":None,"conditions":[],"times":[],
@@ -84,10 +84,10 @@ def main():
         finally:
             client.close()
         result = cli(binary,db,config,root,env,"memory_recall",args)
-        assert result["version"] == "recall.v5" and result["status"] == "answered",result
+        assert result["version"] == "recall.v6" and result["status"] == "answered",result
         assert result["facts"][0]["statement"] == TEXT
         assert "answer_contract" not in result
-        assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["r1_v1","r4_v5"] * 2
+        assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["r1_v2","r4_v6"] * 2
         # 新 CLI 进程无完整保留结果，不以核验为名再次调用。
         failure = cli(binary,db,config,root,env,"memory_validate_answer",dict(query=args["query"],request_id="online",draft_answer=TEXT,source_ids=[Fixture.source_id]),success=False)
         assert "not_retained" in failure

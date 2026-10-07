@@ -111,17 +111,17 @@ pub fn request(
         r1::not_understood(&ctx).map_err(|e| e.to_string())?;
         Ok((
             ModelStage::R1,
-            "r1_v1",
+            "r1_v2",
             recall_models::R1_PROMPT,
             recall_models::r1_schema(),
             recall_models::r1_input(&ctx, &entities),
         ))
     } else {
         let f = R4Input::new(input)?;
-        // 与生产构造保持一致的完整 r4.v5 包；单阶段评测不调用 R1 或检索模型。
+        // 与生产构造保持一致的完整 r4.v6 包；单阶段评测不调用 R1 或检索模型。
         Ok((
             ModelStage::R4,
-            "r4_v5",
+            "r4_v6",
             recall_models::R4_PROMPT,
             recall_models::r4_schema_for_plan(&f.plan),
             recall_models::r4_payload(&f.request, &f.plan, &f.evidence, 28_800),

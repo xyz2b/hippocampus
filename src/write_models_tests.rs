@@ -1,6 +1,6 @@
 use super::*;
 use crate::chat::{ChatConfig, ChatMemoryService, EnrichmentMode};
-use crate::contract::{SourceRef, W4Candidate, W4Input};
+use crate::contract::{RecordView2, SourceRef, W4Candidate, W4Input};
 use crate::enrichment::run_source_with_all_models;
 use crate::enrichment::{RuntimeInputBudget, run_source_with_models};
 use crate::*;
@@ -70,7 +70,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         provider.client.transport = Some(Arc::new(move |request| {
             let body: Json =
                 serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-            if body["text"]["format"]["name"] == "w3_v2" {
+            if body["text"]["format"]["name"] == "w3_v3" {
                 let store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
                 assert!(
                     store
@@ -129,7 +129,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
             let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             assert!(input.get("model").is_none());
             assert_eq!(input["current_user_message"], case["text"]);
-            if request["text"]["format"]["name"] == "w3_v2" {
+            if request["text"]["format"]["name"] == "w3_v3" {
                 assert_eq!(
                     input["candidates"][0]["candidate"],
                     case["w1"]["candidates"][0]
@@ -1605,7 +1605,7 @@ fn w3_for(upstream: &Json) -> Json {
 
 #[test]
 fn entity_registration_during_each_model_preserves_independent_candidates() {
-    for stage in ["w1_v2", "w3_v2", "w4_v4"] {
+    for stage in ["w1_v3", "w3_v3", "w4_v4"] {
         let db = Db::new();
         let first = "我喜欢浅蓝围巾。";
         let old_key = db.start_turn(first, "seed-entity", &[]);
@@ -2978,7 +2978,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W1_PROMPT,
             vec![
-                "w1.v2",
+                "w1.v3",
                 "speech=plan and memory_type=fact",
                 "completed booking or purchase",
                 "Kinship refers",
@@ -2989,7 +2989,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W3_PROMPT,
             vec![
-                "w3.v2",
+                "w3.v3",
                 "user really",
                 "qualifier present only in sentence",
                 "cannot be supported",
@@ -3030,8 +3030,8 @@ fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_
     assert_eq!(requests.len(), 2);
     let state = db.open().read().unwrap();
     for (i, (stage, version, schema, old_schema)) in [
-        ("w1", "w1.v2", "w1_v2", "w1_v1"),
-        ("w3", "w3.v2", "w3_v2", "w3_v1"),
+        ("w1", "w1.v3", "w1_v3", "w1_v2"),
+        ("w3", "w3.v3", "w3_v3", "w3_v2"),
     ]
     .iter()
     .enumerate()
@@ -3050,6 +3050,255 @@ fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_
             crate::recall_models::fingerprint(&requests[i]),
             crate::recall_models::fingerprint(&prior)
         );
+    }
+}
+
+#[test]
+fn af90_injected_date_interpretations_survive_review_storage_and_reopen() {
+    // Model decisions are injected: these checks cover transport/storage, not semantic inference.
+    let cases = [
+        (
+            "我计划11月18日修篱笆。",
+            "11月18日",
+            "plan",
+            json!({"kind":"date","date":"2026-11-18"}),
+        ),
+        (
+            "我曾在8月6日修过篱笆。",
+            "8月6日",
+            "user_statement",
+            json!({"kind":"date","date":"2026-08-06"}),
+        ),
+        (
+            "我计划2028年11月18日修篱笆。",
+            "2028年11月18日",
+            "plan",
+            json!({"kind":"date","date":"2028-11-18"}),
+        ),
+        (
+            "我计划11月18日修篱笆。",
+            "11月18日",
+            "plan",
+            json!({"kind":"date","date":"2028-11-18"}),
+        ),
+        (
+            "我已预订11月18日的修缮服务。",
+            "11月18日",
+            "user_statement",
+            json!({"kind":"date","date":"2026-11-18"}),
+        ),
+        (
+            "我记得11月18日这件事。",
+            "11月18日",
+            "user_statement",
+            json!({"kind":"unknown"}),
+        ),
+        (
+            "我计划1月8日修篱笆。",
+            "1月8日",
+            "plan",
+            json!({"kind":"unknown"}),
+        ),
+        (
+            "我计划10月2日修篱笆。",
+            "10月2日",
+            "plan",
+            json!({"kind":"unknown"}),
+        ),
+        (
+            "我计划10月修篱笆。",
+            "10月",
+            "plan",
+            json!({"kind":"unknown"}),
+        ),
+        (
+            "我计划11月修篱笆。",
+            "11月",
+            "plan",
+            json!({"kind":"month","year_offset":0,"month":11}),
+        ),
+        (
+            "我计划11月18日至11月20日修篱笆。",
+            "11月18日至11月20日",
+            "plan",
+            json!({"kind":"range","start":"2026-11-18","end_inclusive":"2026-11-20"}),
+        ),
+        (
+            "我计划12月30日至1月2日修篱笆。",
+            "12月30日至1月2日",
+            "plan",
+            json!({"kind":"unknown"}),
+        ),
+    ];
+    for (text, quote, speech, interp) in cases {
+        let db = Db::new();
+        let history = if quote == "11月18日" && interp["date"] == "2028-11-18" {
+            vec!["我已确定2028年的修缮安排。"]
+        } else {
+            vec![]
+        };
+        let key = db.start_turn(text, "date-boundary", &history);
+        let time =
+            json!({"role":"event","quote":{"text":quote},"anchor":"said_on","interp":interp});
+        let mut extraction = w1(text);
+        extraction["candidates"][0]["speech"] = json!(speech);
+        extraction["candidates"][0]["times"] = json!([time]);
+        let (provider, sent) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&extraction.to_string())),
+                Ok(envelope(&w3().to_string())),
+            ],
+        );
+        let result = run_all(&db, &key, &provider);
+        assert_eq!(
+            result["enrichment"]["status"], "committed",
+            "{text}: {result}"
+        );
+        let requests = sent.lock().unwrap();
+        let reviewed: Json = serde_json::from_str(requests[1]["input"].as_str().unwrap()).unwrap();
+        assert_eq!(reviewed["said_on"], "2026-10-02");
+        assert_eq!(reviewed["user_history"], json!(history));
+        assert_eq!(
+            reviewed["candidates"][0]["candidate"]["times"],
+            json!([time])
+        );
+        assert_eq!(
+            reviewed["candidates"][0]["time_resolutions"][0]["status"],
+            if interp["kind"] == "unknown" {
+                "unknown"
+            } else {
+                "resolved"
+            }
+        );
+        // Reopening must retain the model's interpretation, including unknowns and coarse precision.
+        let state = db.open().read().unwrap();
+        let id = result["enrichment"]["candidates"][0]["memory_id"]
+            .as_u64()
+            .unwrap();
+        let RecordView2::Current(view) = crate::w4::record_view(&state, MemoryId(id)).unwrap()
+        else {
+            panic!("current record required")
+        };
+        assert_eq!(
+            serde_json::to_value(view.candidate.times).unwrap(),
+            json!([time])
+        );
+        assert_eq!(db.calls(), 2);
+    }
+    let db = Db::new();
+    let text = "我计划11月18日修篱笆，11月20日刷栅栏。";
+    let key = db.start_turn(text, "independent-events", &[]);
+    let mut extraction = w1(text);
+    extraction["candidates"][0]["speech"] = json!("plan");
+    extraction["candidates"][0]["times"] = json!([
+        {"role":"event","quote":{"text":"11月18日"},"anchor":"said_on","interp":{"kind":"date","date":"2026-11-18"}},
+        {"role":"event","quote":{"text":"11月20日"},"anchor":"said_on","interp":{"kind":"date","date":"2026-11-20"}}
+    ]);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&extraction.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    assert_eq!(
+        run_all(&db, &key, &provider)["enrichment"]["status"],
+        "committed"
+    );
+    let reviewed: Json =
+        serde_json::from_str(sent.lock().unwrap()[1]["input"].as_str().unwrap()).unwrap();
+    assert_eq!(
+        reviewed["candidates"][0]["candidate"]["times"],
+        extraction["candidates"][0]["times"]
+    );
+    assert_eq!(
+        reviewed["candidates"][0]["time_resolutions"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+}
+
+#[test]
+fn af90_w3_conflict_is_scoped_and_undated_plan_commits_without_lost_qualifiers() {
+    let db = Db::new();
+    let claims = [
+        "我的卡号是31，又说是47。",
+        "我打算修篱笆。",
+        "如果雨停，我可能刷栅栏。",
+    ];
+    let text = claims.concat();
+    let key = db.start_turn(&text, "scoped-review", &[]);
+    let mut extraction = w1(&text);
+    extraction["candidates"] = json!(
+        claims
+            .iter()
+            .map(|text| w1(text)["candidates"][0].clone())
+            .collect::<Vec<_>>()
+    );
+    extraction["candidates"][1]["speech"] = json!("plan");
+    extraction["candidates"][2]["speech"] = json!("plan");
+    // Missing applicable uncertainty/condition is rejected by the model, never inferred in code.
+    let review = json!({"reviews":[
+        {"candidate":0,"verdict":"insufficient","problems":[{"aspect":"value","quote":{"text":claims[0]}}],"episode_value":"not_applicable"},
+        {"candidate":1,"verdict":"supported","problems":[],"episode_value":"not_applicable"},
+        {"candidate":2,"verdict":"contradicted","problems":[{"aspect":"uncertainty","quote":{"text":"可能"}},{"aspect":"condition","quote":{"text":"如果雨停"}}],"episode_value":"not_applicable"}
+    ],"coverage":{"status":"complete","missing":[]},"request_reviews":[]});
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&extraction.to_string())),
+            Ok(envelope(&review.to_string())),
+        ],
+    );
+    let result = run_all(&db, &key, &provider);
+    assert_eq!(
+        result["enrichment"]["candidates"][0]["reasons"],
+        json!(["review_insufficient"])
+    );
+    assert_eq!(result["enrichment"]["candidates"][1]["status"], "committed");
+    assert_eq!(
+        result["enrichment"]["candidates"][2]["reasons"],
+        json!(["review_contradicted"])
+    );
+    let records = db
+        .open()
+        .read()
+        .unwrap()
+        .repository
+        .list_by_owner(&UserId::from("alice"))
+        .unwrap();
+    assert_eq!(records.len(), 1);
+    assert_eq!(records[0].evidence[0].quote, claims[1]);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn af90_write_prompts_pin_date_direction_and_candidate_scoped_review() {
+    for prompt in [W1_PROMPT, W3_PROMPT] {
+        for rule in [
+            "event direction, not speech",
+            "explicit years",
+            "said_on",
+            "continuous interval as a whole",
+            "precision",
+            "unknown",
+        ] {
+            assert!(prompt.contains(rule), "{rule}");
+        }
+        assert!(!prompt.contains("For example"));
+    }
+    for rule in [
+        "plan with no expressed calendar time",
+        "times=[]",
+        "unclear which one is wrong",
+        "unrelated candidates",
+        "Explicit refutation or correction",
+        "applicable expressed qualifier",
+    ] {
+        assert!(W3_PROMPT.contains(rule), "{rule}");
     }
 }
 
@@ -3127,7 +3376,7 @@ fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
     assert_eq!(final_sent.lock().unwrap().len(), 1);
     assert_eq!(db.calls(), 3);
     let request = &final_sent.lock().unwrap()[0];
-    assert_eq!(request["text"]["format"]["name"], "w3_v2");
+    assert_eq!(request["text"]["format"]["name"], "w3_v3");
     let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     assert_eq!(payload["generation"], 1);
     assert_eq!(payload["utc_offset_seconds"], 28_800);
@@ -3150,124 +3399,136 @@ fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
 
 #[test]
 fn history_import_models_receive_null_original_time_and_frozen_before_parent_provenance() {
-    let db = Db::new();
-    let text = "我计划明天参加石溪展览。";
-    let parent_key = db.start_turn("我补充展览安排。", "import-parent", &[text]);
-    let parent = db.open().read().unwrap().sources[&parent_key].id.clone();
-    let mut service = ChatMemoryService::new(
-        db.open(),
-        ChatConfig {
-            enrichment_mode: EnrichmentMode::Off,
-            model_budget: Some(ModelBudgetConfig {
-                group_id: "authorized".into(),
-                max_calls: 100,
-                max_operation_calls: 3,
+    for (text, quote, interp) in [
+        (
+            "我计划明天参加石溪展览。",
+            "明天",
+            json!({"kind":"relative","unit":"day","offset":1}),
+        ),
+        (
+            "我计划11月18日修篱笆。",
+            "11月18日",
+            json!({"kind":"unknown"}),
+        ),
+    ] {
+        let db = Db::new();
+        let parent_key = db.start_turn("我补充展览安排。", "import-parent", &[text]);
+        let parent = db.open().read().unwrap().sources[&parent_key].id.clone();
+        let mut service = ChatMemoryService::new(
+            db.open(),
+            ChatConfig {
+                enrichment_mode: EnrichmentMode::Off,
+                model_budget: Some(ModelBudgetConfig {
+                    group_id: "authorized".into(),
+                    max_calls: 100,
+                    max_operation_calls: 3,
+                    ..Default::default()
+                }),
                 ..Default::default()
-            }),
-            ..Default::default()
-        },
-    )
-    .unwrap();
-    let status = service
-        .call("memory_source_status", json!({"source_id":parent}), || {
-            false
-        })
-        .unwrap();
-    let args = json!({"source_id":parent,"history_index":0,
-        "expected_content_fingerprint":status["history_entries"][0]["content_fingerprint"],
-        "request_id":"import-model-input","capture_source":true});
-    let imported = service
-        .call("memory_source_import_history", args.clone(), || false)
-        .unwrap();
-    let child = imported["source"]["source_id"].as_str().unwrap();
-    let key = db
-        .open()
-        .read()
-        .unwrap()
-        .sources
-        .iter()
-        .find(|(_, s)| s.id == child)
-        .unwrap()
-        .0
-        .clone();
-    let status = service
-        .call("memory_source_status", json!({"source_id":child}), || false)
-        .unwrap();
-    let accepted = service
-        .call(
-            "memory_source_reprocess",
-            json!({"source_id":child,
-        "request_id":"import-model-round","expected_state_token":status["state_token"],
-        "mode":"reextract","enqueue":false}),
-            || false,
+            },
         )
         .unwrap();
-    assert_eq!(accepted["generation"], 1);
-    assert_eq!(accepted["time_anchor"]["said_on"], Json::Null);
-    assert_eq!(accepted["enqueued"], false);
-    let mut extraction = w1(text);
-    extraction["candidates"][0]["speech"] = json!("plan");
-    extraction["candidates"][0]["times"] = json!([{"role":"event","quote":{"text":"明天"},
-        "anchor":"said_on","interp":{"kind":"relative","unit":"day","offset":1}}]);
-    let (provider, sent) = mocked(
-        &db,
-        vec![
-            Ok(envelope(&extraction.to_string())),
-            Ok(envelope(&w3().to_string())),
-        ],
-    );
-    let result = run(&db, &key, &provider);
-    assert_eq!(result["enrichment"]["status"], "committed", "{result}");
-    let requests = sent.lock().unwrap();
-    assert_eq!(requests.len(), 2);
-    for request in requests.iter() {
-        let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
-        assert_eq!(payload["said_on"], Json::Null);
-        assert_eq!(payload["time_anchor"]["said_on"], Json::Null);
-        assert_eq!(payload["source_provenance"]["before_source_id"], parent);
-        assert_eq!(payload["current_user_message"], text);
-        assert!(payload.get("model").is_none());
-        if request["text"]["format"]["name"] == "w3_v2" {
-            assert_eq!(
-                payload["candidates"][0]["time_resolutions"][0]["status"],
-                "unknown"
-            );
+        let status = service
+            .call("memory_source_status", json!({"source_id":parent}), || {
+                false
+            })
+            .unwrap();
+        let args = json!({"source_id":parent,"history_index":0,
+        "expected_content_fingerprint":status["history_entries"][0]["content_fingerprint"],
+        "request_id":"import-model-input","capture_source":true});
+        let imported = service
+            .call("memory_source_import_history", args.clone(), || false)
+            .unwrap();
+        let child = imported["source"]["source_id"].as_str().unwrap();
+        let key = db
+            .open()
+            .read()
+            .unwrap()
+            .sources
+            .iter()
+            .find(|(_, s)| s.id == child)
+            .unwrap()
+            .0
+            .clone();
+        let status = service
+            .call("memory_source_status", json!({"source_id":child}), || false)
+            .unwrap();
+        let accepted = service
+            .call(
+                "memory_source_reprocess",
+                json!({"source_id":child,
+        "request_id":"import-model-round","expected_state_token":status["state_token"],
+        "mode":"reextract","enqueue":false}),
+                || false,
+            )
+            .unwrap();
+        assert_eq!(accepted["generation"], 1);
+        assert_eq!(accepted["time_anchor"]["said_on"], Json::Null);
+        assert_eq!(accepted["enqueued"], false);
+        let mut extraction = w1(text);
+        extraction["candidates"][0]["speech"] = json!("plan");
+        extraction["candidates"][0]["times"] = json!([{"role":"event","quote":{"text":quote},
+        "anchor":"said_on","interp":interp}]);
+        let (provider, sent) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&extraction.to_string())),
+                Ok(envelope(&w3().to_string())),
+            ],
+        );
+        let result = run(&db, &key, &provider);
+        assert_eq!(result["enrichment"]["status"], "committed", "{result}");
+        let requests = sent.lock().unwrap();
+        assert_eq!(requests.len(), 2);
+        for request in requests.iter() {
+            let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+            assert_eq!(payload["said_on"], Json::Null);
+            assert_eq!(payload["time_anchor"]["said_on"], Json::Null);
+            assert_eq!(payload["source_provenance"]["before_source_id"], parent);
+            assert_eq!(payload["current_user_message"], text);
+            assert!(payload.get("model").is_none());
+            if request["text"]["format"]["name"] == "w3_v3" {
+                assert_eq!(
+                    payload["candidates"][0]["time_resolutions"][0]["status"],
+                    "unknown"
+                );
+            }
         }
-    }
-    drop(requests);
-    let state = db.open().read().unwrap();
-    let record = state
-        .repository
-        .list_by_owner(&UserId::from("alice"))
-        .unwrap()
-        .pop()
-        .unwrap();
-    let crate::contract::RecordView2::Current(view) =
-        crate::w4::record_view(&state, record.id).unwrap()
-    else {
-        panic!("current record required")
-    };
-    assert_eq!(view.said_on, None);
-    assert_eq!(
-        view.time_resolutions[0].status,
-        crate::contract::ResolutionStatus::Unknown
-    );
-    assert_eq!(
+        drop(requests);
+        let state = db.open().read().unwrap();
+        let record = state
+            .repository
+            .list_by_owner(&UserId::from("alice"))
+            .unwrap()
+            .pop()
+            .unwrap();
+        let crate::contract::RecordView2::Current(view) =
+            crate::w4::record_view(&state, record.id).unwrap()
+        else {
+            panic!("current record required")
+        };
+        assert_eq!(view.said_on, None);
+        assert_eq!(
+            view.time_resolutions[0].status,
+            crate::contract::ResolutionStatus::Unknown
+        );
+        assert_eq!(
+            service
+                .call("memory_source_import_history", args, || false)
+                .unwrap()["replayed"],
+            true
+        );
+        assert_eq!(service.enrich_source(child).unwrap(), result);
+        assert_eq!(sent.lock().unwrap().len(), 2);
+        assert_eq!(db.calls(), 2); // Mock transport only; replays never send again.
         service
-            .call("memory_source_import_history", args, || false)
-            .unwrap()["replayed"],
-        true
-    );
-    assert_eq!(service.enrich_source(child).unwrap(), result);
-    assert_eq!(sent.lock().unwrap().len(), 2);
-    assert_eq!(db.calls(), 2); // Mock transport only; replays never send again.
-    service
-        .call("memory_forget", json!({"source_id":parent}), || false)
-        .unwrap();
-    let deleted = db.open().read().unwrap();
-    assert!(deleted.sources[&key].request.is_none());
-    assert!(!serde_json::to_string(&deleted).unwrap().contains(text));
-    assert!(crate::w4::record_view(&deleted, record.id).is_none());
+            .call("memory_forget", json!({"source_id":parent}), || false)
+            .unwrap();
+        let deleted = db.open().read().unwrap();
+        assert!(deleted.sources[&key].request.is_none());
+        assert!(!serde_json::to_string(&deleted).unwrap().contains(text));
+        assert!(crate::w4::record_view(&deleted, record.id).is_none());
+    }
 }
 
 pub(crate) fn assert_nonempty_model_request(request: &Json) {
@@ -3360,7 +3621,7 @@ fn af83_all_write_stage_requests_bind_nonempty_schema() {
     );
     let requests = sent.lock().unwrap();
     assert_eq!(requests.len(), 3);
-    for (request, name) in requests.iter().zip(["w1_v2", "w3_v2", "w4_v4"]) {
+    for (request, name) in requests.iter().zip(["w1_v3", "w3_v3", "w4_v4"]) {
         assert_eq!(request["text"]["format"]["name"], name);
         assert_nonempty_model_request(request);
     }

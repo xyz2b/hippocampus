@@ -36,15 +36,15 @@ class BackgroundFixture(Fixture):
 
     def output(self, body):
         stage = body["text"]["format"]["name"]
-        if stage == "r1_v1":
+        if stage == "r1_v2":
             return {"need": "judge", "current_evidence": "query_only", "type": "single",
                     "subject": {"entity_id": "self"}, "relation": "居住地", "conditions": [],
                     "time": None, "plan": {"op": "lookup", "filter": {"relation": "lives_in", "time": None}, "unit": None}}
-        if stage == "r4_v5":
+        if stage == "r4_v6":
             return {"verdict": "insufficient", "facts": [], "compute": None}
-        if stage == "w1_v2" and type(self).invalid:
+        if stage == "w1_v3" and type(self).invalid:
             return {"synthetic_invalid_output": True}
-        if stage == "w1_v2":
+        if stage == "w1_v3":
             result = super().output(body)
             candidate = result["candidates"][0]
             text = candidate["sentence"]["text"]
@@ -96,7 +96,7 @@ def main():
         save_cli(binary, db, env, config, turn("startup", new_text))
         assert calls(db) == 2
         entered, release = threading.Event(), threading.Event()
-        BackgroundFixture.gate = "w1_v2", entered, release
+        BackgroundFixture.gate = "w1_v3", entered, release
         client = ConcurrentClient(binary, db, env, "write-pipeline-fixture", config=config)
         try:
             assert entered.wait(8), "startup scan did not recover the queued source"

@@ -89,8 +89,8 @@ fn w1(text: &str) -> Json {
 fn output(request: &Json) -> Json {
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     match request["text"]["format"]["name"].as_str().unwrap() {
-        "w1_v2" => w1(input["current_user_message"].as_str().unwrap()),
-        "w3_v2" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+        "w1_v3" => w1(input["current_user_message"].as_str().unwrap()),
+        "w3_v3" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
             json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
             "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
         "w4_v4" => {
@@ -106,11 +106,11 @@ fn output(request: &Json) -> Json {
                     "targets":targets,"basis":basis,"effective":null,"relation_scope":null,"pending_reason":null,"resolves_relations":[]})
             }).collect::<Vec<_>>()})
         }
-        "r1_v1" => {
+        "r1_v2" => {
             json!({"need":"judge","current_evidence":"query_only","type":"single","subject":{"entity_id":"self"},
             "relation":"居住地","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"lives_in","time":null},"unit":null}})
         }
-        "r4_v5" => json!({"verdict":"insufficient","facts":[],"compute":null}),
+        "r4_v6" => json!({"verdict":"insufficient","facts":[],"compute":null}),
         stage => panic!("unexpected stage {stage}"),
     }
 }
@@ -258,7 +258,7 @@ fn background_trace_child() {
     c.transport = Some(Arc::new(move |request| {
         let body: Json =
             serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-        if body["text"]["format"]["name"] != "w1_v2" {
+        if body["text"]["format"]["name"] != "w1_v3" {
             return original(request);
         }
         let mut extraction = w1(OLD);
@@ -321,7 +321,7 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
             first.structured_content.unwrap()["global_context"]["status"],
             "available"
         );
-        let recall_arguments = json!({"recall_version":"recall.v5","request_id":"retained",
+        let recall_arguments = json!({"recall_version":"recall.v6","request_id":"retained",
             "query":"全局回答要求","offline":true,"bootstrap":true});
         let recalled = ChatMemoryService::call_shared(
             &shared,
@@ -417,7 +417,7 @@ fn background_startup_recovers_queued_task_and_preserves_receiving_date() {
     let key = capture(&mut first, &db, "queued", OLD);
     drop(first); // new operation/service has no in-memory notification for this task.
     let (mut c, sent) = client();
-    let (entered, release) = hold(&mut c, "w3_v2");
+    let (entered, release) = hold(&mut c, "w3_v3");
     let mut service = db.service(5);
     service.inject_model_client(c);
     let worker = service.start_background().unwrap().unwrap();
@@ -533,7 +533,7 @@ fn background_reserved_missing_result_fails_once_without_resending() {
     c.transport = Some(Arc::new(move |request| {
         let body: Json =
             serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-        if body["text"]["format"]["name"] == "w3_v2" {
+        if body["text"]["format"]["name"] == "w3_v3" {
             return Err(OpenAiAdapterError::InvalidResponse(
                 "synthetic interrupted response".into(),
             ));
@@ -728,7 +728,7 @@ fn background_periodic_scan_reclaims_expired_lease_and_rejects_late_executor() {
     w4_start_round(&mut db.open(), &key, "lease", false).unwrap();
     let old = w4_claim_round(&mut db.open(), &key).unwrap();
     let (mut c, _) = client();
-    let (entered, release) = hold(&mut c, "w1_v2");
+    let (entered, release) = hold(&mut c, "w1_v3");
     service.inject_model_client(c);
     assert!(!service.run_background_once().unwrap());
     let worker = service.start_background().unwrap().unwrap();
@@ -793,7 +793,7 @@ fn background_held_model_allows_online_foreground_recall_and_new_raw_before_rele
     capture(&mut service, &db, "old", OLD);
     service.run_background_once().unwrap();
     let (mut c, sent) = client();
-    let (entered, release) = hold(&mut c, "w1_v2");
+    let (entered, release) = hold(&mut c, "w1_v3");
     service.inject_model_client(c);
     let worker = service.start_background().unwrap().unwrap();
     let shared = Arc::new(Mutex::new(service));
@@ -864,8 +864,8 @@ fn background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled
         capture(&mut service, &db, "old", OLD);
         service.run_background_once().unwrap();
         let (mut c, _) = client();
-        let (w1_entered, release_w1) = hold(&mut c, "w1_v2");
-        let (r4_entered, release_r4) = hold(&mut c, "r4_v5");
+        let (w1_entered, release_w1) = hold(&mut c, "w1_v3");
+        let (r4_entered, release_r4) = hold(&mut c, "r4_v6");
         service.inject_model_client(c);
         capture(&mut service, &db, "new", NEW);
         let worker = service.start_background().unwrap().unwrap();
@@ -900,7 +900,7 @@ fn background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled
             let result = foreground.join().unwrap().unwrap();
             assert!(!result.is_error.unwrap_or(false));
             let recall = &result.structured_content.as_ref().unwrap()["recall"];
-            assert_eq!(recall["version"], "recall.v5");
+            assert_eq!(recall["version"], "recall.v6");
             assert!(
                 recall["snapshot"]["read_revision"].as_u64().unwrap()
                     < db.open().read().unwrap().revision
@@ -978,7 +978,7 @@ fn background_late_model_response_cannot_restore_a_deleted_source() {
     let key = capture(&mut service, &db, "deleted", OLD);
     let id = db.open().read().unwrap().sources[&key].id.clone();
     let (mut c, _) = client();
-    let (entered, release) = hold(&mut c, "w1_v2");
+    let (entered, release) = hold(&mut c, "w1_v3");
     service.inject_model_client(c);
     let worker = service.start_background().unwrap().unwrap();
     let shared = Mutex::new(service);

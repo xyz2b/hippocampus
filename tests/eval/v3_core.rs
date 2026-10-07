@@ -39,11 +39,11 @@ fn stage_name(request: &Value) -> &str {
         .and_then(Value::as_str)
         .unwrap_or("unknown")
     {
-        "w1_v1" | "w1_v2" => "W1",
-        "w3_v1" | "w3_v2" => "W3",
+        "w1_v1" | "w1_v2" | "w1_v3" => "W1",
+        "w3_v1" | "w3_v2" | "w3_v3" => "W3",
         "w4_v2" | "w4_v3" | "w4_v4" => "W4",
-        "r1_v1" => "R1",
-        "r4_v3" | "r4_v4" | "r4_v5" => "R4",
+        "r1_v1" | "r1_v2" => "R1",
+        "r4_v3" | "r4_v4" | "r4_v5" | "r4_v6" => "R4",
         other => other,
     }
 }

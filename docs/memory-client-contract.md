@@ -1,4 +1,4 @@
-# personal_memory 客户端接入约定（recall.v5）
+# personal_memory 客户端接入约定（recall.v6）
 
 启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；只读问个人安排、经历、状态等具体问题时，调用普通 memory_recall，不用 bootstrap 代替。memory_prepare 已返回保存与本次召回的结果/状态，分别核对；没有新问题时，不再用同一段陈述调用 memory_recall，核实/更正类查询仍可调用。在线请求不要自行加 offline=true。
 
@@ -12,7 +12,7 @@
 ## 输入与调用顺序
 
 1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求，零模型调用；完成后继续处理同一条消息，不是普通个人事实查询。
-2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 按时间顺序携带理解当前消息指代所必需、且获准留存的先前 USER 原话，不限于上一条、不带无关内容；不自动补写已保存来源，也不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交；计划按完整断言与限定语保存、呈现，不当作已发生事件。
+2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 按时间顺序携带当前消息所依赖的全部必要且获准留存的先前 USER 原话，不限于上一条、不带无关内容；不自动补写已保存来源，也不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交；计划按完整断言与限定语保存、呈现，不当作已发生事件。
 3. 只有整条当前消息及必要 history 均获准留存时传 capture_source=true。省略/false 被拒绝，不转为事实保存。明确不保存、无法满足的保存期限、秘密、假设或引用不调用持久写入工具；改用只读 recall 或本轮上下文。
 4. 只读查询提交完整原问，context 仅放必要 USER 澄清，不能拼接不同消息或增加事实。Recall 包括 bootstrap 都须稳定 request_id；新查询/刷新使用新 ID。同参重放复用首次 at 和结果，不追加模型尝试。Prepare 缺省从 session/turn 派生 request_id。
 5. 主体未解析时必要澄清一次，不凭目录唯一或排除法绑定；明确家人等人物的称呼可用 memory_entity_upsert 登记，不要求真名，不把属性或事件登记成人物。登记不会自动修复旧候选；使用下述 status → reprocess 流程确认待处理主体，不要求用户重说已留存原话。memory_list 仅作管理，不能绕过召回取得事实答案。memory_clarify 已停用旧 staged 提交，旧暂存只读/可删。
@@ -60,7 +60,7 @@ MCP 无法强制第三方聊天客户端遵守这些表达规则；此边界仍�
 
 ## 校验、删除与预算
 
-memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v5 保守回答，不使用旧 safe_answer。
+memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v6 保守回答，不使用旧 safe_answer。
 
 用户明确要求遗忘且目标可定位时调用 memory_forget；对象不明先澄清。旧记录和暂存仍可删除；墓碑、索引、回执及迟到任务保护不变。
 

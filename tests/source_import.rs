@@ -444,7 +444,7 @@ fn nullable_raw_r3_r4_keeps_unknown_relative_time_and_resolves_absolute_time() {
         assert_eq!(raw.said_on, None);
         check_nullable(raw);
         let payload = recall_models::r4_input(&assembled, 28800);
-        assert_eq!(payload["contract"], "r4.v5");
+        assert_eq!(payload["contract"], "r4.v6");
         assert_eq!(
             payload["source_context"][child]["time_anchor"]["said_on"],
             Json::Null

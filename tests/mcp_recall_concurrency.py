@@ -112,7 +112,7 @@ def main():
 
         try:
             seed()
-            for stage in ["r1_v1", "r4_v5"]:
+            for stage in ["r1_v2", "r4_v6"]:
                 entered, release = gate(stage)
                 before = len(HeldFixture.requests)
                 args = query(f"same-{stage}")
@@ -134,7 +134,7 @@ def main():
                 assert checked["approved"] is True, checked
 
             for action in ["change", "delete", "cancel"]:
-                for stage in ["r1_v1", "r4_v5"]:
+                for stage in ["r1_v2", "r4_v6"]:
                     entered, release = gate(stage)
                     before = len(HeldFixture.requests)
                     args = query(f"{action}-{stage}")
@@ -159,7 +159,7 @@ def main():
                         replayed = client.call("memory_recall", args)
                         assert replayed == original, (original, replayed)
                         # R3 includes arrivals during R1, but not arrivals during R4.
-                        assert (json.dumps(saved["source"]["source_id"]) in json.dumps(original)) == (stage == "r1_v1"), original
+                        assert (json.dumps(saved["source"]["source_id"]) in json.dumps(original)) == (stage == "r1_v2"), original
                         assert len(HeldFixture.requests) == before + 2
                         continue
                     # The cancelled RPC may have no response; repeating its exact request joins/checks the same execution.
@@ -171,7 +171,7 @@ def main():
                     else:
                         assert "cancelled" in failed["error"] or "not_retained" in failed["error"], failed
                     assert TEXT not in json.dumps(failed, ensure_ascii=False)
-                    assert len(HeldFixture.requests) == before + (1 if stage == "r1_v1" else 2)
+                    assert len(HeldFixture.requests) == before + (1 if stage == "r1_v2" else 2)
                     with sqlite3.connect(db) as c:
                         state = c.execute("SELECT state_json FROM memory_profiles WHERE owner_id=?", (OWNER,)).fetchone()[0]
                     assert TEXT not in json.dumps(json.loads(state)["receipts"], ensure_ascii=False)
@@ -179,7 +179,7 @@ def main():
                         assert TEXT not in state
                         seed()
 
-            entered, release = gate("r1_v1")
+            entered, release = gate("r1_v2")
             before = len(HeldFixture.requests)
             args = {"user_turn": {"session_id": "concurrent", "turn_id": "prepared", "text": TEXT,
                                   "capture_source": True, "observed_at": AT}}

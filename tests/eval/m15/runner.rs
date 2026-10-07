@@ -100,7 +100,7 @@ fn r1_requests(case: &Value) -> BTreeMap<String, Value> {
         };
         let mut wire = hippocampus::structured_request(
             ModelStage::R1,
-            "r1_v1",
+            "r1_v2",
             recall_models::R1_PROMPT,
             recall_models::r1_input(&ctx, &entities),
             recall_models::r1_schema(),
@@ -502,7 +502,7 @@ fn m15_prepare_t1_ids_are_registered_before_foreground_and_strictly_replayed() {
         let recorder = Recorder::new(dir.clone(), if replay { None } else { Some(1) }, None);
         recorder.bind_source_database("m15_ids", &db.0);
         recorder.begin("m15_ids", "prepare:m1", &BTreeMap::new());
-        let request = json!({"model":PRO,"input":json!({"source":{"kind":"stored","source_id":source},"quote":{"text":"测试用虚构原句。"}}).to_string(),"text":{"format":{"name":"r1_v1"}}});
+        let request = json!({"model":PRO,"input":json!({"source":{"kind":"stored","source_id":source},"quote":{"text":"测试用虚构原句。"}}).to_string(),"text":{"format":{"name":"r1_v2"}}});
         let response = recorder.respond("m15_ids", &request, || {
             assert!(!replay, "exact request must reuse response");
             let log: Value =
@@ -545,13 +545,13 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
         assert!(input.get("model").is_none());
         assert!(input.get("expect_common").is_none());
         match request["text"]["format"]["name"].as_str().unwrap() {
-            "w1_v2" => {
+            "w1_v3" => {
                 let text = &input["current_user_message"];
                 json!({"candidates":[{"kind":"assertion","speech":"user_statement","subject":{"entity_id":"self"},
                     "relation":"fact","memory_type":"fact","value":{"kind":"text","text":text,"quote":{"text":text}},
                     "sentence":{"text":text},"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[]}],"memory_requests":[]})
             }
-            "w3_v2" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+            "w3_v3" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
             "w4_v4" => {
@@ -561,11 +561,11 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
                     "resolves_relations":[],"basis":[{"source":c["source"],"quote":c["candidate"]["sentence"]},r["evidence"][0]],
                     "effective":null,"relation_scope":null,"pending_reason":null}]})
             }
-            "r1_v1" => {
+            "r1_v2" => {
                 json!({"need":"judge","current_evidence":"assertion_present","type":"single","subject":{"entity_id":"self"},
                 "relation":"fact","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})
             }
-            "r4_v5" => {
+            "r4_v6" => {
                 let r = &input["evidence"]["records"][0];
                 if !r.is_null() {
                     json!({"verdict":"supported","facts":[{"statement":r["candidate"]["sentence"]["text"],

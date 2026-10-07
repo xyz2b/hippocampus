@@ -1,4 +1,4 @@
-//! r4.v5 的机械核验与计算。引用/结构失效拒绝整份输出；不能精确计算单独返回不足。
+//! r4.v6 的机械核验与计算。引用/结构失效拒绝整份输出；不能精确计算单独返回不足。
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
