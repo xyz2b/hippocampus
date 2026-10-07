@@ -1896,9 +1896,39 @@ fn compare_plan(
         {
             return Err("AF137 duplicate slots".into());
         }
+        compare_mark_interrupted(&mut cases)?;
         groups.push(cases);
     }
     Ok(groups)
+}
+fn compare_mark_interrupted(cases: &mut [Case]) -> Result<(), String> {
+    let root = campaign_root(cases)?.ok_or("AF137 campaign missing")?;
+    let dir = root.join("sends");
+    if !dir.exists() {
+        return Ok(());
+    }
+    let mut sent = std::collections::BTreeSet::new();
+    for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
+        let path = entry.map_err(|e| e.to_string())?.path();
+        if path.extension().and_then(|s| s.to_str()) != Some("json") {
+            continue;
+        }
+        let log: Value = serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+        if !matches!(log["state"].as_str(), Some("started" | "responded")) {
+            return Err("invalid AF137 send log".into());
+        }
+        sent.insert(log["slot"].to_string());
+    }
+    for case in cases {
+        // Only an exact sent identity with no recording is skippable. Stale
+        // recordings and changed campaign identities still fail strict checks.
+        if matches!(case.replay, Replay::Missing) && sent.contains(&campaign_slot(case).to_string())
+        {
+            case.replay = Replay::Interrupted;
+        }
+    }
+    Ok(())
 }
 fn compare_subset(cases: &[Case], options: &CompareOptions) -> Vec<Case> {
     cases
@@ -1951,15 +1981,17 @@ fn compare_resource(id: &str) -> &str {
         id
     }
 }
-fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> String {
+fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<String, String> {
     let mut lines = vec![
         "AF137 写入侧多模型比较干跑（不发送请求）".into(),
         "固定样本: W1 20 + W3 20（reviewed，标注 v1 / 请求 v3）；W4/R1/R4=0。".into(),
-        "档案 | 完整槽位/累计上限 | 本次所选 | 待录制 | 可回放 | 过期 | 拒绝 | 输出 token 上界 | 超时秒".into(),
+        "档案 | 完整槽位/累计上限 | 本次所选 | 待录制 | 可回放 | 过期 | 拒绝 | 中断在途 | 已占用 | 输出 token 上界 | 超时秒".into(),
     ];
     let mut selected_slots = 0;
     let mut needed = 0;
     let mut rejected = 0;
+    let mut interrupted = 0;
+    let mut occupied = 0;
     let mut reserved = 0;
     let mut cloud_reserved = 0;
     for group in groups {
@@ -1985,6 +2017,11 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> String {
             .iter()
             .filter(|c| matches!(c.replay, Replay::Output(_) | Replay::Failed(_)))
             .count();
+        let inflight = subset
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Interrupted))
+            .count();
+        let used = count_sends([campaign_root(group)?.unwrap().join("sends")])?;
         let tokens: u64 = group
             .iter()
             .map(|c| c.request["max_output_tokens"].as_u64().unwrap())
@@ -1992,18 +2029,23 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> String {
         selected_slots += subset.len();
         needed += missing;
         rejected += refused;
+        interrupted += inflight;
+        if options.profiles.contains(id) {
+            occupied += used;
+        }
         reserved += tokens;
         if !id.starts_with("qwen-") {
             cloud_reserved += tokens;
         }
         lines.push(format!(
-            "{id} | {} | {} | {missing} | {cached} | {stale} | {refused} | {tokens} | {}",
+            "{id} | {} | {} | {missing} | {cached} | {stale} | {refused} | {inflight} | {used} | {tokens} | {}",
             group.len(),
             subset.len(),
             group[0].timeout_seconds.unwrap()
         ));
     }
     lines.push(format!("完整固定槽位: 520（云端 320 / 本地 200）；本次所选: {selected_slots}；待录制: {needed}；发送前拒绝: {rejected}。"));
+    lines.push(format!("本次所选档案累计已占用: {occupied}；未录制（中断在途）: {interrupted}（跳过、不重发、仍占额度）。"));
     lines.push(format!("完整输出额度上界: {reserved} token（云端 {cloud_reserved} / 本地 {}，含思考）；不是预计用量，输入另计。", reserved - cloud_reserved));
     lines.push("每档独立 campaign: target/eval-providers/compare-af137/campaigns/<profile>；子集沿用完整 80/40 槽额度。".into());
     lines.push("仅 AF137 标识盲化: source_snapshot.eval_sample=s-<16 位 SHA-256>；报告保留真实样本 ID 对照。".into());
@@ -2013,11 +2055,12 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> String {
     );
     lines.push("Opus prompt_schema：未使用约束解码，原 schema 完整核验、不修补；27B 思考仅一次，稳定性未验证。".into());
     lines.push("本次真实调用: 0；不读取密钥，不创建录制/额度/报告文件。".into());
-    lines.join("\n")
+    Ok(lines.join("\n"))
 }
 fn compare_mechanical(row: &Value) -> Vec<String> {
     let reason = match row["status"].as_str() {
         Some("未录制") => Some("missing"),
+        Some("未录制（中断在途）") => Some("interrupted_inflight"),
         Some("录制过期") => Some("stale"),
         Some("发送前拒绝") => Some("preflight_rejected"),
         Some("输入无效") => Some("invalid_input"),
@@ -2141,6 +2184,7 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
         json!({"profile":group[0].model.label,"model":group[0].model.model,"protocol":provider.protocol,
             "effort":group[0].model.effort,"thinking":provider.thinking,"structured_mode":provider.structured_mode,
             "timeout_seconds":group[0].timeout_seconds,"fixed_slots":group.len(),
+            "interrupted_inflight":items(&report["results"]).iter().filter(|r|r["status"]=="未录制（中断在途）").count(),
             "summary":report["summary"],"metrics":metrics})
     }).collect();
     let unstable: Vec<_> = matrix
@@ -2148,8 +2192,18 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
         .filter(|r| items(&r["profiles"]).iter().any(|c| c["unstable"] == true))
         .map(|r| r["id"].clone())
         .collect();
+    let interrupted: Vec<_> = reports
+        .iter()
+        .flat_map(|r| items(&r["results"]))
+        .filter(|r| r["status"] == "未录制（中断在途）")
+        .map(|r| {
+            json!({"profile":r["model"],"stage":r["stage"],"id":r["id"],
+            "repeat":r["repeat"],"request":r["request"],"status":r["status"]})
+        })
+        .collect();
     json!({"comparison":"af137","purpose":"W1/W3 stage screening, not end-to-end reliability",
         "fixed_slots":520,"sent_calls":sent,"profiles":profile_reports,"matrix":matrix,"unstable_samples":unstable,
+        "interrupted":interrupted,
         "results":reports.iter().flat_map(|r|items(&r["results"]).iter().cloned()).collect::<Vec<_>>()})
 }
 fn provider_comparison_from_env() -> Result<(), String> {
@@ -2159,7 +2213,7 @@ fn provider_comparison_from_env() -> Result<(), String> {
     let profiles = smoke_profiles(include_str!("eval/write_stage/providers.json"))?;
     let groups = compare_plan(&root, &profiles, variable)?;
     if options.dry {
-        println!("{}", compare_dry_plan(&groups, &options));
+        println!("{}", compare_dry_plan(&groups, &options)?);
         return Ok(());
     }
     // Check every selected campaign before any client, credentials or physical sends.
@@ -2280,6 +2334,7 @@ fn repeat_count(value: Option<&str>) -> Result<usize, String> {
 #[derive(Clone)]
 enum Replay {
     Missing,
+    Interrupted,
     Stale,
     Output(String),
     Failed(Value),
@@ -2673,7 +2728,7 @@ fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
         .filter(|c| {
             !matches!(
                 c.replay,
-                Replay::Output(_) | Replay::Failed(_) | Replay::Rejected(_)
+                Replay::Output(_) | Replay::Failed(_) | Replay::Rejected(_) | Replay::Interrupted
             )
         })
         .count();
@@ -2869,6 +2924,12 @@ fn evaluate_cases(
             Replay::Failed(record) => failed_score(case, record),
             Replay::Rejected(reason) => {
                 json!({"id":case.sample["id"],"stage":case.stage,"status":"发送前拒绝","error":reason,"sent":false})
+            }
+            Replay::Interrupted => {
+                let mut r = score(&case.stage, &case.sample, None);
+                r["status"] = json!("未录制（中断在途）");
+                r["sent"] = json!(false);
+                r
             }
             _ if limit.is_some() => {
                 // A durable started entry precedes the physical send. A crash
@@ -7099,7 +7160,7 @@ fn af137_plan_has_520_fixed_slots_and_key_free_dry_run() {
         .map(|c| campaign_slot(c).to_string())
         .collect();
     assert_eq!(slots.len(), 520);
-    let dry = compare_dry_plan(&groups, &options);
+    let dry = compare_dry_plan(&groups, &options).unwrap();
     for text in [
         "12779520",
         "7864320",
@@ -7307,7 +7368,7 @@ fn af137_routes_both_stages_and_freezes_full_manifests_before_subset_resume() {
     assert!(matches!(stale[0][40].replay, Replay::Stale));
 }
 #[test]
-fn af137_crash_blocks_resend_and_provider_locks_do_not_overlap() {
+fn af137_crash_skips_inflight_resumes_other_slots_without_refunding_quota() {
     let temp = TempRecords::new();
     let profiles = smoke_fixture_profiles();
     let groups = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
@@ -7327,8 +7388,12 @@ fn af137_crash_blocks_resend_and_provider_locks_do_not_overlap() {
     assert!(crash.is_err());
     let resumed = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
     let options = compare_fixture_options(Some("ds-pro"), None, Some("80"));
+    assert!(matches!(resumed[0][0].replay, Replay::Output(_)));
+    assert!(matches!(resumed[0][1].replay, Replay::Interrupted));
+    assert_eq!(compare_preflight(&resumed, &options).unwrap(), 78);
+    // The historical campaign precheck is unchanged; only AF137 plans mark gaps.
     assert!(
-        compare_preflight(&resumed, &options)
+        preflight(&subset, Some(80))
             .unwrap_err()
             .contains("already sent")
     );
@@ -7336,6 +7401,112 @@ fn af137_crash_blocks_resend_and_provider_locks_do_not_overlap() {
         count_sends([temp.0.join("campaigns/ds-pro/sends")]).unwrap(),
         2
     );
+    let dry = compare_dry_plan(&resumed, &options).unwrap();
+    assert!(dry.contains("ds-pro | 80 | 80 | 78 | 1 | 0 | 0 | 1 | 2 |"));
+    let report = evaluate_cases(&resumed[0], Some(80), &mut |c| {
+        assert_ne!(campaign_slot(c), campaign_slot(&subset[1]));
+        sent += 1;
+        Ok(compare_fixture_response(c))
+    })
+    .unwrap();
+    assert_eq!(report["sent_calls"], 78);
+    assert_eq!(sent, 80);
+    assert_eq!(report["results"][1]["status"], "未录制（中断在途）");
+    assert_eq!(report["results"][1]["sent"], false);
+    assert_eq!(report["results"][1]["usage"], Value::Null);
+    assert!(!subset[1].path.exists());
+    assert_eq!(
+        count_sends([temp.0.join("campaigns/ds-pro/sends")]).unwrap(),
+        80
+    );
+    let final_groups = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    assert_eq!(compare_preflight(&final_groups, &options).unwrap(), 0);
+    let reports: Vec<_> = final_groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("offline report sent")).unwrap())
+        .collect();
+    let final_report = compare_report(&final_groups, &reports, 78);
+    assert_eq!(items(&final_report["interrupted"]).len(), 1);
+    assert_eq!(final_report["interrupted"][0]["profile"], "ds-pro");
+    assert_eq!(final_report["interrupted"][0]["id"], subset[1].sample["id"]);
+    assert_eq!(final_report["interrupted"][0]["repeat"], 2);
+    assert_eq!(final_report["profiles"][0]["interrupted_inflight"], 1);
+    let cell = &final_report["matrix"][0]["profiles"][0];
+    assert_eq!(cell["complete"], false);
+    assert_eq!(cell["observed_attempts"], 1);
+    assert_eq!(cell["unstable"], false);
+    assert_eq!(
+        cell["attempts"][1]["mechanical_failures"],
+        json!(["interrupted_inflight"])
+    );
+    assert_eq!(final_report["matrix"][0]["tier"], "证据不足，暂不分层");
+    for limit in [Some(80), Some(0)] {
+        assert_eq!(
+            evaluate_cases(&final_groups[0], limit, &mut |_| panic!("inflight resent")).unwrap()["sent_calls"],
+            0
+        );
+    }
+    let mut changed = profiles;
+    changed[0].timeout_seconds += 1;
+    let changed = compare_plan(&temp.0, &changed, smoke_fixture_variable).unwrap();
+    assert!(matches!(changed[0][1].replay, Replay::Missing));
+    assert!(
+        compare_preflight(&changed, &options)
+            .unwrap_err()
+            .contains("identity")
+    );
+    // Every started/responded log consumes allowance, including duplicate logs.
+    campaign_start(&subset[1]).unwrap();
+    assert!(
+        compare_preflight(&final_groups, &options)
+            .unwrap_err()
+            .contains("cumulative 81 + missing 0 exceeds 80")
+    );
+}
+
+#[test]
+fn af137_durable_recording_before_responded_log_is_replayed_not_skipped() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let groups = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    compare_freeze(&groups[0]).unwrap();
+    let case = &groups[0][0];
+    let path = campaign_start(case).unwrap();
+    let response = compare_fixture_response(case);
+    let text = model_provider::provider_output(case.provider.as_ref().unwrap().protocol, &response)
+        .unwrap();
+    save_recording(
+        case,
+        &normalized_envelope(case.provider.as_ref(), &response),
+        Some(&text),
+        None,
+    )
+    .unwrap();
+    let log: Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+    assert_eq!(log["state"], "started");
+    let resumed = compare_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    assert!(matches!(resumed[0][0].replay, Replay::Output(_)));
+    assert_eq!(
+        compare_preflight(
+            &resumed,
+            &compare_fixture_options(Some("ds-pro"), None, Some("80"))
+        )
+        .unwrap(),
+        79
+    );
+    let report =
+        evaluate_cases(&resumed[0][..1], Some(80), &mut |_| panic!("cached resent")).unwrap();
+    assert_eq!(report["sent_calls"], 0);
+    assert_ne!(report["results"][0]["status"], "未录制（中断在途）");
+    assert_eq!(
+        count_sends([temp.0.join("campaigns/ds-pro/sends")]).unwrap(),
+        1
+    );
+}
+
+#[test]
+fn af137_provider_locks_do_not_overlap() {
+    let temp = TempRecords::new();
     let root = temp.0.join("locks");
     let ds = w3_trial_lock(&root.join(compare_resource("ds-pro"))).unwrap();
     assert!(w3_trial_lock(&root.join(compare_resource("ds-flash"))).is_err());
