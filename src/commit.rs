@@ -2614,6 +2614,19 @@ pub fn w4_save_plan(
             };
         }
         if !round_order_allowed(state, source)? || source.enrichment == "stale_requires_review" {
+            crate::diagnostics::record_for(&claim.operation_id, "w4_order_blocked", || {
+                serde_json::json!({"stage":"save_plan","round":claim.round,
+                    "order_sequence":source.order_sequence(),
+                    "source_less_barrier_sequence":state.source_less_barrier_sequence,
+                    "last_applied_source_sequence":state.last_applied_source_sequence,
+                    "reason":if source.order_sequence() <= state.source_less_barrier_sequence {
+                        "source_less_barrier"
+                    } else if source.order_sequence() < state.last_applied_source_sequence {
+                        "newer_source_applied"
+                    } else if source.enrichment == "stale_requires_review" {
+                        "stale_requires_review"
+                    } else { "applied_sequence_without_receipt" }})
+            });
             return Err("needs_rejudge: round blocked by ordering barrier".into());
         }
         if input_meta(source)?.is_some_and(|m| m.ready) && checkpoint.candidates != candidates {

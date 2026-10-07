@@ -179,12 +179,12 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
             )
         }
         "r4" => {
-            r4_input(sample)?;
+            let input = r4_input(sample)?;
             (
                 ModelStage::R4,
                 "r4_v5",
                 recall_models::R4_PROMPT,
-                recall_models::r4_schema(),
+                recall_models::r4_schema_for_plan(&input.plan),
             )
         }
         _ => return Err("invalid fixed input stage".into()),

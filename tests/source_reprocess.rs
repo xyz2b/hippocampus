@@ -589,9 +589,21 @@ fn confirmation_still_requires_semantic_w3_support_and_delete_blocks_late_commit
 #[test]
 fn source_less_authority_barrier_is_preserved_for_other_sources() {
     let db = Db::new();
+    register(&db);
     let (older, _) = db.capture("older-before-authority", FIRST);
     let (key, id) = db.capture("rebuild-before-authority", SECOND);
-    register(&db);
+    db.open("alice")
+        .transaction(|state| {
+            let mut entity = state
+                .entities
+                .get(&EntityId::from("child"))
+                .unwrap()
+                .clone();
+            entity.aliases.push("后续孩子称呼".into());
+            state.entities.upsert(entity);
+            Ok(())
+        })
+        .unwrap();
     let barrier = db
         .open("alice")
         .read()

@@ -1,11 +1,11 @@
 # personal_memory 客户端接入约定（recall.v5）
 
-启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；问个人安排、经历、状态等具体问题时，另调普通 memory_recall，不用 bootstrap 代替。在线请求不要自行加 offline=true。
+启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；只读问个人安排、经历、状态等具体问题时，调用普通 memory_recall，不用 bootstrap 代替。memory_prepare 已返回保存与本次召回的结果/状态，分别核对；没有新问题时，不再用同一段陈述调用 memory_recall，核实/更正类查询仍可调用。在线请求不要自行加 offline=true。
 
 主体澄清以最终 recall.status/clarification 为准：R1 是初步判断，通过完整核验的 R4 按授权证据终审。
 开放列表不要求先选一个人；真正的指代歧义仍先澄清。跳过/失败不代表已解决歧义，不把返回的记录数量当作答案资格。
 
-提到未登记的家人等人物时，用 memory_entity_upsert 明确登记用户确认的称呼，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体。登记不自动重建已保存来源。分别报告原文保存与整理进度；pending 时可用 memory_source_status 查看，不能说原话未收到。
+提到未登记的家人等人物时，先用 memory_entity_upsert 明确登记用户确认的称呼，再 memory_prepare 保存当前获准原话，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体，也不因人物未解析放弃保存其他获准原话。登记不自动绑定或重建已保存候选。分别报告原文保存与整理进度；pending 时可用 memory_source_status 查看，不能说原话未收到。
 
 默认写入 w4_runtime_v1、召回 recall_v3；旧执行器已删除；legacy 值及 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 字段（包括 false/null/空值）在打开数据库前拒绝，不自动改写配置；answer_contract.v1 返回 contract_version_unsupported。旧数据仍通过 LegacyRecordView 读取，不自动重建。工具名和参数以 tools/list 为准，owner 固定在服务器配置，客户端不能切换。
 

@@ -1603,6 +1603,150 @@ fn w3_for(upstream: &Json) -> Json {
     output
 }
 
+#[test]
+fn entity_registration_during_each_model_preserves_independent_candidates() {
+    for stage in ["w1_v2", "w3_v2", "w4_v4"] {
+        let db = Db::new();
+        let first = "我喜欢浅蓝围巾。";
+        let old_key = db.start_turn(first, "seed-entity", &[]);
+        let (seed, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&w1(first).to_string())),
+                Ok(envelope(&w3().to_string())),
+            ],
+        );
+        let old = run_all(&db, &old_key, &seed)["enrichment"]["candidates"][0]["memory_id"].clone();
+        assert!(old.is_number());
+        let text = "我仍喜欢浅蓝围巾。家人使用长笛。";
+        let key = db.start_turn(text, "mixed-entity", &[]);
+        let state = db.open().read().unwrap();
+        let source_id = state.sources[&key].id.clone();
+        let mut extraction = w1("我仍喜欢浅蓝围巾。");
+        let mut unresolved = w1("家人使用长笛。")["candidates"][0].clone();
+        unresolved["subject"] = json!({"unresolved":{"text":"家人"}});
+        extraction["candidates"]
+            .as_array_mut()
+            .unwrap()
+            .push(unresolved);
+        let decision = json!({"decisions":[{"candidate":0,"status":"decided","action":"reinforce",
+            "targets":[old],"resolves_relations":[],"basis":[
+                {"source":{"kind":"stored","source_id":state.sources[&old_key].id},"quote":{"text":first}},
+                {"source":{"kind":"stored","source_id":source_id},"quote":{"text":"我仍喜欢浅蓝围巾。"}}],
+            "effective":null,"relation_scope":null,"pending_reason":null}]});
+        let (mut provider, sent) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&extraction.to_string())),
+                Ok(envelope(&w3_for(&extraction).to_string())),
+                Ok(envelope(&decision.to_string())),
+            ],
+        );
+        let transport = provider.client.transport.take().unwrap();
+        let path = db.0.clone();
+        let source_key = key.clone();
+        provider.client.transport = Some(Arc::new(move |request| {
+            let body: Json =
+                serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+            if body["text"]["format"]["name"] == stage {
+                let mut store = SqliteMemoryStore::open(&path, "alice".into()).unwrap();
+                let before = store.read().unwrap();
+                store
+                    .transaction(|s| {
+                        s.entities.upsert(Entity {
+                            id: "family-new".into(),
+                            owner_id: "alice".into(),
+                            entity_type: EntityType::Person,
+                            canonical_name: "新增亲属".into(),
+                            aliases: vec!["家人".into()],
+                        });
+                        Ok(())
+                    })
+                    .unwrap();
+                let after = store.read().unwrap();
+                assert_eq!(after.revision, before.revision + 1);
+                assert_eq!(
+                    after.source_less_barrier_sequence,
+                    before.source_less_barrier_sequence
+                );
+                assert_eq!(after.sources[&source_key].enrichment, "running");
+            }
+            transport(request)
+        }));
+        let result = run_all(&db, &key, &provider);
+        assert_eq!(
+            result["enrichment"]["status"], "pending",
+            "{stage}: {result}"
+        );
+        assert_eq!(result["enrichment"]["candidates"][0]["status"], "committed");
+        assert_eq!(
+            result["enrichment"]["candidates"][1]["status"],
+            "unresolved"
+        );
+        assert_eq!(
+            result["enrichment"]["candidates"][1]["reasons"],
+            json!(["unresolved_subject"])
+        );
+        assert_eq!(sent.lock().unwrap().len(), 3);
+        let final_state = db.open().read().unwrap();
+        assert_eq!(
+            final_state
+                .repository
+                .list_by_owner(&"alice".into())
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(final_state.sources[&key].task.round, Some(0));
+    }
+}
+
+#[test]
+fn appended_directory_after_reopen_does_not_bypass_stage_binding() {
+    let db = Db::new();
+    let text = "我偏好墨绿色帽子。";
+    let key = db.start_turn(text, "directory-reopen", &[]);
+    let (first, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&w1(text).to_string())),
+            Err(OpenAiAdapterError::Http("synthetic interrupted W3".into())),
+        ],
+    );
+    assert_eq!(run_all(&db, &key, &first)["enrichment"]["status"], "failed");
+    let before = db.open().read().unwrap();
+    db.open()
+        .transaction(|s| {
+            s.entities.upsert(Entity {
+                id: "new-person".into(),
+                owner_id: "alice".into(),
+                entity_type: EntityType::Person,
+                canonical_name: "新人物".into(),
+                aliases: vec![],
+            });
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(
+        db.open().read().unwrap().source_less_barrier_sequence,
+        before.source_less_barrier_sequence
+    );
+    let (mut next, sent) = mocked(&db, vec![]);
+    next.context.known_entities = db
+        .open()
+        .read()
+        .unwrap()
+        .entities
+        .list_by_owner(&"alice".into());
+    assert_eq!(
+        run_all(&db, &key, &next)["enrichment"]["status"],
+        "needs_rejudge"
+    );
+    assert!(sent.lock().unwrap().is_empty());
+    assert_eq!(db.calls(), 2);
+    assert_eq!(db.open().read().unwrap().sources[&key].task.round, Some(0));
+}
+
 fn ready_w4(
     db: &Db,
     key: &str,

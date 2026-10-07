@@ -305,13 +305,9 @@ fn write_pipeline_cli_preserves_the_source_less_order_barrier() {
     save(&mut db.service("w4_runtime_v1", "deferred"), "older");
     db.open()
         .transaction(|state| {
-            state.entities.upsert(Entity {
-                id: EntityId::from("later"),
-                owner_id: UserId::from("alice"),
-                entity_type: EntityType::Person,
-                canonical_name: "后续实体".into(),
-                aliases: vec![],
-            });
+            let mut entity = state.entities.get(&EntityId::from("self")).unwrap().clone();
+            entity.aliases.push("后续本人称呼".into());
+            state.entities.upsert(entity);
             Ok(())
         })
         .unwrap();
@@ -393,13 +389,9 @@ fn write_pipeline_order_barrier_precedes_unavailable_provider_setup() {
         save(&mut db.service("w4_runtime_v1", "deferred"), "older");
         db.open()
             .transaction(|state| {
-                state.entities.upsert(Entity {
-                    id: EntityId::from("later"),
-                    owner_id: UserId::from("alice"),
-                    entity_type: EntityType::Person,
-                    canonical_name: "后续实体".into(),
-                    aliases: vec![],
-                });
+                let mut entity = state.entities.get(&EntityId::from("self")).unwrap().clone();
+                entity.aliases.push("后续本人称呼".into());
+                state.entities.upsert(entity);
                 Ok(())
             })
             .unwrap();

@@ -2819,3 +2819,106 @@ fn r4_unknown_original_time_keeps_v4_and_never_uses_the_receiving_day() {
     assert!(!R4_PROMPT.contains("receiving year"));
     assert!(!R4_PROMPT.contains("For example"));
 }
+
+#[test]
+fn actual_r4_schema_and_stage_digest_follow_validated_current_eligibility() {
+    for mode in ["query_only", "assertion_present", "unknown", "invalid-r1"] {
+        let db = Db::new();
+        let mut understanding = r1_out("judge");
+        understanding["current_evidence"] = json!(mode);
+        let (p, sent) = mocked(&db, vec![envelope(understanding), envelope(r4_out())]);
+        let mut rt = RecallRuntime::default();
+        assert_eq!(
+            run(&mut rt, &db, "schema-eligibility", Some(&p))
+                .unwrap()
+                .status,
+            RecallStatus::Answered
+        );
+        let requests = sent.lock().unwrap();
+        assert_eq!(requests.len(), 2);
+        let schema = &requests[1]["text"]["format"]["schema"];
+        for source in [
+            &schema["properties"]["facts"]["items"]["properties"]["evidence"]["items"]["properties"]
+                ["source"],
+            &schema["properties"]["compute"]["anyOf"][0]["properties"]["items"]["items"]["properties"]
+                ["evidence"]["items"]["properties"]["source"],
+            &schema["properties"]["compute"]["anyOf"][0]["properties"]["items"]["items"]["properties"]
+                ["date_source"]["anyOf"][0],
+        ] {
+            if mode == "query_only" {
+                assert_eq!(source["properties"]["kind"]["enum"], json!(["stored"]));
+                assert!(source.get("anyOf").is_none());
+            } else {
+                assert_eq!(
+                    source["anyOf"][0]["properties"]["kind"]["enum"],
+                    json!(["current"])
+                );
+                assert_eq!(
+                    source["anyOf"][1]["properties"]["kind"]["enum"],
+                    json!(["stored"])
+                );
+            }
+        }
+        assert!(
+            schema["properties"]["facts"]["items"]["properties"]
+                .get("current")
+                .is_some()
+        );
+        assert_eq!(schema == &r4_schema(), mode != "query_only");
+        let state = db.open().read().unwrap();
+        let receipt = state
+            .receipts
+            .values()
+            .find(|r| r.request["form"] == "recall_metadata_v1")
+            .unwrap();
+        assert_eq!(
+            receipt.request["stages"]["r4"],
+            json!(fingerprint(&json!([R4_PROMPT, schema])))
+        );
+        let mut broad = requests[1].clone();
+        broad["text"]["format"]["schema"] = r4_schema();
+        assert_eq!(
+            fingerprint(&broad) == fingerprint(&requests[1]),
+            mode != "query_only"
+        );
+    }
+}
+
+#[test]
+fn query_only_still_rejects_injected_current_refs_and_quotes_preserve_markdown() {
+    for variant in ["current", "markdown_removed", "whitespace"] {
+        let db = Db::new();
+        let text = "我使用 **白色** 台灯。";
+        db.open()
+            .transaction(|s| {
+                s.sources
+                    .get_mut("s-purple")
+                    .unwrap()
+                    .request
+                    .as_mut()
+                    .unwrap()["text"] = json!(text);
+                Ok(())
+            })
+            .unwrap();
+        let mut proposed = r4_out();
+        let evidence = &mut proposed["facts"][0]["evidence"][0];
+        evidence["quote"]["text"] = json!(match variant {
+            "markdown_removed" => "我使用 白色 台灯。",
+            "whitespace" => "我使用**白色**台灯。",
+            _ => text,
+        });
+        if variant == "current" {
+            evidence["source"] = json!({"kind":"current"});
+        }
+        let (p, _) = mocked(&db, vec![envelope(r1_out("judge")), envelope(proposed)]);
+        let result = run(&mut RecallRuntime::default(), &db, variant, Some(&p)).unwrap();
+        if variant == "whitespace" {
+            assert_eq!(result.status, RecallStatus::Answered);
+            assert_eq!(result.facts[0].evidence[0].quote.text, text);
+        } else {
+            assert_eq!(result.status, RecallStatus::Degraded);
+            assert_eq!(result.semantic_judgment, SemanticJudgment::Failed);
+            assert!(result.facts.is_empty());
+        }
+    }
+}

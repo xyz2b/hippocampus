@@ -207,6 +207,303 @@ fn planned(db: &Db, key: &str) -> (W4Claim, Vec<W4Candidate>, w4::Plan) {
     (claim, candidates, plan)
 }
 
+fn directory_person(id: &str, name: &str, aliases: &[&str]) -> Entity {
+    Entity {
+        id: id.into(),
+        owner_id: "alice".into(),
+        entity_type: EntityType::Person,
+        canonical_name: name.into(),
+        aliases: aliases.iter().map(|s| (*s).into()).collect(),
+    }
+}
+
+#[test]
+fn pure_directory_addition_between_groups_preserves_revision_and_round() {
+    let db = Db::new();
+    let (claim, _, plan) = planned(&db, "s");
+    w4_commit_group(&mut db.open(), &claim, &plan.groups[0]).unwrap();
+    let before = db.open().read().unwrap();
+    db.open()
+        .transaction(|s| {
+            s.entities
+                .upsert(directory_person("added", "新增人物", &["新增称呼"]));
+            Ok(())
+        })
+        .unwrap();
+    let after = db.open().read().unwrap();
+    assert_eq!(after.revision, before.revision + 1);
+    assert_eq!(
+        after.source_less_barrier_sequence,
+        before.source_less_barrier_sequence
+    );
+    assert_eq!(
+        after.last_applied_source_sequence,
+        before.last_applied_source_sequence
+    );
+    assert_eq!(after.sources["s"].enrichment, "running");
+    w4_commit_group(&mut db.open(), &claim, &plan.groups[1]).unwrap();
+    w4_finish_round(&mut db.open(), &claim).unwrap();
+    let state = db.open().read().unwrap();
+    assert_eq!(state.sources["s"].enrichment, "committed");
+    assert_eq!(state.sources["s"].task.round, Some(0));
+    assert_eq!(
+        state
+            .repository
+            .list_by_owner(&"alice".into())
+            .unwrap()
+            .len(),
+        2
+    );
+}
+
+#[test]
+fn directory_edits_conflicts_and_mixed_changes_still_block_remaining_groups() {
+    for change in [
+        "rename",
+        "alias",
+        "type",
+        "delete",
+        "name_conflict",
+        "alias_conflict",
+        "record",
+        "staging",
+        "relation",
+        "update",
+    ] {
+        let db = Db::new();
+        db.open()
+            .transaction(|s| {
+                s.entities
+                    .upsert(directory_person("existing", "Existing", &["Known"]));
+                Ok(())
+            })
+            .unwrap();
+        let other_member = if change == "relation" {
+            let (seed, _, seed_plan) = planned(&db, "relation-seed");
+            for group in &seed_plan.groups {
+                w4_commit_group(&mut db.open(), &seed, group).unwrap();
+            }
+            w4_finish_round(&mut db.open(), &seed).unwrap();
+            Some(db.open().read().unwrap().w5_receipts[&seed_plan.groups[0].id].products[&0])
+        } else {
+            None
+        };
+        let (claim, _, plan) = planned(&db, "s");
+        db.open()
+            .transaction(|s| {
+                s.sources.get_mut("s").unwrap().task.accepted_mode = Some("deferred".into());
+                Ok(())
+            })
+            .unwrap();
+        w4_commit_group(&mut db.open(), &claim, &plan.groups[0]).unwrap();
+        let before = db.open().read().unwrap();
+        db.open()
+            .transaction(|s| {
+                let mut added = directory_person("added", "New Person", &["New Alias"]);
+                let mut existing = s.entities.get(&"existing".into()).unwrap().clone();
+                match change {
+                    "rename" => existing.canonical_name = "Changed".into(),
+                    "alias" => existing.aliases.push("Changed Alias".into()),
+                    "type" => existing.entity_type = EntityType::Organization,
+                    "delete" => s.entities = InMemoryEntityRepository::default(),
+                    "name_conflict" => added.canonical_name = " eXiStInG ".into(),
+                    "alias_conflict" => added.aliases.push(" kNoWn ".into()),
+                    "record" => {
+                        let id = s.w5_receipts[&plan.groups[0].id].products[&0];
+                        let mut memory = s.repository.get(id)?.unwrap();
+                        memory.tags.push("changed".into());
+                        s.repository.update(memory)?;
+                    }
+                    "staging" => {
+                        let mut staging = serde_json::to_value(&s.staging)?;
+                        staging["next_id"] = json!(77);
+                        s.staging = serde_json::from_value(staging)?;
+                    }
+                    "relation" => {
+                        s.relations.insert(
+                            "changed".into(),
+                            StoredRelation {
+                                id: "changed".into(),
+                                kind: hippocampus::RelationKind::Conflict,
+                                members: vec![
+                                    s.w5_receipts[&plan.groups[0].id].products[&0],
+                                    other_member.unwrap(),
+                                ],
+                                conditions: json!([]),
+                                times: json!([]),
+                                basis: vec![],
+                                status: hippocampus::RelationStatus::Open,
+                                resolution: None,
+                                created_by: "synthetic-control".into(),
+                                closed_by: None,
+                            },
+                        );
+                    }
+                    "update" => {
+                        s.record_updates.insert(
+                            s.w5_receipts[&plan.groups[0].id].products[&0],
+                            UpdateState::from_reasons(vec![]),
+                        );
+                    }
+                    _ => unreachable!(),
+                }
+                if matches!(change, "rename" | "alias" | "type") {
+                    s.entities.upsert(existing);
+                }
+                s.entities.upsert(added);
+                Ok(())
+            })
+            .unwrap();
+        let after = db.open().read().unwrap();
+        assert_eq!(after.revision, before.revision + 1, "{change}");
+        assert!(
+            after.source_less_barrier_sequence >= claim.order_sequence,
+            "{change}"
+        );
+        assert_eq!(
+            after.sources["s"].enrichment, "stale_requires_review",
+            "{change}"
+        );
+        assert!(
+            matches!(
+                w4_commit_group(&mut db.open(), &claim, &plan.groups[1]).unwrap(),
+                W5Outcome::NeedsRejudge(_)
+            ),
+            "{change}"
+        );
+        w4_finish_round(&mut db.open(), &claim).unwrap();
+        let barrier = db.open().read().unwrap().source_less_barrier_sequence;
+        db.open()
+            .transaction(|s| {
+                s.entities
+                    .upsert(directory_person("later", "Later Person", &[]));
+                Ok(())
+            })
+            .unwrap();
+        let final_state = db.open().read().unwrap();
+        assert_eq!(final_state.source_less_barrier_sequence, barrier);
+        assert_eq!(final_state.sources["s"].enrichment, "needs_rejudge");
+        let mut service = hippocampus::chat::ChatMemoryService::new(
+            db.open(),
+            hippocampus::chat::ChatConfig {
+                enrichment_mode: hippocampus::chat::EnrichmentMode::Deferred,
+                model_budget: Some(ModelBudgetConfig {
+                    group_id: "af78-terminal".into(),
+                    max_calls: 3,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(
+            !service.run_background_once().unwrap(),
+            "must not enqueue needs_rejudge"
+        );
+    }
+}
+
+#[test]
+fn ordering_diagnostic_probe() {
+    let Ok(kind) = std::env::var("AF78_DIAGNOSTIC_PROBE") else {
+        return;
+    };
+    let db = Db::new();
+    db.open()
+        .transaction(|s| {
+            s.entities
+                .upsert(directory_person("existing", "Original", &[]));
+            Ok(())
+        })
+        .unwrap();
+    source(&db, "s", "喜欢咖啡。喜欢红茶。");
+    w4_start_round(&mut db.open(), "s", "trace-order", false).unwrap();
+    let claim = w4_claim_round(&mut db.open(), "s").unwrap();
+    let (candidates, plan) = prepared(&db, &claim);
+    if kind == "newer" {
+        let (newer, _, plan) = planned(&db, "newer");
+        w4_commit_group(&mut db.open(), &newer, &plan.groups[0]).unwrap();
+    } else {
+        db.open()
+            .transaction(|s| {
+                s.entities
+                    .upsert(directory_person("existing", "Changed", &[]));
+                Ok(())
+            })
+            .unwrap();
+    }
+    let before = snapshot(&db);
+    assert!(
+        w4_save_plan(&mut db.open(), &claim, &candidates, &plan)
+            .unwrap_err()
+            .to_string()
+            .starts_with("needs_rejudge:")
+    );
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(diagnostics::incomplete(), kind == "unwritable");
+}
+
+#[test]
+fn ordering_diagnostic_survives_rollback_and_writer_failure() {
+    for kind in ["source_less", "newer", "unwritable"] {
+        let root = std::env::temp_dir().join(format!("order-trace-{}", diagnostics::new_id()));
+        if kind != "unwritable" {
+            std::fs::create_dir(&root).unwrap();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o700)).unwrap();
+            }
+        }
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "ordering_diagnostic_probe", "--nocapture"])
+            .env("AF78_DIAGNOSTIC_PROBE", kind)
+            .env("PMR_TRACE_DIR", &root)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        if kind == "unwritable" {
+            assert!(!root.exists());
+            continue;
+        }
+        let file = std::fs::read_dir(&root)
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .path();
+        let rows = std::fs::read_to_string(file)
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str::<serde_json::Value>(line).unwrap())
+            .collect::<Vec<_>>();
+        let events = rows
+            .iter()
+            .filter(|row| row["kind"] == "w4_order_blocked")
+            .collect::<Vec<_>>();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0]["run_id"], "trace-order");
+        let data = &events[0]["data"];
+        assert_eq!(data["stage"], "save_plan");
+        assert_eq!(
+            data["reason"],
+            if kind == "source_less" {
+                "source_less_barrier"
+            } else {
+                "newer_source_applied"
+            }
+        );
+        assert_eq!(data.as_object().unwrap().len(), 6);
+        assert!(!data.to_string().contains("咖啡"));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
 #[test]
 fn explicit_rejudge_is_deduplicated_and_reuses_assertions() {
     let db = Db::new();

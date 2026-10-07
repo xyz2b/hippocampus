@@ -200,3 +200,7 @@ AE15 最新计算类 low 固定输入8次，中位延迟84.4秒（含1次180秒�
 该步当时的核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
 
 主体确认/重建、历史补录与 nullable said_on 在第③④步实现，该步 DB 仍为 9。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。宿主版本枚举、bootstrap、MCP 包络、请求时钟与 Validate 同步到 recall.v4；显式 recall.v3 请求返回 contract_version_unsupported，不静默升级。评测执行器使用现行 schema 与输入版本号，历史录制仅作历史核验，严格回放如实报告过期。
+
+### AF78 引用资格与宿主路由
+
+R4 strict schema 按已核验 R1 计划生成：query_only 时 facts/compute 的 evidence 及 date_source 只允许 stored；assertion_present、unknown（含 R1 失败）仍允许 current。FactView.current 字段不变，最终核验仍拒绝违规引用。生产和两份阶段评测适配器共用构造函数，实际 schema 进入请求指纹和阶段摘要；这是现有资格规则的执行，不升 r4.v5/recall.v5，旧录制按实际指纹报告过期。引用保留原文 Markdown/符号，现有空白与引号归一不变。宿主先明确登记人物再 prepare，检查保存及召回结果/状态，没有新问题时不重复原陈述召回。

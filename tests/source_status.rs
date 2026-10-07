@@ -397,3 +397,42 @@ fn source_status_is_advertised_as_read_only_and_requires_source_id() {
     assert_eq!(shape["annotations"]["openWorldHint"], false);
     assert_eq!(shape["inputSchema"]["required"], json!(["source_id"]));
 }
+
+#[test]
+fn cli_source_status_is_read_only_and_sends_no_models() {
+    let db = Db::new();
+    let (_, id) = db.capture("cli-status", FIRST);
+    let before = serde_json::to_value(db.open("alice").read().unwrap()).unwrap();
+    let args = db.0.with_extension("args.json");
+    std::fs::write(&args, serde_json::to_vec(&json!({"source_id":id})).unwrap()).unwrap();
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+        .args([
+            "--db",
+            db.0.to_str().unwrap(),
+            "--owner",
+            "alice",
+            "--call",
+            "memory_source_status",
+            "--arguments",
+            args.to_str().unwrap(),
+        ])
+        .env("PMR_MODEL_NETWORK", "deny")
+        .env_remove("DEEPSEEK_API_KEY")
+        .env_remove("DEEPSEEK_PRO_MODEL")
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let result: Json = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(result["source"]["source_id"], id);
+    assert_eq!(result["model_calls"], json!([]));
+    assert!(!result.to_string().contains(FIRST));
+    assert_eq!(
+        serde_json::to_value(db.open("alice").read().unwrap()).unwrap(),
+        before
+    );
+    assert_eq!(db.calls(), 0);
+}

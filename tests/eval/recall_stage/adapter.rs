@@ -123,7 +123,7 @@ pub fn request(
             ModelStage::R4,
             "r4_v5",
             recall_models::R4_PROMPT,
-            recall_models::r4_schema(),
+            recall_models::r4_schema_for_plan(&f.plan),
             recall_models::r4_payload(&f.request, &f.plan, &f.evidence, 28_800),
         ))
     }

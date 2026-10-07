@@ -534,14 +534,14 @@ impl SqliteMemoryStore {
                 return Err(error);
             }
         };
-        let business_changed = business_before
-            != serde_json::to_value((
-                &state.repository,
-                &state.entities,
-                &state.staging,
-                &state.relations,
-                &state.record_updates,
-            ))?;
+        let business_after = serde_json::to_value((
+            &state.repository,
+            &state.entities,
+            &state.staging,
+            &state.relations,
+            &state.record_updates,
+        ))?;
+        let business_changed = business_before != business_after;
         state.revision = if business_changed {
             read_revision
                 .checked_add(1)
@@ -552,6 +552,12 @@ impl SqliteMemoryStore {
         if business_changed {
             if state.last_applied_source_sequence == applied_before
                 && !state.source_attributed_change
+                && !pure_entity_addition(
+                    &business_before,
+                    &business_after,
+                    &state.entities,
+                    &self.owner,
+                )
             {
                 // ponytail: owner-wide barrier; split by semantic slot only if unrelated jobs are measurably blocked.
                 state.source_less_barrier_sequence = state.source_less_barrier_sequence.max(
@@ -602,4 +608,40 @@ impl SqliteMemoryStore {
         self.refresh_fact_index_after_commit();
         Ok(result)
     }
+}
+
+/// AF78: compare identities and directory resolution, never infer a person's meaning.
+fn pure_entity_addition(
+    before: &Value,
+    after: &Value,
+    entities: &InMemoryEntityRepository,
+    owner: &UserId,
+) -> bool {
+    if [0, 2, 3, 4].into_iter().any(|i| before[i] != after[i]) {
+        return false;
+    }
+    let (Some(old), Some(new)) = (
+        before[1]["entities"].as_object(),
+        after[1]["entities"].as_object(),
+    ) else {
+        return false;
+    };
+    let Ok(previous_entities) =
+        serde_json::from_value::<InMemoryEntityRepository>(before[1].clone())
+    else {
+        return false;
+    };
+    new.len() > old.len()
+        && old.iter().all(|(id, entity)| new.get(id) == Some(entity))
+        && new.keys().filter(|id| !old.contains_key(*id)).all(|id| {
+            let Some(entity) = entities.get(&EntityId::from(id.as_str())) else {
+                return false;
+            };
+            &entity.owner_id == owner
+                && std::iter::once(&entity.canonical_name)
+                    .chain(&entity.aliases)
+                    .all(|name| {
+                        previous_entities.resolve(owner, name) == EntityResolution::NotFound
+                    })
+        })
 }
