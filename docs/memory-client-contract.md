@@ -12,7 +12,7 @@
 ## 输入与调用顺序
 
 1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求，零模型调用；完成后继续处理同一条消息，不是普通个人事实查询。
-2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 仅含必要的先前 USER 原话，不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交；计划按完整断言与限定语保存、呈现，不当作已发生事件。
+2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 按时间顺序携带理解当前消息指代所必需、且获准留存的先前 USER 原话，不限于上一条、不带无关内容；不自动补写已保存来源，也不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交；计划按完整断言与限定语保存、呈现，不当作已发生事件。
 3. 只有整条当前消息及必要 history 均获准留存时传 capture_source=true。省略/false 被拒绝，不转为事实保存。明确不保存、无法满足的保存期限、秘密、假设或引用不调用持久写入工具；改用只读 recall 或本轮上下文。
 4. 只读查询提交完整原问，context 仅放必要 USER 澄清，不能拼接不同消息或增加事实。Recall 包括 bootstrap 都须稳定 request_id；新查询/刷新使用新 ID。同参重放复用首次 at 和结果，不追加模型尝试。Prepare 缺省从 session/turn 派生 request_id。
 5. 主体未解析时必要澄清一次，不凭目录唯一或排除法绑定；明确家人等人物的称呼可用 memory_entity_upsert 登记，不要求真名，不把属性或事件登记成人物。登记不会自动修复旧候选；使用下述 status → reprocess 流程确认待处理主体，不要求用户重说已留存原话。memory_list 仅作管理，不能绕过召回取得事实答案。memory_clarify 已停用旧 staged 提交，旧暂存只读/可删。

@@ -3269,3 +3269,206 @@ fn history_import_models_receive_null_original_time_and_frozen_before_parent_pro
     assert!(!serde_json::to_string(&deleted).unwrap().contains(text));
     assert!(crate::w4::record_view(&deleted, record.id).is_none());
 }
+
+pub(crate) fn assert_nonempty_model_request(request: &Json) {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    assert_eq!(request["text"]["format"]["strict"], true);
+    let mut check = Command::new("python3")
+        .args([
+            "-c",
+            r#"
+import json,re,sys
+schema=json.load(sys.stdin)
+patterns=[]
+def check(node):
+    if isinstance(node,dict):
+        if node.get('type')=='string':
+            if 'enum' in node:
+                assert all(s.strip() for s in node['enum'])
+            else:
+                pattern=node['pattern']
+                assert pattern==r'^[\s\S]*\S[\s\S]*$'
+                for text in ['', ' \t\n\u3000']:
+                    assert re.fullmatch(pattern,text) is None
+                for text in ['中文', '第一行\n第二行', '\n中文\n', '0']:
+                    assert re.fullmatch(pattern,text) is not None
+                patterns.append(pattern)
+        if node.get('type')=='null':
+            assert 'pattern' not in node
+        if node.get('type')=='array':
+            assert node.get('minItems',0)==0
+        for child in node.values(): check(child)
+    elif isinstance(node,list):
+        for child in node: check(child)
+check(schema)
+assert patterns
+"#,
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    check
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(&serde_json::to_vec(&request["text"]["format"]["schema"]).unwrap())
+        .unwrap();
+    let result = check.wait_with_output().unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    fn remove_pattern(value: &mut Json) {
+        match value {
+            Json::Object(o) => {
+                o.remove("pattern");
+                for v in o.values_mut() {
+                    remove_pattern(v);
+                }
+            }
+            Json::Array(a) => a.iter_mut().for_each(remove_pattern),
+            _ => (),
+        }
+    }
+    let mut prior = request.clone();
+    remove_pattern(&mut prior["text"]["format"]["schema"]);
+    assert_ne!(
+        crate::recall_models::fingerprint(request),
+        crate::recall_models::fingerprint(&prior)
+    );
+}
+
+#[test]
+fn af83_all_write_stage_requests_bind_nonempty_schema() {
+    let db = Db::new();
+    let (key, upstream, output) = w4_case(&db, false);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    assert_eq!(
+        run_all(&db, &key, &provider)["enrichment"]["status"],
+        "committed"
+    );
+    let requests = sent.lock().unwrap();
+    assert_eq!(requests.len(), 3);
+    for (request, name) in requests.iter().zip(["w1_v2", "w3_v2", "w4_v4"]) {
+        assert_eq!(request["text"]["format"]["name"], name);
+        assert_nonempty_model_request(request);
+    }
+    for rule in [
+        "assertion's holder or actor",
+        "nonempty continuous reference span",
+        "Never invent placeholder words",
+        "history-only span",
+        "plan keyword alone never establishes self",
+    ] {
+        assert!(W1_PROMPT.contains(rule), "{rule}");
+    }
+}
+
+#[test]
+fn af83_w1_diagnostics_are_private_and_do_not_retry() {
+    if std::env::var_os("AF83_W1_TRACE_PROBE").is_none() {
+        let root = std::env::temp_dir().join(format!("af83-w1-trace-{}", diagnostics::new_id()));
+        std::fs::create_dir(&root).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        let child = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "af83_w1_diagnostics_are_private_and_do_not_retry",
+                "--nocapture",
+            ])
+            .env("AF83_W1_TRACE_PROBE", "1")
+            .env("PMR_TRACE_DIR", &root)
+            .output()
+            .unwrap();
+        assert!(
+            child.status.success(),
+            "{}{}",
+            String::from_utf8_lossy(&child.stdout),
+            String::from_utf8_lossy(&child.stderr)
+        );
+        let rows: Vec<Json> = std::fs::read_dir(&root)
+            .unwrap()
+            .flat_map(|p| {
+                std::fs::read_to_string(p.unwrap().path())
+                    .unwrap()
+                    .lines()
+                    .map(|l| serde_json::from_str(l).unwrap())
+                    .collect::<Vec<Json>>()
+            })
+            .collect();
+        std::fs::remove_dir_all(root).unwrap();
+        let failures: Vec<_> = rows
+            .iter()
+            .filter(|r| {
+                r["kind"] == "model_check"
+                    && r["data"]["stage"] == "W1"
+                    && r["data"]["phase"] == "decode"
+            })
+            .collect();
+        assert_eq!(failures.len(), 3);
+        for event in failures {
+            let d = &event["data"];
+            assert_eq!(d["status"], "failed");
+            assert_eq!(d["error"], "w1_invalid_output");
+            assert!(!d.to_string().contains("private-diagnostic-marker"));
+            assert!(!d.to_string().contains("我偏爱松木凳。"));
+            assert!(d["rule"] == "schema" || d["rule"] == "nonblank");
+        }
+        return;
+    }
+    let text = "我偏爱松木凳。";
+    let mut bad = w1(text);
+    bad["candidates"]
+        .as_array_mut()
+        .unwrap()
+        .push(w1(text)["candidates"][0].clone());
+    bad["candidates"][1]["subject"] = json!({"unresolved":{"text":" "}});
+    bad["memory_requests"] = json!([{"kind":"do_not_store","quote":{"text":"不要保存"},
+        "target":{"object":"facts","candidate_indices":[0],"quote":null},"deadline":null}]);
+    let mut bad_request = w1(text);
+    bad_request["memory_requests"] = json!([{"kind":"do_not_store","quote":{"text":" "},
+        "target":{"object":"facts","candidate_indices":[0],"quote":null},"deadline":null}]);
+    let mut unknown = w1(text);
+    unknown["private-diagnostic-marker"] = json!("private-diagnostic-marker");
+    for output in [bad, bad_request, unknown] {
+        let db = Db::new();
+        let key = db.start(text);
+        let (provider, sent) = mocked(&db, vec![Ok(envelope(&output.to_string()))]);
+        let result = run_all(&db, &key, &provider);
+        assert_eq!(result["enrichment"]["status"], "failed");
+        let state = db.open().read().unwrap();
+        assert_eq!(
+            state.sources[&key].error.as_deref(),
+            Some("w1_invalid_output")
+        );
+        assert!(state.sources[&key].request.is_some());
+        assert!(
+            state
+                .repository
+                .list_by_owner(&"alice".into())
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            run_all(&db, &key, &provider)["enrichment"]["status"],
+            "failed"
+        );
+        assert_eq!(sent.lock().unwrap().len(), 1);
+        assert_eq!(db.calls(), 1);
+    }
+    assert!(!diagnostics::incomplete());
+}

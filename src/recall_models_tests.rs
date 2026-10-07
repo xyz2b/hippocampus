@@ -2922,3 +2922,144 @@ fn query_only_still_rejects_injected_current_refs_and_quotes_preserve_markdown()
         }
     }
 }
+
+#[test]
+fn af83_recall_requests_bind_nonempty_schema_in_both_current_branches() {
+    for mode in ["query_only", "assertion_present"] {
+        let db = Db::new();
+        let mut understanding = r1_out("judge");
+        understanding["current_evidence"] = json!(mode);
+        let (p, sent) = mocked(&db, vec![envelope(understanding), envelope(r4_out())]);
+        assert_eq!(
+            run(&mut RecallRuntime::default(), &db, "af83-schema", Some(&p))
+                .unwrap()
+                .status,
+            RecallStatus::Answered
+        );
+        let requests = sent.lock().unwrap();
+        assert_eq!(requests.len(), 2);
+        for (request, name) in requests.iter().zip(["r1_v1", "r4_v5"]) {
+            assert_eq!(request["text"]["format"]["name"], name);
+            crate::write_models::tests::assert_nonempty_model_request(request);
+        }
+    }
+    for rule in [
+        "current USER's own speech",
+        "singular first-person",
+        "quoted or reported speakers",
+        "Preserve Markdown delimiters",
+        "never input metadata such as said_on",
+    ] {
+        assert!(R1_PROMPT.contains(rule), "{rule}");
+    }
+    for rule in [
+        "interpretation must agree with the explicit calendar",
+        "never to hide an explicit contradiction",
+    ] {
+        assert!(R4_PROMPT.contains(rule), "{rule}");
+    }
+}
+
+#[test]
+fn af83_r1_diagnostics_are_private_and_preserve_broad_recall() {
+    if std::env::var_os("AF83_R1_TRACE_PROBE").is_none() {
+        let root = std::env::temp_dir().join(format!("af83-r1-trace-{}", diagnostics::new_id()));
+        std::fs::create_dir(&root).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        let child = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "af83_r1_diagnostics_are_private_and_preserve_broad_recall",
+                "--nocapture",
+            ])
+            .env("AF83_R1_TRACE_PROBE", "1")
+            .env("PMR_TRACE_DIR", &root)
+            .output()
+            .unwrap();
+        assert!(
+            child.status.success(),
+            "{}{}",
+            String::from_utf8_lossy(&child.stdout),
+            String::from_utf8_lossy(&child.stderr)
+        );
+        let rows: Vec<Value> = std::fs::read_dir(&root)
+            .unwrap()
+            .flat_map(|p| {
+                std::fs::read_to_string(p.unwrap().path())
+                    .unwrap()
+                    .lines()
+                    .map(|l| serde_json::from_str(l).unwrap())
+                    .collect::<Vec<Value>>()
+            })
+            .collect();
+        std::fs::remove_dir_all(root).unwrap();
+        let events: Vec<_> = rows
+            .iter()
+            .filter(|r| {
+                r["kind"] == "model_check"
+                    && r["data"]["stage"] == "R1"
+                    && r["data"]["phase"] == "validate"
+            })
+            .collect();
+        assert_eq!(events.len(), 2);
+        let fields: BTreeSet<_> = events
+            .iter()
+            .map(|r| r["data"]["field"].as_str().unwrap())
+            .collect();
+        assert_eq!(
+            fields,
+            BTreeSet::from(["conditions[0].quote.text", "time.quote.text"])
+        );
+        for event in events {
+            let d = &event["data"];
+            assert_eq!(d["status"], "failed");
+            assert_eq!(d["error"], "r1_not_understood");
+            assert_eq!(d["rule"], "quote_or_source");
+            assert!(!d.to_string().contains("private-diagnostic-marker"));
+            assert!(!d.to_string().contains(TEXT));
+        }
+        return;
+    }
+    let _trace = diagnostics::Operation::enter("af83-r1-diagnostic");
+    for kind in ["condition", "metadata-time"] {
+        let db = Db::new();
+        let mut understanding = r1_out("judge");
+        if kind == "condition" {
+            understanding["conditions"] =
+                json!([{"quote":{"text":"private-diagnostic-marker"},"resolved":true}]);
+        } else {
+            understanding["time"] = json!({"role":"event","quote":{"text":"2026-10-03"},
+                "interp":{"kind":"unknown"},"anchor":"said_on"});
+        }
+        let (p, sent) = mocked(&db, vec![envelope(understanding), envelope(r4_out())]);
+        let mut rt = RecallRuntime::default();
+        let result = run(&mut rt, &db, kind, Some(&p)).unwrap();
+        assert_eq!(result.status, RecallStatus::Answered);
+        assert!(
+            result
+                .degraded_reasons
+                .contains(&"r1_not_understood".into())
+        );
+        assert!(
+            result
+                .degraded_reasons
+                .contains(&"model_invalid_output".into())
+        );
+        let inputs: Vec<Value> = sent
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|r| serde_json::from_str(r["input"].as_str().unwrap()).unwrap())
+            .collect();
+        assert!(inputs[1]["plan"].is_null());
+        assert_eq!(inputs[1]["current_evidence"], "unknown");
+        assert_eq!(inputs[1]["evidence"]["raw"].as_array().unwrap().len(), 1);
+        assert_eq!(run(&mut rt, &db, kind, Some(&p)).unwrap(), result);
+        assert_eq!(sent.lock().unwrap().len(), 2);
+        assert_eq!(db.calls(), 2);
+    }
+    assert!(!diagnostics::incomplete());
+}

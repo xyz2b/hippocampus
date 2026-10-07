@@ -122,23 +122,77 @@ impl fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 
+/// 仅供诊断，不包含模型原文、serde 错误文本或模型提供的字段名。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ValidationDiagnostic {
+    pub error: Error,
+    pub field: String,
+    pub rule: &'static str,
+}
+
 /// strict 形状解码；错误不携带模型原文。已解码输入也会在 validate 中检查非空字符串。
 pub fn decode(text: &str) -> Result<W1Output, Error> {
-    let output = serde_json::from_str(text).map_err(|_| Error::InvalidOutput)?;
-    shape(&output)?;
+    decode_detailed(text).map_err(|d| d.error)
+}
+
+pub fn decode_detailed(text: &str) -> Result<W1Output, ValidationDiagnostic> {
+    let schema = || ValidationDiagnostic {
+        error: Error::InvalidOutput,
+        field: "$".into(),
+        rule: "schema",
+    };
+    let output: W1Output = serde_json::from_str(text).map_err(|_| schema())?;
+    let value = serde_json::to_value(&output).map_err(|_| schema())?;
+    if let Some(field) = blank_field(&value, "") {
+        return Err(ValidationDiagnostic {
+            error: Error::InvalidOutput,
+            field,
+            rule: "nonblank",
+        });
+    }
     Ok(output)
 }
 
-fn shape(output: &W1Output) -> Result<(), Error> {
-    fn nonblank(value: &serde_json::Value) -> bool {
-        match value {
-            serde_json::Value::String(text) => !text.trim().is_empty(),
-            serde_json::Value::Array(values) => values.iter().all(nonblank),
-            serde_json::Value::Object(fields) => fields.values().all(nonblank),
-            _ => true,
+/// 只用于已严格反序列化、再由 W1/R1 Rust 类型序列化的值。路径词表固定，索引可变。
+pub(crate) fn blank_field(value: &serde_json::Value, path: &str) -> Option<String> {
+    match value {
+        serde_json::Value::String(text) if text.trim().is_empty() => {
+            Some(if path.is_empty() { "$" } else { path }.into())
         }
+        serde_json::Value::Array(values) => values
+            .iter()
+            .enumerate()
+            .find_map(|(i, value)| blank_field(value, &format!("{path}[{i}]"))),
+        serde_json::Value::Object(fields) => fields.iter().find_map(|(key, value)| {
+            let field = match key.as_str() {
+                "memory_requests" | "candidates" | "kind" | "speech" | "subject" | "entity_id"
+                | "unresolved" | "relation" | "memory_type" | "value" | "text" | "quote"
+                | "sentence" | "polarity" | "strength" | "uncertainty" | "conditions"
+                | "resolved" | "times" | "role" | "interp" | "anchor" | "date" | "start"
+                | "end_inclusive" | "unit" | "offset" | "year_offset" | "month"
+                | "anchor_quote" | "integer" | "boolean" | "target" | "object"
+                | "candidate_indices" | "deadline" | "need" | "current_evidence" | "type"
+                | "ambiguous" | "time" | "plan" | "op" | "filter" => key.as_str(),
+                _ => return blank_field(value, "$").map(|_| "$".into()),
+            };
+            let path = if path.is_empty() {
+                field.into()
+            } else {
+                format!("{path}.{field}")
+            };
+            blank_field(value, &path)
+        }),
+        _ => None,
     }
-    if nonblank(&serde_json::to_value(output).map_err(|_| Error::InvalidOutput)?) {
+}
+
+fn shape(output: &W1Output) -> Result<(), Error> {
+    if blank_field(
+        &serde_json::to_value(output).map_err(|_| Error::InvalidOutput)?,
+        "",
+    )
+    .is_none()
+    {
         Ok(())
     } else {
         Err(Error::InvalidOutput)

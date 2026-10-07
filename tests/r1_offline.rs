@@ -664,3 +664,89 @@ fn invalid_trusted_context_is_reported_without_guessing() {
         }
     });
 }
+
+#[test]
+fn detailed_validation_preserves_fallback_and_reports_only_fixed_fields() {
+    using_context("灯罩保持**深橙色**。", &[], |ctx| {
+        for (raw, field, rule) in [
+            (
+                {
+                    let mut o = output();
+                    o["conditions"] = json!([{"quote":{"text":"灯罩保持深橙色"},"resolved":true}]);
+                    o
+                },
+                "conditions[0].quote.text",
+                "quote_or_source",
+            ),
+            (
+                {
+                    let mut o = output();
+                    o["time"] = time(ctx.said_on, json!({"kind":"unknown"}));
+                    o
+                },
+                "time.quote.text",
+                "quote_or_source",
+            ),
+            (
+                {
+                    let mut o = output();
+                    o["subject"] = json!({"entity_id":"not-authorized"});
+                    o
+                },
+                "subject",
+                "subject_scope",
+            ),
+            (
+                {
+                    let mut o = output();
+                    o["plan"]["filter"]["relation"] = json!("private-invalid-relation");
+                    o
+                },
+                "plan.filter.relation",
+                "relation_catalogue",
+            ),
+            (
+                {
+                    let mut o = output();
+                    o["plan"]["unit"] = json!("private-invalid-unit");
+                    o
+                },
+                "plan.unit",
+                "supported_unit",
+            ),
+            (
+                {
+                    let mut o = output();
+                    o["relation"] = json!(" \n");
+                    o
+                },
+                "relation",
+                "nonblank",
+            ),
+        ] {
+            let typed: R1Output = serde_json::from_value(raw).unwrap();
+            let (plan, diagnostic) = r1::validate_detailed(typed.clone(), ctx).unwrap();
+            assert_eq!(plan, r1::validate(typed, ctx).unwrap());
+            degraded(&plan);
+            let diagnostic = diagnostic.unwrap();
+            assert_eq!(diagnostic.error, Error::InvalidOutput);
+            assert_eq!(diagnostic.field, field);
+            assert_eq!(diagnostic.rule, rule);
+            assert!(!format!("{diagnostic:?}").contains("private-invalid"));
+        }
+        let mut raw = output();
+        raw["conditions"] = json!([{"quote":{"text":"**深橙色**"},"resolved":true}]);
+        let (plan, diagnostic) =
+            r1::validate_detailed(serde_json::from_value(raw).unwrap(), ctx).unwrap();
+        assert!(plan.output.is_some());
+        assert!(diagnostic.is_none());
+        let invalid = Context {
+            said_on: "not-a-date",
+            ..*ctx
+        };
+        assert_eq!(
+            r1::validate_detailed(r1::decode(&output().to_string()).unwrap(), &invalid),
+            Err(Error::InvalidContext("said_on"))
+        );
+    });
+}

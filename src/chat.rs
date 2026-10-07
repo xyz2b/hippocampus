@@ -276,7 +276,7 @@ struct Remember {
     /// Stable, unique chat/session ID. Reuse both IDs when retrying the same message.
     session_id: String,
     turn_id: String,
-    /// Relevant preceding user messages, oldest first. Not stored as independent new statements.
+    /// Authorized verbatim USER antecedents needed to understand this message, oldest first; not limited to the previous turn. Exclude unrelated content. Not independently saved, and never backfilled into an existing source.
     #[serde(default)]
     history: Vec<String>,
     #[serde(default)]
@@ -1485,7 +1485,7 @@ pub fn memory_tools() -> Vec<Tool> {
     vec![
         tool::<Prepare>(
             "memory_prepare",
-            "After bootstrap, use for authorized personal assertions, including factual background in questions and follow-ups. Pass the complete verbatim current USER message in user_turn, stable session/turn IDs, necessary preceding USER history, and capture_source=true only when the entire message/history is authorized for retention. No separate remember call is needed. False/omitted capture is rejected; pure read-only/no-save queries use memory_recall. T1 stores raw text first; inline/deferred enqueue background W1/W3/W4 without waiting, off does not queue. Source=stored is not a committed fact. Check source/enrichment/recall independently; a successful recall does not prove saving succeeded. Failed/pending enrichment replays without another model attempt. Skip secrets and no-save messages. An in_progress response requires retrying EXACTLY the same parameters to resume existing work; do not report failure or create another save. Prepare derives request_id from session/turn if omitted. Only recall.v5 is supported.",
+            "After bootstrap, use for authorized personal assertions, including factual background in questions and follow-ups. Pass the complete verbatim current USER message in user_turn, stable session/turn IDs, necessary authorized verbatim USER antecedents in chronological history (not only the previous turn; exclude unrelated content), and capture_source=true only when the entire message/history is authorized for retention. No separate remember call is needed. False/omitted capture is rejected; pure read-only/no-save queries use memory_recall. T1 stores raw text first; inline/deferred enqueue background W1/W3/W4 without waiting, off does not queue. Source=stored is not a committed fact. Check source/enrichment/recall independently; a successful recall does not prove saving succeeded. Failed/pending enrichment replays without another model attempt; do not backfill history into a retained source. Skip secrets and no-save messages. An in_progress response requires retrying EXACTLY the same parameters to resume existing work; do not report failure or create another save. Prepare derives request_id from session/turn if omitted. Only recall.v5 is supported.",
             true,
             false,
             true,

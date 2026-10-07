@@ -77,6 +77,21 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ValidationDiagnostic {
+    pub error: Error,
+    pub field: String,
+    pub rule: &'static str,
+}
+
+fn diagnostic(field: impl Into<String>, rule: &'static str) -> ValidationDiagnostic {
+    ValidationDiagnostic {
+        error: Error::InvalidOutput,
+        field: field.into(),
+        rule,
+    }
+}
+
 pub fn decode(text: &str) -> Result<R1Output, Error> {
     let output = serde_json::from_str(text).map_err(|_| Error::InvalidOutput)?;
     shape(&output)?;
@@ -84,18 +99,14 @@ pub fn decode(text: &str) -> Result<R1Output, Error> {
 }
 
 fn shape(output: &R1Output) -> Result<(), Error> {
-    fn nonblank(value: &serde_json::Value) -> bool {
-        match value {
-            serde_json::Value::String(text) => !text.trim().is_empty(),
-            serde_json::Value::Array(values) => values.iter().all(nonblank),
-            serde_json::Value::Object(fields) => fields.values().all(nonblank),
-            _ => true,
-        }
-    }
-    if nonblank(&serde_json::to_value(output).map_err(|_| Error::InvalidOutput)?) {
-        Ok(())
-    } else {
-        Err(Error::InvalidOutput)
+    shape_detailed(output).map_err(|d| d.error)
+}
+
+fn shape_detailed(output: &R1Output) -> Result<(), ValidationDiagnostic> {
+    let value = serde_json::to_value(output).map_err(|_| diagnostic("$", "schema"))?;
+    match w2::blank_field(&value, "") {
+        Some(field) => Err(diagnostic(field, "nonblank")),
+        None => Ok(()),
     }
 }
 
@@ -135,17 +146,26 @@ pub fn not_understood(ctx: &Context<'_>) -> Result<Plan, Error> {
 }
 
 /// 任一模型字段失效，整份理解降级；不保留部分模型过滤条件。
-pub fn validate(mut output: R1Output, ctx: &Context<'_>) -> Result<Plan, Error> {
+pub fn validate(output: R1Output, ctx: &Context<'_>) -> Result<Plan, Error> {
+    validate_detailed(output, ctx).map(|(plan, _)| plan)
+}
+
+/// 失效输出仍返回同一降级计划；诊断独立于计划，可信上下文错误仍通过 Err 返回。
+pub fn validate_detailed(
+    mut output: R1Output,
+    ctx: &Context<'_>,
+) -> Result<(Plan, Option<ValidationDiagnostic>), Error> {
     let mut plan = not_understood(ctx)?;
     let checked = (|| {
-        shape(&output).ok()?;
+        shape_detailed(&output)?;
         let allowed = |id: &str| {
             let id = EntityId::from(id);
             ctx.entities.contains(&id) && ctx.subject_ids.is_none_or(|ids| ids.contains(&id))
         };
         match &mut output.subject {
             R1Subject::Entity(subject) if allowed(&subject.entity_id) => {}
-            R1Subject::Unresolved(subject) => restore(&mut subject.unresolved, ctx)?,
+            R1Subject::Unresolved(subject) => restore(&mut subject.unresolved, ctx)
+                .ok_or_else(|| diagnostic("subject.unresolved.text", "quote_or_source"))?,
             R1Subject::Ambiguous(subject)
                 if subject.ambiguous.len() >= 2
                     && subject.ambiguous.iter().all(|id| allowed(id))
@@ -155,10 +175,12 @@ pub fn validate(mut output: R1Output, ctx: &Context<'_>) -> Result<Plan, Error> 
                         .collect::<std::collections::BTreeSet<_>>()
                         .len()
                         == subject.ambiguous.len() => {}
-            _ => return None,
+            _ => return Err(diagnostic("subject", "subject_scope")),
         }
-        for condition in &mut output.conditions {
-            restore(&mut condition.quote, ctx)?;
+        for (i, condition) in output.conditions.iter_mut().enumerate() {
+            restore(&mut condition.quote, ctx).ok_or_else(|| {
+                diagnostic(format!("conditions[{i}].quote.text"), "quote_or_source")
+            })?;
         }
         if output
             .plan
@@ -166,30 +188,36 @@ pub fn validate(mut output: R1Output, ctx: &Context<'_>) -> Result<Plan, Error> 
             .relation
             .as_ref()
             .is_some_and(|id| !ctx.relations.iter().any(|r| &r.id == id))
-            || output
-                .plan
-                .unit
-                .as_ref()
-                .is_some_and(|unit| !ctx.supported_units.contains(&unit.as_str()))
         {
-            return None;
+            return Err(diagnostic("plan.filter.relation", "relation_catalogue"));
+        }
+        if output
+            .plan
+            .unit
+            .as_ref()
+            .is_some_and(|unit| !ctx.supported_units.contains(&unit.as_str()))
+        {
+            return Err(diagnostic("plan.unit", "supported_unit"));
         }
         let time = match output.time.as_mut() {
-            Some(time) => Some(check_time(time, ctx)?),
+            Some(time) => Some(check_time(time, ctx, "time")?),
             None => None,
         };
         let filter_time = match output.plan.filter.time.as_mut() {
-            Some(time) => Some(check_time(time, ctx)?),
+            Some(time) => Some(check_time(time, ctx, "plan.filter.time")?),
             None => None,
         };
-        Some((time, filter_time))
+        Ok((time, filter_time))
     })();
-    if let Some((time, filter_time)) = checked {
-        plan.output = Some(output);
-        plan.time_resolution = time;
-        plan.filter_time_resolution = filter_time;
+    match checked {
+        Ok((time, filter_time)) => {
+            plan.output = Some(output);
+            plan.time_resolution = time;
+            plan.filter_time_resolution = filter_time;
+            Ok((plan, None))
+        }
+        Err(diagnostic) => Ok((plan, Some(diagnostic))),
     }
-    Ok(plan)
 }
 
 fn restore(quote: &mut Quote, ctx: &Context<'_>) -> Option<()> {
@@ -202,13 +230,24 @@ fn restore(quote: &mut Quote, ctx: &Context<'_>) -> Option<()> {
     None
 }
 
-fn check_time(time: &mut TimeInterp, ctx: &Context<'_>) -> Option<TimeResolution> {
+fn check_time(
+    time: &mut TimeInterp,
+    ctx: &Context<'_>,
+    field: &'static str,
+) -> Result<TimeResolution, ValidationDiagnostic> {
     if time.role == TimeRole::Retention {
-        return None;
+        return Err(diagnostic(format!("{field}.role"), "time_role"));
     }
-    restore(&mut time.quote, ctx)?;
+    restore(&mut time.quote, ctx)
+        .ok_or_else(|| diagnostic(format!("{field}.quote.text"), "quote_or_source"))?;
     if let Interp::Anchored { anchor_quote, .. } = &mut time.interp {
-        restore(anchor_quote, ctx)?;
+        restore(anchor_quote, ctx).ok_or_else(|| {
+            diagnostic(
+                format!("{field}.interp.anchor_quote.text"),
+                "quote_or_source",
+            )
+        })?;
     }
-    w2::resolve_time_interp(time, ctx.said_on, ctx.utc_offset_seconds).ok()
+    w2::resolve_time_interp(time, ctx.said_on, ctx.utc_offset_seconds)
+        .map_err(|_| diagnostic(field, "time"))
 }

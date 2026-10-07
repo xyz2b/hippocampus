@@ -31,6 +31,8 @@ non-asserting message. Use unknown when that distinction is uncertain. Classify 
 not the prepare/recall entry point. An asserted premise beside a question can be reviewed, but
 questions, hypotheses and reported words do not thereby become confirmed personal facts;
 R4 must judge their attribution, modality and support. A question alone is not evidence.
+In the current USER's own speech, a singular first-person reference refers to self. Do not apply
+this to quoted or reported speakers, or use a plural reference to identify all its members.
 Resolve the subject only from explicit words or USER context naming the referent. Use an existing
 entity_id, unresolved with an exact reference Quote, or ambiguous with at least two distinct
 catalogue IDs. Catalogue uniqueness or elimination alone cannot resolve an unstated referent.
@@ -43,7 +45,10 @@ Choose type=single, aggregate, comparison, temporal or open from the actual requ
 language relation and conditions are retrieval hints, not executable or literal filters.
 Every condition is an exact continuous Quote with resolved indicating whether it is understood;
 retain unclear restrictions rather than treating them as unrestricted. Quotes can come from
-current message or necessary USER context. History has no independent date anchor: a relative
+current message or necessary USER context. Preserve Markdown delimiters, punctuation and symbols
+inside each continuous Quote; never strip formatting or join separated spans. time.quote and
+anchor_quote must also come from that allowed text, never input metadata such as said_on.
+History has no independent date anchor: a relative
 time expressed only in history must not become an interpreted query time. Use unknown if needed.
 Choose exactly one plan.op: lookup, list, count, sum, compare or elapsed. For aggregate requests,
 plan describes enumeration of the authorized scope, never a total inferred from top hits.
@@ -129,7 +134,10 @@ of the same qualifier shape. All qualifier and time quotes must occur in this fa
 sources. resolved means the restriction is understood, not that it applies to this query.
 For each fact.times entry, its quote must occur in a source already referenced by THAT fact's
 evidence. If the time comes from another supplied source, add a real reference to that source
-in the same fact.evidence and judge whether the time applies to this assertion. A time elsewhere
+in the same fact.evidence and judge whether the time applies to this assertion. A date or range
+interpretation must agree with the explicit calendar in its quote, preserving its precision.
+Use unknown only when the time cannot be interpreted with the required fields, never to hide an explicit contradiction
+between the quoted calendar and the interpretation. A time elsewhere
 in the package does not establish its applicability or count as this fact's evidence.
 conditions describe restrictions asserted by the evidence source, never conditions introduced
 only by the question. A query situation may guide applies, but cannot become a source qualifier.
@@ -1013,7 +1021,20 @@ impl RecallRuntime {
                     Ok(text) => {
                         plan = crate::diagnostics::checked("R1", "decode", r1::decode(&text))
                             .and_then(|o| {
-                                crate::diagnostics::checked("R1", "validate", r1::validate(o, &ctx))
+                                let result = r1::validate_detailed(o, &ctx);
+                                crate::diagnostics::record("model_check", || {
+                                    let diagnostic = result.as_ref().ok().and_then(|(_, d)| d.as_ref());
+                                    let mut event = json!({"stage":"R1","phase":"validate",
+                                        "status":if result.is_ok() && diagnostic.is_none() {"completed"} else {"failed"},
+                                        "error":result.as_ref().err().map(ToString::to_string)
+                                            .or_else(||diagnostic.map(|d|d.error.to_string()))});
+                                    if let Some(d) = diagnostic {
+                                        event["field"] = json!(d.field);
+                                        event["rule"] = json!(d.rule);
+                                    }
+                                    event
+                                });
+                                result.map(|(plan, _)| plan)
                             })
                             .unwrap_or(plan);
                         if plan.output.is_none() {

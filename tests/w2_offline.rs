@@ -1085,3 +1085,59 @@ fn spaced_integer_literals_keep_their_sign_and_value() {
     c["value"]["integer"] = json!(12);
     rejected(source, c, "integer_quote_mismatch");
 }
+
+#[test]
+fn detailed_decode_rejects_the_whole_batch_and_never_reports_model_field_names() {
+    for blank in ["", " \t\n\u{3000}"] {
+        let mut invalid = candidate("他使用木尺。");
+        invalid["subject"] = json!({"unresolved":{"text":blank}});
+        let raw = json!({"candidates":[candidate("我喝热水。"),invalid],
+            "memory_requests":[request("do_not_store","不保存",&[0])]});
+        let diagnostic = w2::decode_detailed(&raw.to_string()).unwrap_err();
+        assert_eq!(diagnostic.field, "candidates[1].subject.unresolved.text");
+        assert_eq!(diagnostic.rule, "nonblank");
+        assert_eq!(diagnostic.error, Error::InvalidOutput);
+        assert_eq!(w2::decode(&raw.to_string()), Err(Error::InvalidOutput));
+    }
+    let mut restriction = request("do_not_store", "不保存", &[0]);
+    restriction["target"]["quote"] = json!({"text":" "});
+    let raw = json!({"candidates":[candidate("我喝热水。")],"memory_requests":[restriction]});
+    let d = w2::decode_detailed(&raw.to_string()).unwrap_err();
+    assert_eq!(d.field, "memory_requests[0].target.quote.text");
+    assert_eq!(d.rule, "nonblank");
+    let typed = serde_json::from_value(raw).unwrap();
+    assert_eq!(
+        w2::validate(
+            typed,
+            &Context {
+                text: "我喝热水。不保存",
+                entities: &[EntityId::from("self")],
+                relations: &catalog(),
+                said_on: Some("2026-04-15"),
+                utc_offset_seconds: 28_800,
+                task_id: None,
+            }
+        ),
+        Err(Error::InvalidOutput)
+    );
+    for text in [
+        "not JSON",
+        r#"{"candidates":[],"memory_requests":[],"private-model-key":42}"#,
+    ] {
+        let d = w2::decode_detailed(text).unwrap_err();
+        assert_eq!(d.field, "$");
+        assert_eq!(d.rule, "schema");
+        assert!(!format!("{d:?}").contains("private-model-key"));
+    }
+    for text in ["中文", "第一行\n第二行"] {
+        let raw = json!({"candidates":[candidate(text)],"memory_requests":[]});
+        assert_eq!(
+            w2::decode_detailed(&raw.to_string())
+                .unwrap()
+                .candidates
+                .len(),
+            1
+        );
+    }
+    assert!(w2::decode_detailed(r#"{"candidates":[],"memory_requests":[]}"#).is_ok());
+}

@@ -42,6 +42,11 @@ that registered entity; otherwise retain unresolved. A property is not a person 
 reference is not an entity alias. Never create entities or resolve those references by elimination.
 For a property or event reference, use explicit USER history to identify its already named
 holder or actor; do not require the referenced property or event to be a registered person.
+Identify the assertion's holder or actor, including a plan's holder, from explicit current words
+or necessary USER history. A property word or plan keyword alone never establishes self.
+When the holder remains unbound, unresolved.text must copy a nonempty continuous reference span
+from current_user_message. Never invent placeholder words, borrow a history-only span as a
+current Quote, or fill an empty reference. Do not invent a subject when no valid span exists.
 An explicit antecedent can resolve an omitted subject; recency alone cannot. A plural reference
 does not identify all its members merely because a family member appeared earlier.
 Distinguish a conditional or uncertain personal intention from an imagined hypothetical scenario.
@@ -397,7 +402,7 @@ impl WriteModelProvider {
             crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?
         };
         if let Some(output) = &saved_w1 {
-            crate::diagnostics::checked("W1", "decode", w2::decode(&output.to_string()))?;
+            decode_w1(&output.to_string())?;
             crate::commit::w4_save_model_stage(store, claim, "w1", &w1_binding, output)?;
         }
         let output = if let Some(previous) = &ctx.previous_w2 {
@@ -440,9 +445,7 @@ impl WriteModelProvider {
             }
         } else {
             match saved_w1 {
-                Some(output) => {
-                    crate::diagnostics::checked("W1", "decode", w2::decode(&output.to_string()))?
-                }
+                Some(output) => decode_w1(&output.to_string())?,
                 None => {
                     crate::commit::w4_renew_claim(store, claim)?;
                     no_missing_result(&client, ModelStage::W1)?;
@@ -457,7 +460,7 @@ impl WriteModelProvider {
                             w1_schema(),
                         )
                         .map_err(provider_error)?;
-                    let output = crate::diagnostics::checked("W1", "decode", w2::decode(&text))?;
+                    let output = decode_w1(&text)?;
                     crate::commit::w4_save_model_stage(
                         store,
                         claim,
@@ -718,13 +721,28 @@ fn provider_error(error: OpenAiAdapterError) -> Box<dyn std::error::Error + Send
     .into()
 }
 
+fn decode_w1(text: &str) -> Result<W1Output, w2::Error> {
+    let result = w2::decode_detailed(text);
+    crate::diagnostics::record("model_check", || {
+        let mut event = json!({"stage":"W1","phase":"decode",
+            "status":if result.is_ok() {"completed"} else {"failed"},
+            "error":result.as_ref().err().map(|d|d.error.to_string())});
+        if let Err(d) = &result {
+            event["field"] = json!(d.field);
+            event["rule"] = json!(d.rule);
+        }
+        event
+    });
+    result.map_err(|d| d.error)
+}
+
 pub(crate) fn object(fields: &[(&str, Json)]) -> Json {
     json!({"type":"object","properties":fields.iter().map(|(k,v)| (k.to_string(),v.clone()))
         .collect::<serde_json::Map<_,_>>(), "required":fields.iter().map(|(k,_)| k).collect::<Vec<_>>(),
         "additionalProperties":false})
 }
 pub(crate) fn string() -> Json {
-    json!({"type":"string"})
+    json!({"type":"string","pattern":r"^[\s\S]*\S[\s\S]*$"})
 }
 pub(crate) fn choices(values: &[&str]) -> Json {
     json!({"type":"string","enum":values})
@@ -936,7 +954,7 @@ pub fn w4_schema() -> Json {
 
 #[cfg(test)]
 #[path = "write_models_tests.rs"]
-mod tests;
+pub(crate) mod tests;
 
 #[cfg(test)]
 #[path = "chat_background_tests.rs"]
