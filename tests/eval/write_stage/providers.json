@@ -1,0 +1,134 @@
+[
+  {
+    "id": "ds-pro",
+    "model": "ep-20261003130756-trhj6",
+    "provider": {
+      "protocol": "openai_responses",
+      "base_url_env": "DEEPSEEK_BASE_URL",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "thinking": null
+    },
+    "effort": "medium",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "ds-flash",
+    "model": "ep-20260923215039-vxgxg",
+    "provider": {
+      "protocol": "openai_responses",
+      "base_url_env": "DEEPSEEK_BASE_URL",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "thinking": null
+    },
+    "effort": "medium",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "gpt-6.1-sol",
+    "model": "gpt-6.1-sol",
+    "provider": {
+      "protocol": "openai_responses",
+      "base_url_env": "OPENAI_BASE_URL",
+      "api_key_env": "OPENAI_API_KEY",
+      "thinking": null
+    },
+    "effort": "medium",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "opus-5.5",
+    "model": "claude-opus-5-5",
+    "provider": {
+      "protocol": "anthropic_messages",
+      "base_url_env": "ANTHROPIC_BASE_URL",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "thinking": true
+    },
+    "effort": "medium",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen-27b-think",
+    "model": "qwen3.8:27b-q4_K_M-ctx64k",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": null,
+      "thinking": true,
+      "model_revision": "sha256:d8e86c06dd75962a2119a900e4fa0acb476e551220106c94577525eaa70a7833",
+      "context_tokens": 65536,
+      "context_proof": {
+        "tokenizer_revision": "sha256:d8e86c06dd75962a2119a900e4fa0acb476e551220106c94577525eaa70a7833;ollama=0.40.0;template_sha256_prefix=b507b9c2f6ca642b",
+        "byte_level_bpe": true,
+        "template_token_bound": 256
+      }
+    },
+    "effort": "omit",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen-27b-nothink",
+    "model": "qwen3.8:27b-q4_K_M-ctx64k",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": null,
+      "thinking": false,
+      "model_revision": "sha256:d8e86c06dd75962a2119a900e4fa0acb476e551220106c94577525eaa70a7833",
+      "context_tokens": 65536,
+      "context_proof": {
+        "tokenizer_revision": "sha256:d8e86c06dd75962a2119a900e4fa0acb476e551220106c94577525eaa70a7833;ollama=0.40.0;template_sha256_prefix=b507b9c2f6ca642b",
+        "byte_level_bpe": true,
+        "template_token_bound": 256
+      }
+    },
+    "effort": "omit",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen-9b-think",
+    "model": "qwen3.5:9b-q8_0",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": null,
+      "thinking": true,
+      "model_revision": "sha256:a8ee95bc3592ebaa624014ca8b429d25e0ef5f45030dc35786da7ff7e9e1b60a",
+      "context_tokens": 131072,
+      "context_proof": {
+        "tokenizer_revision": "sha256:a8ee95bc3592ebaa624014ca8b429d25e0ef5f45030dc35786da7ff7e9e1b60a;ollama=0.40.0;template_sha256_prefix=b507b9c2f6ca642b",
+        "byte_level_bpe": true,
+        "template_token_bound": 256
+      }
+    },
+    "effort": "omit",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen-9b-nothink",
+    "model": "qwen3.5:9b-q8_0",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": null,
+      "thinking": false,
+      "model_revision": "sha256:a8ee95bc3592ebaa624014ca8b429d25e0ef5f45030dc35786da7ff7e9e1b60a",
+      "context_tokens": 131072,
+      "context_proof": {
+        "tokenizer_revision": "sha256:a8ee95bc3592ebaa624014ca8b429d25e0ef5f45030dc35786da7ff7e9e1b60a;ollama=0.40.0;template_sha256_prefix=b507b9c2f6ca642b",
+        "byte_level_bpe": true,
+        "template_token_bound": 256
+      }
+    },
+    "effort": "omit",
+    "max_output_tokens": 8192,
+    "timeout_seconds": 360
+  }
+]

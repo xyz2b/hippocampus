@@ -1213,6 +1213,375 @@ fn provider_options_from_env() -> Result<Option<ProviderOptions>, String> {
     Ok(Some(ProviderOptions { provider, campaign }))
 }
 
+const SMOKE_ROOT: &str = "target/eval-providers/smoke-af122";
+const SMOKE_CAP: usize = 8;
+const SMOKE_SAMPLE: &str = "w1_01_simple_residence";
+const SMOKE_IDS: [&str; SMOKE_CAP] = [
+    "ds-pro",
+    "ds-flash",
+    "gpt-6.1-sol",
+    "opus-5.5",
+    "qwen-27b-think",
+    "qwen-27b-nothink",
+    "qwen-9b-think",
+    "qwen-9b-nothink",
+];
+
+#[derive(Clone, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SmokeProfile {
+    id: String,
+    model: String,
+    provider: ProviderConfig,
+    effort: ReasoningEffort,
+    max_output_tokens: u32,
+    timeout_seconds: u64,
+}
+fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
+    let profiles: Vec<SmokeProfile> = serde_json::from_str(text).map_err(|e| e.to_string())?;
+    if profiles.iter().map(|p| p.id.as_str()).collect::<Vec<_>>() != SMOKE_IDS {
+        return Err("AF122 requires exactly eight profiles in the fixed order".into());
+    }
+    for profile in &profiles {
+        profile.provider.validate().map_err(|e| e.to_string())?;
+        EvalModel {
+            label: profile.id.clone(),
+            model: Some(profile.model.clone()),
+            base: None,
+            effort: profile.effort,
+        }
+        .validate()?;
+        let local = profile.provider.protocol == ProviderProtocol::OpenaiChat;
+        if profile.max_output_tokens != 8192
+            || profile.timeout_seconds != 360
+            || profile.effort
+                != if local {
+                    ReasoningEffort::Omit
+                } else {
+                    ReasoningEffort::Medium
+                }
+        {
+            return Err("AF122 output/timeout/effort is fixed".into());
+        }
+        if local {
+            let revision = profile
+                .provider
+                .model_revision
+                .as_deref()
+                .ok_or("missing model digest")?;
+            let digest = revision
+                .strip_prefix("sha256:")
+                .ok_or("expected sha256 digest")?;
+            let proof = profile
+                .provider
+                .context_proof
+                .as_ref()
+                .ok_or("missing context proof")?;
+            let capacity = if profile.id.starts_with("qwen-27b") {
+                65536
+            } else {
+                131072
+            };
+            if digest.len() != 64
+                || !digest.bytes().all(|b| b.is_ascii_hexdigit())
+                || !proof.tokenizer_revision.contains(revision)
+                || !proof
+                    .tokenizer_revision
+                    .contains("ollama=0.40.0;template_sha256_prefix=b507b9c2f6ca642b")
+                || !proof.byte_level_bpe
+                || proof.template_token_bound != 256
+                || profile.provider.context_tokens != Some(capacity)
+                || profile.provider.thinking != Some(profile.id.ends_with("-think"))
+            {
+                return Err(
+                    "AF122 local deployment proof differs from the approved profile".into(),
+                );
+            }
+        }
+    }
+    Ok(profiles)
+}
+fn smoke_options(
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<(bool, Option<usize>), String> {
+    if variable("EVAL_SMOKE").as_deref() != Some("1") {
+        return Err("EVAL_SMOKE must be 1".into());
+    }
+    for key in [
+        "EVAL_M15",
+        "EVAL_HISTORY",
+        "EVAL_FIXED_INPUTS",
+        "EVAL_STAGES",
+        "EVAL_CASES",
+        "EVAL_MODEL",
+        "EVAL_MODEL_LABEL",
+        "EVAL_REASONING_EFFORT",
+        "EVAL_PROVIDER_CONFIG",
+        "EVAL_REPEAT",
+        "EVAL_MAX_OUTPUT_TOKENS",
+        "EVAL_PROVIDER_DIR",
+        "EVAL_CAMPAIGN_DIR",
+        "EVAL_BASE_URL",
+        "EVAL_API_KEY",
+        "EVAL_GATE",
+    ] {
+        if variable(key).is_some() {
+            return Err(format!("AF122 fixed smoke does not accept {key}"));
+        }
+    }
+    let dry = variable("EVAL_DRY_RUN").as_deref() == Some("1");
+    let limit = match variable("EVAL_RECORD").as_deref() {
+        None => None,
+        Some("0") => Some(0),
+        Some("8") => Some(SMOKE_CAP),
+        _ => return Err("AF122 EVAL_RECORD must be absent, 0 (cached only), or 8".into()),
+    };
+    Ok((dry, limit))
+}
+fn smoke_plan(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<Vec<Case>, String> {
+    let sample = samples("w1")
+        .into_iter()
+        .find(|s| s["id"] == SMOKE_SAMPLE)
+        .ok_or("smoke sample missing")?;
+    let mut cases = Vec::new();
+    for p in profiles {
+        // Placeholders permit key-free planning. Live preflight requires the actual environment URL.
+        let base = variable(&p.provider.base_url_env).unwrap_or_else(|| {
+            format!(
+                "https://{}.invalid/v1",
+                p.provider.base_url_env.to_ascii_lowercase()
+            )
+        });
+        let model = EvalModel {
+            label: p.id.clone(),
+            model: Some(p.model.clone()),
+            base: Some(base),
+            effort: p.effort,
+        };
+        let options = ProviderOptions {
+            provider: p.provider.clone(),
+            campaign: root.join("campaign"),
+        };
+        model.validate()?;
+        options
+            .provider
+            .endpoint(model.base.as_deref().unwrap())
+            .map_err(|e| e.to_string())?;
+        let mut request = stage_request_with_output_tokens("w1", &sample, p.max_output_tokens)?;
+        request["model"] = json!(p.model);
+        p.effort.apply(&mut request);
+        cases.push(case_from_request_with_provider(
+            "w1".into(),
+            sample.clone(),
+            &root.join("recordings").join(&p.id),
+            &model,
+            1,
+            request,
+            Some(&options),
+        )?);
+    }
+    if cases.len() != SMOKE_CAP
+        || cases
+            .iter()
+            .map(|c| campaign_slot(c).to_string())
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            != SMOKE_CAP
+    {
+        return Err("AF122 must contain eight distinct W1 slots".into());
+    }
+    Ok(cases)
+}
+fn smoke_dry_plan(cases: &[Case]) -> String {
+    let mut lines = vec![
+        "AF122 provider 冒烟干跑（不发送请求）".to_owned(),
+        format!("样本: {SMOKE_SAMPLE}；8 档 × W1 × 1 次；W3/W4/R1/R4=0。"),
+        "档案 | 模型 | effort | thinking | 输出上限 | 超时秒 | 预检".into(),
+    ];
+    for c in cases {
+        let p = c.provider.as_ref().unwrap();
+        let status = match &c.replay {
+            Replay::Rejected(s) => format!("拒绝: {s}"),
+            Replay::Output(_) | Replay::Failed(_) => "可回放".into(),
+            _ => "待录制".into(),
+        };
+        lines.push(format!(
+            "{} | {} | {} | {} | 8192 | 360 | {status}",
+            c.model.label,
+            c.model.model.as_deref().unwrap(),
+            serde_json::to_value(c.model.effort)
+                .unwrap()
+                .as_str()
+                .unwrap(),
+            p.thinking.map(|b| b.to_string()).unwrap_or("null".into())
+        ));
+    }
+    let rejected = cases
+        .iter()
+        .filter(|c| matches!(c.replay, Replay::Rejected(_)))
+        .count();
+    let missing = cases
+        .iter()
+        .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
+        .count();
+    lines.push(format!(
+        "固定槽位/累计授权上限: 8；待录制: {missing}；发送前拒绝: {rejected}。"
+    ));
+    lines.push("输出预留上限: 65536 token（含思考）；串行，无自动重试。".into());
+    lines.push("本次真实调用: 0；不读取密钥，不创建录制/额度/报告文件。".into());
+    lines.join("\n")
+}
+fn smoke_credentials(
+    cases: &[Case],
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<std::collections::BTreeMap<String, String>, String> {
+    let mut keys = std::collections::BTreeMap::new();
+    for c in cases
+        .iter()
+        .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
+    {
+        let p = c
+            .provider
+            .as_ref()
+            .ok_or("smoke requires explicit provider")?;
+        let base =
+            variable(&p.base_url_env).ok_or_else(|| format!("missing {}", p.base_url_env))?;
+        if Some(&base) != c.model.base.as_ref() {
+            return Err("smoke endpoint changed after planning".into());
+        }
+        let key = if let Some(name) = &p.api_key_env {
+            variable(name).ok_or_else(|| format!("missing {name}"))?
+        } else {
+            String::new()
+        };
+        if key.trim().is_empty() && p.protocol != ProviderProtocol::OpenaiChat {
+            return Err(format!("missing API key for {}", c.model.label));
+        }
+        keys.insert(c.model.label.clone(), key.trim().to_owned());
+    }
+    Ok(keys)
+}
+fn smoke_http_request(
+    http: &reqwest::blocking::Client,
+    c: &Case,
+    key: &str,
+) -> Result<reqwest::blocking::Request, String> {
+    let provider = c.provider.as_ref().ok_or("smoke requires provider")?;
+    let url = provider
+        .endpoint(c.model.base.as_deref().ok_or("missing endpoint")?)
+        .map_err(|e| e.to_string())?;
+    hippocampus::provider_http_request(http, &url, key, provider.protocol)
+        .timeout(std::time::Duration::from_secs(360))
+        .json(&c.wire_request)
+        .build()
+        .map_err(|e| e.to_string())
+}
+fn smoke_preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
+    if limit.is_some()
+        && cases
+            .iter()
+            .any(|c| matches!(c.replay, Replay::Rejected(_)))
+    {
+        return Err("AF122 entire batch refused: a profile failed preflight".into());
+    }
+    preflight(cases, limit)
+}
+fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
+    let rows: Vec<_> = items(&report["results"])
+        .iter()
+        .zip(cases)
+        .map(|(r, c)| {
+            let raw = &r["raw"];
+            let wire_valid = if r["status"] == "调用失败" {
+                Some(false)
+            } else if raw.is_null() {
+                None
+            } else {
+                Some(model_provider::check_output(&c.request["text"]["format"]["schema"], raw).is_ok())
+            };
+            let checks: Vec<_> = items(&r["fields"])
+                .iter()
+                .filter(|f| {
+                    f["field"] == "decode"
+                        || f["field"].as_str().is_some_and(|s| s.starts_with("w2."))
+                })
+                .collect();
+            let provider = c.provider.as_ref().unwrap();
+            json!({
+                "profile": c.model.label, "model": c.model.model, "protocol": provider.protocol,
+                "endpoint": provider.endpoint(c.model.base.as_deref().unwrap()).unwrap(),
+                "effort": c.model.effort, "thinking": provider.thinking,
+                "max_output_tokens": 8192, "timeout_seconds": 360,
+                "status": r["status"], "error": r["error"],
+                "provider_output_valid": wire_valid,
+                "mechanical_valid": (!checks.is_empty()).then(|| checks.iter().all(|f| f["passed"] == true)),
+                "mechanical_checks": checks, "sample_score": r["status"],
+                "semantic_score": r["categories"]["semantic"],
+                "elapsed_ms": r["elapsed_ms"], "usage": r["usage"], "request": r["request"]
+            })
+        })
+        .collect();
+    report["model"] = json!("mixed-provider-smoke");
+    report["purpose"] = json!("protocol availability only; not a quality comparison");
+    report["smoke"] = json!(rows);
+    report
+}
+fn provider_smoke_from_env() -> Result<(), String> {
+    let variable = |name: &str| std::env::var(name).ok();
+    let (dry, limit) = smoke_options(variable)?;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(SMOKE_ROOT);
+    let profiles = smoke_profiles(include_str!("eval/write_stage/providers.json"))?;
+    let cases = smoke_plan(&root, &profiles, variable)?;
+    if dry {
+        println!("{}", smoke_dry_plan(&cases));
+        return Ok(());
+    }
+    // Validate the complete cohort before creating a client or spending any allowance.
+    let sends = smoke_preflight(&cases, limit).map_err(|error| {
+        println!("{}", smoke_dry_plan(&cases));
+        error
+    })?;
+    let keys = if sends > 0 {
+        smoke_credentials(&cases, variable)?
+    } else {
+        Default::default()
+    };
+    let http = if sends > 0 {
+        Some(
+            reqwest::blocking::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .retry(reqwest::retry::never())
+                .build()
+                .map_err(|e| e.to_string())?,
+        )
+    } else {
+        None
+    };
+    let report = evaluate_cases(&cases, limit, &mut |c| {
+        let http = http.as_ref().ok_or("offline smoke cannot send")?;
+        let request = smoke_http_request(http, c, &keys[&c.model.label])?;
+        let response = http.execute(request).map_err(|e| e.to_string())?;
+        if !response.status().is_success() {
+            return Err(format!("HTTP {}", response.status()));
+        }
+        response.json().map_err(|e| e.to_string())
+    })?;
+    let report = smoke_report(report, &cases);
+    // Offline reports go to stdout only; historical recordings and allowance files remain untouched.
+    if sends > 0 {
+        m15_write_json(&root.join("report.json"), &report)?;
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
+    );
+    Ok(())
+}
+
 fn repeat_count(value: Option<&str>) -> Result<usize, String> {
     value
         .unwrap_or("1")
@@ -1703,7 +2072,8 @@ fn save_recording_timed(
     w3_trial_metadata(&mut record, case);
     recorded.push(record); // Includes failed attempts; reruns replay them instead of picking a success.
     file["recorded"] = json!(recorded);
-    if case.sample["m15_review"] == true || case.w3_trial_root.is_some() {
+    if case.sample["m15_review"] == true || case.w3_trial_root.is_some() || case.campaign.is_some()
+    {
         return m15_write_json(&case.path, &file);
     }
     std::fs::create_dir_all(case.path.parent().unwrap()).map_err(|e| e.to_string())?;
@@ -1732,6 +2102,14 @@ fn evaluate(
     cases: &[Case],
     limit: Option<usize>,
     send: &mut dyn FnMut(&Value) -> Result<Value, String>,
+) -> Result<Value, String> {
+    evaluate_cases(cases, limit, &mut |case| send(&case.wire_request))
+}
+
+fn evaluate_cases(
+    cases: &[Case],
+    limit: Option<usize>,
+    send: &mut dyn FnMut(&Case) -> Result<Value, String>,
 ) -> Result<Value, String> {
     let mut planned = preflight(cases, limit)?;
     // The OS releases this lock on exit/crash; all arms share one fixed ledger.
@@ -1783,7 +2161,7 @@ fn evaluate(
                 };
                 sent += 1;
                 let started = std::time::Instant::now();
-                let response = send(&case.wire_request);
+                let response = send(case);
                 let elapsed_ms = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
                 let envelope = response
                     .as_ref()
@@ -2022,6 +2400,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_SMOKE").is_some() {
+        provider_smoke_from_env().unwrap();
+        return;
+    }
     let m15 = std::env::var("EVAL_M15").as_deref() == Ok("w1");
     let w3_trial = std::env::var("EVAL_M15").as_deref() == Ok("w3");
     let w3_effort = std::env::var("EVAL_M15").as_deref() == Ok("w3-effort");
@@ -5333,4 +5715,264 @@ fn af119_campaign_retains_started_allowance_and_never_resends_missing_recordings
     std::fs::remove_file(&cases[0].path).unwrap();
     let missing = plan_repeated_with_provider(chosen, &other.0, &model, 1, Some(&options)).unwrap();
     assert!(preflight(&missing, Some(2)).is_err());
+}
+
+#[test]
+fn af123_profiles_are_fixed_and_dry_planning_never_reads_keys_or_writes() {
+    let profiles = smoke_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    assert_eq!(profiles.len(), 8);
+    assert_eq!(profiles[4].model, "qwen3.8:27b-q4_K_M-ctx64k");
+    assert_eq!(profiles[5].model, profiles[4].model);
+    for broken in [
+        "[]".to_owned(),
+        include_str!("eval/write_stage/providers.json").replace("8192", "1024"),
+        include_str!("eval/write_stage/providers.json").replace("0.40.0", "0.39.0"),
+        include_str!("eval/write_stage/providers.json").replace("131072", "65536"),
+    ] {
+        assert!(smoke_profiles(&broken).is_err());
+    }
+    assert!(smoke_options(|name| (name == "EVAL_SMOKE").then(|| "1".into())).is_ok());
+    for key in [
+        "EVAL_SMOKE",
+        "EVAL_RECORD",
+        "EVAL_CASES",
+        "EVAL_API_KEY",
+        "EVAL_BASE_URL",
+        "EVAL_REPEAT",
+        "EVAL_MAX_OUTPUT_TOKENS",
+        "EVAL_PROVIDER_CONFIG",
+    ] {
+        assert!(
+            smoke_options(|name| if name == key {
+                Some("9".into())
+            } else {
+                (name == "EVAL_SMOKE").then(|| "1".into())
+            })
+            .is_err(),
+            "{key}"
+        );
+    }
+    let root =
+        std::env::temp_dir().join(format!("smoke-dry-{}", hippocampus::diagnostics::new_id()));
+    let cases = smoke_plan(&root, &profiles, |name| {
+        assert!(name.ends_with("_BASE_URL"), "planning cannot read {name}");
+        None
+    })
+    .unwrap();
+    let plan = smoke_dry_plan(&cases);
+    assert!(plan.contains("固定槽位/累计授权上限: 8"));
+    assert!(plan.contains("本次真实调用: 0"));
+    assert!(
+        cases
+            .iter()
+            .all(|c| c.stage == "w1" && c.repeat == 1 && c.request["max_output_tokens"] == 8192)
+    );
+    assert!(!root.exists());
+    assert!(cases.iter().all(|c| matches!(c.replay, Replay::Missing)));
+    assert_eq!(smoke_preflight(&cases, Some(8)).unwrap(), 8);
+    // The approved alias must survive planning and wire conversion unchanged.
+    for c in cases
+        .iter()
+        .filter(|c| c.model.label.starts_with("qwen-27b"))
+    {
+        assert_eq!(c.request["model"], "qwen3.8:27b-q4_K_M-ctx64k");
+        assert_eq!(c.wire_request["model"], c.request["model"]);
+    }
+}
+
+fn smoke_fixture_profiles() -> Vec<SmokeProfile> {
+    smoke_profiles(include_str!("eval/write_stage/providers.json")).unwrap()
+}
+fn smoke_fixture_variable(name: &str) -> Option<String> {
+    Some(
+        match name {
+            "DEEPSEEK_BASE_URL" => "https://ds.fixture.invalid/v1",
+            "OPENAI_BASE_URL" => "https://gpt.fixture.invalid/v1",
+            "ANTHROPIC_BASE_URL" => "https://opus.fixture.invalid/v1",
+            "QWEN_BASE_URL" => "http://127.0.0.1:11434/v1",
+            "DEEPSEEK_API_KEY" => "fixture-ds-key",
+            "OPENAI_API_KEY" => "fixture-gpt-key",
+            "ANTHROPIC_API_KEY" => "fixture-opus-key",
+            _ => panic!("unexpected credential lookup: {name}"),
+        }
+        .into(),
+    )
+}
+fn smoke_fixture_response(c: &Case) -> Value {
+    let text = "{\"candidates\":[],\"memory_requests\":[]}";
+    match c.provider.as_ref().unwrap().protocol {
+        ProviderProtocol::OpenaiResponses => {
+            json!({"status":"completed","usage":{"input_tokens":1,"output_tokens":2},"output":[{"type":"message","content":[{"type":"output_text","text":text}]}]})
+        }
+        ProviderProtocol::AnthropicMessages => {
+            json!({"stop_reason":"end_turn","usage":{"input_tokens":1,"cache_read_input_tokens":3,"output_tokens":2},"content":[{"type":"thinking","thinking":"PRIVATE_THOUGHT"},{"type":"text","text":text}]})
+        }
+        ProviderProtocol::OpenaiChat => {
+            json!({"usage":{"prompt_tokens":1,"completion_tokens":2},"choices":[{"finish_reason":"stop","message":{"content":text,"reasoning":"PRIVATE_THOUGHT"}}]})
+        }
+    }
+}
+#[test]
+fn af123_mixed_smoke_routes_each_slot_and_strictly_replays_one_shared_campaign() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let cases = smoke_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    assert_eq!(smoke_preflight(&cases, Some(8)).unwrap(), 8);
+    let keys = smoke_credentials(&cases, smoke_fixture_variable).unwrap();
+    let http = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    let mut sent = Vec::new();
+    let report = evaluate_cases(&cases, Some(8), &mut |c| {
+        let request = smoke_http_request(&http, c, &keys[&c.model.label]).unwrap();
+        assert_eq!(
+            request.timeout().copied(),
+            Some(std::time::Duration::from_secs(360))
+        );
+        assert_eq!(
+            request.headers()[reqwest::header::USER_AGENT],
+            model_provider::MODEL_USER_AGENT
+        );
+        let body: Value =
+            serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
+        assert_eq!(body["model"], c.request["model"]);
+        match c.provider.as_ref().unwrap().protocol {
+            ProviderProtocol::AnthropicMessages => {
+                assert_eq!(request.url().host_str(), Some("opus.fixture.invalid"));
+                assert_eq!(request.headers()["x-api-key"], "fixture-opus-key");
+                assert!(request.headers().get("authorization").is_none());
+                assert_eq!(body["max_tokens"], 8192);
+            }
+            ProviderProtocol::OpenaiChat => {
+                assert_eq!(
+                    request.url().as_str(),
+                    "http://127.0.0.1:11434/v1/chat/completions"
+                );
+                assert!(request.headers().get("authorization").is_none());
+                assert_eq!(
+                    body["reasoning_effort"],
+                    if c.provider.as_ref().unwrap().thinking == Some(true) {
+                        "medium"
+                    } else {
+                        "none"
+                    }
+                );
+                assert_eq!(body["max_tokens"], 8192);
+            }
+            ProviderProtocol::OpenaiResponses => {
+                let gpt = c.model.label == "gpt-6.1-sol";
+                assert_eq!(
+                    request.url().host_str(),
+                    Some(if gpt {
+                        "gpt.fixture.invalid"
+                    } else {
+                        "ds.fixture.invalid"
+                    })
+                );
+                assert_eq!(
+                    request.headers()["authorization"],
+                    if gpt {
+                        "Bearer fixture-gpt-key"
+                    } else {
+                        "Bearer fixture-ds-key"
+                    }
+                );
+                assert_eq!(body["max_output_tokens"], 8192);
+                assert!(body["instructions"].is_string());
+            }
+        }
+        sent.push(c.model.label.clone());
+        Ok(smoke_fixture_response(c))
+    })
+    .unwrap();
+    assert_eq!(
+        sent.iter().map(String::as_str).collect::<Vec<_>>(),
+        SMOKE_IDS
+    );
+    assert_eq!(report["sent_calls"], 8);
+    let report = smoke_report(report, &cases);
+    for r in items(&report["smoke"]) {
+        assert_eq!(r["provider_output_valid"], true);
+        assert_eq!(r["mechanical_valid"], true);
+        assert_eq!(r["sample_score"], "失败"); // Empty extraction is not a semantic pass.
+    }
+    let auth: Value =
+        serde_json::from_slice(&std::fs::read(temp.0.join("campaign/authorization.json")).unwrap())
+            .unwrap();
+    assert_eq!(auth["limit"], 8);
+    assert_eq!(items(&auth["requests"]).len(), 8);
+    assert_eq!(count_sends([temp.0.join("campaign/sends")]).unwrap(), 8);
+    for c in &cases {
+        assert!(
+            !std::fs::read_to_string(&c.path)
+                .unwrap()
+                .contains("PRIVATE_THOUGHT")
+        );
+    }
+    let replay = smoke_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    assert!(
+        smoke_credentials(&replay, |_| panic!("cached replay cannot read keys"))
+            .unwrap()
+            .is_empty()
+    );
+    let replay_report = evaluate_cases(&replay, Some(0), &mut |_| {
+        panic!("offline localhost request")
+    })
+    .unwrap();
+    assert_eq!(replay_report["results"], report["results"]);
+    assert_eq!(replay_report["sent_calls"], 0);
+    let mut changed = profiles;
+    changed[0].provider.model_revision = Some("changed-provider".into());
+    let stale = smoke_plan(&temp.0, &changed, smoke_fixture_variable).unwrap();
+    assert!(matches!(stale[0].replay, Replay::Stale));
+    assert!(
+        smoke_preflight(&stale, Some(8))
+            .unwrap_err()
+            .contains("identity")
+    );
+}
+#[test]
+fn af123_context_rejection_and_crash_consume_no_extra_slots() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let mut rejected = profiles.clone();
+    rejected[6].provider.context_proof = None;
+    rejected[7].provider.context_tokens = Some(1);
+    let cases = smoke_plan(&temp.0, &rejected, smoke_fixture_variable).unwrap();
+    assert!(matches!(&cases[6].replay,Replay::Rejected(s) if s=="model_context_unproven"));
+    assert!(matches!(&cases[7].replay,Replay::Rejected(s) if s=="model_context_exceeded"));
+    assert!(smoke_preflight(&cases, Some(8)).is_err());
+    assert!(!temp.0.join("campaign").exists());
+    let cases = smoke_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    let mut sent = 0;
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        evaluate_cases(&cases, Some(8), &mut |c| {
+            sent += 1;
+            if sent == 3 {
+                panic!("simulated crash after durable started");
+            }
+            Ok(smoke_fixture_response(c))
+        })
+        .unwrap();
+    }));
+    assert!(result.is_err());
+    assert_eq!(count_sends([temp.0.join("campaign/sends")]).unwrap(), 3);
+    let resumed = smoke_plan(&temp.0, &profiles, smoke_fixture_variable).unwrap();
+    assert!(matches!(resumed[0].replay, Replay::Output(_)));
+    assert!(
+        smoke_preflight(&resumed, Some(8))
+            .unwrap_err()
+            .contains("already sent")
+    );
+    assert!(
+        evaluate_cases(&resumed, Some(8), &mut |_| panic!(
+            "must not resend unknown attempt"
+        ))
+        .is_err()
+    );
+    assert_eq!(
+        evaluate_cases(&resumed, None, &mut |_| panic!("offline crash replay")).unwrap()["sent_calls"],
+        0
+    );
 }

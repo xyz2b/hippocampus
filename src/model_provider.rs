@@ -98,8 +98,10 @@ impl ProviderConfig {
                     )
             }
             ProviderProtocol::OpenaiChat => {
-                matches!(model, "qwen3.5:9b-q8_0" | "qwen3.8:27b-q4_K_M")
-                    && self.thinking.is_some()
+                matches!(
+                    model,
+                    "qwen3.5:9b-q8_0" | "qwen3.8:27b-q4_K_M" | "qwen3.8:27b-q4_K_M-ctx64k"
+                ) && self.thinking.is_some()
                     && effort == ReasoningEffort::Omit
             }
         };
@@ -547,6 +549,41 @@ mod tests {
         ));
         ReasoningEffort::Low.apply(&mut r);
         assert!(provider_request(Some(&qwen), &r).is_err());
+    }
+    #[test]
+    fn qwen_ctx64k_alias_preserves_thinking_and_rejects_unknown_aliases() {
+        let mut qwen = config(ProviderProtocol::OpenaiChat);
+        qwen.model_revision = Some("fixture-alias-digest".into());
+        qwen.context_tokens = Some(65536);
+        qwen.context_proof = Some(ContextProof {
+            tokenizer_revision: "fixture-alias-tokenizer".into(),
+            template_token_bound: 256,
+            byte_level_bpe: true,
+        });
+        let mut canonical = request();
+        canonical["model"] = json!("qwen3.8:27b-q4_K_M-ctx64k");
+        ReasoningEffort::Omit.apply(&mut canonical);
+        for thinking in [false, true] {
+            qwen.thinking = Some(thinking);
+            let wire = provider_request(Some(&qwen), &canonical).unwrap();
+            assert_eq!(wire["model"], canonical["model"]);
+            assert_eq!(
+                wire["reasoning_effort"],
+                if thinking { "medium" } else { "none" }
+            );
+            for unknown in [
+                "qwen3.8:27b-q4_K_M-ctx32k",
+                "qwen3.8:27b-q4_K_M-ctx64k-unknown",
+            ] {
+                assert!(qwen.check_model(unknown, ReasoningEffort::Omit).is_err());
+            }
+            assert!(
+                qwen.check_model(canonical["model"].as_str().unwrap(), ReasoningEffort::Low)
+                    .is_err()
+            );
+        }
+        qwen.thinking = None;
+        assert!(provider_request(Some(&qwen), &canonical).is_err());
     }
     #[test]
     fn output_protocols_reject_refusal_truncation_and_empty_without_reading_thoughts() {
