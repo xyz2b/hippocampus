@@ -1,6 +1,6 @@
 # W4 的代码侧与运行时离线闭环
 
-> 2026-10-06 M1 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。缺省角色采用 AC2，Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除、DB9 和授权账本保留，客户端见 [接入约定](../memory-client-contract.md)。历史测量与检查点兼容说明不代表旧执行器仍可用。
+> 2026-10-07 M1.5 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。当前 DB v10；契约为 W1/W3 v3、W4 v4、R1 v2、R4/recall v6。缺省 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除与授权账本保留，客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定。历史测量与检查点兼容说明不代表旧执行器仍可用。
 
 依据 contracts.md 2.1–2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。W2 在 `src/w2.rs`，W3 类型与机械核验在 `src/contract.rs`，W4 在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，库级入口在 `src/enrichment.rs`。注入提供者实现离线闭环；④-3/④-4 增加显式 W1/W3/W4 模型入口，④-5 接通配置与 CLI 分发。
 
@@ -96,13 +96,13 @@
   - 必需记录超限时整批待定；w4_22 删除 s-501 后重判 N 可清除缺口，`records=1` 不误判超限，零预算仍待定且只计未送入的存活记录。
   - retract 可带结束时间；reinforce 等非结束动作只记回执。
 - **反例**：23 种不合规输出整份拒绝。
-- **范围外**：`after.recall` 涉及 recall.v4，不在这里验收。
+- **B 段历史范围外**：`after.recall` 涉及 recall.v4，不在这里验收。
 - **例外（用户同意）**：w4_09 不比对组装结果。样本为了测试“检索到无关记录时判为 new”，送入了一条按取数规则取不到的其他关系记录；该样本直接用样本输入验证校验、转换与提交。
-- **标签状态与验证边界**：样本迁移到 w4.v2 后为 draft，等用户复核。复核前，本测试只说明代码与当前标签一致；“无新回归”仅指约定检查覆盖范围，不代表模型语义、运行时接线或 recall.v4 已验收。
+- **B 段历史标签状态与验证边界**：样本迁移到 w4.v2 后为 draft，等用户复核。复核前，本测试只说明代码与当时标签一致；“无新回归”仅指约定检查覆盖范围，不代表模型语义、运行时接线或 recall.v4 已验收。
 
 ## 5. 运行时库级闭环
 
-第③段及④-1～④-5在 w4_runtime_v1 上扩展，现已是唯一默认写入路径。数据库保持9，W5回执格式仍v8；CLI 与 MCP inline/deferred 后台接通，旧 commit_candidates 等执行器已删除。对外使用冻结3.5片段（见第8、10节），旧保存回执读取保留。
+第③段及④-1～④-5在 w4_runtime_v1 上扩展，现已是唯一默认写入路径。当前数据库为10，W5回执格式仍v8；CLI 与 MCP inline/deferred 后台接通，旧 commit_candidates 等执行器已删除。对外使用冻结3.5片段（见第8、10节），旧保存回执读取保留。
 
 - **入口**：调用方先显式 `w4_start_round`，再调用 `enrichment::run_source(store, key, budget, upstream, judge)`。流程为认领 → 恢复检查 → 保存输入 → `assemble` → 提供者输出或 `assembly.skipped` → `prepare_output`（共享组装函数后严格校验） → `plan`（内部再次 `validate`）→ 保存计划 → 逐组提交 → 汇总。提供者调用期间不持有数据库事务。终态用 `enrichment::receipt` 读取，普通读取不重新认领或判定。
 - **提供者**：上游接收 `ProviderContext` 与 `SourceInput { text, history }`，返回 `UpstreamBatch { w2, review }`，包括所有 W2 ok/unresolved/rejected 候选、原始索引和请求映射，以及 W3 verdict、problems、episode_value、coverage 和 request_reviews；不返回准入布尔缺省、committed_id、Plan、组编号或提交快照。`review` 由代码 `W3Output::validate` 产生，核对候选（含 unresolved，排除 rejected）和请求一一对应、无重复、所有 Quote 逐字存在且还原、supported 的 problems 为空、非 Episode 的 episode_value 为 not_applicable。核验绑定最终完整 W2 结果（含时间换算、请求索引映射）和运行时来源快照，保存后重新加载也复验；改变输入不得沿用核验。W1 为空时 review 必须为 None；全部被 W2 拒收时允许不调用 W3，请求仍未核验。只有 W2 ok 且 W3 supported、未被控制请求阻断的候选进入 W4/W5。运行时由 episode_value 和已核验 remember 的最终索引映射计算 Admission，绑定历史产物，`plan` 生成证据、组和快照。
@@ -117,7 +117,7 @@
 - **重判复用**：新轮继承 W4 候选，从上一轮回执绑定 committed_id，原有绑定不能丢弃或替换。本轮暂停或拒收的已提交候选仍保留在完整批次，后续轮次从本来源各轮已提交 W5 回执恢复最新产物绑定；不另存进度或把暂停候选变成无 ID 的新增。低层接口没有完整批次时仍禁止移除已有绑定。完整批次来源绑定不变时，复用已经核验的 W2/W3，绝不重新提取后按索引套用产物；来源快照变化时通过 previous_w2 将最终候选与请求交提供者重新核验 W3，禁止替换该 W2 批次，旧 W3 绑定会被拒。W5 继续核对产物的来源、完整候选、有效状态及快照；失效或归并退出的产物不能回落成无 ID 的新增。新尝试仍须显式重判，不自动再次调用模型。
 - **删除与验证**：清空自身 result（含批次、控制标记、模型阶段结果和输入元数据）和认领；清洗他处候选、W3 binding/问题/覆盖片段、请求、来源历史副本、依据和编码快照，受影响计划整体失效，进入 needs_rejudge。旁侧元数据没有原文副本；新轮才重建。保留历史组 ID 供审计，不执行失效旧组。重判可读取失效关系的来源 ID 与墓碑，但不向提供者附已删除原文；输出若仍把它当动作依据，validate / W5 继续拒绝。`tests/enrichment_batch.rs`、`tests/enrichment_runtime.rs` 与 `tests/w4_recovery.rs` 用真实 SQLite 关闭重开覆盖完整批次、绑定、控制暂停、T1、注入输出、预算、恢复窗口、屏障、争抢、删除和回执映射。
 
-默认切换、MCP inline/deferred 后台与 recall.v4 均已接通。检索 full_text/fallback 只记内部输入诊断，继续使用已有 w1:<来源ID>:<候选索引> 证据ID；旧ID与回执原样读取。关系由W4决定或显式判定解决，不从枚举完整性自动解决。
+默认切换、MCP inline/deferred 后台与 recall.v6 均已接通。检索 full_text/fallback 只记内部输入诊断，继续使用已有 w1:<来源ID>:<候选索引> 证据ID；旧ID与回执原样读取。关系由W4决定或显式判定解决，不从枚举完整性自动解决。
 
 ## 6. W1/W3 模型提供者（④-3）
 
@@ -211,11 +211,11 @@ W1/W3/W4 的单次本地 HTTP 超时统一为 360 秒。本轮录制最长约 24
 
 AF1 升版后的离线回归保留 w4.v2 归档样本的显式 incomplete 输入来验证原有保守提交规则；组装对照仍核对记录与关系闭包，coverage 按 v3 规则另验。新回归直接使用生产组装的 complete 输入，核对小范围穷举、预算回落、历史及关系闭包、任务隔离，以及新提交不会批量清除旧 pending。召回侧在可信主体/任务内，对空关系结果或范围内更强词法命中放宽关系提示；无关系过滤的小范围实际穷举，裁剪/越界仍报告不完整。
 
-## M1.5 第②步：计划与协议升版
+## M1.5 第②步：计划与协议升版（历史记录）
 
-当前核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
+该步当时的核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
 
-主体确认/重建、历史补录与 nullable said_on 在第③④步实现，本步 DB 仍为 9。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。宿主分发的版本字面量位于本任务范围外 chat.rs/chat_recall.rs，接线需补充授权；未完成前不能宣称 MCP 的 v4 闭环已可用。
+主体确认/重建、历史补录与 nullable said_on 已在第③④步实现；第②步当时 DB 仍为9，第③步升到10。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。第②步最初遗漏宿主版本分发范围，后来经补充授权完成 chat.rs/chat_recall.rs 等接线；当前 MCP 闭环使用 recall.v6。
 
 ### AF78 实体目录追加
 

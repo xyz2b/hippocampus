@@ -3,8 +3,10 @@
 缺省 `tests/eval.rs` 只运行 v3，未设置 EVAL_RECORD 时严格离线回放已有 AC2 录制。
 旧运行器已删除，EVAL_PIPELINE=legacy 明确拒绝。按 AD1，expect_common 绝对评分为主，
 0517000 原始报告和纯评分适配器保留作历史参考，不作上线门槛。
-新模式以 AC2 配置跑生产 `ChatMemoryService`：W1 Pro low、W4 Pro medium、W3 Pro minimal、
+新模式以显式固定的历史 AC2 配置跑生产 `ChatMemoryService`：W1 Pro medium、W4 Pro medium、W3 Pro minimal、
 R1 Pro minimal、R4 Pro 计算类 low / 其余 minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型可见 input。
+这组评测配置不随运行时缺省变化：当前运行时 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low。
+当前 DB v10，契约为 W1/W3 v3、W4 v4、R1 v2、R4/recall v6；历史录制按完整指纹核对，不能冒充新版。
 输出预算 W1=32768、W3/W4=16384（生产阶段常量），R1=4096、R4=16384；禁用模型修复。
 
 ```sh
@@ -183,7 +185,7 @@ EVAL_PIPELINE=v3 EVAL_QUESTIONS='<case/question,...>' EVAL_DRY_RUN=1 \
   cargo test --test eval resident_eval_suite -- --exact --nocapture
 ```
 
-W4 已升为 w4.v3；所有请求仍严格匹配完整指纹。旧 W4 不能复用，新状态的 R4 包也须重建；W1/W3/R1 仅在请求完全一致时可复用。计划列出“不复用上限”和按阶段的重录容量，后者使用历史分支及失败数，不是精确缺录制数。未知 usage 使用同阶段已知均值，不能记零；金额仅按 AC2 约50元和 token 合计比例粗折，不是服务商报价或费用上限。正式额度预检仍按不复用上限，不把估算当授权。
+AF1 当时将 W4 升为 w4.v3，当前为 w4.v4；所有请求仍严格匹配完整指纹。旧 W4 不能复用，新状态的 R4 包也须重建；W1/W3/R1 仅在请求完全一致时可复用。计划列出“不复用上限”和按阶段的重录容量，后者使用历史分支及失败数，不是精确缺录制数。未知 usage 使用同阶段已知均值，不能记零；金额仅按 AC2 约50元和 token 合计比例粗折，不是服务商报价或费用上限。正式额度预检仍按不复用上限，不把估算当授权。
 
 已录制失败默认仍回放，不自动重试。获批后先确认余额充足，将 AC2 录制复制到独立目录，只有在副本中明确删去待重录的失败调用及其后续阶段，才会重新发送该请求；成功前缀完整保留，每次复用仍检查指纹。空目录不具备计划中的复用条件。原失败审计保留不动。全量旧运行输出的离线重算只校准评分，不表示 AF1 新运行时已取得对应质量；修改输入后不得借用旧输出确认完整性或当前值。
 
@@ -218,5 +220,5 @@ python3 tests/eval/scoring/compare.py \
 
 合并报告逐题标出 `targeted/ac2` 与运行文件路径。定点题缺结果记未录制，不回落 AC2；本轮发送计数不累加 AC2 的583次历史调用。合并分数是混合版本的63题视图，不表示全量重测；原 AC2 报告不得覆盖。
 
-M1.5 的 recall.v5 评分、虚构 prepare MVP 和固定 W1 low/medium 对照使用独立入口与目录，
+M1.5 的 recall.v6 评分、虚构 prepare MVP 和固定 W1 low/medium 对照使用独立入口与目录，
 见 [m15/README.md](m15/README.md)。两组各预留最多 24 次；默认历史评测及 59/4 核验不变。

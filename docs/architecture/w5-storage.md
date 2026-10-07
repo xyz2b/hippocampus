@@ -1,6 +1,6 @@
 # W5 存储扩展：冲突关系、更新状态与任务恢复
 
-W5 的冲突关系、重判复用与归并、更新状态使用版本 8 的存储形态（7 → 8），按 w5-acceptance.md 分段实现。运行时准备第②段增加任务轮次和持久计划，数据库另升 8 → 9，不改变 W5 回执格式。依据：contracts.md 1.6（UpdateState）、2.4（RelationLink）、2.5（W5）、3.2（RecordView）。
+W5 的冲突关系、重判复用与归并、更新状态使用版本 8 的存储形态（7 → 8），按 w5-acceptance.md 分段实现。运行时准备第②段增加任务轮次和持久计划，数据库另升 8 → 9；M1.5 第③步再升到当前 v10，保存来源代际、主体确认与管理审计，第④步接通历史补录出处和时间锚点，W5 回执格式仍为 v8。当前契约为 W1/W3 v3、W4 v4、R1 v2、R4/recall v6。依据：contracts.md 1.6（UpdateState）、2.4（RelationLink）、2.5（W5）、3.2（RecordView）。第7节保留早期分段计划及当时的旧召回接线安排，不表示旧执行器仍可用。
 
 ## 1. 放在哪里
 
@@ -111,7 +111,7 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 - `w4_finish_round` 与 `enrichment::receipt` 共用逐候选结果：产品取真实 products（其更新状态可取 live record_updates），强化/归并取实际目标及本次回执 updates；撤回执行成功为 committed / memory_id=null，待定撤回虽有 Committed 组回执，候选及来源仍 pending。Held 为 pending（未解决主体为 unresolved），混合结果保留已提交候选。输入就绪且候选为空为 no_candidates_unreviewed，不推断 completed_no_facts；决定过期或余组屏障为 needs_rejudge。专用转换只输出 contracts 3.5 的片段，不展开检查点，也不改旧 MCP 输出。
 - 当前 write_pipeline 缺省且只支持 w4_runtime_v1，legacy 值及旧检索字段在打开库前拒绝。inline/deferred 的 T1 绑定 processing_version 并排队，MCP 单 worker 自动执行；CLI --call 不启动 worker，--enrich-source 显式同步处理，drain 只选 queued。off 来源须显式整理。既有旧版本来源、失败与排队任务不自动转换或执行；读取/删除与顺序屏障保留。首轮round=0，续跑不加轮次，终态重判须显式新轮。冻结3.5对外片段、组计划及认领规则见 w4-code-side.md 第8、10节。
 
-## 6. 版本 9 与兼容
+## 6. 版本 10 与兼容
 
 已发布版本及本段写入版本：
 
@@ -124,11 +124,13 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 | 7 | 88eb857 / ca16b64 | 有 status、有 legacy_fingerprint |
 | 8 | f1d1828 / 9933ece | 持久 form=pre8 或 v8，关系与更新状态 |
 | 9 | 运行时第②/③段 | 新任务轮次、排序、输入与计划检查点；form 不变 |
+| 10 | M1.5 第③/④步 | 来源代际、主体确认、管理审计、历史补录出处与时间锚点；form 不变 |
 
 规则：
 
-- 新写入程序读 1–9，只读检索支持 3–9；迁移到 8 时快照补 `relations = {}`、`next_relation = 0`、`record_updates = {}`，回执缺 `updates` 时为空（含义“未知”，不是 judged）。迁移只补缺省，不推断旧记录的更新状态。
-- 版本 8 → 9 只提升数据库版本、由可选字段补缺省；不将旧任务迁入新路径，不改旧回执、指纹或 form。缺省新字段不序列化，旧任务写回也保持旧形状。版本 8 的 9933ece 程序拒读 9，防止改写快照丢掉轮次和检查点。新程序拒读未来版本 10。
+- 新写入程序读 1–10，只读检索支持 3–10；操作连接只接受已初始化的 v10/WAL 数据库。迁移到 8 时快照补 `relations = {}`、`next_relation = 0`、`record_updates = {}`，回执缺 `updates` 时为空（含义“未知”，不是 judged）。迁移只补缺省，不推断旧记录的更新状态。
+- 版本 8 → 9 只提升数据库版本、由可选字段补缺省；不将旧任务迁入新路径，不改旧回执、指纹或 form。缺省新字段不序列化，旧任务写回也保持旧形状。版本 8 的 9933ece 程序拒读 9，防止改写快照丢掉轮次和检查点。
+- 版本 9 → 10 沿用现有 owner 快照与索引；旧 owner 的来源代际缺省为0、来源按普通出处读取，确认/审计缺省为空，不改旧回执、不自动入队或重整理，已删墓碑保留。v9 写程序拒绝 v10，当前程序拒读未来版本11及以上。
 - 第③段直接扩展 `w4_runtime_v1` 的库级语义；此前没有运行时登记调用方或真实 v1 任务，不新增 v2 或版本兼容分支，不升数据库版本，不改冻结契约或 W5 回执形状。
 - `tests/fixtures/w5_storage/v8-9933ece.sql` 来自 9933ece 自己的程序升级真实 v7-ca16b64 库到 8 并写入失败旧任务；不是将新库降版本号。`tests/w4_recovery.rs` 检查迁移前后旧任务、回执不变，关闭重开、旧回执重放与版本边界。
 - 版本 7 的程序（88eb857、ca16b64）拒读 8：它们改写快照时会丢掉关系和更新状态，冲突会消失、pending 会变成未知。
@@ -138,7 +140,7 @@ W4 不直接给 UpdateState；W5 按下表生成，写进回执和 `record_updat
 - 测试必须包含“迁移 → 关闭 → 重开 → 重放”，以及重开后 `form` 仍为 `pre8`。
 - 兼容测试按上表逐一构造各版本程序实际写出的数据（不是从新格式删字段近似），每种都验证：能打开、迁移后字段齐全、迁移保存后重开仍能识别旧格式、同组重放结果不变、旧程序拒读新版本。
 
-## 7. 分段
+## 7. 分段（历史记录）
 
 1. **存储与迁移**（本文）：加字段（含回执 `updates`、`merged`、`form`，组的 `scope_complete`、`seen_relations` 与 `W5Seen.relations`）、版本 8、事务业务快照纳入新字段、兼容测试。不改提交行为。
    - 组与决定上后续各段要用的字段也在这一段定好，避免以后再改回执里保存的形状：决定加 `resolves_relations`、`resolution`、`relation`（conflict 要建立的关系）、`pending_reason`，动作加 `Conflict`，候选加 `committed_id`。都在为空时不序列化，旧组的指纹不变。执行尚未实现前，携带这些字段的组一律拒绝，不静默忽略。
