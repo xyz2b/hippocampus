@@ -218,6 +218,185 @@ fn role_reasoning_configuration_is_strict_and_changes_requests_and_bindings() {
 }
 
 #[test]
+fn af105_runtime_w3_low_reaches_requests_and_bindings_without_reusing_minimal() {
+    let config: ChatConfig = serde_json::from_value(json!({"write_models":{
+        "w1":"pro-fixture","w3":"pro-fixture","w4":"pro-fixture"
+    }}))
+    .unwrap();
+    let defaults = config.write_models.unwrap();
+    for prior in [Some(ReasoningEffort::Minimal), None] {
+        let db = Db::new();
+        let text = "我收藏陶瓷杯。";
+        let key = db.start(text);
+        let mut models = defaults.clone();
+        if let Some(effort) = prior {
+            models.reasoning_effort.insert("w3".into(), effort);
+        }
+        let (first, sent) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&w1(text).to_string())),
+                Ok(envelope(&w3().to_string())),
+            ],
+        );
+        let first = first.with_models(models).unwrap();
+        let transport = first.client.transport.as_ref().unwrap().clone();
+        let mut first = first;
+        first.client.transport = Some(Arc::new(move |request| {
+            assert_eq!(
+                request.timeout(),
+                Some(&std::time::Duration::from_secs(360))
+            );
+            transport(request)
+        }));
+        let mut store = db.open();
+        let claim = w4_claim_round(&mut store, &key).unwrap();
+        let (ctx, input) = inputs(&store, &key, &claim);
+        let batch = first.provide(&mut store, &claim, &ctx, &input).unwrap();
+        assert!(batch.review.is_some());
+        assert!(
+            batch
+                .w2
+                .candidates
+                .iter()
+                .all(|c| c.status == w2::Status::Ok)
+        );
+        let expected = prior.unwrap_or(ReasoningEffort::Low);
+        let sent = sent.lock().unwrap();
+        assert_eq!(sent.len(), 2);
+        assert_eq!(sent[1]["reasoning"]["effort"], json!(expected));
+        assert_eq!(sent[1]["max_output_tokens"], 16384);
+        let payload: Json = serde_json::from_str(sent[1]["input"].as_str().unwrap()).unwrap();
+        assert!(payload.get("reasoning_effort").is_none());
+        let saved = store.read().unwrap().sources[&key].result.as_ref().unwrap()["w4_model_stages"]
+            ["w3"]
+            .clone();
+        assert_eq!(saved["binding"]["reasoning_effort"], json!(expected));
+        if prior.is_some() {
+            let (changed, sends) = mocked(&db, vec![]);
+            let changed = changed.with_models(defaults.clone()).unwrap();
+            let error = changed
+                .provide(&mut store, &claim, &ctx, &input)
+                .unwrap_err();
+            assert!(error.to_string().contains("needs_rejudge"));
+            assert!(sends.lock().unwrap().is_empty());
+            assert_eq!(db.calls(), 2);
+            assert_eq!(
+                store.read().unwrap().sources[&key].result.as_ref().unwrap()["w4_model_stages"]["w3"],
+                saved
+            );
+        }
+    }
+}
+
+#[test]
+fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
+    let db = Db::new();
+    let config: ChatConfig = serde_json::from_value(json!({"write_models":{
+        "w1":"pro-fixture","w3":"pro-fixture","w4":"pro-fixture"
+    }}))
+    .unwrap();
+    let models = config.write_models.unwrap();
+    assert_eq!(models.effort("w3"), ReasoningEffort::Low);
+    let limits = ModelBudgetConfig {
+        group_id: "same-authorization".into(),
+        max_calls: 2,
+        max_operation_calls: 3,
+        ..Default::default()
+    };
+    let mut policies = Vec::new();
+    let mut fingerprints = Vec::new();
+    for (operation, effort) in [
+        ("minimal-op", ReasoningEffort::Minimal),
+        ("low-op", models.effort("w3")),
+    ] {
+        let (mut provider, sent) = mocked(&db, vec![Ok(envelope(&w3().to_string()))]);
+        provider.client = provider
+            .client
+            .with_budget(&db.0, "alice", limits.clone(), operation)
+            .unwrap();
+        provider
+            .client
+            .structured_output_for_model_with_effort(
+                &models.w3,
+                effort,
+                ModelStage::W3,
+                "w3_v3",
+                W3_PROMPT,
+                json!({"fixture":true}),
+                w3_schema(),
+            )
+            .unwrap();
+        assert_eq!(sent.lock().unwrap().len(), 1);
+        assert_eq!(
+            sent.lock().unwrap()[0]["reasoning"]["effort"],
+            json!(effort)
+        );
+        let connection = rusqlite::Connection::open(&db.0).unwrap();
+        policies.push(
+            connection
+                .query_row::<String, _, _>("SELECT policy_json FROM model_budget_groups", [], |r| {
+                    r.get(0)
+                })
+                .unwrap(),
+        );
+        fingerprints.push(
+            connection
+                .query_row::<String, _, _>(
+                    "SELECT request_fingerprint FROM model_calls WHERE operation_id=?1",
+                    [operation],
+                    |r| r.get(0),
+                )
+                .unwrap(),
+        );
+        assert_eq!(
+            connection
+                .query_row::<i64, _, _>(
+                    "SELECT count(*) FROM model_calls WHERE operation_id='minimal-op'",
+                    [],
+                    |r| r.get(0)
+                )
+                .unwrap(),
+            1
+        );
+        assert_eq!(db.calls(), policies.len() as i64);
+    }
+    assert_eq!(policies[0], policies[1]);
+    assert_ne!(fingerprints[0], fingerprints[1]);
+    let policy: Json = serde_json::from_str(&policies[0]).unwrap();
+    assert_eq!(policy["limits"]["max_calls"], 2);
+    assert_eq!(policy["write_output_tokens"]["w3"], 16384);
+    let (mut third, sent) = mocked(&db, vec![]);
+    third.client = third
+        .client
+        .with_budget(&db.0, "alice", limits, "over-allowance")
+        .unwrap();
+    let error = third
+        .client
+        .structured_output_for_model_with_effort(
+            &models.w3,
+            ReasoningEffort::Low,
+            ModelStage::W3,
+            "w3_v3",
+            W3_PROMPT,
+            json!({"fixture":true}),
+            w3_schema(),
+        )
+        .unwrap_err();
+    assert!(matches!(error, OpenAiAdapterError::Budget(_)));
+    assert!(sent.lock().unwrap().is_empty());
+    assert_eq!(db.calls(), 2);
+    let connection = rusqlite::Connection::open(&db.0).unwrap();
+    assert_eq!(
+        connection
+            .query_row::<String, _, _>("SELECT policy_json FROM model_budget_groups", [], |r| r
+                .get(0))
+            .unwrap(),
+        policies[0]
+    );
+}
+
+#[test]
 fn changed_write_reasoning_never_reuses_saved_stages_or_frozen_candidates() {
     for role in ["w1", "w3", "w4"] {
         let db = Db::new();

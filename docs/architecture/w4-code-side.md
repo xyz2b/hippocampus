@@ -137,7 +137,7 @@
 
 ## 8. 配置与 CLI 分发（④-5）
 
-配置文件示例（`model_budget` 为批处理必须的显式有限授权）：
+历史显式配置示例（AE7 / f41fffa 的 AC2 写入配置，保留 W1 medium/W3 minimal/W4 medium 用于复现，不代表当前缺省；`model_budget` 为批处理必须的显式有限授权）：
 
 ```json
 {
@@ -154,8 +154,8 @@
 ```
 
 - `write_pipeline` 缺省且只接受 w4_runtime_v1；legacy 报已退出。允许 inline/deferred/off。inline 与 deferred 均在 T1 后保存 queued、唤醒 MCP worker，前台不等待写入模型；accepted_mode 保留实际模式。CLI --call 不启动 worker，--enrich-source 按来源绑定版本同步整理，旧版本任务明确拒绝执行。原文接收必须 capture_source=true。
-- `write_models` 选择 W1/W3/W4 模型ID；缺省从 DEEPSEEK_PRO_MODEL 取得用户自己的 Pro 接入点，W1/W4 medium、W3 minimal。显式角色可覆盖；缺少端点只在需要在线模型时明确报错，离线不要求。未知角色、非字符串/null/空白ID报错；离线配置检查不验证远端是否存在。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
-- 按角色推理强度另设 `write_models.reasoning_effort`，角色缺省为 W1/W4 medium、W3 minimal；既有角色 ID 的字符串格式不变。接受 low/medium/high/minimal/none/xhigh/max；显式 omit 删除请求的 reasoning 字段，交由供应商默认，不能等同 medium。未知角色、非法值/null 报错。[Responses 文档](https://developers.openai.com/api/docs/guides/reasoning)说明可省略且强度支持取决于模型；Pro minimal 已按 AE6 实测，其他未测强度仍待验证。强度是 API 请求内容，进入预算请求指纹与阶段绑定，不进入 USER payload/提示词。既有检查点缺少强度按 medium 识别，medium 绑定保持原结构；变化不复用旧结果，已冻结 W1 候选也不能冒充不同强度产生的结果。旧授权与检查点保留原绑定，不隐式改变。
+- `write_models` 选择 W1/W3/W4 模型ID；缺省从 DEEPSEEK_PRO_MODEL 取得用户自己的 Pro 接入点，W1/W3 low、W4 medium。显式角色可覆盖；缺少端点只在需要在线模型时明确报错，离线不要求。未知角色、非字符串/null/空白ID报错；离线配置检查不验证远端是否存在。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
+- 按角色推理强度另设 `write_models.reasoning_effort`，角色缺省为 W1/W3 low、W4 medium；既有角色 ID 的字符串格式不变。接受 low/medium/high/minimal/none/xhigh/max；显式 omit 删除请求的 reasoning 字段，交由供应商默认，不能等同 medium。未知角色、非法值/null 报错。[Responses 文档](https://developers.openai.com/api/docs/guides/reasoning)说明可省略且强度支持取决于模型；Pro minimal 已按 AE6 实测；W3 low 按 AF103 四个虚构场景各两次的定点对照为 6/8，通过数高于 minimal 的 2/8，但不证明普遍正确，其他未测强度仍待验证。强度是 API 请求内容，进入预算请求指纹与阶段绑定，不进入 USER payload/提示词。既有检查点缺少强度按 medium 识别，medium 绑定保持原结构；变化不复用旧结果，已冻结 W1 候选也不能冒充不同强度产生的结果。预算组 policy_json 不包含模型或 effort；本次缺省切 low 不变更输出上限、既有策略或已占用次数。同操作已有 minimal W3 检查点返回 needs_rejudge，零发送；新操作仍使用同组剩余额度。历史显式配置与检查点保留原绑定，不隐式改变。
 - 所选模型 ID 仅用于 API 外层 model 路由及每个阶段的持久输入绑定，不进入模型可见的 payload。W1/W3 已独立构造绑定；W4 将 payload 与 stage_binding 分开，绑定仍保留原有 model、w4_input、sources 结构，失败操作标识也仅保留在绑定中。已有结果时同轮换模型返回 needs_rejudge，零发送；未写出结果的已占用调用也不重发。显式新轮次可重跑变化的 W3/W4，其他相同阶段继续复用。尚未冻结 W2 批次时，显式新轮次可重新提取 W1；已有冻结批次后，换 W1 仍返回 needs_rejudge，不能重提取后按旧候选索引提交或把旧候选标为新模型产物。旧检查点缺少模型字段时同轮也需重判；其冻结 W1 按已知旧默认 Flash 识别。已保存计划仍按既有规则续交，不因换 W4 模型重做已保存决定。数据库版本、schema、回执和冻结契约不变。
 - T1 在 `SourceRecord.task.processing_version` 绑定版本，包括新路径 off 来源；此时 round 仍为空，不调用模型。修改配置不会迁移既有来源或重排队列。同消息键同参数重放只读实际回执，不增加任务、轮次或模型调用；不同参数仍要求新 turn_id。
 - `pmr-mcp --db PATH --owner ID --config CONFIG --drain-enrichment --max-jobs N` 在 deferred 模式整理 queued 来源，按任务排序序号选择新版本；旧版本来源不自动执行，不转换版本。新来源仍受此前来源与无来源屏障约束，复用 W4/W5 屏障、租约和快照检查。
@@ -171,7 +171,7 @@
 - **W3**：明确冲突或删改明确限定语判 contradicted，无法确认或排除命题判 insufficient。覆盖按 relation/value/限定语判断，不因 sentence 包含整条消息就判完整；gaps 必须附遗漏断言的非空连续原文。问题 Quote 不省略中间文字。
 - **W4**：提示词要求每条决定（含 pending）附新候选 `source.source_id` 的依据；decided 的每个目标还要分别引用旧依据。pending 要求仅为提示词约束，不收紧 validate。legacy 信息缺失用 unclear_relation，不伪造旧依据；依赖排除未检索记录的结论用 scope_incomplete，双方完整的已定位目标仍可更新。整个旧断言的修订用 refine，现实及偏好强度变化用 state_change，独立范围或局部补充才 coexist。整组协调目标与动作，每候选一条决定，每关系最多解决一次。
 - **V6 回退**：W4 提示词逐字恢复 554ae73/e887e63 的第 2 版；W1 保留第 3 版，W3 不变。w4_16/w4_17 标签仍为 pending，decided 不算通过。提示词泄漏扫描继续覆盖三阶段全部样本原文、ID 和标签；schema、契约、validate 不变。
-- **生产预算**：新写入阶段固定 W1=32768、W3/W4=16384；历史授权保留原配置，旧阶段不再执行。W1 按既有超时规则使用 360 秒，W3/W4 使用 180 秒。新授权的内部 policy_json 增加 `write_output_tokens` 绑定；已有无此字段的历史授权不重写，不能静默用于提高额度后的新写入阶段，须提供新 group_id。本轮不改变上述预算、数据库版本及调用次数限制。
+- **生产预算**：新写入阶段固定 W1=32768、W3/W4=16384；历史授权保留原配置，旧阶段不再执行。W1/W3/W4 均按现有生产规则使用 360 秒阶段超时，每阶段调用前续租 900 秒；W3 low 定点实测最长约 131 秒。单阶段评测工具的 180 秒是独立配置，本次不改变。新授权的内部 policy_json 增加 `write_output_tokens` 绑定；已有无此字段的历史授权不重写，不能静默用于提高额度后的新写入阶段，须提供新 group_id。本轮不改变上述预算、数据库版本及调用次数限制。
 - **评分与门禁**：`tests/write_stage_eval.rs` 默认仅报告模型评分或调用失败；显式 `EVAL_GATE=1` 才因最终评分或调用失败而失败（原始 W4 评分另行报告），`EVAL_GATE=0` 关闭门禁。无效样本、损坏录制、非法配置及上限预检仍失败。W1 按 W2 最终候选与还原后的请求评分，保留 raw 和含拒收、原因、索引映射的 w2_final。候选完整匹配仍决定整项是否通过；字段独立诊断，不把一个错误扩散到正确字段。W4 resolves_relations 按整组比对，合法的归属变化不扣分，遗漏或重复仍失败。
 - 时间对象内的 role 与请求 target_object 均支持标签的可接受集合，结构数组仍逐项完整匹配；接受 event/validity 不意味着接受 retention，时间解释、Quote 和其他限定语继续逐字段严格评分。
 - **U4 评分校准**：逐字段及逐样本分别报告 contract（解码、机械校验、编号一致性）、semantic（标签语义）和 reference（引用选择）；机械校验通过不证明完整语义正确。允许的引用等价仅为：两边均是当前原文连续片段，末尾单个句号（中文或英文）或分句逗号可有可无；conditions 可多/少一个本候选完整原句中明确存在的开头主语“我”（不从其他断言借主语）。不忽略内部标点，不缩短目标指代，不改变限定语或时间，不放宽专用关系的值；fact 的原句值沿用原句引用等价。coexist 且 targets 为空时不要求旧方依据。W4 报告 raw_result/raw_output 与 final_result/final_output，最终评分采用和运行时相同的组装规则；不能把组装后的通过当作模型原始引用能力改善。

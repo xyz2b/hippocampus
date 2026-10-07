@@ -66,7 +66,7 @@ memory_validate_answer 提交同 request_id、完整 query/context/task_id 及�
 
 offline=true 与 bootstrap 只关闭召回模型，不关闭已获授权的后台 worker。全服务零模型应设 enrichment_mode=off、PMR_MODEL_NETWORK=deny。CLI --call 不启动 worker；需要同步整理时显式 --enrich-source，批量 drain 要求 deferred。MCP 前后台模型在独立操作连接上运行，不占用全局锁等待模型。
 
-模型调用须有有限持久 model_budget；前台最多 R1/R4 两次、每条消息后台最多 W1/W3/W4 三次，共享总额度。失败/超时计入已尝试预算，不自动重试、重置或扩大授权。缺省角色：W1 Pro low、W4 Pro medium；W3/R1/R4 Pro minimal；计算 R4 low。DEEPSEEK_PRO_MODEL 提供 Pro 接入点/模型 ID；缺少时只在需要在线模型时明确报错，显式角色配置可覆盖。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
+模型调用须有有限持久 model_budget；前台最多 R1/R4 两次、每条消息后台最多 W1/W3/W4 三次，共享总额度。失败/超时计入已尝试预算，不自动重试、重置或扩大授权。缺省角色：W1/W3 Pro low、W4 Pro medium；R1/R4 Pro minimal；计算 R4 low。DEEPSEEK_PRO_MODEL 提供 Pro 接入点/模型 ID；缺少时只在需要在线模型时明确报错，显式角色配置可覆盖。传输继续使用 DEEPSEEK_BASE_URL/API_KEY。
 
 旧库升级与手工备份见 [本地数据库切换步骤](architecture/m1-cutover.md)。
 

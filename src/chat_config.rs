@@ -11,7 +11,7 @@ pub(super) fn role_defaults(mut value: Value, write: bool) -> PersistenceResult<
         .as_object_mut()
         .ok_or("role models must be an object")?;
     let defaults: &[(&str, &str)] = if write {
-        &[("w1", "low"), ("w3", "minimal"), ("w4", "medium")]
+        &[("w1", "low"), ("w3", "low"), ("w4", "medium")]
     } else {
         &[("r1", "minimal"), ("r4", "minimal")]
     };
@@ -116,7 +116,7 @@ mod tests {
         );
         assert_eq!(
             [write.effort("w1"), write.effort("w3"), write.effort("w4")],
-            [Low, Minimal, Medium]
+            [Low, Low, Medium]
         );
         let recall = config.recall_models_for(Some("pro-fixture")).unwrap();
         assert_eq!(
@@ -134,6 +134,42 @@ mod tests {
     }
 
     #[test]
+    fn af105_w3_defaults_and_explicit_efforts_survive_configuration_reopen() {
+        for value in [
+            json!({}),
+            json!({"write_models":{}}),
+            json!({"write_models":{"w1":"custom"}}),
+        ] {
+            let config: ChatConfig = serde_json::from_value(value).unwrap();
+            let reopened: ChatConfig =
+                serde_json::from_value(serde_json::to_value(&config).unwrap()).unwrap();
+            for config in [&config, &reopened] {
+                config.validate().unwrap();
+                let models = config.write_models_for(Some("pro-fixture")).unwrap();
+                assert_eq!(models.effort("w3"), Low);
+                assert_eq!(models.effort("w1"), Low);
+                assert_eq!(models.effort("w4"), Medium);
+                assert_eq!(models.w3, "pro-fixture");
+            }
+        }
+        for effort in [Minimal, Medium, crate::ReasoningEffort::Omit] {
+            let config: ChatConfig = serde_json::from_value(json!({"write_models":{
+                "w3":"custom-reviewer", "reasoning_effort":{"w3":effort}
+            }}))
+            .unwrap();
+            let reopened: ChatConfig =
+                serde_json::from_value(serde_json::to_value(&config).unwrap()).unwrap();
+            for config in [&config, &reopened] {
+                let models = config.write_models_for(Some("pro-fixture")).unwrap();
+                assert_eq!(models.effort("w3"), effort);
+                assert_eq!(models.w3, "custom-reviewer");
+                assert_eq!(models.effort("w1"), Low);
+                assert_eq!(models.effort("w4"), Medium);
+            }
+        }
+    }
+
+    #[test]
     fn partial_role_defaults_and_explicit_overrides_are_distinct() {
         let config: ChatConfig = serde_json::from_value(json!({
             "write_models":{"w1":"custom","reasoning_effort":{"w1":"low"}},
@@ -148,7 +184,7 @@ mod tests {
         assert_eq!(write.w1, "custom");
         assert_eq!(write.w3, "pro-fixture");
         assert_eq!(write.effort("w1"), Low);
-        assert_eq!(write.effort("w3"), Minimal);
+        assert_eq!(write.effort("w3"), Low);
         assert_eq!(
             config.recall_models_for(None).unwrap().effort("r4"),
             Minimal

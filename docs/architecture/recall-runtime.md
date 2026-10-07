@@ -183,7 +183,7 @@ Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或
 
 **新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和仍获准可见的原读快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
-客户端使用单一 recall.v6、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1 low、W4 medium、W3/R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
+客户端使用单一 recall.v6、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1/W3 low、W4 medium、R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
 
 ## 第4项④：与后台整理并发
 
