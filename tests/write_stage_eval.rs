@@ -8,7 +8,7 @@ mod recall_adapter;
 #[path = "eval/fixed_inputs/adapter.rs"]
 mod fixed_adapter;
 
-use hippocampus::model_provider::{self, ProviderConfig, ProviderProtocol};
+use hippocampus::model_provider::{self, ProviderConfig, ProviderProtocol, StructuredMode};
 use hippocampus::{
     EntityId, MemoryType, ModelBudgetConfig, ModelStage, ReasoningEffort, contract::*,
     structured_request, w2, w4, write_models,
@@ -1205,8 +1205,12 @@ fn provider_options_from_env() -> Result<Option<ProviderOptions>, String> {
     let Some(value) = std::env::var("EVAL_PROVIDER_CONFIG").ok() else {
         return Ok(None);
     };
-    let provider =
+    let provider: ProviderConfig =
         serde_json::from_str(&value).map_err(|e| format!("invalid EVAL_PROVIDER_CONFIG: {e}"))?;
+    // AF132 authorizes only the fixed Opus profile, not arbitrary evaluation overrides.
+    provider
+        .require_native_schema()
+        .map_err(|e| e.to_string())?;
     let campaign = std::env::var_os("EVAL_CAMPAIGN_DIR")
         .map(PathBuf::from)
         .ok_or("new provider requires EVAL_CAMPAIGN_DIR")?;
@@ -1215,6 +1219,7 @@ fn provider_options_from_env() -> Result<Option<ProviderOptions>, String> {
 
 const SMOKE_ROOT: &str = "target/eval-providers/smoke-af122";
 const SMOKE_CURRENT_ROOT: &str = "target/eval-providers/smoke-af128";
+const OPUS_PROMPT_SMOKE_ROOT: &str = "target/eval-providers/smoke-af132";
 const SMOKE_CAP: usize = 8;
 const SMOKE_SAMPLE: &str = "w1_01_simple_residence";
 const SMOKE_IDS: [&str; SMOKE_CAP] = [
@@ -1245,6 +1250,11 @@ fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
     }
     for profile in &profiles {
         profile.provider.validate().map_err(|e| e.to_string())?;
+        if profile.provider.structured_mode == StructuredMode::PromptSchema
+            && (profile.id != "opus-5.5" || profile.model != "claude-opus-5-5")
+        {
+            return Err("prompt_schema is limited to the fixed Opus evaluation profile".into());
+        }
         EvalModel {
             label: profile.id.clone(),
             model: Some(profile.model.clone()),
@@ -1327,7 +1337,12 @@ fn smoke_selection(value: Option<&str>) -> Result<Vec<String>, String> {
         .collect())
 }
 fn smoke_root(base: &Path, selected: &[String]) -> PathBuf {
-    base.join(SMOKE_CURRENT_ROOT).join(selected.join("--"))
+    let root = if selected == ["opus-5.5"] {
+        OPUS_PROMPT_SMOKE_ROOT
+    } else {
+        SMOKE_CURRENT_ROOT
+    };
+    base.join(root).join(selected.join("--"))
 }
 fn smoke_options(
     variable: impl Fn(&str) -> Option<String>,
@@ -1370,6 +1385,13 @@ fn smoke_options(
             ));
         }
     };
+    if !dry
+        && limit.is_some_and(|n| n > 0)
+        && selected.iter().any(|id| id == "opus-5.5")
+        && selected.len() != 1
+    {
+        return Err("AF132 prompt_schema recording requires only opus-5.5 and EVAL_RECORD=1; mixed Opus cohorts are read-only".into());
+    }
     Ok((dry, limit, selected))
 }
 fn smoke_plan(
@@ -1434,12 +1456,12 @@ fn smoke_plan(
 }
 fn smoke_dry_plan(cases: &[Case]) -> String {
     let mut lines = vec![
-        "AF128 provider 冒烟干跑（不发送请求）".to_owned(),
+        "provider 冒烟干跑（不发送请求）".to_owned(),
         format!(
             "样本: {SMOKE_SAMPLE}；{} 档 × W1 × 1 次；W3/W4/R1/R4=0。",
             cases.len()
         ),
-        "档案 | 模型 | effort | thinking | 输出上限 | 超时秒 | 预检".into(),
+        "档案 | 模型 | effort | thinking | structured_mode | 输出上限 | 超时秒 | 预检".into(),
     ];
     for c in cases {
         let p = c.provider.as_ref().unwrap();
@@ -1450,7 +1472,7 @@ fn smoke_dry_plan(cases: &[Case]) -> String {
             _ => "待录制".into(),
         };
         lines.push(format!(
-            "{} | {} | {} | {} | {} | {} | {status}",
+            "{} | {} | {} | {} | {} | {} | {} | {status}",
             c.model.label,
             c.model.model.as_deref().unwrap(),
             serde_json::to_value(c.model.effort)
@@ -1458,6 +1480,10 @@ fn smoke_dry_plan(cases: &[Case]) -> String {
                 .as_str()
                 .unwrap(),
             p.thinking.map(|b| b.to_string()).unwrap_or("null".into()),
+            serde_json::to_value(p.structured_mode)
+                .unwrap()
+                .as_str()
+                .unwrap(),
             c.request["max_output_tokens"],
             c.timeout_seconds.unwrap()
         ));
@@ -1485,6 +1511,12 @@ fn smoke_dry_plan(cases: &[Case]) -> String {
     lines.push(format!(
         "输出预留上限: {tokens} token（含思考）；串行，无自动重试。"
     ));
+    if cases
+        .iter()
+        .any(|c| c.provider.as_ref().unwrap().structured_mode == StructuredMode::PromptSchema)
+    {
+        lines.push("Opus prompt_schema：未使用约束解码；只接受原 schema/decode/W2 核验通过的输出，不修补。".into());
+    }
     lines.push("本次真实调用: 0；不读取密钥，不创建录制/额度/报告文件。".into());
     lines.join("\n")
 }
@@ -1585,10 +1617,20 @@ fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
                 })
                 .collect();
             let provider = c.provider.as_ref().unwrap();
+            let transport_valid = if r["status"] == "调用失败" {
+                Some(r["response"]["status"] == "completed")
+            } else if raw.is_null() {
+                None
+            } else {
+                Some(true)
+            };
             json!({
                 "profile": c.model.label, "model": c.model.model, "protocol": provider.protocol,
                 "endpoint": provider.endpoint(c.model.base.as_deref().unwrap()).unwrap(),
                 "effort": c.model.effort, "thinking": provider.thinking,
+                "structured_mode":provider.structured_mode,
+                "constrained_decoding":provider.structured_mode == StructuredMode::NativeSchema,
+                "transport_valid":transport_valid,"provider_http_error":r["provider_http_error"],
                 "max_output_tokens": c.request["max_output_tokens"], "timeout_seconds": c.timeout_seconds,
                 "status": r["status"], "error": r["error"],
                 "provider_output_valid": wire_valid,
@@ -1643,10 +1685,9 @@ fn provider_smoke_from_env() -> Result<(), String> {
         let http = http.as_ref().ok_or("offline smoke cannot send")?;
         let request = smoke_http_request(http, c, &keys[&c.model.label])?;
         let response = http.execute(request).map_err(|e| e.to_string())?;
-        if !response.status().is_success() {
-            return Err(format!("HTTP {}", response.status()));
-        }
-        response.json().map_err(|e| e.to_string())
+        model_provider::read_http_response(response, c.provider.as_ref().unwrap().protocol)
+            .map(|(_, envelope)| envelope)
+            .map_err(|e| e.to_string())
     })?;
     let report = smoke_report(report, &cases);
     // Offline reports go to stdout only; historical recordings and allowance files remain untouched.
@@ -1941,6 +1982,9 @@ fn eval_provider_binding(
         if let Some(seconds) = timeout_seconds {
             binding["timeout_seconds"] = json!(seconds);
         }
+        if let Some(mode) = provider.structured_mode_binding() {
+            binding["structured_mode"] = mode;
+        }
         binding
     })
 }
@@ -2036,6 +2080,9 @@ fn campaign_start(case: &Case) -> Result<PathBuf, String> {
     Ok(path)
 }
 fn normalized_envelope(provider: Option<&ProviderConfig>, envelope: &Value) -> Value {
+    if envelope.get("provider_http_error").is_some() {
+        return envelope.clone();
+    }
     let Some(provider) = provider else {
         return envelope.clone();
     };
@@ -2162,6 +2209,9 @@ fn save_recording_timed(
     if let Some(error) = error {
         record["error"] = json!(error);
     }
+    if let Some(error) = envelope.get("provider_http_error") {
+        record["provider_http_error"] = error.clone();
+    }
     if case.provider.is_some() {
         record["provider_binding"] = eval_provider_binding(
             &case.model,
@@ -2194,6 +2244,9 @@ fn failed_score(case: &Case, record: &Value) -> Value {
     report["status"] = json!("调用失败");
     report["error"] = record["error"].clone();
     report["response"] = record["response"].clone();
+    if let Some(error) = record.get("provider_http_error").filter(|v| !v.is_null()) {
+        report["provider_http_error"] = error.clone();
+    }
     report["categories"] = json!({"contract":{"passed":false,"failures":["call"]},
         "semantic":{"passed":null,"failures":[]},"reference":{"passed":null,"failures":[]}});
     report
@@ -2272,6 +2325,9 @@ fn evaluate_cases(
                 let pending_log = if let Some(path) = attempt {
                     let mut entry = json!({"state":"responded","request":case_fingerprint(case),
                         "elapsed_ms":elapsed_ms,"usage":envelope["usage"],"status":envelope["status"],"error":response.as_ref().err()});
+                    if let Some(error) = envelope.get("provider_http_error") {
+                        entry["provider_http_error"] = error.clone();
+                    }
                     if case.w3_trial_root.is_some() {
                         entry["sample"] = case.sample["id"].clone();
                         entry["repeat"] = json!(case.repeat);
@@ -2286,8 +2342,12 @@ fn evaluate_cases(
                 } else {
                     None
                 };
-                metrics = json!({"elapsed_ms":elapsed_ms,"usage":envelope["usage"]});
+                metrics = json!({"elapsed_ms":elapsed_ms,"usage":envelope["usage"],
+                    "provider_http_error":envelope["provider_http_error"]});
                 let text = response.and_then(|e| {
+                    if let Some(error) = e.get("provider_http_error") {
+                        return Err(format!("provider HTTP error: {error}"));
+                    }
                     if let Some(provider) = &case.provider {
                         let text = model_provider::provider_output(provider.protocol, &e)
                             .map_err(|e| e.to_string())?;
@@ -2318,7 +2378,7 @@ fn evaluate_cases(
                         )?;
                         failed_score(
                             case,
-                            &json!({"error":error,"response":{
+                            &json!({"error":error,"provider_http_error":envelope["provider_http_error"],"response":{
                             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}}),
                         )
                     }
@@ -2346,6 +2406,12 @@ fn evaluate_cases(
         result["repeat"] = json!(case.repeat);
         result["max_output_tokens"] = case.request["max_output_tokens"].clone();
         result["request"] = case_fingerprint(case);
+        if let Some(error) = metrics.get("provider_http_error").filter(|v| !v.is_null()) {
+            result["provider_http_error"] = error.clone();
+        }
+        if let Some(provider) = &case.provider {
+            result["structured_mode"] = json!(provider.structured_mode);
+        }
         w3_trial_metadata(&mut result, case);
         results.push(result);
     }
@@ -2618,10 +2684,9 @@ fn write_stage_eval_suite() {
             })
             .send()
             .map_err(|e| e.to_string())?;
-        if !response.status().is_success() {
-            return Err(format!("HTTP {}", response.status()));
-        }
-        response.json().map_err(|e| e.to_string())
+        model_provider::read_http_response(response, protocol)
+            .map(|(_, envelope)| envelope)
+            .map_err(|e| e.to_string())
     })
     .unwrap();
     if w3_effort {
@@ -5675,6 +5740,7 @@ fn provider_eval_fixture(
         campaign: temp.0.join("campaign"),
         provider: ProviderConfig {
             protocol,
+            structured_mode: Default::default(),
             base_url_env: "FIXTURE_BASE".into(),
             api_key_env: None,
             model_revision: Some("fixture-model-digest".into()),
@@ -6199,4 +6265,212 @@ fn af128_selected_smoke_has_its_own_allowance_and_preserves_expired_history() {
     }
     assert_eq!(count_sends([history.join("campaign/sends")]).unwrap(), 8);
     assert_eq!(count_sends([root.join("campaign/sends")]).unwrap(), 4);
+}
+
+#[test]
+fn af132_only_opus_changes_identity_and_gets_an_independent_single_slot() {
+    assert!(
+        smoke_options(|name| match name {
+            "EVAL_SMOKE" => Some("1".into()),
+            "EVAL_SMOKE_PROFILES" => Some("ds-flash,opus-5.5,qwen-27b-think,qwen-9b-think".into()),
+            "EVAL_RECORD" => Some("4".into()),
+            _ => None,
+        })
+        .is_err()
+    );
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let mut native_profiles = profiles.clone();
+    native_profiles[3].provider.structured_mode = StructuredMode::NativeSchema;
+    let history = temp.0.join("history");
+    let native = smoke_plan(&history, &native_profiles, smoke_fixture_variable).unwrap();
+    evaluate_cases(&native, Some(8), &mut |c| Ok(smoke_fixture_response(c))).unwrap();
+    let native_bytes: Vec<_> = native
+        .iter()
+        .map(|c| std::fs::read(&c.path).unwrap())
+        .collect();
+    let changed = smoke_plan(&history, &profiles, smoke_fixture_variable).unwrap();
+    for (i, (old, new)) in native.iter().zip(&changed).enumerate() {
+        if i == 3 {
+            assert_ne!(case_fingerprint(old), case_fingerprint(new));
+            assert!(matches!(new.replay, Replay::Stale));
+            let binding = eval_provider_binding(
+                &new.model,
+                &new.wire_request,
+                new.provider.as_ref(),
+                new.timeout_seconds,
+            );
+            assert_eq!(
+                binding["structured_mode"]["instruction_version"],
+                model_provider::PROMPT_SCHEMA_VERSION
+            );
+        } else {
+            assert_eq!(case_fingerprint(old), case_fingerprint(new));
+            assert_eq!(old.wire_request, new.wire_request);
+            assert!(matches!(new.replay, Replay::Output(_)));
+        }
+    }
+    let (_, limit, selected) = smoke_options(|name| match name {
+        "EVAL_SMOKE" | "EVAL_RECORD" => Some("1".into()),
+        "EVAL_SMOKE_PROFILES" => Some("opus-5.5".into()),
+        _ => None,
+    })
+    .unwrap();
+    assert_eq!(limit, Some(1));
+    let root = smoke_root(&temp.0, &selected);
+    assert!(root.starts_with(temp.0.join(OPUS_PROMPT_SMOKE_ROOT)));
+    assert_ne!(root, temp.0.join(SMOKE_CURRENT_ROOT).join("opus-5.5"));
+    let opus = &profiles[3..4];
+    let cases = smoke_plan_with_history(&root, &history, opus, smoke_fixture_variable).unwrap();
+    assert!(matches!(cases[0].replay, Replay::Stale));
+    assert_eq!(smoke_preflight(&cases, Some(1)).unwrap(), 1);
+    assert!(smoke_preflight(&cases, Some(2)).is_err());
+    assert!(smoke_dry_plan(&cases).contains("未使用约束解码"));
+    assert!(!root.exists());
+    let report = evaluate_cases(&cases, Some(1), &mut |c| {
+        assert!(c.wire_request["output_config"].get("format").is_none());
+        let body = json!({"error":{"type":"invalid_request_error",
+            "message":"The compiled grammar is too large. PRIVATE_TEXT secret-key"}});
+        Ok(model_provider::safe_http_error(
+            400,
+            body.to_string().as_bytes(),
+            Some("req_12345678"),
+            ProviderProtocol::AnthropicMessages,
+        ))
+    })
+    .unwrap();
+    let report = smoke_report(report, &cases);
+    assert_eq!(report["sent_calls"], 1);
+    assert_eq!(report["smoke"][0]["structured_mode"], "prompt_schema");
+    assert_eq!(report["smoke"][0]["constrained_decoding"], false);
+    assert_eq!(report["smoke"][0]["transport_valid"], false);
+    assert_eq!(
+        report["smoke"][0]["provider_http_error"]["code"],
+        "schema_grammar_too_large"
+    );
+    assert!(report["smoke"][0]["usage"].is_null());
+    assert_eq!(count_sends([root.join("campaign/sends")]).unwrap(), 1);
+    let authorization: Value =
+        serde_json::from_slice(&std::fs::read(root.join("campaign/authorization.json")).unwrap())
+            .unwrap();
+    assert_eq!(authorization["limit"], 1);
+    for path in std::iter::once(cases[0].path.clone()).chain(
+        std::fs::read_dir(root.join("campaign/sends"))
+            .unwrap()
+            .map(|p| p.unwrap().path()),
+    ) {
+        let text = std::fs::read_to_string(path).unwrap();
+        assert!(text.contains("schema_grammar_too_large"));
+        assert!(!text.contains("PRIVATE_TEXT"));
+        assert!(!text.contains("secret-key"));
+    }
+    let replay = smoke_plan_with_history(&root, &history, opus, smoke_fixture_variable).unwrap();
+    assert!(matches!(replay[0].replay, Replay::Failed(_)));
+    let replay_report = smoke_report(
+        evaluate_cases(&replay, Some(1), &mut |_| {
+            panic!("failed slot cannot resend")
+        })
+        .unwrap(),
+        &replay,
+    );
+    assert_eq!(replay_report["sent_calls"], 0);
+    assert_eq!(replay_report["results"], report["results"]);
+    assert_eq!(replay_report["smoke"], report["smoke"]);
+    for (c, bytes) in native.iter().zip(native_bytes) {
+        assert_eq!(std::fs::read(&c.path).unwrap(), bytes);
+    }
+}
+
+#[test]
+fn af132_prompt_schema_outputs_are_checked_without_repair_and_failures_replay() {
+    for (text, valid) in [
+        ("{\"candidates\":[],\"memory_requests\":[]}", true),
+        (
+            "```json\n{\"candidates\":[],\"memory_requests\":[]}\n```",
+            false,
+        ),
+        ("Here: {\"candidates\":[],\"memory_requests\":[]}", false),
+        ("{\"candidates\":[],\"memory_requests\":[]} trailing", false),
+        (
+            "{\"candidates\":[],\"memory_requests\":[],\"extra\":true}",
+            false,
+        ),
+        (
+            "{\"candidates\":[{\"kind\":\"invalid\"}],\"memory_requests\":[]}",
+            false,
+        ),
+    ] {
+        let temp = TempRecords::new();
+        let profiles = smoke_fixture_profiles();
+        let cases = smoke_plan(&temp.0, &profiles[3..4], smoke_fixture_variable).unwrap();
+        let report = evaluate_cases(&cases, Some(1), &mut |_| {
+            Ok(json!({"stop_reason":"end_turn",
+            "usage":{"input_tokens":1,"output_tokens":2},"content":[{"type":"text","text":text}]}))
+        })
+        .unwrap();
+        let report = smoke_report(report, &cases);
+        assert_eq!(report["smoke"][0]["transport_valid"], true);
+        assert_eq!(report["smoke"][0]["provider_output_valid"], valid);
+        if valid {
+            assert_eq!(report["smoke"][0]["mechanical_valid"], true);
+            assert_eq!(report["smoke"][0]["semantic_score"]["passed"], false);
+        }
+        let replay = smoke_plan(&temp.0, &profiles[3..4], smoke_fixture_variable).unwrap();
+        let replay_report = evaluate_cases(&replay, Some(1), &mut |_| {
+            panic!("completed or failed output cannot resend")
+        })
+        .unwrap();
+        assert_eq!(replay_report["sent_calls"], 0);
+        assert_eq!(replay_report["results"], report["results"]);
+    }
+}
+
+#[test]
+fn af132_non_json_http_errors_preserve_reported_usage_and_do_not_echo_text() {
+    for (body, expected, usage) in [
+        (
+            "<html>PRIVATE_TEXT secret-key</html>".to_owned(),
+            "provider_error_non_json",
+            Value::Null,
+        ),
+        (
+            json!({"error":{"type":"PRIVATE_TEXT","message":"PRIVATE_TEXT secret-key"},
+            "usage":{"input_tokens":4,"output_tokens":0}})
+            .to_string(),
+            "provider_error_unclassified",
+            json!({"input_tokens":4,"output_tokens":0}),
+        ),
+    ] {
+        let temp = TempRecords::new();
+        let profiles = smoke_fixture_profiles();
+        let cases = smoke_plan(&temp.0, &profiles[3..4], smoke_fixture_variable).unwrap();
+        let report = evaluate_cases(&cases, Some(1), &mut |_| {
+            Ok(model_provider::safe_http_error(
+                502,
+                body.as_bytes(),
+                None,
+                ProviderProtocol::AnthropicMessages,
+            ))
+        })
+        .unwrap();
+        assert_eq!(
+            report["results"][0]["provider_http_error"]["code"],
+            expected
+        );
+        assert_eq!(report["results"][0]["usage"], usage);
+        assert!(!report.to_string().contains("PRIVATE_TEXT"));
+        assert!(
+            !std::fs::read_to_string(&cases[0].path)
+                .unwrap()
+                .contains("secret-key")
+        );
+        let replay = smoke_plan(&temp.0, &profiles[3..4], smoke_fixture_variable).unwrap();
+        assert_eq!(
+            evaluate_cases(&replay, Some(1), &mut |_| panic!(
+                "HTTP failure cannot resend"
+            ))
+            .unwrap()["results"],
+            report["results"]
+        );
+    }
 }

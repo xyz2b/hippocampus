@@ -239,6 +239,21 @@ DeepSeek 环境变量。模型字段仍是字符串；凭据配置仅保存环�
 副本仅删除整数 minimum/maximum；原 schema 和业务核验不变，未知不支持关键字拒绝。
 只取最终正文，拒绝、截断、空正文及额外字段失败，不提取或记录思考正文，不重试。
 
+`structured_mode` 缺省 `native_schema`，序列化省略该缺省，原请求与绑定不变。
+AF132 仅批准评测工具的 `opus-5.5` 档案使用 `prompt_schema`：不发送约束解码 format，
+在原 system 末尾附固定版本指令与原始 schema；返回仍经原 schema、decode、领域核验，
+不修补 JSON、不重试。它保证被接受的结果经过核验，不保证生成始终符合 schema。
+模式、附加指令版本和实际 schema 进入绑定，报告显式标注未使用约束解码。
+生产客户端拒绝该实验模式，角色默认值与冻结领域契约不变。
+Opus 单次确认使用独立额度 1 的 campaign，不复用或重置运行中的本地冒烟账本；
+命令与报告字段见 [阶段评测说明](../../../tests/eval/write_stage/README.md#opus-无约束解码实验af132仅评测例外)。
+
+运行时与阶段评测共用 HTTP 错误处理：非 2xx 正文限制读取为 64 KiB 加一个溢出判定字节，
+仅保留状态、白名单类型、受限响应头请求 ID、安全失败码和数字 usage。
+语法超限分类为 `schema_grammar_too_large`，其他正文按未知/非 JSON/超大/不可读分类，
+不把服务商自由文本写入错误、录制或轨迹。未报告用量仍按未知结算并保留输出预留；
+失败占用已发送额度，不追加调用。
+
 本地模型必须配置实际 `context_tokens`（本轮部署 27B=65536、9B=131072）、
 `model_revision` 及 `context_proof`。证明字段为 `tokenizer_revision`、
 `byte_level_bpe=true`、`template_token_bound`：由部署方核实该固定版本使用字节级 BPE，

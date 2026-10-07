@@ -55,6 +55,7 @@
     "model": "claude-opus-5-5",
     "provider": {
       "protocol": "anthropic_messages",
+      "structured_mode": "prompt_schema",
       "base_url_env": "ANTHROPIC_BASE_URL",
       "api_key_env": "ANTHROPIC_API_KEY",
       "thinking": true

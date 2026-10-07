@@ -327,6 +327,7 @@ impl OpenAiClient {
         provider: ProviderConfig,
     ) -> Result<Self, OpenAiAdapterError> {
         provider.validate()?;
+        provider.require_native_schema()?;
         let endpoint = provider.endpoint(base)?;
         let mut client = Self::new(base, if key.is_empty() { "local-no-key" } else { key })?;
         client.responses_url = endpoint;
@@ -410,7 +411,11 @@ impl OpenAiClient {
             .provider
             .as_ref()
             .map_or(ProviderProtocol::OpenaiResponses, |p| p.protocol);
-        let schema = if protocol == ProviderProtocol::AnthropicMessages {
+        let mode_binding = self
+            .provider
+            .as_ref()
+            .and_then(ProviderConfig::structured_mode_binding);
+        let schema = if protocol == ProviderProtocol::AnthropicMessages && mode_binding.is_none() {
             model_provider::anthropic_schema(&schema)?
         } else {
             schema
@@ -420,12 +425,14 @@ impl OpenAiClient {
             .as_ref()
             .ok_or_else(|| OpenAiAdapterError::Budget("missing budget".into()))?
             .output_tokens(stage);
-        Ok(Some(
-            json!({"adapter":model_provider::ADAPTER_VERSION,"protocol":protocol,
+        let mut binding = json!({"adapter":model_provider::ADAPTER_VERSION,"protocol":protocol,
             "endpoint":self.responses_url,"model":model,"revision":self.provider.as_ref().and_then(|p| p.model_revision.as_ref()),
             "effort":effort,"thinking":self.provider.as_ref().and_then(|p| p.thinking),"schema":schema,"output_tokens":output,
-            "context_tokens":self.provider.as_ref().and_then(|p| p.context_tokens),"context_proof":self.provider.as_ref().and_then(|p| p.context_proof.as_ref())}),
-        ))
+            "context_tokens":self.provider.as_ref().and_then(|p| p.context_tokens),"context_proof":self.provider.as_ref().and_then(|p| p.context_proof.as_ref())});
+        if let Some(mode) = mode_binding {
+            binding["structured_mode"] = mode;
+        }
+        Ok(Some(binding))
     }
 
     /// Cache identity needs endpoints, not credentials for stages that may never run.
@@ -593,6 +600,9 @@ impl OpenAiClient {
         input: Value,
         schema: Value,
     ) -> Result<String, OpenAiAdapterError> {
+        if let Some(provider) = &self.provider {
+            provider.require_native_schema()?;
+        }
         if !self.network_allowed {
             return Err(OpenAiAdapterError::NetworkDisabled);
         }
@@ -708,39 +718,44 @@ impl OpenAiClient {
         let result = (|| {
             let execute = |request| {
                 let response = self.http.execute(request).map_err(http_error)?;
-                Ok::<_, OpenAiAdapterError>((
-                    response.status(),
-                    response.text().map_err(http_error)?,
-                ))
+                model_provider::read_http_response(response, protocol)
             };
             #[cfg(test)]
-            let (status, body) = if let Some(transport) = &self.transport {
+            let (status, envelope) = if let Some(transport) = &self.transport {
                 let (status, body) = transport(http_request)?;
-                let status = reqwest::StatusCode::from_u16(status)
-                    .map_err(|e| OpenAiAdapterError::Http(e.to_string()))?;
-                (status, body)
+                let envelope = if (200..300).contains(&status) {
+                    serde_json::from_str(&body).map_err(|_| {
+                        OpenAiAdapterError::InvalidResponse("response is not JSON".into())
+                    })?
+                } else {
+                    model_provider::safe_http_error(status, body.as_bytes(), None, protocol)
+                };
+                (status, envelope)
             } else {
                 execute(http_request)?
             };
             #[cfg(not(test))]
-            let (status, body) = execute(http_request)?;
-            http_status = Some(status.as_u16());
-            let envelope = serde_json::from_str::<Value>(&body).ok();
+            let (status, envelope) = execute(http_request)?;
+            http_status = Some(status);
             // Usage accounting is unconditional; PMR_TRACE_DIR never controls the budget ledger.
-            usage = envelope
-                .as_ref()
-                .and_then(|e| model_provider::normalized_usage(protocol, e));
-            if crate::diagnostics::enabled()
-                && let Some(envelope) = &envelope
-            {
+            if !(200..300).contains(&status) {
+                usage = envelope.get("usage").filter(|v| !v.is_null()).cloned();
+                diagnostic_response = envelope.clone();
+                return Err(OpenAiAdapterError::Api {
+                    status,
+                    message: envelope["provider_http_error"].to_string(),
+                });
+            }
+            usage = model_provider::normalized_usage(protocol, &envelope);
+            if crate::diagnostics::enabled() {
                 diagnostic_response = if protocol != ProviderProtocol::OpenaiResponses {
                     json!({"id":envelope.get("id"),"model":envelope.get("model"),"usage":usage,
-                        "stop_reason":envelope.get("stop_reason"),"output_text":model_provider::provider_output(protocol, envelope).ok(),
+                        "stop_reason":envelope.get("stop_reason"),"output_text":model_provider::provider_output(protocol, &envelope).ok(),
                         "observability":"business_message_allowlist; reasoning bodies excluded"})
                 } else {
                     json!({"id":envelope.get("id"),"model":envelope.get("model"),
                     "status":envelope.get("status"),"usage":envelope.get("usage"),
-                    "incomplete_details":envelope.get("incomplete_details"),"error":envelope.get("error"),
+                    "incomplete_details":envelope.get("incomplete_details"),"error":envelope.get("error").map(|_| model_provider::safe_http_error(status, envelope.to_string().as_bytes(), None, protocol)["provider_http_error"].clone()),
                     "output":envelope.get("output").and_then(Value::as_array).map(|items| items.iter()
                         .filter(|item| item.get("type").and_then(Value::as_str) == Some("message"))
                         .map(|item| json!({"type":"message","content":item.get("content").and_then(Value::as_array).map(|parts| parts.iter()
@@ -749,21 +764,6 @@ impl OpenAiClient {
                     "observability":"business_message_allowlist; reasoning bodies excluded"})
                 };
             }
-            if !status.is_success() {
-                let message = envelope
-                    .as_ref()
-                    .and_then(|e| e.pointer("/error/message"))
-                    .and_then(Value::as_str)
-                    .unwrap_or("API returned a non-JSON error body")
-                    .to_owned();
-                return Err(OpenAiAdapterError::Api {
-                    status: status.as_u16(),
-                    message,
-                });
-            }
-            let envelope = envelope.ok_or_else(|| {
-                OpenAiAdapterError::InvalidResponse("response is not JSON".into())
-            })?;
             if env::var_os("PMR_OPENAI_TRACE").is_some() {
                 eprintln!(
                     "[openai-response] {}",
@@ -1048,6 +1048,7 @@ mod tests {
     fn provider_fixture(protocol: ProviderProtocol) -> ProviderConfig {
         ProviderConfig {
             protocol,
+            structured_mode: Default::default(),
             base_url_env: "TEST_PROVIDER_BASE".into(),
             api_key_env: Some("TEST_PROVIDER_KEY".into()),
             model_revision: Some("fixture-model-revision".into()),
@@ -1066,6 +1067,101 @@ mod tests {
                 template_token_bound: 64,
                 byte_level_bpe: true,
             }),
+        }
+    }
+    #[test]
+    fn experimental_prompt_schema_is_bound_but_cannot_be_sent_by_production() {
+        let ledger = crate::model_budget::tests::TestLedger::new();
+        let mut client = ledger.client("https://fixture.invalid/v1");
+        client.provider = Some(provider_fixture(ProviderProtocol::AnthropicMessages));
+        let schema = crate::write_models::object(&[("count", crate::write_models::index())]);
+        let native = client
+            .provider_binding(
+                "claude-opus-5-5",
+                ReasoningEffort::Medium,
+                ModelStage::W1,
+                schema.clone(),
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            native,
+            json!({"adapter":model_provider::ADAPTER_VERSION,
+            "protocol":"anthropic_messages","endpoint":client.responses_url,
+            "model":"claude-opus-5-5","revision":"fixture-model-revision",
+            "effort":"medium","thinking":null,"schema":model_provider::anthropic_schema(&schema).unwrap(),
+            "output_tokens":32768,"context_tokens":null,"context_proof":client.provider.as_ref().unwrap().context_proof})
+        );
+        client.provider.as_mut().unwrap().structured_mode =
+            model_provider::StructuredMode::PromptSchema;
+        let experimental = client
+            .provider_binding(
+                "claude-opus-5-5",
+                ReasoningEffort::Medium,
+                ModelStage::W1,
+                schema.clone(),
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(experimental["schema"], schema);
+        assert_eq!(
+            experimental["structured_mode"]["instruction_version"],
+            model_provider::PROMPT_SCHEMA_VERSION
+        );
+        assert_ne!(experimental, native);
+        assert!(matches!(
+            OpenAiClient::new_for_provider(
+                "https://fixture.invalid",
+                "fixture-key",
+                client.provider.clone().unwrap()
+            ),
+            Err(OpenAiAdapterError::InvalidContext(_))
+        ));
+        client.network_allowed = true;
+        client.transport = Some(Arc::new(|_| {
+            panic!("production cannot send experimental mode")
+        }));
+        assert!(matches!(
+            client.structured_output_for_model_with_effort(
+                "claude-opus-5-5",
+                ReasoningEffort::Medium,
+                ModelStage::W1,
+                "test",
+                "fixed",
+                json!({}),
+                schema
+            ),
+            Err(OpenAiAdapterError::InvalidContext(_))
+        ));
+        assert_eq!(client.model_call_count(), 0);
+        assert!(!ledger.path.exists());
+    }
+    #[test]
+    fn safe_http_errors_settle_and_leave_no_provider_prose_in_diagnostics() {
+        for (label, body, expected, known_usage) in [
+            ("grammar", json!({"error":{"type":"invalid_request_error","message":"The compiled grammar is too large. PRIVATE_TEXT secret-key"},"usage":{"input_tokens":2,"output_tokens":0}}).to_string(), "schema_grammar_too_large", true),
+            ("unknown", json!({"error":{"type":"PRIVATE_TEXT","message":"PRIVATE_TEXT secret-key"}}).to_string(), "provider_error_unclassified", false),
+            ("html", "<html>PRIVATE_TEXT secret-key</html>".into(), "provider_error_non_json", false),
+        ] {
+            let ledger = crate::model_budget::tests::TestLedger::new();
+            let mut client = ledger.client("https://fixture.invalid/v1");
+            client.network_allowed = true;
+            client.transport = Some(Arc::new(move |_| Ok((400, body.clone()))));
+            let (result, events) = crate::diagnostics::capture_model_events(|| client.structured_output(ModelStage::W1, "test", "fixed", json!({}), json!({})));
+            let error = result.unwrap_err();
+            assert!(matches!(error, OpenAiAdapterError::Api {status:400,..}));
+            let display = error.to_string();
+            assert!(display.contains(expected), "{label}");
+            for text in [display, serde_json::to_string(&events).unwrap(), json!(client.model_budget_report()).to_string()] {
+                assert!(!text.contains("PRIVATE_TEXT"), "{label}");
+                assert!(!text.contains("secret-key"), "{label}");
+            }
+            assert_eq!(client.model_call_count(), 1);
+            let report = &client.model_budget_report()[0];
+            assert_eq!(report["usage_status"], if known_usage {"known"} else {"unknown"});
+            assert_eq!(report["output_reservation_retained"], !known_usage);
+            assert!(matches!(client.structured_output(ModelStage::W1, "test", "fixed", json!({}), json!({})), Err(OpenAiAdapterError::Budget(_))));
+            assert_eq!(client.model_call_count(), 1);
         }
     }
     #[test]

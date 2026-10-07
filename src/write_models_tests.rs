@@ -4106,6 +4106,7 @@ fn af119_provider_identity_is_checked_before_reusing_write_stages() {
     .into();
     first.client.provider = Some(super::super::model_provider::ProviderConfig {
         protocol: super::super::model_provider::ProviderProtocol::OpenaiResponses,
+        structured_mode: Default::default(),
         base_url_env: "FIXTURE_BASE".into(),
         api_key_env: None,
         model_revision: Some("revision-one".into()),

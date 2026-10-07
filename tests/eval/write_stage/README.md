@@ -104,3 +104,45 @@ cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 身份或请求指纹不一致仍按原规则过期，不能靠更改档案标签复用。
 固定入口拒绝 `EVAL_CASES`、`EVAL_REPEAT`、`EVAL_MODEL`、`EVAL_PROVIDER_CONFIG`、
 `EVAL_API_KEY`/`EVAL_BASE_URL`、输出上限等自定义评测参数；需要其他比较时另立任务。
+
+### Opus 无约束解码实验（AF132，仅评测例外）
+
+Opus 的 W1 原生 schema 曾因 `compiled grammar is too large` 返回 400；这不证明
+其他阶段必然失败，也不能根据未报告 usage 推断零计费。仅 `opus-5.5` 档案显式设置
+`structured_mode=prompt_schema`，其余档案缺省 `native_schema`。生产客户端拒绝
+prompt_schema，普通 `EVAL_PROVIDER_CONFIG` 也不接受该模式。
+
+实验请求不发送 `output_config.format`，在原 system 提示词末尾附固定
+`prompt-schema.v1` 指令和未经删改的原 schema，保留 medium、自适应思考、W1 输出上限
+32768 与超时 360 秒。发送前对追加后的完整请求做上下文预检。该模式没有约束解码保证；
+返回仍须通过原 schema、decode 与 W2，围栏、前后缀和非法 JSON 一律失败，不修补、
+不自动重试。报告分列 `transport_valid`（完整响应通路）、`provider_output_valid`
+（原 schema）、`mechanical_valid`（decode/W2）与 `semantic_score`，并明确
+`structured_mode=prompt_schema`、`constrained_decoding=false`。
+
+模式、固定附加指令及其版本、实际请求进入绑定和指纹；仅 Opus 的旧录制过期，
+原生模式的请求与绑定不变。单独选择 Opus 使用新的独立目录
+`target/eval-providers/smoke-af132/opus-5.5/`，总额度固定为 1；不读取密钥的干跑：
+
+```sh
+EVAL_SMOKE=1 EVAL_SMOKE_PROFILES=opus-5.5 EVAL_DRY_RUN=1 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+AF130 已授权的确认调用由 Claude 执行，本次实现不执行：
+
+```sh
+EVAL_SMOKE=1 EVAL_SMOKE_PROFILES=opus-5.5 EVAL_RECORD=1 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+续跑沿用同一命令、endpoint、目录与账本：失败也占用唯一槽位，已有失败录制只回放，
+已 started 但缺录制时拒绝重发。不能删除旧账本重置额度。AF122/AF128 的 campaign
+与产物保持原样；混合旧 cohort 的 Opus 请求身份已改变，不能沿用其授权重发。
+当前入口将含 Opus 的混合 cohort 限为干跑或只读回放；真实录制须只选
+`opus-5.5`、`EVAL_RECORD=1`。上述 AF128 四档录制命令描述历史版本，不用于本次续跑。
+
+HTTP 非 2xx 错误正文最多读取 64 KiB 加一个溢出判定字节；录制、账本和运行时轨迹
+只保留 HTTP 状态、白名单错误类型、受限的响应头请求 ID、固定安全失败码及数字用量。
+语法超限记为 `schema_grammar_too_large`；未知、非 JSON、超大或不可读正文分别分类，
+不保存自由文本，防止服务商回显原话或凭据。无 usage 记未知，不退款、不自动重试。

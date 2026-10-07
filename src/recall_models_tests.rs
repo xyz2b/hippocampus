@@ -3187,6 +3187,7 @@ fn af119_provider_endpoint_and_revision_invalidate_recall_cache_without_resendin
     p.recall_models.r4 = "gpt-6.1-sol".into();
     p.client.provider = Some(super::super::model_provider::ProviderConfig {
         protocol: super::super::model_provider::ProviderProtocol::OpenaiResponses,
+        structured_mode: Default::default(),
         base_url_env: "FIXTURE_BASE".into(),
         api_key_env: None,
         model_revision: Some("revision-one".into()),
