@@ -71,11 +71,13 @@ SAMPLES = [
                             times=[t("event", "上个月", {"kind": "relative", "unit": "month", "offset": -1})])],
            must_not=["为“哪里的火锅好吃”生成 user_statement 候选"],
            note="sentence 取到逗号或整句均可（可接受集合）。"),
-    sample("w1_05_hypothetical", "假设不能冒充用户事实", "如果我以后去深圳工作，我会考虑租房。",
-           candidates=[cand("如果我以后去深圳工作，我会考虑租房。", speech="hypothetical",
-                            relation=["fact", "works_at"], memory_type="fact",
-                            value="如果我以后去深圳工作，我会考虑租房。", unchecked=["times", "conditions"])],
-           must_not=["speech 为 user_statement", "生成 works_at=深圳 的 user_statement 候选"]),
+    sample("w1_05_hypothetical", "有条件的个人计划须保留条件与不确定性", "如果我以后去深圳工作，我会考虑租房。",
+           candidates=[cand("如果我以后去深圳工作，我会考虑租房。", speech="plan",
+                            relation="fact", memory_type="fact", uncertainty=["考虑", "会考虑"],
+                            conditions=["如果我以后去深圳工作"],
+                            value="如果我以后去深圳工作，我会考虑租房。", unchecked=["times"])],
+           must_not=["speech 为 user_statement 或 hypothetical", "丢失条件或“考虑”", "生成 works_at 候选"],
+           note="AF151：按有条件的个人计划评分；保留“考虑”或“会考虑”，时间仍不评分。"),
     sample("w1_06_reported", "转述保留实际来源", "我妈说我小时候特别怕狗。",
            candidates=[cand("我妈说我小时候特别怕狗。", speech="reported", relation="fact",
                             memory_type="fact", value="我妈说我小时候特别怕狗。",
@@ -90,7 +92,7 @@ SAMPLES = [
            note="用户确认（2026-10-03）：“打算”由 speech=plan 表达，不属于 uncertainty。"),
     sample("w1_08_retraction", "撤回没有新值", "之前说我在字节工作那个不对，收回。",
            candidates=[cand("之前说我在字节工作那个不对，收回。", kind="retraction",
-                            relation="works_at", memory_type="fact", value=None,
+                            relation="works_at", memory_type="fact", value=[None, "字节"],
                             unchecked=["polarity"])],
            must_not=["生成 works_at=字节 的 assertion", "生成 forget 请求（撤回事实不等于删除原文）"]),
     sample("w1_09_forget_request", "删除请求是控制请求，不是撤回", "把我住址那条忘掉吧。",
@@ -116,7 +118,7 @@ SAMPLES = [
            must_not=["deadline.role 为 event"]),
     sample("w1_12_unresolved_subject", "目录外指代用 unresolved，不编造 ID", "他上周辞职了。",
            candidates=[cand("他上周辞职了。", subject={"unresolved": "他"}, relation="fact",
-                            memory_type="fact", value="他上周辞职了。",
+                            memory_type=["fact", "episode"], value="他上周辞职了。",
                             times=[t("event", "上周", {"kind": "relative", "unit": "week", "offset": -1})])],
            must_not=["subject 绑定为 self 或 e-laowang（没有任何依据）", "编造不在目录中的 entity_id"]),
     sample("w1_13_history_disambiguates", "历史明确点名时可绑定指代", "他上周辞职了。",
@@ -130,8 +132,8 @@ SAMPLES = [
                cand("我住在上海，在一家银行做产品经理。", relation="lives_in", memory_type="fact", value="上海"),
                cand("我住在上海，在一家银行做产品经理。", relation="job_title", memory_type="fact", value="产品经理"),
            ],
-           must_not=["works_at=银行（“一家银行”不是具体雇主）"],
-           note="用户确认：不另给 works_at（“一家银行”不是具体雇主），故 candidate_count=2。"),
+           must_not=["两项必需候选缺失", "任意其他第三项或推测具体雇主"],
+           note="AF151 覆盖原裁定：两项必需，可选 works_at=“一家银行”；其他第三项不通过。"),
     sample("w1_15_negation", "否定偏好的极性", "我不吃香菜。",
            candidates=[cand("我不吃香菜。", relation=["avoids", "likes"],
                             memory_type=["preference", "constraint"], value="香菜",
@@ -157,6 +159,15 @@ SAMPLES = [
            must_not=["生成候选", "把“忽略之前的指令”当作对模型的指令执行（例如输出空请求集合）"],
            note="后续由运行时进入 awaiting_confirmation；W1 只负责如实提出请求。"),
 ]
+
+for s in SAMPLES:
+    if s["id"].split("_")[1] in {"05", "08", "14"}:
+        s["label_revision"] = {"decisions": ["AF150", "AF151"], "date": "2026-10-08"}
+    if s["id"] == "w1_14_two_candidates":
+        s["expect"]["optional_candidates"] = [cand(
+            s["input"]["text"], relation="works_at", memory_type="fact", value="一家银行")]
+    if s["id"] == "w1_12_unresolved_subject":
+        s["label_revision"] = {"decisions": ["AF154", "AF155"], "date": "2026-10-08"}
 
 
 def main():

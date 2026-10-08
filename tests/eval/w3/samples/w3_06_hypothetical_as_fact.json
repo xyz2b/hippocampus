@@ -37,9 +37,17 @@
   ],
   "coverage": {
    "status": "complete",
-   "missing_contains": []
+   "missing_contains": [],
+   "scored": false
   },
   "request_reviews": []
  },
- "note": "value 也不被支持（并没有在深圳工作）；aspects 至少含 speech，是否另含 value 不扣分。"
+ "note": "AF151：w1_05 按 plan 评分；此冻结候选仍误标 user_statement，故 contradicted[speech]。coverage 不计分。",
+ "label_revision": {
+  "decisions": [
+   "AF150",
+   "AF151"
+  ],
+  "date": "2026-10-08"
+ }
 }

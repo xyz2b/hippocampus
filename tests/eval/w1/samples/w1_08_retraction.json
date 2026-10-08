@@ -61,7 +61,10 @@
     "subject": "self",
     "relation": "works_at",
     "memory_type": "fact",
-    "value": null,
+    "value": [
+     null,
+     "字节"
+    ],
     "sentence": "之前说我在字节工作那个不对，收回。",
     "uncertainty": null,
     "conditions": [],
@@ -75,5 +78,12 @@
   "生成 works_at=字节 的 assertion",
   "生成 forget 请求（撤回事实不等于删除原文）"
  ],
- "note": null
+ "note": null,
+ "label_revision": {
+  "decisions": [
+   "AF150",
+   "AF151"
+  ],
+  "date": "2026-10-08"
+ }
 }

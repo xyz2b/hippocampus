@@ -8,6 +8,10 @@ pub const MODEL_USER_AGENT: &str = "hippocampus/0.1";
 pub const PROMPT_SCHEMA_VERSION: &str = "prompt-schema.v1";
 pub const PROMPT_SCHEMA_INSTRUCTION: &str = "Output exactly one JSON object conforming to the following JSON Schema. Do not output prose, Markdown fences, or any text before or after the object.\nJSON Schema:\n";
 pub const MAX_ERROR_BODY_BYTES: usize = 64 * 1024;
+pub const DASHSCOPE_MODEL: &str = "qwen3.7-flash-2026-07-15";
+pub const DASHSCOPE_QWEN38_MODEL: &str = "qwen3.8-flash";
+pub const DASHSCOPE_QWEN38_CONTEXT_REVISION: &str = "qwen3.8-flash;dashscope-text-context.v1;alias";
+pub const DASHSCOPE_CONTEXT_REVISION: &str = "qwen3.7-flash-2026-07-15;dashscope-text-context.v1";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -70,6 +74,13 @@ pub struct ProviderConfig {
     pub context_proof: Option<ContextProof>,
 }
 impl ProviderConfig {
+    fn is_dashscope(&self) -> bool {
+        self.protocol == ProviderProtocol::OpenaiChat
+            && matches!(
+                self.model_revision.as_deref(),
+                Some(DASHSCOPE_CONTEXT_REVISION | DASHSCOPE_QWEN38_CONTEXT_REVISION)
+            )
+    }
     pub fn validate(&self) -> Result<(), Error> {
         if self.structured_mode == StructuredMode::PromptSchema
             && self.protocol != ProviderProtocol::AnthropicMessages
@@ -121,7 +132,7 @@ impl ProviderConfig {
     pub fn check_model(&self, model: &str, effort: ReasoningEffort) -> Result<(), Error> {
         self.validate()?;
         let supported = match self.protocol {
-            ProviderProtocol::OpenaiResponses if model == "gpt-6.1-sol" => {
+            ProviderProtocol::OpenaiResponses if matches!(model, "gpt-6.1-sol" | "gpt-6-luna") => {
                 self.thinking.is_none()
                     && matches!(
                         effort,
@@ -132,11 +143,28 @@ impl ProviderConfig {
                 self.thinking.is_none() && model.starts_with("ep-")
             }
             ProviderProtocol::AnthropicMessages => {
-                model == "claude-opus-5-5"
-                    && self.thinking != Some(false)
+                matches!(
+                    model,
+                    "claude-opus-5-5" | "claude-sonnet-5-5" | "claude-haiku-5-5"
+                ) && self.thinking != Some(false)
                     && matches!(
                         effort,
                         ReasoningEffort::Low | ReasoningEffort::Medium | ReasoningEffort::High
+                    )
+            }
+            ProviderProtocol::OpenaiChat if model == DASHSCOPE_QWEN38_MODEL => {
+                self.model_revision.as_deref() == Some(DASHSCOPE_QWEN38_CONTEXT_REVISION)
+                    && self.api_key_env.is_some()
+                    && self.thinking.is_some()
+                    && effort == ReasoningEffort::Omit
+            }
+            ProviderProtocol::OpenaiChat if model == DASHSCOPE_MODEL => {
+                self.model_revision.as_deref() == Some(DASHSCOPE_CONTEXT_REVISION)
+                    && self.api_key_env.is_some()
+                    && matches!(
+                        (self.thinking, effort),
+                        (Some(true), ReasoningEffort::Medium)
+                            | (Some(false), ReasoningEffort::Omit)
                     )
             }
             ProviderProtocol::OpenaiChat => {
@@ -159,8 +187,9 @@ impl ProviderConfig {
         // Responses/Chat bases are complete API prefixes, including any version path.
         // Anthropic uses an SDK-style root; accept an explicit /v1 without duplicating it.
         let base = base.trim().trim_end_matches('/');
-        let path = if self.protocol == ProviderProtocol::AnthropicMessages && base.ends_with("/v1")
-        {
+        let path = if self.is_dashscope() && base.ends_with("/compatible-mode") {
+            "v1/chat/completions"
+        } else if self.protocol == ProviderProtocol::AnthropicMessages && base.ends_with("/v1") {
             "messages"
         } else {
             self.protocol.path()
@@ -178,10 +207,61 @@ impl ProviderConfig {
                 "provider URL must be http(s) without credentials/query/fragment".into(),
             ));
         }
+        if self.is_dashscope()
+            && (url.scheme() != "https"
+                || !url.host_str().is_some_and(|h| h.ends_with(".aliyuncs.com"))
+                || url.path() != "/compatible-mode/v1/chat/completions")
+        {
+            return Err(Error::InvalidContext(
+                "DashScope requires its official HTTPS compatible-mode endpoint".into(),
+            ));
+        }
         Ok(endpoint)
     }
 
     pub fn check_context(&self, request: &Value, output: u64) -> Result<(), Error> {
+        if self.is_dashscope() {
+            // Official Qwen3.7 snapshot / Qwen3.8 alias limits, checked 2026-10-08: context 1,000,000;
+            // thinking input 983,616; output 131,072. Cloud overflow is an error,
+            // unlike Ollama's possible truncation. This is a byte prescreen, not
+            // an attestation of an unpublished cloud tokenizer/template.
+            // https://help.aliyun.com/zh/model-studio/qwen3-7-flash
+            // https://help.aliyun.com/zh/model-studio/qwen3-8-flash
+            // https://help.aliyun.com/zh/model-studio/error-code
+            if self.context_tokens != Some(1_000_000)
+                || self.context_proof.is_some()
+                || request["model"]
+                    != if self.model_revision.as_deref() == Some(DASHSCOPE_QWEN38_CONTEXT_REVISION)
+                    {
+                        DASHSCOPE_QWEN38_MODEL
+                    } else {
+                        DASHSCOPE_MODEL
+                    }
+                || !request["messages"].as_array().is_some_and(|m| {
+                    m.len() == 2
+                        && m[0]["role"] == "system"
+                        && m[1]["role"] == "user"
+                        && m.iter().all(|m| m["content"].is_string())
+                })
+            {
+                return Err(Error::ContextUnproven);
+            }
+            let bytes = serde_json::to_vec(request)
+                .map_err(|e| Error::InvalidContext(e.to_string()))?
+                .len() as u64;
+            // DashScope documents up to ten completion tokens of rounding error.
+            if output == 0
+                || output > 131_072
+                || bytes > 983_616
+                || bytes
+                    .checked_add(output)
+                    .and_then(|n| n.checked_add(10))
+                    .is_none_or(|n| n > 1_000_000)
+            {
+                return Err(Error::ContextExceeded);
+            }
+            return Ok(());
+        }
         // Remote structured APIs reject overflow; local Chat may silently truncate, so it is mandatory there.
         if self.context_tokens.is_none() && self.protocol != ProviderProtocol::OpenaiChat {
             return Ok(());
@@ -234,7 +314,7 @@ pub fn provider_request(
         .as_u64()
         .ok_or_else(|| Error::InvalidContext("missing output cap".into()))?;
     let schema = &canonical["text"]["format"]["schema"];
-    let request = match config.protocol {
+    let mut request = match config.protocol {
         ProviderProtocol::OpenaiResponses => {
             if canonical["instructions"]
                 .as_str()
@@ -243,7 +323,7 @@ pub fn provider_request(
                 return Err(Error::InvalidContext("instructions required".into()));
             }
             let mut r = canonical.clone();
-            if model == "gpt-6.1-sol" {
+            if matches!(model, "gpt-6.1-sol" | "gpt-6-luna") {
                 r.as_object_mut().unwrap().remove("temperature");
             }
             r
@@ -274,6 +354,19 @@ pub fn provider_request(
             "reasoning_effort":if config.thinking == Some(false) {"none"} else {"medium"},
             "response_format":{"type":"json_schema","json_schema":{"name":canonical["text"]["format"]["name"],"strict":true,"schema":schema}}}),
     };
+    if config.model_revision.as_deref() == Some(DASHSCOPE_QWEN38_CONTEXT_REVISION) {
+        // Qwen3.8 disallows reasoning_effort together with thinking_budget.
+        request.as_object_mut().unwrap().remove("reasoning_effort");
+        request["enable_thinking"] = json!(config.thinking.unwrap());
+    }
+    if config.is_dashscope() {
+        // max_tokens excludes thought tokens on Qwen; this cap includes both.
+        request.as_object_mut().unwrap().remove("max_tokens");
+        request["max_completion_tokens"] = json!(tokens);
+        if config.thinking == Some(true) {
+            request["thinking_budget"] = json!(tokens / 2);
+        }
+    }
     config.check_context(&request, tokens)?;
     Ok(request)
 }
@@ -486,6 +579,15 @@ pub fn normalized_usage(protocol: ProviderProtocol, envelope: &Value) -> Option<
         _ => unreachable!(),
     };
     let mut result = json!({"input_tokens":input,"output_tokens":output});
+    if protocol == ProviderProtocol::OpenaiChat {
+        if let Some(n) = u
+            .pointer("/prompt_tokens_details/cached_tokens")
+            .and_then(Value::as_u64)
+            .filter(|n| *n <= input)
+        {
+            result["input_tokens_details"] = json!({"cached_tokens":n});
+        }
+    }
     let thinking = if protocol == ProviderProtocol::AnthropicMessages {
         u.pointer("/output_tokens_details/thinking_tokens")
     } else {
@@ -554,6 +656,81 @@ pub fn provider_output(protocol: ProviderProtocol, envelope: &Value) -> Result<S
             nonempty(c["message"]["content"].as_str().unwrap_or_default().into())
         }
     }
+}
+/// Evaluation-only excerpts: never parse these fragments as a model answer.
+pub fn incomplete_diagnostics(protocol: ProviderProtocol, envelope: &Value) -> Option<Value> {
+    let (content, reasoning) = match protocol {
+        ProviderProtocol::OpenaiChat => {
+            let choices = envelope["choices"].as_array().filter(|c| c.len() == 1)?;
+            let choice = &choices[0];
+            if choice["finish_reason"] != "length" || !choice["message"]["refusal"].is_null() {
+                return None;
+            }
+            (
+                choice["message"]["content"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .to_owned(),
+                choice["message"]["reasoning_content"]
+                    .as_str()
+                    .map(str::to_owned),
+            )
+        }
+        ProviderProtocol::OpenaiResponses => {
+            if envelope["status"] != "incomplete"
+                || envelope["incomplete_details"]["reason"] != "max_output_tokens"
+            {
+                return None;
+            }
+            let messages = envelope["output"].as_array()?;
+            let mut text = String::new();
+            for message in messages.iter().filter(|m| m["type"] == "message") {
+                for part in message["content"].as_array()? {
+                    if part["type"] == "refusal" {
+                        return None;
+                    }
+                    if part["type"] == "output_text" {
+                        text.push_str(part["text"].as_str().unwrap_or_default());
+                    }
+                }
+            }
+            (text, None) // Encrypted/internal Responses reasoning is never captured.
+        }
+        ProviderProtocol::AnthropicMessages => {
+            if envelope["stop_reason"] != "max_tokens" {
+                return None;
+            }
+            let content = envelope["content"].as_array()?;
+            let text = content
+                .iter()
+                .filter(|p| p["type"] == "text")
+                .filter_map(|p| p["text"].as_str())
+                .collect::<String>();
+            (text, None) // Keep diagnostics limited to final text; no thinking blocks.
+        }
+    };
+    fn head(s: &str, bytes: usize) -> &str {
+        let mut end = s.len().min(bytes);
+        while !s.is_char_boundary(end) {
+            end -= 1;
+        }
+        &s[..end]
+    }
+    fn tail(s: &str, bytes: usize) -> &str {
+        let mut start = s.len().saturating_sub(bytes);
+        while !s.is_char_boundary(start) {
+            start += 1;
+        }
+        &s[start..]
+    }
+    let mut result = json!({"diagnostic_only":true,"scoring_eligible":false,
+        "output_utf8_bytes":content.len(),"output_head":head(&content,2048),"output_tail":tail(&content,2048),
+        "limits_utf8_bytes":{"output_head":2048,"output_tail":2048,"reasoning_tail":1024}});
+    if let Some(reasoning) = reasoning {
+        result["reasoning_utf8_bytes"] = json!(reasoning.len());
+        result["reasoning_tail"] = json!(tail(&reasoning, 1024));
+    }
+    Some(result)
 }
 fn nonempty(text: String) -> Result<String, Error> {
     if text.trim().is_empty() {
@@ -636,6 +813,159 @@ mod tests {
             crate::write_models::object(&[("count", crate::write_models::index())]),
             &ModelBudgetConfig::default(),
         )
+    }
+    fn dashscope(thinking: bool) -> ProviderConfig {
+        let mut cfg = config(ProviderProtocol::OpenaiChat);
+        cfg.api_key_env = Some("QWEN_API_KEY".into());
+        cfg.thinking = Some(thinking);
+        cfg.model_revision = Some(DASHSCOPE_CONTEXT_REVISION.into());
+        cfg.context_tokens = Some(1_000_000);
+        cfg
+    }
+    #[test]
+    fn dashscope_snapshot_caps_auth_endpoint_and_usage_are_explicit() {
+        for thinking in [true, false] {
+            let cfg = dashscope(thinking);
+            let mut canonical = request();
+            canonical["model"] = json!(DASHSCOPE_MODEL);
+            canonical["max_output_tokens"] = json!(32768);
+            if thinking {
+                canonical["reasoning"] = json!({"effort":"medium"});
+            } else {
+                canonical.as_object_mut().unwrap().remove("reasoning");
+            }
+            let wire = provider_request(Some(&cfg), &canonical).unwrap();
+            assert_eq!(
+                wire["reasoning_effort"],
+                if thinking { "medium" } else { "none" }
+            );
+            assert_eq!(wire["max_completion_tokens"], 32768);
+            if thinking {
+                assert_eq!(wire["thinking_budget"], 16384);
+                canonical["max_output_tokens"] = json!(16384);
+                let w3 = provider_request(Some(&cfg), &canonical).unwrap();
+                assert_eq!(w3["thinking_budget"], 8192);
+                assert_eq!(w3["max_completion_tokens"], 16384);
+            } else {
+                assert!(wire.get("thinking_budget").is_none());
+            }
+            assert!(wire.get("max_tokens").is_none());
+            assert_eq!(
+                wire["response_format"]["json_schema"]["schema"],
+                canonical["text"]["format"]["schema"]
+            );
+            assert_eq!(wire["response_format"]["json_schema"]["strict"], true);
+            let endpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+            for base in [
+                "https://dashscope.aliyuncs.com/compatible-mode/",
+                "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            ] {
+                assert_eq!(cfg.endpoint(base).unwrap(), endpoint);
+            }
+            for base in [
+                "https://ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode",
+                "https://ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+            ] {
+                assert_eq!(
+                    cfg.endpoint(base).unwrap(),
+                    "https://ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+                );
+            }
+            for base in [
+                "http://127.0.0.1:11434/v1",
+                "http://ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode",
+                "http://dashscope.aliyuncs.com/compatible-mode",
+                "https://evil.aliyuncs.com.example.com/compatible-mode",
+                "https://aliyuncs.com.evil.com/compatible-mode",
+                "https://dashscope.aliyuncs.com/v1",
+                "https://proxy.invalid/compatible-mode",
+                "https://dashscope.aliyuncs.com/compatible-mode?secret=x",
+                "https://ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode#fragment",
+                "https://user:password@ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode",
+            ] {
+                assert!(cfg.endpoint(base).is_err());
+            }
+            assert!(
+                cfg.check_model("qwen3.7-flash", ReasoningEffort::Medium)
+                    .is_err()
+            );
+            assert!(
+                cfg.check_model("qwen3.7-flash-2099-01-01", ReasoningEffort::Medium)
+                    .is_err()
+            );
+            let mut invalid = cfg.clone();
+            invalid.api_key_env = None;
+            assert!(
+                invalid
+                    .check_model(
+                        DASHSCOPE_MODEL,
+                        if thinking {
+                            ReasoningEffort::Medium
+                        } else {
+                            ReasoningEffort::Omit
+                        }
+                    )
+                    .is_err()
+            );
+        }
+        let response = json!({"choices":[{"finish_reason":"stop","message":{"content":"{}","reasoning_content":"ignored thought"}}],
+            "usage":{"prompt_tokens":11,"completion_tokens":8,"completion_tokens_details":{"reasoning_tokens":6}}});
+        assert_eq!(
+            provider_output(ProviderProtocol::OpenaiChat, &response).unwrap(),
+            "{}"
+        );
+        assert_eq!(
+            normalized_usage(ProviderProtocol::OpenaiChat, &response).unwrap(),
+            json!({"input_tokens":11,"output_tokens":8,"output_tokens_details":{"reasoning_tokens":6}})
+        );
+        let no_thought = json!({"usage":{"prompt_tokens":11,"completion_tokens":2}});
+        assert!(
+            normalized_usage(ProviderProtocol::OpenaiChat, &no_thought)
+                .unwrap()
+                .get("output_tokens_details")
+                .is_none()
+        );
+    }
+    #[test]
+    fn dashscope_context_rejects_overflow_unknown_binding_and_non_text_without_truncation() {
+        let cfg = dashscope(true);
+        let mut canonical = request();
+        canonical["model"] = json!(DASHSCOPE_MODEL);
+        canonical["reasoning"] = json!({"effort":"medium"});
+        let wire = provider_request(Some(&cfg), &canonical).unwrap();
+        let mut big = wire.clone();
+        big["messages"][1]["content"] = json!("汉".repeat(400000));
+        assert!(matches!(
+            cfg.check_context(&big, 32768),
+            Err(Error::ContextExceeded)
+        ));
+        assert!(cfg.check_context(&wire, u64::MAX).is_err());
+        let mut unknown = cfg.clone();
+        unknown.context_tokens = None;
+        assert!(matches!(
+            unknown.check_context(&wire, 32768),
+            Err(Error::ContextUnproven)
+        ));
+        unknown = cfg.clone();
+        unknown.context_tokens = Some(2_000_000);
+        assert!(matches!(
+            unknown.check_context(&wire, 32768),
+            Err(Error::ContextUnproven)
+        ));
+        let mut multimedia = wire.clone();
+        multimedia["messages"][1]["content"] =
+            json!([{"type":"image_url","image_url":{"url":"https://example.invalid/image"}}]);
+        assert!(matches!(
+            cfg.check_context(&multimedia, 32768),
+            Err(Error::ContextUnproven)
+        ));
+        assert_eq!(wire["messages"][1]["content"], canonical["input"]);
+        let mut local = config(ProviderProtocol::OpenaiChat);
+        local.thinking = Some(false);
+        assert!(matches!(
+            local.check_context(&wire, 32768),
+            Err(Error::ContextUnproven)
+        ));
     }
     #[test]
     fn prompt_schema_preserves_original_schemas_and_checks_the_expanded_request() {
@@ -986,6 +1316,61 @@ mod tests {
         assert!(provider_request(Some(&qwen), &canonical).is_err());
     }
     #[test]
+    fn incomplete_chat_diagnostics_are_utf8_bounded_and_never_final_output() {
+        let body = format!("HEAD{}TAIL", "汉".repeat(5000));
+        let reasoning = format!("{}END", "🚀".repeat(1000));
+        let mut response = json!({"choices":[{"finish_reason":"length","message":{"content":body,"reasoning_content":reasoning}}]});
+        let diagnostic = incomplete_diagnostics(ProviderProtocol::OpenaiChat, &response).unwrap();
+        assert_eq!(diagnostic["diagnostic_only"], true);
+        assert_eq!(diagnostic["scoring_eligible"], false);
+        assert_eq!(diagnostic["output_utf8_bytes"], body.len());
+        assert!(
+            diagnostic["output_head"]
+                .as_str()
+                .unwrap()
+                .starts_with("HEAD")
+        );
+        assert!(
+            diagnostic["output_tail"]
+                .as_str()
+                .unwrap()
+                .ends_with("TAIL")
+        );
+        assert!(
+            diagnostic["reasoning_tail"]
+                .as_str()
+                .unwrap()
+                .ends_with("END")
+        );
+        for (key, max) in [
+            ("output_head", 2048),
+            ("output_tail", 2048),
+            ("reasoning_tail", 1024),
+        ] {
+            assert!(diagnostic[key].as_str().unwrap().len() <= max);
+        }
+        assert!(matches!(
+            provider_output(ProviderProtocol::OpenaiChat, &response),
+            Err(Error::Incomplete(_))
+        ));
+        assert!(incomplete_diagnostics(ProviderProtocol::OpenaiResponses, &response).is_none());
+        response["choices"][0]["message"]
+            .as_object_mut()
+            .unwrap()
+            .remove("reasoning_content");
+        assert!(
+            incomplete_diagnostics(ProviderProtocol::OpenaiChat, &response)
+                .unwrap()
+                .get("reasoning_tail")
+                .is_none()
+        );
+        response["choices"][0]["finish_reason"] = json!("stop");
+        assert!(incomplete_diagnostics(ProviderProtocol::OpenaiChat, &response).is_none());
+        response["choices"][0]["finish_reason"] = json!("length");
+        response["choices"][0]["message"]["refusal"] = json!("refused");
+        assert!(incomplete_diagnostics(ProviderProtocol::OpenaiChat, &response).is_none());
+    }
+    #[test]
     fn output_protocols_reject_refusal_truncation_and_empty_without_reading_thoughts() {
         let responses = json!({"status":"completed","output":[{"content":[{"type":"output_text","text":"{}"}]}]});
         let anthropic = json!({"stop_reason":"end_turn","content":[{"type":"thinking","thinking":"private"},{"type":"text","text":"{}"}]});
@@ -1060,5 +1445,142 @@ mod tests {
             .is_none()
         );
         assert!(normalized_usage(ProviderProtocol::AnthropicMessages,&json!({"usage":{"input_tokens":u64::MAX,"cache_read_input_tokens":1,"output_tokens":2}})).is_none());
+    }
+    #[test]
+    fn af163_new_models_keep_native_protocol_effort_and_usage() {
+        for (model, protocol) in [
+            ("gpt-6-luna", ProviderProtocol::OpenaiResponses),
+            ("claude-sonnet-5-5", ProviderProtocol::AnthropicMessages),
+            ("claude-haiku-5-5", ProviderProtocol::AnthropicMessages),
+        ] {
+            let cfg = config(protocol);
+            let mut canonical = request();
+            canonical["model"] = json!(model);
+            ReasoningEffort::Medium.apply(&mut canonical);
+            let wire = provider_request(Some(&cfg), &canonical).unwrap();
+            assert_eq!(wire["model"], model);
+            cfg.require_native_schema().unwrap();
+            assert!(
+                cfg.check_model("unknown-new-model", ReasoningEffort::Medium)
+                    .is_err()
+            );
+            if protocol == ProviderProtocol::OpenaiResponses {
+                assert_eq!(wire["instructions"], canonical["instructions"]);
+                assert!(wire.get("temperature").is_none());
+                let mut missing = canonical.clone();
+                missing.as_object_mut().unwrap().remove("instructions");
+                assert!(provider_request(Some(&cfg), &missing).is_err());
+                let envelope = json!({"usage":{"input_tokens":12,"output_tokens":20,"output_tokens_details":{"reasoning_tokens":7}}});
+                assert_eq!(
+                    normalized_usage(protocol, &envelope),
+                    Some(envelope["usage"].clone())
+                );
+            } else {
+                assert_eq!(wire["system"], canonical["instructions"]);
+                assert_eq!(wire["output_config"]["format"]["type"], "json_schema");
+                assert_eq!(wire["output_config"]["effort"], "medium");
+                assert!(
+                    wire["system"]
+                        .as_str()
+                        .unwrap()
+                        .contains(PROMPT_SCHEMA_INSTRUCTION)
+                        == false
+                );
+                let usage=normalized_usage(protocol,&json!({"usage":{"input_tokens":10,"cache_read_input_tokens":2,"cache_creation_input_tokens":3,"output_tokens":20,"output_tokens_details":{"thinking_tokens":7}}})).unwrap();
+                assert_eq!(usage["input_tokens"], 15);
+                assert_eq!(usage["output_tokens"], 20);
+                assert_eq!(usage["output_tokens_details"]["reasoning_tokens"], 7);
+            }
+        }
+    }
+    #[test]
+    fn af163_incomplete_diagnostics_bound_cloud_text_without_exposing_thinking() {
+        let text = "测".repeat(3000);
+        for (protocol, envelope) in [
+            (
+                ProviderProtocol::OpenaiResponses,
+                json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[
+                {"type":"reasoning","summary":[{"text":"PRIVATE_THINKING"}]},
+                {"type":"message","content":[{"type":"output_text","text":text}]}]}),
+            ),
+            (
+                ProviderProtocol::AnthropicMessages,
+                json!({"stop_reason":"max_tokens","content":[{"type":"thinking","thinking":"PRIVATE_THINKING"},{"type":"text","text":text}]}),
+            ),
+        ] {
+            let fragments = incomplete_diagnostics(protocol, &envelope).unwrap();
+            assert_eq!(fragments["diagnostic_only"], true);
+            assert_eq!(fragments["scoring_eligible"], false);
+            assert_eq!(fragments["output_utf8_bytes"], 9000);
+            for key in ["output_head", "output_tail"] {
+                assert!(fragments[key].as_str().unwrap().len() <= 2048);
+            }
+            assert!(!fragments.to_string().contains("PRIVATE_THINKING"));
+            assert!(matches!(
+                provider_output(protocol, &envelope),
+                Err(Error::Incomplete(_))
+            ));
+            let mut completed = envelope.clone();
+            completed["status"] = json!("completed");
+            completed["stop_reason"] = json!("end_turn");
+            assert!(incomplete_diagnostics(protocol, &completed).is_none());
+        }
+    }
+    #[test]
+    fn af166_qwen38_alias_uses_enable_thinking_and_budget_without_effort() {
+        for thinking in [true, false] {
+            let mut cfg = dashscope(thinking);
+            cfg.model_revision = Some(DASHSCOPE_QWEN38_CONTEXT_REVISION.into());
+            for cap in [32768, 16384] {
+                let mut canonical = request();
+                canonical["model"] = json!(DASHSCOPE_QWEN38_MODEL);
+                canonical["max_output_tokens"] = json!(cap);
+                ReasoningEffort::Omit.apply(&mut canonical);
+                let wire = provider_request(Some(&cfg), &canonical).unwrap();
+                assert_eq!(wire["enable_thinking"], thinking);
+                assert!(wire.get("reasoning_effort").is_none());
+                assert!(wire.get("max_tokens").is_none());
+                assert_eq!(wire["max_completion_tokens"], cap);
+                if thinking {
+                    assert_eq!(wire["thinking_budget"], cap / 2);
+                } else {
+                    assert!(wire.get("thinking_budget").is_none());
+                }
+                assert_eq!(wire["response_format"]["json_schema"]["strict"], true);
+            }
+            assert_eq!(
+                cfg.endpoint("https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode")
+                    .unwrap(),
+                "https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+            );
+            assert!(
+                cfg.endpoint("http://dashscope.aliyuncs.com/compatible-mode")
+                    .is_err()
+            );
+            assert!(
+                cfg.check_model("qwen3.8-flash-2026-10-08", ReasoningEffort::Omit)
+                    .is_err()
+            );
+            assert!(
+                cfg.check_model(DASHSCOPE_QWEN38_MODEL, ReasoningEffort::Medium)
+                    .is_err()
+            );
+            let mut wrong = cfg.clone();
+            wrong.model_revision = Some(DASHSCOPE_CONTEXT_REVISION.into());
+            assert!(
+                wrong
+                    .check_model(DASHSCOPE_QWEN38_MODEL, ReasoningEffort::Omit)
+                    .is_err()
+            );
+            assert!(
+                cfg.check_model(DASHSCOPE_MODEL, ReasoningEffort::Omit)
+                    .is_err()
+            );
+        }
+        let usage=normalized_usage(ProviderProtocol::OpenaiChat,&json!({"usage":{"prompt_tokens":10,"completion_tokens":20,"prompt_tokens_details":{"cached_tokens":3},"completion_tokens_details":{"reasoning_tokens":7}}})).unwrap();
+        assert_eq!(
+            usage,
+            json!({"input_tokens":10,"input_tokens_details":{"cached_tokens":3},"output_tokens":20,"output_tokens_details":{"reasoning_tokens":7}})
+        );
     }
 }

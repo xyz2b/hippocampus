@@ -61,21 +61,37 @@
    },
    {
     "candidate": 1,
-    "verdict": "supported",
-    "aspects": [],
+    "verdict": [
+     "contradicted",
+     "insufficient"
+    ],
+    "aspects": [
+     "time"
+    ],
     "episode_value": "low_value"
    }
   ],
   "coverage": {
    "status": "complete",
-   "missing_contains": []
+   "missing_contains": [],
+   "scored": false
   },
   "request_reviews": [
    {
     "request": 0,
-    "verdict": "contradicted"
+    "verdict": [
+     "contradicted",
+     "insufficient"
+    ]
    }
   ]
  },
- "note": "请求只针对车牌；绑定到“今天好累”会让低价值经历绕过准入。2026-10-03 改为两个完整句子，经历候选只取经历句（Codex 评审：原输入把控制请求与车牌整句塞入经历，属样本问题）。"
+ "note": "请求只针对车牌；绑定到“今天好累”会让低价值经历绕过准入。2026-10-03 改为两个完整句子，经历候选只取经历句（Codex 评审：原输入把控制请求与车牌整句塞入经历，属样本问题）。 AF150：输入不动；候选1漏时间，不得 supported；episode_value 仍为 low_value，时间错误不改变经历的跨轮价值。请求扩绑不得 supported。",
+ "label_revision": {
+  "decisions": [
+   "AF150",
+   "AF151"
+  ],
+  "date": "2026-10-08"
+ }
 }

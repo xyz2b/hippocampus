@@ -84,10 +84,34 @@
     "strength": null
    }
   ],
-  "memory_requests": []
+  "memory_requests": [],
+  "optional_candidates": [
+   {
+    "kind": "assertion",
+    "speech": "user_statement",
+    "subject": "self",
+    "relation": "works_at",
+    "memory_type": "fact",
+    "value": "一家银行",
+    "sentence": "我住在上海，在一家银行做产品经理。",
+    "polarity": "affirm",
+    "uncertainty": null,
+    "conditions": [],
+    "times": [],
+    "strength": null
+   }
+  ]
  },
  "must_not": [
-  "works_at=银行（“一家银行”不是具体雇主）"
+  "两项必需候选缺失",
+  "任意其他第三项或推测具体雇主"
  ],
- "note": "用户确认：不另给 works_at（“一家银行”不是具体雇主），故 candidate_count=2。"
+ "note": "AF151 覆盖原裁定：两项必需，可选 works_at=“一家银行”；其他第三项不通过。",
+ "label_revision": {
+  "decisions": [
+   "AF150",
+   "AF151"
+  ],
+  "date": "2026-10-08"
+ }
 }

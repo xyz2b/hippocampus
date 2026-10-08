@@ -28,7 +28,7 @@
   "reviews": [
    {
     "candidate": 0,
-    "verdict": "contradicted",
+    "verdict": "insufficient",
     "aspects": [
      "relation"
     ],
@@ -37,9 +37,17 @@
   ],
   "coverage": {
    "status": "complete",
-   "missing_contains": []
+   "missing_contains": [],
+   "scored": false
   },
   "request_reviews": []
  },
- "note": null
+ "note": null,
+ "label_revision": {
+  "decisions": [
+   "AF150",
+   "AF151"
+  ],
+  "date": "2026-10-08"
+ }
 }

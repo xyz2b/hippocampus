@@ -39,25 +39,59 @@
   "requests": []
  },
  "expect": {
-  "reviews": [
+  "alternatives": [
    {
-    "candidate": 0,
-    "verdict": "supported",
-    "aspects": [],
-    "episode_value": "not_applicable"
+    "reviews": [
+     {
+      "candidate": 0,
+      "verdict": "supported",
+      "aspects": [],
+      "episode_value": "not_applicable"
+     },
+     {
+      "candidate": 1,
+      "verdict": "supported",
+      "aspects": [],
+      "episode_value": "not_applicable"
+     }
+    ],
+    "coverage": {
+     "status": "complete",
+     "missing_contains": []
+    },
+    "request_reviews": []
    },
    {
-    "candidate": 1,
-    "verdict": "supported",
-    "aspects": [],
-    "episode_value": "not_applicable"
+    "reviews": [
+     {
+      "candidate": 0,
+      "verdict": "supported",
+      "aspects": [],
+      "episode_value": "not_applicable"
+     },
+     {
+      "candidate": 1,
+      "verdict": "supported",
+      "aspects": [],
+      "episode_value": "not_applicable"
+     }
+    ],
+    "coverage": {
+     "status": "gaps",
+     "missing_contains": [
+      "一家银行"
+     ]
+    },
+    "request_reviews": []
    }
-  ],
-  "coverage": {
-   "status": "complete",
-   "missing_contains": []
-  },
-  "request_reviews": []
+  ]
  },
- "note": "用户确认：“在一家银行”不算漏提，coverage 为 complete。"
+ "note": "AF155 覆盖此前 complete 裁定：complete 或 gaps 两个完整分支；gaps 须精确引用且含“一家银行”，两个候选仍须 supported。",
+ "label_revision": {
+  "decisions": [
+   "AF154",
+   "AF155"
+  ],
+  "date": "2026-10-08"
+ }
 }

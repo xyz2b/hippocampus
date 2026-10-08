@@ -6,6 +6,45 @@
 - `tests/eval/w3/samples/`：输入为 W2 已通过的候选（部分故意带错，简写形式：Quote 用字符串表示，评测适配器负责展开成 w1.v1 结构）；`expect.reviews[].aspects` 是必须指出的问题方面集合。
 - 标注中“待用户裁定”“由人工复核”的项目写在各样本的 `note`。
 
+## AF150 / AF151 标注修订（2026-10-08）
+
+修订样本用 `label_revision` 记录决定编号与日期；输入、ID、提示词和请求指纹不变。
+W1 05 按带条件及不确定性的 plan 评分；08 的撤回值接受 null 或“字节”；14 保留
+两项必需候选，`optional_candidates` 仅允许额外的 works_at=“一家银行”。任意其他
+第三项或第四项失败。生成器保留上述规则，可重复生成 JSON。
+
+`expect.alternatives` 是完整期望对象的数组，整支全部通过才通过，不能跨分支拼接字段。
+当前只支持一项可选候选，评分器将它展开为两条完整分支；数量、字段、请求与机械核验
+都在每条分支中检查。标量 `verdict` 可使用允许集合，但不会豁免 schema、decode、W2/W3
+核验失败。
+
+W3 02、03、04、05、06、08、09、10、16、20 的 `coverage.scored=false`：complete/gaps
+均接受，gaps 仍须提供非空、逐字连续原文引用，05 的引用还须包含母亲的断言。该标记
+不免除机械核验。报告将候选及请求的 verdict 评分与 coverage 观察、评分、引用检查分列。
+W3 16 保留 episode_value=low_value：遗漏时间与这条日常状态的记忆价值是两个独立问题。
+W3 12 的 complete 期望保持原样；其他未裁定标注不变。
+
+零调用重评命令及旧报告保留方式见
+[阶段评测说明](../write_stage/README.md#af150--af151-离线重评2026-10-08)。
+
+## AF154 / AF155 标注修订（2026-10-08）
+
+四个样本的 `label_revision` 更新为 AF154/AF155，输入与 ID 保持不变：
+
+- W1 12 的 memory_type 接受 fact 或 episode；主体、日期精度与请求等其他期望不变。
+- W3 12 覆盖此前 complete 裁定，接受 complete/gaps 两个完整分支；两候选均须
+  supported。gaps 必须非空、逐字连续引用原文且含“一家银行”，不能跨分支拼配。
+- W3 10 本轮临时接受 contradicted/insufficient[value]，supported 仍失败。报告保留
+  两种 verdict 的分布；它们在生产的 rejected/pending 语义不等价，长期按 insufficient
+  收窄提示词另立待办。
+- W3 19 标记 `observation_only=true`，原因是“频率限定语缺少明确映射，待契约决定”。
+  保留原始判断和失败字段，排除主语义通过率与分层；有效输出记“观察”，不计通过。
+  decode、schema、W2/W3 核验或引用失败仍记“失败”，不会被观察标记豁免。
+
+AF137 仍为 40 样本、520 槽；其中 39 个计分样本、1 个观察样本（13 个观察槽）。
+请求指纹与账本身份不变，旧报告保留。重评说明见
+[AF155 离线重评](../write_stage/README.md#af154--af155-离线重评2026-10-08)。
+
 ```
 python3 tests/eval/w1/gen_samples.py
 python3 tests/eval/w3/gen_samples.py

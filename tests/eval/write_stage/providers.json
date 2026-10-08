@@ -90,7 +90,8 @@
       "w3": 16384,
       "w4": 16384
     },
-    "timeout_seconds": 1800
+    "timeout_seconds": 1800,
+    "endpoint_env": "QWEN_LOCAL_BASE_URL"
   },
   {
     "id": "qwen-27b-nothink",
@@ -114,7 +115,8 @@
       "w3": 16384,
       "w4": 16384
     },
-    "timeout_seconds": 360
+    "timeout_seconds": 360,
+    "endpoint_env": "QWEN_LOCAL_BASE_URL"
   },
   {
     "id": "qwen-9b-think",
@@ -138,7 +140,8 @@
       "w3": 16384,
       "w4": 16384
     },
-    "timeout_seconds": 1800
+    "timeout_seconds": 1800,
+    "endpoint_env": "QWEN_LOCAL_BASE_URL"
   },
   {
     "id": "qwen-9b-nothink",
@@ -155,6 +158,136 @@
         "byte_level_bpe": true,
         "template_token_bound": 256
       }
+    },
+    "effort": "omit",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360,
+    "endpoint_env": "QWEN_LOCAL_BASE_URL"
+  },
+  {
+    "id": "qwen37-flash-think",
+    "model": "qwen3.7-flash-2026-07-15",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": "QWEN_API_KEY",
+      "thinking": true,
+      "model_revision": "qwen3.7-flash-2026-07-15;dashscope-text-context.v1",
+      "context_tokens": 1000000
+    },
+    "effort": "medium",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen37-flash-nothink",
+    "model": "qwen3.7-flash-2026-07-15",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": "QWEN_API_KEY",
+      "thinking": false,
+      "model_revision": "qwen3.7-flash-2026-07-15;dashscope-text-context.v1",
+      "context_tokens": 1000000
+    },
+    "effort": "omit",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360
+  },
+  {
+    "id": "gpt-6-luna",
+    "model": "gpt-6-luna",
+    "provider": {
+      "protocol": "openai_responses",
+      "base_url_env": "OPENAI_BASE_URL",
+      "api_key_env": "OPENAI_API_KEY",
+      "thinking": null
+    },
+    "effort": "medium",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360
+  },
+  {
+    "id": "claude-sonnet-5-5",
+    "model": "claude-sonnet-5-5",
+    "provider": {
+      "protocol": "anthropic_messages",
+      "base_url_env": "ANTHROPIC_BASE_URL",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "thinking": true,
+      "structured_mode": "prompt_schema"
+    },
+    "effort": "medium",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360
+  },
+  {
+    "id": "claude-haiku-5-5",
+    "model": "claude-haiku-5-5",
+    "provider": {
+      "protocol": "anthropic_messages",
+      "base_url_env": "ANTHROPIC_BASE_URL",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "thinking": true,
+      "structured_mode": "prompt_schema"
+    },
+    "effort": "medium",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen38-flash-think",
+    "model": "qwen3.8-flash",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": "QWEN_API_KEY",
+      "thinking": true,
+      "model_revision": "qwen3.8-flash;dashscope-text-context.v1;alias",
+      "context_tokens": 1000000
+    },
+    "effort": "omit",
+    "max_output_tokens": {
+      "w1": 32768,
+      "w3": 16384,
+      "w4": 16384
+    },
+    "timeout_seconds": 360
+  },
+  {
+    "id": "qwen38-flash-nothink",
+    "model": "qwen3.8-flash",
+    "provider": {
+      "protocol": "openai_chat",
+      "base_url_env": "QWEN_BASE_URL",
+      "api_key_env": "QWEN_API_KEY",
+      "thinking": false,
+      "model_revision": "qwen3.8-flash;dashscope-text-context.v1;alias",
+      "context_tokens": 1000000
     },
     "effort": "omit",
     "max_output_tokens": {

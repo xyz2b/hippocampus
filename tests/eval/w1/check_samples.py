@@ -19,6 +19,21 @@ def options(v):
     return v if isinstance(v, list) else [v]
 
 
+def expectation_branches(e):
+    bases = e.get("alternatives", [e])
+    if not bases:
+        raise ValueError("empty expectation alternatives")
+    for base in bases:
+        optional = base.get("optional_candidates", [])
+        if len(optional) > 1:
+            raise ValueError("only one optional candidate is supported")
+        branch = {k: v for k, v in base.items() if k != "optional_candidates"}
+        yield branch
+        if optional:
+            yield dict(branch, candidates=branch["candidates"] + optional,
+                       candidate_count=len(branch["candidates"]) + 1)
+
+
 def check_candidate(c, text, where, relations, entities, errors):
     def quote(q, field):
         if q is not None and q not in text:
@@ -34,7 +49,8 @@ def check_candidate(c, text, where, relations, entities, errors):
         # 值可以是规范化值（英文、实体名），只有含中文且看起来是原文片段时才要求逐字。
         if isinstance(v, str) and len(v) > 4:
             quote(v, "value")
-    quote(c.get("uncertainty"), "uncertainty")
+    for q in options(c.get("uncertainty")):
+        quote(q, "uncertainty")
     for q in c.get("conditions", []):
         quote(q["quote"] if isinstance(q, dict) else q, "conditions")
     for tm in c.get("times", []):
@@ -84,9 +100,9 @@ def check_w3(s, errors):
     if [r["candidate"] for r in e["reviews"]] != list(range(len(i["candidates"]))):
         errors.append("reviews must map 1:1 to candidates")
     for r in e["reviews"]:
-        if r["verdict"] not in VERDICTS or not set(r["aspects"]) <= ASPECTS:
+        if not set(options(r["verdict"])) <= VERDICTS or not set(r["aspects"]) <= ASPECTS:
             errors.append(f"review {r['candidate']} enum")
-        if r["verdict"] == "supported" and r["aspects"]:
+        if "supported" in options(r["verdict"]) and r["aspects"]:
             errors.append(f"review {r['candidate']} supported with problems")
         if r["episode_value"] not in EPISODE:
             errors.append(f"review {r['candidate']} episode_value")
@@ -94,7 +110,7 @@ def check_w3(s, errors):
             errors.append(f"review {r['candidate']} episode_value vs memory_type")
     if e["coverage"]["status"] not in {"complete", "gaps"}:
         errors.append("coverage.status")
-    if (e["coverage"]["status"] == "gaps") != bool(e["coverage"]["missing_contains"]):
+    if e["coverage"].get("scored", True) and (e["coverage"]["status"] == "gaps") != bool(e["coverage"]["missing_contains"]):
         errors.append("coverage gaps need missing quotes")
     for q in e["coverage"]["missing_contains"]:
         if q not in text:
@@ -102,7 +118,7 @@ def check_w3(s, errors):
     if len(e["request_reviews"]) != len(i["requests"]):
         errors.append("request_reviews must map 1:1 to requests")
     for r in e["request_reviews"]:
-        if r["verdict"] not in VERDICTS:
+        if not set(options(r["verdict"])) <= VERDICTS:
             errors.append("request verdict")
 
 
@@ -173,9 +189,18 @@ def main():
         for path in sorted((ROOT / contract / "samples").glob("*.json")):
             s = json.loads(path.read_text())
             errors = []
+            if "observation_only" in s and not isinstance(s["observation_only"], bool):
+                errors.append("observation_only must be boolean")
+            if s.get("observation_only") is True and not (
+                    isinstance(s.get("observation_reason"), str) and s["observation_reason"].strip()):
+                errors.append("observation needs a nonempty reason")
             if s["contract"] != {"r4": "r4.v3"}.get(contract, f"{contract}.v1") or s["label_status"] not in {"draft", "reviewed"}:
                 errors.append("contract/label_status")
-            check(s, errors)
+            if contract in {"w1", "w3"}:
+                for expect in expectation_branches(s["expect"]):
+                    check(dict(s, expect=expect), errors)
+            else:
+                check(s, errors)
             failed += bool(errors)
             print(("ok  " if not errors else "FAIL") + f" {s['id']}" + "".join(f"\n     {x}" for x in errors))
     sys.exit(1 if failed else 0)

@@ -28,7 +28,10 @@
   "reviews": [
    {
     "candidate": 0,
-    "verdict": "insufficient",
+    "verdict": [
+     "contradicted",
+     "insufficient"
+    ],
     "aspects": [
      "value"
     ],
@@ -37,9 +40,17 @@
   ],
   "coverage": {
    "status": "complete",
-   "missing_contains": []
+   "missing_contains": [],
+   "scored": false
   },
   "request_reviews": []
  },
- "note": "“杭州附近”不能证明住在杭州，也不能证明不住在杭州：草稿按 insufficient。"
+ "note": "AF155：现行提示词有歧义，本轮比较临时双收 contradicted/insufficient[value]，不得 supported；两者在生产的 rejected/pending 语义不等价。长期按 insufficient 收窄提示词另立待办。",
+ "label_revision": {
+  "decisions": [
+   "AF154",
+   "AF155"
+  ],
+  "date": "2026-10-08"
+ }
 }

@@ -559,13 +559,33 @@ fn score_w3(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             !a.is_null() && items(&e["aspects"]).iter().all(|e| aspects.contains(e)),
         );
     }
-    compare(
+    let gaps = actual["coverage"]["status"] == "gaps";
+    let missing = items(&actual["coverage"]["missing"]);
+    check(
         fields,
-        "coverage.status",
-        &sample["expect"]["coverage"]["status"],
-        &actual["coverage"]["status"],
+        "coverage.validate",
+        json!(true),
+        actual["coverage"].clone(),
+        (!gaps || !missing.is_empty())
+            && missing.iter().all(|q| {
+                q["text"].as_str().is_some_and(|q| {
+                    !q.is_empty() && sample["input"]["text"].as_str().unwrap().contains(q)
+                })
+            }),
     );
-    for e in items(&sample["expect"]["coverage"]["missing_contains"]) {
+    let scored = sample["expect"]["coverage"]["scored"] != false;
+    if scored {
+        compare(
+            fields,
+            "coverage.status",
+            &sample["expect"]["coverage"]["status"],
+            &actual["coverage"]["status"],
+        );
+    }
+    for e in items(&sample["expect"]["coverage"]["missing_contains"])
+        .iter()
+        .filter(|_| scored || gaps)
+    {
         check(
             fields,
             "coverage.missing_contains",
@@ -685,7 +705,71 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
     Ok(())
 }
 
+// Alternatives are full expectations, never per-field unions. This task has
+// only one optional candidate; expand it into the same complete-branch check.
+fn expectation_branches(expect: &Value) -> Vec<Value> {
+    let bases = expect
+        .get("alternatives")
+        .map(items)
+        .unwrap_or_else(|| std::slice::from_ref(expect));
+    let mut branches = Vec::new();
+    for base in bases {
+        let optional = items(&base["optional_candidates"]);
+        assert!(
+            optional.len() <= 1,
+            "only one optional candidate is supported"
+        );
+        let mut branch = base.clone();
+        branch
+            .as_object_mut()
+            .unwrap()
+            .remove("optional_candidates");
+        branches.push(branch.clone());
+        if let Some(candidate) = optional.first() {
+            branch["candidates"]
+                .as_array_mut()
+                .unwrap()
+                .push(candidate.clone());
+            branch["candidate_count"] = json!(items(&branch["candidates"]).len());
+            branches.push(branch);
+        }
+    }
+    branches
+}
+
 fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
+    if matches!(stage, "w1" | "w3")
+        && text.is_some()
+        && (sample["expect"].get("alternatives").is_some()
+            || !items(&sample["expect"]["optional_candidates"]).is_empty())
+    {
+        let branches = expectation_branches(&sample["expect"]);
+        if branches.len() > 1 || sample["expect"].get("alternatives").is_some() {
+            let reports: Vec<_> = branches
+                .iter()
+                .map(|expect| {
+                    let mut branch = sample.clone();
+                    branch["expect"] = expect.clone();
+                    score_raw(stage, &branch, text)
+                })
+                .collect();
+            let passed = reports.iter().position(|r| r["status"] == "通过");
+            let selected = passed.unwrap_or_else(|| {
+                (0..reports.len())
+                    .min_by_key(|i| {
+                        items(&reports[*i]["fields"])
+                            .iter()
+                            .filter(|f| f["passed"] != true)
+                            .count()
+                    })
+                    .unwrap()
+            });
+            let mut report = reports[selected].clone();
+            report["expectation_branches"] = json!({"selected":selected,"passed":passed.is_some(),
+                "statuses":reports.iter().map(|r|&r["status"]).collect::<Vec<_>>()});
+            return report;
+        }
+    }
     let mut fields = Vec::new();
     let result = text.map(|text| {
         if sample["fixed_input"] == true {
@@ -728,6 +812,36 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     };
     let mut report = json!({"stage": stage, "id": sample["id"], "label_status": sample["label_status"], "split":sample["split"], "status": status,
         "categories": categories(&fields), "fields": fields, "must_not": sample.get("must_not").or_else(|| sample["expect"].get("must_not")), "note": sample["note"]});
+    if let Some(revision) = sample.get("label_revision") {
+        report["label_revision"] = revision.clone();
+    }
+    if stage == "w3" && text.is_some() {
+        let raw: Value = text
+            .and_then(|t| serde_json::from_str(t).ok())
+            .unwrap_or(Value::Null);
+        report["raw_output"] = raw.clone();
+        let verdict_fields: Vec<_> = fields
+            .iter()
+            .filter(|f| !f["field"].as_str().unwrap().starts_with("coverage."))
+            .collect();
+        let valid = verdict_fields
+            .iter()
+            .filter(|f| f["category"] == "contract")
+            .all(|f| f["passed"] == true);
+        let coverage_fields: Vec<_> = fields
+            .iter()
+            .filter(|f| f["field"].as_str().unwrap().starts_with("coverage."))
+            .collect();
+        let coverage_valid = coverage_fields
+            .iter()
+            .any(|f| f["field"] == "coverage.validate" && f["passed"] == true);
+        let scored = sample["expect"]["coverage"]["scored"] != false;
+        report["verdict_result"] = json!({"valid":valid,"passed":valid.then(||verdict_fields.iter().all(|f|f["passed"]==true))});
+        report["coverage_result"] = json!({"scored":scored,"status":raw["coverage"]["status"],
+            "missing":raw["coverage"]["missing"],"valid":coverage_valid,
+            "passed":scored.then(||coverage_valid && coverage_fields.iter().all(|f|f["passed"]==true)),
+            "guard_passed":coverage_valid && coverage_fields.iter().filter(|f|f["field"]=="coverage.validate" || !scored).all(|f|f["passed"]==true)});
+    }
     if stage == "w1" {
         report["raw"] = text
             .map(|t| serde_json::from_str(t).unwrap_or(json!(t)))
@@ -780,8 +894,26 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     report
 }
 
+fn mark_observation(sample: &Value, report: &mut Value) {
+    if sample["observation_only"] != true {
+        return;
+    }
+    report["observation_only"] = json!(true);
+    report["observation_reason"] = sample["observation_reason"].clone();
+    if matches!(report["status"].as_str(), Some("通过" | "失败")) {
+        report["observed_status"] = report["status"].clone();
+        let mechanical_failure = items(&report["fields"]).iter().any(|f| {
+            matches!(f["category"].as_str(), Some("contract" | "reference")) && f["passed"] != true
+        });
+        if !mechanical_failure {
+            report["status"] = json!("观察");
+        }
+    }
+}
+
 fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
-    let raw = score_raw(stage, sample, text);
+    let mut raw = score_raw(stage, sample, text);
+    mark_observation(sample, &mut raw);
     if !matches!(stage, "w4" | "r4") || text.is_none() {
         return raw;
     }
@@ -1242,18 +1374,34 @@ struct SmokeProfile {
     effort: ReasoningEffort,
     max_output_tokens: std::collections::BTreeMap<String, u32>,
     timeout_seconds: u64,
+    // Routing metadata is deliberately outside the historic provider binding.
+    #[serde(default)]
+    endpoint_env: Option<String>,
 }
-fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
+fn evaluation_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
     let profiles: Vec<SmokeProfile> = serde_json::from_str(text).map_err(|e| e.to_string())?;
-    if profiles.iter().map(|p| p.id.as_str()).collect::<Vec<_>>() != SMOKE_IDS {
-        return Err("AF122 requires exactly eight profiles in the fixed order".into());
+    let expected: Vec<_> = SMOKE_IDS
+        .into_iter()
+        .chain(AF156_IDS)
+        .chain(AF163_IDS)
+        .chain(AF166_QWEN_IDS)
+        .collect();
+    if profiles.iter().map(|p| p.id.as_str()).collect::<Vec<_>>() != expected {
+        return Err("evaluation requires historic, AF156 and AF163 profiles in fixed order".into());
     }
     for profile in &profiles {
         profile.provider.validate().map_err(|e| e.to_string())?;
         if profile.provider.structured_mode == StructuredMode::PromptSchema
-            && (profile.id != "opus-5.5" || profile.model != "claude-opus-5-5")
+            && !matches!(
+                (profile.id.as_str(), profile.model.as_str()),
+                ("opus-5.5", "claude-opus-5-5")
+                    | ("claude-sonnet-5-5", "claude-sonnet-5-5")
+                    | ("claude-haiku-5-5", "claude-haiku-5-5")
+            )
         {
-            return Err("prompt_schema is limited to the fixed Opus evaluation profile".into());
+            return Err(
+                "prompt_schema is limited to the AF132/AF166 fixed evaluation profiles".into(),
+            );
         }
         EvalModel {
             label: profile.id.clone(),
@@ -1262,7 +1410,9 @@ fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
             effort: profile.effort,
         }
         .validate()?;
-        let local = profile.provider.protocol == ProviderProtocol::OpenaiChat;
+        let cloud_qwen = AF156_IDS.contains(&profile.id.as_str());
+        let qwen38 = AF166_QWEN_IDS.contains(&profile.id.as_str());
+        let local = profile.id.starts_with("qwen-");
         if json!(profile.max_output_tokens) != json!({"w1":32768,"w3":16384,"w4":16384})
             || profile.timeout_seconds
                 != if local && profile.provider.thinking == Some(true) {
@@ -1273,12 +1423,86 @@ fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
             || profile.effort
                 != if local {
                     ReasoningEffort::Omit
+                } else if qwen38 || (cloud_qwen && profile.provider.thinking == Some(false)) {
+                    ReasoningEffort::Omit
                 } else {
                     ReasoningEffort::Medium
                 }
         {
             return Err("AF122 output/timeout/effort is fixed".into());
         }
+        if profile.endpoint_env.as_deref()
+            != if local {
+                Some("QWEN_LOCAL_BASE_URL")
+            } else {
+                None
+            }
+        {
+            return Err("evaluation endpoint routing differs from the approved profile".into());
+        }
+        if cloud_qwen
+            && (profile.model != model_provider::DASHSCOPE_MODEL
+                || profile.provider.protocol != ProviderProtocol::OpenaiChat
+                || profile.provider.base_url_env != "QWEN_BASE_URL"
+                || profile.provider.api_key_env.as_deref() != Some("QWEN_API_KEY")
+                || profile.provider.thinking != Some(profile.id.ends_with("-think"))
+                || profile.provider.context_tokens != Some(1_000_000)
+                || profile.provider.context_proof.is_some()
+                || profile.provider.model_revision.as_deref()
+                    != Some(model_provider::DASHSCOPE_CONTEXT_REVISION))
+        {
+            return Err(
+                "AF156 snapshot/context/thinking binding differs from the approved profile".into(),
+            );
+        }
+        if AF163_IDS.contains(&profile.id.as_str()) {
+            let anthropic = profile.id.starts_with("claude-");
+            let prefix = if anthropic { "ANTHROPIC" } else { "OPENAI" };
+            if profile.model != profile.id
+                || profile.provider.protocol
+                    != if anthropic {
+                        ProviderProtocol::AnthropicMessages
+                    } else {
+                        ProviderProtocol::OpenaiResponses
+                    }
+                || profile.provider.base_url_env != format!("{prefix}_BASE_URL")
+                || profile.provider.api_key_env != Some(format!("{prefix}_API_KEY"))
+                || profile.provider.thinking != anthropic.then_some(true)
+                || profile.provider.structured_mode
+                    != if anthropic {
+                        StructuredMode::PromptSchema
+                    } else {
+                        StructuredMode::NativeSchema
+                    }
+                || profile.provider.context_tokens.is_some()
+                || profile.provider.context_proof.is_some()
+                || profile.provider.model_revision.is_some()
+            {
+                return Err(
+                    "AF163 requires the approved AF166 structured-mode cloud profile".into(),
+                );
+            }
+        }
+        if qwen38
+            && (profile.model != model_provider::DASHSCOPE_QWEN38_MODEL
+                || profile.provider.protocol != ProviderProtocol::OpenaiChat
+                || profile.provider.base_url_env != "QWEN_BASE_URL"
+                || profile.provider.api_key_env.as_deref() != Some("QWEN_API_KEY")
+                || profile.provider.thinking != Some(profile.id.ends_with("-think"))
+                || profile.provider.structured_mode != StructuredMode::NativeSchema
+                || profile.provider.context_tokens != Some(1_000_000)
+                || profile.provider.context_proof.is_some()
+                || profile.provider.model_revision.as_deref()
+                    != Some(model_provider::DASHSCOPE_QWEN38_CONTEXT_REVISION))
+        {
+            return Err(
+                "AF166 Qwen3.8 alias/context/thinking profile differs from approval".into(),
+            );
+        }
+        profile
+            .provider
+            .check_model(&profile.model, profile.effort)
+            .map_err(|e| e.to_string())?;
         if local {
             let revision = profile
                 .provider
@@ -1316,6 +1540,83 @@ fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
         }
     }
     Ok(profiles)
+}
+fn smoke_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
+    Ok(evaluation_profiles(text)?
+        .into_iter()
+        .filter(|p| SMOKE_IDS.contains(&p.id.as_str()))
+        .collect())
+}
+
+fn profile_base(
+    profile: &SmokeProfile,
+    recordings: &Path,
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<String, String> {
+    let name = profile
+        .endpoint_env
+        .as_deref()
+        .unwrap_or(&profile.provider.base_url_env);
+    if let Some(base) = variable(name) {
+        return Ok(base);
+    }
+    // Recover only the old endpoint, then rebuild and check the full request fingerprint.
+    // Never substitute the current cloud QWEN_BASE_URL for a historic local endpoint.
+    fn endpoints(
+        dir: &Path,
+        p: &SmokeProfile,
+        result: &mut std::collections::BTreeSet<String>,
+    ) -> Result<(), String> {
+        if !dir.exists() {
+            return Ok(());
+        }
+        for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
+            let path = entry.map_err(|e| e.to_string())?.path();
+            if path.is_dir() {
+                endpoints(&path, p, result)?;
+                continue;
+            }
+            if path.extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+            let value: Value =
+                serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+                    .map_err(|e| e.to_string())?;
+            for record in items(&value["recorded"]) {
+                let b = &record["provider_binding"];
+                if b["provider"] == json!(p.provider)
+                    && b["model"] == p.model
+                    && b["effort"] == json!(p.effort)
+                    && let Some(endpoint) = b["endpoint"].as_str()
+                    && let Some(base) = endpoint
+                        .strip_suffix("/chat/completions")
+                        .or_else(|| endpoint.strip_suffix("/responses"))
+                        .or_else(|| endpoint.strip_suffix("/v1/messages"))
+                {
+                    if p.provider.endpoint(base).map_err(|e| e.to_string())? == endpoint {
+                        result.insert(base.into());
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    let mut bases = std::collections::BTreeSet::new();
+    endpoints(recordings, profile, &mut bases)?;
+    if bases.len() > 1 {
+        return Err(
+            "historical endpoints are ambiguous; set the profile endpoint environment explicitly"
+                .into(),
+        );
+    }
+    Ok(bases.into_iter().next().unwrap_or_else(|| {
+        if AF156_IDS.contains(&profile.id.as_str()) || AF166_QWEN_IDS.contains(&profile.id.as_str())
+        {
+            "https://dashscope.aliyuncs.com/compatible-mode".into()
+        } else {
+            format!("https://{}.invalid/v1", name.to_ascii_lowercase())
+        }
+    }))
 }
 fn smoke_selection(value: Option<&str>) -> Result<Vec<String>, String> {
     let requested: Vec<_> = value.map_or_else(
@@ -1406,12 +1707,7 @@ fn smoke_plan(
     let mut cases = Vec::new();
     for p in profiles {
         // Placeholders permit key-free planning. Live preflight requires the actual environment URL.
-        let base = variable(&p.provider.base_url_env).unwrap_or_else(|| {
-            format!(
-                "https://{}.invalid/v1",
-                p.provider.base_url_env.to_ascii_lowercase()
-            )
-        });
+        let base = profile_base(p, &root.join("recordings").join(&p.id), &variable)?;
         let model = EvalModel {
             label: p.id.clone(),
             model: Some(p.model.clone()),
@@ -1431,7 +1727,7 @@ fn smoke_plan(
             stage_request_with_output_tokens("w1", &sample, p.max_output_tokens["w1"])?;
         request["model"] = json!(p.model);
         p.effort.apply(&mut request);
-        cases.push(case_from_request_with_provider(
+        let mut case = case_from_request_with_provider(
             "w1".into(),
             sample.clone(),
             &root.join("recordings").join(&p.id),
@@ -1440,7 +1736,9 @@ fn smoke_plan(
             request,
             Some(&options),
             Some(p.timeout_seconds),
-        )?);
+        )?;
+        case.endpoint_env = p.endpoint_env.clone();
+        cases.push(case);
     }
     if cases.is_empty()
         || cases
@@ -1549,8 +1847,8 @@ fn smoke_credentials(
             .provider
             .as_ref()
             .ok_or("smoke requires explicit provider")?;
-        let base =
-            variable(&p.base_url_env).ok_or_else(|| format!("missing {}", p.base_url_env))?;
+        let name = c.endpoint_env.as_deref().unwrap_or(&p.base_url_env);
+        let base = variable(name).ok_or_else(|| format!("missing {name}"))?;
         if Some(&base) != c.model.base.as_ref() {
             return Err("smoke endpoint changed after planning".into());
         }
@@ -1559,7 +1857,9 @@ fn smoke_credentials(
         } else {
             String::new()
         };
-        if key.trim().is_empty() && p.protocol != ProviderProtocol::OpenaiChat {
+        if key.trim().is_empty()
+            && (p.api_key_env.is_some() || p.protocol != ProviderProtocol::OpenaiChat)
+        {
             return Err(format!("missing API key for {}", c.model.label));
         }
         keys.insert(c.model.label.clone(), key.trim().to_owned());
@@ -1601,7 +1901,7 @@ fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
         .iter()
         .zip(cases)
         .map(|(r, c)| {
-            let raw = &r["raw"];
+            let raw = if r["raw"].is_null() { &r["raw_output"] } else { &r["raw"] };
             let wire_valid = if r["status"] == "调用失败" {
                 Some(false)
             } else if raw.is_null() {
@@ -1612,7 +1912,7 @@ fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
             let checks: Vec<_> = items(&r["fields"])
                 .iter()
                 .filter(|f| {
-                    f["field"] == "decode"
+                    f["field"] == "decode" || f["field"] == "w3.validate"
                         || f["field"].as_str().is_some_and(|s| s.starts_with("w2."))
                 })
                 .collect();
@@ -1625,10 +1925,12 @@ fn smoke_report(mut report: Value, cases: &[Case]) -> Value {
                 Some(true)
             };
             json!({
-                "profile": c.model.label, "model": c.model.model, "protocol": provider.protocol,
+                "profile": c.model.label, "model": c.model.model, "stage":c.stage,"id":c.sample["id"],"protocol": provider.protocol,
                 "endpoint": provider.endpoint(c.model.base.as_deref().unwrap()).unwrap(),
                 "effort": c.model.effort, "thinking": provider.thinking,
                 "structured_mode":provider.structured_mode,
+                "structured_output_note":if provider.structured_mode==StructuredMode::PromptSchema {"未使用约束解码"} else {"请求原生 schema"},
+                "model_identity_note":if AF166_QWEN_IDS.contains(&c.model.label.as_str()) {"别名，可能漂移"} else {"固定档案"},
                 "constrained_decoding":provider.structured_mode == StructuredMode::NativeSchema,
                 "transport_valid":transport_valid,"provider_http_error":r["provider_http_error"],
                 "max_output_tokens": c.request["max_output_tokens"], "timeout_seconds": c.timeout_seconds,
@@ -1659,6 +1961,9 @@ fn provider_smoke_from_env() -> Result<(), String> {
     if dry {
         println!("{}", smoke_dry_plan(&cases));
         return Ok(());
+    }
+    if limit.is_some_and(|n| n > 0) && selected.iter().any(|id| id.starts_with("qwen-")) {
+        return Err("historic local Qwen profiles are read-only; recording is disabled".into());
     }
     // Validate the complete cohort before creating a client or spending any allowance.
     let sends = smoke_preflight(&cases, limit).map_err(|error| {
@@ -1702,6 +2007,22 @@ fn provider_smoke_from_env() -> Result<(), String> {
 }
 
 const COMPARE_ROOT: &str = "target/eval-providers/compare-af137";
+const AF156_ROOT: &str = "target/eval-providers/compare-af156";
+const AF163_ROOT: &str = "target/eval-providers/compare-af163";
+const AF163_IDS: [&str; 3] = ["gpt-6-luna", "claude-sonnet-5-5", "claude-haiku-5-5"];
+const AF166_PROMPT_IDS: [&str; 2] = ["claude-sonnet-5-5", "claude-haiku-5-5"];
+const AF166_QWEN_IDS: [&str; 2] = ["qwen38-flash-think", "qwen38-flash-nothink"];
+const AF163_COMPARE_IDS: [&str; 5] = [
+    "gpt-6-luna",
+    "claude-sonnet-5-5",
+    "claude-haiku-5-5",
+    "qwen38-flash-think",
+    "qwen38-flash-nothink",
+];
+const AF166_DIAG_ROOT: &str = "target/eval-providers/compare-af163/diag-af166";
+const AF163_SMOKE_SAMPLES: [&str; 2] = ["w1_01_simple_residence", "w3_01_supported_simple"];
+const AF162_ROOT: &str = "target/eval-providers/compare-af156/diag-af162";
+const AF156_IDS: [&str; 2] = ["qwen37-flash-think", "qwen37-flash-nothink"];
 const COMPARE_IDS: [&str; 7] = [
     "ds-pro",
     "ds-flash",
@@ -1713,11 +2034,27 @@ const COMPARE_IDS: [&str; 7] = [
 ];
 
 struct CompareOptions {
+    qwen38: bool,
+    af163: bool,
+    smoke: bool,
+    af156: bool,
+    diagnostic: bool,
     dry: bool,
     limit: Option<usize>,
     profiles: Vec<String>,
     cases: Vec<String>,
     gate: bool,
+}
+impl CompareOptions {
+    fn quota(&self, id: &str) -> usize {
+        if self.smoke {
+            2
+        } else if self.diagnostic {
+            1
+        } else {
+            compare_quota(id)
+        }
+    }
 }
 fn compare_quota(id: &str) -> usize {
     if id == "qwen-27b-think" { 40 } else { 80 }
@@ -1781,9 +2118,14 @@ fn compare_samples() -> Result<Vec<(String, Value)>, String> {
     Ok(result)
 }
 fn compare_options(variable: impl Fn(&str) -> Option<String>) -> Result<CompareOptions, String> {
-    if variable("EVAL_COMPARE").as_deref() != Some("af137") {
-        return Err("EVAL_COMPARE must be af137".into());
-    }
+    let (af156, diagnostic, af163, smoke) = match variable("EVAL_COMPARE").as_deref() {
+        Some("af137") => (false, false, false, false),
+        Some("af156") => (true, false, false, false),
+        Some("af162") => (true, true, false, false),
+        Some("af163") => (false, false, true, false),
+        Some("af163-smoke") => (false, false, true, true),
+        _ => return Err("EVAL_COMPARE must be af137, af156, af162, af163 or af163-smoke".into()),
+    };
     for key in [
         "EVAL_SMOKE",
         "EVAL_SMOKE_PROFILES",
@@ -1803,18 +2145,78 @@ fn compare_options(variable: impl Fn(&str) -> Option<String>) -> Result<CompareO
         "EVAL_BASE_URL",
         "EVAL_API_KEY",
     ] {
-        if variable(key).is_some() {
+        if variable(key).is_some() && !(diagnostic && key == "EVAL_CASES") {
             return Err(format!("AF137 fixed comparison does not accept {key}"));
         }
     }
-    let profiles = compare_selection(variable("EVAL_COMPARE_PROFILES").as_deref(), &COMPARE_IDS)?;
+    let diagnostic_ids: Vec<_> = AF156_IDS.into_iter().chain(AF166_QWEN_IDS).collect();
+    let profiles = compare_selection(
+        variable("EVAL_COMPARE_PROFILES").as_deref(),
+        if smoke {
+            &AF166_PROMPT_IDS
+        } else if af163 {
+            &AF163_COMPARE_IDS
+        } else if diagnostic && variable("EVAL_COMPARE_PROFILES").is_some() {
+            &diagnostic_ids
+        } else if af156 {
+            &AF156_IDS
+        } else {
+            &COMPARE_IDS
+        },
+    )?;
+    let qwen38 = profiles
+        .iter()
+        .any(|id| AF166_QWEN_IDS.contains(&id.as_str()));
+    if diagnostic && qwen38 && profiles.iter().any(|id| AF156_IDS.contains(&id.as_str())) {
+        return Err(
+            "Qwen3.7 and Qwen3.8 diagnostics have separate authorizations; cannot mix".into(),
+        );
+    }
     let samples = compare_samples()?;
     let ids: Vec<_> = samples
         .iter()
         .map(|(_, s)| s["id"].as_str().unwrap())
         .collect();
-    let cases = compare_selection(variable("EVAL_COMPARE_CASES").as_deref(), &ids)?;
-    let quota: usize = profiles.iter().map(|id| compare_quota(id)).sum();
+    let cases = if smoke {
+        if variable("EVAL_COMPARE_CASES").is_some() {
+            return Err("AF163 smoke uses the fixed W1/W3 pair".into());
+        }
+        AF163_SMOKE_SAMPLES
+            .iter()
+            .map(|s| (*s).to_owned())
+            .collect()
+    } else if diagnostic {
+        if variable("EVAL_COMPARE_CASES").is_some() {
+            return Err("AF162 uses only EVAL_CASES".into());
+        }
+        let prefix = variable("EVAL_CASES").unwrap_or_else(|| "w1_01".into());
+        let found: Vec<_> = ids
+            .iter()
+            .filter(|id| !prefix.is_empty() && id.starts_with(&prefix))
+            .map(|id| (*id).to_owned())
+            .collect();
+        if found.len() != 1 {
+            return Err("AF162 EVAL_CASES must identify exactly one sample".into());
+        }
+        found
+    } else {
+        compare_selection(variable("EVAL_COMPARE_CASES").as_deref(), &ids)?
+    };
+    if diagnostic && qwen38 && cases != [SMOKE_SAMPLE] {
+        return Err("AF166 Qwen3.8 diagnostic is fixed to w1_01".into());
+    }
+    let quota: usize = profiles
+        .iter()
+        .map(|id| {
+            if smoke {
+                2
+            } else if diagnostic {
+                1
+            } else {
+                compare_quota(id)
+            }
+        })
+        .sum();
     let limit = match variable("EVAL_RECORD").as_deref() {
         None => None,
         Some("0") => Some(0),
@@ -1826,6 +2228,11 @@ fn compare_options(variable: impl Fn(&str) -> Option<String>) -> Result<CompareO
         }
     };
     Ok(CompareOptions {
+        qwen38,
+        af163,
+        smoke,
+        af156,
+        diagnostic,
         dry: variable("EVAL_DRY_RUN").as_deref() == Some("1"),
         limit,
         profiles,
@@ -1838,19 +2245,53 @@ fn compare_plan(
     profiles: &[SmokeProfile],
     variable: impl Fn(&str) -> Option<String>,
 ) -> Result<Vec<Vec<Case>>, String> {
-    let selected = compare_samples()?;
+    compare_plan_for(root, profiles, &COMPARE_IDS, variable)
+}
+fn compare_plan_for(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    ids: &[&str],
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<Vec<Vec<Case>>, String> {
+    compare_plan_for_sample(root, profiles, ids, variable, None)
+}
+fn compare_plan_for_sample(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    ids: &[&str],
+    variable: impl Fn(&str) -> Option<String>,
+    diagnostic_case: Option<&str>,
+) -> Result<Vec<Vec<Case>>, String> {
+    compare_plan_with_smoke(root, profiles, ids, variable, diagnostic_case, false)
+}
+fn compare_plan_with_smoke(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    ids: &[&str],
+    variable: impl Fn(&str) -> Option<String>,
+    diagnostic_case: Option<&str>,
+    smoke: bool,
+) -> Result<Vec<Vec<Case>>, String> {
+    let mut selected = compare_samples()?;
+    if smoke {
+        selected.retain(|(_, s)| AF163_SMOKE_SAMPLES.contains(&s["id"].as_str().unwrap()));
+        if selected.len() != 2 {
+            return Err("AF163 smoke pair missing".into());
+        }
+    }
+    if let Some(id) = diagnostic_case {
+        selected.retain(|(_, s)| s["id"] == id);
+        if selected.len() != 1 {
+            return Err("AF162 requires one known sample".into());
+        }
+    }
     let mut groups = Vec::new();
-    for id in COMPARE_IDS {
+    for &id in ids {
         let p = profiles
             .iter()
             .find(|p| p.id == id)
             .ok_or("missing AF137 profile")?;
-        let base = variable(&p.provider.base_url_env).unwrap_or_else(|| {
-            format!(
-                "https://{}.invalid/v1",
-                p.provider.base_url_env.to_ascii_lowercase()
-            )
-        });
+        let base = profile_base(p, &root.join("recordings").join(id), &variable)?;
         let model = EvalModel {
             label: p.id.clone(),
             model: Some(p.model.clone()),
@@ -1858,6 +2299,9 @@ fn compare_plan(
             effort: p.effort,
         };
         model.validate()?;
+        p.provider
+            .endpoint(model.base.as_deref().unwrap())
+            .map_err(|e| e.to_string())?;
         p.provider
             .check_model(&p.model, p.effort)
             .map_err(|e| e.to_string())?;
@@ -1870,8 +2314,12 @@ fn compare_plan(
             let mut request = compare_request(stage, sample, p.max_output_tokens[stage])?;
             request["model"] = json!(p.model);
             p.effort.apply(&mut request);
-            for repeat in 1..=compare_quota(id) / 40 {
-                cases.push(case_from_request_with_provider(
+            for repeat in 1..=if diagnostic_case.is_some() || smoke {
+                1
+            } else {
+                compare_quota(id) / 40
+            } {
+                let mut case = case_from_request_with_provider(
                     stage.clone(),
                     sample.clone(),
                     &root
@@ -1883,7 +2331,9 @@ fn compare_plan(
                     request.clone(),
                     Some(&options),
                     Some(p.timeout_seconds),
-                )?);
+                )?;
+                case.endpoint_env = p.endpoint_env.clone();
+                cases.push(case);
             }
         }
         if cases
@@ -1892,7 +2342,13 @@ fn compare_plan(
             .map(|s| s.to_string())
             .collect::<std::collections::BTreeSet<_>>()
             .len()
-            != compare_quota(id)
+            != if smoke {
+                2
+            } else if diagnostic_case.is_some() {
+                1
+            } else {
+                compare_quota(id)
+            }
         {
             return Err("AF137 duplicate slots".into());
         }
@@ -1938,7 +2394,7 @@ fn compare_subset(cases: &[Case], options: &CompareOptions) -> Vec<Case> {
         .collect()
 }
 fn compare_preflight(groups: &[Vec<Case>], options: &CompareOptions) -> Result<usize, String> {
-    let quota: usize = options.profiles.iter().map(|id| compare_quota(id)).sum();
+    let quota: usize = options.profiles.iter().map(|id| options.quota(id)).sum();
     if options.limit.is_some_and(|n| n != 0 && n != quota) {
         return Err(format!("AF137 allowance must equal {quota}"));
     }
@@ -1950,9 +2406,9 @@ fn compare_preflight(groups: &[Vec<Case>], options: &CompareOptions) -> Result<u
         let id = &group[0].model.label;
         let limit = options
             .limit
-            .map(|n| if n == 0 { 0 } else { compare_quota(id) });
+            .map(|n| if n == 0 { 0 } else { options.quota(id) });
         if limit.is_some_and(|n| n > 0) {
-            campaign_check(group, compare_quota(id))?;
+            campaign_check(group, options.quota(id))?;
         }
         sends += preflight(&compare_subset(group, options), limit)?;
     }
@@ -1961,7 +2417,7 @@ fn compare_preflight(groups: &[Vec<Case>], options: &CompareOptions) -> Result<u
 fn compare_freeze(group: &[Case]) -> Result<(), String> {
     let root = campaign_root(group)?.ok_or("AF137 campaign missing")?;
     let _lock = w3_trial_lock(root)?;
-    let quota = compare_quota(&group[0].model.label);
+    let quota = group.len();
     campaign_check(group, quota)?;
     let path = root.join("authorization.json");
     if !path.exists() {
@@ -1977,25 +2433,33 @@ fn compare_resource(id: &str) -> &str {
         "deepseek"
     } else if id.starts_with("qwen-") {
         "qwen"
+    } else if AF156_IDS.contains(&id) || AF166_QWEN_IDS.contains(&id) {
+        "dashscope"
     } else {
         id
     }
 }
 fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<String, String> {
     let mut lines = vec![
-        "AF137 写入侧多模型比较干跑（不发送请求）".into(),
-        "固定样本: W1 20 + W3 20（reviewed，标注 v1 / 请求 v3）；W4/R1/R4=0。".into(),
-        "档案 | 完整槽位/累计上限 | 本次所选 | 待录制 | 可回放 | 过期 | 拒绝 | 中断在途 | 已占用 | 输出 token 上界 | 超时秒".into(),
+        format!("{} 写入侧多模型比较干跑（不发送请求）",if options.smoke {"AF163 冒烟"} else if options.af163 {"AF163"} else if options.af156 {"AF156"} else {"AF137"}),
+        if options.af156 || options.af163 {
+            "固定样本: W1 20 + W3 20（reviewed，当前 AF155 标注 / 请求 v3）；W4/R1/R4=0。"
+        } else {
+            "固定样本: W1 20 + W3 20（reviewed，标注 v1 / 请求 v3）；W4/R1/R4=0。"
+        }.into(),
+        "档案 | 完整槽位/累计上限 | 本次所选 | 待录制 | 可回放 | 过期 | 拒绝 | 中断在途 | 已占用 | 输出 token 上界 | 超时秒 | 熔断未发送".into(),
     ];
     let mut selected_slots = 0;
     let mut needed = 0;
     let mut rejected = 0;
     let mut interrupted = 0;
     let mut occupied = 0;
+    let mut blocked = 0;
     let mut reserved = 0;
     let mut cloud_reserved = 0;
     for group in groups {
         let id = &group[0].model.label;
+        let circuits = provider_circuits(group)?;
         let subset = if options.profiles.contains(id) {
             compare_subset(group, options)
         } else {
@@ -2003,7 +2467,9 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<St
         };
         let missing = subset
             .iter()
-            .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
+            .filter(|c| {
+                matches!(c.replay, Replay::Missing | Replay::Stale) && !circuit_blocks(c, &circuits)
+            })
             .count();
         let stale = subset
             .iter()
@@ -2021,6 +2487,10 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<St
             .iter()
             .filter(|c| matches!(c.replay, Replay::Interrupted))
             .count();
+        let circuit_open = subset
+            .iter()
+            .filter(|c| circuit_blocks(c, &circuits))
+            .count();
         let used = count_sends([campaign_root(group)?.unwrap().join("sends")])?;
         let tokens: u64 = group
             .iter()
@@ -2030,6 +2500,7 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<St
         needed += missing;
         rejected += refused;
         interrupted += inflight;
+        blocked += circuit_open;
         if options.profiles.contains(id) {
             occupied += used;
         }
@@ -2038,29 +2509,197 @@ fn compare_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<St
             cloud_reserved += tokens;
         }
         lines.push(format!(
-            "{id} | {} | {} | {missing} | {cached} | {stale} | {refused} | {inflight} | {used} | {tokens} | {}",
+            "{id} | {} | {} | {missing} | {cached} | {stale} | {refused} | {inflight} | {used} | {tokens} | {} | {circuit_open}",
             group.len(),
             subset.len(),
             group[0].timeout_seconds.unwrap()
         ));
     }
-    lines.push(format!("完整固定槽位: 520（云端 320 / 本地 200）；本次所选: {selected_slots}；待录制: {needed}；发送前拒绝: {rejected}。"));
+    let fixed = if options.smoke {
+        "4（独立于正式 400 槽；Luna 原 2 槽保留）"
+    } else if options.af163 {
+        "400（三档 240 + Qwen3.8 两档 160；本地 0）"
+    } else if options.af156 {
+        "160（云端 160 / 本地 0）"
+    } else {
+        "520（云端 320 / 本地 200）"
+    };
+    lines.push(format!("完整固定槽位: {fixed}；本次所选: {selected_slots}；待录制: {needed}；发送前拒绝: {rejected}。"));
     lines.push(format!("本次所选档案累计已占用: {occupied}；未录制（中断在途）: {interrupted}（跳过、不重发、仍占额度）。"));
+    lines.push(format!("熔断未发送: {blocked}（同档连续 3 次同类 HTTP 错误或 incomplete(max_output_tokens)；后续槽不占额度，重启仍停止）。"));
     lines.push(format!("完整输出额度上界: {reserved} token（云端 {cloud_reserved} / 本地 {}，含思考）；不是预计用量，输入另计。", reserved - cloud_reserved));
-    lines.push("每档独立 campaign: target/eval-providers/compare-af137/campaigns/<profile>；子集沿用完整 80/40 槽额度。".into());
-    lines.push("仅 AF137 标识盲化: source_snapshot.eval_sample=s-<16 位 SHA-256>；报告保留真实样本 ID 对照。".into());
-    lines.push(
-        "各档串行；DeepSeek 两档共用执行锁，本地三档共用执行锁；不同 provider 可独立进程并行。"
-            .into(),
-    );
-    lines.push("Opus prompt_schema：未使用约束解码，原 schema 完整核验、不修补；27B 思考仅一次，稳定性未验证。".into());
+    let root = if options.smoke {
+        "target/eval-providers/compare-af163/smoke"
+    } else if options.af163 {
+        AF163_ROOT
+    } else if options.af156 {
+        AF156_ROOT
+    } else {
+        COMPARE_ROOT
+    };
+    let quota = if options.smoke {
+        "2"
+    } else if options.af163 || options.af156 {
+        "80"
+    } else {
+        "80/40"
+    };
+    lines.push(format!(
+        "每档独立 campaign: {root}/campaigns/<profile>；子集沿用完整 {quota} 槽额度。"
+    ));
+    lines.push("比较模式标识盲化: source_snapshot.eval_sample=s-<16 位 SHA-256>；报告保留真实样本 ID 对照。".into());
+    if options.af156 {
+        let selected: Vec<_> = groups
+            .iter()
+            .filter(|g| options.profiles.contains(&g[0].model.label))
+            .flat_map(|g| compare_subset(g, options))
+            .collect();
+        let lengths: Vec<_> = selected
+            .iter()
+            .map(|c| serde_json::to_vec(&c.wire_request).unwrap().len())
+            .collect();
+        lines.push(format!("输入粗估: {} token（逐请求完整 wire UTF-8 字节/3 向上取整，非预检依据）；完整请求字节合计 {}，单次最大 {}。",
+            lengths.iter().map(|n|n.div_ceil(3)).sum::<usize>(),lengths.iter().sum::<usize>(),lengths.iter().max().unwrap_or(&0)));
+        lines.push(format!("输出使用 max_completion_tokens（思考+回答）；官方至多 10 token 误差，完整额度保守合计 {} token。",reserved+groups.iter().map(Vec::len).sum::<usize>() as u64*10));
+        lines.push("40 样本不变：39 个计分、1 个观察（两档共 4 个观察槽）；当前 AF155 标注，W3 verdict/coverage 分列。".into());
+        lines.push("DashScope 仅固定快照、官方 HTTPS、纯文本两条消息；完整 wire 字节预检官方输入/上下文上限，超限拒绝、不截断；云端真实分词超限亦报错。".into());
+        lines.push("仅 AF156 两档可录制；本地历史档只读，与 reports-af155 七档严格对照，旧账本不复用、不扩额。".into());
+        for group in groups {
+            let budget = |stage| {
+                group
+                    .iter()
+                    .find(|c| c.stage == stage)
+                    .map(|c| c.wire_request["thinking_budget"].clone())
+                    .unwrap_or(Value::Null)
+            };
+            lines.push(format!(
+                "{} thinking_budget: W1={} / W3={}（null 表示不传）。",
+                group[0].model.label,
+                budget("w1"),
+                budget("w3")
+            ));
+        }
+    }
+    if options.af163 {
+        let bytes: usize = groups
+            .iter()
+            .filter(|g| options.profiles.contains(&g[0].model.label))
+            .flat_map(|g| compare_subset(g, options))
+            .map(|c| serde_json::to_vec(&c.wire_request).unwrap().len())
+            .sum();
+        lines.push(format!("输入粗估: {} token（完整 wire UTF-8 字节/3，非额度/上下文证明）；请求字节合计 {bytes}。",bytes.div_ceil(3)));
+        let selected: Vec<_> = groups
+            .iter()
+            .filter(|g| options.profiles.contains(&g[0].model.label))
+            .flat_map(|g| compare_subset(g, options))
+            .collect();
+        let output: u64 = selected
+            .iter()
+            .map(|c| c.request["max_output_tokens"].as_u64().unwrap())
+            .sum();
+        let rounding = selected
+            .iter()
+            .filter(|c| AF166_QWEN_IDS.contains(&c.model.label.as_str()))
+            .count() as u64
+            * 10;
+        lines.push(format!("本次所选输出额度: {output} token；Qwen 实际输出至多每次另有 10 token 误差，保守合计 {}（不是预计用量）。",output+rounding));
+        lines.push(
+            "当前 AF155 标注：40 样本中 39 个计分、1 个观察；W3 verdict/coverage 分列。".into(),
+        );
+        lines.push("Luna native schema；Sonnet/Haiku medium + prompt_schema（未使用约束解码）；Qwen3.8 effort=omit，以 enable_thinking + thinking_budget 绑定开关。".into());
+        lines.push(if options.smoke {"每档 W1 w1_01 + W3 w3_01，各一次；独立 2 槽，共 4；Luna 两条原生冒烟保留，不重开额度。"} else {"正式录制须先核验所选档 W1/W3 冒烟的严格绑定、协议/schema/机械核验与 usage；缺录制时发送前拒绝。"}.into());
+        if !options.smoke {
+            lines.push("Qwen3.8：别名，可能漂移；真实 W1 schema 诊断须通过完整 JSON/schema/W2/usage 且无完全相同候选/请求重复后，才允许本档正式发送。".into());
+            for group in groups
+                .iter()
+                .filter(|g| AF166_QWEN_IDS.contains(&g[0].model.label.as_str()))
+            {
+                lines.push(format!("{} enable_thinking={}；thinking_budget: W1={} / W3={}；reasoning_effort 不传。",
+                    group[0].model.label,group[0].wire_request["enable_thinking"],
+                    group.iter().find(|c|c.stage=="w1").unwrap().wire_request["thinking_budget"],
+                    group.iter().find(|c|c.stage=="w3").unwrap().wire_request["thinking_budget"]));
+            }
+        }
+        lines.push(
+            "Qwen3.7-flash：不可用，无约束解码；旧 Qwen3.7 AF156/AF162 剩余额度作废，仅保留离线历史。".into(),
+        );
+    } else if options.af156 {
+        lines.push("两档串行，共用 DashScope 执行锁；同一档不可重复启动。".into());
+    } else {
+        lines.push(
+            "各档串行；DeepSeek 两档共用执行锁，本地三档共用执行锁；不同 provider 可独立进程并行。"
+                .into(),
+        );
+        lines.push("Opus prompt_schema：未使用约束解码，原 schema 完整核验、不修补；27B 思考仅一次，稳定性未验证。".into());
+    }
     lines.push("本次真实调用: 0；不读取密钥，不创建录制/额度/报告文件。".into());
+    Ok(lines.join("\n"))
+}
+fn diagnostic_dry_plan(groups: &[Vec<Case>], options: &CompareOptions) -> Result<String, String> {
+    let mut lines = vec![
+        if options.qwen38 {
+            "AF166 Qwen3.8 单样本诊断干跑（沿用 AF162，不发送请求）"
+        } else {
+            "AF162 单样本诊断干跑（不发送请求）"
+        }
+        .into(),
+        format!(
+            "固定诊断样本: {}；独立目录: {}；正式槽位: 0。",
+            options.cases[0],
+            if options.qwen38 {
+                AF166_DIAG_ROOT
+            } else {
+                AF162_ROOT
+            }
+        ),
+        "档案 | 槽位上限 | 待录制 | 拒绝 | 已占用 | thinking_budget | 输出上限".into(),
+    ];
+    let mut needed = 0;
+    let mut rejected = 0;
+    for group in groups
+        .iter()
+        .filter(|g| options.profiles.contains(&g[0].model.label))
+    {
+        campaign_check(group, 1)?;
+        let circuits = provider_circuits(group)?;
+        let pending = group
+            .iter()
+            .filter(|c| {
+                matches!(c.replay, Replay::Missing | Replay::Stale) && !circuit_blocks(c, &circuits)
+            })
+            .count();
+        let refused = group
+            .iter()
+            .filter(|c| matches!(c.replay, Replay::Rejected(_)))
+            .count();
+        let used = count_sends([campaign_root(group)?.unwrap().join("sends")])?;
+        if used + pending > 1 {
+            return Err("AF162 profile cumulative allowance exceeds 1".into());
+        }
+        needed += pending;
+        rejected += refused;
+        lines.push(format!(
+            "{} | 1 | {pending} | {refused} | {used} | {} | {}",
+            group[0].model.label,
+            group[0].wire_request["thinking_budget"],
+            group[0].request["max_output_tokens"]
+        ));
+    }
+    lines.push(format!("完整诊断额度: 2（think 1 + nothink 1）；本次所选: {}；待录制: {needed}；拒绝: {rejected}。",options.profiles.len()));
+    if options.qwen38 {
+        lines.push("qwen3.8-flash：别名，可能漂移；原生 json_schema，真实 W1 schema，盲化 ID；enable_thinking=true/false，reasoning_effort 不传。".into());
+        lines.push("开思考 thinking_budget=16384；关思考不传预算；输出上限 32768（思考+回答），完整两槽至多 65556 token（含各 10 token 误差）；截断留有界诊断片段。".into());
+        lines.push("诊断核验完整 JSON、原 schema/W2、usage 与完全相同重复候选/请求；通过后才能使用正式两档各 80 槽，本诊断不计正式额度。".into());
+    }
+    lines.push("发送前落盘、不重试、在途不重发、严格指纹；续跑不扩额。诊断片段不参与评分。".into());
+    lines.push("本次真实调用: 0；不读取密钥、不创建目录/账本/录制。".into());
     Ok(lines.join("\n"))
 }
 fn compare_mechanical(row: &Value) -> Vec<String> {
     let reason = match row["status"].as_str() {
         Some("未录制") => Some("missing"),
         Some("未录制（中断在途）") => Some("interrupted_inflight"),
+        Some("熔断未发送") => Some("provider_circuit_open"),
         Some("录制过期") => Some("stale"),
         Some("发送前拒绝") => Some("preflight_rejected"),
         Some("输入无效") => Some("invalid_input"),
@@ -2110,6 +2749,35 @@ fn compare_tier(cells: &[Value]) -> &str {
     }
     if cells
         .iter()
+        .filter(|c| {
+            matches!(
+                c["profile"].as_str(),
+                Some("gpt-6-luna" | "claude-haiku-5-5")
+            )
+        })
+        .any(stable)
+    {
+        return "低价云档即可（本轮 Luna/Haiku 两次均通过）";
+    }
+    if cells
+        .iter()
+        .filter(|c| c["profile"] == "claude-sonnet-5-5")
+        .any(stable)
+    {
+        return "Sonnet 即可（本轮两次均通过）";
+    }
+    if cells
+        .iter()
+        .filter(|c| {
+            AF156_IDS.contains(&c["profile"].as_str().unwrap())
+                || AF166_QWEN_IDS.contains(&c["profile"].as_str().unwrap())
+        })
+        .any(stable)
+    {
+        return "阿里云 Qwen 即可（本轮两次均通过）";
+    }
+    if cells
+        .iter()
         .filter(|c| c["profile"].as_str().unwrap().starts_with("ds-"))
         .any(stable)
     {
@@ -2124,7 +2792,171 @@ fn compare_tier(cells: &[Value]) -> &str {
     }
     "全部失败（不自动归因）"
 }
+// AF163 prices are the user-approved scenario, not proxy billing quotes.
+fn compare_price(id: &str) -> Option<(f64, f64, Option<f64>)> {
+    Some(match id {
+        "ds-pro" => (9.0, 27.0, Some(0.3)),
+        "ds-flash" => (1.0, 4.0, Some(0.02)), // AF163 off-peak scenario.
+        "gpt-6.1-sol" | "claude-sonnet-5-5" => (2.0 * 7.1, 10.0 * 7.1, None),
+        "opus-5.5" => (4.0 * 7.1, 20.0 * 7.1, None),
+        "qwen38-flash-think" | "qwen38-flash-nothink" => (0.8, 2.7, Some(0.1)),
+        "gpt-6-luna" | "claude-haiku-5-5" => (0.10 * 7.1, 0.50 * 7.1, None),
+        "qwen-27b-think" | "qwen-27b-nothink" | "qwen-9b-nothink" => (0.0, 0.0, None),
+        _ => return None,
+    })
+}
+fn compare_cost(id: &str, rows: &[Value]) -> Value {
+    let price = compare_price(id);
+    let mut subtotal = 0.0;
+    let mut known = 0;
+    let mut unknown = 0;
+    let mut reasons = std::collections::BTreeSet::new();
+    for r in rows {
+        if !matches!(
+            r["status"].as_str(),
+            Some("通过" | "失败" | "调用失败" | "观察" | "未录制（中断在途）")
+        ) {
+            continue; // Missing/blocked/rejected slots have no known send, not fictitious fees.
+        }
+        let values = r["usage"]["input_tokens"]
+            .as_u64()
+            .zip(r["usage"]["output_tokens"].as_u64());
+        let Some(((input, output), (input_rate, output_rate, cached_rate))) = values.zip(price)
+        else {
+            unknown += 1;
+            reasons.insert("usage_or_price_unknown");
+            continue;
+        };
+        if id == "claude-haiku-5-5" && input > 100_000 {
+            unknown += 1;
+            reasons.insert("haiku_price_only_approved_up_to_100k_input");
+            continue;
+        }
+        let cached = r
+            .pointer("/usage/input_tokens_details/cached_tokens")
+            .and_then(Value::as_u64);
+        if cached.is_some_and(|n| n > input) {
+            unknown += 1;
+            reasons.insert("invalid_cached_token_count");
+            continue;
+        }
+        let cached = if cached_rate.is_some() {
+            cached.unwrap_or(0)
+        } else {
+            0
+        };
+        subtotal += ((input - cached) as f64 * input_rate
+            + cached as f64 * cached_rate.unwrap_or(input_rate)
+            + output as f64 * output_rate)
+            / 1_000_000.0;
+        known += 1;
+    }
+    let passed = rows
+        .iter()
+        .filter(|r| r["observation_only"] != true && r["status"] == "通过")
+        .count();
+    let mut samples = std::collections::BTreeMap::<String, Vec<&Value>>::new();
+    for r in rows.iter().filter(|r| r["observation_only"] != true) {
+        samples
+            .entry(format!("{}:{}", r["stage"], r["id"]))
+            .or_default()
+            .push(r);
+    }
+    let stable = samples
+        .values()
+        .filter(|rs| rs.len() == 2 && rs.iter().all(|r| r["status"] == "通过"))
+        .count();
+    json!({"currency":"CNY","price_revision":"AF163/AF165 / 2026-10-08","usd_cny":7.1,
+        "basis":"官方价估算，代理实际计费可能不同；实际已录制 usage，失败/观察调用也计费用，推理 token 已含在 output 中",
+        "input_cny_per_million":price.map(|p|p.0),"output_cny_per_million":price.map(|p|p.1),
+        "cached_input_cny_per_million":price.and_then(|p|p.2),
+        "assumptions":"DeepSeek Flash 按 AF163 非高峰价；已知 DS/Qwen3.8 缓存按缓存价，否则按普通输入价。其他档未计缓存创建/读取费率差异；本地仅 API 费为零，不含硬件/电费。Haiku 仅输入≤100k 的批准价。",
+        "priced_attempts":known,"unknown_usage_or_price_attempts":unknown,"unknown_reasons":reasons,
+        "known_subtotal_cny":subtotal,"estimated_total_cny":(unknown==0).then_some(subtotal),
+        "passed_attempts":passed,"stable_passed_samples":stable,
+        "cost_per_passed_attempt_cny":(unknown==0 && passed>0).then(||subtotal/passed as f64),
+        "cost_per_stable_passed_sample_cny":(unknown==0 && stable>0).then(||subtotal/stable as f64),
+        "denominator":"每通过样本成本按两次均通过的非观察样本数；单次通过成本另列。分子含本档所列阶段全部已发送调用费用；未录制/过期不是免费或通过。"})
+}
+fn af163_smoke_check(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    selected: &[String],
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<(), String> {
+    let ids: Vec<_> = selected.iter().map(String::as_str).collect();
+    let groups = compare_plan_with_smoke(root, profiles, &ids, variable, None, true)?;
+    for group in groups {
+        campaign_check(&group, 2)?;
+        let report = evaluate_cases(&group, None, &mut |_| panic!("smoke check must not send"))?;
+        let checked = smoke_report(report, &group);
+        for row in items(&checked["smoke"]) {
+            if row["transport_valid"] != true
+                || row["provider_output_valid"] != true
+                || row["mechanical_valid"] != true
+                || row["usage"]["input_tokens"].as_u64().is_none()
+                || row["usage"]["output_tokens"].as_u64().is_none()
+            {
+                return Err(format!(
+                    "AF163 {} smoke {} is missing/stale or failed protocol/schema/mechanical/usage checks; no formal send permitted",
+                    row["profile"], row["request"]
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+fn af166_diagnostic_rows(groups: &[Vec<Case>], reports: &[Value]) -> Vec<Value> {
+    groups.iter().zip(reports).flat_map(|(group,report)| {
+        let checked = smoke_report(report.clone(),group);
+        items(&checked["smoke"]).iter().zip(items(&report["results"])).map(|(check,row)| {
+            let raw = if row["raw"].is_null() {&row["raw_output"]} else {&row["raw"]};
+            let duplicate = raw.is_object().then(||["candidates","memory_requests"].iter().any(|field| {
+                let values = items(&raw[*field]);
+                values.iter().enumerate().any(|(i,value)|values[..i].contains(value))
+            }));
+            let valid = check["transport_valid"]==true && check["provider_output_valid"]==true
+                && check["mechanical_valid"]==true && duplicate==Some(false)
+                && check["usage"]["input_tokens"].as_u64().is_some()
+                && check["usage"]["output_tokens"].as_u64().is_some();
+            let mut check = check.clone();
+            check["exact_duplicate_candidates_or_requests"] = json!(duplicate);
+            check["diagnostic_passed"] = json!(valid);
+            check["boundary"] = json!("单个完整 JSON + 原 schema/W2 + usage + 完全相同重复项；不判语义，不证明所有输入的约束执行");
+            check
+        }).collect::<Vec<_>>()
+    }).collect()
+}
+fn af166_diagnostic_check(
+    root: &Path,
+    profiles: &[SmokeProfile],
+    selected: &[String],
+    variable: impl Fn(&str) -> Option<String>,
+) -> Result<(), String> {
+    let ids: Vec<_> = selected.iter().map(String::as_str).collect();
+    let groups = compare_plan_for_sample(root, profiles, &ids, variable, Some(SMOKE_SAMPLE))?;
+    for group in &groups {
+        campaign_check(group, 1)?;
+    }
+    let reports = groups
+        .iter()
+        .map(|group| evaluate_cases(group, None, &mut |_| panic!("diagnostic check sent")))
+        .collect::<Result<Vec<_>, _>>()?;
+    if af166_diagnostic_rows(&groups, &reports)
+        .iter()
+        .any(|r| r["diagnostic_passed"] != true)
+    {
+        return Err("AF166 Qwen3.8 diagnostic missing/stale/invalid/duplicated or usage unknown; no formal send permitted".into());
+    }
+    Ok(())
+}
 fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value {
+    let af163 = groups
+        .iter()
+        .any(|g| AF163_COMPARE_IDS.contains(&g[0].model.label.as_str()));
+    let af156 = groups
+        .iter()
+        .any(|g| AF156_IDS.contains(&g[0].model.label.as_str()));
     let mut matrix = Vec::new();
     for (stage, sample) in compare_samples().unwrap() {
         let mut cells = Vec::new();
@@ -2136,10 +2968,15 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
             let passed = rows.iter().filter(|r| r["status"] == "通过").count();
             let complete = rows
                 .iter()
-                .all(|r| matches!(r["status"].as_str(), Some("通过" | "失败")));
+                .all(|r| matches!(r["status"].as_str(), Some("通过" | "失败" | "观察")));
             let observed = rows
                 .iter()
-                .filter(|r| matches!(r["status"].as_str(), Some("通过" | "失败" | "调用失败")))
+                .filter(|r| {
+                    matches!(
+                        r["status"].as_str(),
+                        Some("通过" | "失败" | "调用失败" | "观察")
+                    )
+                })
                 .count();
             let distinct: std::collections::BTreeSet<_> =
                 rows.iter().map(|r| r["status"].as_str()).collect();
@@ -2150,18 +2987,26 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
                 "reference_failures":r["categories"]["reference"]["failures"],
                 "semantic_failures":r["categories"]["semantic"]["failures"],
                 "error":r["error"],"elapsed_ms":r["elapsed_ms"],"usage":r["usage"],
+                "provider_circuit_error":r["provider_circuit_error"],
                 "request":r["request"],
+                "verdict_result":r["verdict_result"],"coverage_result":r["coverage_result"],
+                "raw_output":r["raw_output"],"fields":r["fields"],"observed_status":r["observed_status"],
             })).collect();
             cells.push(json!({"profile":group[0].model.label,"passed":passed,"total":rows.len(),
-                "score":format!("{passed}/{}",rows.len()),"complete":complete,
+                "reference_only":(af156 && !AF156_IDS.contains(&group[0].model.label.as_str())) || (af163 && !AF163_COMPARE_IDS.contains(&group[0].model.label.as_str())),
+                "score":if sample["observation_only"]==true {"观察，不计分".to_owned()} else {format!("{passed}/{}",rows.len())},"complete":complete,
                 "observed_attempts":observed,"unstable":observed==rows.len() && distinct.len()>1,
                 "stability":if rows.len()==1 {"单次，稳定性未验证"} else {"仅两次观测"},
-                "structured_mode":mode,"constrained_decoding":mode==StructuredMode::NativeSchema,"attempts":attempts}));
+                "structured_mode":mode,"constrained_decoding":mode==StructuredMode::NativeSchema,
+                "structured_output_note":if mode==StructuredMode::PromptSchema {"未使用约束解码"} else {"请求原生 schema"},
+                "model_identity_note":if AF166_QWEN_IDS.contains(&group[0].model.label.as_str()) {"别名，可能漂移"} else {"固定档案"},"attempts":attempts}));
         }
         matrix.push(
             json!({"stage":stage,"id":sample["id"],"label_contract":sample["contract"],
             "eval_sample":compare_sample_id(sample["id"].as_str().unwrap()),
-            "request_contract":format!("{stage}.v3"),"tier":compare_tier(&cells),"profiles":cells}),
+            "label_revision":sample["label_revision"],
+            "observation_only":sample["observation_only"]==true,"observation_reason":sample["observation_reason"],
+            "request_contract":format!("{stage}.v3"),"tier":if sample["observation_only"]==true {"观察（契约待定）"} else {compare_tier(&cells)},"profiles":cells}),
         );
     }
     let profile_reports: Vec<_> = groups.iter().zip(reports).map(|(group, report)| {
@@ -2174,6 +3019,7 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
                 (key.to_owned(),json!({"known":known.len(),"unknown":rows.len()-known.len(),"known_total":(!known.is_empty()).then(||known.iter().sum::<u64>())}))
             }).collect();
             metric["usage"] = usage;
+            metric["cost_estimate"] = compare_cost(&group[0].model.label, &rows.iter().map(|r|(*r).clone()).collect::<Vec<_>>());
             metric["failure_categories"] = json!({
                 "mechanical":rows.iter().filter(|r| !compare_mechanical(r).is_empty()).count(),
                 "reference":rows.iter().filter(|r| r["categories"]["reference"]["passed"]==false).count(),
@@ -2181,15 +3027,48 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
             });
         }
         let provider = group[0].provider.as_ref().unwrap();
+        let w3: Vec<_> = items(&report["results"]).iter().filter(|r|r["stage"]=="w3" && r["observation_only"]!=true).collect();
+        let verdict = |pass|w3.iter().filter(|r|r["verdict_result"]["passed"]==pass).count();
+        let w3_10: Vec<_> = w3.iter().filter(|r|r["id"]=="w3_10_value_not_supported").map(|r| {
+            let reviews: Vec<_> = items(&r["raw_output"]["reviews"]).iter().filter(|r|r["candidate"]==0).collect();
+            if reviews.len()==1 {reviews[0]["verdict"].clone()} else {Value::Null}
+        }).collect();
+        let verdict_count = |v|w3_10.iter().filter(|r|**r==v).count();
+        let observations: Vec<_> = items(&report["results"]).iter().filter(|r|r["observation_only"]==true).map(|r|json!({
+            "id":r["id"],"repeat":r["repeat"],"status":r["status"],"observed_status":r["observed_status"],
+            "reason":r["observation_reason"],"raw_output":r["raw_output"],"fields":r["fields"],
+            "mechanical_failures":compare_mechanical(r),
+        })).collect();
         json!({"profile":group[0].model.label,"model":group[0].model.model,"protocol":provider.protocol,
+            "reference_only":(af156 && !AF156_IDS.contains(&group[0].model.label.as_str())) || (af163 && !AF163_COMPARE_IDS.contains(&group[0].model.label.as_str())),
             "effort":group[0].model.effort,"thinking":provider.thinking,"structured_mode":provider.structured_mode,
+            "structured_output_note":if provider.structured_mode==StructuredMode::PromptSchema {"未使用约束解码"} else {"请求原生 schema"},
+            "model_identity_note":if AF166_QWEN_IDS.contains(&group[0].model.label.as_str()) {"别名，可能漂移"} else {"固定档案"},
             "timeout_seconds":group[0].timeout_seconds,"fixed_slots":group.len(),
             "interrupted_inflight":items(&report["results"]).iter().filter(|r|r["status"]=="未录制（中断在途）").count(),
-            "summary":report["summary"],"metrics":metrics})
+            "circuit_not_sent":report["circuit_not_sent"],"provider_circuits":report["provider_circuits"],
+            "w3_verdict":{"passed":verdict(true),"failed":verdict(false),"unavailable":w3.len()-verdict(true)-verdict(false)},
+            "w3_10_verdict_distribution":{"contradicted":verdict_count("contradicted"),"insufficient":verdict_count("insufficient"),
+                "supported":verdict_count("supported"),"unavailable":w3_10.len()-verdict_count("contradicted")-verdict_count("insufficient")-verdict_count("supported")},
+            "observations":observations,
+            "w3_coverage":{"complete":w3.iter().filter(|r|r["coverage_result"]["status"]=="complete").count(),
+                "gaps":w3.iter().filter(|r|r["coverage_result"]["status"]=="gaps").count(),
+                "scored_passed":w3.iter().filter(|r|r["coverage_result"]["passed"]==true).count(),
+                "scored_failed":w3.iter().filter(|r|r["coverage_result"]["passed"]==false).count(),
+                "unscored":w3.iter().filter(|r|r["coverage_result"]["scored"]==false).count(),
+                "guard_failed":w3.iter().filter(|r|r["coverage_result"]["guard_passed"]==false).count()},
+            "summary":report["summary"],"metrics":metrics,
+            "stage_pass_rates":items(&report["summary"]).iter().filter(|r|r["stage"]=="w1" || r["stage"]=="w3").map(|r|json!({
+                "stage":r["stage"],"passed":r["passed"],"scoring_slots":r["scoring_slots"],
+                "pass_rate":r["scoring_slots"].as_u64().filter(|n|*n>0).map(|n|r["passed"].as_u64().unwrap_or(0) as f64/n as f64)})).collect::<Vec<_>>(),
+            "cost_estimate":compare_cost(&group[0].model.label,items(&report["results"]))})
     }).collect();
     let unstable: Vec<_> = matrix
         .iter()
-        .filter(|r| items(&r["profiles"]).iter().any(|c| c["unstable"] == true))
+        .filter(|r| {
+            r["observation_only"] != true
+                && items(&r["profiles"]).iter().any(|c| c["unstable"] == true)
+        })
         .map(|r| r["id"].clone())
         .collect();
     let interrupted: Vec<_> = reports
@@ -2201,23 +3080,161 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
             "repeat":r["repeat"],"request":r["request"],"status":r["status"]})
         })
         .collect();
-    json!({"comparison":"af137","purpose":"W1/W3 stage screening, not end-to-end reliability",
-        "fixed_slots":520,"sent_calls":sent,"profiles":profile_reports,"matrix":matrix,"unstable_samples":unstable,
+    json!({"comparison":if af163 {"af163"} else if af156 {"af156"} else {"af137"},"purpose":"W1/W3 stage screening, not end-to-end reliability",
+        "fixed_slots":groups.iter().map(Vec::len).sum::<usize>(),"sent_calls":sent,"profiles":profile_reports,"matrix":matrix,"unstable_samples":unstable,
+        "scoring_samples":matrix.iter().filter(|r|r["observation_only"]!=true).count(),
+        "observation_samples":matrix.iter().filter(|r|r["observation_only"]==true).count(),
         "interrupted":interrupted,
+        "circuit_not_sent":reports.iter().flat_map(|r|items(&r["results"]))
+            .filter(|r|r["status"]=="熔断未发送").count(),
         "results":reports.iter().flat_map(|r|items(&r["results"]).iter().cloned()).collect::<Vec<_>>()})
 }
 fn provider_comparison_from_env() -> Result<(), String> {
     let variable = |name: &str| std::env::var(name).ok();
+    provider_comparison(variable)
+}
+fn af156_reference_check(report: &Value, baseline: &Value) -> Result<(), String> {
+    if baseline["comparison"] != "af137"
+        || baseline["fixed_slots"] != 520
+        || baseline["sent_calls"] != 0
+    {
+        return Err("AF156 requires the zero-call AF155 520-slot reference report".into());
+    }
+    let identity = |report: &Value| {
+        items(&report["results"])
+            .iter()
+            .filter(|r| COMPARE_IDS.contains(&r["model"].as_str().unwrap_or("")))
+            .map(|r| {
+                json!([
+                    r["model"],
+                    r["stage"],
+                    r["id"],
+                    r["repeat"],
+                    r["request"],
+                    r["status"],
+                    r["observation_only"]
+                ])
+                .to_string()
+            })
+            .collect::<std::collections::BTreeSet<_>>()
+    };
+    let expected = identity(baseline);
+    if expected.len() != 520 || identity(report) != expected {
+        return Err(
+            "AF156 historical requests/scores differ from reports-af155; no recording permitted"
+                .into(),
+        );
+    }
+    Ok(())
+}
+fn af156_reference(profiles: &[SmokeProfile]) -> Result<(Vec<Vec<Case>>, Vec<Value>), String> {
+    let history = Path::new(env!("CARGO_MANIFEST_DIR")).join(COMPARE_ROOT);
+    let groups = compare_plan(&history, profiles, |_| None)?;
+    let reports = groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("historical comparison sent")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let baseline: Value = serde_json::from_slice(
+        &std::fs::read(history.join("reports-af155/report.json")).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    af156_reference_check(&compare_report(&groups, &reports, 0), &baseline)?;
+    Ok((groups, reports))
+}
+fn provider_comparison(variable: impl Fn(&str) -> Option<String> + Copy) -> Result<(), String> {
+    provider_comparison_at(Path::new(env!("CARGO_MANIFEST_DIR")), variable)
+}
+fn provider_comparison_at(
+    base: &Path,
+    variable: impl Fn(&str) -> Option<String> + Copy,
+) -> Result<(), String> {
     let options = compare_options(variable)?;
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(COMPARE_ROOT);
-    let profiles = smoke_profiles(include_str!("eval/write_stage/providers.json"))?;
-    let groups = compare_plan(&root, &profiles, variable)?;
+    if options.af156 && !options.qwen38 && options.limit.is_some_and(|n| n > 0) && !options.dry {
+        return Err("AF164: Qwen3.7-flash unavailable (no constrained decoding); remaining authorization revoked".into());
+    }
+    let root = base.join(if options.diagnostic && options.qwen38 {
+        AF166_DIAG_ROOT
+    } else if options.smoke {
+        "target/eval-providers/compare-af163/smoke"
+    } else if options.af163 {
+        AF163_ROOT
+    } else if options.diagnostic {
+        AF162_ROOT
+    } else if options.af156 {
+        AF156_ROOT
+    } else {
+        COMPARE_ROOT
+    });
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json"))?;
+    let ids: &[&str] = if options.smoke {
+        &AF166_PROMPT_IDS
+    } else if options.af163 {
+        &AF163_COMPARE_IDS
+    } else if options.diagnostic && options.qwen38 {
+        &AF166_QWEN_IDS
+    } else if options.af156 {
+        &AF156_IDS
+    } else {
+        &COMPARE_IDS
+    };
+    let diagnostic_case = options.diagnostic.then(|| options.cases[0].as_str());
+    let groups = compare_plan_with_smoke(
+        &root,
+        &profiles,
+        ids,
+        variable,
+        diagnostic_case,
+        options.smoke,
+    )?;
     if options.dry {
-        println!("{}", compare_dry_plan(&groups, &options)?);
+        println!(
+            "{}",
+            if options.diagnostic {
+                diagnostic_dry_plan(&groups, &options)?
+            } else {
+                compare_dry_plan(&groups, &options)?
+            }
+        );
         return Ok(());
     }
+    if options.limit.is_some_and(|n| n > 0)
+        && options.profiles.iter().any(|id| id.starts_with("qwen-"))
+    {
+        return Err("historic local Qwen profiles are read-only; recording is disabled".into());
+    }
+    // Reject a stale historical reference before credentials, clients, freeze or sends.
+    let reference = if (options.af156 && !options.diagnostic) || (options.af163 && !options.smoke) {
+        Some(af156_reference(&profiles)?)
+    } else {
+        None
+    };
     // Check every selected campaign before any client, credentials or physical sends.
     let sends = compare_preflight(&groups, &options)?;
+    if sends > 0 && options.af163 && !options.smoke {
+        let anthropic_and_luna: Vec<_> = options
+            .profiles
+            .iter()
+            .filter(|id| AF163_IDS.contains(&id.as_str()))
+            .cloned()
+            .collect();
+        if !anthropic_and_luna.is_empty() {
+            af163_smoke_check(
+                &root.join("smoke"),
+                &profiles,
+                &anthropic_and_luna,
+                variable,
+            )?;
+        }
+        let qwen: Vec<_> = options
+            .profiles
+            .iter()
+            .filter(|id| AF166_QWEN_IDS.contains(&id.as_str()))
+            .cloned()
+            .collect();
+        if !qwen.is_empty() {
+            af166_diagnostic_check(&root.join("diag-af166"), &profiles, &qwen, variable)?;
+        }
+    }
     let selected_cases: Vec<_> = groups
         .iter()
         .filter(|g| options.profiles.contains(&g[0].model.label))
@@ -2256,7 +3273,7 @@ fn provider_comparison_from_env() -> Result<(), String> {
         let subset = compare_subset(group, &options);
         let limit = options
             .limit
-            .map(|n| if n == 0 { 0 } else { compare_quota(id) });
+            .map(|n| if n == 0 { 0 } else { options.quota(id) });
         let pending = preflight(&subset, limit)?;
         // Separate processes may run different cloud providers; DS and Ollama cannot overlap.
         let _resource = if pending > 0 {
@@ -2286,12 +3303,60 @@ fn provider_comparison_from_env() -> Result<(), String> {
         sent += report["sent_calls"].as_u64().unwrap() as usize;
     }
     // Refresh after recording, also including unselected profiles' existing recordings.
-    let groups = compare_plan(&root, &profiles, variable)?;
-    let reports: Vec<_> = groups
+    let mut groups = compare_plan_with_smoke(
+        &root,
+        &profiles,
+        ids,
+        variable,
+        diagnostic_case,
+        options.smoke,
+    )?;
+    let mut reports: Vec<_> = groups
         .iter()
         .map(|g| evaluate_cases(g, None, &mut |_| panic!("offline comparison sent")))
         .collect::<Result<_, _>>()?;
-    let report = compare_report(&groups, &reports, sent);
+    let new_reports = reports.clone();
+    if let Some((mut historic, mut historic_reports)) = reference {
+        historic.append(&mut groups);
+        historic_reports.append(&mut reports);
+        groups = historic;
+        reports = historic_reports;
+    }
+    let mut report = if options.smoke {
+        let cases: Vec<_> = groups.iter().flat_map(|g| g.iter().cloned()).collect();
+        let rows: Vec<_> = reports
+            .iter()
+            .flat_map(|r| items(&r["results"]).iter().cloned())
+            .collect();
+        smoke_report(
+            json!({"comparison":"af163-smoke","authorized_slots":4,"formal_slots":0,
+            "fixed_slots":4,"sent_calls":sent,"results":rows}),
+            &cases,
+        )
+    } else if options.diagnostic {
+        json!({"comparison":if options.qwen38 {"af166-qwen38-diagnostic"} else {"af162"},"diagnostic_only":true,"scoring_eligible":false,
+            "authorized_slots":2,"formal_af156_slots":0,"fixed_slots":2,"sample":options.cases[0],"sent_calls":sent,
+            "diagnostic_checks":if options.qwen38 {json!(af166_diagnostic_rows(&groups,&reports))} else {Value::Null},
+            "profiles":groups.iter().map(|g|json!({"profile":g[0].model.label,"allowance":1})).collect::<Vec<_>>(),
+            "results":reports.iter().flat_map(|r|items(&r["results"]).iter().cloned()).collect::<Vec<_>>()})
+    } else {
+        compare_report(&groups, &reports, sent)
+    };
+    if (options.af156 && !options.diagnostic) || (options.af163 && !options.smoke) {
+        report["authorized_slots"] = json!(if options.af163 { 400 } else { 160 });
+        report["historical_slots"] = json!(520);
+        report["reference_report"] = json!("compare-af137/reports-af155/report.json");
+        report["reference_profiles"] = json!(COMPARE_IDS);
+        report["new_profile_report"] = compare_report(&groups[7..], &new_reports, sent);
+    }
+    if options.af163 {
+        report["structured_mode_decision"] = json!({"decision":"AF166","profiles":AF166_PROMPT_IDS,
+            "w1_evidence":"schema_grammar_too_large","w3_evidence":"HTTP 400 provider_error_unclassified; 原始正文未保存，无法离线确认是否 schema 问题",
+            "mode":"prompt_schema","note":"未使用约束解码"});
+        report["unavailable_profiles"] = json!([{"model":model_provider::DASHSCOPE_MODEL,
+            "profiles":AF156_IDS,"status":"不可用：无约束解码","decision":"AF164",
+            "remaining_authorization":"revoked","quality_comparison":false}]);
+    }
     if sent > 0 {
         m15_write_json(
             &root
@@ -2314,7 +3379,8 @@ fn compare_check_report(report: &Value, options: &CompareOptions) -> Result<(), 
         && items(&report["results"]).iter().any(|r| {
             options.profiles.iter().any(|id| r["model"] == *id)
                 && options.cases.iter().any(|id| r["id"] == *id)
-                && r["status"] != "通过"
+                && !(r["status"] == "通过"
+                    || (r["observation_only"] == true && r["status"] == "观察"))
         })
     {
         return Err("AF137 selected model scores failed (EVAL_GATE=1)".into());
@@ -2357,6 +3423,7 @@ struct Case {
     repeat: usize,
     w3_trial_root: Option<PathBuf>,
     timeout_seconds: Option<u64>,
+    endpoint_env: Option<String>,
 }
 
 fn plan(selected: Vec<(String, Value)>, root: &Path) -> Result<Vec<Case>, String> {
@@ -2590,6 +3657,7 @@ fn case_from_request_with_provider(
         repeat,
         w3_trial_root: None,
         timeout_seconds,
+        endpoint_env: None,
     })
 }
 
@@ -2716,20 +3784,103 @@ fn normalized_envelope(provider: Option<&ProviderConfig>, envelope: &Value) -> V
         Ok(text) => {
             json!({"status":"completed","usage":usage,"output":[{"content":[{"type":"output_text","text":text}]}]})
         }
+        Err(hippocampus::OpenAiAdapterError::Incomplete(reason)) => {
+            let mut result =
+                json!({"status":"incomplete","usage":usage,"incomplete_details":{"reason":reason}});
+            if let Some(diagnostic) =
+                model_provider::incomplete_diagnostics(provider.protocol, envelope)
+            {
+                result["diagnostic_fragments"] = diagnostic;
+            }
+            result
+        }
         Err(e) => {
             json!({"status":"failed","usage":usage,"error":e.to_string(),"incomplete_details":{"reason":e.to_string()}})
         }
     }
 }
 
+#[derive(Default, serde::Serialize, serde::Deserialize)]
+struct ProviderCircuit {
+    error: Option<String>,
+    consecutive: usize,
+}
+impl ProviderCircuit {
+    fn observe(&mut self, envelope: &Value) {
+        let detail = &envelope["provider_http_error"];
+        let key = detail["http_status"]
+            .as_u64()
+            .filter(|s| (300..600).contains(s))
+            .map(|status| json!([status, detail["error_type"], detail["code"]]).to_string())
+            .or_else(|| {
+                (envelope["status"] == "incomplete"
+                    && envelope["incomplete_details"]["reason"] == "max_output_tokens")
+                    .then(|| "incomplete:max_output_tokens".into())
+            });
+        self.consecutive = match &key {
+            Some(_) if key == self.error => self.consecutive.saturating_add(1).min(3),
+            Some(_) => 1,
+            None => 0,
+        };
+        self.error = key;
+    }
+    fn open(&self) -> bool {
+        self.consecutive >= 3
+    }
+}
+type ProviderCircuits = std::collections::BTreeMap<String, ProviderCircuit>;
+fn provider_circuits(cases: &[Case]) -> Result<ProviderCircuits, String> {
+    let Some(root) = campaign_root(cases)? else {
+        return Ok(Default::default());
+    };
+    let path = root.join("provider_circuit.json");
+    if !path.exists() {
+        return Ok(Default::default());
+    }
+    let state: Value = serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    let authorization: Value = serde_json::from_slice(
+        &std::fs::read(root.join("authorization.json")).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    if state["authorization"] != hippocampus::recall_models::fingerprint(&authorization) {
+        return Err("provider circuit authorization changed".into());
+    }
+    serde_json::from_value(state["profiles"].clone()).map_err(|e| e.to_string())
+}
+fn persist_provider_circuits(cases: &[Case], circuits: &ProviderCircuits) -> Result<(), String> {
+    if let Some(root) = campaign_root(cases)? {
+        let authorization: Value = serde_json::from_slice(
+            &std::fs::read(root.join("authorization.json")).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+        m15_write_json(
+            &root.join("provider_circuit.json"),
+            &json!({"authorization":hippocampus::recall_models::fingerprint(&authorization),"profiles":circuits}),
+        )?;
+    }
+    Ok(())
+}
+fn circuit_blocks(case: &Case, circuits: &ProviderCircuits) -> bool {
+    matches!(case.replay, Replay::Missing | Replay::Stale)
+        && circuits
+            .get(&case.model.label)
+            .is_some_and(ProviderCircuit::open)
+}
+
 fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
+    let circuits = provider_circuits(cases)?;
     let needed = cases
         .iter()
         .filter(|c| {
-            !matches!(
-                c.replay,
-                Replay::Output(_) | Replay::Failed(_) | Replay::Rejected(_) | Replay::Interrupted
-            )
+            !circuit_blocks(c, &circuits)
+                && !matches!(
+                    c.replay,
+                    Replay::Output(_)
+                        | Replay::Failed(_)
+                        | Replay::Rejected(_)
+                        | Replay::Interrupted
+                )
         })
         .count();
     let sends = if limit.is_some() { needed } else { 0 };
@@ -2836,6 +3987,12 @@ fn save_recording_timed(
     if let Some(error) = envelope.get("provider_http_error") {
         record["provider_http_error"] = error.clone();
     }
+    if let Some(diagnostic) = envelope
+        .get("diagnostic_fragments")
+        .filter(|v| !v.is_null())
+    {
+        record["diagnostic_fragments"] = diagnostic.clone();
+    }
     if case.provider.is_some() {
         record["provider_binding"] = eval_provider_binding(
             &case.model,
@@ -2870,6 +4027,9 @@ fn failed_score(case: &Case, record: &Value) -> Value {
     report["response"] = record["response"].clone();
     if let Some(error) = record.get("provider_http_error").filter(|v| !v.is_null()) {
         report["provider_http_error"] = error.clone();
+    }
+    if let Some(diagnostic) = record.get("diagnostic_fragments").filter(|v| !v.is_null()) {
+        report["diagnostic_fragments"] = diagnostic.clone();
     }
     report["categories"] = json!({"contract":{"passed":false,"failures":["call"]},
         "semantic":{"passed":null,"failures":[]},"reference":{"passed":null,"failures":[]}});
@@ -2915,6 +4075,7 @@ fn evaluate_cases(
             )?;
         }
     }
+    let mut circuits = provider_circuits(cases)?;
     let mut sent = 0;
     let mut results = Vec::new();
     for case in cases {
@@ -2929,6 +4090,16 @@ fn evaluate_cases(
                 let mut r = score(&case.stage, &case.sample, None);
                 r["status"] = json!("未录制（中断在途）");
                 r["sent"] = json!(false);
+                r
+            }
+            Replay::Missing | Replay::Stale
+                if circuit_blocks(case, &circuits)
+                    && (limit.is_some() || matches!(case.replay, Replay::Missing)) =>
+            {
+                let mut r = score(&case.stage, &case.sample, None);
+                r["status"] = json!("熔断未发送");
+                r["sent"] = json!(false);
+                r["provider_circuit_error"] = json!(circuits[&case.model.label].error);
                 r
             }
             _ if limit.is_some() => {
@@ -2952,6 +4123,12 @@ fn evaluate_cases(
                     .ok()
                     .map(|e| normalized_envelope(case.provider.as_ref(), e))
                     .unwrap_or(Value::Null);
+                // Persist HTTP/truncation streaks before another send, including across restart.
+                circuits
+                    .entry(case.model.label.clone())
+                    .or_default()
+                    .observe(&envelope);
+                persist_provider_circuits(cases, &circuits)?;
                 let pending_log = if let Some(path) = attempt {
                     let mut entry = json!({"state":"responded","request":case_fingerprint(case),
                         "elapsed_ms":elapsed_ms,"usage":envelope["usage"],"status":envelope["status"],"error":response.as_ref().err()});
@@ -3008,7 +4185,7 @@ fn evaluate_cases(
                         )?;
                         failed_score(
                             case,
-                            &json!({"error":error,"provider_http_error":envelope["provider_http_error"],"response":{
+                            &json!({"error":error,"provider_http_error":envelope["provider_http_error"],"diagnostic_fragments":envelope.get("diagnostic_fragments"),"response":{
                             "status":envelope["status"],"incomplete_details":envelope["incomplete_details"],"usage":envelope["usage"]}}),
                         )
                     }
@@ -3026,6 +4203,10 @@ fn evaluate_cases(
             }
         };
         result["model"] = json!(case.model.label);
+        mark_observation(&case.sample, &mut result);
+        if let Some(revision) = case.sample.get("label_revision") {
+            result["label_revision"] = revision.clone();
+        }
         result["reasoning_effort"] = json!(case.model.effort);
         result["elapsed_ms"] = metrics["elapsed_ms"].clone();
         result["usage"] = metrics
@@ -3060,6 +4241,7 @@ fn evaluate_cases(
         .collect();
     Ok(
         json!({"model": cases.first().map(|c|&c.model.label), "planned_calls": planned, "sent_calls": sent,
+            "provider_circuits":circuits,"circuit_not_sent":results.iter().filter(|r|r["status"]=="熔断未发送").count(),
             "reasoning_effort":cases.first().filter(|first|cases.iter().all(|c|c.model.effort==first.model.effort)).map(|c|c.model.effort),
             "reasoning_efforts":cases.iter().map(|c|serde_json::to_value(c.model.effort).unwrap().as_str().unwrap().to_owned()).collect::<std::collections::BTreeSet<_>>(),
             "metrics":stage_metrics(&results),
@@ -3074,12 +4256,18 @@ fn evaluate_cases(
 fn stage_summaries(results: &[Value], cases: &[Case]) -> Vec<Value> {
     ["w1", "w3", "w4", "r1", "r4"].into_iter()
         .filter(|stage| !stage.starts_with('r') || cases.iter().any(|c|c.stage==*stage)).map(|stage| {
-        let rows: Vec<_> = results.iter().filter(|r| r["stage"] == stage).collect();
+        let all: Vec<_> = results.iter().filter(|r| r["stage"] == stage).collect();
+        let rows: Vec<_> = all.iter().copied().filter(|r|r["observation_only"]!=true).collect();
         let count = |status| rows.iter().filter(|r| r["status"] == status).count();
-        json!({"stage": stage, "passed": count("通过"), "total": rows.len(),
+        let all_count = |status| all.iter().filter(|r| r["status"] == status).count();
+        json!({"stage": stage, "passed": count("通过"), "total": all.len(),"scoring_slots":rows.len(),
+            "observation_only":all.len()-rows.len(),
+            "observed":all.iter().filter(|r|r["status"]=="观察").count(),
+            "observation_failed":all.iter().filter(|r|r["observation_only"]==true && matches!(r["status"].as_str(),Some("失败"|"调用失败"))).count(),
             "evaluated": count("通过") + count("失败"), "failed": count("失败") + count("调用失败"),
-            "missing": count("未录制"), "stale": count("录制过期"), "invalid_input": count("输入无效"),
-            "draft": rows.iter().filter(|r| r["label_status"] == "draft").count()})
+            "missing": all_count("未录制"), "stale": all_count("录制过期"), "invalid_input": all_count("输入无效"),
+            "circuit_not_sent":all_count("熔断未发送"),
+            "draft": all.iter().filter(|r| r["label_status"] == "draft").count()})
     }).collect()
 }
 
@@ -4380,10 +5568,10 @@ fn eval_gate(value: Option<&str>) -> Result<bool, String> {
 }
 
 fn check_report(report: &Value, gate: bool) -> Result<(), String> {
-    if items(&report["summary"])
-        .iter()
-        .any(|s| s["invalid_input"] != 0 || (gate && s["failed"] != 0))
-    {
+    if items(&report["summary"]).iter().any(|s| {
+        s["invalid_input"] != 0
+            || (gate && (s["failed"] != 0 || s["observation_failed"].as_u64().unwrap_or(0) > 0))
+    }) {
         Err("invalid sample input or gated model failure".into())
     } else {
         Ok(())
@@ -4439,6 +5627,7 @@ fn fake_w1(sample: &Value) -> Value {
                 "value",
                 "sentence",
                 "polarity",
+                "uncertainty",
             ] {
                 if c[key].is_array() {
                     c[key] = c[key][0].clone();
@@ -5121,7 +6310,11 @@ fn all_w3_sample_inputs_pass_w2() {
         );
         assert_eq!(
             score("w3", &sample, Some(&fake_w3(&sample).to_string()))["status"],
-            "通过",
+            if sample["observation_only"] == true {
+                "观察"
+            } else {
+                "通过"
+            },
             "{}",
             sample["id"]
         );
@@ -5171,13 +6364,24 @@ fn injected_three_stages_pass_decode_failure_and_missing() {
 }
 
 fn fake_w3(sample: &Value) -> Value {
+    let mut sample = sample.clone();
+    if sample["expect"].get("alternatives").is_some() {
+        sample["expect"] = expectation_branches(&sample["expect"]).remove(0);
+    }
+    let scalar = |v: &Value| {
+        if v.is_array() {
+            v[0].clone()
+        } else {
+            v.clone()
+        }
+    };
     json!({"reviews": items(&sample["expect"]["reviews"]).iter().map(|r| json!({
-        "candidate": r["candidate"], "verdict": r["verdict"], "episode_value": r["episode_value"],
+        "candidate": r["candidate"], "verdict": scalar(&r["verdict"]), "episode_value": r["episode_value"],
         "problems": items(&r["aspects"]).iter().map(|a| json!({"aspect": a,
             "quote": {"text": sample["input"]["text"]}})).collect::<Vec<_>>()
     })).collect::<Vec<_>>(), "coverage": {"status": sample["expect"]["coverage"]["status"],
-        "missing": items(&sample["expect"]["coverage"]["missing_contains"]).iter().map(adapter::quote).collect::<Vec<_>>()},
-        "request_reviews": sample["expect"]["request_reviews"]})
+        "missing": if sample["expect"]["coverage"]["status"]=="gaps" {items(&sample["expect"]["coverage"]["missing_contains"]).iter().map(adapter::quote).collect::<Vec<_>>()} else {vec![]}},
+        "request_reviews": items(&sample["expect"]["request_reviews"]).iter().map(|r|json!({"request":r["request"],"verdict":scalar(&r["verdict"])})).collect::<Vec<_>>()})
 }
 
 #[test]
@@ -6591,7 +7795,7 @@ fn smoke_fixture_variable(name: &str) -> Option<String> {
             "DEEPSEEK_BASE_URL" => "https://ds.fixture.invalid/v1",
             "OPENAI_BASE_URL" => "https://gpt.fixture.invalid/v1",
             "ANTHROPIC_BASE_URL" => "https://opus.fixture.invalid",
-            "QWEN_BASE_URL" => "http://127.0.0.1:11434/v1",
+            "QWEN_LOCAL_BASE_URL" => "http://127.0.0.1:11434/v1",
             "DEEPSEEK_API_KEY" => "fixture-ds-key",
             "OPENAI_API_KEY" => "fixture-gpt-key",
             "ANTHROPIC_API_KEY" => "fixture-opus-key",
@@ -7109,6 +8313,702 @@ fn af132_non_json_http_errors_preserve_reported_usage_and_do_not_echo_text() {
     }
 }
 
+fn af156_fixture_variable(name: &str) -> Option<String> {
+    match name {
+        "QWEN_BASE_URL" => Some("https://dashscope.aliyuncs.com/compatible-mode".into()),
+        "QWEN_API_KEY" => Some("fixture-cloud-key".into()),
+        _ => smoke_fixture_variable(name),
+    }
+}
+fn af156_fixture_options() -> CompareOptions {
+    compare_options(|name| match name {
+        "EVAL_COMPARE" => Some("af156".into()),
+        "EVAL_RECORD" => Some("160".into()),
+        _ => None,
+    })
+    .unwrap()
+}
+fn af160_http_error(status: u16, kind: &str, message: &str) -> Value {
+    model_provider::safe_http_error(
+        status,
+        json!({"error":{"type":kind,"message":message}})
+            .to_string()
+            .as_bytes(),
+        None,
+        ProviderProtocol::OpenaiChat,
+    )
+}
+fn af162_truncated_response() -> Value {
+    json!({"choices":[{"finish_reason":"length","message":{
+        "content":format!("HEAD{}TAIL","汉".repeat(5000)),"reasoning_content":format!("{}END","想".repeat(2000))}}],
+        "usage":{"prompt_tokens":2353,"completion_tokens":19131,"completion_tokens_details":{"reasoning_tokens":2744}}})
+}
+fn af162_fixture_options() -> CompareOptions {
+    compare_options(|key| match key {
+        "EVAL_COMPARE" => Some("af162".into()),
+        "EVAL_CASES" => Some("w1_01".into()),
+        "EVAL_RECORD" => Some("2".into()),
+        _ => None,
+    })
+    .unwrap()
+}
+#[test]
+fn af162_incomplete_records_only_bounded_diagnostics_and_trips_after_three() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    compare_freeze(&groups[0]).unwrap();
+    let mut calls = 0;
+    let report = evaluate_cases(&groups[0], Some(80), &mut |_| {
+        calls += 1;
+        assert!(calls <= 3);
+        Ok(af162_truncated_response())
+    })
+    .unwrap();
+    assert_eq!(calls, 3);
+    assert_eq!(report["sent_calls"], 3);
+    assert_eq!(report["circuit_not_sent"], 77);
+    assert_eq!(
+        count_sends([groups[0][0].campaign.as_ref().unwrap().join("sends")]).unwrap(),
+        3
+    );
+    for case in &groups[0][..3] {
+        let record: Value = serde_json::from_slice(&std::fs::read(&case.path).unwrap()).unwrap();
+        let row = &record["recorded"][0];
+        assert_eq!(row["response"]["status"], "incomplete");
+        assert_eq!(
+            row["response"]["incomplete_details"]["reason"],
+            "max_output_tokens"
+        );
+        assert_eq!(row["response"]["usage"]["output_tokens"], 19131);
+        assert_eq!(
+            row["response"]["usage"]["output_tokens_details"]["reasoning_tokens"],
+            2744
+        );
+        assert!(row.get("output").is_none() && row.get("output_text").is_none());
+        assert_eq!(row["diagnostic_fragments"]["diagnostic_only"], true);
+        assert_eq!(row["diagnostic_fragments"]["scoring_eligible"], false);
+        assert!(
+            row["diagnostic_fragments"]["output_head"]
+                .as_str()
+                .unwrap()
+                .len()
+                <= 2048
+        );
+        assert!(
+            row["diagnostic_fragments"]["output_tail"]
+                .as_str()
+                .unwrap()
+                .len()
+                <= 2048
+        );
+        assert!(
+            row["diagnostic_fragments"]["reasoning_tail"]
+                .as_str()
+                .unwrap()
+                .len()
+                <= 1024
+        );
+    }
+    assert!(
+        items(&report["results"])[..3]
+            .iter()
+            .all(|r| r["status"] == "调用失败")
+    );
+    let resumed = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    let replay = evaluate_cases(&resumed[0], Some(0), &mut |_| {
+        panic!("truncated slot retried")
+    })
+    .unwrap();
+    assert_eq!(replay["sent_calls"], 0);
+    assert_eq!(replay["results"], report["results"]);
+    let mut circuit = ProviderCircuit::default();
+    let incomplete =
+        json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"}});
+    circuit.observe(&incomplete);
+    circuit.observe(&incomplete);
+    circuit.observe(&json!({"status":"incomplete","incomplete_details":{"reason":"other"}}));
+    assert_eq!(circuit.consecutive, 0);
+    circuit.observe(&incomplete);
+    assert_eq!(circuit.consecutive, 1);
+    circuit.observe(&af160_http_error(
+        400,
+        "invalid_request_error",
+        "different class",
+    ));
+    assert_eq!(circuit.consecutive, 1);
+    // Even an apparently complete, valid answer must not be scored when the provider marks length.
+    compare_freeze(&groups[1]).unwrap();
+    let mut complete = compare_fixture_response(&groups[1][0]);
+    complete["choices"][0]["finish_reason"] = json!("length");
+    let short = evaluate_cases(&groups[1][..1], Some(80), &mut |_| Ok(complete.clone())).unwrap();
+    assert_eq!(short["results"][0]["status"], "调用失败");
+    assert_eq!(
+        short["results"][0]["diagnostic_fragments"]["scoring_eligible"],
+        false
+    );
+}
+#[test]
+fn af162_single_sample_has_independent_two_slot_authorization_and_strict_resume() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let formal = temp.0.join("formal");
+    let full = compare_plan_for(&formal, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    for group in &full {
+        compare_freeze(group).unwrap();
+    }
+    let before: Vec<_> = full
+        .iter()
+        .map(|g| std::fs::read(g[0].campaign.as_ref().unwrap().join("authorization.json")).unwrap())
+        .collect();
+    let options = af162_fixture_options();
+    let root = formal.join("diag-af162");
+    let groups = compare_plan_for_sample(
+        &root,
+        &profiles,
+        &AF156_IDS,
+        af156_fixture_variable,
+        Some(&options.cases[0]),
+    )
+    .unwrap();
+    assert_eq!(groups.iter().map(Vec::len).sum::<usize>(), 2);
+    assert_eq!(compare_preflight(&groups, &options).unwrap(), 2);
+    assert!(
+        diagnostic_dry_plan(&groups, &options)
+            .unwrap()
+            .contains("待录制: 2；拒绝: 0")
+    );
+    assert!(!root.exists());
+    for (group, full_group) in groups.iter().zip(&full) {
+        assert_eq!(group[0].wire_request, full_group[0].wire_request);
+        assert_eq!(
+            case_fingerprint(&group[0]),
+            case_fingerprint(&full_group[0])
+        );
+        assert_ne!(group[0].campaign, full_group[0].campaign);
+        compare_freeze(group).unwrap();
+        let report =
+            evaluate_cases(group, Some(1), &mut |_| Ok(af162_truncated_response())).unwrap();
+        assert_eq!(report["sent_calls"], 1);
+        assert_eq!(
+            count_sends([group[0].campaign.as_ref().unwrap().join("sends")]).unwrap(),
+            1
+        );
+        let auth: Value = serde_json::from_slice(
+            &std::fs::read(
+                group[0]
+                    .campaign
+                    .as_ref()
+                    .unwrap()
+                    .join("authorization.json"),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(auth["limit"], 1);
+        assert_eq!(items(&auth["requests"]).len(), 1);
+    }
+    let resumed = compare_plan_for_sample(
+        &root,
+        &profiles,
+        &AF156_IDS,
+        af156_fixture_variable,
+        Some(&options.cases[0]),
+    )
+    .unwrap();
+    assert_eq!(compare_preflight(&resumed, &options).unwrap(), 0);
+    for group in &resumed {
+        assert_eq!(
+            evaluate_cases(group, Some(1), &mut |_| panic!("diagnostic resent")).unwrap()["sent_calls"],
+            0
+        );
+    }
+    let changed = compare_plan_for_sample(
+        &root,
+        &profiles,
+        &AF156_IDS,
+        af156_fixture_variable,
+        Some("w1_02_uncertainty"),
+    )
+    .unwrap();
+    assert!(compare_preflight(&changed, &options).is_err());
+    for (group, bytes) in full.iter().zip(before) {
+        assert_eq!(
+            std::fs::read(
+                group[0]
+                    .campaign
+                    .as_ref()
+                    .unwrap()
+                    .join("authorization.json")
+            )
+            .unwrap(),
+            bytes
+        );
+        assert_eq!(
+            count_sends([group[0].campaign.as_ref().unwrap().join("sends")]).unwrap(),
+            0
+        );
+    }
+    for bad in ["3", "80", "160"] {
+        assert!(
+            compare_options(|key| match key {
+                "EVAL_COMPARE" => Some("af162".into()),
+                "EVAL_RECORD" => Some(bad.into()),
+                _ => None,
+            })
+            .is_err()
+        );
+    }
+    for bad in ["w1_", "w1_01,w1_02", ""] {
+        assert!(
+            compare_options(|key| match key {
+                "EVAL_COMPARE" => Some("af162".into()),
+                "EVAL_CASES" => Some(bad.into()),
+                _ => None,
+            })
+            .is_err()
+        );
+    }
+    provider_comparison_at(&temp.0, |key| match key {
+        "EVAL_COMPARE" => Some("af162".into()),
+        "EVAL_DRY_RUN" => Some("1".into()),
+        "EVAL_RECORD" => Some("2".into()),
+        "EVAL_CASES" => Some("w1_01".into()),
+        "QWEN_BASE_URL" => Some("https://dashscope.aliyuncs.com/compatible-mode".into()),
+        "QWEN_API_KEY" => panic!("dry diagnostic read a key"),
+        _ => None,
+    })
+    .unwrap();
+}
+#[test]
+fn af160_three_same_errors_stop_unbilled_slots_and_survive_restart() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    compare_freeze(&groups[0]).unwrap();
+    let mut calls = 0;
+    // Two failures persisted in an earlier invocation; restarting must not reset the streak.
+    evaluate_cases(&groups[0][..2], Some(80), &mut |_| {
+        calls += 1;
+        Ok(af160_http_error(
+            400,
+            "invalid_request_error",
+            "PRIVATE_TEXT first failure",
+        ))
+    })
+    .unwrap();
+    let resumed = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    let report = evaluate_cases(&resumed[0], Some(80), &mut |_| {
+        calls += 1;
+        assert!(calls <= 3, "circuit sent a fourth bad request");
+        Ok(af160_http_error(
+            400,
+            "invalid_request_error",
+            "different provider prose",
+        ))
+    })
+    .unwrap();
+    assert_eq!(calls, 3);
+    assert_eq!(report["sent_calls"], 1);
+    assert_eq!(report["circuit_not_sent"], 77);
+    assert_eq!(items(&report["results"])[2]["status"], "调用失败");
+    assert!(
+        items(&report["results"])[3..]
+            .iter()
+            .all(|r| r["status"] == "熔断未发送" && r["sent"] == false)
+    );
+    let campaign = temp.0.join("campaigns").join(AF156_IDS[0]);
+    assert_eq!(count_sends([campaign.join("sends")]).unwrap(), 3);
+    assert_eq!(resumed[0].iter().filter(|c| c.path.exists()).count(), 3);
+    assert!(!report.to_string().contains("PRIVATE_TEXT"));
+    let final_groups =
+        compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    assert_eq!(
+        compare_preflight(&final_groups, &af156_fixture_options()).unwrap(),
+        80
+    );
+    let dry = compare_dry_plan(&final_groups, &af156_fixture_options()).unwrap();
+    assert!(dry.contains("熔断未发送: 77"));
+    for limit in [None, Some(0), Some(80)] {
+        let replay = evaluate_cases(&final_groups[0], limit, &mut |_| {
+            panic!("open circuit resent")
+        })
+        .unwrap();
+        assert_eq!(replay["sent_calls"], 0);
+        assert_eq!(replay["results"], report["results"]);
+        let comparison = compare_report(&final_groups[..1], &[replay], 0);
+        assert_eq!(comparison["circuit_not_sent"], 77);
+        assert_eq!(comparison["profiles"][0]["circuit_not_sent"], 77);
+    }
+    // A separate profile can send, retaining its original 80-slot authorization.
+    compare_freeze(&final_groups[1]).unwrap();
+    let other=evaluate_cases(&final_groups[1][..1],Some(80),&mut |_| {
+        Ok(json!({"choices":[{"finish_reason":"stop","message":{"content":"{\"candidates\":[],\"memory_requests\":[]}"}}]}))
+    }).unwrap();
+    assert_eq!(other["sent_calls"], 1);
+    assert_eq!(other["circuit_not_sent"], 0);
+    assert_eq!(count_sends([campaign.join("sends")]).unwrap(), 3);
+    let auth_path = campaign.join("authorization.json");
+    let mut auth: Value = serde_json::from_slice(&std::fs::read(&auth_path).unwrap()).unwrap();
+    auth["limit"] = json!(81);
+    m15_write_json(&auth_path, &auth).unwrap();
+    assert!(provider_circuits(&final_groups[0]).is_err());
+}
+#[test]
+fn af160_error_class_and_success_reset_the_streak_not_semantic_scores() {
+    let mut circuit = ProviderCircuit::default();
+    let a = af160_http_error(400, "invalid_request_error", "ordinary error");
+    let b = af160_http_error(400, "authentication_error", "ordinary error");
+    let c = af160_http_error(401, "authentication_error", "ordinary error");
+    let d = af160_http_error(
+        401,
+        "authentication_error",
+        "The compiled grammar is too large",
+    );
+    for error in [&a, &b, &c, &d] {
+        circuit.observe(error);
+        assert_eq!(circuit.consecutive, 1);
+        circuit.observe(error);
+        assert_eq!(circuit.consecutive, 2);
+        assert!(!circuit.open());
+    }
+    for non_provider in [
+        json!({"status":"completed"}),
+        json!({"error":"invalid JSON"}),
+        Value::Null,
+    ] {
+        circuit.observe(&non_provider);
+        assert_eq!(circuit.consecutive, 0);
+        circuit.observe(&a);
+        assert_eq!(circuit.consecutive, 1);
+    }
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    compare_freeze(&groups[0]).unwrap();
+    let mut calls = 0;
+    let report=evaluate_cases(&groups[0][..8],Some(80),&mut |_| {
+        calls+=1;
+        match calls {
+            1|2|4|5|7|8=>Ok(a.clone()),
+            // Valid provider envelopes with bad JSON/schema/semantics do not count as HTTP errors.
+            3=>Ok(json!({"choices":[{"finish_reason":"stop","message":{"content":"bad JSON"}}]})),
+            _=>Ok(json!({"choices":[{"finish_reason":"stop","message":{"content":"{\"candidates\":[],\"memory_requests\":[]}"}}]})),
+        }
+    }).unwrap();
+    assert_eq!(calls, 8);
+    assert_eq!(report["circuit_not_sent"], 0);
+    assert_eq!(
+        provider_circuits(&groups[0]).unwrap()[AF156_IDS[0]].consecutive,
+        2
+    );
+}
+#[test]
+fn af156_plan_is_160_snapshot_slots_and_requires_explicit_auth_without_keys_in_dry_run() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    assert_eq!(profiles.len(), 15);
+    let options = af156_fixture_options();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF156_IDS, |name| {
+        assert_eq!(name, "QWEN_BASE_URL");
+        None
+    })
+    .unwrap();
+    assert_eq!(groups.iter().map(Vec::len).sum::<usize>(), 160);
+    assert_eq!(
+        groups
+            .iter()
+            .flatten()
+            .map(|c| c.request["max_output_tokens"].as_u64().unwrap())
+            .sum::<u64>(),
+        3_932_160
+    );
+    assert_eq!(compare_preflight(&groups, &options).unwrap(), 160);
+    let dry = compare_dry_plan(&groups, &options).unwrap();
+    for text in [
+        "完整固定槽位: 160",
+        "待录制: 160",
+        "发送前拒绝: 0",
+        "3932160",
+        "3933760",
+        "当前 AF155",
+        "本次真实调用: 0",
+    ] {
+        assert!(dry.contains(text), "{dry}");
+    }
+    assert!(!temp.0.exists());
+    let http = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    for group in &groups {
+        let keys = smoke_credentials(group, af156_fixture_variable).unwrap();
+        assert!(
+            smoke_credentials(group, |name| (name == "QWEN_BASE_URL")
+                .then(|| "https://dashscope.aliyuncs.com/compatible-mode".into()))
+            .is_err()
+        );
+        for case in group {
+            let body = &case.wire_request;
+            assert_eq!(body["model"], model_provider::DASHSCOPE_MODEL);
+            if case.provider.as_ref().unwrap().thinking == Some(true) {
+                assert_eq!(
+                    body["thinking_budget"],
+                    case.request["max_output_tokens"].as_u64().unwrap() / 2
+                );
+                let mut old = case.clone();
+                old.wire_request
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("thinking_budget");
+                assert_ne!(case_fingerprint(&old), case_fingerprint(case));
+            } else {
+                assert!(body.get("thinking_budget").is_none());
+            }
+            assert_eq!(
+                body["max_completion_tokens"],
+                case.request["max_output_tokens"]
+            );
+            assert_eq!(
+                body["reasoning_effort"],
+                if case.provider.as_ref().unwrap().thinking == Some(true) {
+                    "medium"
+                } else {
+                    "none"
+                }
+            );
+            assert!(body.get("max_tokens").is_none());
+            assert_eq!(case.timeout_seconds, Some(360));
+            let input: Value =
+                serde_json::from_str(case.request["input"].as_str().unwrap()).unwrap();
+            assert_eq!(
+                input["source_snapshot"]["eval_sample"],
+                compare_sample_id(case.sample["id"].as_str().unwrap())
+            );
+            assert!(
+                !body
+                    .to_string()
+                    .contains(case.sample["id"].as_str().unwrap())
+            );
+            let request = smoke_http_request(&http, case, &keys[&case.model.label]).unwrap();
+            assert_eq!(
+                request.headers()[reqwest::header::AUTHORIZATION],
+                "Bearer fixture-cloud-key"
+            );
+            assert_eq!(
+                request.headers()[reqwest::header::USER_AGENT],
+                model_provider::MODEL_USER_AGENT
+            );
+            assert_eq!(
+                request.url().as_str(),
+                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+            );
+        }
+    }
+    for bad in ["159", "161", "520"] {
+        assert!(
+            compare_options(|name| match name {
+                "EVAL_COMPARE" => Some("af156".into()),
+                "EVAL_RECORD" => Some(bad.into()),
+                _ => None,
+            })
+            .is_err()
+        );
+    }
+    assert!(
+        compare_options(|name| match name {
+            "EVAL_COMPARE" => Some("af156".into()),
+            "EVAL_COMPARE_PROFILES" => Some("qwen-27b-think".into()),
+            _ => None,
+        })
+        .is_err()
+    );
+    assert!(!temp.0.exists());
+}
+#[test]
+fn af156_durable_slots_skip_inflight_keep_80_per_profile_and_reject_changed_requests() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    for group in &groups {
+        compare_freeze(group).unwrap();
+    }
+    campaign_start(&groups[0][0]).unwrap();
+    let resumed = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    assert!(matches!(resumed[0][0].replay, Replay::Interrupted));
+    assert_eq!(
+        compare_preflight(&resumed, &af156_fixture_options()).unwrap(),
+        159
+    );
+    let mut sends = 0;
+    for group in &resumed {
+        let report = evaluate_cases(&group[..2], Some(80), &mut |case| {
+            sends += 1;
+            assert_ne!(campaign_slot(case), campaign_slot(&groups[0][0]));
+            Ok(compare_fixture_response(case))
+        })
+        .unwrap();
+        assert_eq!(
+            report["sent_calls"],
+            if group[0].model.label == AF156_IDS[0] {
+                1
+            } else {
+                2
+            }
+        );
+    }
+    assert_eq!(sends, 3);
+    for id in AF156_IDS {
+        assert_eq!(
+            count_sends([temp.0.join("campaigns").join(id).join("sends")]).unwrap(),
+            2
+        );
+        let a: Value = serde_json::from_slice(
+            &std::fs::read(temp.0.join("campaigns").join(id).join("authorization.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(a["limit"], 80);
+        assert_eq!(items(&a["requests"]).len(), 80);
+    }
+    let ready = compare_plan_for(&temp.0, &profiles, &AF156_IDS, af156_fixture_variable).unwrap();
+    for group in &ready {
+        assert_eq!(
+            evaluate_cases(&group[..2], Some(0), &mut |_| panic!(
+                "strict replay resent"
+            ))
+            .unwrap()["sent_calls"],
+            0
+        );
+    }
+    let reports: Vec<_> = ready
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("offline report sent")).unwrap())
+        .collect();
+    let report = compare_report(&ready, &reports, 0);
+    assert_eq!(report["fixed_slots"], 160);
+    assert_eq!(report["interrupted"][0]["profile"], AF156_IDS[0]);
+    let mut changed = profiles.clone();
+    changed[8].max_output_tokens.insert("w1".into(), 32767);
+    let stale = compare_plan_for(&temp.0, &changed, &AF156_IDS, af156_fixture_variable).unwrap();
+    assert!(matches!(stale[0][1].replay, Replay::Stale));
+    assert!(compare_preflight(&stale, &af156_fixture_options()).is_err());
+    assert_eq!(
+        count_sends([temp.0.join("campaigns").join(AF156_IDS[0]).join("sends")]).unwrap(),
+        2
+    );
+}
+#[test]
+fn af156_local_routing_is_separate_and_historic_replay_still_checks_full_fingerprints() {
+    let temp = TempRecords::new();
+    let profiles = smoke_fixture_profiles();
+    let local = &profiles[4..5];
+    let cases = smoke_plan(&temp.0, local, smoke_fixture_variable).unwrap();
+    evaluate_cases(&cases, Some(1), &mut |case| {
+        Ok(smoke_fixture_response(case))
+    })
+    .unwrap();
+    let variable = |name: &str| {
+        assert_eq!(
+            name, "QWEN_LOCAL_BASE_URL",
+            "must not read cloud QWEN_BASE_URL"
+        );
+        None
+    };
+    let old = smoke_plan(&temp.0, local, variable).unwrap();
+    assert_eq!(
+        old[0].model.base.as_deref(),
+        Some("http://127.0.0.1:11434/v1")
+    );
+    assert_eq!(case_fingerprint(&old[0]), case_fingerprint(&cases[0]));
+    assert!(matches!(old[0].replay, Replay::Output(_)));
+    assert_eq!(
+        evaluate_cases(&old, Some(0), &mut |_| panic!("historic replay sent")).unwrap()["sent_calls"],
+        0
+    );
+    let empty = TempRecords::new();
+    let missing = smoke_plan(&empty.0, local, variable).unwrap();
+    assert!(
+        smoke_credentials(&missing, |_| None)
+            .unwrap_err()
+            .contains("QWEN_LOCAL_BASE_URL")
+    );
+    let mut changed = local.to_vec();
+    changed[0].max_output_tokens.insert("w1".into(), 32767);
+    let stale = smoke_plan(&temp.0, &changed, variable).unwrap();
+    assert!(matches!(stale[0].replay, Replay::Stale));
+    let denied = provider_comparison(|name| match name {
+        "EVAL_COMPARE" => Some("af137".into()),
+        "EVAL_COMPARE_PROFILES" => Some("qwen-27b-think".into()),
+        "EVAL_RECORD" => Some("40".into()),
+        _ => None,
+    })
+    .unwrap_err();
+    assert!(denied.contains("read-only"));
+}
+#[test]
+fn af156_nine_profile_report_preserves_observation_and_strict_reference_scores() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let mut history =
+        compare_plan(&temp.0.join("history"), &profiles, af156_fixture_variable).unwrap();
+    let mut current = compare_plan_for(
+        &temp.0.join("current"),
+        &profiles,
+        &AF156_IDS,
+        af156_fixture_variable,
+    )
+    .unwrap();
+    for case in history.iter_mut().chain(&mut current).flatten() {
+        let output = if case.stage == "w3" {
+            fake_w3(&case.sample)
+        } else {
+            json!({"candidates":[],"memory_requests":[]})
+        };
+        case.replay = Replay::Output(output.to_string());
+    }
+    let reports = |groups: &[Vec<Case>]| {
+        groups
+            .iter()
+            .map(|g| evaluate_cases(g, None, &mut |_| panic!("fixture replay sent")).unwrap())
+            .collect::<Vec<_>>()
+    };
+    let mut historic_reports = reports(&history);
+    let baseline = compare_report(&history, &historic_reports, 0);
+    historic_reports.extend(reports(&current));
+    history.extend(current);
+    let merged = compare_report(&history, &historic_reports, 0);
+    assert_eq!(merged["comparison"], "af156");
+    assert_eq!(merged["fixed_slots"], 680);
+    assert_eq!(items(&merged["profiles"]).len(), 9);
+    assert_eq!(merged["scoring_samples"], 39);
+    assert_eq!(merged["observation_samples"], 1);
+    af156_reference_check(&merged, &baseline).unwrap();
+    let mut stale = merged.clone();
+    stale["results"][0]["request"] = json!("changed");
+    assert!(af156_reference_check(&stale, &baseline).is_err());
+    let observation = items(&merged["matrix"])
+        .iter()
+        .find(|r| r["id"] == "w3_19_unresolved_condition_honest")
+        .unwrap();
+    assert_eq!(observation["tier"], "观察（契约待定）");
+    assert!(
+        items(&observation["profiles"])
+            .iter()
+            .all(|p| p["passed"] == 0)
+    );
+    for profile in &items(&merged["profiles"])[7..] {
+        assert_eq!(items(&profile["observations"]).len(), 2);
+        assert!(profile.get("w3_verdict").is_some() && profile.get("w3_coverage").is_some());
+        assert_eq!(profile["summary"][1]["passed"], 38);
+    }
+    assert_eq!(
+        compare_tier(&[
+            json!({"profile":AF156_IDS[0],"total":2,"passed":2,"complete":true,"unstable":false})
+        ]),
+        "阿里云 Qwen 即可（本轮两次均通过）"
+    );
+    assert!(!temp.0.exists());
+}
 fn compare_fixture_options(
     profiles: Option<&str>,
     cases: Option<&str>,
@@ -7677,6 +9577,401 @@ fn af137_wire_inputs_are_blind_and_reports_keep_the_reverse_lookup() {
     assert!(!temp.0.exists());
 }
 #[test]
+fn af155_w1_memory_type_alternatives_keep_subject_time_and_request_checks() {
+    let sample = samples("w1")[11].clone();
+    let mut output = fake_w1(&sample);
+    for memory_type in ["fact", "episode"] {
+        output["candidates"][0]["memory_type"] = json!(memory_type);
+        assert_eq!(
+            score("w1", &sample, Some(&output.to_string()))["status"],
+            "通过"
+        );
+    }
+    for subject in [
+        json!({"entity_id":"unresolved"}),
+        json!({"entity_id":"self"}),
+    ] {
+        let mut invalid = output.clone();
+        invalid["candidates"][0]["subject"] = subject.clone();
+        let report = score("w1", &sample, Some(&invalid.to_string()));
+        assert_eq!(report["status"], "失败");
+        if subject["entity_id"] == "unresolved" {
+            assert!(
+                items(&report["fields"])
+                    .iter()
+                    .any(|f| f["field"] == "w2.candidates[0]" && f["passed"] == false)
+            );
+        }
+    }
+    let mut invalid = output.clone();
+    invalid["candidates"][0]["times"][0]["interp"] = json!({"kind":"date","iso":"2026-09-13"});
+    assert_eq!(
+        score("w1", &sample, Some(&invalid.to_string()))["status"],
+        "失败"
+    );
+    invalid = output;
+    invalid["memory_requests"] = json!([{"kind":"remember","quote":{"text":sample["input"]["text"]},
+        "target":{"object":"facts","candidate_indices":[0],"quote":{"text":sample["input"]["text"]}},"deadline":null}]);
+    assert_eq!(
+        score("w1", &sample, Some(&invalid.to_string()))["status"],
+        "失败"
+    );
+}
+
+#[test]
+fn af155_w3_complete_and_gaps_are_whole_branches_with_bank_basis() {
+    let sample = samples("w3")[11].clone();
+    let mut output = fake_w3(&sample);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["coverage"] = json!({"status":"gaps","missing":[{"text":"在一家银行做产品经理"}]});
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    for missing in [
+        json!([]),
+        json!([{"text":"上海"}]),
+        json!([{"text":"在一家银行工作"}]),
+    ] {
+        let mut invalid = output.clone();
+        invalid["coverage"]["missing"] = missing;
+        assert_eq!(
+            score("w3", &sample, Some(&invalid.to_string()))["status"],
+            "失败"
+        );
+    }
+    output["reviews"][1]["verdict"] = json!("contradicted");
+    output["reviews"][1]["problems"] =
+        json!([{"aspect":"condition","quote":{"text":"在一家银行"}}]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    let mut crossing = sample.clone();
+    crossing["expect"]["alternatives"][0]["reviews"][1] = json!({"candidate":1,"verdict":"contradicted","aspects":["condition"],"episode_value":"not_applicable"});
+    // Verdict matches the complete branch, coverage matches the supported/gaps branch: neither whole branch passes.
+    assert_eq!(
+        score("w3", &crossing, Some(&output.to_string()))["status"],
+        "失败"
+    );
+}
+
+#[test]
+fn af155_w3_temporary_verdict_set_still_requires_value_and_validation() {
+    let sample = samples("w3")[9].clone();
+    let mut output = fake_w3(&sample);
+    for verdict in ["contradicted", "insufficient"] {
+        output["reviews"][0]["verdict"] = json!(verdict);
+        assert_eq!(
+            score("w3", &sample, Some(&output.to_string()))["status"],
+            "通过"
+        );
+    }
+    output["reviews"][0]["verdict"] = json!("supported");
+    output["reviews"][0]["problems"] = json!([]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output = fake_w3(&sample);
+    output["reviews"][0]["problems"][0]["aspect"] = json!("subject");
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output = fake_w3(&sample);
+    output["reviews"][0]["problems"][0]["quote"]["text"] = json!("not in source");
+    let report = score("w3", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "失败");
+    assert_eq!(report["verdict_result"]["passed"], Value::Null);
+}
+
+#[test]
+fn af155_observation_never_counts_as_pass_or_hides_mechanical_failure() {
+    let sample = samples("w3")[18].clone();
+    let output = fake_w3(&sample);
+    let passing_label = score("w3", &sample, Some(&output.to_string()));
+    assert_eq!(passing_label["status"], "观察");
+    assert_eq!(passing_label["observed_status"], "通过");
+    let mut different = output.clone();
+    different["reviews"][0]["verdict"] = json!("contradicted");
+    different["reviews"][0]["problems"] = json!([{"aspect":"strength","quote":{"text":"一般"}}]);
+    let observed = score("w3", &sample, Some(&different.to_string()));
+    assert_eq!(observed["status"], "观察");
+    assert_eq!(observed["observed_status"], "失败");
+    assert_eq!(observed["raw_output"], different);
+    assert!(
+        items(&observed["fields"])
+            .iter()
+            .any(|f| f["passed"] == false)
+    );
+    let mut summary = stage_summaries(&[passing_label, observed], &[]);
+    let w3 = summary.iter().find(|s| s["stage"] == "w3").unwrap();
+    for key in ["passed", "failed", "evaluated", "scoring_slots"] {
+        assert_eq!(w3[key], 0);
+    }
+    assert_eq!(w3["observed"], 2);
+    assert!(check_report(&json!({"summary":summary}), true).is_ok());
+    for invalid in [
+        "{".to_owned(),
+        {
+            let mut empty = output.clone();
+            empty["coverage"] = json!({"status":"gaps","missing":[]});
+            empty.to_string()
+        },
+        {
+            different["reviews"][0]["problems"][0]["quote"]["text"] = json!("not in source");
+            different.to_string()
+        },
+    ] {
+        let bad = score("w3", &sample, Some(&invalid));
+        assert_eq!(bad["status"], "失败", "{bad}");
+        summary = stage_summaries(&[bad.clone()], &[]);
+        assert_eq!(
+            summary.iter().find(|s| s["stage"] == "w3").unwrap()["observation_failed"],
+            1
+        );
+        assert!(check_report(&json!({"summary":summary}), true).is_err());
+        let options = CompareOptions {
+            qwen38: false,
+            af163: false,
+            smoke: false,
+            af156: false,
+            diagnostic: false,
+            dry: false,
+            profiles: vec!["ds-pro".into()],
+            cases: vec![sample["id"].as_str().unwrap().into()],
+            limit: None,
+            gate: true,
+        };
+        let mut bad = bad;
+        bad["model"] = json!("ds-pro");
+        assert!(compare_check_report(&json!({"results":[bad]}), &options).is_err());
+    }
+    let mut invalid_input = score("w3", &sample, None);
+    invalid_input["status"] = json!("输入无效");
+    assert!(
+        check_report(
+            &json!({"summary":stage_summaries(&[invalid_input], &[])}),
+            false
+        )
+        .is_err()
+    );
+    for status in ["未录制", "录制过期"] {
+        let mut row = score("w3", &sample, None);
+        row["status"] = json!(status);
+        let summary = stage_summaries(&[row], &[]);
+        assert_eq!(
+            summary.iter().find(|s| s["stage"] == "w3").unwrap()[if status == "未录制" {
+                "missing"
+            } else {
+                "stale"
+            }],
+            1
+        );
+    }
+}
+
+#[test]
+fn af155_annotations_preserve_all_520_request_and_campaign_identities() {
+    let temp = TempRecords::new();
+    let groups = compare_plan(&temp.0, &smoke_fixture_profiles(), |_| None).unwrap();
+    assert_eq!(compare_samples().unwrap().len(), 40);
+    assert_eq!(groups.iter().map(Vec::len).sum::<usize>(), 520);
+    for group in &groups {
+        assert_eq!(group.len(), compare_quota(&group[0].model.label));
+        for case in group {
+            let mut changed = case.clone();
+            changed.sample["expect"] = json!({"alternatives":[{},{}]});
+            changed.sample["label_revision"] = json!("different revision");
+            changed.sample["observation_only"] = json!(case.sample["observation_only"] != true);
+            changed.sample["observation_reason"] = json!("annotation-only");
+            assert_eq!(
+                compare_request(
+                    &case.stage,
+                    &case.sample,
+                    case.request["max_output_tokens"].as_u64().unwrap() as u32
+                )
+                .unwrap(),
+                compare_request(
+                    &changed.stage,
+                    &changed.sample,
+                    case.request["max_output_tokens"].as_u64().unwrap() as u32
+                )
+                .unwrap()
+            );
+            assert_eq!(case_fingerprint(case), case_fingerprint(&changed));
+            assert_eq!(campaign_slot(case), campaign_slot(&changed));
+        }
+    }
+    assert!(!temp.0.exists());
+}
+
+#[test]
+fn af151_full_branches_do_not_mix_fields_or_hide_w3_validation() {
+    let mut sample = samples("w3")[3].clone();
+    let mut a = sample["expect"].clone();
+    a["reviews"][0]["verdict"] = json!("contradicted");
+    a["reviews"][0]["aspects"] = json!(["polarity"]);
+    let b = sample["expect"].clone();
+    let mut output = fake_w3(&sample);
+    sample["expect"] = json!({"alternatives":[a,b]});
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["reviews"][0]["problems"][0]["aspect"] = json!("polarity");
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output["reviews"][0]["problems"][0]["aspect"] = json!("relation");
+    output["reviews"][0]["problems"][0]["quote"]["text"] = json!("not in source");
+    let report = score("w3", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "失败");
+    assert!(
+        items(&report["fields"])
+            .iter()
+            .any(|f| f["field"] == "w3.validate" && f["passed"] == false)
+    );
+    output = fake_w3(&samples("w3")[3]);
+    sample["expect"]["alternatives"] = json!([sample["expect"]["alternatives"][1]]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+}
+
+#[test]
+fn af151_optional_candidate_is_exact_and_cannot_hide_w2_rejection() {
+    let sample = samples("w1")[13].clone();
+    let mut output = serde_json::to_value(
+        adapter::expand(&json!({
+            "candidates":sample["expect"]["candidates"],"requests":[]
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        score("w1", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    let mut invalid = output.clone();
+    invalid["candidates"][0]["value"]["quote"]["text"] = json!("not in source");
+    let report = score("w1", &sample, Some(&invalid.to_string()));
+    assert_eq!(report["status"], "失败");
+    assert!(
+        items(&report["fields"])
+            .iter()
+            .any(|f| f["field"] == "w2.candidates[0]" && f["passed"] == false)
+    );
+    let optional = adapter::candidate(&sample["expect"]["optional_candidates"][0]);
+    output["candidates"]
+        .as_array_mut()
+        .unwrap()
+        .push(optional.clone());
+    assert_eq!(
+        score("w1", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["candidates"][2]["value"]["text"] = json!("上海");
+    output["candidates"][2]["value"]["quote"]["text"] = json!("上海");
+    assert_eq!(
+        score("w1", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output["candidates"][2] = optional.clone();
+    output["candidates"].as_array_mut().unwrap().push(optional);
+    assert_eq!(
+        score("w1", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+}
+
+#[test]
+fn af151_unscored_coverage_still_requires_exact_nonempty_mother_basis() {
+    let sample = samples("w3")[4].clone();
+    let mut output = fake_w3(&sample);
+    let report = score("w3", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "通过");
+    assert_eq!(report["coverage_result"]["passed"], Value::Null);
+    output["coverage"]["status"] = json!("gaps");
+    let report = score("w3", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "失败");
+    assert_eq!(report["verdict_result"]["passed"], true);
+    output["coverage"]["missing"] = json!([{"text":"我"}]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output["coverage"]["missing"] = json!([{"text":"我妈对青霉素过敏"}]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["coverage"]["missing"] = json!([{"text":"母亲过敏"}]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    let report = score("w3", &sample, Some("{}"));
+    assert_eq!(report["status"], "失败");
+    assert_eq!(report["coverage_result"]["guard_passed"], false);
+    assert_eq!(report["verdict_result"]["passed"], Value::Null);
+}
+
+#[test]
+fn af151_time_and_request_verdict_sets_never_accept_supported() {
+    let sample = samples("w3")[15].clone();
+    let mut output = fake_w3(&sample);
+    for verdict in ["contradicted", "insufficient"] {
+        output["reviews"][1]["verdict"] = json!(verdict);
+        output["request_reviews"][0]["verdict"] = json!(verdict);
+        assert_eq!(
+            score("w3", &sample, Some(&output.to_string()))["status"],
+            "通过"
+        );
+    }
+    output["request_reviews"][0]["verdict"] = json!("supported");
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    output["request_reviews"][0]["verdict"] = json!("insufficient");
+    output["reviews"][1]["verdict"] = json!("supported");
+    output["reviews"][1]["problems"] = json!([]);
+    assert_eq!(
+        score("w3", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+}
+
+#[test]
+fn af151_annotation_changes_do_not_change_requests_or_fingerprints() {
+    let temp = TempRecords::new();
+    let groups = compare_plan(&temp.0, &smoke_fixture_profiles(), |_| None).unwrap();
+    for group in &groups {
+        for stage in ["w1", "w3"] {
+            let c = group.iter().find(|c| c.stage == stage).unwrap();
+            let mut changed = c.clone();
+            changed.sample["expect"] = json!({"alternatives":[{},{}]});
+            changed.sample["label_revision"] =
+                json!({"date":"different", "decisions":["annotation-only"]});
+            changed.sample["focus"] = json!("annotation-only");
+            assert_eq!(
+                compare_request(stage, &c.sample, 16384).unwrap(),
+                compare_request(stage, &changed.sample, 16384).unwrap()
+            );
+            assert_eq!(case_fingerprint(c), case_fingerprint(&changed));
+        }
+    }
+    assert!(!temp.0.exists());
+}
+
+#[test]
 fn af137_blinding_changes_only_comparison_requests_and_keeps_legacy_replay_valid() {
     let temp = TempRecords::new();
     for stage in ["w1", "w3"] {
@@ -7733,5 +10028,808 @@ fn af137_blinding_changes_only_comparison_requests_and_keeps_legacy_replay_valid
     for c in historical {
         let input: Value = serde_json::from_str(c.request["input"].as_str().unwrap()).unwrap();
         assert_eq!(input["source_snapshot"]["eval_sample"], c.sample["id"]);
+    }
+}
+
+fn af163_fixture_options(smoke: bool, record: Option<&str>) -> CompareOptions {
+    compare_options(|key| match key {
+        "EVAL_COMPARE" => Some(if smoke { "af163-smoke" } else { "af163" }.into()),
+        "EVAL_RECORD" => record.map(str::to_owned),
+        "EVAL_COMPARE_PROFILES" => (!smoke).then(|| AF163_IDS.join(",")),
+        _ => None,
+    })
+    .unwrap()
+}
+#[test]
+fn af166_prompt_profiles_smoke_four_and_original_240_blinded_requests() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let http = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    for smoke in [true, false] {
+        let root = temp.0.join(if smoke { "smoke" } else { "formal" });
+        let groups = compare_plan_with_smoke(
+            &root,
+            &profiles,
+            if smoke { &AF166_PROMPT_IDS } else { &AF163_IDS },
+            smoke_fixture_variable,
+            None,
+            smoke,
+        )
+        .unwrap();
+        let options = af163_fixture_options(smoke, Some(if smoke { "4" } else { "240" }));
+        assert_eq!(
+            compare_preflight(&groups, &options).unwrap(),
+            if smoke { 4 } else { 240 }
+        );
+        assert_eq!(
+            groups.iter().map(Vec::len).sum::<usize>(),
+            if smoke { 4 } else { 240 }
+        );
+        let dry = compare_dry_plan(&groups, &options).unwrap();
+        assert!(
+            dry.contains(if smoke {
+                "完整固定槽位: 4"
+            } else {
+                "完整固定槽位: 400"
+            }),
+            "{dry}"
+        );
+        assert!(dry.contains("发送前拒绝: 0"));
+        assert!(!root.exists());
+        for group in &groups {
+            assert_eq!(group.len(), if smoke { 2 } else { 80 });
+            assert_eq!(
+                group.iter().filter(|c| c.stage == "w1").count(),
+                if smoke { 1 } else { 40 }
+            );
+            assert_eq!(
+                group.iter().filter(|c| c.stage == "w3").count(),
+                if smoke { 1 } else { 40 }
+            );
+            let keys = smoke_credentials(group, smoke_fixture_variable).unwrap();
+            for case in group {
+                assert!(matches!(case.replay, Replay::Missing));
+                assert_eq!(case.timeout_seconds, Some(360));
+                assert_eq!(case.model.effort, ReasoningEffort::Medium);
+                assert_eq!(
+                    case.provider.as_ref().unwrap().structured_mode,
+                    if case.model.label == "gpt-6-luna" {
+                        StructuredMode::NativeSchema
+                    } else {
+                        StructuredMode::PromptSchema
+                    }
+                );
+                let wire = case.wire_request.to_string();
+                assert!(!wire.contains(case.sample["id"].as_str().unwrap()));
+                assert!(!wire.contains("\"expect\""));
+                let request = smoke_http_request(&http, case, &keys[&case.model.label]).unwrap();
+                assert_eq!(
+                    request.headers()["user-agent"],
+                    model_provider::MODEL_USER_AGENT
+                );
+                if case.provider.as_ref().unwrap().protocol == ProviderProtocol::AnthropicMessages {
+                    assert_eq!(request.headers()["x-api-key"], "fixture-opus-key");
+                } else {
+                    assert!(
+                        request.headers()["authorization"]
+                            .to_str()
+                            .unwrap()
+                            .starts_with("Bearer ")
+                    );
+                }
+                if case.model.label == "gpt-6-luna" {
+                    assert!(
+                        case.wire_request["instructions"]
+                            .as_str()
+                            .is_some_and(|s| !s.is_empty())
+                    );
+                    assert_eq!(case.wire_request["text"]["format"]["strict"], true);
+                    assert!(case.wire_request.get("temperature").is_none());
+                    assert!(request.url().path().ends_with("/v1/responses"));
+                } else {
+                    assert_eq!(case.wire_request["output_config"]["effort"], "medium");
+                    assert!(case.wire_request["output_config"].get("format").is_none());
+                    assert!(
+                        case.wire_request["system"]
+                            .as_str()
+                            .unwrap()
+                            .contains(model_provider::PROMPT_SCHEMA_INSTRUCTION)
+                    );
+                    assert!(
+                        case.provider
+                            .as_ref()
+                            .unwrap()
+                            .require_native_schema()
+                            .is_err()
+                    );
+                    assert_eq!(case.wire_request["thinking"]["type"], "adaptive");
+                    assert_eq!(request.url().path(), "/v1/messages");
+                }
+            }
+        }
+    }
+    for (mode, wrong) in [("af163-smoke", "240"), ("af163", "6"), ("af163", "241")] {
+        assert!(
+            compare_options(|key| match key {
+                "EVAL_COMPARE" => Some(mode.into()),
+                "EVAL_RECORD" => Some(wrong.into()),
+                _ => None,
+            })
+            .is_err()
+        );
+    }
+    provider_comparison_at(&temp.0, |key| match key {
+        "EVAL_COMPARE" => Some("af163-smoke".into()),
+        "EVAL_DRY_RUN" => Some("1".into()),
+        "EVAL_RECORD" => Some("4".into()),
+        "OPENAI_BASE_URL" => Some("https://gpt.fixture.invalid/v1".into()),
+        "ANTHROPIC_BASE_URL" => Some("https://opus.fixture.invalid".into()),
+        "OPENAI_API_KEY" | "ANTHROPIC_API_KEY" => panic!("dry run read secret"),
+        _ => None,
+    })
+    .unwrap();
+}
+#[test]
+fn af163_smoke_is_strict_separate_from_formal_and_never_retries_schema_errors() {
+    let temp = TempRecords::new();
+    let root = temp.0.join("smoke");
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let selected: Vec<_> = AF163_IDS.iter().map(|id| (*id).to_owned()).collect();
+    assert!(af163_smoke_check(&root, &profiles, &selected, smoke_fixture_variable).is_err());
+    assert!(!temp.0.exists());
+    let groups = compare_plan_with_smoke(
+        &root,
+        &profiles,
+        &AF163_IDS,
+        smoke_fixture_variable,
+        None,
+        true,
+    )
+    .unwrap();
+    for group in &groups {
+        compare_freeze(group).unwrap();
+        let mut calls = 0;
+        let report = evaluate_cases(group, Some(2), &mut |c| {
+            calls += 1;
+            Ok(compare_fixture_response(c))
+        })
+        .unwrap();
+        assert_eq!(calls, 2);
+        assert_eq!(report["sent_calls"], 2);
+        assert_eq!(
+            count_sends([campaign_root(group).unwrap().unwrap().join("sends")]).unwrap(),
+            2
+        );
+    }
+    af163_smoke_check(&root, &profiles, &selected, smoke_fixture_variable).unwrap();
+    let formal = compare_plan_for(
+        &temp.0.join("formal"),
+        &profiles,
+        &AF163_IDS,
+        smoke_fixture_variable,
+    )
+    .unwrap();
+    assert_eq!(
+        compare_preflight(&formal, &af163_fixture_options(false, Some("240"))).unwrap(),
+        240
+    );
+    assert!(!temp.0.join("formal").exists());
+    let mut changed = profiles.clone();
+    changed
+        .iter_mut()
+        .find(|p| p.id == "gpt-6-luna")
+        .unwrap()
+        .timeout_seconds += 1;
+    assert!(af163_smoke_check(&root, &changed, &selected, smoke_fixture_variable).is_err());
+    // Provider failures stay failed; no automatic retry or renewed allowance.
+    let other = temp.0.join("failed");
+    let groups = compare_plan_with_smoke(
+        &other,
+        &profiles,
+        &["claude-sonnet-5-5"],
+        smoke_fixture_variable,
+        None,
+        true,
+    )
+    .unwrap();
+    compare_freeze(&groups[0]).unwrap();
+    let mut calls = 0;
+    evaluate_cases(&groups[0], Some(2), &mut |_| {
+        calls += 1;
+        Ok(af160_http_error(
+            400,
+            "invalid_request_error",
+            "schema_grammar_too_large",
+        ))
+    })
+    .unwrap();
+    assert_eq!(calls, 2);
+    let selected = vec!["claude-sonnet-5-5".to_owned()];
+    assert!(af163_smoke_check(&other, &profiles, &selected, smoke_fixture_variable).is_err());
+    let resumed = compare_plan_with_smoke(
+        &other,
+        &profiles,
+        &["claude-sonnet-5-5"],
+        smoke_fixture_variable,
+        None,
+        true,
+    )
+    .unwrap();
+    assert_eq!(
+        evaluate_cases(&resumed[0], Some(2), &mut |_| panic!("failure resent")).unwrap()["sent_calls"],
+        0
+    );
+}
+#[test]
+fn af163_formal_keeps_80_slots_for_subsets_and_uses_existing_breaker() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF163_IDS, smoke_fixture_variable).unwrap();
+    let options = compare_options(|key| match key {
+        "EVAL_COMPARE" => Some("af163".into()),
+        "EVAL_COMPARE_PROFILES" => Some("gpt-6-luna".into()),
+        "EVAL_COMPARE_CASES" => Some("w1_01_simple_residence".into()),
+        "EVAL_RECORD" => Some("80".into()),
+        _ => None,
+    })
+    .unwrap();
+    assert_eq!(compare_preflight(&groups, &options).unwrap(), 2);
+    compare_freeze(&groups[0]).unwrap();
+    campaign_start(&groups[0][0]).unwrap();
+    let resumed = compare_plan_for(&temp.0, &profiles, &AF163_IDS, smoke_fixture_variable).unwrap();
+    assert!(matches!(resumed[0][0].replay, Replay::Interrupted));
+    assert_eq!(compare_preflight(&resumed, &options).unwrap(), 1);
+    let mut calls = 0;
+    let report = evaluate_cases(&resumed[0],Some(80),&mut |_|{
+        calls+=1;Ok(json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"usage":{"input_tokens":1,"output_tokens":2},
+            "output":[{"type":"message","content":[{"type":"output_text","text":"partial"}]}]}))
+    }).unwrap();
+    assert_eq!(calls, 3);
+    assert_eq!(report["circuit_not_sent"], 76);
+    assert_eq!(
+        count_sends([temp.0.join("campaigns/gpt-6-luna/sends")]).unwrap(),
+        4
+    );
+    let refreshed =
+        compare_plan_for(&temp.0, &profiles, &AF163_IDS, smoke_fixture_variable).unwrap();
+    assert_eq!(
+        evaluate_cases(&refreshed[0], Some(80), &mut |_| panic!("circuit resent")).unwrap()["sent_calls"],
+        0
+    );
+}
+#[test]
+fn af163_costs_use_actual_usage_unknowns_and_non_observation_denominators() {
+    let a = json!({"stage":"w1","id":"a","status":"通过","usage":{"input_tokens":1000,"output_tokens":2000,"output_tokens_details":{"reasoning_tokens":1500}}});
+    let mut b = a.clone();
+    b["repeat"] = json!(2);
+    let cost = compare_cost("gpt-6-luna", &[a.clone(), b.clone()]);
+    assert_eq!(cost["stable_passed_samples"], 1);
+    assert!((cost["estimated_total_cny"].as_f64().unwrap() - 0.01562).abs() < 1e-10);
+    assert_eq!(
+        cost["cost_per_stable_passed_sample_cny"],
+        cost["estimated_total_cny"]
+    );
+    assert_eq!(cost["cost_per_passed_attempt_cny"], json!(0.00781));
+    let mut observation = a.clone();
+    observation["observation_only"] = json!(true);
+    observation["status"] = json!("观察");
+    let cost = compare_cost("gpt-6-luna", &[a.clone(), b, observation]);
+    assert_eq!(cost["passed_attempts"], 2);
+    assert_eq!(cost["priced_attempts"], 3);
+    assert!(cost["estimated_total_cny"].as_f64().unwrap() > 0.02);
+    let failed = json!({"stage":"w1","id":"b","status":"调用失败"});
+    let cost = compare_cost("gpt-6-luna", &[a.clone(), failed]);
+    assert_eq!(cost["unknown_usage_or_price_attempts"], 1);
+    assert!(cost["estimated_total_cny"].is_null());
+    assert!(cost["cost_per_passed_attempt_cny"].is_null());
+    assert!(cost["known_subtotal_cny"].as_f64().unwrap() > 0.0);
+    let mut ds = a.clone();
+    ds["usage"]["input_tokens_details"] = json!({"cached_tokens":500});
+    assert!(
+        (compare_cost("ds-pro", &[ds.clone()])["estimated_total_cny"]
+            .as_f64()
+            .unwrap()
+            - 0.05865)
+            .abs()
+            < 1e-10
+    );
+    ds["usage"]["input_tokens_details"]["cached_tokens"] = json!(1001);
+    assert!(compare_cost("ds-pro", &[ds])["estimated_total_cny"].is_null());
+    let mut haiku = a.clone();
+    haiku["usage"]["input_tokens"] = json!(100001);
+    assert!(compare_cost("claude-haiku-5-5", &[haiku])["estimated_total_cny"].is_null());
+    let cost = compare_cost(
+        "gpt-6-luna",
+        &[json!({"status":"未录制"}), json!({"status":"熔断未发送"})],
+    );
+    assert_eq!(cost["priced_attempts"], 0);
+    assert_eq!(cost["unknown_usage_or_price_attempts"], 0);
+    assert!(cost["cost_per_stable_passed_sample_cny"].is_null());
+}
+#[test]
+fn af163_ten_profile_report_preserves_historic_scores_and_columns() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let mut groups =
+        compare_plan(&temp.0.join("history"), &profiles, smoke_fixture_variable).unwrap();
+    groups.extend(
+        compare_plan_for(
+            &temp.0.join("new"),
+            &profiles,
+            &AF163_IDS,
+            smoke_fixture_variable,
+        )
+        .unwrap(),
+    );
+    let reports: Vec<_> = groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("report sent")).unwrap())
+        .collect();
+    let report = compare_report(&groups, &reports, 0);
+    assert_eq!(report["comparison"], "af163");
+    assert_eq!(report["fixed_slots"], 760);
+    assert_eq!(report["profiles"].as_array().unwrap().len(), 10);
+    assert_eq!(report["matrix"].as_array().unwrap().len(), 40);
+    assert_eq!(report["scoring_samples"], 39);
+    assert_eq!(report["observation_samples"], 1);
+    for (i, profile) in items(&report["profiles"]).iter().enumerate() {
+        assert_eq!(profile["reference_only"], i < 7);
+        assert!(profile.get("w3_verdict").is_some());
+        assert!(profile.get("w3_coverage").is_some());
+        assert!(profile.get("observations").is_some());
+        assert!(profile.get("cost_estimate").is_some());
+        assert_eq!(profile["stage_pass_rates"].as_array().unwrap().len(), 2);
+        assert!(
+            items(&profile["metrics"])
+                .iter()
+                .all(|m| m.get("cost_estimate").is_some())
+        );
+    }
+    let mut cells: Vec<_> = AF163_IDS
+        .iter()
+        .map(|id| json!({"profile":id,"total":2,"passed":0,"complete":true,"unstable":false}))
+        .collect();
+    cells[0]["passed"] = json!(2);
+    assert_eq!(
+        compare_tier(&cells),
+        "低价云档即可（本轮 Luna/Haiku 两次均通过）"
+    );
+    cells[0]["passed"] = json!(0);
+    cells[1]["passed"] = json!(2);
+    assert_eq!(compare_tier(&cells), "Sonnet 即可（本轮两次均通过）");
+}
+#[test]
+fn af164_qwen_revocation_rejects_before_secret_lookup_or_sends() {
+    for mode in ["af156", "af162"] {
+        let error = provider_comparison(|key| match key {
+            "EVAL_COMPARE" => Some(mode.into()),
+            "EVAL_RECORD" => Some(if mode == "af156" { "160" } else { "2" }.into()),
+            "QWEN_API_KEY" | "QWEN_BASE_URL" => panic!("revoked campaign read credentials"),
+            _ => None,
+        })
+        .unwrap_err();
+        assert!(error.contains("AF164"));
+        assert!(error.contains("revoked"));
+    }
+}
+
+#[test]
+fn af163_cloud_incomplete_excerpts_and_usage_survive_strict_offline_replay() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let groups = compare_plan_for(&temp.0, &profiles, &AF163_IDS, smoke_fixture_variable).unwrap();
+    let text = "片段".repeat(3000);
+    for group in &groups {
+        compare_freeze(group).unwrap();
+        let envelope = if group[0].provider.as_ref().unwrap().protocol
+            == ProviderProtocol::OpenaiResponses
+        {
+            json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"usage":{"input_tokens":12,"output_tokens":50},
+                "output":[{"type":"message","content":[{"type":"output_text","text":text}]}]})
+        } else {
+            json!({"stop_reason":"max_tokens","usage":{"input_tokens":12,"output_tokens":50},
+                "content":[{"type":"thinking","thinking":"PRIVATE_THINKING"},{"type":"text","text":text}]})
+        };
+        let report = evaluate_cases(&group[..1], Some(80), &mut |_| Ok(envelope.clone())).unwrap();
+        let row = &report["results"][0];
+        assert_eq!(row["status"], "调用失败");
+        assert_eq!(row["diagnostic_fragments"]["scoring_eligible"], false);
+        assert_eq!(
+            row["response"]["incomplete_details"]["reason"],
+            "max_output_tokens"
+        );
+        assert_eq!(row["usage"], json!({"input_tokens":12,"output_tokens":50}));
+        let file: Value = serde_json::from_slice(&std::fs::read(&group[0].path).unwrap()).unwrap();
+        let record = &file["recorded"][0];
+        assert!(record.get("output_text").is_none());
+        assert!(record.get("output").is_none());
+        assert!(!file.to_string().contains("PRIVATE_THINKING"));
+    }
+    let resumed = compare_plan_for(&temp.0, &profiles, &AF163_IDS, smoke_fixture_variable).unwrap();
+    for group in resumed {
+        let report =
+            evaluate_cases(&group[..1], Some(80), &mut |_| panic!("incomplete resent")).unwrap();
+        assert_eq!(report["sent_calls"], 0);
+        assert_eq!(
+            report["results"][0]["diagnostic_fragments"]["diagnostic_only"],
+            true
+        );
+    }
+}
+
+fn af166_fixture_variable(name: &str) -> Option<String> {
+    match name {
+        "QWEN_BASE_URL" => {
+            Some("https://ws-fixture.cn-beijing.maas.aliyuncs.com/compatible-mode".into())
+        }
+        "QWEN_API_KEY" => Some("fixture-qwen-key".into()),
+        _ => smoke_fixture_variable(name),
+    }
+}
+#[test]
+fn af166_modes_have_four_smoke_two_diagnostic_and_400_formal_slots() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    for (mode, ids, record, smoke, diagnostic, count) in [
+        (
+            "af163-smoke",
+            AF166_PROMPT_IDS.as_slice(),
+            "4",
+            true,
+            false,
+            4,
+        ),
+        ("af162", AF166_QWEN_IDS.as_slice(), "2", false, true, 2),
+        (
+            "af163",
+            AF163_COMPARE_IDS.as_slice(),
+            "400",
+            false,
+            false,
+            400,
+        ),
+    ] {
+        let options = compare_options(|key| match key {
+            "EVAL_COMPARE" => Some(mode.into()),
+            "EVAL_RECORD" => Some(record.into()),
+            "EVAL_COMPARE_PROFILES" => diagnostic.then(|| AF166_QWEN_IDS.join(",")),
+            _ => None,
+        })
+        .unwrap();
+        assert_eq!(options.profiles.len(), ids.len());
+        let root = temp.0.join(mode);
+        let groups = compare_plan_with_smoke(
+            &root,
+            &profiles,
+            ids,
+            af166_fixture_variable,
+            diagnostic.then_some(SMOKE_SAMPLE),
+            smoke,
+        )
+        .unwrap();
+        assert_eq!(groups.iter().map(Vec::len).sum::<usize>(), count);
+        assert_eq!(compare_preflight(&groups, &options).unwrap(), count);
+        assert!(!root.exists());
+        for group in &groups {
+            assert!(group.iter().all(|c| matches!(c.replay, Replay::Missing)));
+            let case = &group[0];
+            if AF166_PROMPT_IDS.contains(&case.model.label.as_str()) {
+                assert_eq!(
+                    case.provider.as_ref().unwrap().structured_mode,
+                    StructuredMode::PromptSchema
+                );
+                assert!(
+                    case.provider
+                        .as_ref()
+                        .unwrap()
+                        .require_native_schema()
+                        .is_err()
+                );
+                assert!(case.wire_request["output_config"].get("format").is_none());
+                assert!(
+                    case.wire_request["system"]
+                        .as_str()
+                        .unwrap()
+                        .ends_with(&case.request["text"]["format"]["schema"].to_string())
+                );
+            } else if AF166_QWEN_IDS.contains(&case.model.label.as_str()) {
+                assert_eq!(case.model.effort, ReasoningEffort::Omit);
+                assert!(case.wire_request.get("reasoning_effort").is_none());
+                assert_eq!(
+                    case.wire_request["enable_thinking"],
+                    case.provider.as_ref().unwrap().thinking.unwrap()
+                );
+                assert_eq!(
+                    case.wire_request["response_format"]["json_schema"]["strict"],
+                    true
+                );
+                assert_eq!(
+                    case.wire_request["model"],
+                    model_provider::DASHSCOPE_QWEN38_MODEL
+                );
+                assert!(
+                    !case
+                        .wire_request
+                        .to_string()
+                        .contains(case.sample["id"].as_str().unwrap())
+                );
+                if case.provider.as_ref().unwrap().thinking == Some(true) {
+                    assert_eq!(
+                        case.wire_request["thinking_budget"],
+                        case.request["max_output_tokens"].as_u64().unwrap() / 2
+                    );
+                } else {
+                    assert!(case.wire_request.get("thinking_budget").is_none());
+                }
+                let mut changed = case.clone();
+                changed.wire_request["enable_thinking"] =
+                    json!(!case.provider.as_ref().unwrap().thinking.unwrap());
+                assert_ne!(case_fingerprint(case), case_fingerprint(&changed));
+                let mut changed = case.clone();
+                changed.wire_request["thinking_budget"] = json!(7);
+                assert_ne!(case_fingerprint(case), case_fingerprint(&changed));
+            }
+        }
+    }
+    for (mode, profiles, record, cases) in [
+        ("af163-smoke", None, "6", None),
+        (
+            "af162",
+            Some("qwen38-flash-think,qwen37-flash-think"),
+            "2",
+            None,
+        ),
+        (
+            "af162",
+            Some("qwen38-flash-think,qwen38-flash-nothink"),
+            "160",
+            None,
+        ),
+        (
+            "af162",
+            Some("qwen38-flash-think,qwen38-flash-nothink"),
+            "2",
+            Some("w1_02"),
+        ),
+        ("af163", None, "401", None),
+    ] {
+        assert!(
+            compare_options(|key| match key {
+                "EVAL_COMPARE" => Some(mode.into()),
+                "EVAL_COMPARE_PROFILES" => profiles.map(str::to_owned),
+                "EVAL_RECORD" => Some(record.into()),
+                "EVAL_CASES" => cases.map(str::to_owned),
+                _ => None,
+            })
+            .is_err()
+        );
+    }
+    for (ids, record) in [
+        (AF163_IDS.as_slice(), "240"),
+        (AF166_QWEN_IDS.as_slice(), "160"),
+    ] {
+        let options = compare_options(|key| match key {
+            "EVAL_COMPARE" => Some("af163".into()),
+            "EVAL_COMPARE_PROFILES" => Some(ids.join(",")),
+            "EVAL_RECORD" => Some(record.into()),
+            _ => None,
+        })
+        .unwrap();
+        assert_eq!(options.profiles.len(), ids.len());
+    }
+}
+#[test]
+fn af166_diagnostic_gates_strictly_and_does_not_consume_formal_allowance() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let selected: Vec<_> = AF166_QWEN_IDS.iter().map(|s| (*s).to_owned()).collect();
+    let root = temp.0.join("diagnostic");
+    assert!(af166_diagnostic_check(&root, &profiles, &selected, af166_fixture_variable).is_err());
+    assert!(!root.exists());
+    let groups = compare_plan_for_sample(
+        &root,
+        &profiles,
+        &AF166_QWEN_IDS,
+        af166_fixture_variable,
+        Some(SMOKE_SAMPLE),
+    )
+    .unwrap();
+    for group in &groups {
+        compare_freeze(group).unwrap();
+        let report =
+            evaluate_cases(group, Some(1), &mut |c| Ok(compare_fixture_response(c))).unwrap();
+        assert_eq!(report["sent_calls"], 1);
+    }
+    af166_diagnostic_check(&root, &profiles, &selected, af166_fixture_variable).unwrap();
+    let formal = compare_plan_for(
+        &temp.0.join("formal"),
+        &profiles,
+        &AF166_QWEN_IDS,
+        af166_fixture_variable,
+    )
+    .unwrap();
+    assert!(
+        formal
+            .iter()
+            .flatten()
+            .all(|c| matches!(c.replay, Replay::Missing))
+    );
+    for group in &formal {
+        assert!(!group[0].campaign.as_ref().unwrap().exists());
+    }
+    let resumed = compare_plan_for_sample(
+        &root,
+        &profiles,
+        &AF166_QWEN_IDS,
+        af166_fixture_variable,
+        Some(SMOKE_SAMPLE),
+    )
+    .unwrap();
+    for group in &resumed {
+        assert_eq!(
+            evaluate_cases(group, Some(1), &mut |_| panic!("diagnostic resent")).unwrap()["sent_calls"],
+            0
+        );
+    }
+    let mut changed = profiles.clone();
+    changed
+        .iter_mut()
+        .find(|p| p.id == AF166_QWEN_IDS[0])
+        .unwrap()
+        .timeout_seconds += 1;
+    assert!(af166_diagnostic_check(&root, &changed, &selected, af166_fixture_variable).is_err());
+    for (kind, output) in [
+        ("duplicate", {
+            let mut o = fake_w1(&groups[0][0].sample);
+            let c = o["candidates"][0].clone();
+            o["candidates"].as_array_mut().unwrap().push(c);
+            o.to_string()
+        }),
+        (
+            "repeated_json",
+            "{\"candidates\":[],\"memory_requests\":[]}{\"candidates\":[],\"memory_requests\":[]}"
+                .into(),
+        ),
+        (
+            "extra_field",
+            "{\"candidates\":[],\"memory_requests\":[],\"extra\":true}".into(),
+        ),
+        ("incomplete", "partial".into()),
+    ] {
+        let badroot = temp.0.join(kind);
+        let bad = compare_plan_for_sample(
+            &badroot,
+            &profiles,
+            &AF166_QWEN_IDS[..1],
+            af166_fixture_variable,
+            Some(SMOKE_SAMPLE),
+        )
+        .unwrap();
+        compare_freeze(&bad[0]).unwrap();
+        let report=evaluate_cases(&bad[0],Some(1),&mut |_|Ok(json!({"choices":[{"finish_reason":if kind=="incomplete" {"length"} else {"stop"},"message":{"content":output}}],"usage":{"prompt_tokens":2,"completion_tokens":3}}))).unwrap();
+        assert_eq!(report["sent_calls"], 1);
+        assert!(
+            af166_diagnostic_check(&badroot, &profiles, &selected[..1], af166_fixture_variable)
+                .is_err(),
+            "{kind}"
+        );
+        if kind == "incomplete" {
+            assert_eq!(
+                report["results"][0]["diagnostic_fragments"]["diagnostic_only"],
+                true
+            );
+        }
+    }
+}
+#[test]
+fn af166_prompt_mode_invalidates_native_recordings_and_campaigns() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let mut native = profiles.clone();
+    for p in native
+        .iter_mut()
+        .filter(|p| AF166_PROMPT_IDS.contains(&p.id.as_str()))
+    {
+        p.provider.structured_mode = StructuredMode::NativeSchema;
+    }
+    let old = compare_plan_with_smoke(
+        &temp.0,
+        &native,
+        &AF166_PROMPT_IDS,
+        smoke_fixture_variable,
+        None,
+        true,
+    )
+    .unwrap();
+    for group in &old {
+        compare_freeze(group).unwrap();
+        evaluate_cases(group, Some(2), &mut |c| Ok(compare_fixture_response(c))).unwrap();
+    }
+    let current = compare_plan_with_smoke(
+        &temp.0,
+        &profiles,
+        &AF166_PROMPT_IDS,
+        smoke_fixture_variable,
+        None,
+        true,
+    )
+    .unwrap();
+    for (old, current) in old.iter().zip(&current) {
+        assert!(current.iter().all(|c| matches!(c.replay, Replay::Stale)));
+        assert_ne!(case_fingerprint(&old[0]), case_fingerprint(&current[0]));
+        assert!(campaign_check(current, 2).is_err());
+    }
+    let mut invalid: Vec<SmokeProfile> = profiles.clone();
+    invalid[0].provider.structured_mode = StructuredMode::PromptSchema;
+    assert!(evaluation_profiles(&serde_json::to_string(&json!(invalid.iter().map(|p|json!({"id":p.id,"model":p.model,"provider":p.provider,"effort":p.effort,"max_output_tokens":p.max_output_tokens,"timeout_seconds":p.timeout_seconds,"endpoint_env":p.endpoint_env})).collect::<Vec<_>>())).unwrap()).is_err());
+}
+#[test]
+fn af166_twelve_profile_report_includes_modes_alias_cache_cost_and_observation() {
+    let temp = TempRecords::new();
+    let profiles = evaluation_profiles(include_str!("eval/write_stage/providers.json")).unwrap();
+    let mut groups =
+        compare_plan(&temp.0.join("history"), &profiles, af166_fixture_variable).unwrap();
+    groups.extend(
+        compare_plan_for(
+            &temp.0.join("new"),
+            &profiles,
+            &AF163_COMPARE_IDS,
+            af166_fixture_variable,
+        )
+        .unwrap(),
+    );
+    let reports: Vec<_> = groups
+        .iter()
+        .map(|g| evaluate_cases(g, None, &mut |_| panic!("offline report sent")).unwrap())
+        .collect();
+    let report = compare_report(&groups, &reports, 0);
+    assert_eq!(report["comparison"], "af163");
+    assert_eq!(report["fixed_slots"], 920);
+    assert_eq!(report["profiles"].as_array().unwrap().len(), 12);
+    assert_eq!(report["scoring_samples"], 39);
+    assert_eq!(report["observation_samples"], 1);
+    for profile in items(&report["profiles"]) {
+        let id = profile["profile"].as_str().unwrap();
+        assert_eq!(profile["reference_only"], COMPARE_IDS.contains(&id));
+        if AF166_PROMPT_IDS.contains(&id) {
+            assert_eq!(profile["structured_output_note"], "未使用约束解码");
+        }
+        if AF166_QWEN_IDS.contains(&id) {
+            assert_eq!(profile["model_identity_note"], "别名，可能漂移");
+        }
+        assert!(profile.get("w3_verdict").is_some());
+        assert!(profile.get("w3_coverage").is_some());
+        assert!(profile.get("observations").is_some());
+    }
+    let row = json!({"stage":"w1","id":"x","status":"通过","usage":{"input_tokens":1000,"input_tokens_details":{"cached_tokens":500},"output_tokens":1000,"output_tokens_details":{"reasoning_tokens":800}}});
+    let cost = compare_cost(AF166_QWEN_IDS[0], &[row]);
+    assert!((cost["estimated_total_cny"].as_f64().unwrap() - 0.00315).abs() < 1e-10);
+}
+
+#[test]
+fn af166_formal_dispatch_rejects_before_credentials_when_prerequisites_missing() {
+    for (selected, allowance, reason) in [
+        (AF166_QWEN_IDS.join(","), "160", "AF166 Qwen3.8 diagnostic"),
+        ("claude-sonnet-5-5".to_owned(), "80", "AF163"),
+    ] {
+        let temp = TempRecords::new();
+        let error = provider_comparison_at(&temp.0, |key| match key {
+            "EVAL_COMPARE" => Some("af163".into()),
+            "EVAL_COMPARE_PROFILES" => Some(selected.clone()),
+            "EVAL_RECORD" => Some(allowance.into()),
+            "OPENAI_API_KEY" | "ANTHROPIC_API_KEY" | "QWEN_API_KEY" => {
+                panic!("prerequisite rejection must precede credential lookup")
+            }
+            "QWEN_BASE_URL" => Some("https://dashscope.aliyuncs.com/compatible-mode".into()),
+            "OPENAI_BASE_URL" => Some("https://gpt.fixture.invalid/v1".into()),
+            "ANTHROPIC_BASE_URL" => Some("https://opus.fixture.invalid".into()),
+            _ => None,
+        })
+        .unwrap_err();
+        assert!(error.contains(reason), "{error}");
+        assert!(!temp.0.exists());
     }
 }
