@@ -85,9 +85,25 @@ expression; unknown means expressed but unclear. Qualifiers
 copy original words and say whether understood. Time roles are event, validity, retention;
 anchor is said_on. Propose date/range/relative/month/anchored/recurring/unknown, never perform
 calendar arithmetic or use execution time. Do not invent dates or interpret unknown anchors.
-Activity or applicability conditions belong in conditions, not times; calendar periods and
-explicit schedules belong in times. Add times only for calendar time actually expressed in the
-source; applicability or situational language alone creates no time. date.date and range.start/end_inclusive require full ISO
+Activity or situational conditions belong in conditions, not times. Calendar periods, explicit
+schedules and observation-relative, historical or future temporal qualifiers applicable to this
+assertion belong in times. Preserve those qualifiers even without a calendar date: use validity
+for the assertion's expressed applicability and event for an expressed event or plan schedule.
+Choose the role by what the time qualifies, not by its past or future direction. Use validity
+for when a state or assertion holds or held. Use event for when an activity, planned action,
+arrangement or occurrence takes place; its schedule is not the validity of the intention.
+When the required interpretation cannot be established reliably, retain the exact time Quote
+with interp.kind=unknown. Do not invent an open interval or make a present-state qualifier mean
+valid forever from reception. A past qualifier does not mechanically end another saved record.
+A present-time qualifier expressing an ongoing state or an assertion still holding at utterance
+time does not bound that state to the speaking day. Never encode it as a single-day
+relative/anchored interval or any interval with an end. If its continuing scope cannot be
+represented reliably, use interp.kind=unknown and keep its original Quote. This does not
+override separately expressed explicit calendar dates.
+Distinguish the assertion's temporal scope from a reference to an earlier utterance: the time of
+having said something is not automatically the validity or event time of its asserted content.
+Judge each qualifier's attachment and meaning, never add a time by keyword alone. Explicit
+calendar dates still follow the rules below. date.date and range.start/end_inclusive require full ISO
 calendar days, never a partial year-month. relative uses unit and signed offset. month uses
 year_offset and month (1..12) for a named calendar month. Relative month shifts use
 kind=relative, unit=month and signed offset; never put a relative offset in month.month or invent
@@ -170,6 +186,12 @@ code resolutions, never substitute execution date or manufacture a missing date.
 Check only times and qualifiers applicable to this candidate, not every time in the message.
 A plan with no expressed calendar time can be supported with times=[]; being a plan does not
 require a date. Preserve every applicable expressed qualifier, including unresolved ones.
+Do not reject a candidate solely because an applicable time cannot be converted into calendar
+endpoints. An exact time Quote with interp.kind=unknown can faithfully preserve that temporal
+qualification. Its presence alone does not establish semantic support: check its attachment,
+role and scope, as well as every other aspect. A reference to an earlier utterance is not
+automatically a time qualifier of the asserted content. A past qualifier does not mechanically
+set ended or end another saved record; W4 judges update actions separately.
 For a month/day or named month without a year, explicit years and unambiguous explicit USER
 context take precedence. Otherwise check against that expression's source's trusted said_on:
 an event explicitly directed toward a future plan or arrangement takes its nearest subsequent
@@ -337,6 +359,12 @@ impl WriteModels {
     }
 }
 
+// 阶段身份只进入内部绑定，不进入模型可见输入。
+fn stage_identity(prompt: &str, schema: &Json) -> Json {
+    json!({"prompt":crate::recall_models::fingerprint(&json!(prompt)),
+        "schema":crate::recall_models::fingerprint(schema)})
+}
+
 /// 共享显式库级入口与 CLI 分发的按角色模型提供者。
 pub struct WriteModelProvider {
     client: OpenAiClient,
@@ -446,7 +474,8 @@ impl WriteModelProvider {
         let client = self
             .operation_client(store, ctx)?
             .for_stage(ModelStage::W1)?;
-        let mut w1_binding = json!({"contract":"w1.v3","model":self.models.w1,"input":input});
+        let mut w1_binding = json!({"contract":"w1.v3","model":self.models.w1,"input":input,
+            "stage_identity":stage_identity(W1_PROMPT, &w1_schema())});
         self.models.effort("w1").bind(&mut w1_binding);
         if let Some(identity) = client.provider_binding(
             &self.models.w1,
@@ -480,6 +509,9 @@ impl WriteModelProvider {
                     .as_ref()
                     .map(|r| &r["w4_model_stages"]["w1"]["binding"])
                     .unwrap_or(&Json::Null);
+                if prior_binding["stage_identity"] != w1_binding["stage_identity"] {
+                    return Err("needs_rejudge: frozen W1 prompt or schema changed".into());
+                }
                 if prior_binding["provider"] != w1_binding["provider"] {
                     return Err("needs_rejudge: frozen W1 provider changed".into());
                 }
@@ -585,8 +617,8 @@ impl WriteModelProvider {
             .operation_client(store, ctx)?
             .for_stage(ModelStage::W3)?;
         input["contract"] = json!("w3.v3");
-        let mut w3_binding =
-            json!({"contract":"w3.v3","model":self.models.w3,"input":input,"final_w2":batch});
+        let mut w3_binding = json!({"contract":"w3.v3","model":self.models.w3,"input":input,"final_w2":batch,
+                "stage_identity":stage_identity(W3_PROMPT, &w3_schema())});
         self.models.effort("w3").bind(&mut w3_binding);
         if let Some(identity) = client.provider_binding(
             &self.models.w3,

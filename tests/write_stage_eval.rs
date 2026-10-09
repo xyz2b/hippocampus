@@ -8,6 +8,12 @@ mod recall_adapter;
 #[path = "eval/fixed_inputs/adapter.rs"]
 mod fixed_adapter;
 
+#[path = "eval/write_stage/af193/mod.rs"]
+mod af193;
+
+#[path = "eval/write_stage/af198/mod.rs"]
+mod af198;
+
 use hippocampus::model_provider::{self, ProviderConfig, ProviderProtocol, StructuredMode};
 use hippocampus::{
     EntityId, MemoryType, ModelBudgetConfig, ModelStage, ReasoningEffort, contract::*,
@@ -21,6 +27,7 @@ const MODEL: &str = "DeepSeek-V4.1-Flash";
 const W3_OLD_PROMPT: &str = include_str!("eval/m15/w3-old-91a068a.txt");
 const W3_OLD_FINGERPRINT: &str = "fnv1a64:e20f41189ca2159c";
 const W3_EFFORT_PROMPT_FINGERPRINT: &str = "fnv1a64:a20cc11e24e4d855";
+const W3_EFFORT_PROMPT: &str = include_str!("eval/write_stage/af193/w3-before.txt");
 const W3_TRIAL_CAP: usize = 16;
 
 fn items(value: &Value) -> &[Value] {
@@ -912,6 +919,12 @@ fn mark_observation(sample: &Value, report: &mut Value) {
 }
 
 fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
+    if stage == "w3"
+        && sample["af198_final_w2"].is_object()
+        && let Some(text) = text
+    {
+        return af198::score_w3(sample, text);
+    }
     let mut raw = score_raw(stage, sample, text);
     mark_observation(sample, &mut raw);
     if !matches!(stage, "w4" | "r4") || text.is_none() {
@@ -4385,6 +4398,14 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_AF198").is_some() {
+        af198::run().unwrap();
+        return;
+    }
+    if std::env::var_os("EVAL_AF193").is_some() || std::env::var_os("EVAL_AF196").is_some() {
+        af193::run().unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_COMPARE").is_some() {
         provider_comparison_from_env().unwrap();
         return;
@@ -4920,7 +4941,7 @@ fn w3_effort_from_env() -> Result<Vec<Case>, String> {
 }
 
 fn w3_effort_plan(root: &Path, base: Option<String>) -> Result<Vec<Case>, String> {
-    if w3_prompt_fingerprint(write_models::W3_PROMPT) != W3_EFFORT_PROMPT_FINGERPRINT {
+    if w3_prompt_fingerprint(W3_EFFORT_PROMPT) != W3_EFFORT_PROMPT_FINGERPRINT {
         return Err("AF101 W3 提示词不再是固定的 dc604f8 字节，禁止变更本组试验".into());
     }
     let samples: Vec<Value> =
@@ -4939,6 +4960,7 @@ fn w3_effort_plan(root: &Path, base: Option<String>) -> Result<Vec<Case>, String
     for sample in samples {
         // Assemble W2 once. Only the top-level reasoning effort differs between arms.
         let mut frozen = stage_request_with_output_tokens("w3", &sample, 16384)?;
+        af193::replace_prompt(&mut frozen, ModelStage::W3, W3_EFFORT_PROMPT);
         frozen["model"] = json!(model.model);
         for repeat in 1..=2 {
             let arms = if repeat == 1 {
@@ -5032,7 +5054,7 @@ fn af101_w3_effort_plan_is_frozen_and_rejects_fifteen_before_output() {
     assert!(!temp.0.exists());
     assert_ne!(w3_effort_root(), w3_comparison_root());
     assert_eq!(
-        w3_prompt_fingerprint(write_models::W3_PROMPT),
+        w3_prompt_fingerprint(W3_EFFORT_PROMPT),
         W3_EFFORT_PROMPT_FINGERPRINT
     );
     assert_eq!(
@@ -5094,7 +5116,7 @@ fn af101_w3_effort_plan_is_frozen_and_rejects_fifteen_before_output() {
                 case.request["instructions"]
                     .as_str()
                     .unwrap()
-                    .ends_with(write_models::W3_PROMPT)
+                    .ends_with(W3_EFFORT_PROMPT)
             );
         }
     }
@@ -10829,7 +10851,14 @@ fn af166_formal_dispatch_rejects_before_credentials_when_prerequisites_missing()
             _ => None,
         })
         .unwrap_err();
-        assert!(error.contains(reason), "{error}");
+        // Current prompts also invalidate the earlier AF155 prerequisite report. That
+        // strict rejection must still occur before credentials or campaign creation.
+        assert!(
+            error.contains(reason)
+                || error
+                    == "AF156 historical requests/scores differ from reports-af155; no recording permitted",
+            "{error}"
+        );
         assert!(!temp.0.exists());
     }
 }

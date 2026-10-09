@@ -568,3 +568,71 @@ cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact -
 成本为 null；未发送槽不计费用。cost_per_stable_passed_sample_cny 按非观察题两次均
 通过的样本数计算，cost_per_passed_attempt_cny 另列单次通过成本，零通过不算单位成本。
 正式比较费用不含独立冒烟/诊断及归档失败的历史费用。
+
+
+### AF193：时间限定语诊断
+
+`EVAL_AF193=1` 固定六个虚构场景（`af193/samples.json`，draft 标注）：观察时刻、历史/当前两断言、当前雇主、未来计划、先前说过的回指、明确日期与当前状态。每场景独立 W1/W3 各一次，共 12 槽；不运行 W4/R1/R4。W3 使用固定完整候选并先经 W2，不接该次 W1 输出；因此这是分阶段诊断。输入只带虚构原文、生产目录及不含语义的来源标识，不带期望或场景 ID。
+
+角色与生产缺省对齐：`DEEPSEEK_PRO_MODEL`、`DEEPSEEK_BASE_URL`，W1/W3 low，输出上限 32768/16384，超时 360 秒。不覆盖用户生产配置。干跑不读密钥、不发送、不创建目录或账本；环境缺模型/地址时使用明确的干跑占位，真实录制拒绝占位：
+
+```sh
+PMR_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_DRY_RUN=1 EVAL_RECORD=12 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+本轮未执行的录制命令（须另行授权，先加载真实端点环境）：
+
+```sh
+PMR_MODEL_NETWORK=live EVAL_AF193=1 EVAL_RECORD=12 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+产物仅写 `target/eval-time-af193/{recordings,campaign,report.json}`。首次发送前冻结全部 12 槽身份与额度，逐调用发送前落盘、响应后立即存录制；失败也占槽，不重试、不自动重发在途槽。续跑同命令、同模型与端点，只发送剩余槽，累计不超过 12。仅接受录制额度 12 或严格回放 0；禁止其他阶段、模型/强度/样本过滤覆盖。发送前需 `PMR_MODEL_NETWORK=live`，bootstrap/offline 不会发送。
+
+```sh
+# 严格回放，仍须保留录制时的模型与地址，密钥不需要。
+PMR_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_RECORD=0 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 只读统计历史录制的提示词影响，不修改任何历史产物。
+PMR_MODEL_NETWORK=offline EVAL_AF193=impact \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+默认只出报告，显式 `EVAL_GATE=1` 才因模型评分失败使测试失败。请求与 provider/模型/端点/上限/强度/超时绑定均严格比较；新提示词不能借用旧输出。影响统计分列精确包含 AF193 修改前提示词的录制（新提示词下必过期）、更早提示词或只有摘要无法单独判定的历史录制，以及固定历史对照；不把无法判定的录制当有效。W4/R4 只有实际输入发生变化时才过期。
+
+`af193/w1-before.txt` 与 `w3-before.txt` 是修改前公开提示词的原字节快照，仅用于影响核查及固定历史对照。AF101 强度对照原本冻结 dc604f8 的 W3 提示词：现显式引用该快照，保留原字节指纹、请求与账本身份，不随当前提示词变动。普通阶段/比较入口仍用当前提示词，如实报告旧录制过期，不改旧指纹或标注。
+
+### AF196：第二轮，仅 W1
+
+AF193 的 12 次实测中 W3 6/6、W1 4/6；t01/t06 的持续状态被 W1 压缩为说话当天。AF196 仅补充 W1 的持续状态时间规则，不改 W3、schema、契约或标签。`EVAL_AF196=1` 复用相同六场景与盲化输入，仅 W1 各一次，Pro low、上限32768、超时360秒；W3/W4/R1/R4=0。
+
+```sh
+PMR_MODEL_NETWORK=offline EVAL_AF196=1 EVAL_DRY_RUN=1 EVAL_RECORD=6 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+独立产物为 `target/eval-time-af196/{recordings,campaign,report.json}`，独立标签 `af196-pro-low`。首次发送前冻结全部6槽身份与额度、每调用先落盘 started，再发送；不重试，失败或在途仍占额度，续跑跳过在途槽且不重发。仅接受 `EVAL_RECORD=6`（录制/续跑）或0（严格回放），其他覆盖与 AF193 相同，两个入口不可同时启用。干跑不读取密钥、不创建产物；真实录制仍要求已加载真实模型/地址和 `PMR_MODEL_NETWORK=live`。
+
+### AF198：第三轮，真实输出串联诊断
+
+`EVAL_AF198=1` 复用 AF193 六个虚构场景与原标签，每场景两次独立重复：该次真实 W1 输出经生产 W2 核验后构造 W3 输入。最大24次（W1 12、W3 12），Pro low，输出上限32768/16384、超时360秒。W1 失败、解码失败或 W2 无非拒收候选时，W3 不发送；不以固定理想候选补位。部分拒收时仅送审非拒收项，保留原始候选索引。
+
+```sh
+PMR_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_DRY_RUN=1 EVAL_RECORD=24 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# Claude 复核后录制/续跑：预先加载 DEEPSEEK_PRO_MODEL/BASE_URL/API_KEY，不打印密钥
+PMR_MODEL_NETWORK=live EVAL_AF198=1 EVAL_RECORD=24 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# 严格离线回放，不读取密钥；缺录制或过期如实拒绝，已发送在途保留缺口
+PMR_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_RECORD=0 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+独立目录 `target/eval-time-af198/`：`recordings/repeat-{1,2}/{w1,w3}/`、`campaign/` 和 `report.json`；不改 AF193/AF196 产物。发送前冻结完整24槽、模型/端点/提示词/schema/超时、W2上下文与 W3 输入构造规则；每槽最多一次。W3 请求未生成时只报告“待上游”，生成后绑定该次 W1 请求和输出摘要、完整 W2 与实际 W3 请求，再将 started 记录 fsync 后发送。全批互斥；失败/中断仍占本槽额度，不重试、不重发、不增额。W1或绑定变动拒绝续跑，不能为复用而绕过指纹。干跑无需密钥、不落盘；W3输入尚未产生时不伪报精确 token。入口拒绝其他评测入口与模型/强度/样本/重复/额度目录覆盖。
+
+报告 W1 原标签评分和真实生产 W2 结果、W3 每候选 verdict/problems（非法输出仍保留原始判断，标为未经机械核验），不把 W3 核验通过算成语义通过。统计“限定语保留但因角色/时间拒收”：仅在 W3 机械核验通过时，对同主体/关系/value 的既有标签候选，全部标签时间引用仍在实际 W2 的 times 中，且 verdict 非 supported、problems 含 time，按候选及场景×重复计数；无法与标签对应的断言标未知、不计入。该计数依据模型声明，不由代码判断时间角色或语义。标签仍为 draft，两次重复只用于诊断；默认仅报告，显式 `EVAL_GATE=1` 才因 W1 失败或 W3 核验/录制缺口失败。
+
+后续获准发送时将上例网络门禁改为 live、去掉 `EVAL_DRY_RUN`；严格回放用 offline、`EVAL_RECORD=0`，仍保留相同模型/地址。本轮不发送。AF193 的原始录制、12槽账本和原报告保持原样；按新 W1 提示词其6条 W1录制过期（含原两次评分失败），6条 W3不因本轮提示词改动过期，不改指纹或借用旧输出。

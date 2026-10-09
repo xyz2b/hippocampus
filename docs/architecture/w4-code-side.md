@@ -127,6 +127,14 @@
 - **预算与失败**：沿用既有 HTTP 发送、网络门禁、阶段超时、输出 token 限额、用量结算和持久预留；测试在 HTTP 执行位置注入假响应。新增 w1/w3/w4 后台计数，与旧前台/旧链路操作计数分开，共享 group 总额度；客户端可在 `with_budget` 后用 `with_background_operation_limit(1..3)` 独立限制后台；缺省为 `min(max_operation_calls,3)`，第4项④以 ChatConfig.background_operation_limit 显式接线，缺省配置和修复链不变；新输出额度的授权绑定见第 9 节，旧授权可继续旧阶段。显式额度保存在同一授权的 policy_json（内部 `max_background_operation_calls`），使用该 group 的客户端须一致配置。同一授权可设 `max_operation_calls=2` 并调用 `with_background_operation_limit(3)`，前后台额度不互占而共享总预算；生产前台 R1/R4 随相应路径接线，未在本段改旧链路。后台同 owner/operation 的阶段次数跨授权 group 核对，不能换 group 重置。超时、无效 JSON/schema、HTTP 失败均不重试、不退款。调用记录存在而阶段输出缺失时为 failed，`source.error=model_invalid_output`，内部诊断 `detail_code=model_result_missing`；新预算尝试须显式重判，不自动重发。错误只保存脱敏代码，外部回执仍为冻结 3.5 字段。
 - **租约与删除**：阶段加载、保存使用与 W5 相同的 attempt、租约、round、operation、来源输入检查；晚到结果不能覆盖继任认领或恢复删除。删除自身来源清空阶段结果，他处阶段输入/输出中的原文和历史副本沿用检查点清洗并使计划失效。`src/write_models_tests.rs` 使用真实 SQLite、关闭重开及进程内假 HTTP 覆盖发送计数、失败/缺结果、输入变化、预算、认领替换和删除；不调用真实模型。
 
+### AF193：时间限定语与阶段身份
+
+W1/W3 保持 v3，DB v11、W4 v4、recall v7 及冻结契约不变。W1 按语义把适用于断言的观察时刻、历史或未来限定语写入 `times`：断言适用时间用 validity，事件/计划时刻用 event；无法可靠换算时用 `TimeInterp(kind=unknown)` 并保留精确原文 Quote。不新增开放区间，不把当下状态解释为从接收日起永久有效，也不凭历史用词自动结束记录。话语回指的说话时刻不能自动作为其内容的有效时间；代码不按关键词添加时间。明确日期仍按原规则换算。W3 不仅因不能换算日历端点而拒收，但原文中出现该字段也不自动证明其附着、角色、范围等语义正确。
+
+W1/W3 阶段绑定新增 `stage_identity`（提示词和 schema 的内容摘要），仅存内部检查点，不进入模型输入。续跑核对身份，旧批次保留原绑定和输出；缺失或不同的身份不能被标为当前提示词产物。同操作不重发，返回 needs_rejudge；已有冻结 W1 的显式新操作也不能换提示词后沿用原候选并改写身份。主体确认仍沿用已批准的冻结候选流程，只重核选定候选，不冒充重新提取。已保存的 W5 计划恢复规则不变；本修复不会自动整理旧 pending 或突破混合提交来源的重提取限制。
+
+六个虚构场景的独立 W1/W3 诊断、12 槽额度与只读历史录制影响统计见 [AF193 评测入口](../../tests/eval/write_stage/README.md#af193时间限定语诊断)。W3 使用固定且经 W2 核验的完整候选，不代表实际 W1→W3 端到端质量。本轮零真实调用。
+
 ## 7. W4 模型提供者（④-4）
 
 - **入口与约束**：`enrichment::run_source_with_all_models(store, key, budget, provider)` 将同一个 `WriteModelProvider` 接到 W1/W3 上游和 W4 判定位置；保留 `run_source` 与 `run_source_with_models` 的注入接口。`W4_PROMPT` 与 `w4_schema()` 在 `src/write_models.rs`，覆盖 w4.v4 动作、逐候选决定、目标数量、新旧双方依据、legacy 待定、范围缺口、关系解决、生效时间及 QualifierRef 冲突范围；原文和历史没有指令权限。提示词不放样本原文、ID 或说明标签，静态测试扫描 W1/W3/W4 samples 的原文、ID 和说明标签；全量验收 B 另扫描 cases 的消息、问题、上下文和说明，覆盖全部五份提示词。W3 定向修正明确原始索引逐项且唯一、非 episode 的 not_applicable、supported 的空 problems，并要求简洁输出而不删核验项；schema、核验规则与冻结契约不变。
