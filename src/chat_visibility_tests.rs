@@ -706,7 +706,7 @@ fn visibility_real_prepare_immediate_recall_success_frequency() {
             )
             .unwrap();
             let body = response.structured_content.as_ref().unwrap();
-            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v6" {
+            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v7" {
                 success += 1;
                 assert_eq!(body["source"]["status"], "stored");
                 assert_eq!(body["recall"]["status"], "answered", "{body}");
@@ -753,4 +753,51 @@ fn visibility_real_prepare_immediate_recall_success_frequency() {
         assert_eq!(success, 30);
         assert!(db.calls() <= 152, "unexpected implicit retry");
     }
+}
+
+#[test]
+fn query_embedding_releases_host_lock_and_offline_bootstrap_do_not_call_it() {
+    let db = Db::new();
+    let mut s = service(&db);
+    seed(&db, &mut s);
+    let (entered, entry) = mpsc::channel();
+    let (release, released) = mpsc::channel();
+    let released = Mutex::new(released);
+    let count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let calls = count.clone();
+    s.inject_embedding_query(Arc::new(move |text| {
+        assert_eq!(text, "我住在哪？");
+        calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        entered.send(()).unwrap();
+        released
+            .lock()
+            .unwrap()
+            .recv_timeout(Duration::from_secs(8))
+            .unwrap();
+        Err("injected_query_failure".into())
+    }));
+    let shared = Mutex::new(s);
+    std::thread::scope(|scope| {
+        let read = scope.spawn(|| read_shared(&shared, "embedding:held"));
+        wait(&entry);
+        // This management call must complete before the query embedding is released.
+        let boot = shared_call(
+            &shared,
+            "memory_recall",
+            json!({"query":"全局回答要求","request_id":"embedding:boot","bootstrap":true,"at":AT}),
+        );
+        assert_eq!(boot["recall"]["retrieval"]["status"], "not_needed");
+        let mut offline = query("embedding:offline");
+        offline["offline"] = json!(true);
+        let result = shared_call(&shared, "memory_recall", offline);
+        assert_eq!(result["recall"]["retrieval"]["status"], "not_needed"); // R1 skipped: actual scope enumeration
+        assert_eq!(count.load(std::sync::atomic::Ordering::SeqCst), 1);
+        let listed = shared_call(&shared, "memory_list", json!({}));
+        assert!(listed.get("error").is_none());
+        release.send(()).unwrap();
+        let out = read.join().unwrap();
+        assert_eq!(out["retrieval"]["status"], "unavailable");
+        assert_eq!(read_shared(&shared, "embedding:held"), out);
+        assert_eq!(count.load(std::sync::atomic::Ordering::SeqCst), 1);
+    });
 }

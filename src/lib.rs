@@ -3,6 +3,7 @@ mod commit;
 pub mod contract;
 pub mod diagnostics;
 pub mod embedding;
+pub mod embedding_index;
 mod engine;
 pub mod enrichment;
 mod fact_index;
@@ -35,3 +36,5 @@ pub use sqlite::*;
 pub use staging::*;
 pub use store::*;
 pub use temporal::*;
+
+pub use lexical::{LEXICAL_DF_PERCENT, LexicalDf, LexicalDfTerm};

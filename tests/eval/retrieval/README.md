@@ -152,3 +152,19 @@ PMR_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=replay cargo test --test retrieval_e
 Q19 两预算下由现状未覆盖变为 lexical-df 全覆盖，目标排第一；hybrid-df 修复大预算下 Q03/Q06 的遗漏。字面/精确题 Q12、Q15、Q22、Q23 的全覆盖、MRR、precision 相对各自旧模式均无退化。完整 JSON/Markdown 包含800行（40题×2预算×5模式×2模型）、逐题 DF/投票及预算诊断；安全违规0。vector-only 的 MRR 仍高于 hybrid-df，不能凭全覆盖宣布融合更优。
 
 限制：高 DF 词也可能承载有效内容，特别是宿主显式限定的小主体范围；只在这一冻结集验证，未将阈值用于生产。现状错误关系过滤（Q31）和无字面命中的同义题仍不能只靠 DF 修复。本轮不添加 BM25，也不调整 RRF 参数。
+
+
+## AF185：生产混合检索严格离线对照
+
+生产 DF 已在 `src/lexical.rs` 统一实现；AF178 不再复制分词/计分。AF175 历史模拟及录制指纹保留；AF185 使用真实 R2/R3 与 DB v11 向量缓存，注入严格复用的查询向量，不连接 Ollama。旧实验报告/录制不覆盖，新 JSON/Markdown 写 `target/eval-retrieval/af185/`。
+
+```sh
+PMR_MODEL_NETWORK=offline cargo test --release --test retrieval_eval af185_production_strict_vector_replay -- --ignored --nocapture
+PMR_MODEL_NETWORK=offline cargo test --test retrieval_eval af185_ -- --nocapture
+```
+
+第一条需要本机已有完整 AF175 录制，显式执行，缺失/指纹变化直接失败、零补发。两模型×两预算在生产路径计算必需全覆盖/MRR/precision、来源原文覆盖、截断及 retrieval 覆盖，保留实际枚举路径；逐题验证 owner/主体/任务/删除硬门槛。每题 opt-out 与未接入路径的 R4 输入逐字节比较。目标必需全覆盖32/32；指标如实报告，不修改冻结标签。第二条覆盖部分/损坏缓存、重开、查询失败及删除并发，不依赖网络。
+
+生产冻结融合：DF 严格>20%、RRF60、两路各2×records种子；关系成员没有词法票或保留席位，融合后展开闭包再裁剪；plan_complete 只来自实际枚举。实验向量录制只认证本冻结合成语料的检索质量，不证明真实语义模型/生产 P95。
+
+AF185 本轮 release 严格回放约96秒（两模型160次生产组装及80题预算的关闭模式对照）；debug 的重复完整投影明显较慢，建议用上述 release 命令。不是实际嵌入/R1/R4 网络延迟，不能用来宣称前台 P95。

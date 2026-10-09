@@ -38,7 +38,7 @@ class M15Scoring(unittest.TestCase):
         self.assertEqual(self.view(c,q,raw)["binding"], [])
         raw["version"]="recall.v3"
         self.assertEqual(self.view(c,q,raw)["adapter"], NEW_ADAPTER)
-        raw["version"]="recall.v7"
+        raw["version"]="recall.v8"
         self.assertTrue(self.view(c,q,raw)["binding"])
         raw["version"]="recall.v4";raw["request"]["query"]="别的问题"
         self.assertTrue(self.view(c,q,raw)["binding"])

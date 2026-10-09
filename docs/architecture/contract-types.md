@@ -2,7 +2,7 @@
 
 依据 contracts.md §1、§2.1、§2.4、§3.2，设计经 GPT 复审 0015 确定。代码在 `src/contract.rs`。
 
-当前 DB v10，契约为 W1/W3 v3、W4 v4、R1 v2、R4/recall v6；配置名仍为 w4_runtime_v1 / recall_v3。A 段样本数量与第4节待办保留为历史记录，当前运行时已接通。
+当前 DB v11，契约为 W1/W3 v3、W4 v4、R1 v2、R4 v6、recall v7；配置名仍为 w4_runtime_v1 / recall_v3。A 段样本数量与第4节待办保留为历史记录，当前运行时已接通。
 
 ## 1. 类型
 
@@ -20,11 +20,11 @@
   - 重判只更新关系和 UpdateState。
   - 重判必须带完全相同的完整候选，否则整组 needs_rejudge。
   - 要改变完整候选，只能走显式重建与替代映射。
-- 回退：删除清洗会把创建回执整体墓碑化。此时记录可能因其他独立证据存活，但已经没有完整候选。召回侧回退为 LegacyRecordView，附上真实的 evidence 和 gaps，不能恢复被删除的候选；当前 recall.v6 已落实这一点。
+- 回退：删除清洗会把创建回执整体墓碑化。此时记录可能因其他独立证据存活，但已经没有完整候选。召回侧回退为 LegacyRecordView，附上真实的 evidence 和 gaps，不能恢复被删除的候选；当前 recall.v7 已落实这一点。
 
 ## 3. 投影到现有 Memory（W5 的执行形式）
 
-旧召回执行器已删除，当前 recall.v6 以完整 Candidate 或 LegacyRecordView 为依据，不把 Memory 投影当成完整语义。计划以 fact 执行存储，保留 speech=plan、极性与限定语，不表示已发生。现有 Memory 表达不了的内容按下面两类处理。
+旧召回执行器已删除，当前 recall.v7 以完整 Candidate 或 LegacyRecordView 为依据，不把 Memory 投影当成完整语义。计划以 fact 执行存储，保留 speech=plan、极性与限定语，不表示已发生。现有 Memory 表达不了的内容按下面两类处理。
 
 **拒绝投影。** 下列情况不提交为现有记录，候选和原文照常保留：
 
@@ -47,7 +47,7 @@
 
 - 不用占位条件冒充：同一 Activity 文本不同就会被判为互斥，不能用它代替。
 - 带这类限定语或完整候选未知的记录，不进入 bootstrap/global_context 的无限定全局要求；这些本地结果不执行条件语义推导。
-- 普通 recall.v6 保留完整候选限定语；旧数据使用 LegacyRecordView.data 与 gaps 原样表达，不按旧条件、别名或 IS-A 规则筛成确定结论。R4 依据可核准原文判断，R5 按完整性门控。
+- 普通 recall.v7 保留完整候选限定语；旧数据使用 LegacyRecordView.data 与 gaps 原样表达，不按旧条件、别名或 IS-A 规则筛成确定结论。R4 依据可核准原文判断，R5 按完整性门控。
 - memory_list 与来源检索仍附 qualifiers_unmapped（限定语原文或 unknown）；旧 answer_contract 答复门、本地/assisted 执行器已删除。
 
 **单个已换算的有效期**写成 valid_from / valid_to（左闭右开，来源为明示）。保存期限只做标记：不写入有效期，也不写入到期时间。

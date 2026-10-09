@@ -998,3 +998,94 @@ impl SqliteMemoryStore {
         Ok(result)
     }
 }
+
+/// Frozen opt-in lexical channel; statistics are only over caller-authorized unique sources.
+pub const LEXICAL_DF_PERCENT: usize = 20;
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct LexicalDf {
+    pub documents: usize,
+    pub terms: Vec<LexicalDfTerm>,
+    entities: Vec<Vec<String>>,
+}
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct LexicalDfTerm {
+    pub term: String,
+    pub df: usize,
+    pub kept: bool,
+}
+impl LexicalDf {
+    /// The production index tokenizer; also used to check experimental corpus parity.
+    pub fn index_text(text: &str) -> String {
+        tokens(text).join(" ")
+    }
+    pub fn new<'a>(
+        hint: &str,
+        entities: &[Entity],
+        documents: impl IntoIterator<Item = &'a str>,
+    ) -> Self {
+        let documents: Vec<_> = documents
+            .into_iter()
+            .map(|s| format!(" {} ", Self::index_text(s)))
+            .collect();
+        let terms = natural_phrases(hint, entities)
+            .into_iter()
+            .map(|term| {
+                let df = documents
+                    .iter()
+                    .filter(|d| d.contains(&format!(" {term} ")))
+                    .count();
+                let kept = Self::kept(df, documents.len());
+                LexicalDfTerm { term, df, kept }
+            })
+            .collect();
+        Self {
+            documents: documents.len(),
+            terms,
+            entities: entity_hints(hint, entities).into_values().collect(),
+        }
+    }
+    pub fn kept(df: usize, documents: usize) -> bool {
+        documents > 0 && (df as u128) * 100 <= (documents as u128) * (LEXICAL_DF_PERCENT as u128)
+    }
+    pub fn score(&self, text: &str) -> (usize, usize) {
+        self.score_words(&format!(" {} ", Self::index_text(text)))
+    }
+    fn score_words(&self, words: &str) -> (usize, usize) {
+        let hit = |term: &str| {
+            self.terms.iter().any(|t| t.kept && t.term == term)
+                && words.contains(&format!(" {term} "))
+        };
+        (
+            self.entities
+                .iter()
+                .filter(|names| names.iter().any(|n| hit(n)))
+                .count(),
+            self.terms.iter().filter(|t| t.kept && hit(&t.term)).count(),
+        )
+    }
+    pub fn matches(&self, text: &str) -> bool {
+        self.score(text).1 > 0
+    }
+    pub(crate) fn matches_segment(&self, text: &str, start: usize, end: usize) -> bool {
+        self.score_words(&format!(" {} ", index_tokens(text, start, end).join(" ")))
+            .1
+            > 0
+    }
+}
+
+#[cfg(test)]
+mod hybrid_df_tests {
+    use super::*;
+    #[test]
+    fn partial_western_tokens_at_segment_edges_cannot_cast_a_vote() {
+        let df = LexicalDf::new(
+            "Rust",
+            &[],
+            ["Rustacean", "Java", "Python", "Ruby", "Swift"],
+        );
+        assert!(df.matches("Rust"));
+        assert!(!df.matches_segment("Rustacean", 0, 4));
+        assert!(!df.matches_segment("xRust", 1, 5));
+        assert!(df.matches_segment("Rust Java", 0, 4));
+    }
+}

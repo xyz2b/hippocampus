@@ -755,7 +755,7 @@ fn a3_receipts_live_in_a_version_older_binaries_reject() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 10);
+    assert_eq!(version, 11);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1220,7 +1220,7 @@ fn a3_v6_receipts_without_status_still_open_and_replay() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 10);
+    assert_eq!(version, 11);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1519,7 +1519,7 @@ fn s1_committed_receipts_of_every_released_version_migrate_and_replay() {
 
         // 迁移：版本 8，回执显式写出 form=pre8，快照补齐新字段。
         drop(db.open());
-        assert_eq!(user_version(&db), 10, "{name}");
+        assert_eq!(user_version(&db), 11, "{name}");
         assert_pre8_receipts(&db, name);
         // 关闭 → 重开 → 再保存一次（任务字段写入也会改写快照）→ 重开：标记仍在。
         reclaim(&db, "s-205");
@@ -1573,7 +1573,7 @@ fn s1_needs_rejudge_receipts_of_released_versions_stay_needs_rejudge() {
     ] {
         let db = restore_fixture(name);
         drop(db.open());
-        assert_eq!(user_version(&db), 10, "{name}");
+        assert_eq!(user_version(&db), 11, "{name}");
         assert_pre8_receipts(&db, name);
         reclaim(&db, "s-205");
         let before = snapshot(&db);
@@ -1592,7 +1592,7 @@ fn s1_v5_database_migrates_and_new_receipts_are_v8() {
     let db = restore_fixture("v5");
     assert_eq!(user_version(&db), 5);
     drop(db.open());
-    assert_eq!(user_version(&db), 10);
+    assert_eq!(user_version(&db), 11);
     reclaim(&db, "s-205");
     let old = MemoryId(1);
     assert_eq!(memory(&db, old).status, MemoryStatus::Active);

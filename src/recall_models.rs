@@ -636,6 +636,7 @@ fn request_binding(
     budget: Budget,
     provider: Option<&RecallModelProvider>,
     bootstrap: bool,
+    retrieval: Option<&recall::Retrieval<'_>>,
 ) -> PersistenceResult<String> {
     let mut binding = fingerprint(&json!([
         request.binding,
@@ -691,6 +692,9 @@ fn request_binding(
         }
         binding = fingerprint(&json!([binding, p.recall_models, identities]));
     }
+    if let Some(r) = retrieval.filter(|r| r.config.enabled) {
+        binding = fingerprint(&json!([binding, "retrieval_v1", r.config]));
+    }
     Ok(binding)
 }
 
@@ -726,7 +730,7 @@ impl RecallRuntime {
         store: &SqliteMemoryStore,
         request_id: &str,
     ) -> PersistenceResult<RecallOutput> {
-        let operation = json!(["recall.v6", fingerprint(&json!(request_id))]).to_string();
+        let operation = json!(["recall.v7", fingerprint(&json!(request_id))]).to_string();
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
@@ -779,7 +783,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v6", fingerprint(&json!(request_id))]).to_string(),
+            json!(["recall.v7", fingerprint(&json!(request_id))]).to_string(),
         );
         self.cached_in_state(store, state, &key).map(|c| c.output)
     }
@@ -793,7 +797,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v6", fingerprint(&json!(request_id))]).to_string(),
+            json!(["recall.v7", fingerprint(&json!(request_id))]).to_string(),
         );
         store.read_for_publication(|state| {
             self.cached_in_state(store, state, &key)?
@@ -818,6 +822,7 @@ impl RecallRuntime {
     }
 
     /// MCP cancellation is checked between sends and before retaining a result; attempts never retry.
+    #[cfg(test)]
     pub(crate) fn run_cancellable(
         &self,
         store: &mut SqliteMemoryStore,
@@ -835,8 +840,52 @@ impl RecallRuntime {
             None,
             implicit_at,
             cancelled,
+            None,
         )
         .map(|(out, _)| out)
+    }
+
+    pub fn run_with_retrieval(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        provider: Option<&RecallModelProvider>,
+        retrieval: &recall::Retrieval<'_>,
+    ) -> PersistenceResult<RecallOutput> {
+        self.run_inner(
+            store,
+            request,
+            budget,
+            provider,
+            None,
+            false,
+            &|| false,
+            Some(retrieval),
+        )
+        .map(|(o, _)| o)
+    }
+    pub(crate) fn run_cancellable_with_retrieval(
+        &self,
+        store: &mut SqliteMemoryStore,
+        request: &Request,
+        budget: Budget,
+        provider: Option<&RecallModelProvider>,
+        implicit_at: bool,
+        cancelled: &dyn Fn() -> bool,
+        retrieval: &recall::Retrieval<'_>,
+    ) -> PersistenceResult<RecallOutput> {
+        self.run_inner(
+            store,
+            request,
+            budget,
+            provider,
+            None,
+            implicit_at,
+            cancelled,
+            Some(retrieval),
+        )
+        .map(|(o, _)| o)
     }
 
     /// 审计与输出共用身份/快照检查；重放返回同一对结果，不触发模型重试。
@@ -847,7 +896,16 @@ impl RecallRuntime {
         budget: Budget,
         provider: Option<&RecallModelProvider>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
-        self.run_inner(store, request, budget, provider, None, false, &|| false)
+        self.run_inner(
+            store,
+            request,
+            budget,
+            provider,
+            None,
+            false,
+            &|| false,
+            None,
+        )
     }
 
     /// 启动的全局视图由宿主离线生成；仍共用请求绑定、缓存和删除检查。
@@ -858,10 +916,11 @@ impl RecallRuntime {
         budget: Budget,
         output: RecallOutput,
         safety: recall::SafetySnapshot,
+        embedding: &crate::embedding::Config,
     ) -> PersistenceResult<RecallOutput> {
         if !request.bootstrap
             || output.request != request.binding
-            || output.version != "recall.v6"
+            || output.version != "recall.v7"
             || output.current_message.is_some()
             || !output.raw.is_empty()
             || !output.facts.is_empty()
@@ -878,6 +937,10 @@ impl RecallRuntime {
             Some((output, safety)),
             false,
             &|| false,
+            Some(&recall::Retrieval {
+                config: embedding,
+                query: None,
+            }),
         )
         .map(|(out, _)| out)
     }
@@ -891,6 +954,7 @@ impl RecallRuntime {
         bootstrap: Option<(RecallOutput, recall::SafetySnapshot)>,
         implicit_at: bool,
         cancelled: &dyn Fn() -> bool,
+        retrieval: Option<&recall::Retrieval<'_>>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         check_cancelled(cancelled)?;
         if store.owner() != &request.owner {
@@ -902,7 +966,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v6", fingerprint(&json!(request.binding.request_id))]).to_string(),
+            json!(["recall.v7", fingerprint(&json!(request.binding.request_id))]).to_string(),
         );
         let mut effective = Request {
             binding: request.binding.clone(),
@@ -936,7 +1000,8 @@ impl RecallRuntime {
                     freeze_clock(&mut effective, at)?;
                 }
             }
-            let binding = request_binding(&effective, budget, provider, bootstrap.is_some())?;
+            let binding =
+                request_binding(&effective, budget, provider, bootstrap.is_some(), retrieval)?;
             if let Some(flight) = flights.get(&key) {
                 if flight.binding != binding {
                     return Err("recall_request_mismatch".into());
@@ -965,14 +1030,18 @@ impl RecallRuntime {
             }
             flight.wait(cancelled)?;
             // 共用回执/安全快照/缓存检查；等待期间删除阻断，普通进度沿用读快照。
-            return self.execute(store, request, budget, provider, bootstrap, cancelled);
+            return self.execute(
+                store, request, budget, provider, bootstrap, cancelled, retrieval,
+            );
         }
         let guard = FlightGuard {
             runtime: self,
             key,
             flight,
         };
-        let result = self.execute(store, request, budget, provider, bootstrap, cancelled);
+        let result = self.execute(
+            store, request, budget, provider, bootstrap, cancelled, retrieval,
+        );
         *guard
             .flight
             .result
@@ -990,6 +1059,7 @@ impl RecallRuntime {
         provider: Option<&RecallModelProvider>,
         bootstrap: Option<(RecallOutput, recall::SafetySnapshot)>,
         cancelled: &dyn Fn() -> bool,
+        retrieval: Option<&recall::Retrieval<'_>>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         check_cancelled(cancelled)?;
         let state = store.read()?;
@@ -1024,13 +1094,13 @@ impl RecallRuntime {
         let initial = stamp(&state)?;
         // request_id 也可能夹带原话；摘要键既避免正文落库，也不会超过账本 ID 长度上限。
         let operation =
-            json!(["recall.v6", fingerprint(&json!(request.binding.request_id))]).to_string();
+            json!(["recall.v7", fingerprint(&json!(request.binding.request_id))]).to_string();
         let cache_key = (
             store.path().to_owned(),
             request.owner.0.clone(),
             operation.clone(),
         );
-        let binding = request_binding(request, budget, provider, bootstrap.is_some())?;
+        let binding = request_binding(request, budget, provider, bootstrap.is_some(), retrieval)?;
         let attempt = crate::diagnostics::new_id();
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
@@ -1114,7 +1184,12 @@ impl RecallRuntime {
             }
             check_cancelled(cancelled)?;
             before_r1.check(store.owner(), &store.read()?)?;
-            let assembly = recall::assemble(store, request, &plan, budget)?;
+            let assembly = match retrieval {
+                Some(retrieval) => recall::assemble_with_retrieval(
+                    store, request, &plan, budget, retrieval, false,
+                )?,
+                None => recall::assemble(store, request, &plan, budget)?,
+            };
             safety = Some(assembly.safety.clone());
             // 执行身份不变；来源绑定与观察版本取自真正交给 R4 的 R3 读快照。
             store.transaction(|state| {

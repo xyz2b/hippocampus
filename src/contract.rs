@@ -1090,8 +1090,30 @@ pub struct RecallOutput {
     pub clarification: Option<RecallClarification>,
     pub semantic_judgment: SemanticJudgment,
     pub completeness: RecallCompleteness,
+    pub retrieval: RecallRetrieval,
     pub degraded_reasons: Vec<String>,
     pub snapshot: RecallSnapshot,
+}
+
+/// Host-only index availability; never establishes evidence or enters R4's completeness.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum RetrievalStatus {
+    #[default]
+    Disabled,
+    NotNeeded,
+    Ready,
+    Pending,
+    Unavailable,
+}
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default)]
+#[serde(deny_unknown_fields)]
+pub struct RecallRetrieval {
+    pub status: RetrievalStatus,
+    pub sources_total: usize,
+    pub sources_indexed: usize,
+    pub segments_total: usize,
+    pub segments_indexed: usize,
 }
 
 /// §3.2 w4.v2 输入用的完整记录视图：CurrentRecordView 的全部字段，加结束时间 `end`

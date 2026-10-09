@@ -261,7 +261,7 @@ impl SqliteMemoryStore {
             0 => tx.execute_batch(
                 "CREATE TABLE memory_profiles (owner_id TEXT PRIMARY KEY, state_json TEXT NOT NULL);",
             )?,
-            1..=10 => (),
+            1..=11 => (),
             _ => return Err(format!("unsupported memory database version {version}").into()),
         }
         // Older binaries must reject snapshots whose source records they would silently discard.
@@ -351,6 +351,11 @@ impl SqliteMemoryStore {
             // No enrollment or receipt rewrite: v9 writers must reject this version.
             tx.pragma_update(None, "user_version", 10)?;
         }
+        if version < 11 {
+            // Derived vectors stay outside owner snapshots; v10 writers lack atomic invalidation.
+            crate::embedding_index::create_schema(&tx)?;
+            tx.pragma_update(None, "user_version", 11)?;
+        }
         crate::fact_index::create_schema(&tx)?;
         let mut state = Self::load(&tx, &owner)?;
         if crate::lexical::initialize(&tx, &owner, &mut state)? && !state.sources.is_empty() {
@@ -389,9 +394,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if version != 10 {
+        if version != 11 {
             return Err(format!(
-                "operation connection requires initialized database version 10; found {version}"
+                "operation connection requires initialized database version 11; found {version}"
             )
             .into());
         }
@@ -421,9 +426,9 @@ impl SqliteMemoryStore {
         let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if !(3..=10).contains(&version) {
+        if !(3..=11).contains(&version) {
             return Err(format!(
-                "source search requires database version 3 to 10; found {version}; migrate explicitly"
+                "source search requires database version 3 to 11; found {version}; migrate explicitly"
             )
             .into());
         }
@@ -598,6 +603,7 @@ impl SqliteMemoryStore {
             source_revision,
             &mut state,
         )?;
+        crate::embedding_index::synchronize(&tx, &self.owner, &sources_before, &state.sources)?;
         Self::save(&tx, &self.owner, &state)?;
         tx.commit()?;
         crate::diagnostics::record("transaction_committed", || {

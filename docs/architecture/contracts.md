@@ -1,4 +1,4 @@
-# 第一阶段契约（冻结；w1/w3 v3，w4 v4，r4/recall v6，r1 v2）
+# 第一阶段契约（冻结；w1/w3 v3，w4 v4，r4 v6，recall v7，r1 v2）
 
 > M1 收尾状态（2026-10-06）：默认新路径，旧执行器已删除、旧数据读取保留；历史合并 59/4，当前严格回放仍有 59 个缺口。实现、备份、局限与补录授权见 [架构索引](README.md)。M1.5 按 AF41 批准增加计划记忆并升版；主体确认/重建、历史补录与 nullable said_on 分别在第③④步实现。
 
@@ -307,7 +307,7 @@ coverage 不完整时区分两类结论：
 - 补录的 nullable `said_on` 原样进入 W2/W4、提交记录及 R3/R4；字段必须出现，旧已知日期字符串仍可读取。未知锚点的 relative/month 换算为 unknown，绝对 date/range 仍按原文核验；代码不按接收序号决定语义更新。R4 沿用 v4。
 - 补录错误：无/异 owner 父来源 `source_not_found`；父/条目墓碑 `source_deleted`；未获准留存 `operation_not_authorized`；槽位不存在/非完整文本 `history_entry_not_found`；指纹不符 `history_content_changed`。原子拒绝，零模型调用。删除父来源递归删除依附补录，删除子来源清除历史副本、产品、确认、索引、缓存及审计；子来源仅保留不含原文的父/指纹/槽位墓碑，槽位移动不能绕过删除；无关独立来源保留。
 - 活跃租约 `source_busy`；状态令牌不符 `source_changed`；未知/异 owner `source_not_found`；墓碑 `source_deleted`；无效引用/实体/候选（含已提交项）`invalid_confirmation`；全文重提取涉及任何已提交动作（含无产品动作）`rebuild_requires_uncommitted_source`；异参重放 `request_id_conflict`；无网络/有限预算/后台授权 `operation_not_authorized`。操作原子拒绝；不隐式重试。
-- 代际与 round 同时递增，取得新的排序序号、操作预算身份和来源绑定；原接收序号/时间不变，不放宽其他来源屏障。旧执行者及旧模型结果不能提交。DB 10 沿用 SourceRecord 控制/审计及 EnrichmentTask.generation；各 owner 旧字段缺省普通来源/代际 0，旧回执不改写、不自动入队，v9 写程序拒绝 v10，只读支持 3–10。删除传播同时清除确认依赖与代际原始副本；确认不是独立事实支持。
+- 代际与 round 同时递增，取得新的排序序号、操作预算身份和来源绑定；原接收序号/时间不变，不放宽其他来源屏障。旧执行者及旧模型结果不能提交。DB 10 沿用 SourceRecord 控制/审计及 EnrichmentTask.generation；各 owner 旧字段缺省普通来源/代际 0，旧回执不改写、不自动入队，v9 写程序拒绝 v10，只读支持 3–11。删除传播同时清除确认依赖与代际原始副本；确认不是独立事实支持。
 
 ## 3. 召回侧
 
@@ -348,7 +348,7 @@ R3 交给 R4 的证据包：
 - `CurrentRecordView = { "format": "current", "id": MemoryId, "stored_status": "active | superseded | expired", "termination_reason": SupersedeReason?, "ended": "not_ended | known | end_unknown", "candidate": Candidate, "evidence": [EvidenceRef], "grade": "committed", "said_on": LocalDate?, "time_resolutions": [TimeResolution], "history": [MemoryId], "open_relations": [string], "update": UpdateState }`。
 - `LegacyRecordView = { "format": "legacy", "id": MemoryId, "data": LegacyMemory, "evidence": [EvidenceRef], "grade": "committed", "update": UpdateState?, "gaps": ["source_missing | sentence_missing | qualifiers_unmapped | time_unmapped"] }`。LegacyMemory 冻结第一阶段开始前 src/model.rs 的 Memory 序列化形状，沿用旧格式解码并保留旧字段，不随新核心类型变化而改释；先执行相同的归属、任务与删除过滤，不把旧 scope 转成无依据的 TextQualifier。旧版没有更新判定状态时 update=null，表示未知而非 judged。
 
-`RecordView2 = CurrentRecordView2 | LegacyRecordView`（当前 w4.v4 的输入使用）：`CurrentRecordView2` 在 CurrentRecordView 的全部字段之外增加 `"end": TimeResolution?`。`ended = known` 时 `end` 为结束时间的换算结果，保留原精度（月精度不补成具体日，多日区间用 start / end_exclusive 表达，不折成一个时间点）；`ended = not_ended` 或 `end_unknown` 时为 null。结束时间来自结束该记录的 W4 决定的 `effective`，其换算结果取候选已核验时间中的对应项，不由 W4 给出；换算结果为 unknown 时 `ended = end_unknown`。结束它的决定没有保存换算结果（本版之前的回执）时，`ended` 按旧字段判断、`end` 为 null，不补造精度。r4.v6、recall.v6 仍使用不含 `end` 的 RecordView；召回侧实现该字段时改用 RecordView2 并升版。
+`RecordView2 = CurrentRecordView2 | LegacyRecordView`（当前 w4.v4 的输入使用）：`CurrentRecordView2` 在 CurrentRecordView 的全部字段之外增加 `"end": TimeResolution?`。`ended = known` 时 `end` 为结束时间的换算结果，保留原精度（月精度不补成具体日，多日区间用 start / end_exclusive 表达，不折成一个时间点）；`ended = not_ended` 或 `end_unknown` 时为 null。结束时间来自结束该记录的 W4 决定的 `effective`，其换算结果取候选已核验时间中的对应项，不由 W4 给出；换算结果为 unknown 时 `ended = end_unknown`。结束它的决定没有保存换算结果（本版之前的回执）时，`ended` 按旧字段判断、`end` 为 null，不补造精度。r4.v6、recall.v7 仍使用不含 `end` 的 RecordView；召回侧实现该字段时改用 RecordView2 并升版。
 
 沿用现有 SupersedeReason 区分现实变化、纠错和撤回；Deleted 不进入任一分支。完整记录的 candidate.kind 为 assertion；用户确认保留独立控制记录及依据，不改写成不存在的完整用户原话。legacy 的 evidence 仅包含能链接到真实获准来源的引用；只有旧数据中的片段而没有可链接原文时 evidence=[]，片段留在 data 内，不能伪造 source_id 或作为新契约已核验的原文依据。gaps 汇入 enrichment_gaps，原文存在则同时交给 R4 核对；无法核准完整断言及限定语的 legacy 目标在 W4 保持 pending，不能以缺字段等于无限定来更新。
 
@@ -372,6 +372,13 @@ records 的完整 candidate.speech=plan 标识计划，保持肯定/否定、条
 - `aggregate` 计划下，R2 在计划范围内枚举全部匹配记录（可分页），并在 `completeness.plan_complete` 如实报告是否截断。
 - 该证据包在 R4 跳过/失败时也返回宿主；pending_related_sources 统计 raw 中相关未完成来源，不能用计数代替原文。来源删除、快照和输出预算检查在返回前再次执行；正文被预算截断时必须标为不完整。
 - pending_updates 统计检索到的相关 update.pending 记录，即使它们已提交；预算裁剪的已知相关记录仍计入，并标为不完整。计数不替代逐记录状态，不能用 0 宣称未检索到的范围没有缺口。legacy 的缺字段/未知更新状态通过 gaps 与 enrichment_gaps 呈现。
+
+仅 `embedding.enabled=true` 启用下列混合检索；关闭时 R1/R4 请求与业务证据逐字节沿用原行为，宿主包络仍为 recall.v7。
+
+- 保持原小范围实际穷举与 aggregate/list/count/sum 计划枚举，不调用查询嵌入。其他非穷举路径统一融合，R1 的关系过滤不留保留席位、关系成员不投词法票；R1 主体提示只能收窄宿主可信范围。
+- 词法通道使用生产中文相邻字对、字母数字词与实体别名。DF 按独立、现存且获准正文来源计数，在 owner/任务/宿主可信主体范围内、先于 R1 主体及关系提示统计；严格超过 20% 的词元不计分。零命中记录不投票，按实体/短语命中数、接收顺序、ID 排序。
+- 向量通道只检索可信 owner/任务/主体范围，忽略关系过滤；来源分段的最佳相似度通过原文引用重叠映射到链接记录。等权 RRF(60)，两路各取 2×records 种子，融合后展开历史和关系闭包，再执行数量与字节预算；闭包成员没有额外席位。截断如实报告，plan_complete 只来自实际枚举，索引 ready 不认证完整性或语义。
+- 查询嵌入至多一次，使用原问题文本，不附 context；正文、向量与记录映射取同一 R3 快照，事务及服务锁释放后执行本机请求，总时限含 digest 等元数据请求。失败退回 lexical-df；部分/陈旧/损坏索引仅用可核准的向量。bootstrap/offline/deny 不发送嵌入或元数据，同参重放不重调。删除及授权检查仍在发布前执行。
 
 ### 3.3 R4 证据判断 `r4.v6`
 
@@ -431,11 +438,11 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 - exact 只在查询范围完整枚举、相关来源已覆盖、成员身份及所需输入明确时成立；代码综合 R2/R3 完整性与 R4 判断，模型自报 coverage=complete 不能覆盖代码已知的截断或遗漏，grade 不决定 exact。否则按操作分别处理：count 只计已确认不同的事件组，可以给有依据的下限；sum 只有已知未计部分非负等条件得到支持时才能给下限；未知符号或重复对象不能给下限；elapsed/compare 缺少端点、必要量或足够精度时返回不足，不输出猜测的数值。
 - count/sum 的非精确结果明确限定为已确认范围及 at_least；没有有效下限、负数求和截断（如已见 +10 而遗漏 -20）、无法去重等情况 computed 为 null，说明不足原因。不能把“部分和”统一标作下限。
 
-### 3.4 召回输出（给宿主） `recall.v6`
+### 3.4 召回输出（给宿主） `recall.v7`
 
 ```json
 {
-  "version": "recall.v6",
+  "version": "recall.v7",
   "request": { "request_id": "op-17", "query": "……", "context": [], "task_id": null, "at": 1790740800 },
   "status": "answered | context_only | insufficient | conflict | needs_clarification | degraded",
   "current_message": "CurrentMessage?",
@@ -448,11 +455,13 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
   "clarification": null,
   "semantic_judgment": "model | skipped | failed",
   "completeness": { "retrieval_truncated": false, "pending_related_sources": 0, "pending_updates": 0, "enrichment_gaps": 0, "plan_complete": true },
+  "retrieval": { "status": "disabled | not_needed | ready | pending | unavailable", "sources_total": 0, "sources_indexed": 0, "segments_total": 0, "segments_indexed": 0 },
   "degraded_reasons": [],
   "snapshot": { "read_revision": 42, "source_revision": 57 }
 }
 ```
 
+- retrieval 是宿主独立元数据，不进入 R4 的 RecallCompleteness、模型请求或业务证据。disabled 表示关闭；not_needed 表示本次实际枚举或 bootstrap；ready 表示查询向量及相同 binding 的索引覆盖完整；pending 表示查询可用但索引覆盖不全；unavailable 表示查询或索引读取失败，本次使用 lexical-df。覆盖数计同一 R3 快照内、当前可信范围内链接到候选记录或尚无记录链接的正文来源/分段，sources_indexed 仅计分段全部核准的来源；分母 0 不代表事实范围完整。原文是否完整进入 raw 仍由 3.2 的 completeness 表达，与这组向量索引覆盖数分别报告。
 - 不新增计划 status 或字段：records.candidate.speech 保留 plan，R4 的 statement 明示计划性质，宿主在 facts/history 中继续保留计划措辞、限定语及日期，不改说成已实现。
 - 宿主按 `facts`、`computed`、`history`、`conflicts` 组织回答；`evidence` 是可引用的原文片段。无 R4 判断时从 records/current_message/raw 取得上下文，并明确未经本轮语义判断，不能自行把 Active 记录当作确定当前结论。
 - request 由代码复制原始 query/context/task_id/at 并绑定稳定 request_id；复用结果时核对同一请求及有效快照。来源 ID 不代替请求绑定，只读请求可仅通过 request_id 关联预算。
@@ -463,7 +472,7 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 - history 区分曾经成立与被纠正/撤回的记录；纠错旧值仅作为审计记录保留，不作为历史事实输出。until 可空，日期未知不回填接收日；clarification 可空，非空为 `{ "question": string, "evidence": [EvidenceRef] }`。
 - op 为 elapsed 时，computed 另带代码按 3.3 计算的 `rounding`、`exact_days`（整数天数 d）与 `approximate`；其他 op 这三个字段为 null。模型输出不含这些字段，也不能覆盖它们。
 - computed 的任一操作数为 `@request.at` 时，computed 另带代码生成的 `request_time = { "at": Timestamp, "local_date": LocalDate, "tz_offset_seconds": integer, "precision": "day" }`：at 等于 request.at，local_date 为按 tz_offset_seconds 换算的本地日期；否则 request_time 为 null。它不属于 items，也没有 evidence。
-- 当前目标默认且唯一受支持的召回输出为 recall.v6。旧路径未完整投入生产，不设置 answer_contract 兼容窗口；旧版本请求返回 contract_version_unsupported，不静默升级。旧数据读取仍遵循 2.6/3.2，详见第 7 节。
+- 当前目标默认且唯一受支持的召回输出为 recall.v7。旧路径未完整投入生产，不设置 answer_contract 兼容窗口；旧版本请求返回 contract_version_unsupported，不静默升级。旧数据读取仍遵循 2.6/3.2，详见第 7 节。
 
 ### 3.5 `memory_prepare` 返回结构
 
@@ -473,7 +482,7 @@ count 的 event_group 由 R4 判断，同组表示同一事件，不同非空组
 {
   "source": { "status": "stored | rejected | failed | deleted", "source_id": null },
   "enrichment": { "status": "queued | running | committed | completed_no_facts | no_candidates_unreviewed | coverage_gaps | pending | awaiting_confirmation | failed | needs_rejudge | budget_exhausted | not_requested | deleted", "candidates": [], "memory_requests": [], "retention_pending": false },
-  "recall": { "…": "recall.v6" }
+  "recall": { "…": "recall.v7" }
 }
 ```
 
@@ -556,9 +565,9 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 | 未解决关系的存储 | 沿用 owner 快照，新增 RelationLink 集合 | 保存成员、范围、依据和解决状态；与 Memory 生命周期分开，按 2.4 迁移旧快照及处理删除 |
 | `memory_type` | 由 W1 给出，W3 核验，代码检查目录 | 保留排序与准入；Episode 的跨轮价值按 2.3 判断，不盲目设置旧字段默认值 |
 | 现有记忆迁移 | 默认切换与语义重建分开；旧数据持续经 LegacyRecordView 读取 | 重建另行按 2.6 授权、盘点、核验和映射；不自动转换旧任务，不无损适配或丢弃无来源记录 |
-| 旧 `answer_contract` | 不设置兼容窗口；仅支持 recall.v6 | 客户端、宿主说明和 Validate 一并切换；旧版本请求返回 contract_version_unsupported，不静默升级 |
+| 旧 `answer_contract` | 不设置兼容窗口；仅支持 recall.v7 | 客户端、宿主说明和 Validate 一并切换；旧版本请求返回 contract_version_unsupported，不静默升级 |
 
-旧路径未完整投入生产，不再维护旧写入、召回行为及输出。执行器配置名仍为 write_pipeline=w4_runtime_v1、recall_pipeline=recall_v3（不是模型/输出契约号）；memory_validate_answer 只核对同进程保留的 recall.v6 请求及有效证据快照，不新增模型调用。旧数据、控制记录、删除墓碑和记账仍保留。
+旧路径未完整投入生产，不再维护旧写入、召回行为及输出。执行器配置名仍为 write_pipeline=w4_runtime_v1、recall_pipeline=recall_v3（不是模型/输出契约号）；memory_validate_answer 只核对同进程保留的 recall.v7 请求及有效证据快照，不新增模型调用。旧数据、控制记录、删除墓碑和记账仍保留。
 
 退出条件为：当前受支持客户端与宿主说明、共同事实/来源评分和 memory_validate_answer 已切换，同批契约用例、零模型/降级、旧库读取、删除及并发检查通过。满足后移除旧 answer_contract 适配及被替代执行路径；不以全部旧数据语义重建为前提。旧版本请求明确返回 contract_version_unsupported，不静默升级。M1 以用户确认的 common.v1 绝对结果为主，0517000 基线仅作参考；已知质量局限留账，不放宽安全阻断项。
 
@@ -566,6 +575,8 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 
 | 日期 | 契约 | 变更 | 原因 |
 | --- | --- | --- | --- |
+| 2026-10-09 | recall.v6 → v7；DB 10 → 11 | opt-in 混合检索及独立 retrieval 状态/覆盖数；来源分段缓存、失效与本机后台维护 | AF183/AF185 用户批准；R1 v2、R4 v6、W 契约不变，关闭检索时模型指纹/业务证据不变，旧 recall 请求明确拒绝 |
+
 | 2026-10-07 | `w1.v2/w3.v2` → v3；`r1.v1` → v2；`r4.v5/recall.v5` → v6 | 无年份日期按所属来源可信时间与事件方向解释，明确年份/上下文优先；内部矛盾且无法择真时 W3 判 insufficient，无关候选独立核验 | AF88、AF90 用户批准；代码不补年、不判方向，W4 v4、DB 10 不变；旧数据可读、旧录制按原指纹保留，不自动重新定年 |
 | 2026-10-07 | W5 提交规则（2.5，无独立版本号） | 无冲突、无其他业务变化的纯新增实体只豁免无来源屏障推进，revision 仍递增；其他失效与阶段绑定检查不变 | AF78 用户批准；不升 DB、模型或 recall 协议，不自动重判或绑定 unresolved |
 | 2026-10-06 | `r4.v4/recall.v4` → v5；R1 v1 不变 | R1 主体歧义为初步判断，R4 按授权证据终审；开放列举不强制选人，真实歧义仍澄清；W1 角色缺省 low | AF56 批准方向，本轮措辞待用户确认；DB 仍 v10，旧请求不静默升级，旧录制按原指纹保留 |
@@ -579,4 +590,4 @@ source_id 在未保存时为 null，不伪造存储成功。宿主按临时规�
 | 2026-10-02 | `w4.v1` → `w4.v2` | conflict 决定增加 `relation_scope`（引用新候选或目标已核验的限定语，作为关系适用范围）；输入记录改用 `RecordView2`（完整记录增加结束时间 `end`，保留精度） | 用户裁定（B 段设计评审 0021、0022）：冲突范围是语义判断，应由 W4 给出，不由代码复制单侧限定语；W4 样本 w4_01 的“至 2026-08，月精度”在原 RecordView 中无法表达 |
 | 2026-10-05 | `w4.v2` → `w4.v3` | 通用 fact 在授权主体、任务及读快照内实际穷举（含必要历史和关系闭包）、未超预算且覆盖已知时可 complete；FTS 未截断不算完整，已有 pending 仅经显式重判改变 | AF1 用户批准：小范围也永久 pending 阻止确认当前值；版本进入请求与录制指纹，旧录制不得冒充新判定 |
 
-当前为 w1.v3、w3.v3、w4.v4、r1.v2、r4.v6、recall.v6；模型输出字段形状不变，r4/recall 继续使用不含 end 的 RecordView。输入契约、schema 名、阶段绑定与请求指纹同步更新；旧录制如实过期，旧数据可读，不自动重整理或重新定年。历史 59/4 仅作历史证据，不补齐新版回放缺口。
+当前为 w1.v3、w3.v3、w4.v4、r1.v2、r4.v6、recall.v7；模型输出字段形状不变，r4/recall 继续使用不含 end 的 RecordView。recall.v7 仅新增宿主 retrieval 元数据；混合检索关闭时，现行模型提示词/schema/业务证据及请求指纹不变，匹配录制仍可严格复用；开启后证据变化则按真实下游指纹报告过期。更早契约录制按原指纹保留，旧数据可读，不自动重整理或重新定年。历史 59/4 仅作历史证据，不补齐新版回放缺口。

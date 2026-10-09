@@ -1,6 +1,10 @@
 //! Standalone loopback-only Ollama embedding client; not wired into production R2.
 use std::io::Read;
 use std::net::{Ipv4Addr, SocketAddr};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
 use std::time::{Duration, Instant};
 
 use reqwest::blocking::Client;
@@ -15,6 +19,82 @@ pub const QUERY_INSTRUCTION: &str =
     "Given a personal memory query, retrieve relevant passages that answer the query";
 
 pub type Result<T> = std::result::Result<T, String>;
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default, deny_unknown_fields)]
+pub struct Config {
+    pub enabled: bool,
+    pub model: Model,
+    pub base_url: String,
+    pub batch: usize,
+    /// One total network deadline, including tags, show and digest verification.
+    pub query_timeout_ms: u64,
+}
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            model: Model::Qwen,
+            base_url: "http://127.0.0.1:11434".into(),
+            batch: DEFAULT_BATCH,
+            query_timeout_ms: 10_000,
+        }
+    }
+}
+impl Config {
+    pub fn is_default(&self) -> bool {
+        self == &Self::default()
+    }
+    pub fn validate(&self) -> Result<()> {
+        endpoint(&self.base_url)?;
+        if !(1..=DEFAULT_BATCH).contains(&self.batch)
+            || !(1..=360_000).contains(&self.query_timeout_ms)
+        {
+            return Err("embedding_config_bounds".into());
+        }
+        Ok(())
+    }
+}
+
+/// Runtime permission is stricter than the separately authorized AF175 experiment.
+pub fn runtime_network_allowed() -> bool {
+    runtime_policy(&std::env::var("PMR_MODEL_NETWORK").unwrap_or_default())
+}
+fn runtime_policy(mode: &str) -> bool {
+    mode == "live"
+}
+
+pub(crate) struct RequestControl {
+    deadline: Instant,
+    stopped: Arc<AtomicBool>,
+}
+impl RequestControl {
+    pub(crate) fn new(timeout_ms: u64, stopped: Arc<AtomicBool>) -> Self {
+        Self {
+            deadline: Instant::now() + Duration::from_millis(timeout_ms),
+            stopped,
+        }
+    }
+    pub(crate) fn check(&self) -> Result<Duration> {
+        if self.stopped.load(Ordering::SeqCst) {
+            return Err("embedding_cancelled".into());
+        }
+        self.deadline
+            .checked_duration_since(Instant::now())
+            .filter(|d| !d.is_zero())
+            .ok_or_else(|| "embedding_deadline_exhausted".into())
+    }
+}
+
+pub(crate) trait Provider: Send + Sync {
+    fn resolve(&self, model: Model, control: &RequestControl) -> Result<Binding>;
+    fn embed(
+        &self,
+        binding: &Binding,
+        inputs: &[String],
+        control: &RequestControl,
+    ) -> Result<Batch>;
+}
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Model {
@@ -261,6 +341,9 @@ fn network_policy(mode: &str) -> Result<()> {
 pub struct Ollama {
     base: reqwest::Url,
     client: Client,
+    runtime: bool,
+    #[cfg(test)]
+    transport: Option<Arc<dyn Fn(&str, Option<&Value>, Duration) -> Result<Value> + Send + Sync>>,
 }
 impl Ollama {
     pub fn new(base: &str) -> Result<Self> {
@@ -278,45 +361,98 @@ impl Ollama {
             .user_agent("hippocampus-local-embedding/af175")
             .build()
             .map_err(|_| "embedding_client")?;
-        Ok(Self { base, client })
+        Ok(Self {
+            base,
+            client,
+            runtime: false,
+            #[cfg(test)]
+            transport: None,
+        })
     }
-    fn call(&self, path: &str, body: Option<&Value>) -> Result<Value> {
+    pub(crate) fn runtime(base: &str) -> Result<Self> {
+        let mut client = Self::new(base)?;
+        client.runtime = true;
+        Ok(client)
+    }
+    fn call(&self, path: &str, body: Option<&Value>, control: &RequestControl) -> Result<Value> {
+        let remaining = control.check()?;
+        if self.runtime && !runtime_network_allowed() {
+            return Err("embedding_network_disabled".into());
+        }
+        network_policy(&std::env::var("PMR_MODEL_NETWORK").unwrap_or_else(|_| "offline".into()))?;
+        #[cfg(test)]
+        if let Some(transport) = &self.transport {
+            let result = transport(path, body, remaining)?;
+            control.check()?;
+            return Ok(result);
+        }
         let url = self.base.join(path).map_err(|_| "embedding_url")?;
         let request = match body {
             Some(body) => self.client.post(url).json(body),
             None => self.client.get(url),
         };
-        let response = request.send().map_err(|_| "embedding_transport")?;
+        let response = request
+            .timeout(remaining)
+            .send()
+            .map_err(|_| "embedding_transport")?;
         if !response.status().is_success() {
             return Err(format!("embedding_http_{}", response.status().as_u16()));
         }
-        bounded_json(
+        let result = bounded_json(
             response,
             if path == "api/embed" {
                 MAX_RESPONSE_BYTES
             } else {
                 1024 * 1024
             },
-        )
+        )?;
+        control.check()?;
+        Ok(result)
     }
     pub fn resolve(&self, model: Model) -> Result<Binding> {
-        let binding = Binding::from_tags(model, &self.call("api/tags", None)?)?;
-        binding.check_show(&self.call("api/show", Some(&json!({"model":model.tag()})))?)?;
-        Ok(binding)
+        Provider::resolve(
+            self,
+            model,
+            &RequestControl::new(360_000, Arc::new(AtomicBool::new(false))),
+        )
     }
-    fn verify_digest(&self, binding: &Binding) -> Result<()> {
-        let current = Binding::from_tags(binding.model, &self.call("api/tags", None)?)?;
+    fn verify_digest(&self, binding: &Binding, control: &RequestControl) -> Result<()> {
+        let current = Binding::from_tags(binding.model, &self.call("api/tags", None, control)?)?;
         if &current != binding {
             return Err("embedding_weights_changed".into());
         }
         Ok(())
     }
     pub fn embed(&self, binding: &Binding, inputs: &[String]) -> Result<Batch> {
+        Provider::embed(
+            self,
+            binding,
+            inputs,
+            &RequestControl::new(360_000, Arc::new(AtomicBool::new(false))),
+        )
+    }
+}
+impl Provider for Ollama {
+    fn resolve(&self, model: Model, control: &RequestControl) -> Result<Binding> {
+        let binding = Binding::from_tags(model, &self.call("api/tags", None, control)?)?;
+        binding.check_show(&self.call(
+            "api/show",
+            Some(&json!({"model":model.tag()})),
+            control,
+        )?)?;
+        Ok(binding)
+    }
+    fn embed(
+        &self,
+        binding: &Binding,
+        inputs: &[String],
+        control: &RequestControl,
+    ) -> Result<Batch> {
         let request = binding.request(inputs)?;
         let start = Instant::now();
-        self.verify_digest(binding)?;
-        let response = self.call("api/embed", Some(&request))?;
-        self.verify_digest(binding)?;
+        self.verify_digest(binding, control)?;
+        let response = self.call("api/embed", Some(&request), control)?;
+        self.verify_digest(binding, control)?;
         let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
         decode_response(binding, inputs.len(), &response, elapsed_ms)
     }
@@ -331,6 +467,78 @@ mod tests {
             &json!({"models":[{"name":Model::Qwen.tag(),"digest":"a".repeat(64)}]}),
         )
         .unwrap()
+    }
+    #[test]
+    fn runtime_config_defaults_bounds_and_strict_gate() {
+        let c = Config::default();
+        assert!(!c.enabled);
+        assert_eq!(c.batch, 16);
+        assert_eq!(c.model, Model::Qwen);
+        c.validate().unwrap();
+        for mode in ["", "offline", "deny", "unexpected"] {
+            assert!(!runtime_policy(mode));
+        }
+        assert!(runtime_policy("live"));
+        for config in [
+            Config {
+                batch: 0,
+                ..c.clone()
+            },
+            Config {
+                batch: 17,
+                ..c.clone()
+            },
+            Config {
+                query_timeout_ms: 0,
+                ..c.clone()
+            },
+            Config {
+                query_timeout_ms: 360_001,
+                ..c.clone()
+            },
+            Config {
+                base_url: "http://cloud.example".into(),
+                ..c
+            },
+        ] {
+            assert!(config.validate().is_err());
+        }
+        assert!(serde_json::from_value::<Config>(json!({"enabled":true,"fallback":true})).is_err());
+    }
+    #[test]
+    fn shared_deadline_includes_metadata_and_digest_requests_and_stops_next_request() {
+        let mut client = Ollama::new("http://127.0.0.1:11434").unwrap();
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let observed = calls.clone();
+        client.transport = Some(Arc::new(move |path, _, remaining| {
+            observed.fetch_add(1, Ordering::SeqCst);
+            assert!(remaining <= Duration::from_millis(30));
+            if path == "api/tags" {
+                Ok(json!({"models":[{"name":Model::Qwen.tag(),"digest":"a".repeat(64)}]}))
+            } else {
+                std::thread::sleep(Duration::from_millis(35));
+                Ok(
+                    json!({"capabilities":["embedding"],"model_info":{"qwen.embedding_length":DIMENSIONS}}),
+                )
+            }
+        }));
+        let control = RequestControl::new(30, Arc::new(AtomicBool::new(false)));
+        assert_eq!(
+            Provider::resolve(&client, Model::Qwen, &control).unwrap_err(),
+            "embedding_deadline_exhausted"
+        );
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        assert_eq!(
+            Provider::embed(&client, &binding(), &["正文".into()], &control).unwrap_err(),
+            "embedding_deadline_exhausted"
+        );
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        let stop = Arc::new(AtomicBool::new(true));
+        assert_eq!(
+            Provider::resolve(&client, Model::Qwen, &RequestControl::new(100, stop)).unwrap_err(),
+            "embedding_cancelled"
+        );
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
     #[test]
     fn loopback_rejects_cloud_forwarding_credentials_and_host_tricks() {
@@ -433,4 +641,39 @@ mod tests {
             assert!(text.get(start..end).is_some());
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct QueryVector {
+    pub binding: Binding,
+    pub vector: Vec<f32>,
+}
+impl QueryVector {
+    pub(crate) fn check(&self, model: Model) -> Result<()> {
+        if self.binding.model != model {
+            return Err("embedding_query_model".into());
+        }
+        crate::embedding_index::Binding::new(self.binding.clone())
+            .map_err(|_| "embedding_query_binding")?;
+        check_normalized(&self.vector, self.binding.dimensions)
+    }
+}
+/// One query embedding, with a single total deadline for discovery and digest checks.
+pub fn query(config: &Config, text: &str) -> Result<QueryVector> {
+    config.validate()?;
+    if !config.enabled || !runtime_network_allowed() {
+        return Err("embedding_network_disabled".into());
+    }
+    let control = RequestControl::new(config.query_timeout_ms, Arc::new(AtomicBool::new(false)));
+    let provider = Ollama::runtime(&config.base_url)?;
+    let binding = Provider::resolve(&provider, config.model, &control)?;
+    let batch = Provider::embed(&provider, &binding, &[config.model.query(text)], &control)?;
+    let vector = batch
+        .vectors
+        .into_iter()
+        .next()
+        .ok_or("embedding_batch_count")?;
+    let result = QueryVector { binding, vector };
+    result.check(config.model)?;
+    Ok(result)
 }

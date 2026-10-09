@@ -1118,7 +1118,7 @@ fn long_request_id_is_bound_without_persisting_its_original_words() {
             .connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
             .unwrap(),
-        10
+        11
     );
 }
 
@@ -1167,7 +1167,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v6");
+    assert_eq!(out["version"], "recall.v7");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1256,7 +1256,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v6");
+        assert_eq!(result["recall"]["version"], "recall.v7");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1271,7 +1271,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v6");
+    assert_eq!(body["recall"]["version"], "recall.v7");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -2993,7 +2993,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let result = runtime
             .run(&mut db.open(), &req, Budget::default(), Some(&provider))
             .unwrap();
-        assert_eq!(result.version, "recall.v6");
+        assert_eq!(result.version, "recall.v7");
         assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
         let requests = sent.lock().unwrap();
         for (i, (schema, contract, old_schema, old_contract)) in [
@@ -3031,7 +3031,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let r4_digest = fingerprint(&json!([R4_PROMPT, requests[1]["text"]["format"]["schema"]]));
         drop(requests);
         let operation =
-            json!(["recall.v6", fingerprint(&json!(req.binding.request_id))]).to_string();
+            json!(["recall.v7", fingerprint(&json!(req.binding.request_id))]).to_string();
         let state = db.open().read().unwrap();
         let receipt = &state.receipts[&operation];
         assert_eq!(
@@ -3226,4 +3226,159 @@ fn af119_provider_endpoint_and_revision_invalidate_recall_cache_without_resendin
             .contains("mismatch")
     );
     assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_bytes() {
+    let db = Db::new();
+    add_legacy(&db, TEXT);
+    let rt = RecallRuntime::default();
+    let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let req = request("hybrid-once");
+    let config = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let calls = std::cell::Cell::new(0);
+    let callback = |query: &str| {
+        assert_eq!(query, req.binding.query);
+        calls.set(calls.get() + 1);
+        Err("injected_embedding_unavailable".into())
+    };
+    let retrieval = recall::Retrieval {
+        config: &config,
+        query: Some(&callback),
+    };
+    let first = rt
+        .run_with_retrieval(
+            &mut db.open(),
+            &req,
+            Budget::default(),
+            Some(&provider),
+            &retrieval,
+        )
+        .unwrap();
+    assert_eq!(first.retrieval.status, RetrievalStatus::Unavailable);
+    assert_eq!(calls.get(), 1);
+    assert_eq!(
+        rt.run_with_retrieval(
+            &mut db.open(),
+            &req,
+            Budget::default(),
+            Some(&provider),
+            &retrieval
+        )
+        .unwrap(),
+        first
+    );
+    assert_eq!(calls.get(), 1);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let fresh = RecallRuntime::default();
+    assert!(
+        fresh
+            .run_with_retrieval(
+                &mut db.open(),
+                &req,
+                Budget::default(),
+                Some(&provider),
+                &retrieval
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("not_retained")
+    );
+    assert_eq!(calls.get(), 1);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+
+    let baseline_db = Db::new();
+    let disabled_db = Db::new();
+    let (base_provider, base_sent) = mocked(
+        &baseline_db,
+        vec![envelope(r1_out("judge")), envelope(r4_out())],
+    );
+    let (disabled_provider, disabled_sent) = mocked(
+        &disabled_db,
+        vec![envelope(r1_out("judge")), envelope(r4_out())],
+    );
+    let req = request("byte-equivalence");
+    let base = RecallRuntime::default()
+        .run(
+            &mut baseline_db.open(),
+            &req,
+            Budget::default(),
+            Some(&base_provider),
+        )
+        .unwrap();
+    let disabled = RecallRuntime::default()
+        .run_with_retrieval(
+            &mut disabled_db.open(),
+            &req,
+            Budget::default(),
+            Some(&disabled_provider),
+            &recall::Retrieval {
+                config: &embedding::Config::default(),
+                query: Some(&|_| panic!("disabled embedding called")),
+            },
+        )
+        .unwrap();
+    assert_eq!(base, disabled);
+    assert_eq!(*base_sent.lock().unwrap(), *disabled_sent.lock().unwrap());
+    for body in base_sent.lock().unwrap().iter() {
+        assert!(!body["input"].as_str().unwrap().contains("retrieval\""));
+    }
+}
+
+#[test]
+fn missing_or_different_index_binding_is_pending_even_with_no_source_segments() {
+    let db = Db::new();
+    add_legacy(&db, TEXT);
+    crate::chat::ChatMemoryService::new(db.open(), Default::default())
+        .unwrap()
+        .call("memory_forget", json!({"source_id":"s-purple"}), || false)
+        .unwrap();
+    let (p, _) = mocked(
+        &db,
+        vec![envelope(r1_out("judge")), envelope(r1_out("judge"))],
+    );
+    let binding = embedding::Binding::from_tags(
+        embedding::Model::Qwen,
+        &json!({"models":[{"name":embedding::Model::Qwen.tag(),"digest":"a".repeat(64)}]}),
+    )
+    .unwrap();
+    let cfg = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let callback = |_: &str| {
+        let mut vector = vec![0.0; embedding::DIMENSIONS];
+        vector[0] = 1.0;
+        Ok(embedding::QueryVector {
+            binding: binding.clone(),
+            vector,
+        })
+    };
+    for attempt in 0..2 {
+        if attempt == 1 {
+            let mut changed = binding.clone();
+            changed.digest = "b".repeat(64);
+            db.open()
+                .set_embedding_binding(embedding_index::Binding::new(changed).unwrap())
+                .unwrap();
+        }
+        let out = RecallRuntime::default()
+            .run_with_retrieval(
+                &mut db.open(),
+                &request(&format!("unbound-zero-{attempt}")),
+                Budget::default(),
+                Some(&p),
+                &recall::Retrieval {
+                    config: &cfg,
+                    query: Some(&callback),
+                },
+            )
+            .unwrap();
+        assert_eq!(out.retrieval.status, RetrievalStatus::Pending);
+        assert_eq!(out.retrieval.segments_total, 0);
+        assert!(!out.completeness.plan_complete);
+    }
 }

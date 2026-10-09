@@ -116,6 +116,37 @@ mod tests {
     use crate::ReasoningEffort::{Low, Medium, Minimal};
 
     #[test]
+    fn embedding_config_is_opt_in_strict_and_default_serialization_stays_compatible() {
+        let implicit: ChatConfig = serde_json::from_value(json!({})).unwrap();
+        let explicit: ChatConfig = serde_json::from_value(json!({"embedding":{}})).unwrap();
+        assert!(!implicit.embedding.enabled);
+        assert_eq!(
+            serde_json::to_value(&implicit).unwrap(),
+            serde_json::to_value(&explicit).unwrap()
+        );
+        assert!(
+            serde_json::to_value(&implicit)
+                .unwrap()
+                .get("embedding")
+                .is_none()
+        );
+        let configured:ChatConfig=serde_json::from_value(json!({"enrichment_mode":"off","embedding":{"enabled":true,"model":"bge-m3","base_url":"http://localhost:11434","batch":8,"query_timeout_ms":90000}})).unwrap();
+        configured.validate().unwrap();
+        assert!(configured.model_budget.is_none());
+        let reopened: ChatConfig =
+            serde_json::from_value(serde_json::to_value(&configured).unwrap()).unwrap();
+        assert_eq!(reopened.embedding, configured.embedding);
+        for invalid in [
+            json!({"embedding":{"base_url":"https://cloud.example"}}),
+            json!({"embedding":{"batch":17}}),
+            json!({"embedding":{"query_timeout_ms":0}}),
+            json!({"embedding":{"fallback":true}}),
+            json!({"embedding":{"model":"qwen-cloud"}}),
+        ] {
+            assert!(serde_json::from_value::<ChatConfig>(invalid).is_err());
+        }
+    }
+    #[test]
     fn omitted_roles_use_environment_pro_and_ac2_efforts_only_when_needed() {
         let config: ChatConfig = serde_json::from_value(json!({})).unwrap();
         assert_eq!(config.write_pipeline, WritePipeline::W4RuntimeV1);

@@ -1,4 +1,4 @@
-//! recall.v6 宿主分发；只提供新契约，不读取评测夹具。
+//! recall.v7 宿主分发；只提供新契约，不读取评测夹具。
 use super::*;
 use crate::contract::{
     Polarity, Qualification, RecallOutput, RecallRequest, RecallStatus, SemanticJudgment, SourceRef,
@@ -72,7 +72,7 @@ impl ChatMemoryService {
     }
 
     fn recall_id(id: Option<String>) -> PersistenceResult<String> {
-        let id = id.ok_or("recall.v6 requires request_id")?;
+        let id = id.ok_or("recall.v7 requires request_id")?;
         bounded_text(&id, "request_id", 512)?;
         Ok(id)
     }
@@ -80,7 +80,7 @@ impl ChatMemoryService {
     fn recall_at(&self, id: &str, at: Option<i64>) -> PersistenceResult<i64> {
         past_time(at, "at")?;
         let key = json!([
-            "recall.v6",
+            "recall.v7",
             crate::openai::recall_models::fingerprint(&json!(id))
         ])
         .to_string();
@@ -147,7 +147,7 @@ impl ChatMemoryService {
                 .filter_map(|m| crate::recall::projection(&before, m.id))
                 .collect::<Vec<_>>();
             let output = RecallOutput {
-                version: "recall.v6".into(),
+                version: "recall.v7".into(),
                 request: request.binding.clone(),
                 status: RecallStatus::ContextOnly,
                 current_message: None,
@@ -159,6 +159,14 @@ impl ChatMemoryService {
                 conflicts: vec![],
                 clarification: None,
                 semantic_judgment: SemanticJudgment::Skipped,
+                retrieval: crate::contract::RecallRetrieval {
+                    status: if self.config.embedding.enabled {
+                        crate::contract::RetrievalStatus::NotNeeded
+                    } else {
+                        crate::contract::RetrievalStatus::Disabled
+                    },
+                    ..Default::default()
+                },
                 completeness: crate::contract::RecallCompleteness {
                     retrieval_truncated: memories.len() > input.limit,
                     pending_related_sources: 0,
@@ -181,11 +189,35 @@ impl ChatMemoryService {
                 },
                 output,
                 crate::recall::SafetySnapshot::capture(&before, &request)?,
+                &self.config.embedding,
             )?;
             return Ok(serde_json::to_value(output)?);
         }
         let provider = self.recall_provider(operation, input.offline)?;
-        let result = self.recall_runtime.run_cancellable(
+        let embedding_config = self.config.embedding.clone();
+        let query = |text: &str| {
+            #[cfg(test)]
+            if let Some(query) = &self.embedding_query {
+                return query(text);
+            }
+            crate::embedding::query(&embedding_config, text)
+        };
+        let retrieval = crate::recall::Retrieval {
+            config: &embedding_config,
+            query: (!input.offline && crate::embedding::runtime_network_allowed()).then_some(
+                &query as &dyn Fn(&str) -> crate::embedding::Result<crate::embedding::QueryVector>,
+            ),
+        };
+        #[cfg(test)]
+        let retrieval = crate::recall::Retrieval {
+            config: &embedding_config,
+            query: if !input.offline && self.embedding_query.is_some() {
+                Some(&query)
+            } else {
+                retrieval.query
+            },
+        };
+        let result = self.recall_runtime.run_cancellable_with_retrieval(
             &mut self.store,
             &request,
             crate::recall::Budget {
@@ -195,6 +227,7 @@ impl ChatMemoryService {
             provider.as_ref(),
             implicit_at,
             cancelled,
+            &retrieval,
         )?;
         Ok(serde_json::to_value(result)?)
     }
@@ -511,7 +544,7 @@ fn retained_write_candidates(result: &Value) -> Vec<Value> {
         .collect()
 }
 
-/// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v6 组织回答。
+/// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v7 组织回答。
 fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value {
     let fact = out.facts.first();
     // R5 对已知相关原文遗漏降 current=unknown、status=insufficient；两者都不能批准。
@@ -548,7 +581,7 @@ fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value
         && input.source_ids.len() == proposed.len()
         && proposed == sources
         && fact.is_some_and(|f| f.statement == input.draft_answer);
-    json!({"version":"recall.v6","request":out.request,"snapshot":out.snapshot,
+    json!({"version":"recall.v7","request":out.request,"snapshot":out.snapshot,
         "approved":approved,"approved_source_ids":if approved {sources} else {BTreeSet::new()},
         "reason":if approved {"retained_exact_statement"} else {"draft_requires_semantic_review"}})
 }
@@ -559,13 +592,14 @@ mod tests {
     #[test]
     fn new_validator_checks_r5_gate_instead_of_blanket_truncation() {
         let mut out: RecallOutput = serde_json::from_value(json!({
-            "version":"recall.v6","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
+            "version":"recall.v7","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
             "status":"answered","current_message":null,"records":[],"raw":[],
             "facts":[{"statement":"我住上海。","evidence":[{"source":{"kind":"stored","source_id":"home"},"quote":{"text":"我住上海。"}}],
                 "record_ids":[1],"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes",
                 "supersedes_record_ids":[],"grade":"committed","update":{"status":"judged","reasons":[]}}],
             "computed":null,"history":[],"conflicts":[],"clarification":null,"semantic_judgment":"model",
             "completeness":{"retrieval_truncated":true,"pending_related_sources":1,"pending_updates":0,"enrichment_gaps":0,"plan_complete":false},
+            "retrieval":{"status":"disabled","sources_total":0,"sources_indexed":0,"segments_total":0,"segments_indexed":0},
             "degraded_reasons":[],"snapshot":{"read_revision":1,"source_revision":1}
         })).unwrap();
         let input: ValidateAnswer = serde_json::from_value(json!({

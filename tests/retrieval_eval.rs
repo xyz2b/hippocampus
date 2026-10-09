@@ -107,6 +107,9 @@ impl Db {
     fn open(&self, owner: &str) -> SqliteMemoryStore {
         SqliteMemoryStore::open(&self.0, UserId::from(owner)).unwrap()
     }
+    fn operation(&self, owner: &str) -> SqliteMemoryStore {
+        SqliteMemoryStore::open_operation(&self.0, UserId::from(owner)).unwrap()
+    }
     fn seed(c: &Corpus, order: &str) -> Self {
         let directory = std::env::temp_dir().join(format!("af173-{}", diagnostics::new_id()));
         std::fs::create_dir_all(&directory).unwrap();
@@ -453,11 +456,29 @@ fn evaluate(c: &Corpus, q: &Query, db: &Db, order: &str, records: usize) -> Json
     let start = Instant::now();
     let assembly = recall::assemble_diagnosed(&store, &request, &plan, budget).unwrap();
     let elapsed_us = start.elapsed().as_micros();
+    evaluate_assembly(
+        c, q, &store, order, records, &request, &plan, budget, &assembly, elapsed_us, true,
+    )
+}
+
+fn evaluate_assembly(
+    c: &Corpus,
+    q: &Query,
+    store: &SqliteMemoryStore,
+    order: &str,
+    records: usize,
+    request: &Request,
+    plan: &r1::Plan,
+    budget: Budget,
+    assembly: &recall::Assembly,
+    elapsed_us: u128,
+    baseline: bool,
+) -> Json {
     let evidence = &assembly.evidence;
     let diagnostic = assembly.retrieval_diagnostic().unwrap();
     assert!(!diagnostic.fts_error, "{} FTS error", q.id);
     for key in ["fts_called", "enumeration", "relation_revoked"] {
-        if !q.expected_path[key].is_null() {
+        if baseline && !q.expected_path[key].is_null() {
             assert_eq!(
                 serde_json::to_value(diagnostic).unwrap()[key],
                 q.expected_path[key],
@@ -604,7 +625,8 @@ fn evaluate(c: &Corpus, q: &Query, db: &Db, order: &str, records: usize) -> Json
         assert!(!diagnostic.stages["record_count_budget"].is_empty());
     }
     // Observation cannot change the frozen payload, host output, or persisted state.
-    if order == "canonical"
+    if baseline
+        && order == "canonical"
         && records == 64
         && matches!(q.id.as_str(), "Q01" | "Q02" | "C03" | "C06")
     {
@@ -824,7 +846,6 @@ mod af175 {
     use serde::Serialize;
     use std::io::Write;
 
-    const LEXICAL_DF_PERCENT: usize = 20;
     const MODES: [&str; 5] = [
         "current",
         "lexical-df",
@@ -1338,40 +1359,7 @@ mod af175 {
             .map(|id| labels[id.as_str().unwrap()])
             .collect()
     }
-    // Test-only copy of lexical::tokens/natural_phrases: production keeps them private.
-    // Parity is checked against the real SQLite index and baseline phrase/entity scores.
-    fn lexical_tokens(text: &str) -> Vec<String> {
-        use std::fmt::Write as _;
-        let mut result = Vec::new();
-        let mut word = String::new();
-        for c in text.chars().flat_map(char::to_lowercase) {
-            let han = matches!(c as u32, 0x3400..=0x4dbf | 0x4e00..=0x9fff | 0xf900..=0xfaff | 0x20000..=0x323af);
-            if han || !c.is_alphanumeric() {
-                if !word.is_empty() {
-                    result.push(std::mem::take(&mut word));
-                }
-                if han {
-                    result.push(format!("c{:x}", c as u32));
-                }
-            } else {
-                if word.is_empty() {
-                    word.push('w');
-                }
-                write!(word, "{:06x}", c as u32).unwrap();
-            }
-        }
-        if !word.is_empty() {
-            result.push(word);
-        }
-        result
-    }
-    fn lexical_words(text: &str) -> String {
-        format!(" {} ", lexical_tokens(text).join(" "))
-    }
-    fn contains_term(words: &str, term: &str) -> bool {
-        words.contains(&format!(" {term} "))
-    }
-    fn query_terms(c: &Corpus, q: &Query) -> (Vec<String>, Vec<Vec<String>>) {
+    fn query_hint(c: &Corpus, q: &Query) -> String {
         let (request, plan) = request_and_plan(c, q);
         let mut hint = std::iter::once(request.binding.query.as_str())
             .chain(request.binding.context.iter().map(String::as_str))
@@ -1385,45 +1373,7 @@ mod af175 {
                 hint.push_str(&condition.quote.text);
             }
         }
-        let words = lexical_words(&hint);
-        let entities: Vec<Vec<String>> = c
-            .entities
-            .iter()
-            .filter(|e| e.owner_id.0 == q.owner)
-            .filter_map(|e| {
-                let names = std::iter::once(&e.canonical_name).chain(&e.aliases);
-                if !names.clone().any(|name| {
-                    name.chars().count() >= 2
-                        && !lexical_tokens(name).is_empty()
-                        && contains_term(&words, &lexical_tokens(name).join(" "))
-                }) {
-                    return None;
-                }
-                Some(
-                    names
-                        .map(|name| lexical_tokens(name).join(" "))
-                        .filter(|name| !name.is_empty())
-                        .collect::<BTreeSet<_>>()
-                        .into_iter()
-                        .collect(),
-                )
-            })
-            .collect();
-        let mut phrases = BTreeSet::new();
-        for group in hint.split(|c: char| !c.is_alphanumeric()) {
-            let tokens = lexical_tokens(group);
-            for (i, token) in tokens.iter().enumerate() {
-                if token.starts_with('w') {
-                    phrases.insert(token.clone());
-                } else if let Some(next) = tokens.get(i + 1).filter(|t| t.starts_with('c')) {
-                    phrases.insert(format!("{token} {next}"));
-                } else if tokens.len() == 1 {
-                    phrases.insert(token.clone());
-                }
-            }
-        }
-        phrases.extend(entities.iter().flatten().cloned());
-        (phrases.into_iter().collect(), entities)
+        hint
     }
     fn df_documents<'a>(c: &'a Corpus, q: &'a Query) -> BTreeMap<&'a str, String> {
         // R1 subject/relation are retrieval hints, not the host's trusted scope.
@@ -1443,98 +1393,50 @@ mod af175 {
             .map(|s| {
                 (
                     s.record.id.as_str(),
-                    lexical_words(s.record.request.as_ref().unwrap()["text"].as_str().unwrap()),
+                    s.record.request.as_ref().unwrap()["text"]
+                        .as_str()
+                        .unwrap()
+                        .to_owned(),
                 )
             })
             .collect()
     }
-    fn term_df(terms: &[String], docs: &BTreeMap<&str, String>) -> BTreeMap<String, usize> {
-        terms
-            .iter()
-            .map(|term| {
-                (
-                    term.clone(),
-                    docs.values()
-                        .filter(|words| contains_term(words, term))
-                        .count(),
-                )
-            })
-            .collect()
-    }
-    fn df_kept(count: usize, documents: usize) -> bool {
-        documents > 0 && count * 100 <= documents * LEXICAL_DF_PERCENT
-    }
-    fn record_words(r: &FrozenRecord) -> String {
-        lexical_words(
-            &std::iter::once(serde_json::to_string(&r.memory.value).unwrap())
-                .chain(r.memory.evidence.iter().map(|e| e.quote.clone()))
-                .collect::<Vec<_>>()
-                .join(" "),
-        )
-    }
-    fn term_scores(words: &str, terms: &[String], entities: &[Vec<String>]) -> (usize, usize) {
-        (
-            entities
-                .iter()
-                .filter(|names| {
-                    names
-                        .iter()
-                        .any(|name| terms.contains(name) && contains_term(words, name))
-                })
-                .count(),
-            terms
-                .iter()
-                .filter(|term| contains_term(words, term))
-                .count(),
-        )
+    fn record_text(r: &FrozenRecord) -> String {
+        std::iter::once(serde_json::to_string(&r.memory.value).unwrap())
+            .chain(r.memory.evidence.iter().map(|e| e.quote.clone()))
+            .collect::<Vec<_>>()
+            .join(" ")
     }
     fn lexical_df_ranking(
         c: &Corpus,
         q: &Query,
         baseline: &Json,
     ) -> (Vec<MemoryId>, Vec<MemoryId>, Json) {
-        let (terms, entities) = query_terms(c, q);
         let documents = df_documents(c, q);
-        let frequencies = term_df(&terms, &documents);
-        let kept: Vec<_> = terms
+        let entities: Vec<_> = c
+            .entities
             .iter()
-            .filter(|term| df_kept(frequencies[*term], documents.len()))
+            .filter(|e| e.owner_id.0 == q.owner)
             .cloned()
             .collect();
+        let df = LexicalDf::new(
+            &query_hint(c, q),
+            &entities,
+            documents.values().map(String::as_str),
+        );
         let candidates: BTreeSet<_> = baseline["diagnostic"]["stages"]["relation_filter"]
             .as_array()
             .unwrap()
             .iter()
             .map(|id| id.as_str().unwrap())
             .collect();
-        // A copied private tokenizer must reproduce the unmodified baseline before DF.
-        for rank in baseline["diagnostic"]["ranking"]
-            .as_array()
-            .into_iter()
-            .flatten()
-        {
-            let label = rank["id"].as_str().unwrap();
-            if candidates.contains(label) {
-                let record = c.records.iter().find(|r| r.label == label).unwrap();
-                let scores = term_scores(&record_words(record), &terms, &entities);
-                assert_eq!(
-                    scores,
-                    (
-                        rank["entity_hits"].as_u64().unwrap() as usize,
-                        rank["phrase_hits"].as_u64().unwrap() as usize
-                    ),
-                    "{} tokenizer/scoring parity: {label}",
-                    q.id
-                );
-            }
-        }
         let mut scored = Vec::new();
         for r in c
             .records
             .iter()
             .filter(|r| candidates.contains(r.label.as_str()))
         {
-            let (entity, phrase) = term_scores(&record_words(r), &kept, &entities);
+            let (entity, phrase) = df.score(&record_text(r));
             let SourceRef::Stored { source_id } = &r.contract.source else {
                 unreachable!()
             };
@@ -1543,7 +1445,7 @@ mod af175 {
                 .is_some_and(|reasons| reasons.iter().any(|reason| reason == "fts"))
                 && documents
                     .get(source_id.as_str())
-                    .is_some_and(|words| kept.iter().any(|term| contains_term(words, term)));
+                    .is_some_and(|text| df.matches(text));
             if entity > 0
                 || phrase > 0
                 || fts
@@ -1567,7 +1469,7 @@ mod af175 {
         let diagnostic = json!({"df_percent":LEXICAL_DF_PERCENT,"df_documents":documents.len(),
             "df_scope":"live unique origin sources in owner/task/host-trusted-subject scope, before R1 subject/relation hints",
             "df_source_ids":documents.keys().collect::<Vec<_>>(),
-            "terms":terms.iter().map(|term|json!({"term":term,"df":frequencies[term],"kept":df_kept(frequencies[term],documents.len())})).collect::<Vec<_>>(),
+            "terms":df.terms,
             "ranking":scored.iter().map(|r|json!({"id":r.1,"entity_hits":r.2,"phrase_hits":r.3,"received_sequence":r.4,"fts_surviving_term":r.5,"lexical_vote":r.2>0||r.3>0||r.5})).collect::<Vec<_>>()});
         let lexical = scored
             .iter()
@@ -2416,36 +2318,30 @@ mod af175 {
     }
     #[test]
     fn af178_df_cutoff_is_strict_source_dedup_and_keeps_rare_literal_terms() {
-        let docs = BTreeMap::from([
-            ("a", lexical_words("我的 Rust 铜鹤 铜鹤")),
-            ("b", lexical_words("我的 铜鹤")),
-            ("c", lexical_words("我的 Java")),
-            ("d", lexical_words("Python")),
-            ("e", lexical_words("Ruby")),
-            ("f", lexical_words("Swift")),
-            ("g", lexical_words("Go")),
-            ("h", lexical_words("Zig")),
-            ("i", lexical_words("Lua")),
-            ("j", lexical_words("Perl")),
-        ]);
-        let weak = lexical_tokens("我的").join(" ");
-        let rare = lexical_tokens("铜鹤").join(" ");
-        let rust = lexical_tokens("RUST").join(" ");
-        let terms = vec![weak.clone(), rare.clone(), rust.clone()];
-        let df = term_df(&terms, &docs);
-        assert_eq!((df[&weak], df[&rare], df[&rust]), (3, 2, 1));
-        assert!(!df_kept(df[&weak], docs.len()));
-        assert!(df_kept(df[&rare], docs.len())); // exactly 20%, not greater
-        assert!(df_kept(df[&rust], docs.len()));
-        assert!(!df_kept(0, 0));
-        assert!(contains_term(&docs["a"], &rust));
-        assert!(!contains_term(&lexical_words("Rustacean"), &rust));
-        let kept: Vec<_> = terms
-            .into_iter()
-            .filter(|t| df_kept(df[t], docs.len()))
-            .collect();
-        assert_eq!(term_scores(&docs["a"], &kept, &[vec![rare]]), (1, 2));
-        assert_eq!(term_scores(&docs["c"], &kept, &[]), (0, 0));
+        let docs = [
+            "我的 Rust 铜鹤 铜鹤",
+            "我的 铜鹤",
+            "我的 Java",
+            "Python",
+            "Ruby",
+            "Swift",
+            "Go",
+            "Zig",
+            "Lua",
+            "Perl",
+        ];
+        let mut entity = data().0.entities.remove(0);
+        entity.canonical_name = "铜鹤".into();
+        entity.aliases.clear();
+        let df = LexicalDf::new("我的 RUST 铜鹤", &[entity], docs);
+        let frequencies: Vec<_> = df.terms.iter().map(|t| (t.df, t.kept)).collect();
+        assert!(frequencies.contains(&(3, false)));
+        assert!(frequencies.contains(&(2, true))); // exactly 20%, not greater
+        assert!(frequencies.contains(&(1, true)));
+        assert!(!LexicalDf::kept(0, 0));
+        assert_eq!(df.score(docs[0]), (1, 2));
+        assert_eq!(df.score(docs[2]), (0, 0));
+        assert_eq!(df.score("Rustacean"), (0, 0));
     }
     #[test]
     fn af178_df_scope_dedup_zero_vote_and_exact_term_ranking() {
@@ -2528,7 +2424,7 @@ mod af175 {
             .unwrap()
         {
             let (text, indexed) = row.unwrap();
-            assert_eq!(lexical_tokens(&text).join(" "), indexed);
+            assert_eq!(LexicalDf::index_text(&text), indexed);
         }
         let mut vector = vec![0.0; embedding::DIMENSIONS];
         vector[0] = 1.0;
@@ -2555,5 +2451,619 @@ mod af175 {
         let batch = restored.result.as_mut().unwrap();
         batch.elapsed_ms = f64::from_bits(batch.elapsed_ms.to_bits() + 1);
         assert!(restored.checked("strict-input", 1).is_err());
+    }
+    fn install_vectors(
+        db: &Db,
+        binding: &Binding,
+        docs: &[Item],
+        vectors: &BTreeMap<String, Vec<f32>>,
+    ) {
+        let mut store = db.operation("A");
+        let state = store.read().unwrap();
+        let token = store
+            .set_embedding_binding(embedding_index::Binding::new(binding.clone()).unwrap())
+            .unwrap();
+        let sources: BTreeSet<_> = docs.iter().filter_map(|d| d.source_id.as_deref()).collect();
+        for source in sources {
+            if !state.sources.get(source).is_some_and(|s| {
+                s.enrichment != "deleted"
+                    && s.request
+                        .as_ref()
+                        .is_some_and(|r| r["capture_source"] == true && r["text"].is_string())
+            }) {
+                continue;
+            }
+            let input = store.embedding_source_input(&token, source).unwrap();
+            let values: Vec<_> = input
+                .segments
+                .iter()
+                .map(|s| vectors[&format!("doc:{source}:{}:{}", s.start, s.end)].clone())
+                .collect();
+            store.write_embedding_vectors(&input, &values).unwrap();
+        }
+    }
+    fn totals(rows: &[Json], budget: usize) -> Json {
+        let group: Vec<_> = rows
+            .iter()
+            .filter(|r| r["records_budget"] == budget && r["control"] == false)
+            .collect();
+        let applicable: Vec<_> = group.iter().filter(|r| r["recall"].is_number()).collect();
+        let avg = |field: &str| {
+            let v: Vec<_> = group.iter().filter_map(|r| r[field].as_f64()).collect();
+            (!v.is_empty()).then(|| v.iter().sum::<f64>() / v.len() as f64)
+        };
+        json!({"records_budget":budget,"required_all":applicable.iter().filter(|r|r["required_all"]==true).count(),
+            "applicable":applicable.len(),"mrr":avg("mrr"),"precision":avg("precision")})
+    }
+    #[test]
+    #[ignore = "requires the strictly bound AF175 local vector recordings; sends nothing"]
+    fn af185_production_strict_vector_replay() {
+        let (c, queries) = data();
+        let docs = document_items(&c, &queries);
+        let historical: Json = serde_json::from_slice(
+            &std::fs::read(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("target/eval-retrieval/af173/report.json"),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            historical["corpus_fingerprint"],
+            fp(&serde_json::from_str::<Json>(include_str!("eval/retrieval/corpus.json")).unwrap())
+        );
+        assert_eq!(
+            historical["queries_fingerprint"],
+            fp(&serde_json::from_str::<Json>(include_str!("eval/retrieval/queries.json")).unwrap())
+        );
+        let mut models = Vec::new();
+        for model in [Model::Qwen, Model::Bge] {
+            let (binding, vectors, slots, _) = model_vectors(
+                &c,
+                &queries,
+                model,
+                false,
+                "http://127.0.0.1:1",
+                &root().join("recordings").join(file_id(model)),
+            )
+            .unwrap();
+            assert!(slots.iter().all(|s| s["status"] == "reused"));
+            println!("AF185 {} strict recordings loaded", model.tag());
+            let db = Db::seed(&c, "canonical");
+            println!("AF185 {} database seeded", model.tag());
+            install_vectors(&db, &binding, &docs, &vectors);
+            println!("AF185 {} cache installed", model.tag());
+            let mut rows = Vec::new();
+            let cfg = embedding::Config {
+                enabled: true,
+                model,
+                ..Default::default()
+            };
+            for q in &queries.queries {
+                for source in &q.overlay_sources {
+                    db.operation(&q.owner)
+                        .transaction(|state| {
+                            state.sources.insert(source.id.clone(), source.clone());
+                            Ok(())
+                        })
+                        .unwrap();
+                }
+                if !q.overlay_sources.is_empty() {
+                    install_vectors(&db, &binding, &docs, &vectors);
+                }
+                for records in &queries.budgets {
+                    let store = db.operation(&q.owner);
+                    let (request, plan) = request_and_plan(&c, q);
+                    let budget = Budget {
+                        records: *records,
+                        stored_bytes: q.stored_bytes,
+                        ..Default::default()
+                    };
+                    let calls = std::cell::Cell::new(0);
+                    let callback = |text: &str| {
+                        assert_eq!(text, q.query);
+                        calls.set(calls.get() + 1);
+                        Ok(embedding::QueryVector {
+                            binding: binding.clone(),
+                            vector: vectors[&format!("query:{}", fp(&json!(text)))].clone(),
+                        })
+                    };
+                    let start = Instant::now();
+                    let assembly = recall::assemble_with_retrieval(
+                        &store,
+                        &request,
+                        &plan,
+                        budget,
+                        &recall::Retrieval {
+                            config: &cfg,
+                            query: Some(&callback),
+                        },
+                        true,
+                    )
+                    .unwrap();
+                    assert_eq!(
+                        calls.get(),
+                        usize::from(assembly.retrieval.status != RetrievalStatus::NotNeeded)
+                    );
+                    assert!(matches!(
+                        assembly.retrieval.status,
+                        RetrievalStatus::Ready | RetrievalStatus::NotNeeded
+                    ));
+                    let mut row = evaluate_assembly(
+                        &c,
+                        q,
+                        &store,
+                        "canonical",
+                        *records,
+                        &request,
+                        &plan,
+                        budget,
+                        &assembly,
+                        start.elapsed().as_micros(),
+                        false,
+                    );
+                    row["retrieval"] = json!(assembly.retrieval);
+                    row["diagnostic"]["lexical_df"] =
+                        json!(assembly.retrieval_diagnostic().unwrap().lexical_df);
+                    let labels: BTreeMap<_, _> = c
+                        .records
+                        .iter()
+                        .map(|r| (r.memory.id, r.label.as_str()))
+                        .collect();
+                    let d = assembly.retrieval_diagnostic().unwrap();
+                    row["diagnostic"]["channels"] = json!({"lexical":d.lexical_ranked.iter().map(|id|labels[id]).collect::<Vec<_>>(),
+                        "vector":d.vector_ranked.iter().map(|id|labels[id]).collect::<Vec<_>>(),"fused":d.fused_ranked.iter().map(|id|labels[id]).collect::<Vec<_>>()});
+                    row["query_embedding_calls"] = json!(calls.get());
+                    rows.push(row);
+                    println!(
+                        "AF185 {} {} r={} covered={}",
+                        model.tag(),
+                        q.id,
+                        records,
+                        rows.last().unwrap()["required_all"]
+                    );
+                    // Opt-out preserves every byte sent to R4, not merely IDs or counts.
+                    if model == Model::Qwen {
+                        let classic = recall::assemble(&store, &request, &plan, budget).unwrap();
+                        let disabled = recall::assemble_with_retrieval(
+                            &store,
+                            &request,
+                            &plan,
+                            budget,
+                            &recall::Retrieval {
+                                config: &embedding::Config::default(),
+                                query: Some(&|_| panic!("disabled queried")),
+                            },
+                            true,
+                        )
+                        .unwrap();
+                        assert_eq!(
+                            serde_json::to_vec(&classic.evidence).unwrap(),
+                            serde_json::to_vec(&disabled.evidence).unwrap()
+                        );
+                        assert_eq!(
+                            recall_models::r4_input(&classic, c.utc_offset_seconds),
+                            recall_models::r4_input(&disabled, c.utc_offset_seconds)
+                        );
+                        let mut actual = evaluate_assembly(
+                            &c,
+                            q,
+                            &store,
+                            "canonical",
+                            *records,
+                            &request,
+                            &plan,
+                            budget,
+                            &disabled,
+                            0,
+                            true,
+                        );
+                        let mut expected = historical["rows"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .find(|r| {
+                                r["id"] == q.id
+                                    && r["records_budget"] == *records
+                                    && r["insertion_order"] == "canonical"
+                            })
+                            .unwrap()
+                            .clone();
+                        actual.as_object_mut().unwrap().remove("elapsed_us");
+                        expected.as_object_mut().unwrap().remove("elapsed_us");
+                        assert_eq!(
+                            actual, expected,
+                            "disabled differs from frozen AF173: {}/{}",
+                            q.id, records
+                        );
+                    }
+                }
+                for source in &q.overlay_sources {
+                    hippocampus::chat::ChatMemoryService::new(
+                        db.operation(&q.owner),
+                        Default::default(),
+                    )
+                    .unwrap()
+                    .call("memory_forget", json!({"source_id":source.id}), || false)
+                    .unwrap();
+                }
+            }
+            models.push(json!({"model":model.tag(),"strict_reused_slots":slots.len(),"totals":queries.budgets.iter().map(|b|totals(&rows,*b)).collect::<Vec<_>>(),"summary":summary(&rows),"rows":rows}));
+        }
+        let report = json!({"revision":"AF185","production_path":true,"new_embedding_requests":0,"safety_violations":0,"disabled_evidence_byte_equal":true,"models":models});
+        let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-retrieval/af185");
+        std::fs::create_dir_all(&directory).unwrap();
+        atomic_write(&directory.join("report.json"), &report).unwrap();
+        let mut md = String::from(
+            "# AF185 生产混合检索严格回放\n\n新嵌入请求 0；两模型均严格复用 AF175 14 槽。disabled R4 输入逐字节相同；安全违规 0。\n\n| 模型 | records | 必需全覆盖 | MRR | precision |\n|---|---|---|---|---|\n",
+        );
+        for model in report["models"].as_array().unwrap() {
+            for row in model["totals"].as_array().unwrap() {
+                md.push_str(&format!(
+                    "| {} | {} | {}/{} | {} | {} |\n",
+                    model["model"],
+                    row["records_budget"],
+                    row["required_all"],
+                    row["applicable"],
+                    row["mrr"],
+                    row["precision"]
+                ));
+            }
+        }
+        std::fs::write(directory.join("report.md"), md).unwrap();
+        println!(
+            "{}",
+            json!(
+                report["models"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|m| json!({"model":m["model"],"totals":m["totals"]}))
+                    .collect::<Vec<_>>()
+            )
+        );
+    }
+    fn fake_binding() -> Binding {
+        Binding::from_tags(
+            Model::Qwen,
+            &json!({"models":[{"name":Model::Qwen.tag(),"digest":"a".repeat(64)}]}),
+        )
+        .unwrap()
+    }
+    fn unit_vector(index: usize) -> Vec<f32> {
+        let mut v = vec![0.0; embedding::DIMENSIONS];
+        v[index] = 1.0;
+        v
+    }
+    #[test]
+    fn af185_cache_partial_corrupt_reopen_and_query_failure() {
+        let (c, queries) = data();
+        let db = Db::seed(&c, "canonical");
+        let q = queries.queries.iter().find(|q| q.id == "Q03").unwrap();
+        let (request, plan) = request_and_plan(&c, q);
+        let binding = fake_binding();
+        let mut store = db.open("A");
+        let token = store
+            .set_embedding_binding(embedding_index::Binding::new(binding.clone()).unwrap())
+            .unwrap();
+        let input = store.embedding_source_input(&token, "s-T03").unwrap();
+        store
+            .write_embedding_vectors(&input, &vec![unit_vector(0); input.segments.len()])
+            .unwrap();
+        drop(store);
+        let store = db.open("A");
+        let cfg = embedding::Config {
+            enabled: true,
+            ..Default::default()
+        };
+        let query = |_: &str| {
+            Ok(embedding::QueryVector {
+                binding: binding.clone(),
+                vector: unit_vector(0),
+            })
+        };
+        let assemble =
+            |callback: Option<&dyn Fn(&str) -> embedding::Result<embedding::QueryVector>>| {
+                recall::assemble_with_retrieval(
+                    &store,
+                    &request,
+                    &plan,
+                    Budget {
+                        records: 8,
+                        ..Default::default()
+                    },
+                    &recall::Retrieval {
+                        config: &cfg,
+                        query: callback,
+                    },
+                    true,
+                )
+                .unwrap()
+            };
+        let partial = assemble(Some(&query));
+        assert_eq!(partial.retrieval.status, RetrievalStatus::Pending);
+        assert_eq!(partial.retrieval.sources_indexed, 1);
+        assert!(
+            partial
+                .evidence
+                .records
+                .iter()
+                .any(|r| r.id() == MemoryId(3))
+        );
+        assert!(!partial.evidence.completeness.plan_complete);
+        assert!(
+            recall_models::r4_input(&partial, c.utc_offset_seconds)
+                .get("retrieval")
+                .is_none()
+        );
+        let wrong = queries.queries.iter().find(|q| q.id == "Q31").unwrap();
+        let (wrong_request, wrong_plan) = request_and_plan(&c, wrong);
+        let mut writer = db.open("A");
+        let origin = writer.embedding_source_input(&token, "s-T01").unwrap();
+        writer
+            .write_embedding_vectors(&origin, &vec![unit_vector(0); origin.segments.len()])
+            .unwrap();
+        writer
+            .transaction(|state| {
+                let mut link = state.relations.values().next().unwrap().clone();
+                link.id = "wrong-hint-over-budget".into();
+                link.members = std::iter::once(MemoryId(1))
+                    .chain(
+                        c.records
+                            .iter()
+                            .filter(|r| r.label.starts_with('F'))
+                            .map(|r| r.memory.id),
+                    )
+                    .collect();
+                state.relations.insert(link.id.clone(), link);
+                Ok(())
+            })
+            .unwrap();
+        let wrong_result = recall::assemble_with_retrieval(
+            &store,
+            &wrong_request,
+            &wrong_plan,
+            Budget {
+                records: 8,
+                ..Default::default()
+            },
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&query),
+            },
+            true,
+        )
+        .unwrap();
+        assert_eq!(wrong_result.evidence.records[0].id(), MemoryId(1));
+        assert!(wrong_result.evidence.records.len() <= 8);
+        assert!(wrong_result.evidence.completeness.retrieval_truncated);
+        assert!(!wrong_result.evidence.completeness.plan_complete);
+        assert!(
+            wrong_result
+                .retrieval_diagnostic()
+                .unwrap()
+                .lexical_ranked
+                .iter()
+                .all(|id| !c
+                    .records
+                    .iter()
+                    .any(|r| r.label.starts_with('F') && r.memory.id == *id))
+        );
+        assert!(wrong_result.retrieval_diagnostic().unwrap().stages["closure"].len() > 8);
+        let failed = assemble(Some(&|_| Err("fake_query_failure".into())));
+        assert_eq!(failed.retrieval.status, RetrievalStatus::Unavailable);
+        assert!(
+            failed
+                .retrieval_diagnostic()
+                .unwrap()
+                .vector_ranked
+                .is_empty()
+        );
+        let zero = recall::assemble_with_retrieval(
+            &store,
+            &request,
+            &plan,
+            Budget {
+                records: 0,
+                ..Default::default()
+            },
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&query),
+            },
+            true,
+        )
+        .unwrap();
+        assert!(zero.evidence.records.is_empty());
+        assert!(zero.evidence.completeness.retrieval_truncated);
+        let blocked = assemble(None);
+        assert_eq!(blocked.retrieval.status, RetrievalStatus::Unavailable);
+        rusqlite::Connection::open(&db.0)
+            .unwrap()
+            .execute(
+                "UPDATE source_vectors SET vector=X'00000000' WHERE source_id='s-T03'",
+                [],
+            )
+            .unwrap();
+        let corrupt = assemble(Some(&query));
+        assert_eq!(corrupt.retrieval.status, RetrievalStatus::Pending);
+        assert_eq!(corrupt.retrieval.sources_indexed, 1);
+        assert!(
+            !corrupt
+                .evidence
+                .records
+                .iter()
+                .any(|r| r.id() == MemoryId(3))
+        );
+    }
+    #[test]
+    fn af185_query_runs_outside_transaction_and_deletion_is_not_publishable() {
+        let (c, queries) = data();
+        let db = Db::seed(&c, "canonical");
+        let q = queries.queries.iter().find(|q| q.id == "Q03").unwrap();
+        let (request, plan) = request_and_plan(&c, q);
+        let binding = fake_binding();
+        let docs = document_items(&c, &queries);
+        let vectors = docs
+            .iter()
+            .map(|i| {
+                (
+                    i.key.clone(),
+                    unit_vector(usize::from(i.source_id.as_deref() != Some("s-T03"))),
+                )
+            })
+            .collect();
+        install_vectors(&db, &binding, &docs, &vectors);
+        let cfg = embedding::Config {
+            enabled: true,
+            ..Default::default()
+        };
+        let store = db.operation("A");
+        let original = store.read().unwrap().sources["s-T03"]
+            .request
+            .as_ref()
+            .unwrap()["text"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        let changed = recall::assemble_with_retrieval(
+            &store,
+            &request,
+            &plan,
+            Budget {
+                records: 8,
+                ..Default::default()
+            },
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&|_| {
+                    db.operation("A")
+                        .transaction(|s| {
+                            s.sources
+                                .get_mut("s-T03")
+                                .unwrap()
+                                .request
+                                .as_mut()
+                                .unwrap()["text"] = json!(format!("{original}附加文本。"));
+                            Ok(())
+                        })
+                        .unwrap();
+                    Ok(embedding::QueryVector {
+                        binding: binding.clone(),
+                        vector: unit_vector(0),
+                    })
+                }),
+            },
+            true,
+        )
+        .unwrap();
+        assert!(changed.check_snapshot(&store).is_err());
+        let token = store.embedding_binding().unwrap().unwrap();
+        assert!(
+            store
+                .read_embedding_vectors(&token, "s-T03")
+                .unwrap()
+                .is_empty()
+        );
+        db.operation("A")
+            .transaction(|s| {
+                s.sources
+                    .get_mut("s-T03")
+                    .unwrap()
+                    .request
+                    .as_mut()
+                    .unwrap()["text"] = json!(original);
+                Ok(())
+            })
+            .unwrap();
+        install_vectors(&db, &binding, &docs, &vectors);
+        let query = |_: &str| {
+            // A different process can delete while the read-side embedding is running.
+            let output = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "af175::af185_delete_child", "--nocapture"])
+                .env("AF185_DELETE_CHILD_DB", &db.0)
+                .env("PMR_MODEL_NETWORK", "deny")
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            Ok(embedding::QueryVector {
+                binding: binding.clone(),
+                vector: unit_vector(0),
+            })
+        };
+        let assembly = recall::assemble_with_retrieval(
+            &store,
+            &request,
+            &plan,
+            Budget {
+                records: 8,
+                ..Default::default()
+            },
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&query),
+            },
+            true,
+        )
+        .unwrap();
+        assert!(
+            assembly
+                .evidence
+                .records
+                .iter()
+                .any(|r| r.id() == MemoryId(3))
+        );
+        assert!(assembly.check_snapshot(&store).is_err());
+        assert!(
+            assembly
+                .finish_skipped(&store, recall::SkipReason::Offline)
+                .is_err()
+        );
+        let later = recall::assemble_with_retrieval(
+            &store,
+            &request,
+            &plan,
+            Budget {
+                records: 8,
+                ..Default::default()
+            },
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&|_| {
+                    Ok(embedding::QueryVector {
+                        binding: binding.clone(),
+                        vector: unit_vector(0),
+                    })
+                }),
+            },
+            true,
+        )
+        .unwrap();
+        assert!(!later.evidence.records.iter().any(|r| r.id() == MemoryId(3)));
+    }
+    #[test]
+    fn af185_delete_child() {
+        let Ok(path) = std::env::var("AF185_DELETE_CHILD_DB") else {
+            return;
+        };
+        let path = Path::new(&path);
+        assert!(
+            path.parent()
+                .unwrap()
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .starts_with("af173-")
+        );
+        let store = SqliteMemoryStore::open_operation(path, UserId::from("A")).unwrap();
+        hippocampus::chat::ChatMemoryService::new(store, Default::default())
+            .unwrap()
+            .call("memory_forget", json!({"source_id":"s-T03"}), || false)
+            .unwrap();
     }
 }

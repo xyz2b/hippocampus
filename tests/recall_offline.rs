@@ -518,7 +518,7 @@ fn reopened_offline_loop_binds_request_snapshot_and_never_writes() {
     assert!(result.facts.is_empty() && result.computed.is_none() && result.history.is_empty());
     assert_eq!(serde_json::to_value(db.state()).unwrap(), before);
     let wire = serde_json::to_value(&result).unwrap();
-    assert_eq!(wire["version"], "recall.v6");
+    assert_eq!(wire["version"], "recall.v7");
     assert!(wire["records"][0].get("end").is_none());
     assert!(wire["records"][0].get("current").is_none());
     assert_eq!(
