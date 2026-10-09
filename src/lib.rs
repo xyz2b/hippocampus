@@ -2,6 +2,7 @@ pub mod chat;
 mod commit;
 pub mod contract;
 pub mod diagnostics;
+pub mod embedding;
 mod engine;
 pub mod enrichment;
 mod fact_index;

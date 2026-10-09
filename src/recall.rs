@@ -207,8 +207,52 @@ impl SafetySnapshot {
     }
 }
 
+/// 离线检索诊断；独立于冻结证据结构，普通 assemble 不收集。
+#[derive(Clone, Debug, Default, serde::Serialize)]
+pub struct RetrievalDiagnostic {
+    pub stages: BTreeMap<String, Vec<MemoryId>>,
+    pub raw_stages: BTreeMap<String, Vec<String>>,
+    pub relation_stages: BTreeMap<String, Vec<String>>,
+    pub requested_relation: Option<String>,
+    pub effective_relation: Option<String>,
+    pub relation_revoked: bool,
+    pub enumeration: Option<String>,
+    pub fts_called: bool,
+    pub fts_error: bool,
+    pub ranking: Vec<RetrievalRank>,
+    pub selection: BTreeMap<MemoryId, Vec<String>>,
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct RetrievalRank {
+    pub id: MemoryId,
+    pub entity_hits: usize,
+    pub phrase_hits: usize,
+    pub received_sequence: u64,
+}
+
+fn diagnostic_stage(
+    diagnostic: &mut Option<RetrievalDiagnostic>,
+    name: &str,
+    ids: impl Iterator<Item = MemoryId>,
+) {
+    if let Some(d) = diagnostic {
+        d.stages.insert(name.into(), ids.collect());
+    }
+}
+
+fn diagnostic_raw(diagnostic: &mut Option<RetrievalDiagnostic>, name: &str, raw: &[RawEvidence]) {
+    if let Some(d) = diagnostic {
+        d.raw_stages.insert(
+            name.into(),
+            raw.iter().map(|r| r.source_id.clone()).collect(),
+        );
+    }
+}
+
 /// R4 的注入位置：消费本次组装，沿用原请求、R1 标记与读快照，不另做一次检索。
 pub struct Assembly {
+    retrieval_diagnostic: Option<RetrievalDiagnostic>,
     pub request: RecallRequest,
     pub plan: r1::Plan,
     pub evidence: RecallEvidence,
@@ -224,6 +268,10 @@ pub struct Assembly {
 }
 
 impl Assembly {
+    pub fn retrieval_diagnostic(&self) -> Option<&RetrievalDiagnostic> {
+        self.retrieval_diagnostic.as_ref()
+    }
+
     /// 人工离线输出与后续模型提供者共用此入口；生产不读取评测夹具。
     pub fn finish_r4(
         self,
@@ -880,6 +928,27 @@ pub fn assemble(
     plan: &r1::Plan,
     budget: Budget,
 ) -> PersistenceResult<Assembly> {
+    assemble_inner(store, request, plan, budget, false)
+}
+
+/// 基线专用观察入口；不改变排序、过滤、裁剪或证据输出。
+pub fn assemble_diagnosed(
+    store: &SqliteMemoryStore,
+    request: &Request,
+    plan: &r1::Plan,
+    budget: Budget,
+) -> PersistenceResult<Assembly> {
+    assemble_inner(store, request, plan, budget, true)
+}
+
+fn assemble_inner(
+    store: &SqliteMemoryStore,
+    request: &Request,
+    plan: &r1::Plan,
+    budget: Budget,
+    diagnose: bool,
+) -> PersistenceResult<Assembly> {
+    let mut diagnostic = diagnose.then(RetrievalDiagnostic::default);
     if store.owner() != &request.owner
         || request.binding.request_id.trim().is_empty()
         || crate::temporal::parse_iso_date(&request.said_on).is_none()
@@ -910,6 +979,8 @@ pub fn assemble(
         .filter(|m| record_in_scope(&state, m, request))
         .map(|m| (m.id, m))
         .collect();
+    diagnostic_stage(&mut diagnostic, "owner", all.iter().map(|m| m.id));
+    diagnostic_stage(&mut diagnostic, "trusted_scope", eligible.keys().copied());
     let entities = state.entities.list_by_owner(store.owner());
     let mut hint = std::iter::once(request.binding.query.as_str())
         .chain(request.binding.context.iter().map(String::as_str))
@@ -942,6 +1013,10 @@ pub fn assemble(
         .copied()
         .filter(|m| subject.is_none_or(|id| m.subject_id.0 == id))
         .collect();
+    diagnostic_stage(&mut diagnostic, "r1_subject", scoped.iter().map(|m| m.id));
+    if let Some(d) = &mut diagnostic {
+        d.requested_relation = relation.map(str::to_owned);
+    }
     let relevance = |m: &Memory| {
         let text = m
             .evidence
@@ -967,18 +1042,40 @@ pub fn assemble(
         .into_iter()
         .filter(|m| relation.is_none_or(|r| m.predicate.0 == r))
         .collect();
+    diagnostic_stage(
+        &mut diagnostic,
+        "relation_filter",
+        candidates.iter().map(|m| m.id),
+    );
+    if let Some(d) = &mut diagnostic {
+        d.effective_relation = relation.map(str::to_owned);
+        d.relation_revoked = d.requested_relation.is_some() && relation.is_none();
+        d.enumeration = if plan.output.is_none() {
+            Some("r1_not_understood".into())
+        } else if enumerate {
+            Some("aggregate_or_list".into())
+        } else if relation.is_none() && candidates.len() <= budget.records {
+            Some("scope_within_record_budget".into())
+        } else {
+            None
+        };
+    }
     // 小范围实际穷举；大范围仍按词法取候选，不能据 FTS 未截断宣称完整。
     let enumerate = enumerate || (relation.is_none() && candidates.len() <= budget.records);
     // FTS 只是候选提示；旧来源无索引时用同一快照的完整值/片段兜底，不据此认证语义。
     let hits = if enumerate {
         BTreeSet::new()
     } else {
-        store
-            .search_w4_facts(&tx, &state, &hint, &candidates)
-            .unwrap_or_default()
-            .into_iter()
-            .collect()
+        if let Some(d) = &mut diagnostic {
+            d.fts_called = true;
+        }
+        let result = store.search_w4_facts(&tx, &state, &hint, &candidates);
+        if let Some(d) = &mut diagnostic {
+            d.fts_error = result.is_err();
+        }
+        result.unwrap_or_default().into_iter().collect()
     };
+    diagnostic_stage(&mut diagnostic, "fts_hits", hits.iter().copied());
     let mut scores = BTreeMap::new();
     let mut selected = BTreeSet::new();
     for m in candidates {
@@ -994,8 +1091,25 @@ pub fn assemble(
         scores.insert(m.id, (entity_score, score));
         if enumerate || relation.is_some() || hits.contains(&m.id) || score > 0 {
             selected.insert(m.id);
+            if let Some(d) = &mut diagnostic {
+                let mechanisms = [
+                    (enumerate, "enumeration"),
+                    (relation.is_some(), "relation"),
+                    (hits.contains(&m.id), "fts"),
+                    (score > 0, "literal"),
+                ];
+                d.selection.insert(
+                    m.id,
+                    mechanisms
+                        .into_iter()
+                        .filter(|(yes, _)| *yes)
+                        .map(|(_, name)| name.into())
+                        .collect(),
+                );
+            }
         }
     }
+    diagnostic_stage(&mut diagnostic, "seeds", selected.iter().copied());
     let mut complete = plan.output.is_some() && (enumerate || relation.is_some());
     complete &= plan
         .filter_time_resolution
@@ -1019,6 +1133,14 @@ pub fn assemble(
         }) {
             complete = false;
         }
+        if let Some(d) = &mut diagnostic {
+            for id in parents.iter().filter(|id| eligible.contains_key(id)) {
+                let reasons = d.selection.entry(*id).or_default();
+                if !reasons.iter().any(|r| r == "version_chain") {
+                    reasons.push("version_chain".into());
+                }
+            }
+        }
         selected.extend(parents.into_iter().filter(|id| eligible.contains_key(id)));
         let links: Vec<_> = state
             .relations
@@ -1034,6 +1156,14 @@ pub fn assemble(
             if outside {
                 complete = false;
             } else {
+                if let Some(d) = &mut diagnostic {
+                    for id in link.members.iter().filter(|id| eligible.contains_key(id)) {
+                        let reasons = d.selection.entry(*id).or_default();
+                        if !reasons.iter().any(|r| r == "relation_member") {
+                            reasons.push("relation_member".into());
+                        }
+                    }
+                }
                 selected.extend(
                     link.members
                         .iter()
@@ -1046,6 +1176,7 @@ pub fn assemble(
             break;
         }
     }
+    diagnostic_stage(&mut diagnostic, "closure", selected.iter().copied());
     let sequence = |id: &MemoryId| {
         sources_of(&state, eligible[id])
             .iter()
@@ -1061,10 +1192,30 @@ pub fn assemble(
             *id,
         )
     });
+    diagnostic_stage(&mut diagnostic, "ranked", ordered.iter().copied());
+    if let Some(d) = &mut diagnostic {
+        d.ranking = ordered
+            .iter()
+            .map(|id| {
+                let (entity_hits, phrase_hits) = scores.get(id).copied().unwrap_or_default();
+                RetrievalRank {
+                    id: *id,
+                    entity_hits,
+                    phrase_hits,
+                    received_sequence: sequence(id),
+                }
+            })
+            .collect();
+    }
     let mut views: Vec<_> = ordered
         .into_iter()
         .filter_map(|id| projection(&state, id))
         .collect();
+    diagnostic_stage(
+        &mut diagnostic,
+        "projected",
+        views.iter().map(RecordView::id),
+    );
     let valid_evidence = |e: &EvidenceRef| match &e.source {
         SourceRef::Stored { source_id } => state
             .sources
@@ -1224,12 +1375,18 @@ pub fn assemble(
         link.resolution = link.resolution.filter(&valid_evidence);
         relations.push(link);
     }
+    diagnostic_raw(&mut diagnostic, "eligible", &raw);
     let mut remaining = budget.stored_bytes;
     let mut truncated = false;
     if views.len() > budget.records {
         truncated = true;
         views.truncate(budget.records);
     }
+    diagnostic_stage(
+        &mut diagnostic,
+        "record_count_budget",
+        views.iter().map(RecordView::id),
+    );
     views.retain(|v| {
         let size = serde_json::to_vec(v).expect("record serialization").len();
         let keep = size <= remaining;
@@ -1240,10 +1397,16 @@ pub fn assemble(
         }
         keep
     });
+    diagnostic_stage(
+        &mut diagnostic,
+        "record_byte_budget",
+        views.iter().map(RecordView::id),
+    );
     if raw.len() > budget.raw {
         truncated = true;
         raw.truncate(budget.raw);
     }
+    diagnostic_raw(&mut diagnostic, "count_budget", &raw);
     let mut bounded_raw = Vec::new();
     for mut item in raw {
         let original_size = serde_json::to_vec(&item)?.len();
@@ -1258,6 +1421,7 @@ pub fn assemble(
     }
     bounded_raw.sort_by_key(|r| (r.sequence, r.source_id.clone()));
     let raw = bounded_raw;
+    diagnostic_raw(&mut diagnostic, "byte_budget", &raw);
     let uncovered_sources = pending_sources
         .into_iter()
         .filter_map(|source| {
@@ -1303,9 +1467,21 @@ pub fn assemble(
             Some(slot)
         })
         .collect();
+    if let Some(d) = &mut diagnostic {
+        d.relation_stages.insert(
+            "eligible".into(),
+            relations.iter().map(|r| r.id.clone()).collect(),
+        );
+    }
     if relations.len() > budget.relations {
         truncated = true;
         relations.truncate(budget.relations);
+    }
+    if let Some(d) = &mut diagnostic {
+        d.relation_stages.insert(
+            "count_budget".into(),
+            relations.iter().map(|r| r.id.clone()).collect(),
+        );
     }
     relations.retain(|r| {
         let size = serde_json::to_vec(r).expect("relation serialization").len();
@@ -1317,6 +1493,12 @@ pub fn assemble(
         }
         keep
     });
+    if let Some(d) = &mut diagnostic {
+        d.relation_stages.insert(
+            "byte_budget".into(),
+            relations.iter().map(|r| r.id.clone()).collect(),
+        );
+    }
     complete &= !truncated;
     let current_message = (!request.bootstrap).then(|| CurrentMessage {
         source_id: None,
@@ -1327,6 +1509,7 @@ pub fn assemble(
         memory_requests: Vec::new(),
     });
     let assembly = Assembly {
+        retrieval_diagnostic: diagnostic,
         request: request.binding.clone(),
         plan: plan.clone(),
         uncovered_sources,
