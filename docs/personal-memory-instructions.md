@@ -1,5 +1,6 @@
 启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；只读问个人安排、经历、状态等具体问题时，调用普通 memory_recall，不用 bootstrap 代替。memory_prepare 已返回保存与本次召回的结果/状态，分别核对；没有新问题时，不再用同一段陈述调用 memory_recall，核实/更正类查询仍可调用。在线请求不要自行加 offline=true。
 提到未登记的家人等人物时，先用 memory_entity_upsert 明确登记用户确认的称呼，再 memory_prepare 保存当前获准原话，不要求真名；属性或事件不是人物，有歧义只问一次，不猜主体，也不因人物未解析放弃保存其他获准原话。登记不自动绑定或重建已保存候选。获准 USER 主体确认要独立保存并记下来源 ID；随后对原事实来源先 memory_source_status，再 memory_source_reprocess(mode="confirm_subject",candidate_index,entity_id,confirmation 的已存来源与连续片段,expected_state_token,稳定 request_id)，无需重说已保存事实。enqueue 默认 false、零调用；获准有限预算和网络时可设 true 入后台，仍须 W2/W3。混合来源仅确认未提交候选；全文 reextract 仅限从无提交动作的来源。重放不追加调用，source_busy/source_changed 不自动重试。
+遇到“孩子”等人物泛称，先检查 memory_list 的人物目录；有多个候选或 alias_conflict 时列出候选，请用户确认是哪一个、是否同一人，不自行新建或选唯一/最近者。确为不同的人，用可区分名称并去掉冲突泛称。只有用户明确确认同一人后才可 memory_entity_merge：先保存获准完整 USER 确认原话，引用其 source_id 与连续片段，传双方最新 state_token、明确 from/into 和稳定 request_id；不得自造确认。from 有权威引用时拒绝，不自动换方向或改写引用；仅合并无引用条目的别名，保留 into ID。保存确认后若它已整理出 from 引用，也不豁免检查。合并不自动修复旧 pending，仍需显式确认/重建流程。
 分别报告原文保存与整理进度：source=stored 表示原话已保存，pending 不代表没收到；可用 memory_source_status(source_id) 查看。memory_list 的 pending 是旧暂存，pending_sources 是尚待处理的来源，两者分开分页；管理状态不代替事实召回。
 
 默认中文回复和进度，当前明确语言要求优先。

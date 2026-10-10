@@ -36,6 +36,18 @@ memory_list 原有 `pending_total/pending` 仍表示旧 staged 暂存；新增 `
 
 DB 9→10 沿用现有快照与索引，不新增存储系统。所有 owner 缺省代际 0、普通来源；旧回执不改写、不自动入队，已删墓碑保留。v9 写程序拒绝 v10；只读范围 3–10。升级前手动备份，不能用旧程序直接回退写入新库。
 
+## 人物重名预检与受限合并（AF200，零模型调用）
+
+`memory_entity_upsert` 检查同 owner 其他实体的规范名与别名：与解析器共用首尾空白裁剪、Unicode小写比较，不折叠内部空白、不做近似匹配。同一实体可更新自身名称；第三实体冲突返回 `{error:"alias_conflict",conflicts:[{id,canonical_name,aliases}]}`，目录不变。冲突只说明名称重叠，不说明同一人。人物泛称有多个候选或冲突时，宿主先列目录并请 USER 确认，不自行创建或按唯一/最近者选择。不同人物应使用可区分名称并去掉冲突泛称；历史冲突不会自动修复。
+
+`memory_list.entities[]` 和 upsert 成功返回的 `entity` 新增 `state_token`，只绑定该实体完整状态，不依赖全局 revision。调用 `memory_entity_merge` 需 `from`、`into`、稳定 `request_id`、`expected_from_state_token`、`expected_into_state_token` 与 `user_confirmation={source:{kind:"stored",source_id},quote:{text}}`。双方必须为当前 owner 的 Person，不能是 self 或相同 ID。USER 必须明确确认两者是同一人，并明确保留哪一个 ID；宿主先保存获准完整确认原话，不自造原文。代码只检查本 owner 已保存、capture_source=true 的来源及精确连续片段，不判断自然语言是否表达同一人。
+
+事务内核对双方令牌、确认出处与引用。`from` 的记录主体/实体值（含历史版本）、旧暂存解析身份、新候选/W4检查点、主体确认、W5指纹和保留的旧代际候选引用均阻止合并，返回 `{error:"entity_has_references",references:[{path,entity_id}]}`；无法读懂的W5身份绑定也拒绝。原文中碰巧出现ID不是引用，模型输入目录/绑定只作审计、保持原样。保存确认后若它已整理为 from 引用，同样拒绝，不为合并豁免或改写。此工具不支持带引用的通用合并。
+
+成功时合并规范名/别名、按同一名称规则去重，保留 into 的规范名和ID，删除 from；与第三实体冲突或超出别名上限时拒绝。返回 `merged/from/into/entity/replayed/audit`，身份审计写入确认来源的既有 management.audits，接受回执用既有 receipts，DB仍为11。合并删除按现有目录屏障规则失效旧执行者，并清除本 owner 的召回保留缓存；跨连接返回前仍核验目录。它不重写模型审计、不自动绑定或重整理 pending。
+
+同 request_id/同参数重放接受的动作，不再次合并；改参 `request_id_conflict`，令牌变化 `entity_changed`，不存在/越权实体统一 `entity_not_found`，无效或已删除确认来源 `invalid_user_confirmation`，非 Person `entity_merge_requires_person`，self `self_protected`。拒绝不执行目录修改，不自动重试。from 已删除后 W2 不能引用它，也不能用 upsert 重新登记旧ID（`entity_id_retired`）。删除确认来源会清除原话与该来源的合并审计并阻止旧合并重放；最小ID元数据仍保留以防旧ID复活，已完成的目录合并不反向撤销。
+
 ## 历史 USER 原话补录
 
 首轮原话只存在于已保存来源的 history 时，先查父来源的 memory_source_status.history_entries，取得原槽位和完整条目指纹。在整条 USER 原话明确获准独立保存后，调用 memory_source_import_history(source_id, history_index, expected_content_fingerprint, request_id, capture_source=true)。服务复制服务器已有的完整文本，不接受宿主重新提交正文、不拼接、不改写，不导入助手消息。每条分别导入；不需用户重说原话。管理状态仅含指纹/位置，不是事实回答。

@@ -91,6 +91,32 @@ pub struct InMemoryEntityRepository {
 }
 
 impl InMemoryEntityRepository {
+    pub(crate) fn remove(&mut self, id: &EntityId) -> Option<Entity> {
+        self.entities.remove(id)
+    }
+
+    pub(crate) fn alias_conflicts(
+        &self,
+        proposed: &Entity,
+        merging: Option<&EntityId>,
+    ) -> Vec<Entity> {
+        let mut conflicts: Vec<_> = self
+            .entities
+            .values()
+            .filter(|entity| {
+                entity.owner_id == proposed.owner_id
+                    && entity.id != proposed.id
+                    && Some(&entity.id) != merging
+                    && std::iter::once(&proposed.canonical_name)
+                        .chain(&proposed.aliases)
+                        .any(|name| matches_entity_name(entity, name))
+            })
+            .cloned()
+            .collect();
+        conflicts.sort_by(|a, b| a.id.cmp(&b.id));
+        conflicts
+    }
+
     pub fn list_by_owner(&self, owner: &UserId) -> Vec<Entity> {
         let mut entities: Vec<_> = self
             .entities
@@ -113,17 +139,11 @@ impl EntityRepository for InMemoryEntityRepository {
     }
 
     fn resolve(&self, owner_id: &UserId, name_or_alias: &str) -> EntityResolution {
-        let query = name_or_alias.trim().to_lowercase();
         let mut matches: Vec<_> = self
             .entities
             .values()
             .filter(|entity| {
-                &entity.owner_id == owner_id
-                    && (entity.canonical_name.to_lowercase() == query
-                        || entity
-                            .aliases
-                            .iter()
-                            .any(|alias| alias.to_lowercase() == query))
+                &entity.owner_id == owner_id && matches_entity_name(entity, name_or_alias)
             })
             .map(|entity| entity.id.clone())
             .collect();
@@ -136,6 +156,17 @@ impl EntityRepository for InMemoryEntityRepository {
             _ => EntityResolution::Ambiguous(matches),
         }
     }
+}
+
+pub(crate) fn entity_name_key(name: &str) -> String {
+    name.trim().to_lowercase()
+}
+
+fn matches_entity_name(entity: &Entity, name: &str) -> bool {
+    let key = entity_name_key(name);
+    std::iter::once(&entity.canonical_name)
+        .chain(&entity.aliases)
+        .any(|name| entity_name_key(name) == key)
 }
 
 pub trait PredicateRegistry {

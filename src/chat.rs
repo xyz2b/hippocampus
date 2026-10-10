@@ -52,6 +52,8 @@ enum RecallVersion {
 mod background;
 #[path = "chat_config.rs"]
 mod configuration;
+#[path = "chat_entities.rs"]
+mod entity_controls;
 #[path = "chat_import.rs"]
 mod history_import;
 #[path = "chat_recall.rs"]
@@ -882,7 +884,11 @@ impl ChatMemoryService {
             || json!({"result":context,"duration_ms":context_started.elapsed().as_millis()}),
         );
         let (mut value, failed) = match operation {
-            Ok(value) => (value, false),
+            Ok(value) => {
+                let failed = matches!(name, "memory_entity_upsert" | "memory_entity_merge")
+                    && value["error"].is_string();
+                (value, failed)
+            }
             Err(error) => (error_body(error.as_ref()), true),
         };
         if failed {
@@ -1441,7 +1447,7 @@ impl ChatMemoryService {
                             .map(|staged| json!({"id":staged.id,"status":"Pending"})).collect::<Vec<_>>(),
                         "pending_source_total":pending_sources.len(),"pending_sources":pending_sources.into_iter()
                             .skip(input.source_offset).take(input.source_limit).collect::<Vec<_>>(),
-                        "entities":state.entities.list_by_owner(&owner)}))
+                        "entities":state.entities.list_by_owner(&owner).iter().map(entity_controls::visible).collect::<Vec<_>>()}))
                 })
             }
             "memory_entity_upsert" => {
@@ -1465,14 +1471,25 @@ impl ChatMemoryService {
                     id: EntityId(input.id),
                     owner_id: owner,
                     entity_type,
-                    canonical_name: input.canonical_name,
-                    aliases: input.aliases,
+                    canonical_name: input.canonical_name.trim().to_owned(),
+                    aliases: input.aliases.iter().map(|name|name.trim().to_owned()).collect(),
                 };
                 self.store.transaction(|state| {
+                    if entity_controls::retired(state, &entity.id) {
+                        return Err("entity_id_retired".into());
+                    }
+                    if state.entities.get(&entity.id).is_some_and(|e|e.owner_id != entity.owner_id) {
+                        return Err("entity_not_found".into());
+                    }
+                    let conflicts = state.entities.alias_conflicts(&entity, None);
+                    if !conflicts.is_empty() {
+                        return Ok(entity_controls::conflict(&conflicts));
+                    }
                     state.entities.upsert(entity.clone());
-                    Ok(json!({"entity":entity}))
+                    Ok(json!({"entity":entity_controls::visible(&entity)}))
                 })
             }
+            "memory_entity_merge" => self.merge_entity(serde_json::from_value(arguments)?),
             "memory_clarify" => {
                 Err("memory_clarify is no longer supported: legacy staged submission is disabled; existing staged data remains readable through memory_list and removable through memory_forget".into())
             }
@@ -1530,7 +1547,7 @@ fn tool<T: JsonSchema>(
         name,
         "memory_recall" | "memory_prepare" | "memory_entity_upsert"
     ) {
-        "After bootstrap, continue handling the SAME current USER message; an empty bootstrap is not evidence that personal memory is empty. For authorized personal background, plans, additions or corrections, use memory_prepare to save that first message too. For a concrete read-only question about personal arrangements, experiences or state, call ordinary memory_recall with the complete question; bootstrap does not answer it. Prepare returns saving and this attempt's recall result/status: inspect them separately, and without a new question do not repeat the same statement as a recall query. Verification/correction queries may still use recall. Do not add offline=true to an online request on your own. Explicitly register an unregistered family member or other person with memory_entity_upsert BEFORE memory_prepare using the user's confirmed reference; a real name is not required. Never register a property or event as a person; ask once when the referent is ambiguous, never guess. An unresolved person does not prevent saving otherwise authorized raw text. Registration does not automatically bind or rebuild retained candidates. Check raw source saving and enrichment independently; pending is not a failed raw save. Inspect pending with memory_source_status; if a first USER message was retained only in history, inspect its history_entries and explicitly authorize memory_source_import_history before separate reprocess. "
+        "After bootstrap, continue handling the SAME current USER message; an empty bootstrap is not evidence that personal memory is empty. For authorized personal background, plans, additions or corrections, use memory_prepare to save that first message too. For a concrete read-only question about personal arrangements, experiences or state, call ordinary memory_recall with the complete question; bootstrap does not answer it. Prepare returns saving and this attempt's recall result/status: inspect them separately, and without a new question do not repeat the same statement as a recall query. Verification/correction queries may still use recall. Do not add offline=true to an online request on your own. For generic person references, first inspect memory_list; with multiple candidates or alias_conflict, list candidates and ask the USER which person and whether they are the same. Never create or choose the only/recent person by elimination; distinct people need distinguishable names without conflicting generic aliases. Explicitly register an unregistered family member or other person with memory_entity_upsert BEFORE memory_prepare using the user's confirmed reference; a real name is not required. Never register a property or event as a person; ask once when the referent is ambiguous, never guess. An unresolved person does not prevent saving otherwise authorized raw text. Registration does not automatically bind or rebuild retained candidates. Check raw source saving and enrichment independently; pending is not a failed raw save. Inspect pending with memory_source_status; if a first USER message was retained only in history, inspect its history_entries and explicitly authorize memory_source_import_history before separate reprocess. "
     } else {
         ""
     };
@@ -1575,7 +1592,7 @@ pub fn memory_tools() -> Vec<Tool> {
         ),
         tool::<List>(
             "memory_list",
-            "Management directory of memory IDs, statuses, legacy staged pending IDs, pending_sources and registered entities; it does not return memory subjects, fact values, relations or source quotes. pending_source_total/pending_sources include retained unprocessed, failed or unresolved sources and committed sources with pending updates. Candidate indices/status/reasons do not establish facts. Entity names do not resolve an unnamed subject in a question. Use memory_recall for factual answers. An empty or insufficient recall must not be bypassed by listing. offset/limit page memories and legacy staged entries; source_offset/source_limit independently page pending_sources. Updates expiration status; include_history includes superseded/expired versions.",
+            "Management directory of memory IDs, statuses, legacy staged pending IDs, pending_sources and registered entities with their state_token; it does not return memory subjects, fact values, relations or source quotes. pending_source_total/pending_sources include retained unprocessed, failed or unresolved sources and committed sources with pending updates. Candidate indices/status/reasons do not establish facts. Entity names do not resolve an unnamed subject in a question. Use memory_recall for factual answers. An empty or insufficient recall must not be bypassed by listing. offset/limit page memories and legacy staged entries; source_offset/source_limit independently page pending_sources. Updates expiration status; include_history includes superseded/expired versions.",
             false,
             true,
             false,
@@ -1603,7 +1620,14 @@ pub fn memory_tools() -> Vec<Tool> {
         ),
         tool::<EntityInput>(
             "memory_entity_upsert",
-            "Register or update an entity and aliases confirmed by the user. Does not merge or rename stable entity IDs. Use memory_list to inspect existing IDs; ambiguous aliases remain pending.",
+            "Register or update an entity and aliases confirmed by the user. Does not merge or rename stable entity IDs. Use memory_list to inspect existing IDs and state_token. Canonical-name/alias collisions with this owner's other entities return alias_conflict with their IDs/names/aliases; nothing changes. A collision does not prove identity. With multiple children or conflicting generic references, list candidates and ask the USER which person and whether they are the same; never create or pick the only/recent entry by elimination. Distinct people need distinguishable names without the conflicting generic alias. Retired merged IDs cannot be registered again.",
+            true,
+            true,
+            false,
+        ),
+        tool::<entity_controls::Merge>(
+            "memory_entity_merge",
+            "Merge two registered Person entries only after an explicit USER confirmation that from and into are the same person. Never invent confirmation or infer identity from shared names, uniqueness or recency. First inspect memory_list for both state_token values. Pass from, into, expected_from_state_token, expected_into_state_token, stable request_id and user_confirmation={source:{kind:stored,source_id},quote:{text}}: an exact continuous excerpt of a retention-authorized USER source already saved by this owner. Only from without authoritative entity references is supported; entity_has_references lists blockers without rewriting them or model audit inputs. Alias collisions with a third entity are rejected. Works offline; same request replays its accepted action without changing the directory again. self and other-owner entities cannot be merged; changed states require a new user-approved request, never automatic retry.",
             true,
             true,
             false,

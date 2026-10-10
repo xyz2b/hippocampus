@@ -46,7 +46,11 @@ def main():
         client = Client(args.binary.resolve(), db, env, "alice", config=config)
         try:
             tools = {t["name"]: t for t in client.rpc("tools/list", {})["tools"]}
-            assert len(tools) == 11
+            assert len(tools) == 12
+            assert "memory_entity_merge" in tools
+            assert tools["memory_entity_merge"]["annotations"]["readOnlyHint"] is False
+            assert tools["memory_entity_merge"]["annotations"]["destructiveHint"] is True
+            assert tools["memory_entity_merge"]["annotations"]["idempotentHint"] is True
             assert "memory_source_import_history" in tools
             assert tools["memory_source_import_history"]["annotations"]["readOnlyHint"] is False
             assert "memory_source_reprocess" in tools
