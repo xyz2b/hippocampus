@@ -49,30 +49,89 @@
   }
  },
  "expect": {
-  "verdict": [
-   "supported",
-   "insufficient"
-  ],
-  "facts": [
+  "alternatives": [
    {
-    "record_ids": [
-     14
+    "verdict": "supported",
+    "facts": [
+     {
+      "record_ids": [
+       14
+      ],
+      "sources": [
+       "s-14"
+      ],
+      "must": {
+       "applies": "unknown"
+      }
+     }
     ],
-    "sources": [
-     "s-14"
+    "compute": null,
+    "must_not": [
+     "断言上海一直住到某个具体日期",
+     "凭消息接收先后推断目标月份仍在旧住址",
+     "声称已确认目标月份的住址"
     ],
-    "must": {
-     "applies": [
-      "yes",
-      "unknown"
-     ]
-    }
+    "forbid_facts": [
+     {
+      "record_ids": [
+       14
+      ],
+      "sources": [],
+      "must": {
+       "applies": "yes"
+      }
+     },
+     {
+      "record_ids": [
+       15
+      ],
+      "sources": [],
+      "must": {
+       "applies": "yes"
+      }
+     }
+    ]
+   },
+   {
+    "verdict": "insufficient",
+    "facts": [],
+    "compute": null,
+    "must_not": [
+     "断言上海一直住到某个具体日期",
+     "凭消息接收先后推断目标月份仍在旧住址",
+     "声称已确认目标月份的住址"
+    ],
+    "forbid_facts": [
+     {
+      "record_ids": [
+       14
+      ],
+      "sources": [],
+      "must": {
+       "applies": "yes"
+      }
+     },
+     {
+      "record_ids": [
+       15
+      ],
+      "sources": [],
+      "must": {
+       "applies": "yes"
+      }
+     }
+    ]
    }
-  ],
-  "compute": null
+  ]
  },
  "must_not": [
-  "断言上海一直住到某个具体日期"
+  "断言上海一直住到某个具体日期",
+  "凭消息接收先后推断目标月份仍在旧住址",
+  "声称已确认目标月份的住址"
  ],
- "note": "2025-03 时上海记录尚未被替代（替代消息 2025-09 才收到），但结束时间未知，R4 可判 supported 或不足，不能编造结束日。"
+ "note": "AF227：旧陈述不证明连续有效；替代消息的接收日期不能证明现实结束日期。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

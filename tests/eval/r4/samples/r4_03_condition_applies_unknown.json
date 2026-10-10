@@ -38,31 +38,70 @@
   }
  },
  "expect": {
-  "verdict": "supported",
-  "facts": [
+  "alternatives": [
    {
-    "record_ids": [
-     3
+    "verdict": "supported",
+    "facts": [
+     {
+      "record_ids": [
+       3
+      ],
+      "sources": [
+       "s-3"
+      ],
+      "must": {
+       "conditions": [
+        "画速写的时候"
+       ],
+       "applies": [
+        "unknown",
+        "no"
+       ]
+      }
+     }
     ],
-    "sources": [
-     "s-3"
+    "compute": null,
+    "must_not": [
+     "把炭笔说成无条件的常用笔",
+     "applies=yes"
+    ]
+   },
+   {
+    "verdict": "insufficient",
+    "facts": [
+     {
+      "record_ids": [
+       3
+      ],
+      "sources": [
+       "s-3"
+      ],
+      "must": {
+       "conditions": [
+        "画速写的时候"
+       ],
+       "applies": [
+        "unknown",
+        "no"
+       ]
+      }
+     }
     ],
-    "must": {
-     "conditions": [
-      "画速写的时候"
-     ],
-     "applies": [
-      "unknown",
-      "no"
-     ]
-    }
+    "compute": null,
+    "must_not": [
+     "把炭笔说成无条件的常用笔",
+     "applies=yes"
+    ]
    }
-  ],
-  "compute": null
+  ]
  },
  "must_not": [
   "把炭笔说成无条件的常用笔",
   "applies=yes"
  ],
- "note": "roadmap M1：条件不匹配时从“过滤掉”改为“标注适用条件”。"
+ "note": "AF247：支持有条件的自述或判一般场景证据不足均可；两支都须同一有出处事实、条件与 applies=unknown/no，不得回答成无条件常用笔。",
+ "label_revision": {
+  "decision": "AF247",
+  "date": "2026-10-11"
+ }
 }

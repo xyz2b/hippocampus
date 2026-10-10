@@ -381,11 +381,11 @@ pub(super) fn run() {
         (
             format!(
                 "{}/responses",
-                std::env::var("DEEPSEEK_BASE_URL")
+                std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
                     .expect("live base URL")
                     .trim_end_matches('/')
             ),
-            std::env::var("DEEPSEEK_API_KEY").expect("live API key"),
+            std::env::var("HUOSHAN_DEEPSEEK_API_KEY").expect("live API key"),
         )
     });
     let recorder = Arc::new(Recorder::new(dir.clone(), limit, live));

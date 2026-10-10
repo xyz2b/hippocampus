@@ -226,8 +226,8 @@ pub(super) fn run() -> Result<(), String> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-negative-af216/points");
     let model =
         std::env::var("DEEPSEEK_PRO_MODEL").unwrap_or_else(|_| "ep-af216-unresolved-pro".into());
-    let base =
-        std::env::var("DEEPSEEK_BASE_URL").unwrap_or_else(|_| "https://af216.invalid/v1".into());
+    let base = std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
+        .unwrap_or_else(|_| "https://af216.invalid/v1".into());
     let cases = ["n03", "n04"]
         .into_iter()
         .flat_map(|id| (1..=2).map(move |r| (id, r)))

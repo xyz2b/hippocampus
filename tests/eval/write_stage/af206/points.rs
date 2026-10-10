@@ -339,8 +339,8 @@ pub(super) fn run() -> Result<(), String> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-fact-af206/points");
     let model =
         std::env::var("DEEPSEEK_PRO_MODEL").unwrap_or_else(|_| "ep-af206-unresolved-pro".into());
-    let base =
-        std::env::var("DEEPSEEK_BASE_URL").unwrap_or_else(|_| "https://af206.invalid/v1".into());
+    let base = std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
+        .unwrap_or_else(|_| "https://af206.invalid/v1".into());
     let cases = (1..=2)
         .map(|r| w4_case(&root, &model, &base, r))
         .collect::<Result<Vec<_>, _>>()?;
@@ -398,7 +398,8 @@ pub(super) fn run() -> Result<(), String> {
         {
             return Err("AF206 points requires real model/base and live gate".into());
         }
-        let key = std::env::var("DEEPSEEK_API_KEY").map_err(|_| "missing DEEPSEEK_API_KEY")?;
+        let key = std::env::var("HUOSHAN_DEEPSEEK_API_KEY")
+            .map_err(|_| "missing HUOSHAN_DEEPSEEK_API_KEY")?;
         Some((
             reqwest::blocking::Client::builder()
                 .redirect(reqwest::redirect::Policy::none())

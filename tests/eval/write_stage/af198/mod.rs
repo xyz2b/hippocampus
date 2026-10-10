@@ -532,8 +532,8 @@ pub(super) fn run() -> Result<(), String> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-time-af198");
     let model =
         std::env::var("DEEPSEEK_PRO_MODEL").unwrap_or_else(|_| "ep-af198-unresolved-pro".into());
-    let base =
-        std::env::var("DEEPSEEK_BASE_URL").unwrap_or_else(|_| "https://af198.invalid/v1".into());
+    let base = std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
+        .unwrap_or_else(|_| "https://af198.invalid/v1".into());
     let trial = plan(&root, &model, &base)?;
     let limit = std::env::var("EVAL_RECORD")
         .ok()
@@ -552,11 +552,12 @@ pub(super) fn run() -> Result<(), String> {
             || model == "ep-af198-unresolved-pro"
             || base == "https://af198.invalid/v1"
         {
-            return Err("AF198 recording requires live network gate and real DEEPSEEK_PRO_MODEL/BASE_URL; nothing sent".into());
+            return Err("AF198 recording requires live network gate and real DEEPSEEK_PRO_MODEL/HUOSHAN_DEEPSEEK_BASE_URL; nothing sent".into());
         }
-        let key = std::env::var("DEEPSEEK_API_KEY").map_err(|_| "missing DEEPSEEK_API_KEY")?;
+        let key = std::env::var("HUOSHAN_DEEPSEEK_API_KEY")
+            .map_err(|_| "missing HUOSHAN_DEEPSEEK_API_KEY")?;
         if key.trim().is_empty() {
-            return Err("missing DEEPSEEK_API_KEY".into());
+            return Err("missing HUOSHAN_DEEPSEEK_API_KEY".into());
         }
         Some((
             reqwest::blocking::Client::builder()

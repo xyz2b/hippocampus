@@ -36,15 +36,63 @@
   }
  },
  "expect": {
-  "verdict": "supported",
-  "facts": [],
-  "compute": {
-   "op": "elapsed",
-   "insufficient_ok": true
-  }
+  "alternatives": [
+   {
+    "verdict": "supported",
+    "facts": [
+     {
+      "record_ids": [
+       24
+      ],
+      "sources": [
+       "s-24"
+      ],
+      "must": {
+       "time_quotes": [
+        "七月"
+       ],
+       "time_kinds": [
+        [
+         "month",
+         "unknown"
+        ]
+       ]
+      }
+     }
+    ],
+    "compute": {
+     "op": "elapsed",
+     "insufficient_ok": true
+    },
+    "must_not": [
+     "把七月补成具体日期",
+     "遗漏粗时间事实却判 supported",
+     "输出精确天数或伪造精度"
+    ]
+   },
+   {
+    "verdict": "insufficient",
+    "facts": [],
+    "compute": {
+     "op": "elapsed",
+     "insufficient_ok": true
+    },
+    "must_not": [
+     "把七月补成具体日期",
+     "遗漏粗时间事实却判 supported",
+     "输出精确天数或伪造精度"
+    ]
+   }
+  ]
  },
  "must_not": [
-  "把七月补成具体日期"
+  "把七月补成具体日期",
+  "遗漏粗时间事实却判 supported",
+  "输出精确天数或伪造精度"
  ],
- "note": null
+ "note": "AF227：两支均无计算结果，粗时间不得补日；supported 支须保留有出处的粗时间事实。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

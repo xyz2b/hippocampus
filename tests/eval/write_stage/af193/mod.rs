@@ -235,8 +235,8 @@ pub(super) fn run() -> Result<(), String> {
     });
     let model =
         std::env::var("DEEPSEEK_PRO_MODEL").unwrap_or_else(|_| "ep-af193-unresolved-pro".into());
-    let base =
-        std::env::var("DEEPSEEK_BASE_URL").unwrap_or_else(|_| "https://af193.invalid/v1".into());
+    let base = std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
+        .unwrap_or_else(|_| "https://af193.invalid/v1".into());
     let cases = plan_for(&root, &model, &base, second)?;
     let limit = std::env::var("EVAL_RECORD")
         .ok()
@@ -257,11 +257,14 @@ pub(super) fn run() -> Result<(), String> {
             ));
         }
         if model == "ep-af193-unresolved-pro" || base == "https://af193.invalid/v1" {
-            return Err("recording requires DEEPSEEK_PRO_MODEL and DEEPSEEK_BASE_URL".into());
+            return Err(
+                "recording requires DEEPSEEK_PRO_MODEL and HUOSHAN_DEEPSEEK_BASE_URL".into(),
+            );
         }
-        let key = std::env::var("DEEPSEEK_API_KEY").map_err(|_| "missing DEEPSEEK_API_KEY")?;
+        let key = std::env::var("HUOSHAN_DEEPSEEK_API_KEY")
+            .map_err(|_| "missing HUOSHAN_DEEPSEEK_API_KEY")?;
         if key.trim().is_empty() {
-            return Err("missing DEEPSEEK_API_KEY".into());
+            return Err("missing HUOSHAN_DEEPSEEK_API_KEY".into());
         }
         Some((
             reqwest::blocking::Client::builder()

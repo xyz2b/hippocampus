@@ -36,25 +36,41 @@
   }
  },
  "expect": {
-  "verdict": [
-   "supported",
-   "insufficient"
-  ],
-  "facts": [
+  "alternatives": [
    {
-    "record_ids": [
-     8
+    "verdict": "supported",
+    "facts": [
+     {
+      "record_ids": [
+       8
+      ],
+      "sources": [
+       "s-8"
+      ],
+      "must": {}
+     }
     ],
-    "sources": [
-     "s-8"
-    ],
-    "must": {}
+    "compute": null,
+    "must_not": [
+     "声称这是唯一当前雇主"
+    ]
+   },
+   {
+    "verdict": "insufficient",
+    "facts": [],
+    "compute": null,
+    "must_not": [
+     "声称这是唯一当前雇主"
+    ]
    }
-  ],
-  "compute": null
+  ]
  },
  "must_not": [
   "声称这是唯一当前雇主"
  ],
- "note": "update.pending 由 R5 合并带到宿主；R4 不得据 supported 清除。"
+ "note": "update.pending 由 R5 合并带到宿主；R4 不得据 supported 清除。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

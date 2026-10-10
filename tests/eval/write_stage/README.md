@@ -68,7 +68,7 @@ EVAL_DRY_RUN=1 \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-取得真实调用授权后，设置 `DEEPSEEK_BASE_URL`、`OPENAI_BASE_URL`、
+取得真实调用授权后，设置 `HUOSHAN_DEEPSEEK_BASE_URL`、`OPENAI_BASE_URL`、
 `ANTHROPIC_BASE_URL`、`QWEN_BASE_URL`，以及对应的三个远程 `*_API_KEY`。
 本地 Qwen 不读取密钥，也不回落到远程 key。录制命令（本任务未执行）：
 
@@ -574,7 +574,7 @@ cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact -
 
 `EVAL_AF193=1` 固定六个虚构场景（`af193/samples.json`，draft 标注）：观察时刻、历史/当前两断言、当前雇主、未来计划、先前说过的回指、明确日期与当前状态。每场景独立 W1/W3 各一次，共 12 槽；不运行 W4/R1/R4。W3 使用固定完整候选并先经 W2，不接该次 W1 输出；因此这是分阶段诊断。输入只带虚构原文、生产目录及不含语义的来源标识，不带期望或场景 ID。
 
-角色与生产缺省对齐：`DEEPSEEK_PRO_MODEL`、`DEEPSEEK_BASE_URL`，W1/W3 low，输出上限 32768/16384，超时 360 秒。不覆盖用户生产配置。干跑不读密钥、不发送、不创建目录或账本；环境缺模型/地址时使用明确的干跑占位，真实录制拒绝占位：
+角色与生产缺省对齐：`DEEPSEEK_PRO_MODEL`、`HUOSHAN_DEEPSEEK_BASE_URL`，W1/W3 low，输出上限 32768/16384，超时 360 秒。不覆盖用户生产配置。干跑不读密钥、不发送、不创建目录或账本；环境缺模型/地址时使用明确的干跑占位，真实录制拒绝占位：
 
 ```sh
 PMR_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_DRY_RUN=1 EVAL_RECORD=12 \
@@ -681,3 +681,22 @@ PMR_MODEL_NETWORK=offline EVAL_AF206=recount EVAL_RECORD=0 \
 points 独立隔离 W4/R4：注入旧已提交记录和核验候选；实际 W4 输出经 prepare→validate→plan→W5 提交后，从该 SQLite 快照装配 R3，注入经 decode→validate 的 R1 计划（R1=0）。报告核对 W4 动作/目标、R4 否定/当前状态及明确记录身份；正文语义仍交人工复核，不用代码判定否定语义。
 
 完整槽位和派生规则先冻结；每个依赖槽绑定上游请求/输出、完整 W2 或实际 R3 请求。发送前落盘占额度，失败/中断仍占槽，不重试、不重发在途槽；请求变化拒绝续跑，不绕过指纹。chain/points 不能借用彼此额度。样本 ID/期望只进报告，模型可见 ID 盲化。AF206 的提交数重算不影响任何请求指纹，旧有报告仅作历史结果；本轮不发送真实调用、不读取生产数据。
+
+
+### 火山 DeepSeek 环境变量迁移（AF243）
+
+已有 `ds-pro`、`ds-flash` 与历史固定输入/M1.5/时间/fact/否定评测的火山请求，
+现在仅从 `HUOSHAN_DEEPSEEK_BASE_URL` / `HUOSHAN_DEEPSEEK_API_KEY` 读取地址与认证；
+`DEEPSEEK_PRO_MODEL` 仍为火山端点 ID。`DEEPSEEK_BASE_URL` / `DEEPSEEK_API_KEY`
+留给官方接口，不能作为火山缺省回落。显式 `EVAL_BASE_URL` / `EVAL_API_KEY` 覆盖行为不变。
+
+档案的 `endpoint_env` 是运行时路由元数据，不进入指纹或授权身份；历史
+`provider.base_url_env` / `api_key_env` 字段继续保留原名，运行时仅对火山 `ep-*`
+模型映射读取新的变量。实际 endpoint、模型、effort、schema、请求正文、上限和超时
+仍完整参与严格绑定。无环境变量时可从旧录制恢复地址用于离线回放，不读取官方地址，
+也不改写录制或冻结账本。无录制时沿用历史干跑占位，真实录制必须提供新变量。
+本调整只作用于评测，不修改生产配置或生产环境变量解析。
+
+## AF247 召回标签离线重评
+
+R1/R4 的 AF247 修订与命令见 [召回阶段说明](../recall_stage/README.md)。输入/ID、r1.v2/r4.v7 请求、AF230 录制和冻结额度不变；`EVAL_RECALL_REPORT_DIR=reports-af247` 只选择新的离线报告目录。写入侧样本、评分与历史比较不变；自动字段结果和人工复核队列仍分别报告。

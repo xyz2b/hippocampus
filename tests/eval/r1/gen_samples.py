@@ -1,4 +1,4 @@
-"""生成 R1 问题理解样本（r1.v1）。标签由 Claude 起草，用户于 2026-10-03 抽查确认（reviewed）。
+"""AF227 保留历史标签并新增 r1_12 完整双分支；生成 R1 问题理解样本（r1.v1）。标签由 Claude 起草，用户于 2026-10-03 抽查确认（reviewed）。
 
 expect 只列需要核对的字段；字段值为数组时表示可接受集合；未列字段不评分。
 relation 是自然语言描述，不评分；filter.relation 为目录 ID，评分。split 为 dev（调提示词可看）或 holdout（只用于验收）。
@@ -100,6 +100,50 @@ SAMPLES = [
     sample("r1_20_elapsed_days", "dev", "距今天数", "我离上次体检过去多少天了？",
            e("judge", "query_only", "temporal", "elapsed", relation=["fact", None], unit=["day", None])),
 ]
+
+
+# AF227: whole expectations bind need to the same evidence classification/subject.
+import copy
+for s in SAMPLES:
+    if s["id"] == "r1_12_statement_plus_question":
+        base = s["expect"]
+        s["expect"] = {"alternatives": [dict(copy.deepcopy(base), need=n) for n in ("judge", "context_only")]}
+        s["label_revision"] = {"decision": "AF227", "date": "2026-10-10"}
+        s["note"] = "AF227：推荐可只需上下文，也可核对新旧陈述；两支均保留 assertion_present/self。"
+
+
+# AF247 changes expectations only; model-visible input and IDs stay frozen.
+for s in SAMPLES:
+    number = int(s["id"].split("_")[1])
+    if number not in {2, 3, 11, 15, 17}:
+        continue
+    s["label_revision"] = {"decision": "AF247", "date": "2026-10-11"}
+    if number in {2, 17}:
+        base = copy.deepcopy(s["expect"])
+        if number == 2:
+            base["plan.filter.relation"] = ["visited", "fact", None]
+        s["expect"] = {"alternatives": [dict(copy.deepcopy(base), need=n) for n in ("context_only", "judge")]}
+        s["note"] = "AF247：可只取上下文或判断陈述支持/新旧关系；两支均须 assertion_present/self，不以可能存在旧记录作为唯一理由。"
+    elif number == 3:
+        s["note"] = "AF247：保持 aggregate/list；询问可能有多个成员的集合，即使没有‘所有’字样也须枚举。共同 lookup/single 失败属提示词/模型问题，不放宽标签。"
+    elif number == 11:
+        recurring = {"quote": "周二", "interp": {"kind": "recurring"}}
+        base = copy.deepcopy(s["expect"])
+        base["type"] = ["single", "temporal"]
+        base["time"] = [None, recurring]
+        base["plan.filter.time"] = [None, recurring]
+        timed = copy.deepcopy(base)
+        timed["conditions"] = []
+        timed["time"] = recurring
+        for branch in (base, timed):
+            branch["must_not"] = ["丢失周二的周期限制", "把一般周二解释为某一具体日或相对偏移", "凭空添加适用限制"]
+        s["expect"] = {"alternatives": [base, timed]}
+        s["note"] = "AF247：周二可在 conditions 或 time(recurring)；非空 time/filter.time 均须保留周期，不接受 unknown、单日或偏移解释。"
+    elif number == 15:
+        s["expect"].pop("conditions")
+        s["focus"] = "当前用途与使用工具"
+        s["must_not"] = ["丢掉写代码的用途而回答任意工具", "把使用事实改成偏好", "把当前问题当陈述或仅取上下文"]
+        s["note"] = "AF247：用途可留在整体查询理解中，不强制 conditions 字段；need=judge、query_only 与 uses/null 保持。用途、额外条件与时间含义仍须人工核验。"
 
 
 def main():

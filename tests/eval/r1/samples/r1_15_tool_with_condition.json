@@ -3,7 +3,7 @@
  "contract": "r1.v1",
  "label_status": "reviewed",
  "split": "dev",
- "focus": "带活动条件的当前偏好",
+ "focus": "当前用途与使用工具",
  "input": {
   "message": "我现在写代码用什么编辑器？",
   "context": [],
@@ -63,12 +63,6 @@
   "current_evidence": "query_only",
   "type": "single",
   "subject": "self",
-  "conditions": [
-   [
-    "写代码",
-    "写代码用"
-   ]
-  ],
   "time": null,
   "plan.op": "lookup",
   "plan.filter.relation": [
@@ -76,5 +70,14 @@
    null
   ]
  },
- "note": null
+ "note": "AF247：用途可留在整体查询理解中，不强制 conditions 字段；need=judge、query_only 与 uses/null 保持。用途、额外条件与时间含义仍须人工核验。",
+ "label_revision": {
+  "decision": "AF247",
+  "date": "2026-10-11"
+ },
+ "must_not": [
+  "丢掉写代码的用途而回答任意工具",
+  "把使用事实改成偏好",
+  "把当前问题当陈述或仅取上下文"
+ ]
 }

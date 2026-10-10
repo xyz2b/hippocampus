@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 pub const ADAPTER_VERSION: &str = "structured-provider.v1";
+pub const ANTHROPIC_SIMPLIFIED_VERSION: &str = "anthropic-native-simplified.v1";
+pub const ANTHROPIC_NOPATTERN_VERSION: &str = "anthropic-native-simplified-nopattern.v1";
 pub const MODEL_USER_AGENT: &str = "hippocampus/0.1";
 pub const PROMPT_SCHEMA_VERSION: &str = "prompt-schema.v1";
 pub const PROMPT_SCHEMA_INSTRUCTION: &str = "Output exactly one JSON object conforming to the following JSON Schema. Do not output prose, Markdown fences, or any text before or after the object.\nJSON Schema:\n";
@@ -19,10 +21,21 @@ pub enum StructuredMode {
     #[default]
     NativeSchema,
     PromptSchema,
+    /// Evaluation only; canonical output shape is unchanged.
+    NativeSimplified,
+    /// Evaluation only; removed nonblank constraints are enforced on canonical output.
+    NativeSimplifiedNopattern,
 }
 impl StructuredMode {
     fn is_native(&self) -> bool {
         *self == Self::NativeSchema
+    }
+    fn rewrite_version(self) -> Option<&'static str> {
+        match self {
+            Self::NativeSimplified => Some(ANTHROPIC_SIMPLIFIED_VERSION),
+            Self::NativeSimplifiedNopattern => Some(ANTHROPIC_NOPATTERN_VERSION),
+            _ => None,
+        }
     }
 }
 
@@ -82,6 +95,13 @@ impl ProviderConfig {
             )
     }
     pub fn validate(&self) -> Result<(), Error> {
+        if self.structured_mode.rewrite_version().is_some()
+            && self.protocol != ProviderProtocol::AnthropicMessages
+        {
+            return Err(Error::InvalidContext(
+                "simplified schema modes only support Anthropic evaluation".into(),
+            ));
+        }
         if self.structured_mode == StructuredMode::PromptSchema
             && self.protocol != ProviderProtocol::AnthropicMessages
         {
@@ -114,6 +134,11 @@ impl ProviderConfig {
     }
 
     pub fn require_native_schema(&self) -> Result<(), Error> {
+        if self.structured_mode.rewrite_version().is_some() {
+            return Err(Error::InvalidContext(
+                "simplified schema modes are limited to Anthropic schema evaluation".into(),
+            ));
+        }
         if self.structured_mode != StructuredMode::NativeSchema {
             return Err(Error::InvalidContext(
                 "prompt_schema is limited to the Opus evaluation profile".into(),
@@ -123,6 +148,10 @@ impl ProviderConfig {
     }
 
     pub fn structured_mode_binding(&self) -> Option<Value> {
+        if let Some(version) = self.structured_mode.rewrite_version() {
+            return Some(json!({"mode":self.structured_mode,
+                "rewrite_version":version}));
+        }
         (self.structured_mode == StructuredMode::PromptSchema).then(|| {
             json!({"mode":self.structured_mode,"instruction_version":PROMPT_SCHEMA_VERSION,
                 "instruction":PROMPT_SCHEMA_INSTRUCTION})
@@ -343,8 +372,14 @@ pub fn provider_request(
                     "{instructions}\n\n[{PROMPT_SCHEMA_VERSION}]\n{PROMPT_SCHEMA_INSTRUCTION}{schema}"
                 ));
             } else {
-                r["output_config"]["format"] =
-                    json!({"type":"json_schema","schema":anthropic_schema(schema)?});
+                let schema = match config.structured_mode {
+                    StructuredMode::NativeSimplified => anthropic_simplified_schema(schema)?,
+                    StructuredMode::NativeSimplifiedNopattern => {
+                        anthropic_simplified_nopattern_schema(schema)?
+                    }
+                    _ => anthropic_schema(schema)?,
+                };
+                r["output_config"]["format"] = json!({"type":"json_schema","schema":schema});
             }
             r
         }
@@ -551,6 +586,205 @@ pub fn anthropic_schema(schema: &Value) -> Result<Value, Error> {
         }
     }
     Ok(Value::Object(result))
+}
+
+/// Shape-preserving, evaluation-only rewrite. Only schema nodes are visited;
+/// an enum, description, or application value can never become a reference.
+pub fn anthropic_simplified_schema(schema: &Value) -> Result<Value, Error> {
+    use std::collections::BTreeMap;
+    fn children(node: &mut Value, mut visit: impl FnMut(&mut Value)) {
+        if let Some(fields) = node.get_mut("properties").and_then(Value::as_object_mut) {
+            for child in fields.values_mut() {
+                visit(child);
+            }
+        }
+        if let Some(child) = node.get_mut("items") {
+            visit(child);
+        }
+        if let Some(branches) = node.get_mut("anyOf").and_then(Value::as_array_mut) {
+            for child in branches {
+                visit(child);
+            }
+        }
+    }
+    fn flatten(node: &mut Value) {
+        children(node, flatten);
+        if let Some(branches) = node.get_mut("anyOf").and_then(Value::as_array_mut) {
+            let mut flat = Vec::new();
+            for branch in std::mem::take(branches) {
+                if branch.as_object().is_some_and(|o| o.len() == 1)
+                    && let Some(inner) = branch["anyOf"].as_array()
+                {
+                    flat.extend(inner.iter().cloned());
+                } else {
+                    flat.push(branch);
+                }
+            }
+            *branches = flat;
+        }
+    }
+    fn collect(node: &Value, repeated: &mut BTreeMap<String, (Value, usize)>) {
+        if node["type"] == "object" {
+            let entry = repeated
+                .entry(node.to_string())
+                .or_insert((node.clone(), 0));
+            entry.1 += 1;
+        }
+        // Reuse the schema-only traversal, without modifying the input.
+        children(&mut node.clone(), |child| collect(child, repeated));
+    }
+    fn render(node: &Value, names: &BTreeMap<String, String>, defining: bool) -> Value {
+        if !defining && let Some(name) = names.get(&node.to_string()) {
+            return json!({"$ref":format!("#/definitions/{name}")});
+        }
+        let mut result = node.clone();
+        children(&mut result, |child| *child = render(child, names, false));
+        result
+    }
+    let mut flat = anthropic_schema(schema)?;
+    flatten(&mut flat);
+    let mut repeated = BTreeMap::new();
+    collect(&flat, &mut repeated);
+    let names: BTreeMap<_, _> = repeated
+        .iter()
+        .filter(|(_, (_, count))| *count > 1)
+        .enumerate()
+        .map(|(i, (key, _))| (key.clone(), format!("d{i}")))
+        .collect();
+    let mut result = render(&flat, &names, true);
+    if !names.is_empty() {
+        result["definitions"] = json!(
+            names
+                .iter()
+                .map(|(key, name)| { (name.clone(), render(&repeated[key].0, &names, true)) })
+                .collect::<BTreeMap<_, _>>()
+        );
+    }
+    // Internal definitions are strictly smaller subtrees, hence nonrecursive.
+    // Check that invariant before handing the schema to a provider.
+    expand_anthropic_simplified_schema(&result)?;
+    Ok(result)
+}
+
+/// Both schemas and the rewrite identity belong to the recording, not model input.
+pub fn anthropic_simplified_binding(original: &Value) -> Result<Value, Error> {
+    Ok(
+        json!({"mode":"native_simplified","rewrite_version":ANTHROPIC_SIMPLIFIED_VERSION,
+        "original_schema":original,"wire_schema":anthropic_simplified_schema(original)?}),
+    )
+}
+
+/// AF238 only: remove exactly the canonical nonblank pattern, never arbitrary regex constraints.
+pub fn anthropic_simplified_nopattern_schema(original: &Value) -> Result<Value, Error> {
+    fn remove(node: &mut Value) {
+        if node["pattern"] == r"^[\s\S]*\S[\s\S]*$" {
+            node.as_object_mut().unwrap().remove("pattern");
+        }
+        for key in ["properties", "definitions"] {
+            if let Some(fields) = node.get_mut(key).and_then(Value::as_object_mut) {
+                for child in fields.values_mut() {
+                    remove(child);
+                }
+            }
+        }
+        if let Some(child) = node.get_mut("items") {
+            remove(child);
+        }
+        if let Some(branches) = node.get_mut("anyOf").and_then(Value::as_array_mut) {
+            for child in branches {
+                remove(child);
+            }
+        }
+    }
+    let mut wire = anthropic_simplified_schema(original)?;
+    remove(&mut wire);
+    Ok(wire)
+}
+
+pub fn anthropic_simplified_nopattern_binding(original: &Value) -> Result<Value, Error> {
+    Ok(
+        json!({"mode":"native_simplified_nopattern","rewrite_version":ANTHROPIC_NOPATTERN_VERSION,
+        "original_schema":original,"wire_schema":anthropic_simplified_nopattern_schema(original)?}),
+    )
+}
+
+/// Resolve only acyclic local definitions generated by the evaluation rewrite.
+/// No response coercion or reverse mapping is performed.
+pub fn expand_anthropic_simplified_schema(schema: &Value) -> Result<Value, Error> {
+    fn expand(
+        node: &Value,
+        definitions: &serde_json::Map<String, Value>,
+        stack: &mut Vec<String>,
+        remaining: &mut usize,
+        depth: usize,
+    ) -> Result<Value, Error> {
+        let invalid = || Error::InvalidContext("invalid simplified schema reference".into());
+        *remaining = remaining.checked_sub(1).ok_or_else(invalid)?;
+        if depth > 64 {
+            return Err(invalid());
+        }
+        let object = node.as_object().ok_or_else(invalid)?;
+        if let Some(reference) = object.get("$ref") {
+            let name = reference
+                .as_str()
+                .and_then(|s| s.strip_prefix("#/definitions/"))
+                .filter(|s| !s.is_empty() && !s.contains(['/', '~']))
+                .ok_or_else(invalid)?;
+            if object.len() != 1 || stack.iter().any(|s| s == name) {
+                return Err(invalid());
+            }
+            let target = definitions.get(name).ok_or_else(invalid)?;
+            stack.push(name.into());
+            let result = expand(target, definitions, stack, remaining, depth + 1);
+            stack.pop();
+            return result;
+        }
+        if object.contains_key("definitions") {
+            return Err(invalid());
+        }
+        let mut result = node.clone();
+        if let Some(fields) = result.get_mut("properties").and_then(Value::as_object_mut) {
+            for child in fields.values_mut() {
+                *child = expand(child, definitions, stack, remaining, depth + 1)?;
+            }
+        }
+        if let Some(child) = result.get_mut("items") {
+            *child = expand(child, definitions, stack, remaining, depth + 1)?;
+        }
+        if let Some(branches) = result.get_mut("anyOf").and_then(Value::as_array_mut) {
+            for child in branches {
+                *child = expand(child, definitions, stack, remaining, depth + 1)?;
+            }
+        }
+        // Fail closed for unsupported keywords, even when an unused definition contains them.
+        anthropic_schema(&result)?;
+        Ok(result)
+    }
+    let mut root = schema.clone();
+    let definitions = root
+        .as_object_mut()
+        .ok_or_else(|| Error::InvalidContext("schema must be an object".into()))?
+        .remove("definitions")
+        .unwrap_or_else(|| json!({}));
+    let definitions = definitions
+        .as_object()
+        .ok_or_else(|| Error::InvalidContext("invalid simplified definitions".into()))?;
+    let mut remaining = 50_000;
+    for (name, node) in definitions {
+        if name.is_empty() || name.contains(['/', '~']) {
+            return Err(Error::InvalidContext(
+                "invalid simplified definition name".into(),
+            ));
+        }
+        expand(
+            node,
+            definitions,
+            &mut vec![name.clone()],
+            &mut remaining,
+            0,
+        )?;
+    }
+    expand(&root, definitions, &mut Vec::new(), &mut remaining, 0)
 }
 
 pub fn normalized_usage(protocol: ProviderProtocol, envelope: &Value) -> Option<Value> {

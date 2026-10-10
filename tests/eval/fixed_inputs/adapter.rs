@@ -107,6 +107,8 @@ fn r4_input(sample: &Value) -> Result<recall_adapter::R4Input, String> {
         source_dates,
         source_texts: serde_json::from_value(sample["source_texts"].clone())
             .map_err(|e| e.to_string())?,
+        utc_offset_seconds: 28_800,
+        source_context: BTreeMap::new(),
     })
 }
 

@@ -5,34 +5,125 @@
  "split": "dev",
  "focus": "距今：终点用 @request.at",
  "input": {
-  "query": "我搬到成都多久了？",
-  "at": "2026-10-03",
-  "current_evidence": "query_only",
-  "plan": {
-   "type": "temporal",
-   "op": "elapsed",
-   "relation": "lives_in"
+  "format": "recall.full@1",
+  "owner_id": "eval",
+  "request": {
+   "request_id": "stage-eval",
+   "query": "我搬到成都多久了？",
+   "context": [],
+   "task_id": null,
+   "at": 1790956800
   },
-  "records": [
+  "plan": {
+   "need": "judge",
+   "current_evidence": "query_only",
+   "type": "temporal",
+   "subject": {
+    "entity_id": "self"
+   },
+   "relation": "fact",
+   "conditions": [],
+   "time": null,
+   "plan": {
+    "op": "elapsed",
+    "filter": {
+     "relation": "fact",
+     "time": null
+    },
+    "unit": "day"
+   }
+  },
+  "entities": [
    {
-    "id": 23,
-    "sentence": "我2026年7月1日搬到成都了。",
-    "said_on": "2026-07-02",
-    "source": "s-23",
-    "status": "active",
-    "ended": "not_ended",
-    "termination": null,
-    "update": "judged",
-    "legacy_gaps": null,
-    "conditions": [],
-    "times": []
+    "id": "self",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "本人",
+    "aliases": []
    }
   ],
-  "raw": [],
-  "relations": [],
-  "completeness": {
-   "retrieval_truncated": false,
-   "plan_complete": true
+  "relations": [
+   "fact"
+  ],
+  "subject_ids": null,
+  "utc_offset_seconds": 28800,
+  "sources": {
+   "s-23": {
+    "text": "我2026年7月1日搬到成都了。",
+    "said_on": "2026-07-02"
+   }
+  },
+  "evidence": {
+   "current_message": {
+    "source_id": null,
+    "text": "我搬到成都多久了？",
+    "said_on": "2026-10-03",
+    "sequence": null,
+    "enrichment": "not_stored",
+    "memory_requests": []
+   },
+   "records": [
+    {
+     "format": "current",
+     "id": 23,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我2026年7月1日搬到成都了。",
+       "quote": {
+        "text": "我2026年7月1日搬到成都了。"
+       }
+      },
+      "sentence": {
+       "text": "我2026年7月1日搬到成都了。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "s-23"
+       },
+       "quote": {
+        "text": "我2026年7月1日搬到成都了。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-07-02",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    }
+   ],
+   "raw": [],
+   "relations": [],
+   "completeness": {
+    "retrieval_truncated": false,
+    "pending_related_sources": 0,
+    "pending_updates": 0,
+    "enrichment_gaps": 0,
+    "plan_complete": true
+   }
   }
  },
  "expect": {
@@ -44,6 +135,15 @@
    "operands": [
     "@request.at",
     "<item>"
+   ],
+   "unit": "day",
+   "expected_value": "94",
+   "exact_days": 94,
+   "rounding": "calendar_days",
+   "approximate": false,
+   "operand_sources": [
+    "@request.at",
+    "s-23"
    ]
   }
  },
@@ -51,5 +151,9 @@
   "模型自己给出天数",
   "把 said_on 当作终点"
  ],
- "note": null
+ "note": "AF227：固定获准 R1 plan.unit=day，事件日到请求日94天；单位不再从未指定单位的问句猜出。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

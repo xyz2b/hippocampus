@@ -68,7 +68,7 @@ EVAL_STAGES=w3 EVAL_CASES=w3_0 cargo test --offline --test write_stage_eval writ
 cargo test --offline --test write_stage_eval dry_run_plan -- --exact --nocapture
 ```
 
-全部样本的潜在调用数为 W1 20、W3 20、W4 21，共 61。真实录制须用户另行批准并提前报告实际需要录制的次数；**以下命令只用于获批后**。先在环境中配置 `DEEPSEEK_BASE_URL`（API base，例如以 `/v1` 结尾）与 `DEEPSEEK_API_KEY`，再执行：
+全部样本的潜在调用数为 W1 20、W3 20、W4 21，共 61。真实录制须用户另行批准并提前报告实际需要录制的次数；**以下命令只用于获批后**。先在环境中配置 `HUOSHAN_DEEPSEEK_BASE_URL`（API base，例如以 `/v1` 结尾）与 `HUOSHAN_DEEPSEEK_API_KEY`，再执行：
 
 ```sh
 EVAL_RECORD=61 cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture

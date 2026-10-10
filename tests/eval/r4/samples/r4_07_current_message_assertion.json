@@ -36,10 +36,7 @@
   }
  },
  "expect": {
-  "verdict": [
-   "supported",
-   "conflict"
-  ],
+  "verdict": "supported",
   "facts": [
    {
     "record_ids": [],
@@ -47,31 +44,32 @@
      "current"
     ],
     "must": {
-     "current": [
-      "yes",
-      "unknown"
-     ]
+     "current": "yes"
     }
-   },
+   }
+  ],
+  "compute": null,
+  "forbid_facts": [
    {
     "record_ids": [
      7
     ],
-    "sources": [
-     "s-7"
-    ],
+    "sources": [],
     "must": {
-     "current": [
-      "no",
-      "unknown"
-     ]
+     "current": "yes"
     }
    }
   ],
-  "compute": null
+  "forbid_supersedes": true
  },
  "must_not": [
-  "杭州 current=yes"
+  "把旧住址确认成当前",
+  "把旧自述当作真实历史",
+  "推断搬家、冲突、替代关系或确定结束时间"
  ],
- "note": null
+ "note": "AF246/AF247：旧记录可不提，或有出处地说明曾自述且 current=no/unknown；仍须本轮住址 current=yes，禁止 supersedes 与确认旧值真实历史。",
+ "label_revision": {
+  "decision": "AF246/AF247",
+  "date": "2026-10-11"
+ }
 }

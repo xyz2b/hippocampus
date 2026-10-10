@@ -1,0 +1,233 @@
+{
+ "id": "r4_23_open_multiple_subjects",
+ "contract": "r4.v7",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "R1 歧义初判不阻断有依据的开放列举",
+ "input": {
+  "format": "recall.full@1",
+  "owner_id": "eval",
+  "request": {
+   "request_id": "stage-eval",
+   "query": "家里谁对什么过敏？",
+   "context": [],
+   "task_id": null,
+   "at": 1790956800
+  },
+  "plan": {
+   "need": "judge",
+   "current_evidence": "query_only",
+   "type": "open",
+   "subject": {
+    "ambiguous": [
+     "self",
+     "child"
+    ]
+   },
+   "relation": "fact",
+   "conditions": [],
+   "time": null,
+   "plan": {
+    "op": "list",
+    "filter": {
+     "relation": "fact",
+     "time": null
+    },
+    "unit": null
+   }
+  },
+  "entities": [
+   {
+    "id": "self",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "本人",
+    "aliases": []
+   },
+   {
+    "id": "child",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "小岑",
+    "aliases": []
+   }
+  ],
+  "relations": [
+   "fact"
+  ],
+  "subject_ids": null,
+  "utc_offset_seconds": 28800,
+  "sources": {
+   "n3a": {
+    "text": "我对芝麻过敏。",
+    "said_on": "2026-09-01"
+   },
+   "n3b": {
+    "text": "我的孩子小岑对芒果过敏。",
+    "said_on": "2026-09-02"
+   }
+  },
+  "evidence": {
+   "current_message": {
+    "source_id": null,
+    "text": "家里谁对什么过敏？",
+    "said_on": "2026-10-03",
+    "sequence": null,
+    "enrichment": "not_stored",
+    "memory_requests": []
+   },
+   "records": [
+    {
+     "format": "current",
+     "id": 301,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我对芝麻过敏。",
+       "quote": {
+        "text": "我对芝麻过敏。"
+       }
+      },
+      "sentence": {
+       "text": "我对芝麻过敏。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "n3a"
+       },
+       "quote": {
+        "text": "我对芝麻过敏。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-09-01",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    },
+    {
+     "format": "current",
+     "id": 302,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "child"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我的孩子小岑对芒果过敏。",
+       "quote": {
+        "text": "我的孩子小岑对芒果过敏。"
+       }
+      },
+      "sentence": {
+       "text": "我的孩子小岑对芒果过敏。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "n3b"
+       },
+       "quote": {
+        "text": "我的孩子小岑对芒果过敏。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-09-02",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    }
+   ],
+   "raw": [],
+   "relations": [],
+   "completeness": {
+    "retrieval_truncated": false,
+    "pending_related_sources": 0,
+    "pending_updates": 0,
+    "enrichment_gaps": 0,
+    "plan_complete": true
+   }
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     301
+    ],
+    "sources": [
+     "n3a"
+    ],
+    "must": {}
+   },
+   {
+    "record_ids": [
+     302
+    ],
+    "sources": [
+     "n3b"
+    ],
+    "must": {}
+   }
+  ],
+  "compute": null,
+  "must_not": [
+   "互换人物和过敏对象",
+   "因 R1 ambiguous 强制选择一个人或要求澄清",
+   "把不同人物的事实合并成同一人物"
+  ]
+ },
+ "must_not": [
+  "互换人物和过敏对象",
+  "因 R1 ambiguous 强制选择一个人或要求澄清",
+  "把不同人物的事实合并成同一人物"
+ ],
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ },
+ "note": "AF227 虚构完整输入；语义检查需人工确认，自动字段通过不等于完整语义通过。"
+}

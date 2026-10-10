@@ -130,7 +130,7 @@ MVP 代理在前台请求前从该临时库的 T1 记录读取 source ID→turn 
 
 ## 已授权录制后的使用（本任务未执行）
 
-环境提供 `DEEPSEEK_BASE_URL`、`DEEPSEEK_API_KEY`。MVP 固定当前生产角色配置；W1 对照固定 Pro。
+环境提供 `HUOSHAN_DEEPSEEK_BASE_URL`、`HUOSHAN_DEEPSEEK_API_KEY`。MVP 固定当前生产角色配置；W1 对照固定 Pro。
 W1 可用 EVAL_BASE_URL/EVAL_API_KEY 指定相同服务的凭据；EVAL_MODEL/EVAL_REASONING_EFFORT/EVAL_REPEAT
 不改变这组固定 Pro、两种强度、两次重复设计。目录通过 EVAL_M15_DIR、报告通过 EVAL_M15_OUTPUT 覆盖。
 

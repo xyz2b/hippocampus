@@ -5,6 +5,12 @@ mod adapter;
 #[path = "eval/recall_stage/adapter.rs"]
 mod recall_adapter;
 
+#[path = "eval/recall_stage/compare.rs"]
+mod recall_compare;
+
+#[path = "eval/recall_stage/review.rs"]
+mod recall_review;
+
 #[path = "eval/fixed_inputs/adapter.rs"]
 mod fixed_adapter;
 
@@ -749,7 +755,7 @@ fn expectation_branches(expect: &Value) -> Vec<Value> {
 }
 
 fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
-    if matches!(stage, "w1" | "w3")
+    if matches!(stage, "w1" | "w3" | "r1" | "r4")
         && text.is_some()
         && (sample["expect"].get("alternatives").is_some()
             || !items(&sample["expect"]["optional_candidates"]).is_empty())
@@ -761,6 +767,9 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
                 .map(|expect| {
                     let mut branch = sample.clone();
                     branch["expect"] = expect.clone();
+                    if let Some(prohibitions) = expect.get("must_not") {
+                        branch["must_not"] = prohibitions.clone();
+                    }
                     score_raw(stage, &branch, text)
                 })
                 .collect();
@@ -783,7 +792,7 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     }
     let mut fields = Vec::new();
     let result = text.map(|text| {
-        if sample["fixed_input"] == true {
+        if sample["fixed_input"] == true && sample["input"]["format"] != "recall.full@1" {
             fixed_adapter::score(stage, sample, text, &mut fields)
         } else {
             match stage {
@@ -890,6 +899,14 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         })).collect::<Vec<_>>());
         report["raw_output"] = raw;
     }
+    if stage == "r1" {
+        report["raw_output_text"] = json!(text);
+        report["final_output"] = result
+            .as_ref()
+            .and_then(|r| r.as_ref().ok())
+            .cloned()
+            .unwrap_or(Value::Null);
+    }
     if stage == "r4" {
         report["validated_output"] = result
             .as_ref()
@@ -897,7 +914,7 @@ fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             .cloned()
             .unwrap_or(Value::Null);
     }
-    if sample["fixed_input"] == true {
+    if sample["fixed_input"] == true && sample["input"]["format"] != "recall.full@1" {
         report["scoring_scope"] = json!("contract_only");
         report["origin"] = sample["origin"].clone();
         report["manual_review"] = json!({"unlabelled_semantics":"pending"});
@@ -959,7 +976,7 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         return raw;
     }
     let assembled = if stage == "r4" {
-        (if sample["fixed_input"] == true {
+        (if sample["fixed_input"] == true && sample["input"]["format"] != "recall.full@1" {
             fixed_adapter::assemble_r4(sample, text.unwrap())
         } else {
             recall_adapter::assemble_r4(sample, text.unwrap())
@@ -1082,7 +1099,7 @@ fn stage_request_with_output_tokens(
     sample: &Value,
     tokens: u32,
 ) -> Result<Value, String> {
-    if sample["fixed_input"] == true {
+    if sample["fixed_input"] == true && sample["input"]["format"] != "recall.full@1" {
         return fixed_adapter::request(stage, sample, tokens);
     }
     let (stage, name, prompt, schema, input) = match stage {
@@ -1286,6 +1303,17 @@ struct EvalModel {
     base: Option<String>,
     effort: ReasoningEffort,
 }
+// Historical bindings retain DEEPSEEK_*; only evaluation credential/endpoint lookup changes.
+fn evaluation_env<'a>(name: &'a str, model: Option<&str>) -> &'a str {
+    if model.is_none_or(|m| m.starts_with("ep-")) {
+        match name {
+            "DEEPSEEK_BASE_URL" => return "HUOSHAN_DEEPSEEK_BASE_URL",
+            "DEEPSEEK_API_KEY" => return "HUOSHAN_DEEPSEEK_API_KEY",
+            _ => {}
+        }
+    }
+    name
+}
 impl EvalModel {
     fn default_model() -> Self {
         Self {
@@ -1302,18 +1330,19 @@ impl EvalModel {
                 serde_json::from_str(&s).map_err(|e| format!("invalid EVAL_PROVIDER_CONFIG: {e}"))
             })
             .transpose()?;
-        let provider_base = provider
-            .as_ref()
-            .and_then(|p| std::env::var(&p.base_url_env).ok());
+        let selected_model = std::env::var("EVAL_MODEL").ok();
+        let provider_base = provider.as_ref().and_then(|p| {
+            std::env::var(evaluation_env(&p.base_url_env, selected_model.as_deref())).ok()
+        });
         let mut model = Self {
             label: std::env::var("EVAL_MODEL_LABEL").unwrap_or_else(|_| MODEL.into()),
-            model: std::env::var("EVAL_MODEL").ok(),
+            model: selected_model,
             base: std::env::var("EVAL_BASE_URL")
                 .ok()
                 .or(provider_base)
                 .or_else(|| {
                     if provider.is_none() {
-                        std::env::var("DEEPSEEK_BASE_URL").ok()
+                        std::env::var("HUOSHAN_DEEPSEEK_BASE_URL").ok()
                     } else {
                         None
                     }
@@ -1478,6 +1507,8 @@ fn evaluation_profiles(text: &str) -> Result<Vec<SmokeProfile>, String> {
         if profile.endpoint_env.as_deref()
             != if local {
                 Some("QWEN_LOCAL_BASE_URL")
+            } else if matches!(profile.id.as_str(), "ds-pro" | "ds-flash") {
+                Some("HUOSHAN_DEEPSEEK_BASE_URL")
             } else {
                 None
             }
@@ -1600,7 +1631,7 @@ fn profile_base(
     let name = profile
         .endpoint_env
         .as_deref()
-        .unwrap_or(&profile.provider.base_url_env);
+        .unwrap_or_else(|| evaluation_env(&profile.provider.base_url_env, Some(&profile.model)));
     if let Some(base) = variable(name) {
         return Ok(base);
     }
@@ -1632,10 +1663,12 @@ fn profile_base(
                     && b["model"] == p.model
                     && b["effort"] == json!(p.effort)
                     && let Some(endpoint) = b["endpoint"].as_str()
-                    && let Some(base) = endpoint
-                        .strip_suffix("/chat/completions")
-                        .or_else(|| endpoint.strip_suffix("/responses"))
-                        .or_else(|| endpoint.strip_suffix("/v1/messages"))
+                    && let Some(base) = record["base_url"].as_str().or_else(|| {
+                        endpoint
+                            .strip_suffix("/chat/completions")
+                            .or_else(|| endpoint.strip_suffix("/responses"))
+                            .or_else(|| endpoint.strip_suffix("/v1/messages"))
+                    })
                 {
                     if p.provider.endpoint(base).map_err(|e| e.to_string())? == endpoint {
                         result.insert(base.into());
@@ -1658,7 +1691,12 @@ fn profile_base(
         {
             "https://dashscope.aliyuncs.com/compatible-mode".into()
         } else {
-            format!("https://{}.invalid/v1", name.to_ascii_lowercase())
+            let placeholder = if matches!(profile.id.as_str(), "ds-pro" | "ds-flash") {
+                profile.provider.base_url_env.as_str()
+            } else {
+                name
+            };
+            format!("https://{}.invalid/v1", placeholder.to_ascii_lowercase())
         }
     }))
 }
@@ -1891,12 +1929,16 @@ fn smoke_credentials(
             .provider
             .as_ref()
             .ok_or("smoke requires explicit provider")?;
-        let name = c.endpoint_env.as_deref().unwrap_or(&p.base_url_env);
+        let name = c
+            .endpoint_env
+            .as_deref()
+            .unwrap_or_else(|| evaluation_env(&p.base_url_env, c.model.model.as_deref()));
         let base = variable(name).ok_or_else(|| format!("missing {name}"))?;
         if Some(&base) != c.model.base.as_ref() {
             return Err("smoke endpoint changed after planning".into());
         }
         let key = if let Some(name) = &p.api_key_env {
+            let name = evaluation_env(name, c.model.model.as_deref());
             variable(name).ok_or_else(|| format!("missing {name}"))?
         } else {
             String::new()
@@ -3869,11 +3911,58 @@ impl ProviderCircuit {
         self.error = key;
     }
     fn open(&self) -> bool {
-        self.consecutive >= 3
+        self.consecutive >= 3 || self.error.as_deref() == Some(NATIVE_STOP)
     }
 }
 type ProviderCircuits = std::collections::BTreeMap<String, ProviderCircuit>;
+const NATIVE_STOP: &str = "anthropic_native_failure; separate approval required";
 fn provider_circuits(cases: &[Case]) -> Result<ProviderCircuits, String> {
+    provider_circuits_with_native_stop(cases, false)
+}
+fn provider_circuits_with_native_stop(
+    cases: &[Case],
+    native_stop: bool,
+) -> Result<ProviderCircuits, String> {
+    let mut circuits = load_provider_circuits(cases)?;
+    if native_stop {
+        // Reconstruct the stop after a crash between recording and circuit persistence.
+        for case in cases.iter().filter(|c| native_anthropic(c)) {
+            let failed = match &case.replay {
+                Replay::Failed(_) => true,
+                Replay::Output(text) => {
+                    native_output_failed(&score(&case.stage, &case.sample, Some(text)))
+                }
+                _ => false,
+            };
+            if failed {
+                stop_native(&mut circuits, &case.model.label);
+            }
+        }
+    }
+    Ok(circuits)
+}
+fn native_anthropic(case: &Case) -> bool {
+    case.provider.as_ref().is_some_and(|p| {
+        p.protocol == ProviderProtocol::AnthropicMessages
+            && p.structured_mode == StructuredMode::NativeSchema
+    })
+}
+fn native_output_failed(row: &Value) -> bool {
+    row["status"] == "调用失败"
+        || items(&row["fields"])
+            .iter()
+            .any(|f| f["category"] == "contract" && f["passed"] == false)
+}
+fn stop_native(circuits: &mut ProviderCircuits, id: &str) {
+    circuits.insert(
+        id.into(),
+        ProviderCircuit {
+            error: Some(NATIVE_STOP.into()),
+            consecutive: 1,
+        },
+    );
+}
+fn load_provider_circuits(cases: &[Case]) -> Result<ProviderCircuits, String> {
     let Some(root) = campaign_root(cases)? else {
         return Ok(Default::default());
     };
@@ -3913,7 +4002,14 @@ fn circuit_blocks(case: &Case, circuits: &ProviderCircuits) -> bool {
 }
 
 fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
-    let circuits = provider_circuits(cases)?;
+    preflight_with_native_stop(cases, limit, false)
+}
+fn preflight_with_native_stop(
+    cases: &[Case],
+    limit: Option<usize>,
+    native_stop: bool,
+) -> Result<usize, String> {
+    let circuits = provider_circuits_with_native_stop(cases, native_stop)?;
     let needed = cases
         .iter()
         .filter(|c| {
@@ -4093,7 +4189,23 @@ fn evaluate_cases(
     limit: Option<usize>,
     send: &mut dyn FnMut(&Case) -> Result<Value, String>,
 ) -> Result<Value, String> {
-    let mut planned = preflight(cases, limit)?;
+    evaluate_cases_with_native_stop(cases, limit, send, false)
+}
+fn evaluate_cases_with_native_stop(
+    cases: &[Case],
+    limit: Option<usize>,
+    send: &mut dyn FnMut(&Case) -> Result<Value, String>,
+    native_stop: bool,
+) -> Result<Value, String> {
+    let recall_ledger = if cases
+        .iter()
+        .any(|c| matches!(c.stage.as_str(), "r1" | "r4"))
+    {
+        recall_review::ledger()?
+    } else {
+        Value::Null
+    };
+    let mut planned = preflight_with_native_stop(cases, limit, native_stop)?;
     // The OS releases this lock on exit/crash; all arms share one fixed ledger.
     let _trial_lock = if planned > 0 {
         w3_trial_root(cases)?.map(w3_trial_lock).transpose()?
@@ -4101,7 +4213,7 @@ fn evaluate_cases(
         None
     };
     if _trial_lock.is_some() {
-        planned = preflight(cases, limit)?;
+        planned = preflight_with_native_stop(cases, limit, native_stop)?;
     }
     let _campaign_lock = if planned > 0 {
         campaign_root(cases)?.map(w3_trial_lock).transpose()?
@@ -4109,7 +4221,7 @@ fn evaluate_cases(
         None
     };
     if _campaign_lock.is_some() {
-        planned = preflight(cases, limit)?;
+        planned = preflight_with_native_stop(cases, limit, native_stop)?;
         let root = campaign_root(cases)?.unwrap();
         let path = root.join("authorization.json");
         if !path.exists() {
@@ -4119,7 +4231,7 @@ fn evaluate_cases(
             )?;
         }
     }
-    let mut circuits = provider_circuits(cases)?;
+    let mut circuits = provider_circuits_with_native_stop(cases, native_stop)?;
     let mut sent = 0;
     let mut results = Vec::new();
     for case in cases {
@@ -4172,6 +4284,9 @@ fn evaluate_cases(
                     .entry(case.model.label.clone())
                     .or_default()
                     .observe(&envelope);
+                if native_stop && native_anthropic(case) && envelope["status"] != "completed" {
+                    stop_native(&mut circuits, &case.model.label);
+                }
                 persist_provider_circuits(cases, &circuits)?;
                 let pending_log = if let Some(path) = attempt {
                     let mut entry = json!({"state":"responded","request":case_fingerprint(case),
@@ -4234,6 +4349,10 @@ fn evaluate_cases(
                         )
                     }
                 };
+                if native_stop && native_anthropic(case) && native_output_failed(&scored) {
+                    stop_native(&mut circuits, &case.model.label);
+                    persist_provider_circuits(cases, &circuits)?;
+                }
                 if let Some((path, entry)) = pending_log {
                     m15_write_json(&path, &entry)?;
                 }
@@ -4268,6 +4387,7 @@ fn evaluate_cases(
             result["structured_mode"] = json!(provider.structured_mode);
         }
         w3_trial_metadata(&mut result, case);
+        recall_review::apply(case, &mut result, &recall_ledger);
         results.push(result);
     }
     let summary = stage_summaries(&results, cases);
@@ -4293,6 +4413,7 @@ fn evaluate_cases(
                 "context_unproven":results.iter().filter(|r|r["error"]=="model_context_unproven").count(),
                 "total":results.iter().filter(|r|r["status"]=="发送前拒绝").count()},
             "raw_summary":stage_summaries(&raw_results,cases),"raw_splits":split_reports(&raw_results),
+            "review_summary":recall_review::summary(&results),
             "summary":summary,"splits":split_reports(&results),"per_sample":per_sample(&results),"results":results}),
     )
 }
@@ -4429,6 +4550,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_RECALL_COMPARE").is_some() {
+        recall_compare::run_from_env().unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_AF216").is_some() {
         af216::run().unwrap();
         return;
@@ -4518,19 +4643,21 @@ fn write_stage_eval_suite() {
         let base = model
             .base
             .as_ref()
-            .expect("EVAL_RECORD requires EVAL_BASE_URL or DEEPSEEK_BASE_URL");
+            .expect("EVAL_RECORD requires EVAL_BASE_URL or HUOSHAN_DEEPSEEK_BASE_URL");
         let key = std::env::var("EVAL_API_KEY")
             .or_else(|_| {
                 if let Some(provider) = provider {
                     provider
                         .api_key_env
                         .as_ref()
-                        .map_or(Ok(String::new()), |name| std::env::var(name))
+                        .map_or(Ok(String::new()), |name| {
+                            std::env::var(evaluation_env(name, model.model.as_deref()))
+                        })
                 } else {
-                    std::env::var("DEEPSEEK_API_KEY")
+                    std::env::var("HUOSHAN_DEEPSEEK_API_KEY")
                 }
             })
-            .expect("EVAL_RECORD requires EVAL_API_KEY or DEEPSEEK_API_KEY");
+            .expect("EVAL_RECORD requires EVAL_API_KEY or HUOSHAN_DEEPSEEK_API_KEY");
         assert!(
             !key.trim().is_empty()
                 || provider.is_some_and(|p| p.protocol == ProviderProtocol::OpenaiChat),
@@ -4806,7 +4933,7 @@ fn w3_comparison_from_env() -> Result<Vec<Case>, String> {
     w3_comparison_options()?;
     let base = std::env::var("EVAL_BASE_URL")
         .ok()
-        .or_else(|| std::env::var("DEEPSEEK_BASE_URL").ok())
+        .or_else(|| std::env::var("HUOSHAN_DEEPSEEK_BASE_URL").ok())
         .map(|s| s.trim_end_matches('/').to_owned());
     w3_comparison_plan(&w3_comparison_root(), base)
 }
@@ -4974,7 +5101,7 @@ fn w3_effort_from_env() -> Result<Vec<Case>, String> {
     w3_trial_options("AF101")?;
     let base = std::env::var("EVAL_BASE_URL")
         .ok()
-        .or_else(|| std::env::var("DEEPSEEK_BASE_URL").ok())
+        .or_else(|| std::env::var("HUOSHAN_DEEPSEEK_BASE_URL").ok())
         .map(|s| s.trim_end_matches('/').to_owned());
     w3_effort_plan(&w3_effort_root(), base)
 }
@@ -6127,6 +6254,10 @@ fn stage_and_prefix_filters_skip_non_w4_code_paths() {
 
 #[test]
 fn dry_run_plan() {
+    if std::env::var_os("EVAL_RECALL_COMPARE").is_some() {
+        recall_compare::dry_run_from_env().unwrap();
+        return;
+    }
     let stages = stages_from_env();
     let prefix = std::env::var("EVAL_CASES").unwrap_or_default();
     let root = recording_root();
@@ -6892,7 +7023,8 @@ fn fake_r1(sample: &Value) -> Value {
             value.clone()
         }
     }
-    let e = &sample["expect"];
+    let branch = expectation_branches(&sample["expect"]);
+    let e = &branch[0];
     let subject = pick(&e["subject"]);
     let subject = if subject.is_string() {
         json!({"entity_id":subject})
@@ -6901,16 +7033,19 @@ fn fake_r1(sample: &Value) -> Value {
     } else {
         subject
     };
-    let time = if e["time"].is_null() {
+    let selected_time = pick(&e["time"]);
+    let time = if selected_time.is_null() {
         Value::Null
     } else {
-        json!({"role":"event","quote":{"text":e["time"]["quote"]},"interp":e["time"]["interp"],"anchor":"said_on"})
+        json!({"role":"event","quote":{"text":selected_time["quote"]},"interp":selected_time["interp"],"anchor":"said_on"})
     };
     json!({"need":pick(&e["need"]),"current_evidence":pick(&e["current_evidence"]),"type":pick(&e["type"]),"subject":subject,
         "relation":"stage query relation","conditions":items(&e["conditions"]).iter().map(|q|json!({"quote":{"text":pick(q)},"resolved":true})).collect::<Vec<_>>(),
         "time":time,"plan":{"op":pick(&e["plan.op"]),"filter":{"relation":pick(&e["plan.filter.relation"]),"time":null},"unit":if e.get("unit").is_some(){pick(&e["unit"])}else{Value::Null}}})
 }
 fn fake_r4(sample: &Value) -> Value {
+    let mut sample = sample.clone();
+    sample["expect"] = expectation_branches(&sample["expect"]).remove(0);
     let f = recall_adapter::R4Input::new(&sample["input"]).unwrap();
     let mut facts = vec![];
     for e in items(&sample["expect"]["facts"]) {
@@ -6924,7 +7059,23 @@ fn fake_r4(sample: &Value) -> Value {
         }).collect();
         let mut fact = json!({"statement":basis[0]["quote"]["text"],"evidence":basis,"record_ids":e["record_ids"],"polarity":"affirm","strength":null,
             "uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[]});
+        if let Some(RecordView::Current(r)) = f
+            .evidence
+            .records
+            .iter()
+            .find(|r| e["record_ids"] == json!([r.id().0]))
+        {
+            let candidate = serde_json::to_value(&r.candidate).unwrap();
+            fact["statement"] = candidate["value"]["text"].clone();
+            fact["times"] = candidate["times"].clone();
+        }
         for (key, v) in e["must"].as_object().unwrap() {
+            if key == "time_quotes" || key == "time_kinds" {
+                if items(&fact["times"]).is_empty() {
+                    fact["times"] = json!(items(&e["must"]["time_quotes"]).iter().map(|q| json!({"role":"event","quote":{"text":q},"interp":{"kind":"unknown"},"anchor":"said_on"})).collect::<Vec<_>>());
+                }
+                continue;
+            }
             let v = if v.is_array() && key != "conditions" {
                 &v[0]
             } else {
@@ -6950,7 +7101,7 @@ fn fake_r4(sample: &Value) -> Value {
         let mut inputs:Vec<_>=f.evidence.records.iter().enumerate().map(|(i,r)|{
             let evidence=match r {RecordView::Current(r)=>r.evidence.clone(),RecordView::Legacy(r)=>r.evidence.clone()};
             json!({"id":r.id().0.to_string(),"evidence":evidence,"quantity":null,"date":null,"date_source":null,
-                "event_group":if op=="count" && expected["distinct_groups"]==2 && i<2 {"same".to_owned()}else{format!("g{i}")}})
+                "event_group":if let Some(group) = items(&expected["groups"]).iter().position(|g| evidence.iter().any(|ev| items(g).contains(&json!(match &ev.source {SourceRef::Stored{source_id}=>source_id.clone(),_=>String::new()})))) {format!("g{group}")}else if op=="count" && expected["distinct_groups"]==2 && i<2 {"same".to_owned()}else{format!("g{i}")}})
         }).collect();
         if op == "sum" {
             for (i, item) in inputs.iter_mut().enumerate() {
@@ -6986,7 +7137,7 @@ fn fake_r4(sample: &Value) -> Value {
             _ => json!([]),
         };
         compute = json!({"op":op,"items":inputs,"operands":operands,"unit":if op=="elapsed"{json!("day")}else{expected["unit"].clone()},
-            "coverage":if expected.get("coverage").is_some(){expected["coverage"][0].clone()}else{json!("complete")}});
+            "coverage":if expected.get("coverage").is_some(){if expected["coverage"].is_array(){expected["coverage"][0].clone()}else{expected["coverage"].clone()}}else{json!("complete")}});
     }
     json!({"verdict":if sample["expect"]["verdict"].is_array(){sample["expect"]["verdict"][0].clone()}else{sample["expect"]["verdict"].clone()},"facts":facts,"compute":compute})
 }
@@ -7262,11 +7413,11 @@ fn r4_assembly_reports_strict_raw_and_final_scores_and_replays_identically() {
 fn recall_stage_recording_replay_splits_and_clock_fingerprints_are_complete() {
     let temp = TempRecords::new();
     let selected = selected("r1,r4", "").unwrap();
-    assert_eq!(selected.len(), 40);
+    assert_eq!(selected.len(), 44);
     let cases = plan(selected.clone(), &temp.0).unwrap();
     assert_eq!(preflight(&cases, None).unwrap(), 0);
-    assert!(preflight(&cases, Some(39)).is_err());
-    let report = evaluate(&cases, Some(40), &mut |request| {
+    assert!(preflight(&cases, Some(43)).is_err());
+    let report = evaluate(&cases, Some(44), &mut |request| {
         let case = cases.iter().find(|c| c.request == *request).unwrap();
         Ok(fake_envelope(if case.stage == "r1" {
             fake_r1(&case.sample)
@@ -7276,7 +7427,16 @@ fn recall_stage_recording_replay_splits_and_clock_fingerprints_are_complete() {
     })
     .unwrap();
     for row in items(&report["splits"]) {
-        assert_eq!(row["total"], if row["split"] == "dev" { 14 } else { 6 });
+        assert_eq!(
+            row["total"],
+            if row["split"] == "dev" {
+                14
+            } else if row["stage"] == "r4" {
+                10
+            } else {
+                6
+            }
+        );
         assert_eq!(row["passed"], row["total"]);
     }
     let replay = evaluate(&plan(selected, &temp.0).unwrap(), None, &mut |_| {
@@ -7332,7 +7492,7 @@ fn reasoning_effort_changes_all_stage_requests_fingerprints_and_recording_paths(
     };
     let original = plan_repeated(chosen.clone(), &temp.0, &medium, 2).unwrap();
     let changed = plan_repeated(chosen, &temp.0, &low, 2).unwrap();
-    assert_eq!(changed.len(), 80);
+    assert_eq!(changed.len(), 88);
     assert_eq!(
         changed
             .iter()
@@ -7343,8 +7503,8 @@ fn reasoning_effort_changes_all_stage_requests_fingerprints_and_recording_paths(
     assert!(!original[0].path.to_string_lossy().contains("reasoning-"));
     assert!(changed[0].path.to_string_lossy().contains("reasoning-low"));
     assert_ne!(original[0].path, changed[0].path);
-    assert_eq!(preflight(&changed, Some(80)).unwrap(), 80);
-    assert!(preflight(&changed, Some(79)).is_err());
+    assert_eq!(preflight(&changed, Some(88)).unwrap(), 88);
+    assert!(preflight(&changed, Some(87)).is_err());
 }
 
 #[test]
@@ -7853,11 +8013,11 @@ fn smoke_fixture_profiles() -> Vec<SmokeProfile> {
 fn smoke_fixture_variable(name: &str) -> Option<String> {
     Some(
         match name {
-            "DEEPSEEK_BASE_URL" => "https://ds.fixture.invalid/v1",
+            "HUOSHAN_DEEPSEEK_BASE_URL" => "https://ds.fixture.invalid/v1",
             "OPENAI_BASE_URL" => "https://gpt.fixture.invalid/v1",
             "ANTHROPIC_BASE_URL" => "https://opus.fixture.invalid",
             "QWEN_LOCAL_BASE_URL" => "http://127.0.0.1:11434/v1",
-            "DEEPSEEK_API_KEY" => "fixture-ds-key",
+            "HUOSHAN_DEEPSEEK_API_KEY" => "fixture-ds-key",
             "OPENAI_API_KEY" => "fixture-gpt-key",
             "ANTHROPIC_API_KEY" => "fixture-opus-key",
             _ => panic!("unexpected credential lookup: {name}"),
@@ -10900,4 +11060,130 @@ fn af166_formal_dispatch_rejects_before_credentials_when_prerequisites_missing()
         );
         assert!(!temp.0.exists());
     }
+}
+
+#[test]
+fn af227_recall_whole_branches_prohibitions_and_mechanical_failures_do_not_mix() {
+    let r1 = samples("r1")
+        .into_iter()
+        .find(|s| s["id"] == "r1_12_statement_plus_question")
+        .unwrap();
+    for need in ["judge", "context_only"] {
+        let mut good = fake_r1(&r1);
+        good["need"] = json!(need);
+        assert_eq!(score("r1", &r1, Some(&good.to_string()))["status"], "通过");
+        good["current_evidence"] = json!("query_only");
+        assert_eq!(score("r1", &r1, Some(&good.to_string()))["status"], "失败");
+    }
+    let mut sample = samples("r4").remove(0);
+    let mut a = sample["expect"].clone();
+    a["must_not"] = json!(["branch A semantic prohibition"]);
+    let mut b = a.clone();
+    b["verdict"] = json!("insufficient");
+    b["facts"][0]["must"]["current"] = json!("unknown");
+    b["must_not"] = json!(["branch B semantic prohibition"]);
+    sample["expect"] = json!({"alternatives":[a,b]});
+    let mut output = fake_r4(&sample);
+    assert_eq!(
+        score("r4", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["verdict"] = json!("insufficient");
+    assert_eq!(
+        score("r4", &sample, Some(&output.to_string()))["status"],
+        "失败",
+        "branch fields must not cross-pair"
+    );
+    output["facts"][0]["current"] = json!("unknown");
+    let report = score("r4", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "通过");
+    assert_eq!(report["must_not"], json!(["branch B semantic prohibition"]));
+    output["facts"][0]["evidence"][0]["quote"]["text"] = json!("not in source");
+    assert_eq!(
+        score("r4", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    let residence = samples("r4")
+        .into_iter()
+        .find(|s| s["id"] == "r4_07_current_message_assertion")
+        .unwrap();
+    let mut current = fake_r4(&residence);
+    current["facts"][0]["supersedes_record_ids"] = json!([7]);
+    assert_eq!(
+        score("r4", &residence, Some(&current.to_string()))["status"],
+        "失败"
+    );
+    let request = stage_request("r4", &sample).unwrap();
+    sample["expect"] = json!({"verdict":"conflict","facts":[],"compute":null});
+    sample["label_revision"] = json!({"decision":"another label"});
+    assert_eq!(request, stage_request("r4", &sample).unwrap());
+}
+
+#[test]
+fn af227_r4_computations_check_group_identity_operands_precision_and_results() {
+    for prefix in ["r4_14", "r4_15", "r4_16", "r4_18", "r4_19"] {
+        let sample = samples("r4")
+            .into_iter()
+            .find(|s| s["id"].as_str().unwrap().starts_with(prefix))
+            .unwrap();
+        let mut output = fake_r4(&sample);
+        assert_eq!(
+            score("r4", &sample, Some(&output.to_string()))["status"],
+            "通过",
+            "{prefix}"
+        );
+        if prefix == "r4_16" {
+            output["compute"]["unit"] = json!("week");
+        } else if prefix == "r4_18" {
+            output["compute"]["operands"]
+                .as_array_mut()
+                .unwrap()
+                .reverse();
+        } else {
+            output["compute"]["items"][0]["event_group"] = json!("wrong-group");
+            if prefix != "r4_14" {
+                output["compute"]["items"][1]["event_group"] = json!("wrong-group");
+            }
+        }
+        assert_eq!(
+            score("r4", &sample, Some(&output.to_string()))["status"],
+            "失败",
+            "{prefix}"
+        );
+    }
+    let sample = samples("r4")
+        .into_iter()
+        .find(|s| s["id"] == "r4_14_count_dedupe")
+        .unwrap();
+    let mut merged = fake_r4(&sample);
+    let duplicate = merged["compute"]["items"].as_array_mut().unwrap().remove(1);
+    merged["compute"]["items"][0]["evidence"]
+        .as_array_mut()
+        .unwrap()
+        .extend(items(&duplicate["evidence"]).iter().cloned());
+    assert_eq!(
+        score("r4", &sample, Some(&merged.to_string()))["status"],
+        "通过"
+    );
+    let sample = samples("r4")
+        .into_iter()
+        .find(|s| s["id"] == "r4_17_elapsed_month_precision")
+        .unwrap();
+    let mut output = fake_r4(&sample);
+    output["facts"] = json!([]);
+    assert_eq!(
+        score("r4", &sample, Some(&output.to_string()))["status"],
+        "失败",
+        "supported must retain the coarse time fact"
+    );
+    output["verdict"] = json!("insufficient");
+    assert_eq!(
+        score("r4", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["compute"]["items"][0]["date"]["interp"] = json!({"kind":"date","date":"2026-07-01"});
+    assert_eq!(
+        score("r4", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
 }

@@ -1,0 +1,223 @@
+{
+ "id": "r4_22_negative_sibling_spans",
+ "contract": "r4.v7",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "同句否定/肯定断言身份分别保留",
+ "input": {
+  "format": "recall.full@1",
+  "owner_id": "eval",
+  "request": {
+   "request_id": "stage-eval",
+   "query": "我用什么？是否使用银匙？",
+   "context": [],
+   "task_id": null,
+   "at": 1790956800
+  },
+  "plan": {
+   "need": "judge",
+   "current_evidence": "query_only",
+   "type": "single",
+   "subject": {
+    "entity_id": "self"
+   },
+   "relation": "fact",
+   "conditions": [],
+   "time": null,
+   "plan": {
+    "op": "lookup",
+    "filter": {
+     "relation": "fact",
+     "time": null
+    },
+    "unit": null
+   }
+  },
+  "entities": [
+   {
+    "id": "self",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "本人",
+    "aliases": []
+   }
+  ],
+  "relations": [
+   "fact"
+  ],
+  "subject_ids": null,
+  "utc_offset_seconds": 28800,
+  "sources": {
+   "n2": {
+    "text": "我不使用银匙，我使用陶杯。",
+    "said_on": "2026-10-01"
+   }
+  },
+  "evidence": {
+   "current_message": {
+    "source_id": null,
+    "text": "我用什么？是否使用银匙？",
+    "said_on": "2026-10-03",
+    "sequence": null,
+    "enrichment": "not_stored",
+    "memory_requests": []
+   },
+   "records": [
+    {
+     "format": "current",
+     "id": 201,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我不使用银匙",
+       "quote": {
+        "text": "我不使用银匙"
+       }
+      },
+      "sentence": {
+       "text": "我不使用银匙，我使用陶杯。"
+      },
+      "polarity": "negate",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "n2"
+       },
+       "quote": {
+        "text": "我不使用银匙，我使用陶杯。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-10-01",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    },
+    {
+     "format": "current",
+     "id": 202,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我使用陶杯",
+       "quote": {
+        "text": "我使用陶杯"
+       }
+      },
+      "sentence": {
+       "text": "我不使用银匙，我使用陶杯。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "n2"
+       },
+       "quote": {
+        "text": "我不使用银匙，我使用陶杯。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-10-01",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    }
+   ],
+   "raw": [],
+   "relations": [],
+   "completeness": {
+    "retrieval_truncated": false,
+    "pending_related_sources": 0,
+    "pending_updates": 0,
+    "enrichment_gaps": 0,
+    "plan_complete": true
+   }
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     201
+    ],
+    "sources": [
+     "n2"
+    ],
+    "must": {
+     "polarity": "negate"
+    }
+   },
+   {
+    "record_ids": [
+     202
+    ],
+    "sources": [
+     "n2"
+    ],
+    "must": {
+     "polarity": "affirm"
+    }
+   }
+  ],
+  "compute": null,
+  "must_not": [
+   "银匙说成肯定使用",
+   "交换兄弟记录 ID",
+   "借同句证据合并不同断言身份"
+  ]
+ },
+ "must_not": [
+  "银匙说成肯定使用",
+  "交换兄弟记录 ID",
+  "借同句证据合并不同断言身份"
+ ],
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ },
+ "note": "AF227 虚构完整输入；语义检查需人工确认，自动字段通过不等于完整语义通过。"
+}

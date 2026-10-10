@@ -120,8 +120,8 @@ pub(super) fn run() -> Result<(), String> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-negative-af216/chain");
     let model =
         std::env::var("DEEPSEEK_PRO_MODEL").unwrap_or_else(|_| "ep-af216-unresolved-pro".into());
-    let base =
-        std::env::var("DEEPSEEK_BASE_URL").unwrap_or_else(|_| "https://af216.invalid/v1".into());
+    let base = std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
+        .unwrap_or_else(|_| "https://af216.invalid/v1".into());
     let trial = af198::plan_scenes(&root, &model, &base, "af216-pro-low", "AF216", scenes())?;
     let limit = limit()?;
     if std::env::var("EVAL_DRY_RUN").as_deref() == Ok("1") {
@@ -164,9 +164,10 @@ fn live(limit: Option<usize>, cap: usize, model: &str, base: &str) -> Result<Liv
     {
         return Err("AF216 live gate and real DEEPSEEK model/base required; nothing sent".into());
     }
-    let key = std::env::var("DEEPSEEK_API_KEY").map_err(|_| "missing DEEPSEEK_API_KEY")?;
+    let key = std::env::var("HUOSHAN_DEEPSEEK_API_KEY")
+        .map_err(|_| "missing HUOSHAN_DEEPSEEK_API_KEY")?;
     if key.trim().is_empty() {
-        return Err("missing DEEPSEEK_API_KEY".into());
+        return Err("missing HUOSHAN_DEEPSEEK_API_KEY".into());
     }
     Ok(Some((
         reqwest::blocking::Client::builder()

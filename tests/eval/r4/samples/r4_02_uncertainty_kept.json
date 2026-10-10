@@ -5,34 +5,130 @@
  "split": "dev",
  "focus": "限定语必须保留到 facts",
  "input": {
-  "query": "我对什么过敏？",
-  "at": "2026-10-03",
-  "current_evidence": "query_only",
-  "plan": {
-   "type": "aggregate",
-   "op": "list",
-   "relation": "allergic_to"
+  "format": "recall.full@1",
+  "owner_id": "eval",
+  "request": {
+   "request_id": "stage-eval",
+   "query": "我对什么过敏？",
+   "context": [],
+   "task_id": null,
+   "at": 1790956800
   },
-  "records": [
+  "plan": {
+   "need": "judge",
+   "current_evidence": "query_only",
+   "type": "aggregate",
+   "subject": {
+    "entity_id": "self"
+   },
+   "relation": "fact",
+   "conditions": [],
+   "time": null,
+   "plan": {
+    "op": "list",
+    "filter": {
+     "relation": "fact",
+     "time": null
+    },
+    "unit": null
+   }
+  },
+  "entities": [
    {
-    "id": 2,
-    "sentence": "我可能对花生过敏。",
-    "said_on": "2026-04-02",
-    "source": "s-2",
-    "status": "active",
-    "ended": "not_ended",
-    "termination": null,
-    "update": "judged",
-    "legacy_gaps": null,
-    "conditions": [],
-    "times": []
+    "id": "self",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "本人",
+    "aliases": []
    }
   ],
-  "raw": [],
-  "relations": [],
-  "completeness": {
-   "retrieval_truncated": false,
-   "plan_complete": true
+  "relations": [
+   "fact"
+  ],
+  "subject_ids": null,
+  "utc_offset_seconds": 28800,
+  "sources": {
+   "s-2": {
+    "text": "我可能对花生过敏。",
+    "said_on": "2026-04-02"
+   }
+  },
+  "evidence": {
+   "current_message": {
+    "source_id": null,
+    "text": "我对什么过敏？",
+    "said_on": "2026-10-03",
+    "sequence": null,
+    "enrichment": "not_stored",
+    "memory_requests": []
+   },
+   "records": [
+    {
+     "format": "current",
+     "id": 2,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我可能对花生过敏。",
+       "quote": {
+        "text": "我可能对花生过敏。"
+       }
+      },
+      "sentence": {
+       "text": "我可能对花生过敏。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": {
+       "quote": {
+        "text": "可能"
+       },
+       "resolved": true
+      },
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "s-2"
+       },
+       "quote": {
+        "text": "我可能对花生过敏。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-04-02",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    }
+   ],
+   "raw": [],
+   "relations": [],
+   "completeness": {
+    "retrieval_truncated": false,
+    "pending_related_sources": 0,
+    "pending_updates": 0,
+    "enrichment_gaps": 0,
+    "plan_complete": true
+   }
   }
  },
  "expect": {
@@ -56,5 +152,9 @@
   "statement 写成确定过敏",
   "丢掉 uncertainty"
  ],
- "note": null
+ "note": null,
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

@@ -59,23 +59,50 @@
   "task_id": null
  },
  "expect": {
-  "need": "judge",
-  "current_evidence": "assertion_present",
-  "type": [
-   "single",
-   "open"
-  ],
-  "subject": "self",
-  "conditions": [],
-  "time": null,
-  "plan.op": [
-   "lookup",
-   "list"
-  ],
-  "plan.filter.relation": [
-   "lives_in",
-   null
+  "alternatives": [
+   {
+    "need": "judge",
+    "current_evidence": "assertion_present",
+    "type": [
+     "single",
+     "open"
+    ],
+    "subject": "self",
+    "conditions": [],
+    "time": null,
+    "plan.op": [
+     "lookup",
+     "list"
+    ],
+    "plan.filter.relation": [
+     "lives_in",
+     null
+    ]
+   },
+   {
+    "need": "context_only",
+    "current_evidence": "assertion_present",
+    "type": [
+     "single",
+     "open"
+    ],
+    "subject": "self",
+    "conditions": [],
+    "time": null,
+    "plan.op": [
+     "lookup",
+     "list"
+    ],
+    "plan.filter.relation": [
+     "lives_in",
+     null
+    ]
+   }
   ]
  },
- "note": "本轮陈述可能更新旧住址，需要 R4 判断新旧关系，故 need=judge。"
+ "note": "AF227：推荐可只需上下文，也可核对新旧陈述；两支均保留 assertion_present/self。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

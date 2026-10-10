@@ -1,0 +1,414 @@
+{
+ "id": "r4_21_plan_booking_not_execution",
+ "contract": "r4.v7",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "计划修改/取消不证明执行或退票",
+ "input": {
+  "format": "recall.full@1",
+  "owner_id": "eval",
+  "request": {
+   "request_id": "stage-eval",
+   "query": "我去过青汀吗？原计划和车票分别是什么状态？",
+   "context": [],
+   "task_id": null,
+   "at": 1791648000
+  },
+  "plan": {
+   "need": "judge",
+   "current_evidence": "query_only",
+   "type": "open",
+   "subject": {
+    "entity_id": "self"
+   },
+   "relation": "fact",
+   "conditions": [],
+   "time": null,
+   "plan": {
+    "op": "list",
+    "filter": {
+     "relation": "fact",
+     "time": null
+    },
+    "unit": null
+   }
+  },
+  "entities": [
+   {
+    "id": "self",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "本人",
+    "aliases": []
+   }
+  ],
+  "relations": [
+   "fact"
+  ],
+  "subject_ids": null,
+  "utc_offset_seconds": 28800,
+  "sources": {
+   "p1": {
+    "text": "我原计划2026年10月10日去青汀。",
+    "said_on": "2026-10-01"
+   },
+   "p2": {
+    "text": "我已订好2026年10月10日去青汀的车票。",
+    "said_on": "2026-10-02"
+   },
+   "p3": {
+    "text": "我取消了2026年10月10日去青汀的出行计划，车票还没有退。",
+    "said_on": "2026-10-04"
+   }
+  },
+  "evidence": {
+   "current_message": {
+    "source_id": null,
+    "text": "我去过青汀吗？原计划和车票分别是什么状态？",
+    "said_on": "2026-10-11",
+    "sequence": null,
+    "enrichment": "not_stored",
+    "memory_requests": []
+   },
+   "records": [
+    {
+     "format": "current",
+     "id": 101,
+     "stored_status": "superseded",
+     "termination_reason": "StateChanged",
+     "ended": "known",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "plan",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我原计划2026年10月10日去青汀。",
+       "quote": {
+        "text": "我原计划2026年10月10日去青汀。"
+       }
+      },
+      "sentence": {
+       "text": "我原计划2026年10月10日去青汀。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": "event",
+        "quote": {
+         "text": "2026年10月10日"
+        },
+        "interp": {
+         "kind": "date",
+         "date": "2026-10-10"
+        },
+        "anchor": "said_on"
+       }
+      ]
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "p1"
+       },
+       "quote": {
+        "text": "我原计划2026年10月10日去青汀。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-10-01",
+     "time_resolutions": [
+      {
+       "status": "resolved",
+       "start": 1791561600,
+       "end_exclusive": 1791648000,
+       "precision": "day"
+      }
+     ],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    },
+    {
+     "format": "current",
+     "id": 102,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我已订好2026年10月10日去青汀的车票。",
+       "quote": {
+        "text": "我已订好2026年10月10日去青汀的车票。"
+       }
+      },
+      "sentence": {
+       "text": "我已订好2026年10月10日去青汀的车票。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": "event",
+        "quote": {
+         "text": "2026年10月10日"
+        },
+        "interp": {
+         "kind": "date",
+         "date": "2026-10-10"
+        },
+        "anchor": "said_on"
+       }
+      ]
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "p2"
+       },
+       "quote": {
+        "text": "我已订好2026年10月10日去青汀的车票。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-10-02",
+     "time_resolutions": [
+      {
+       "status": "resolved",
+       "start": 1791561600,
+       "end_exclusive": 1791648000,
+       "precision": "day"
+      }
+     ],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    },
+    {
+     "format": "current",
+     "id": 103,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "plan",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我取消了2026年10月10日去青汀的出行计划",
+       "quote": {
+        "text": "我取消了2026年10月10日去青汀的出行计划"
+       }
+      },
+      "sentence": {
+       "text": "我取消了2026年10月10日去青汀的出行计划，车票还没有退。"
+      },
+      "polarity": "negate",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": "event",
+        "quote": {
+         "text": "2026年10月10日"
+        },
+        "interp": {
+         "kind": "date",
+         "date": "2026-10-10"
+        },
+        "anchor": "said_on"
+       }
+      ]
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "p3"
+       },
+       "quote": {
+        "text": "我取消了2026年10月10日去青汀的出行计划，车票还没有退。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-10-04",
+     "time_resolutions": [
+      {
+       "status": "resolved",
+       "start": 1791561600,
+       "end_exclusive": 1791648000,
+       "precision": "day"
+      }
+     ],
+     "history": [
+      101
+     ],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    },
+    {
+     "format": "current",
+     "id": 104,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "车票还没有退",
+       "quote": {
+        "text": "车票还没有退"
+       }
+      },
+      "sentence": {
+       "text": "我取消了2026年10月10日去青汀的出行计划，车票还没有退。"
+      },
+      "polarity": "negate",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": []
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "p3"
+       },
+       "quote": {
+        "text": "我取消了2026年10月10日去青汀的出行计划，车票还没有退。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": "2026-10-04",
+     "time_resolutions": [],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    }
+   ],
+   "raw": [],
+   "relations": [],
+   "completeness": {
+    "retrieval_truncated": false,
+    "pending_related_sources": 0,
+    "pending_updates": 0,
+    "enrichment_gaps": 0,
+    "plan_complete": true
+   }
+  }
+ },
+ "expect": {
+  "verdict": "insufficient",
+  "facts": [
+   {
+    "record_ids": [
+     101
+    ],
+    "sources": [
+     "p1"
+    ],
+    "must": {
+     "current": "no"
+    }
+   },
+   {
+    "record_ids": [
+     102
+    ],
+    "sources": [
+     "p2"
+    ],
+    "must": {}
+   },
+   {
+    "record_ids": [
+     103
+    ],
+    "sources": [
+     "p3"
+    ],
+    "must": {
+     "polarity": "negate"
+    }
+   },
+   {
+    "record_ids": [
+     104
+    ],
+    "sources": [
+     "p3"
+    ],
+    "must": {
+     "polarity": "negate"
+    }
+   }
+  ],
+  "compute": null,
+  "must_not": [
+   "计划或订票当作已去过",
+   "没有执行证据就断言没去过",
+   "取消计划自动推断退票",
+   "把旧计划说成已发生活动"
+  ]
+ },
+ "must_not": [
+  "计划或订票当作已去过",
+  "没有执行证据就断言没去过",
+  "取消计划自动推断退票",
+  "把旧计划说成已发生活动"
+ ],
+ "label_revision": {
+  "decision": "AF247",
+  "date": "2026-10-11"
+ },
+ "note": "AF247：保持 insufficient；问题包含是否实际去过，计划/订票/取消不能证明执行。记录103(plan)与104(user_statement)的 Candidate 均为 negate，表面肯定句式不能豁免方向或身份错误。"
+}
