@@ -1,0 +1,548 @@
+[
+  {
+    "id": "f01",
+    "af206": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF206 2026-10-10",
+    "input": {
+      "text": "我不使用铜勺，我使用木铲。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "p_31",
+          "names": [
+            "青团"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我不使用铜勺",
+          "sentence": "我不使用铜勺，我使用木铲。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我使用木铲",
+          "sentence": "我不使用铜勺，我使用木铲。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我不使用铜勺",
+          "sentence": "我不使用铜勺，我使用木铲。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我使用木铲",
+          "sentence": "我不使用铜勺，我使用木铲。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    }
+  },
+  {
+    "id": "f02",
+    "af206": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF206 2026-10-10",
+    "input": {
+      "text": "我收藏贝壳，我保养风铃。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "p_31",
+          "names": [
+            "青团"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我收藏贝壳",
+          "sentence": "我收藏贝壳，我保养风铃。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我保养风铃",
+          "sentence": "我收藏贝壳，我保养风铃。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我收藏贝壳",
+          "sentence": "我收藏贝壳，我保养风铃。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我保养风铃",
+          "sentence": "我收藏贝壳，我保养风铃。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    }
+  },
+  {
+    "id": "f03",
+    "af206": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF206 2026-10-10",
+    "input": {
+      "text": "如果天气合适，我可能去清湾划船，也可能去石岭露营。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "p_31",
+          "names": [
+            "青团"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我可能去清湾划船",
+          "sentence": "如果天气合适，我可能去清湾划船，也可能去石岭露营。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": "可能",
+          "conditions": [
+            "如果天气合适"
+          ],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "也可能去石岭露营",
+          "sentence": "如果天气合适，我可能去清湾划船，也可能去石岭露营。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": "可能",
+          "conditions": [
+            "如果天气合适"
+          ],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我可能去清湾划船",
+          "sentence": "如果天气合适，我可能去清湾划船，也可能去石岭露营。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": "可能",
+          "conditions": [
+            "如果天气合适"
+          ],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "也可能去石岭露营",
+          "sentence": "如果天气合适，我可能去清湾划船，也可能去石岭露营。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": "可能",
+          "conditions": [
+            "如果天气合适"
+          ],
+          "times": []
+        }
+      ],
+      "requests": []
+    }
+  },
+  {
+    "id": "f04",
+    "af206": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF206 2026-10-10",
+    "input": {
+      "text": "我收集木刻，青团练习口琴。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "p_31",
+          "names": [
+            "青团"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我收集木刻",
+          "sentence": "我收集木刻，青团练习口琴。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "p_31",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "青团练习口琴",
+          "sentence": "我收集木刻，青团练习口琴。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我收集木刻",
+          "sentence": "我收集木刻，青团练习口琴。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "p_31",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "青团练习口琴",
+          "sentence": "我收集木刻，青团练习口琴。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    }
+  },
+  {
+    "id": "f05",
+    "af206": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF206 2026-10-10",
+    "input": {
+      "text": "我使用瓷盘，不对，我使用竹盘。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "p_31",
+          "names": [
+            "青团"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我使用竹盘",
+          "sentence": "我使用瓷盘，不对，我使用竹盘。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我使用竹盘",
+          "sentence": "我使用瓷盘，不对，我使用竹盘。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    }
+  },
+  {
+    "id": "f06",
+    "af206": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF206 2026-10-10",
+    "input": {
+      "text": "我改用银色收纳盒，壁灯仍用原来的白色。",
+      "history": [
+        "我的收纳盒是蓝色的，壁灯是白色的。"
+      ],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        },
+        {
+          "id": "p_31",
+          "names": [
+            "青团"
+          ]
+        }
+      ],
+      "relations": [
+        "fact"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我改用银色收纳盒",
+          "sentence": "我改用银色收纳盒，壁灯仍用原来的白色。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "壁灯仍用原来的白色",
+          "sentence": "我改用银色收纳盒，壁灯仍用原来的白色。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我改用银色收纳盒",
+          "sentence": "我改用银色收纳盒，壁灯仍用原来的白色。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "壁灯仍用原来的白色",
+          "sentence": "我改用银色收纳盒，壁灯仍用原来的白色。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    }
+  }
+]

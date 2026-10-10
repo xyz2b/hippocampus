@@ -21,7 +21,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         String::from_utf8_lossy(&output.stderr)
     );
     let cases: Vec<Json> = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(cases.len(), 10);
+    assert_eq!(cases.len(), 11);
     for case in cases {
         let db = Db::new();
         let mut ctx = context();
@@ -70,7 +70,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         provider.client.transport = Some(Arc::new(move |request| {
             let body: Json =
                 serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-            if body["text"]["format"]["name"] == "w3_v3" {
+            if body["text"]["format"]["name"] == "w3_v4" {
                 let store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
                 assert!(
                     store
@@ -129,7 +129,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
             let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             assert!(input.get("model").is_none());
             assert_eq!(input["current_user_message"], case["text"]);
-            if request["text"]["format"]["name"] == "w3_v3" {
+            if request["text"]["format"]["name"] == "w3_v4" {
                 assert_eq!(
                     input["candidates"][0]["candidate"],
                     case["w1"]["candidates"][0]
@@ -321,7 +321,7 @@ fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
                 &models.w3,
                 effort,
                 ModelStage::W3,
-                "w3_v3",
+                "w3_v4",
                 W3_PROMPT,
                 json!({"fixture":true}),
                 w3_schema(),
@@ -377,7 +377,7 @@ fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
             &models.w3,
             ReasoningEffort::Low,
             ModelStage::W3,
-            "w3_v3",
+            "w3_v4",
             W3_PROMPT,
             json!({"fixture":true}),
             w3_schema(),
@@ -1956,7 +1956,7 @@ fn w3_for(upstream: &Json) -> Json {
 
 #[test]
 fn entity_registration_during_each_model_preserves_independent_candidates() {
-    for stage in ["w1_v3", "w3_v3", "w4_v4"] {
+    for stage in ["w1_v4", "w3_v4", "w4_v5"] {
         let db = Db::new();
         let first = "我喜欢浅蓝围巾。";
         let old_key = db.start_turn(first, "seed-entity", &[]);
@@ -2242,10 +2242,10 @@ fn w4_fixture_closes_the_model_pipeline_with_three_sends_and_reopen() {
         json!(memories[0].id)
     );
     let request = &sent.lock().unwrap()[2];
-    assert_eq!(request["text"]["format"]["name"], "w4_v4");
+    assert_eq!(request["text"]["format"]["name"], "w4_v5");
     assert_eq!(request["text"]["format"]["strict"], true);
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
-    assert_eq!(input["contract"], "w4.v4");
+    assert_eq!(input["contract"], "w4.v5");
     let mut old = request.clone();
     old["text"]["format"]["name"] = json!("w4_v2");
     let mut old_input = input.clone();
@@ -3134,7 +3134,7 @@ fn w4_unrelated_source_and_audit_survive_source_deletion() {
     let old = state.sources[&old_key].id.clone();
     let id = &state.sources[&key].id;
     let text = crate::lexical::body(&state.sources[&key]).unwrap();
-    let binding = json!({"contract":"w4.v4","sources":{id:{"text":text,"history":[]}}});
+    let binding = json!({"contract":"w4.v5","sources":{id:{"text":text,"history":[]}}});
     let decision = json!({"decisions":[{
         "candidate":0,"status":"decided","action":"new","targets":[],"resolves_relations":[],
         "basis":[{"source":{"kind":"stored","source_id":id},"quote":{"text":text}}],
@@ -3299,12 +3299,12 @@ fn w4_late_old_source_deletion_cannot_restore_raw_audit_or_input_copies() {
 #[test]
 fn prompts_distinguish_assertions_and_intentions_without_rewriting_quotes() {
     for rule in [
-        "value.quote.text exactly",
-        "including final punctuation",
-        "never by shortening a generic fact value",
+        "value.text must equal value.quote.text, a continuous original span within sentence",
+        "this one assertion sufficiently. It need not be the shortest span",
+        "this quote is continuous within the full sentence",
         "Output each assertion",
-        "each copying the whole",
-        "does not merge different types or qualifiers",
+        "every candidate copies that whole sentence",
+        "a shared sentence does not merge different assertions",
         "do not use a relation describing an accomplished",
     ] {
         assert!(W1_PROMPT.contains(rule), "{rule}");
@@ -3329,7 +3329,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W1_PROMPT,
             vec![
-                "w1.v3",
+                "w1.v4",
                 "speech=plan and memory_type=fact",
                 "completed booking or purchase",
                 "Kinship refers",
@@ -3340,7 +3340,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W3_PROMPT,
             vec![
-                "w3.v3",
+                "w3.v4",
                 "user really",
                 "qualifier present only in sentence",
                 "cannot be supported",
@@ -3349,7 +3349,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W4_PROMPT,
             vec![
-                "w4.v4",
+                "w4.v5",
                 "plan change or cancellation",
                 "automatically cancels a booking",
                 "normally uses state_change",
@@ -3381,8 +3381,8 @@ fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_
     assert_eq!(requests.len(), 2);
     let state = db.open().read().unwrap();
     for (i, (stage, version, schema, old_schema)) in [
-        ("w1", "w1.v3", "w1_v3", "w1_v2"),
-        ("w3", "w3.v3", "w3_v3", "w3_v2"),
+        ("w1", "w1.v4", "w1_v4", "w1_v2"),
+        ("w3", "w3.v4", "w3_v4", "w3_v2"),
     ]
     .iter()
     .enumerate()
@@ -3727,7 +3727,7 @@ fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
     assert_eq!(final_sent.lock().unwrap().len(), 1);
     assert_eq!(db.calls(), 3);
     let request = &final_sent.lock().unwrap()[0];
-    assert_eq!(request["text"]["format"]["name"], "w3_v3");
+    assert_eq!(request["text"]["format"]["name"], "w3_v4");
     let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     assert_eq!(payload["generation"], 1);
     assert_eq!(payload["utc_offset_seconds"], 28_800);
@@ -3838,7 +3838,7 @@ fn history_import_models_receive_null_original_time_and_frozen_before_parent_pro
             assert_eq!(payload["source_provenance"]["before_source_id"], parent);
             assert_eq!(payload["current_user_message"], text);
             assert!(payload.get("model").is_none());
-            if request["text"]["format"]["name"] == "w3_v3" {
+            if request["text"]["format"]["name"] == "w3_v4" {
                 assert_eq!(
                     payload["candidates"][0]["time_resolutions"][0]["status"],
                     "unknown"
@@ -3972,7 +3972,7 @@ fn af83_all_write_stage_requests_bind_nonempty_schema() {
     );
     let requests = sent.lock().unwrap();
     assert_eq!(requests.len(), 3);
-    for (request, name) in requests.iter().zip(["w1_v3", "w3_v3", "w4_v4"]) {
+    for (request, name) in requests.iter().zip(["w1_v4", "w3_v4", "w4_v5"]) {
         assert_eq!(request["text"]["format"]["name"], name);
         assert_nonempty_model_request(request);
     }

@@ -13,6 +13,8 @@ mod af193;
 
 #[path = "eval/write_stage/af198/mod.rs"]
 mod af198;
+#[path = "eval/write_stage/af206/mod.rs"]
+mod af206;
 
 use hippocampus::model_provider::{self, ProviderConfig, ProviderProtocol, StructuredMode};
 use hippocampus::{
@@ -919,6 +921,19 @@ fn mark_observation(sample: &Value, report: &mut Value) {
 }
 
 fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
+    if stage == "w1"
+        && sample["af206"] == true
+        && let Some(text) = text
+    {
+        return af206::score_w1(sample, text);
+    }
+    if stage == "w3"
+        && sample["af206"] == true
+        && sample["af198_final_w2"].is_object()
+        && let Some(text) = text
+    {
+        return af206::score_w3(sample, text);
+    }
     if stage == "w3"
         && sample["af198_final_w2"].is_object()
         && let Some(text) = text
@@ -1081,7 +1096,7 @@ fn stage_request_with_output_tokens(
                         .collect::<std::collections::BTreeSet<_>>()
                 )
             };
-            let mut payload = json!({"contract": if stage == "w1" { "w1.v3" } else { "w3.v3" }, "source_snapshot": {"eval_sample": sample["id"]},
+            let mut payload = json!({"contract": if stage == "w1" { "w1.v4" } else { "w3.v4" }, "source_snapshot": {"eval_sample": sample["id"]},
                 "current_user_message": input["text"], "user_history": input.get("history").cloned().unwrap_or(json!([])),
                 "entities": items(&entities).iter().map(|e| json!({"id": e["id"], "owner_id": "eval",
                     "entity_type": "Person", "canonical_name": e["names"][0], "aliases": e["names"]})).collect::<Vec<_>>(),
@@ -1091,7 +1106,7 @@ fn stage_request_with_output_tokens(
             if stage == "w1" {
                 (
                     ModelStage::W1,
-                    "w1_v3",
+                    "w1_v4",
                     write_models::W1_PROMPT,
                     write_models::w1_schema(),
                     payload,
@@ -1110,7 +1125,7 @@ fn stage_request_with_output_tokens(
                 payload["memory_requests"] = serde_json::to_value(&batch.memory_requests).unwrap();
                 (
                     ModelStage::W3,
-                    "w3_v3",
+                    "w3_v4",
                     write_models::W3_PROMPT,
                     write_models::w3_schema(),
                     payload,
@@ -1138,10 +1153,10 @@ fn stage_request_with_output_tokens(
                 .collect();
             (
                 ModelStage::W4,
-                "w4_v4",
+                "w4_v5",
                 write_models::W4_PROMPT,
                 write_models::w4_schema(),
-                json!({"contract": "w4.v4", "w4_input": input, "sources": sources}),
+                json!({"contract": "w4.v5", "w4_input": input, "sources": sources}),
             )
         }
         "r1" | "r4" => recall_adapter::request(stage, sample)?,
@@ -1183,7 +1198,7 @@ fn fingerprint(request: &Value) -> Value {
     }
     if matches!(
         request["text"]["format"]["name"].as_str(),
-        Some("r1_v1" | "r1_v2" | "r4_v3" | "r4_v4" | "r4_v5" | "r4_v6")
+        Some("r1_v1" | "r1_v2" | "r4_v3" | "r4_v4" | "r4_v5" | "r4_v6" | "r4_v7")
     ) {
         // 新召回不删除时钟字段；request.at/said_on/时区/模型/提示词/完整包都须参与绑定。
         return json!(hippocampus::recall_models::fingerprint(&request));
@@ -3019,7 +3034,7 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
             "eval_sample":compare_sample_id(sample["id"].as_str().unwrap()),
             "label_revision":sample["label_revision"],
             "observation_only":sample["observation_only"]==true,"observation_reason":sample["observation_reason"],
-            "request_contract":format!("{stage}.v3"),"tier":if sample["observation_only"]==true {"观察（契约待定）"} else {compare_tier(&cells)},"profiles":cells}),
+            "request_contract":format!("{stage}.v4"),"tier":if sample["observation_only"]==true {"观察（契约待定）"} else {compare_tier(&cells)},"profiles":cells}),
         );
     }
     let profile_reports: Vec<_> = groups.iter().zip(reports).map(|(group, report)| {
@@ -4398,6 +4413,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_AF206").is_some() {
+        af206::run().unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_AF198").is_some() {
         af198::run().unwrap();
         return;
@@ -4797,7 +4816,7 @@ fn w3_comparison_plan(root: &Path, base: Option<String>) -> Result<Vec<Case>, St
         let mut old = frozen.clone();
         old["instructions"] = structured_request(
             ModelStage::W3,
-            "w3_v3",
+            "w3_v4",
             W3_OLD_PROMPT,
             serde_json::from_str(frozen["input"].as_str().unwrap()).unwrap(),
             frozen["text"]["format"]["schema"].clone(),
@@ -4910,7 +4929,7 @@ fn w3_comparison_dry_run() {
         .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
         .count();
     println!("AF96 W3 对照：旧/新提示词 × 4 虚构场景 × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。");
-    println!("固定 Pro、minimal、w3.v3、said_on=2026-10-07、UTC+8、max_output_tokens=16384。");
+    println!("固定 Pro、minimal、w3.v4、said_on=2026-10-07、UTC+8、max_output_tokens=16384。");
     println!(
         "旧提示词：91a068a，字节指纹 {W3_OLD_FINGERPRINT}；新提示词：{}。",
         w3_prompt_fingerprint(write_models::W3_PROMPT)
@@ -5030,7 +5049,7 @@ fn w3_effort_dry_run() {
         "AF101 W3 强度对照：同一提示词 × 4 虚构场景 × minimal/low × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。"
     );
     println!(
-        "固定 Pro、w3.v3、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
+        "固定 Pro、w3.v4、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
     );
     println!("固定提示词：dc604f8，字节指纹 {W3_EFFORT_PROMPT_FINGERPRINT}。");
     println!(
@@ -5080,7 +5099,7 @@ fn af101_w3_effort_plan_is_frozen_and_rejects_fifteen_before_output() {
             );
             assert_eq!(case.request["model"], "ep-20261003130756-trhj6");
             assert_eq!(case.request["max_output_tokens"], 16384);
-            assert_eq!(case.request["text"]["format"]["name"], "w3_v3");
+            assert_eq!(case.request["text"]["format"]["name"], "w3_v4");
             assert!(matches!(
                 case.sample["label_status"].as_str(),
                 Some("draft" | "reviewed")
@@ -5546,7 +5565,7 @@ fn eval_request_timeout(request: &Value) -> std::time::Duration {
     let compute =
         hippocampus::recall_models::RecallModels::default().r4_effort(op) == ReasoningEffort::Low;
     std::time::Duration::from_secs(
-        if request["text"]["format"]["name"] == "r4_v6"
+        if request["text"]["format"]["name"] == "r4_v7"
             && request["reasoning"]["effort"] == "low"
             && compute
         {
@@ -5560,17 +5579,17 @@ fn eval_request_timeout(request: &Value) -> std::time::Duration {
 #[test]
 fn evaluation_timeout_is_240_only_for_r4_compute_low() {
     for (stage, effort, op, seconds) in [
-        ("r4_v6", "low", "count", 240),
-        ("r4_v6", "low", "sum", 240),
-        ("r4_v6", "low", "elapsed", 240),
-        ("r4_v6", "low", "compare", 240),
-        ("r4_v6", "low", "lookup", 180),
-        ("r4_v6", "low", "list", 180),
-        ("r4_v6", "low", "invalid", 180),
-        ("r4_v6", "minimal", "count", 180),
-        ("r4_v6", "high", "count", 180),
+        ("r4_v7", "low", "count", 240),
+        ("r4_v7", "low", "sum", 240),
+        ("r4_v7", "low", "elapsed", 240),
+        ("r4_v7", "low", "compare", 240),
+        ("r4_v7", "low", "lookup", 180),
+        ("r4_v7", "low", "list", 180),
+        ("r4_v7", "low", "invalid", 180),
+        ("r4_v7", "minimal", "count", 180),
+        ("r4_v7", "high", "count", 180),
         ("r1_v2", "low", "count", 180),
-        ("w3_v3", "low", "count", 180),
+        ("w3_v4", "low", "count", 180),
     ] {
         let request = json!({"text":{"format":{"name":stage}},"reasoning":{"effort":effort},
             "input":json!({"plan":{"plan":{"op":op}}}).to_string()});
@@ -7442,11 +7461,11 @@ fn z8_r1_condition_subset_and_unlabelled_time_keep_required_semantics() {
 #[test]
 fn m15_stage_executors_bind_current_schema_and_input_contracts() {
     for (stage, schema, contract) in [
-        ("w1", "w1_v3", "w1.v3"),
-        ("w3", "w3_v3", "w3.v3"),
-        ("w4", "w4_v4", "w4.v4"),
+        ("w1", "w1_v4", "w1.v4"),
+        ("w3", "w3_v4", "w3.v4"),
+        ("w4", "w4_v5", "w4.v5"),
         ("r1", "r1_v2", "r1.v2"),
-        ("r4", "r4_v6", "r4.v6"),
+        ("r4", "r4_v7", "r4.v7"),
     ] {
         let request =
             stage_request_with_output_tokens(stage, &samples(stage).remove(0), 16384).unwrap();
@@ -7466,9 +7485,9 @@ fn m15_stage_executors_bind_current_schema_and_input_contracts() {
             let mut input: Value =
                 serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             let contract = match stage.as_str() {
-                "w3" => "w3.v3",
+                "w3" => "w3.v4",
                 "r1" => "r1.v2",
-                "r4" => "r4.v6",
+                "r4" => "r4.v7",
                 _ => unreachable!(),
             };
             assert_eq!(input["contract"], contract);
@@ -9261,7 +9280,7 @@ fn af137_routes_both_stages_and_freezes_full_manifests_before_subset_resume() {
     assert_eq!(items(&report["matrix"]).len(), 40);
     assert_eq!(items(&report["results"]).len(), 520);
     assert_eq!(report["matrix"][0]["label_contract"], "w1.v1");
-    assert_eq!(report["matrix"][0]["request_contract"], "w1.v3");
+    assert_eq!(report["matrix"][0]["request_contract"], "w1.v4");
     assert_eq!(
         report["matrix"][0]["profiles"][3]["constrained_decoding"],
         false

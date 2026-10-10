@@ -518,7 +518,7 @@ fn reopened_offline_loop_binds_request_snapshot_and_never_writes() {
     assert!(result.facts.is_empty() && result.computed.is_none() && result.history.is_empty());
     assert_eq!(serde_json::to_value(db.state()).unwrap(), before);
     let wire = serde_json::to_value(&result).unwrap();
-    assert_eq!(wire["version"], "recall.v7");
+    assert_eq!(wire["version"], "recall.v8");
     assert!(wire["records"][0].get("end").is_none());
     assert!(wire["records"][0].get("current").is_none());
     assert_eq!(
@@ -1512,4 +1512,164 @@ fn recorded_r1_relation_filters_cannot_hide_stronger_or_only_authorized_evidence
         .unwrap();
         assert!(!tight.evidence.completeness.plan_complete);
     }
+}
+
+fn af206_fragments(db: &Db) -> (MemoryId, MemoryId) {
+    let text = "我收藏纸扇，我使用竹笛。";
+    source(db, "siblings", text, None, "running");
+    let mut first = candidate("siblings", text, "self");
+    first.candidate.value = Some(Value::Text {
+        text: "我收藏纸扇".into(),
+        quote: Quote {
+            text: "我收藏纸扇".into(),
+        },
+    });
+    let mut second = first.clone();
+    second.index = 1;
+    second.candidate.value = Some(Value::Text {
+        text: "我使用竹笛".into(),
+        quote: Quote {
+            text: "我使用竹笛".into(),
+        },
+    });
+    let input = W4Input {
+        candidates: vec![first, second],
+        records: vec![],
+        relations: vec![],
+        coverage: W4Coverage {
+            complete: true,
+            omitted: 0,
+        },
+    };
+    let decisions = (0..2)
+        .map(|index| W4Decision {
+            candidate: index,
+            status: DecisionStatus::Decided,
+            action: Some(Action::New),
+            targets: vec![],
+            resolves_relations: vec![],
+            basis: vec![stored("siblings", text)],
+            effective: None,
+            relation_scope: None,
+            pending_reason: None,
+        })
+        .collect();
+    let state = db.state();
+    let p = w4::plan(
+        &w4::W4Runtime {
+            state: &state,
+            owner: OWNER.into(),
+            source_key: "siblings",
+            round: 0,
+            task_id: None,
+            admissions: BTreeMap::new(),
+        },
+        &input,
+        &W4Output { decisions },
+    )
+    .unwrap();
+    let claim = W5Claim {
+        source_key: "siblings".into(),
+        attempt_id: "claim-siblings".into(),
+    };
+    let mut products = BTreeMap::new();
+    for group in &p.groups {
+        let W5Outcome::Committed(receipt) = commit_group(&mut db.open(), &claim, group).unwrap()
+        else {
+            panic!("commit")
+        };
+        products.extend(receipt.products);
+    }
+    w5_finish_task(&mut db.open(), &claim, &W5TaskEnd::Committed).unwrap();
+    (products[&0], products[&1])
+}
+
+#[test]
+fn af206_sibling_records_share_full_evidence_without_sharing_update_or_grade() {
+    let db = Db::new();
+    let (first, second) = af206_fragments(&db);
+    db.open()
+        .transaction(|s| {
+            s.record_updates.insert(
+                second,
+                UpdateState {
+                    status: UpdateStatus::Pending,
+                    reasons: vec![UpdateReason::UpdateScopeIncomplete],
+                },
+            );
+            Ok(())
+        })
+        .unwrap();
+    let req = request("纸扇和竹笛？", None, None);
+    let p = plan(&req, Some(understanding()));
+    let output = json!({"verdict":"supported","compute":null,"facts":[
+        {"statement":"我收藏纸扇","record_ids":[first],"evidence":[stored("siblings","我收藏纸扇，我使用竹笛。")],
+         "polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[]},
+        {"statement":"我使用竹笛","record_ids":[],"evidence":[stored("siblings","我使用竹笛")],
+         "polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[]}]});
+    let result = recall::assemble(&db.open(), &req, &p, Budget::default())
+        .unwrap()
+        .finish_r4(&db.open(), Ok(&output.to_string()))
+        .unwrap();
+    assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
+    assert_eq!(result.facts[0].grade, RecallGrade::Committed);
+    assert_eq!(
+        result.facts[0].update.as_ref().unwrap().status,
+        UpdateStatus::Judged
+    );
+    assert_eq!(result.facts[1].grade, RecallGrade::Uncommitted);
+    assert!(result.facts[1].update.is_none());
+    assert_eq!(result.records.len(), 2);
+    for record in &result.records {
+        let RecordView::Current(v) = record else {
+            panic!("current")
+        };
+        assert_eq!(v.candidate.sentence.text, "我收藏纸扇，我使用竹笛。");
+        assert_eq!(v.evidence[0].quote.text, v.candidate.sentence.text);
+    }
+}
+
+#[test]
+fn af206_one_full_sentence_candidate_cannot_prove_truncated_source_fully_understood() {
+    let db = Db::new();
+    let old = seed(&db, "old-self", "我收藏纸扇。", "self", None, true);
+    let child = seed(
+        &db,
+        "partial",
+        "孩子读书，我改用布扇。",
+        "child",
+        None,
+        true,
+    );
+    db.open()
+        .transaction(|s| {
+            s.sources.get_mut("partial").unwrap().enrichment = "pending".into();
+            // The linked committed candidate is the child's claim; its full sentence also contains
+            // another unresolved assertion. Do not infer that the whole source concerns only child.
+            let _ = child;
+            Ok(())
+        })
+        .unwrap();
+    let req = request("我收藏什么？", None, None);
+    let p = plan(&req, Some(understanding()));
+    // Only the self record enters this relation/subject-hinted package, while raw is clipped.
+    let output = json!({"verdict":"supported","compute":null,"facts":[{"statement":"我收藏纸扇。",
+        "record_ids":[old],"evidence":[stored("old-self","我收藏纸扇。")],"polarity":"affirm","strength":null,
+        "uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes","supersedes_record_ids":[]}]});
+    let result = recall::assemble(
+        &db.open(),
+        &req,
+        &p,
+        Budget {
+            raw: 0,
+            ..Budget::default()
+        },
+    )
+    .unwrap()
+    .finish_r4(&db.open(), Ok(&output.to_string()))
+    .unwrap();
+    assert_eq!(result.status, RecallStatus::Insufficient, "{result:?}");
+    assert_eq!(result.facts[0].current, Qualification::Unknown);
+    assert!(!result.completeness.plan_complete);
+    assert!(result.completeness.retrieval_truncated);
 }

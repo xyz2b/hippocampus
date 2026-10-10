@@ -472,7 +472,10 @@ fn value_mismatch_is_rejected_without_defaults_or_rounding() {
     rejected("我有1.5个。", c, "integer_quote_mismatch");
     let mut c = candidate("我住上海。");
     c["value"] = json!({"kind":"text","text":"上海","quote":{"text":"上海"}});
-    rejected("我住上海。", c, "fact_sentence_mismatch");
+    assert_eq!(
+        run("我住上海。", vec![c], vec![]).unwrap().candidates[0].status,
+        w2::Status::Ok
+    );
     let mut c = candidate("我住上海。");
     c["strength"] = json!("strong");
     rejected("我住上海。", c, "strength_not_applicable");
@@ -1140,4 +1143,85 @@ fn detailed_decode_rejects_the_whole_batch_and_never_reports_model_field_names()
         );
     }
     assert!(w2::decode_detailed(r#"{"candidates":[],"memory_requests":[]}"#).is_ok());
+}
+
+#[test]
+fn af206_fact_fragment_is_continuous_inside_full_sentence_only() {
+    let text = "我不用木杯，我使用竹碗。另一句是别人的话。";
+    let sentence = "我不用木杯，我使用竹碗。";
+    for fragment in ["我不用木杯", "我使用竹碗", sentence] {
+        let mut c = candidate(sentence);
+        c["value"] = json!({"kind":"text","text":fragment,"quote":{"text":fragment}});
+        let b = run(text, vec![c], vec![]).unwrap();
+        assert_eq!(b.candidates[0].status, Status::Ok);
+        assert_eq!(b.candidates[0].candidate.sentence.text, sentence);
+    }
+    let mut outside = candidate(sentence);
+    outside["value"] = json!({"kind":"text","text":"另一句","quote":{"text":"另一句"}});
+    rejected(text, outside, "fact_sentence_mismatch");
+    let mut discontinuous = candidate(sentence);
+    discontinuous["value"] =
+        json!({"kind":"text","text":"我不用木杯竹碗","quote":{"text":"我不用木杯竹碗"}});
+    rejected(text, discontinuous, "value_quote_not_found");
+    let mut unequal = candidate(sentence);
+    unequal["value"] = json!({"kind":"text","text":"竹碗","quote":{"text":"我使用竹碗"}});
+    rejected(text, unequal, "fact_sentence_mismatch");
+}
+
+#[test]
+fn af206_qualifier_and_negation_support_stays_a_w3_judgment() {
+    use hippocampus::contract::*;
+    let text = "如果有空，我可能去东桥，我不去西桥。";
+    let mut c = candidate(text);
+    c["value"] = json!({"kind":"text","text":"我可能去东桥","quote":{"text":"我可能去东桥"}});
+    // Deliberately missing the shared condition and uncertainty: W2 must not infer semantics.
+    let batch = run(text, vec![c.clone()], vec![]).unwrap();
+    assert_eq!(batch.candidates[0].status, Status::Ok);
+    for (aspect, quote) in [("condition", "如果有空"), ("uncertainty", "可能")] {
+        let output = W3Output::decode(&json!({"reviews":[{"candidate":0,"verdict":"contradicted",
+            "problems":[{"aspect":aspect,"quote":{"text":quote}}],"episode_value":"not_applicable"}],
+            "request_reviews":[],"coverage":{"status":"complete","missing":[]}}).to_string()).unwrap();
+        let checked = output
+            .validate(&batch, &json!({"snapshot":1}), text)
+            .unwrap();
+        assert_eq!(checked.output().reviews[0].verdict, Verdict::Contradicted);
+    }
+    c["value"] = json!({"kind":"text","text":"我不去西桥","quote":{"text":"我不去西桥"}});
+    let wrong_polarity = run(text, vec![c.clone()], vec![]).unwrap();
+    assert_eq!(wrong_polarity.candidates[0].status, Status::Ok);
+    let review = W3Output::decode(&json!({"reviews":[{"candidate":0,"verdict":"contradicted",
+        "problems":[{"aspect":"polarity","quote":{"text":"我不去西桥"}}],"episode_value":"not_applicable"}],
+        "request_reviews":[],"coverage":{"status":"complete","missing":[]}}).to_string()).unwrap();
+    assert_eq!(
+        review
+            .validate(&wrong_polarity, &json!({"snapshot":1}), text)
+            .unwrap()
+            .output()
+            .reviews[0]
+            .verdict,
+        Verdict::Contradicted
+    );
+    c["polarity"] = json!("negate");
+    let negative = run(text, vec![c], vec![]).unwrap();
+    let candidate = ContractCandidate {
+        candidate: negative.candidates[0].candidate.clone(),
+        source: SourceRef::Stored {
+            source_id: "source".into(),
+        },
+        said_on: Some("2026-04-15".into()),
+        time_resolutions: vec![],
+    };
+    // AF206 does not authorize changing ordinary negative-fact execution projection.
+    assert!(matches!(
+        candidate.project(&ProjectionContext {
+            owner_id: "owner".into(),
+            task_id: None,
+            observed_at: hippocampus::Timestamp(0),
+            session_id: "s".into(),
+            turn_id: "t".into(),
+            evidence_id: "e".into(),
+            explicit_memory_request: false
+        }),
+        Err(Unprojectable::Polarity(Polarity::Negate))
+    ));
 }

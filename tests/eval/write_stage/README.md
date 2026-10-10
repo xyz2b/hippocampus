@@ -636,3 +636,21 @@ PMR_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_RECORD=0 \
 报告 W1 原标签评分和真实生产 W2 结果、W3 每候选 verdict/problems（非法输出仍保留原始判断，标为未经机械核验），不把 W3 核验通过算成语义通过。统计“限定语保留但因角色/时间拒收”：仅在 W3 机械核验通过时，对同主体/关系/value 的既有标签候选，全部标签时间引用仍在实际 W2 的 times 中，且 verdict 非 supported、problems 含 time，按候选及场景×重复计数；无法与标签对应的断言标未知、不计入。该计数依据模型声明，不由代码判断时间角色或语义。标签仍为 draft，两次重复只用于诊断；默认仅报告，显式 `EVAL_GATE=1` 才因 W1 失败或 W3 核验/录制缺口失败。
 
 后续获准发送时将上例网络门禁改为 live、去掉 `EVAL_DRY_RUN`；严格回放用 offline、`EVAL_RECORD=0`，仍保留相同模型/地址。本轮不发送。AF193 的原始录制、12槽账本和原报告保持原样；按新 W1 提示词其6条 W1录制过期（含原两次评分失败），6条 W3不因本轮提示词改动过期，不改指纹或借用旧输出。
+
+
+### AF206：通用 fact 片段 value 串联与定点验证
+
+独立产物目录为 `target/eval-fact-af206/{chain,points}/`；不读取生产数据，不覆盖历史录制或标签。六个虚构场景在 `af206/scenes.json`（草拟标签，待产品复核），覆盖一否一肯、两条肯定、共享条件/不确定性、两个明确主体、同句纠正、修改一项且另一项保持。样本 ID 只进报告，模型可见来源标识为摘要；提示词中不含样本文字。
+
+```sh
+EVAL_AF206=chain EVAL_DRY_RUN=1 EVAL_RECORD=24 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+EVAL_AF206=points EVAL_DRY_RUN=1 EVAL_RECORD=4 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+chain 固定 24 槽（6×2×W1/W3），使用生产 DeepSeek Pro、W1/W3 low、32768/16384 输出容量。W3 的实际输入由**同次 W1 输出经生产 W2**生成；没有送审候选则跳过，不用理想候选补位。W1 评分允许含标注断言内容且不含兄弟断言的更长连续片段，不强求最短值；同句纠正与限定语语义仍按标签/模型核验，不能只以子串合法算支持。W3 保留逐候选 verdict，核验后用真实 SQLite 执行新来源准入，报告实际回执/记录身份；history 仅作指代上下文，不自动变成旧记录。否定普通 fact 即使 supported 仍不提交，不作为 AF206 修复失败。
+
+points 固定 4 槽（W4 2 + R4 2）：预置两条共享完整原句的片段记录，修改一项、另一项保持。W4 medium/16384，R4 minimal/4096；实际 W4 输出经 prepare→validate→plan→W5 事务提交，R4 从该 SQLite 快照的生产 R3 证据包生成，不调用 R1。W4 评分检查目标和动作；R4 核验与实际证据保留供语义复核。
+
+每个 campaign 固定总额度和完整槽位/派生规则，各依赖槽在发送前持久化精确请求及上游输出身份；物理发送前占额度，不重试，不重发中断在途槽。干跑不读取密钥、不创建账本或录制。授权后才可去掉 `EVAL_DRY_RUN=1` 并设置 `PMR_MODEL_NETWORK=live` 与 DEEPSEEK 环境变量；离线严格回放用 `EVAL_RECORD=0`，新目录缺口如实报告。不要将本轮授权额度转移给其他 campaign。
+
+AF206 当前契约 W1/W3 v4、W4 v5、R4 v7、recall v8；R1 v2、DB v11 不变。当前请求与旧 W 阶段/R4 的契约及提示词身份不同，旧录制严格报告过期；保留历史录制/标签/报告，不改指纹以复用。AF96/AF101 等历史冻结提示词继续保留，不能当作当前提示词验证结果。

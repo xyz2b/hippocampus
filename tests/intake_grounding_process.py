@@ -19,13 +19,15 @@ ROOT = Path(__file__).resolve().parents[1]
 OWNER = "intake-grounding-synthetic"
 SUBJECT = "霜叶31"
 OTHER = "青石82"
-REVIEW = "w3_v3"
-EXTRACTION = "w1_v3"
+REVIEW = "w3_v4"
+EXTRACTION = "w1_v4"
 PAPER = "霜叶31默认用 A4 纸打印，纸张放在右侧纸盒。"
+OTHER_SENTENCE = "青石82收藏木牌。"
 # text, predicate, value kind, value, review verdict; all statements are synthetic.
 CASES = {
     "a4_false": (PAPER, "fact", "boolean", False, "format_reject"),
-    "fact_fragment": (PAPER, "fact", "text", "A4", "format_reject"),
+    "fact_fragment": (PAPER, "fact", "text", "A4", "insufficient"),
+    "fact_fragment_outside_sentence": (PAPER + OTHER_SENTENCE, "fact", "text", OTHER_SENTENCE, "format_reject"),
     "fact_sentence": (PAPER, "fact", "text", PAPER, "supported"),
     "text": ("霜叶31的材质是橡木。", "material", "text", "橡木", "supported"),
     "integer": ("霜叶31的维护预算是 500 元。", "maintenance_budget", "integer", 500, "supported"),
@@ -53,11 +55,13 @@ def active(db):
 def raw_candidate(case):
     text, predicate, kind, value, _ = case
     quote = str(value) if kind in ("text", "integer", "entity") else text
+    # The negative control cites real source text outside this candidate's sentence.
+    sentence = PAPER if case == CASES["fact_fragment_outside_sentence"] else text
     return {"kind": "assertion", "speech": "user_statement",
             "subject": {"entity_id": SUBJECT}, "relation": predicate, "memory_type": "fact",
             "value": {"kind": kind, "entity_id" if kind == "entity" else kind: value,
                       "quote": {"text": quote}},
-            "sentence": {"text": text}, "polarity": "affirm", "strength": None,
+            "sentence": {"text": sentence}, "polarity": "affirm", "strength": None,
             "uncertainty": None, "conditions": [], "times": []}
 
 
@@ -89,9 +93,9 @@ def review_output(case):
     if verdict == "bad_format":
         return {"reviews": "invalid review array"}
     return {"reviews": [{"candidate": 0,
-            "verdict": "contradicted" if verdict == "contradicted" else "supported",
+            "verdict": verdict if verdict in ("contradicted", "insufficient") else "supported",
             "problems": [{"aspect": "value", "quote": {"text": text}}]
-                        if verdict == "contradicted" else [], "episode_value": "not_applicable"}],
+                        if verdict in ("contradicted", "insufficient") else [], "episode_value": "not_applicable"}],
             "coverage": {"status": "complete", "missing": []}, "request_reviews": []}
 
 
@@ -209,13 +213,18 @@ def run_case(binary, directory, env, mode, name):
         frozen(processed, status)
         if verdict not in ("bad_format", "http_error"):
             candidate_result = processed["enrichment"]["candidates"][0]
-            check(candidate_result["status"] == ("committed" if expected_active else "rejected"),
+            # A valid continuous fragment passes W2; this fixture's W3 still finds it insufficient.
+            expected_candidate_status = ("committed" if expected_active else
+                                         "pending" if verdict == "insufficient" else "rejected")
+            check(candidate_result["status"] == expected_candidate_status,
                   "candidate receipt disagrees with grounding result")
             if verdict == "format_reject":
                 check("candidate_rejected:fact_sentence_mismatch" in candidate_result["reasons"],
                       "fact format rejection lost its reason")
             if verdict == "contradicted":
                 check("review_contradicted" in candidate_result["reasons"], "independent review verdict lost")
+            if verdict == "insufficient":
+                check("review_insufficient" in candidate_result["reasons"], "independent review insufficiency lost")
         after_batch = len(Fixture.requests)
         replay = cli(binary, db, config, env, "--call", "memory_remember", arguments=turn)
         check(replay == processed and len(Fixture.requests) == after_batch, "receipt replay changed or sent another request")

@@ -77,7 +77,7 @@ def main():
                 client.call("memory_remember", {**turn, "text": "同键换原话。"}, error=True)
                 assert profile(db) == before
                 offline = client.call("memory_recall", {"query": "我的伞", "request_id": "raw", "offline": True})
-                assert offline["recall"]["version"] == "recall.v7"
+                assert offline["recall"]["version"] == "recall.v8"
                 assert offline["recall"]["semantic_judgment"] == "skipped"
                 assert any(r["source_id"] == saved["source"]["source_id"] for r in offline["recall"]["raw"])
                 client.call("memory_forget", {"source_id": saved["source"]["source_id"]})

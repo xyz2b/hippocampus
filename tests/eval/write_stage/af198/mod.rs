@@ -4,9 +4,10 @@ use super::*;
 const CAP: usize = 24;
 const LABEL: &str = "af198-pro-low";
 
-struct Trial {
-    root: PathBuf,
-    w1: Vec<Case>,
+pub(super) struct Trial {
+    name: String,
+    pub(super) root: PathBuf,
+    pub(super) w1: Vec<Case>,
     authorization: Value,
 }
 
@@ -15,7 +16,7 @@ fn slot_root(root: &Path, repeat: usize, stage: &str, id: &str) -> PathBuf {
         .join(format!("repeat-{repeat}-{stage}-{id}"))
 }
 
-fn case(
+pub(super) fn case(
     root: &Path,
     stage: &str,
     sample: Value,
@@ -44,9 +45,9 @@ fn case(
     Ok(cases.remove(0))
 }
 
-fn w3_request(w1: &Case, batch: Option<&w2::Batch>) -> Value {
+pub(super) fn w3_request(w1: &Case, batch: Option<&w2::Batch>) -> Value {
     let mut input: Value = serde_json::from_str(w1.request["input"].as_str().unwrap()).unwrap();
-    input["contract"] = json!("w3.v3");
+    input["contract"] = json!("w3.v4");
     input["candidates"] = json!(
         batch
             .map(|b| b
@@ -66,7 +67,7 @@ fn w3_request(w1: &Case, batch: Option<&w2::Batch>) -> Value {
     budget.review_output_tokens = 16384;
     let mut request = structured_request(
         ModelStage::W3,
-        "w3_v3",
+        "w3_v4",
         write_models::W3_PROMPT,
         input,
         write_models::w3_schema(),
@@ -78,6 +79,17 @@ fn w3_request(w1: &Case, batch: Option<&w2::Batch>) -> Value {
 }
 
 fn plan(root: &Path, model: &str, base: &str) -> Result<Trial, String> {
+    plan_scenes(root, model, base, LABEL, "AF198", af193::scenes())
+}
+
+pub(super) fn plan_scenes(
+    root: &Path,
+    model: &str,
+    base: &str,
+    label: &str,
+    name: &str,
+    scenes: Vec<Value>,
+) -> Result<Trial, String> {
     let config: hippocampus::chat::ChatConfig =
         serde_json::from_value(json!({"write_models":{}})).unwrap();
     let roles = config.write_models.as_ref().unwrap();
@@ -88,12 +100,12 @@ fn plan(root: &Path, model: &str, base: &str) -> Result<Trial, String> {
     let catalog = w2::relation_catalog(&config.predicates, &config.memory_types)
         .map_err(|e| e.to_string())?;
     let mut w1 = Vec::new();
-    for scene in af193::scenes() {
+    for scene in scenes {
         for repeat in 1..=2 {
             let mut sample = scene.clone();
             sample["expect"] = sample["w1_expect"].clone();
             let model = EvalModel {
-                label: LABEL.into(),
+                label: label.into(),
                 model: Some(model.into()),
                 base: Some(base.trim_end_matches('/').into()),
                 effort: roles.effort("w1"),
@@ -125,9 +137,10 @@ fn plan(root: &Path, model: &str, base: &str) -> Result<Trial, String> {
             "provider":c.provider,"timeout_seconds":c.timeout_seconds}),
     ]).collect();
     let trial = Trial {
+        name: name.into(),
         root: root.into(),
         w1,
-        authorization: json!({"trial":"AF198","limit":CAP,"slots":slots}),
+        authorization: json!({"trial":name,"limit":CAP,"slots":slots}),
     };
     trial.check(None)?;
     Ok(trial)
@@ -150,7 +163,7 @@ fn exact_file(path: &Path, expected: &Value) -> Result<(), String> {
 
 // Validate using the catalog, source clock and identities actually visible to W1.
 // The generic stage scoring adapter intentionally has looser sample relation types.
-fn final_batch(c: &Case) -> Result<w2::Batch, String> {
+pub(super) fn final_batch(c: &Case) -> Result<w2::Batch, String> {
     let Replay::Output(text) = &c.replay else {
         return Err("w1_unavailable".into());
     };
@@ -191,7 +204,7 @@ fn final_batch(c: &Case) -> Result<w2::Batch, String> {
     .map_err(|e| e.to_string())
 }
 
-fn dependent_case(root: &Path, w1: &Case) -> Result<Option<Case>, String> {
+pub(super) fn dependent_case(root: &Path, w1: &Case) -> Result<Option<Case>, String> {
     let Ok(batch) = final_batch(w1) else {
         return Ok(None);
     };
@@ -238,7 +251,7 @@ impl Trial {
         }))
     }
 
-    fn check(&self, limit: Option<usize>) -> Result<(), String> {
+    pub(super) fn check(&self, limit: Option<usize>) -> Result<(), String> {
         if self.w1.len() != 12 || limit.is_some_and(|l| l != 0 && l != CAP) {
             return Err("AF198 freezes 24 slots; EVAL_RECORD must be 24 or 0".into());
         }
@@ -258,7 +271,7 @@ impl Trial {
         Ok(())
     }
 
-    fn dry(&self, limit: Option<usize>) -> Result<String, String> {
+    pub(super) fn dry(&self, limit: Option<usize>) -> Result<String, String> {
         self.check(limit)?;
         let mut w3_ready = 0;
         let mut w3_reused = 0;
@@ -305,14 +318,14 @@ impl Trial {
             本次真实调用 0；不读取密钥、不创建目录/账本/录制；模型/地址{}。",
             self.occupied()?,
             missing + w3_ready + w3_wait,
-            if self.w1[0].model.model.as_deref() == Some("ep-af198-unresolved-pro")
-                || self.w1[0].model.base.as_deref() == Some("https://af198.invalid/v1")
+            if self.w1[0].model.model.as_deref().is_some_and(|m| m.ends_with("unresolved-pro"))
+                || self.w1[0].model.base.as_deref().is_some_and(|b| b.ends_with(".invalid/v1"))
             {
                 "未设置，使用干跑占位；真实录制拒绝占位"
             } else {
                 "已加载（不输出值）"
             }
-        ))
+        ).replace("AF198", &self.name))
     }
 }
 
@@ -393,7 +406,7 @@ pub(super) fn score_w3(sample: &Value, text: &str) -> Value {
         "qualifiers_retained_time_refusals":time_refused,"fields":[{"field":"w3.validate","passed":valid}]})
 }
 
-fn evaluate(
+pub(super) fn evaluate(
     trial: &Trial,
     limit: Option<usize>,
     send: &mut dyn FnMut(&Case) -> Result<Value, String>,
@@ -470,7 +483,7 @@ fn evaluate(
         })
         .count();
     Ok(
-        json!({"trial":"AF198","authorized_calls":CAP,"sent_calls":sent,"cumulative_sent_or_inflight":trial.occupied()?,
+        json!({"trial":trial.name,"authorized_calls":CAP,"sent_calls":sent,"cumulative_sent_or_inflight":trial.occupied()?,
         "stage_only":false,"chain":"actual W1 -> production W2 -> W3","results":results,
         "summary":{"w1_passed":results.iter().filter(|r|r["stage"]=="w1" && r["status"]=="通过").count(),
             "w3_mechanically_valid":results.iter().filter(|r|r["stage"]=="w3" && r["mechanical_valid"]==true).count(),

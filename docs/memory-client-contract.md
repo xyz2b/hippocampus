@@ -1,4 +1,4 @@
-# personal_memory 客户端接入约定（recall.v7）
+# personal_memory 客户端接入约定（recall.v8）
 
 启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；只读问个人安排、经历、状态等具体问题时，调用普通 memory_recall，不用 bootstrap 代替。memory_prepare 已返回保存与本次召回的结果/状态，分别核对；没有新问题时，不再用同一段陈述调用 memory_recall，核实/更正类查询仍可调用。在线请求不要自行加 offline=true。
 
@@ -72,7 +72,7 @@ MCP 无法强制第三方聊天客户端遵守这些表达规则；此边界仍�
 
 ## 校验、删除与预算
 
-memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v7 保守回答，不使用旧 safe_answer。
+memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v8 保守回答，不使用旧 safe_answer。
 
 用户明确要求遗忘且目标可定位时调用 memory_forget；对象不明先澄清。旧记录和暂存仍可删除；墓碑、索引、回执及迟到任务保护不变。
 
@@ -96,4 +96,4 @@ M1.5 于 2026-10-07 按 AF110 暂告一段落，以下是正常使用时需要�
 - “我们”等多人主语不能表示为多主体候选，普通否定事实也不提交为结构化事实；两者目前依靠原话召回，宿主保留主体、否定与不确定性，不擅自归到某个家人。否定计划、偏好、约束与撤回仍按各自契约资格处理。
 - 旧 pending 来源不会因升级、模型强度变化或实体登记自动重整理。需要补处理时先查 memory_source_status，再显式使用主体确认或候选重建入口，遵守授权、已提交候选限制和有限预算；无需重说已保存原话。
 
-recall.v7 的 retrieval 只报告本机检索状态/索引覆盖（disabled/not_needed/ready/pending/unavailable），不代替 completeness、保存回执或 R4 判断。ready 不证明唯一当前值；pending 不表示原话未收到，宿主仍可使用已返回 raw 及其明确限定语。bootstrap/offline 不调用嵌入；默认 embedding.enabled=false。DB 当前 v11，可读旧数据，不自动重新整理。
+recall.v8 的 retrieval 只报告本机检索状态/索引覆盖（disabled/not_needed/ready/pending/unavailable），不代替 completeness、保存回执或 R4 判断。ready 不证明唯一当前值；pending 不表示原话未收到，宿主仍可使用已返回 raw 及其明确限定语。bootstrap/offline 不调用嵌入；默认 embedding.enabled=false。DB 当前 v11，可读旧数据，不自动重新整理。

@@ -418,7 +418,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v7".into(),
+                version: "recall.v8".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -444,17 +444,7 @@ impl Assembly {
             .evidence
             .records
             .iter()
-            .filter(|r| {
-                f.record_ids.contains(&r.id())
-                    || f.supersedes_record_ids.contains(&r.id())
-                    || f.evidence.iter().any(|e| {
-                        r4::record_evidence(r).iter().any(|re| {
-                            e.source == re.source
-                                && (locate_quote(&re.quote.text, &e.quote.text).is_some()
-                                    || locate_quote(&e.quote.text, &re.quote.text).is_some())
-                        })
-                    })
-            })
+            .filter(|r| f.record_ids.contains(&r.id()) || f.supersedes_record_ids.contains(&r.id()))
             .collect();
         // 无法定位的遗漏可能改变当前结论，不能用词法不命中证明无关。
         // 仅有截断标记、或完整可见的 queued/failed 原文，不触发此门控。
@@ -471,7 +461,8 @@ impl Assembly {
                 });
         let grade = if f.evidence.iter().all(|e|
             !self.evidence.raw.iter().any(|raw| matches!(&e.source, SourceRef::Stored {source_id} if source_id == &raw.source_id))
-            && self.evidence.records.iter().any(|r| r4::supports_record(e, r)))
+            && !f.record_ids.is_empty()
+            && related.iter().any(|r| f.record_ids.contains(&r.id()) && r4::supports_record(e, r)))
             { RecallGrade::Committed } else { RecallGrade::Uncommitted };
         let mut pending = Vec::new();
         let mut has_pending = false;
@@ -679,7 +670,7 @@ impl Assembly {
         let clarification =
             (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v7".into(),
+            version: "recall.v8".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
@@ -1707,30 +1698,9 @@ fn assemble_inner(
             if covered {
                 return None;
             }
-            // 仅单条已提交 Current 候选的整句覆盖整个来源时，才用其槽位排除无关事实。
-            // 片段链接、legacy 或未整理原文都不足以排除来源中尚未理解的其他断言。
-            let linked: Vec<_> = source_links
-                .get(id)
-                .into_iter()
-                .flatten()
-                .filter(|m| m.status != MemoryStatus::Deleted)
-                .collect();
-            let slot = if linked.len() == 1 {
-                projection(&state, linked[0].id).and_then(|view| match &view {
-                    RecordView::Current(v)
-                        if v.candidate.sentence.text == body && v.evidence.iter().any(|e| {
-                            matches!(&e.source, SourceRef::Stored {source_id} if source_id == id)
-                                && locate_quote(body, &e.quote.text).is_some()
-                        }) =>
-                    {
-                        record_slot(&view)
-                    }
-                    _ => None,
-                })
-            } else {
-                None
-            };
-            Some(slot)
+            // 整句引用只证明原文可见，不证明其中所有断言已整理；已提交单条候选
+            // 不能替该来源的其他未提交候选证明主体/关系槽位。遗漏来源仍保守门控。
+            Some(None)
         })
         .collect();
     if let Some(d) = &mut diagnostic {

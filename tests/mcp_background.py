@@ -40,11 +40,11 @@ class BackgroundFixture(Fixture):
             return {"need": "judge", "current_evidence": "query_only", "type": "single",
                     "subject": {"entity_id": "self"}, "relation": "居住地", "conditions": [],
                     "time": None, "plan": {"op": "lookup", "filter": {"relation": "lives_in", "time": None}, "unit": None}}
-        if stage == "r4_v6":
+        if stage == "r4_v7":
             return {"verdict": "insufficient", "facts": [], "compute": None}
-        if stage == "w1_v3" and type(self).invalid:
+        if stage == "w1_v4" and type(self).invalid:
             return {"synthetic_invalid_output": True}
-        if stage == "w1_v3":
+        if stage == "w1_v4":
             result = super().output(body)
             candidate = result["candidates"][0]
             text = candidate["sentence"]["text"]
@@ -52,7 +52,7 @@ class BackgroundFixture(Fixture):
             candidate["relation"] = "lives_in"
             candidate["value"] = {"kind": "text", "text": city, "quote": {"text": city}}
             return result
-        if stage == "w4_v4":
+        if stage == "w4_v5":
             w4 = json.loads(body["input"])["w4_input"]
             old = next(record for record in w4["records"] if record["format"] == "current")
             return {"decisions": [{"candidate": candidate["index"], "status": "decided",
@@ -96,7 +96,7 @@ def main():
         save_cli(binary, db, env, config, turn("startup", new_text))
         assert calls(db) == 2
         entered, release = threading.Event(), threading.Event()
-        BackgroundFixture.gate = "w1_v3", entered, release
+        BackgroundFixture.gate = "w1_v4", entered, release
         client = ConcurrentClient(binary, db, env, "write-pipeline-fixture", config=config)
         try:
             assert entered.wait(8), "startup scan did not recover the queued source"

@@ -1797,3 +1797,104 @@ fn provider_error_details_do_not_create_raw_copies_outside_checkpoints() {
         Some("model_invalid_output")
     );
 }
+
+#[test]
+fn af206_fragment_rejudge_preserves_identity_and_full_original_evidence() {
+    let db = Db::new();
+    let text = "我收藏木牌，我收藏石印。";
+    let key = db.start("fragment-round", text);
+    let upstream = |ctx: &ProviderContext, input: &SourceInput| {
+        Ok(["我收藏木牌", "我收藏石印"]
+            .into_iter()
+            .enumerate()
+            .map(|(index, fragment)| {
+                let mut c = supported(ctx, &input.text, index);
+                c.contract.candidate.value = Some(Value::Text {
+                    text: fragment.into(),
+                    quote: Quote {
+                        text: fragment.into(),
+                    },
+                });
+                c
+            })
+            .collect())
+    };
+    let first = run_source(
+        &mut db.open(),
+        &key,
+        RuntimeInputBudget::default(),
+        upstream,
+        |_, _, _| panic!("new scope, no W4"),
+    )
+    .unwrap();
+    assert_eq!(first["enrichment"]["status"], "committed");
+    let records = db
+        .open()
+        .read()
+        .unwrap()
+        .repository
+        .list_by_owner(&"alice".into())
+        .unwrap();
+    assert_eq!(records.len(), 2);
+    let ids: Vec<_> = records.iter().map(|r| r.id).collect();
+    assert!(records.iter().all(|r| r.evidence[0].quote == text));
+    w4_start_round(&mut db.open(), &key, "fragment-rejudge", true).unwrap();
+    let second = run_source(
+        &mut db.open(),
+        &key,
+        RuntimeInputBudget::default(),
+        upstream,
+        |_, input, _| {
+            Ok(Some(W4Output {
+                decisions: input
+                    .candidates
+                    .iter()
+                    .map(|c| W4Decision {
+                        candidate: c.index,
+                        status: DecisionStatus::Decided,
+                        action: Some(Action::Reinforce),
+                        targets: vec![c.committed_id.unwrap()],
+                        resolves_relations: vec![],
+                        basis: vec![EvidenceRef {
+                            source: c.source.clone(),
+                            quote: c.candidate.sentence.clone(),
+                        }],
+                        effective: None,
+                        relation_scope: None,
+                        pending_reason: None,
+                    })
+                    .collect(),
+            }))
+        },
+    )
+    .unwrap();
+    assert_eq!(second["enrichment"]["status"], "committed", "{second}");
+    assert_eq!(
+        db.open()
+            .read()
+            .unwrap()
+            .repository
+            .list_by_owner(&"alice".into())
+            .unwrap()
+            .iter()
+            .map(|r| r.id)
+            .collect::<Vec<_>>(),
+        ids
+    );
+    // Replaying the finished round has no second reinforcement or identity substitution.
+    assert_eq!(
+        hippocampus::enrichment::receipt(&db.open(), &key).unwrap(),
+        second
+    );
+    let state = db.open().read().unwrap();
+    for id in ids {
+        let RecordView2::Current(record) = w4::record_view(&state, id).unwrap() else {
+            panic!("current")
+        };
+        assert_ne!(
+            serde_json::to_value(record.candidate.value).unwrap()["text"],
+            text
+        );
+        assert_eq!(record.candidate.sentence.text, text);
+    }
+}

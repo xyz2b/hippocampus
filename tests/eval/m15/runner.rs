@@ -545,16 +545,16 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
         assert!(input.get("model").is_none());
         assert!(input.get("expect_common").is_none());
         match request["text"]["format"]["name"].as_str().unwrap() {
-            "w1_v3" => {
+            "w1_v4" => {
                 let text = &input["current_user_message"];
                 json!({"candidates":[{"kind":"assertion","speech":"user_statement","subject":{"entity_id":"self"},
                     "relation":"fact","memory_type":"fact","value":{"kind":"text","text":text,"quote":{"text":text}},
                     "sentence":{"text":text},"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[]}],"memory_requests":[]})
             }
-            "w3_v3" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+            "w3_v4" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
-            "w4_v4" => {
+            "w4_v5" => {
                 let c = &input["w4_input"]["candidates"][0];
                 let r = &input["w4_input"]["records"][0];
                 json!({"decisions":[{"candidate":c["index"],"status":"decided","action":"reinforce","targets":[r["id"]],
@@ -565,7 +565,7 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
                 json!({"need":"judge","current_evidence":"assertion_present","type":"single","subject":{"entity_id":"self"},
                 "relation":"fact","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})
             }
-            "r4_v6" => {
+            "r4_v7" => {
                 let r = &input["evidence"]["records"][0];
                 if !r.is_null() {
                     json!({"verdict":"supported","facts":[{"statement":r["candidate"]["sentence"]["text"],

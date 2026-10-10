@@ -1181,7 +1181,7 @@ fn current_assertion_is_read_only_uncommitted_and_failed_judgment_has_no_facts()
 }
 
 #[test]
-fn pending_is_merged_without_record_id_bypass_and_unknown_stays_unknown() {
+fn pending_requires_explicit_record_identity_and_unknown_stays_unknown() {
     let f = Fixture::sample("r4_08_");
     let id = *f.ids.values().next().unwrap();
     f.db.open()
@@ -1199,8 +1199,13 @@ fn pending_is_merged_without_record_id_bypass_and_unknown_stays_unknown() {
     view["record_ids"] = json!([]);
     let result = f.finish(output(vec![view.clone()], None));
     assert_eq!(result.status, RecallStatus::Answered);
+    assert_eq!(result.facts[0].grade, RecallGrade::Uncommitted);
+    assert!(result.facts[0].update.is_none());
+    assert_eq!(result.completeness.pending_updates, 1);
+    let identified = f.finish(output(vec![f.fact(sample_id, "unknown")], None));
+    assert_eq!(identified.facts[0].grade, RecallGrade::Committed);
     assert_eq!(
-        result.facts[0].update,
+        identified.facts[0].update,
         Some(UpdateState {
             status: UpdateStatus::Pending,
             reasons: vec![
@@ -1218,6 +1223,122 @@ fn pending_is_merged_without_record_id_bypass_and_unknown_stays_unknown() {
         .unwrap();
     let result = f.finish(output(vec![view], None));
     assert!(result.facts[0].update.is_none());
+
+    let siblings = Fixture::new(json!({"query":"我收藏和使用哪些物品？","at":SAID_ON,
+        "current_evidence":"query_only","plan":{"type":"open","relation":"物品","op":"list"},
+        "records":[],"relations":[],"raw":[]}));
+    let sentence = "我收藏纸扇，我使用竹笛。";
+    source(&siblings.db, "siblings", sentence, None, "running");
+    let input = W4Input {
+        candidates: ["我收藏纸扇", "我使用竹笛"]
+            .into_iter()
+            .enumerate()
+            .map(|(index, span)| {
+                let mut c = candidate("siblings", sentence, "self");
+                c.index = index;
+                c.candidate.value = Some(hippocampus::contract::Value::Text {
+                    text: span.into(),
+                    quote: Quote { text: span.into() },
+                });
+                c
+            })
+            .collect(),
+        records: vec![],
+        relations: vec![],
+        coverage: W4Coverage {
+            complete: true,
+            omitted: 0,
+        },
+    };
+    let decisions = (0..2)
+        .map(|index| W4Decision {
+            candidate: index,
+            status: DecisionStatus::Decided,
+            action: Some(Action::New),
+            targets: vec![],
+            resolves_relations: vec![],
+            basis: vec![stored("siblings", sentence)],
+            effective: None,
+            relation_scope: None,
+            pending_reason: None,
+        })
+        .collect();
+    let state = siblings.db.state();
+    let plan = w4::plan(
+        &w4::W4Runtime {
+            state: &state,
+            owner: OWNER.into(),
+            source_key: "siblings",
+            round: 0,
+            task_id: None,
+            admissions: BTreeMap::new(),
+        },
+        &input,
+        &W4Output { decisions },
+    )
+    .unwrap();
+    let claim = W5Claim {
+        source_key: "siblings".into(),
+        attempt_id: "claim-siblings".into(),
+    };
+    let mut products = BTreeMap::new();
+    for group in &plan.groups {
+        let W5Outcome::Committed(receipt) =
+            commit_group(&mut siblings.db.open(), &claim, group).unwrap()
+        else {
+            panic!("sibling commit failed")
+        };
+        products.extend(receipt.products);
+    }
+    w5_finish_task(&mut siblings.db.open(), &claim, &W5TaskEnd::Committed).unwrap();
+    let pending = UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: vec![UpdateReason::UpdateTargetUnknown],
+    };
+    siblings
+        .db
+        .open()
+        .transaction(|state| {
+            state.record_updates.insert(products[&0], pending.clone());
+            Ok(())
+        })
+        .unwrap();
+    let result = siblings.finish(output(
+        vec![
+            fact(
+                "我收藏纸扇",
+                vec![stored("siblings", sentence)],
+                vec![products[&0]],
+                "unknown",
+            ),
+            fact(
+                "我使用竹笛",
+                vec![stored("siblings", sentence)],
+                vec![products[&1]],
+                "unknown",
+            ),
+            fact(
+                "我使用竹笛",
+                vec![stored("siblings", sentence)],
+                vec![],
+                "unknown",
+            ),
+        ],
+        None,
+    ));
+    assert_eq!(result.status, RecallStatus::Answered);
+    assert_eq!(result.facts[0].grade, RecallGrade::Committed);
+    assert_eq!(result.facts[0].update, Some(pending));
+    assert_eq!(result.facts[1].grade, RecallGrade::Committed);
+    assert_eq!(
+        result.facts[1].update,
+        Some(UpdateState {
+            status: UpdateStatus::Judged,
+            reasons: vec![]
+        })
+    );
+    assert_eq!(result.facts[2].grade, RecallGrade::Uncommitted);
+    assert!(result.facts[2].update.is_none());
 }
 
 #[test]
@@ -2518,7 +2639,7 @@ fn visibility_gate_allows_complete_new_raw_and_keeps_no_current_history() {
 }
 
 #[test]
-fn visibility_gate_excludes_whole_source_with_known_other_subject() {
+fn visibility_gate_does_not_infer_omitted_source_subject_from_one_full_sentence() {
     let f = visibility_fixture();
     seed_on(
         &f.db,
@@ -2535,6 +2656,7 @@ fn visibility_gate_excludes_whole_source_with_known_other_subject() {
             Ok(())
         })
         .unwrap();
+    let before = serde_json::to_value(f.db.state()).unwrap();
     let assembly = f.assembly_with(
         &f.request(),
         f.plan_json(),
@@ -2558,8 +2680,12 @@ fn visibility_gate_excludes_whole_source_with_known_other_subject() {
         )
         .unwrap();
     assert!(out.completeness.retrieval_truncated);
-    assert_eq!(out.status, RecallStatus::Answered);
-    assert_eq!(out.facts[0].current, Qualification::Yes);
+    assert_eq!(out.status, RecallStatus::Insufficient);
+    assert_eq!(out.facts[0].current, Qualification::Unknown);
+    assert!(!out.completeness.plan_complete);
+    assert_eq!(out.completeness.pending_related_sources, 1);
+    assert_eq!(f.db.state().sources["child"].enrichment, "needs_rejudge");
+    assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
     assert!(out.degraded_reasons.is_empty());
 }
 
