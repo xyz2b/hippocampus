@@ -11,7 +11,7 @@ fn scenes() -> Vec<Value> {
 
 // Independent assertions have explicitly labelled locating spans, not a mandatory shortest value.
 // Longer continuous spans are accepted when they contain the labelled content and no sibling claim.
-fn labelled(sample: &Value) -> Value {
+pub(super) fn labelled(sample: &Value) -> Value {
     let mut adjusted = sample.clone();
     let sentence = sample["input"]["text"].as_str().unwrap();
     let candidates = items(&sample["w1_expect"]["candidates"]);
@@ -44,7 +44,11 @@ pub(super) fn score_w1(sample: &Value, text: &str) -> Value {
     score_raw("w1", &labelled(sample), Some(text))
 }
 
-fn commit_probe(sample: &Value, output: &W3Output, batch: &w2::Batch) -> Result<Value, String> {
+pub(super) fn commit_probe(
+    sample: &Value,
+    output: &W3Output,
+    batch: &w2::Batch,
+) -> Result<Value, String> {
     let dir = std::env::temp_dir().join(format!(
         "af206-commit-{}",
         hippocampus::diagnostics::new_id()
@@ -110,9 +114,6 @@ fn commit_probe(sample: &Value, output: &W3Output, batch: &w2::Batch) -> Result<
                     .reviews
                     .iter()
                     .any(|r| r.candidate == c.index && r.verdict == Verdict::Supported)
-                && !(c.candidate.speech == hippocampus::contract::Speech::UserStatement
-                    && c.candidate.memory_type == "fact"
-                    && c.candidate.polarity == hippocampus::contract::Polarity::Negate)
         })
         .count();
     // Actual identities, full evidence and execution values must survive reopen. No semantic repair.
@@ -122,7 +123,7 @@ fn commit_probe(sample: &Value, output: &W3Output, batch: &w2::Batch) -> Result<
     Ok(
         json!({"receipt":receipt,"record_count":records.len(),"expected_supported_projectable":expected_committable,
         "committed_identity_valid":identity_valid,"passed":identity_valid && records.len()==expected_committable,
-        "note":"fresh-source admission probe; history is reference context, not imported committed records; ordinary negative fact remains unprojectable"}),
+        "note":"fresh-source admission probe; history is reference context, not imported committed records; AF216 ordinary negative user_statement fact projects to Negative"}),
     )
 }
 
@@ -194,9 +195,9 @@ pub(super) fn score_w3(sample: &Value, text: &str) -> Value {
 pub(super) fn run() -> Result<(), String> {
     if !matches!(
         std::env::var("EVAL_AF206").as_deref(),
-        Ok("chain" | "points")
+        Ok("chain" | "points" | "recount")
     ) {
-        return Err("EVAL_AF206 accepts chain or points".into());
+        return Err("EVAL_AF206 accepts chain, points or recount".into());
     }
     for key in [
         "EVAL_AF198",
@@ -237,9 +238,12 @@ pub(super) fn run() -> Result<(), String> {
                 .map_err(|_| "EVAL_RECORD integer".to_owned())
         })
         .transpose()?;
+    if std::env::var("EVAL_AF206").as_deref() == Ok("recount") && limit != Some(0) {
+        return Err("AF206 recount requires EVAL_RECORD=0; nothing sent".into());
+    }
     if std::env::var("EVAL_DRY_RUN").as_deref() == Ok("1") {
         println!(
-            "{}\nAF206 另有独立 points campaign：W4 2 + R4 2，最多 4 次。串联检查断言片段与限定语，W3 后执行真实 SQLite 提交/重开；否定普通 fact 保持未提交。",
+            "{}\nAF206 另有独立 points campaign：W4 2 + R4 2，最多 4 次。串联检查断言片段与限定语，W3 后执行真实 SQLite 提交/重开；普通否定 fact 按 AF216 提交资格检查。",
             trial
                 .dry(limit)?
                 .replace("af198", "af206")
@@ -306,7 +310,12 @@ pub(super) fn run() -> Result<(), String> {
     report["note"] = json!(
         "fictional draft labels; history not automatically imported; W3 semantic verdicts retained; points independently tests updates"
     );
-    m15_write_json(&root.join("report.json"), &report)?;
+    let report_root = if std::env::var("EVAL_AF206").as_deref() == Ok("recount") {
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-negative-af216/af206-recount")
+    } else {
+        root.clone()
+    };
+    m15_write_json(&report_root.join("report.json"), &report)?;
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     Ok(())
 }
@@ -375,7 +384,7 @@ mod tests {
         {
             assert_eq!(row["actual_commit"]["passed"], true, "{row}");
             if row["id"] == "f01" {
-                assert_eq!(row["actual_commit"]["record_count"], 1);
+                assert_eq!(row["actual_commit"]["record_count"], 2);
             }
         }
         let replay = af198::evaluate(

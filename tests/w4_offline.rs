@@ -2132,10 +2132,10 @@ fn a_deleted_relation_member_does_not_consume_the_input_budget() {
 
 #[test]
 fn a_held_candidate_holds_its_whole_dependency_group() {
-    // w4_21 变体：候选 0（修订 51）是现有 Memory 表达不了的否定事实；候选 1 撤回 50 并解决
+    // w4_21 变体：候选 0（修订 51）极性未知，仍不可投影；候选 1 撤回 50 并解决
     // rel-1。两者经 rel-1 相互依赖，不能只执行后一半。
     let mut sample = sample("w4_21_confirm_conflict_side");
-    sample["input"]["candidates"][0]["candidate"]["polarity"] = json!("negate");
+    sample["input"]["candidates"][0]["candidate"]["polarity"] = json!("unknown");
     let db = Db::new();
     let own = seed(&db, &sample);
     let input: W4Input = serde_json::from_value(sample["input"].clone()).unwrap();
@@ -2149,7 +2149,7 @@ fn a_held_candidate_holds_its_whole_dependency_group() {
             (
                 0,
                 Held::Unprojectable(Unprojectable::Polarity(
-                    hippocampus::contract::Polarity::Negate
+                    hippocampus::contract::Polarity::Unknown
                 ))
             ),
             (1, Held::DependsOnHeld { candidate: 0 }),

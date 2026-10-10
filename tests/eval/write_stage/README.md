@@ -647,10 +647,37 @@ EVAL_AF206=chain EVAL_DRY_RUN=1 EVAL_RECORD=24 cargo test --test write_stage_eva
 EVAL_AF206=points EVAL_DRY_RUN=1 EVAL_RECORD=4 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-chain 固定 24 槽（6×2×W1/W3），使用生产 DeepSeek Pro、W1/W3 low、32768/16384 输出容量。W3 的实际输入由**同次 W1 输出经生产 W2**生成；没有送审候选则跳过，不用理想候选补位。W1 评分允许含标注断言内容且不含兄弟断言的更长连续片段，不强求最短值；同句纠正与限定语语义仍按标签/模型核验，不能只以子串合法算支持。W3 保留逐候选 verdict，核验后用真实 SQLite 执行新来源准入，报告实际回执/记录身份；history 仅作指代上下文，不自动变成旧记录。否定普通 fact 即使 supported 仍不提交，不作为 AF206 修复失败。
+chain 固定 24 槽（6×2×W1/W3），使用生产 DeepSeek Pro、W1/W3 low、32768/16384 输出容量。W3 的实际输入由**同次 W1 输出经生产 W2**生成；没有送审候选则跳过，不用理想候选补位。W1 评分允许含标注断言内容且不含兄弟断言的更长连续片段，不强求最短值；同句纠正与限定语语义仍按标签/模型核验，不能只以子串合法算支持。W3 保留逐候选 verdict，核验后用真实 SQLite 执行新来源准入，报告实际回执/记录身份；history 仅作指代上下文，不自动变成旧记录。AF206 当时否定普通 fact 即使 supported 仍不提交，不作为该轮修复失败；AF216 已批准开放 user_statement+fact 的否定投影，当前回放按新政策重算提交数，历史原报告不改。
 
 points 固定 4 槽（W4 2 + R4 2）：预置两条共享完整原句的片段记录，修改一项、另一项保持。W4 medium/16384，R4 minimal/4096；实际 W4 输出经 prepare→validate→plan→W5 事务提交，R4 从该 SQLite 快照的生产 R3 证据包生成，不调用 R1。W4 评分检查目标和动作；R4 核验与实际证据保留供语义复核。
 
 每个 campaign 固定总额度和完整槽位/派生规则，各依赖槽在发送前持久化精确请求及上游输出身份；物理发送前占额度，不重试，不重发中断在途槽。干跑不读取密钥、不创建账本或录制。授权后才可去掉 `EVAL_DRY_RUN=1` 并设置 `PMR_MODEL_NETWORK=live` 与 DEEPSEEK 环境变量；离线严格回放用 `EVAL_RECORD=0`，新目录缺口如实报告。不要将本轮授权额度转移给其他 campaign。
 
 AF206 当前契约 W1/W3 v4、W4 v5、R4 v7、recall v8；R1 v2、DB v11 不变。当前请求与旧 W 阶段/R4 的契约及提示词身份不同，旧录制严格报告过期；保留历史录制/标签/报告，不改指纹以复用。AF96/AF101 等历史冻结提示词继续保留，不能当作当前提示词验证结果。
+
+
+### AF216：普通否定 fact 的提交政策与 24 槽诊断
+
+不改提示词/schema/版本/DB。仅 assertion+user_statement+fact+negate 投影为 Negative；肯定仍为 None，否定 episode、unknown、plan、retraction 保持原规则，旧 pending 不自动重整理。
+
+四个虚构场景（`af216/scenes.json`）：一否一肯、专用关系否定、明确状态变化、明确纠错。W1 允许完整的合法通用/专用关系期望分支，事实片段可取更长连续引用，不能用其他分支掩盖机械失败。语义标签为草稿，未匹配的实际候选待人工复核。串联中 W3 使用同次 W1 经生产 W2 的结果，核验后用真实 SQLite 检查提交/重开；不注入理想 W1 输出补位。
+
+```sh
+# 零调用干跑；无需密钥，不创建 campaign/录制
+PMR_MODEL_NETWORK=offline EVAL_AF216=chain EVAL_DRY_RUN=1 EVAL_RECORD=16 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+PMR_MODEL_NETWORK=offline EVAL_AF216=points EVAL_DRY_RUN=1 EVAL_RECORD=8 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# 获准录制后：保留同一 DEEPSEEK_PRO_MODEL/BASE_URL，另外提供 API_KEY，改 offline 为 live，去掉 EVAL_DRY_RUN
+# 严格回放：同一配置、offline、EVAL_RECORD=0，不发请求
+# AF206 历史录制重算：保留录制时模型/端点，报告另存，原录制/标签/账本/报告不改
+PMR_MODEL_NETWORK=offline EVAL_AF206=recount EVAL_RECORD=0 \
+  cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+独立目录 `target/eval-negative-af216/{chain,points}/`，chain 固定16槽（4×2×W1/W3），points 固定8槽（2×2×W4/R4），合计上限24。生产 Pro：W1/W3 low（32768/16384），W4 medium（16384），R4 minimal（4096），各360秒。输出容量合计475136 token（含推理，并非预期用量）；依赖输入生成前不伪报其精确 token。
+
+points 独立隔离 W4/R4：注入旧已提交记录和核验候选；实际 W4 输出经 prepare→validate→plan→W5 提交后，从该 SQLite 快照装配 R3，注入经 decode→validate 的 R1 计划（R1=0）。报告核对 W4 动作/目标、R4 否定/当前状态及明确记录身份；正文语义仍交人工复核，不用代码判定否定语义。
+
+完整槽位和派生规则先冻结；每个依赖槽绑定上游请求/输出、完整 W2 或实际 R3 请求。发送前落盘占额度，失败/中断仍占槽，不重试、不重发在途槽；请求变化拒绝续跑，不绕过指纹。chain/points 不能借用彼此额度。样本 ID/期望只进报告，模型可见 ID 盲化。AF206 的提交数重算不影响任何请求指纹，旧有报告仅作历史结果；本轮不发送真实调用、不读取生产数据。

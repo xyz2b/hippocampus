@@ -22,4 +22,4 @@ offline=true/Bootstrap 零召回调用，不关闭已授权后台；全服务零
 recall.v8 的 retrieval 是独立检索状态/覆盖，不是保存或语义成功回执；保留 completeness、grade/update 及 raw，不能从 ready 推断完整答案，从 pending 推断未接收。混合检索默认关闭；bootstrap/offline 零嵌入。
 
 
-通用 fact 的 value 可以是定位单条断言的连续原文片段，sentence/依据仍保留完整原句；共用原句不表示共用记录身份、提交等级或更新状态。请按回执逐条核对，不把同句另一项的成功当成本项已提交。旧整句记录继续可读；普通否定事实当前仍以原话兜底。
+通用 fact 的 value 可以是定位单条断言的连续原文片段，sentence/依据仍保留完整原句；共用原句不表示共用记录身份、提交等级或更新状态。请按回执逐条核对，不把同句另一项的成功当成本项已提交。旧整句记录继续可读；已核验的普通否定 user_statement+fact 可提交并保留否定；否定 episode 和极性 unknown 仍以原话兜底，旧 pending 不自动重整理。否定不自动表示撤回、纠错或冲突。

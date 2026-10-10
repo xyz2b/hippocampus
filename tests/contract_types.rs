@@ -270,8 +270,8 @@ fn projection_refuses_what_memory_would_misstate() {
             Unprojectable::NotUserStatement(Speech::Reported),
         ),
         (
-            "negated fact",
-            json!({"polarity": "negate"}),
+            "negated episode",
+            json!({"polarity": "negate", "memory_type": "episode"}),
             Unprojectable::Polarity(Polarity::Negate),
         ),
         (
@@ -379,5 +379,64 @@ fn plan_projection_uses_fact_only_and_never_claims_to_be_lossless() {
     assert_eq!(
         contract(c).project(&context()).unwrap_err(),
         Unprojectable::NotUserStatement(Speech::Plan)
+    );
+}
+
+#[test]
+fn af216_fact_negation_is_independent_of_value_and_preserves_other_projection_rules() {
+    for relation in ["fact", "lives_in"] {
+        for value in [
+            json!({"kind":"text","text":"城南","quote":{"text":"城南"}}),
+            json!({"kind":"boolean","boolean":false,"quote":{"text":"没有"}}),
+        ] {
+            for polarity in ["affirm", "negate"] {
+                let mut c = plain();
+                c["relation"] = json!(relation);
+                c["value"] = value.clone();
+                c["polarity"] = json!(polarity);
+                let p = contract(c).project(&context()).unwrap();
+                assert!(p.lossless);
+                assert_eq!(
+                    p.candidate.polarity,
+                    if polarity == "negate" {
+                        Some(hippocampus::Polarity::Negative)
+                    } else {
+                        None
+                    }
+                );
+                if value["kind"] == "boolean" {
+                    assert_eq!(p.candidate.value, hippocampus::MemoryValue::Boolean(false));
+                }
+            }
+        }
+    }
+    let mut c = plain();
+    c["polarity"] = json!("unknown");
+    assert_eq!(
+        contract(c).project(&context()).unwrap_err(),
+        Unprojectable::Polarity(Polarity::Unknown)
+    );
+    let mut c = plain();
+    c["polarity"] = json!("negate");
+    c["speech"] = json!("plan");
+    let p = contract(c).project(&context()).unwrap();
+    assert_eq!(p.candidate.polarity, None);
+    assert!(!p.lossless);
+    let mut c = plain();
+    c["polarity"] = json!("negate");
+    c["kind"] = json!("retraction");
+    c["value"] = Json::Null;
+    let p = contract(c).project(&context()).unwrap();
+    assert_eq!(p.candidate.polarity, None);
+    assert!(matches!(
+        p.candidate.intent,
+        hippocampus::CandidateIntent::Retract { .. }
+    ));
+    let mut c = plain();
+    c["polarity"] = json!("negate");
+    c["memory_type"] = json!("episode");
+    assert_eq!(
+        contract(c).project(&context()).unwrap_err(),
+        Unprojectable::Polarity(Polarity::Negate)
     );
 }

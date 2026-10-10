@@ -30,10 +30,12 @@
 
 - 主体未解析；
 - speech 既不是 user_statement，也不是以 fact 投影的 plan；
-- 非偏好、非约束的普通否定断言（计划与撤回另按契约处理）；
+- 否定 episode（计划与撤回另按契约处理）；
 - 任何类型的方向未知；
 - 偏好强度未知；
 - 断言缺值。
+
+已核验的 user_statement+fact 否定断言按既有准入条件提交，投影 polarity=Negative；肯定仍为 None。Boolean false 是值，与 polarity 独立，不由代码改为肯定、更新、冲突或撤回。完整 Candidate 与身份检查不变；旧 pending 不自动重整理。此为 AF216 的 W5 提交政策变更，不升 DB/阶段版本。
 
 撤回可以没有新值：它投影为撤回意图，执行时不会插入。
 

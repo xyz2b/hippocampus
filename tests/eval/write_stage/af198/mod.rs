@@ -6,6 +6,7 @@ const LABEL: &str = "af198-pro-low";
 
 pub(super) struct Trial {
     name: String,
+    cap: usize,
     pub(super) root: PathBuf,
     pub(super) w1: Vec<Case>,
     authorization: Value,
@@ -136,11 +137,13 @@ pub(super) fn plan_scenes(
             "recipe":"actual-w1-production-w2.v1","request_template":w3_request(c,None),
             "provider":c.provider,"timeout_seconds":c.timeout_seconds}),
     ]).collect();
+    let cap = if name == "AF216" { 16 } else { CAP };
     let trial = Trial {
         name: name.into(),
+        cap,
         root: root.into(),
         w1,
-        authorization: json!({"trial":name,"limit":CAP,"slots":slots}),
+        authorization: json!({"trial":name,"limit":cap,"slots":slots}),
     };
     trial.check(None)?;
     Ok(trial)
@@ -252,14 +255,17 @@ impl Trial {
     }
 
     pub(super) fn check(&self, limit: Option<usize>) -> Result<(), String> {
-        if self.w1.len() != 12 || limit.is_some_and(|l| l != 0 && l != CAP) {
-            return Err("AF198 freezes 24 slots; EVAL_RECORD must be 24 or 0".into());
+        if self.w1.len() * 2 != self.cap || limit.is_some_and(|l| l != 0 && l != self.cap) {
+            return Err(format!(
+                "{} freezes {} slots; EVAL_RECORD must be {} or 0",
+                self.name, self.cap, self.cap
+            ));
         }
         exact_file(
             &self.root.join("campaign/authorization.json"),
             &self.authorization,
         )?;
-        if self.occupied()? > CAP {
+        if self.occupied()? > self.cap {
             return Err("AF198 cumulative allowance exceeded".into());
         }
         for c in &self.w1 {
@@ -307,14 +313,18 @@ impl Trial {
             .iter()
             .map(|c| c.wire_request.to_string().len())
             .sum();
+        let scenes = self.w1.len() / 2;
+        let slots = self.w1.len();
+        let cap = self.cap;
+        let output_capacity = slots * (32768 + 16384);
         Ok(format!(
-            "AF198：6 个虚构场景 × 2 次重复 × W1→W2→W3 = 24 槽（W1 12 + W3 12）。\n\
+            "AF198：{scenes} 个虚构场景 × 2 次重复 × W1→W2→W3 = {cap} 槽（W1 {slots} + W3 {slots}）。\n\
             生产缺省：DeepSeek Pro；W1 low/32768，W3 low/16384；超时均 360 秒。\n\
             W1：待录制 {missing}，可复用 {reused}；W3：已确定待录制 {w3_ready}，可复用 {w3_reused}，待该次 W1→W2 输入 {w3_wait}，阻断/在途 {blocked}。\n\
-            独立 campaign 固定额度 24；累计已发送/在途 {}；新增调用上限 {}（W3 无可核验候选则跳过，不用固定候选补位）。\n\
+            独立 campaign 固定额度 {cap}；累计已发送/在途 {}；新增调用上限 {}（W3 无可核验候选则跳过，不用固定候选补位）。\n\
             先冻结完整槽位/构造规则，再将 W3 绑定至该次 W1 输出、完整 W2 与实际请求；发送前落盘，不重试、不重发在途槽。\n\
             W1 请求合计 {bytes} 字节；输入 token 粗估 UTF-8 字节上界 {bytes}；W3 输入依赖尚未产生，不伪报精确 token。\n\
-            输出配置容量 589824 token（含推理，非预期用量）；W4/R1/R4=0。\n\
+            输出配置容量 {output_capacity} token（含推理，非预期用量）；W4/R1/R4=0。\n\
             本次真实调用 0；不读取密钥、不创建目录/账本/录制；模型/地址{}。",
             self.occupied()?,
             missing + w3_ready + w3_wait,
@@ -412,13 +422,13 @@ pub(super) fn evaluate(
     send: &mut dyn FnMut(&Case) -> Result<Value, String>,
 ) -> Result<Value, String> {
     trial.check(limit)?;
-    let _lock = if limit == Some(CAP) {
+    let _lock = if limit == Some(trial.cap) {
         Some(w3_trial_lock(&trial.root.join("campaign"))?)
     } else {
         None
     };
     trial.check(limit)?;
-    if limit == Some(CAP) {
+    if limit == Some(trial.cap) {
         let path = trial.root.join("campaign/authorization.json");
         if !path.exists() {
             m15_write_json(&path, &trial.authorization)?;
@@ -452,7 +462,7 @@ pub(super) fn evaluate(
                 "status":"上游阻断（未发送）","sent":false,"reason":final_w2.err().unwrap_or_else(||"no_reviewable_candidates".into())}));
             continue;
         };
-        if limit == Some(CAP) {
+        if limit == Some(trial.cap) {
             let Replay::Output(text) = &actual.replay else {
                 unreachable!()
             };
@@ -483,7 +493,7 @@ pub(super) fn evaluate(
         })
         .count();
     Ok(
-        json!({"trial":trial.name,"authorized_calls":CAP,"sent_calls":sent,"cumulative_sent_or_inflight":trial.occupied()?,
+        json!({"trial":trial.name,"authorized_calls":trial.cap,"sent_calls":sent,"cumulative_sent_or_inflight":trial.occupied()?,
         "stage_only":false,"chain":"actual W1 -> production W2 -> W3","results":results,
         "summary":{"w1_passed":results.iter().filter(|r|r["stage"]=="w1" && r["status"]=="通过").count(),
             "w3_mechanically_valid":results.iter().filter(|r|r["stage"]=="w3" && r["mechanical_valid"]==true).count(),
@@ -537,7 +547,7 @@ pub(super) fn run() -> Result<(), String> {
         return Ok(());
     }
     trial.check(limit)?;
-    let live = if limit == Some(CAP) {
+    let live = if limit == Some(trial.cap) {
         if std::env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live")
             || model == "ep-af198-unresolved-pro"
             || base == "https://af198.invalid/v1"

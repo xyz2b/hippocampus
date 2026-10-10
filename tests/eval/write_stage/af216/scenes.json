@@ -1,0 +1,543 @@
+[
+  {
+    "id": "n01",
+    "af216": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF216 2026-10-10",
+    "input": {
+      "text": "我不使用锡叉，我使用木匙。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "uses"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我不使用锡叉",
+          "sentence": "我不使用锡叉，我使用木匙。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我使用木匙",
+          "sentence": "我不使用锡叉，我使用木匙。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我不使用锡叉",
+          "sentence": "我不使用锡叉，我使用木匙。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我使用木匙",
+          "sentence": "我不使用锡叉，我使用木匙。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": [],
+      "alternatives": [
+        {
+          "candidate_count": 2,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "我不使用锡叉",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            },
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "我使用木匙",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "affirm",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        },
+        {
+          "candidate_count": 2,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "uses",
+              "memory_type": "fact",
+              "value": "锡叉",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            },
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "我使用木匙",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "affirm",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        },
+        {
+          "candidate_count": 2,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "我不使用锡叉",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            },
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "uses",
+              "memory_type": "fact",
+              "value": "木匙",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "affirm",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        },
+        {
+          "candidate_count": 2,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "uses",
+              "memory_type": "fact",
+              "value": "锡叉",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            },
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "uses",
+              "memory_type": "fact",
+              "value": "木匙",
+              "sentence": "我不使用锡叉，我使用木匙。",
+              "polarity": "affirm",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        }
+      ]
+    }
+  },
+  {
+    "id": "n02",
+    "af216": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF216 2026-10-10",
+    "input": {
+      "text": "我不在芦湾工坊任职。",
+      "history": [],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "芦湾工坊",
+          "sentence": "我不在芦湾工坊任职。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "芦湾工坊",
+          "sentence": "我不在芦湾工坊任职。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": [],
+      "alternatives": [
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "works_at",
+              "memory_type": "fact",
+              "value": "芦湾工坊",
+              "sentence": "我不在芦湾工坊任职。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        },
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "我不在芦湾工坊任职。",
+              "sentence": "我不在芦湾工坊任职。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        }
+      ]
+    }
+  },
+  {
+    "id": "n03",
+    "af216": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF216 2026-10-10",
+    "input": {
+      "text": "我不再在苔桥工坊任职。",
+      "history": [
+        "我在苔桥工坊任职。"
+      ],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "苔桥工坊",
+          "sentence": "我不再在苔桥工坊任职。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "苔桥工坊",
+          "sentence": "我不再在苔桥工坊任职。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": [],
+      "alternatives": [
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "works_at",
+              "memory_type": "fact",
+              "value": "苔桥工坊",
+              "sentence": "我不再在苔桥工坊任职。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        },
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "我不再在苔桥工坊任职。",
+              "sentence": "我不再在苔桥工坊任职。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        }
+      ]
+    }
+  },
+  {
+    "id": "n04",
+    "af216": true,
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF216 2026-10-10",
+    "input": {
+      "text": "更正先前说法：我不在霜坪工坊任职。",
+      "history": [
+        "我在霜坪工坊任职。"
+      ],
+      "said_on": "2026-10-10",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at"
+      ],
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "霜坪工坊",
+          "sentence": "更正先前说法：我不在霜坪工坊任职。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "霜坪工坊",
+          "sentence": "更正先前说法：我不在霜坪工坊任职。",
+          "polarity": "negate",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": [],
+      "alternatives": [
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "works_at",
+              "memory_type": "fact",
+              "value": "霜坪工坊",
+              "sentence": "更正先前说法：我不在霜坪工坊任职。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        },
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "kind": "assertion",
+              "speech": "user_statement",
+              "subject": "self",
+              "relation": "fact",
+              "memory_type": "fact",
+              "value": "更正先前说法：我不在霜坪工坊任职。",
+              "sentence": "更正先前说法：我不在霜坪工坊任职。",
+              "polarity": "negate",
+              "strength": null,
+              "uncertainty": null,
+              "conditions": [],
+              "times": []
+            }
+          ],
+          "requests": []
+        }
+      ]
+    }
+  }
+]

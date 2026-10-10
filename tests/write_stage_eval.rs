@@ -15,6 +15,8 @@ mod af193;
 mod af198;
 #[path = "eval/write_stage/af206/mod.rs"]
 mod af206;
+#[path = "eval/write_stage/af216/mod.rs"]
+mod af216;
 
 use hippocampus::model_provider::{self, ProviderConfig, ProviderProtocol, StructuredMode};
 use hippocampus::{
@@ -921,6 +923,17 @@ fn mark_observation(sample: &Value, report: &mut Value) {
 }
 
 fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
+    if sample["af216"] == true {
+        if let Some(text) = text {
+            if stage == "w1" {
+                return af216::score_w1(sample, text);
+            }
+            if stage == "w3" {
+                return af216::score_w3(sample, text);
+            }
+        }
+    }
+
     if stage == "w1"
         && sample["af206"] == true
         && let Some(text) = text
@@ -978,7 +991,6 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
             report
         }
     };
-    report["final_result"] = json!({"status":report["status"],"fields":report["fields"],"categories":report["categories"]});
     report["raw_result"] = raw;
     report["raw_output"] = serde_json::from_str(text.unwrap()).unwrap_or(json!(text.unwrap()));
     report["final_output"] = if stage == "r4" && !report["validated_output"].is_null() {
@@ -988,7 +1000,11 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
     };
     if stage == "r4" {
         report["raw_output_text"] = json!(text.unwrap());
+        if sample["af216_point"] == true {
+            af216::points::check_r4(sample, &mut report);
+        }
     }
+    report["final_result"] = json!({"status":report["status"],"fields":report["fields"],"categories":report["categories"]});
     report
 }
 
@@ -4413,6 +4429,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_AF216").is_some() {
+        af216::run().unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_AF206").is_some() {
         af206::run().unwrap();
         return;

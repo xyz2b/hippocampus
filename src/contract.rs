@@ -1189,7 +1189,7 @@ pub enum Unprojectable {
     NotUserStatement(Speech),
     UnknownMemoryType(String),
     MissingValue,
-    /// 普通非方向型否定断言，或任何类型的方向未知；计划的极性保留在完整候选中。
+    /// 否定 episode 等不可投影断言，或任何类型的方向未知；计划极性保留在完整候选中。
     Polarity(Polarity),
     UnknownStrength,
 }
@@ -1265,6 +1265,11 @@ impl ContractCandidate {
             // 撤回本身就是否定，不是否定事实。
             (Polarity::Negate, false, CandidateKind::Retraction) => None,
             (Polarity::Negate, false, CandidateKind::Assertion) if plan => None,
+            (Polarity::Negate, false, CandidateKind::Assertion)
+                if c.speech == Speech::UserStatement && memory_type == MemoryType::Fact =>
+            {
+                Some(crate::Polarity::Negative)
+            }
             (Polarity::Negate, false, CandidateKind::Assertion) => {
                 return Err(Unprojectable::Polarity(Polarity::Negate));
             }

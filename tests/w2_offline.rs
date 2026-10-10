@@ -1211,17 +1211,19 @@ fn af206_qualifier_and_negation_support_stays_a_w3_judgment() {
         said_on: Some("2026-04-15".into()),
         time_resolutions: vec![],
     };
-    // AF206 does not authorize changing ordinary negative-fact execution projection.
-    assert!(matches!(
-        candidate.project(&ProjectionContext {
+    let projected = candidate
+        .project(&ProjectionContext {
             owner_id: "owner".into(),
             task_id: None,
             observed_at: hippocampus::Timestamp(0),
             session_id: "s".into(),
             turn_id: "t".into(),
             evidence_id: "e".into(),
-            explicit_memory_request: false
-        }),
-        Err(Unprojectable::Polarity(Polarity::Negate))
-    ));
+            explicit_memory_request: false,
+        })
+        .unwrap();
+    assert_eq!(
+        projected.candidate.polarity,
+        Some(hippocampus::Polarity::Negative)
+    );
 }
