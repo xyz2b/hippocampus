@@ -418,7 +418,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v8".into(),
+                version: "recall.v9".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -434,6 +434,7 @@ impl Assembly {
                 retrieval: self.retrieval,
                 degraded_reasons: reasons,
                 snapshot: self.snapshot,
+                statement_snapshot: None,
             },
             audit,
         ))
@@ -670,7 +671,7 @@ impl Assembly {
         let clarification =
             (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v8".into(),
+            version: "recall.v9".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
@@ -698,6 +699,7 @@ impl Assembly {
             retrieval: self.retrieval,
             degraded_reasons,
             snapshot: self.snapshot,
+            statement_snapshot: None,
         })
     }
 }
@@ -757,7 +759,7 @@ fn record_slot(record: &RecordView) -> Option<(String, String)> {
     }
 }
 
-fn source_in_task(source: &SourceRecord, request: &Request) -> bool {
+pub(crate) fn source_in_task(source: &SourceRecord, request: &Request) -> bool {
     source.enrichment != "deleted"
         && crate::lexical::body(source).is_some()
         && crate::lexical::task(source)
@@ -777,7 +779,11 @@ fn sources_of<'a>(state: &'a PersistedMemoryState, memory: &Memory) -> Vec<&'a S
         .collect()
 }
 
-fn record_in_scope(state: &PersistedMemoryState, memory: &Memory, request: &Request) -> bool {
+pub(crate) fn record_in_scope(
+    state: &PersistedMemoryState,
+    memory: &Memory,
+    request: &Request,
+) -> bool {
     let sources = sources_of(state, memory);
     let origin_allowed =
         crate::w5_record_contract(state, memory.id).is_none_or(|c| match c.source {
@@ -823,7 +829,7 @@ pub(crate) fn projection(state: &PersistedMemoryState, id: MemoryId) -> Option<R
     }
 }
 
-fn enrichment(source: &SourceRecord) -> Option<EnrichmentStatus> {
+pub(crate) fn enrichment(source: &SourceRecord) -> Option<EnrichmentStatus> {
     use EnrichmentStatus::*;
     match source.enrichment.as_str() {
         "stale_requires_review" => Some(NeedsRejudge),

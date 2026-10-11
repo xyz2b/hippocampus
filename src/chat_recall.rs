@@ -1,4 +1,4 @@
-//! recall.v8 宿主分发；只提供新契约，不读取评测夹具。
+//! recall.v9 宿主分发；只提供新契约，不读取评测夹具。
 use super::*;
 use crate::contract::{
     Polarity, Qualification, RecallOutput, RecallRequest, RecallStatus, SemanticJudgment, SourceRef,
@@ -72,7 +72,7 @@ impl ChatMemoryService {
     }
 
     fn recall_id(id: Option<String>) -> PersistenceResult<String> {
-        let id = id.ok_or("recall.v8 requires request_id")?;
+        let id = id.ok_or("recall.v9 requires request_id")?;
         bounded_text(&id, "request_id", 512)?;
         Ok(id)
     }
@@ -80,7 +80,7 @@ impl ChatMemoryService {
     fn recall_at(&self, id: &str, at: Option<i64>) -> PersistenceResult<i64> {
         past_time(at, "at")?;
         let key = json!([
-            "recall.v8",
+            "recall.v9",
             crate::openai::recall_models::fingerprint(&json!(id))
         ])
         .to_string();
@@ -130,7 +130,7 @@ impl ChatMemoryService {
             bootstrap: input.bootstrap,
         };
         if input.bootstrap {
-            // 启动召回只读取既有全局规则；不把普通个人事实或未整理正文送到宿主。
+            // 全局规则保持原行为；个人已存陈述仅经显式启用的独立快照返回。
             let before = self.store.read()?;
             let global = self.global_context_from_state(&before)?;
             let memories = global
@@ -147,7 +147,7 @@ impl ChatMemoryService {
                 .filter_map(|m| crate::recall::projection(&before, m.id))
                 .collect::<Vec<_>>();
             let output = RecallOutput {
-                version: "recall.v8".into(),
+                version: "recall.v9".into(),
                 request: request.binding.clone(),
                 status: RecallStatus::ContextOnly,
                 current_message: None,
@@ -179,6 +179,13 @@ impl ChatMemoryService {
                     read_revision: before.revision,
                     source_revision: before.source_revision,
                 },
+                statement_snapshot: crate::retrieval::statement_snapshot(
+                    &before,
+                    &request,
+                    &self.config.statement_snapshot,
+                    input.limit,
+                    unix_seconds()?,
+                )?,
             };
             let output = self.recall_runtime.run_bootstrap(
                 &mut self.store,
@@ -190,6 +197,7 @@ impl ChatMemoryService {
                 output,
                 crate::recall::SafetySnapshot::capture(&before, &request)?,
                 &self.config.embedding,
+                &self.config.statement_snapshot,
             )?;
             return Ok(serde_json::to_value(output)?);
         }
@@ -544,7 +552,7 @@ fn retained_write_candidates(result: &Value) -> Vec<Value> {
         .collect()
 }
 
-/// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v8 组织回答。
+/// ponytail: 仅核准简单事实的完全相同陈述；复杂限定/计算需宿主按 recall.v9 组织回答。
 fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value {
     let fact = out.facts.first();
     // R5 对已知相关原文遗漏降 current=unknown、status=insufficient；两者都不能批准。
@@ -581,7 +589,7 @@ fn validate_retained_answer(input: &ValidateAnswer, out: &RecallOutput) -> Value
         && input.source_ids.len() == proposed.len()
         && proposed == sources
         && fact.is_some_and(|f| f.statement == input.draft_answer);
-    json!({"version":"recall.v8","request":out.request,"snapshot":out.snapshot,
+    json!({"version":"recall.v9","request":out.request,"snapshot":out.snapshot,
         "approved":approved,"approved_source_ids":if approved {sources} else {BTreeSet::new()},
         "reason":if approved {"retained_exact_statement"} else {"draft_requires_semantic_review"}})
 }
@@ -592,7 +600,7 @@ mod tests {
     #[test]
     fn new_validator_checks_r5_gate_instead_of_blanket_truncation() {
         let mut out: RecallOutput = serde_json::from_value(json!({
-            "version":"recall.v8","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
+            "version":"recall.v9","request":{"request_id":"gate","query":"住所？","context":[],"task_id":null,"at":1791000000},
             "status":"answered","current_message":null,"records":[],"raw":[],
             "facts":[{"statement":"我住上海。","evidence":[{"source":{"kind":"stored","source_id":"home"},"quote":{"text":"我住上海。"}}],
                 "record_ids":[1],"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[],"current":"yes","applies":"yes",

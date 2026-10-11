@@ -4,6 +4,173 @@ use crate::{
     RetentionTier, Timestamp,
 };
 
+/// AF283's approved relation IDs; no text-based health or preference classification.
+pub const STATEMENT_SNAPSHOT_RELATIONS: &[&str] = &[
+    "response_language",
+    "response_style",
+    "code_example_language",
+    "likes",
+    "avoids",
+    "job_title",
+    "works_at",
+    "lives_in",
+    "allergic_to",
+];
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(default, deny_unknown_fields)]
+pub struct StatementSnapshotConfig {
+    pub enabled: bool,
+    pub max_records: usize,
+    pub max_bytes: usize,
+}
+impl Default for StatementSnapshotConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            max_records: 8,
+            max_bytes: 16_384,
+        }
+    }
+}
+impl StatementSnapshotConfig {
+    pub fn is_default(&self) -> bool {
+        self == &Self::default()
+    }
+
+    pub fn validate(&self) -> crate::PersistenceResult<()> {
+        if !(1..=32).contains(&self.max_records) || !(512..=65_536).contains(&self.max_bytes) {
+            return Err(
+                "statement_snapshot bounds: max_records=1..32, max_bytes=512..65536".into(),
+            );
+        }
+        Ok(())
+    }
+}
+
+pub(crate) fn statement_snapshot(
+    state: &crate::PersistedMemoryState,
+    request: &crate::recall::Request,
+    config: &StatementSnapshotConfig,
+    limit: usize,
+    read_at: i64,
+) -> crate::PersistenceResult<Option<crate::contract::StatementSnapshot>> {
+    use crate::contract::{Grade, RecordView, SourceRef, StoredStatus, Subject};
+    use crate::{MemoryRepository, RetentionPolicy, UpdateStatus};
+    if !config.enabled || !request.bootstrap {
+        return Ok(None);
+    }
+    config.validate()?;
+    let authorized = |id: &str| {
+        state.sources.values().find(|s| s.id == id).filter(|s| {
+            crate::recall::source_in_task(s, request)
+                && s.request
+                    .as_ref()
+                    .is_some_and(|r| r["capture_source"] == true)
+                && s.enrichment != "awaiting_confirmation"
+        })
+    };
+    let mut result = crate::contract::StatementSnapshot {
+        records: vec![],
+        snapshot: crate::contract::RecallSnapshot {
+            read_revision: state.revision,
+            source_revision: state.source_revision,
+        },
+        read_at,
+        unfinished_sources: state
+            .sources
+            .values()
+            .filter(|s| {
+                crate::recall::source_in_task(s, request)
+                    && !matches!(
+                        crate::recall::enrichment(s),
+                        Some(
+                            crate::contract::EnrichmentStatus::Committed
+                                | crate::contract::EnrichmentStatus::CompletedNoFacts
+                        )
+                    )
+            })
+            .count(),
+        coverage_unknown: true,
+        truncated: false,
+        notice: "已存陈述，非本轮判断；不证明当前值、条件适用或完整覆盖。".into(),
+    };
+    let mut memories = state.repository.list_by_owner(&request.owner)?;
+    memories.sort_by_key(|m| (std::cmp::Reverse(m.temporal.observed_at), m.id));
+    for memory in memories {
+        if memory.subject_id != EntityId::from("self")
+            || memory.status != MemoryStatus::Active
+            || matches!(
+                crate::DefaultRetentionPolicy.evaluate(&memory, Timestamp(read_at)),
+                crate::RetentionAction::Expire
+            )
+            || !crate::recall::record_in_scope(state, &memory, request)
+            || !STATEMENT_SNAPSHOT_RELATIONS.contains(&memory.predicate.0.as_str())
+            || (matches!(
+                memory.predicate.0.as_str(),
+                "response_language"
+                    | "response_style"
+                    | "code_example_language"
+                    | "likes"
+                    | "avoids"
+            ) && !matches!(
+                memory.memory_type,
+                MemoryType::Preference | MemoryType::Constraint
+            ))
+        {
+            continue;
+        }
+        let Some(RecordView::Current(view)) = crate::recall::projection(state, memory.id) else {
+            continue;
+        };
+        if view.stored_status != StoredStatus::Active
+            || view.grade != Grade::Committed
+            || view.update.status != UpdateStatus::Judged
+            || !view.open_relations.is_empty()
+            || !matches!(&view.candidate.subject, Subject::Entity(s) if s.entity_id == "self")
+        {
+            continue;
+        }
+        let Some(contract) = crate::w5_record_contract(state, memory.id) else {
+            continue;
+        };
+        let SourceRef::Stored { source_id } = &contract.source else {
+            continue;
+        };
+        let Some(origin) = authorized(source_id) else {
+            continue;
+        };
+        if crate::contract::locate_quote(
+            crate::lexical::body(origin).unwrap(),
+            &view.candidate.sentence.text,
+        )
+        .is_none()
+            || view.evidence.is_empty()
+            || !view.evidence.iter().all(|e| {
+                let SourceRef::Stored { source_id } = &e.source else {
+                    return false;
+                };
+                authorized(source_id).is_some_and(|s| {
+                    crate::contract::locate_quote(crate::lexical::body(s).unwrap(), &e.quote.text)
+                        .is_some()
+                })
+            })
+        {
+            continue;
+        }
+        if result.records.len() >= config.max_records.min(limit) {
+            result.truncated = true;
+            continue;
+        }
+        result.records.push(view);
+        if serde_json::to_vec(&result)?.len() > config.max_bytes {
+            result.records.pop();
+            result.truncated = true;
+        }
+    }
+    Ok(Some(result))
+}
+
 #[derive(serde::Serialize, Clone, Debug, Default, Eq, PartialEq)]
 pub struct GlobalContext {
     pub mandatory: Vec<Memory>,

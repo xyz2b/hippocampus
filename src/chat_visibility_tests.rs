@@ -706,7 +706,7 @@ fn visibility_real_prepare_immediate_recall_success_frequency() {
             )
             .unwrap();
             let body = response.structured_content.as_ref().unwrap();
-            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v8" {
+            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v9" {
                 success += 1;
                 assert_eq!(body["source"]["status"], "stored");
                 assert_eq!(body["recall"]["status"], "answered", "{body}");

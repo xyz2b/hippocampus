@@ -116,6 +116,45 @@ mod tests {
     use crate::ReasoningEffort::{Low, Medium, Minimal};
 
     #[test]
+    fn af283_snapshot_is_opt_in_bounded_and_default_binding_is_unchanged() {
+        let implicit: ChatConfig = serde_json::from_value(json!({})).unwrap();
+        let explicit: ChatConfig =
+            serde_json::from_value(json!({"statement_snapshot":{}})).unwrap();
+        assert_eq!(
+            serde_json::to_value(&implicit).unwrap(),
+            serde_json::to_value(&explicit).unwrap()
+        );
+        assert!(!implicit.statement_snapshot.enabled);
+        assert!(
+            serde_json::to_value(implicit)
+                .unwrap()
+                .get("statement_snapshot")
+                .is_none()
+        );
+        let configured: ChatConfig = serde_json::from_value(json!({"statement_snapshot":{
+            "enabled":true, "max_records":4, "max_bytes":8192
+        }}))
+        .unwrap();
+        configured.validate().unwrap();
+        let reopened: ChatConfig =
+            serde_json::from_value(serde_json::to_value(&configured).unwrap()).unwrap();
+        assert_eq!(reopened.statement_snapshot, configured.statement_snapshot);
+        for invalid in [
+            json!({"max_records":0}),
+            json!({"max_records":33}),
+            json!({"max_bytes":511}),
+            json!({"max_bytes":65537}),
+            json!({"enabled":"true"}),
+            json!({"relations":["fact"]}),
+        ] {
+            assert!(
+                serde_json::from_value::<ChatConfig>(json!({"statement_snapshot":invalid}))
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
     fn embedding_config_is_opt_in_strict_and_default_serialization_stays_compatible() {
         let implicit: ChatConfig = serde_json::from_value(json!({})).unwrap();
         let explicit: ChatConfig = serde_json::from_value(json!({"embedding":{}})).unwrap();

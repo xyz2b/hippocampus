@@ -9,6 +9,58 @@ const TEXT: &str = "我的灯是紫色。";
 const AT: i64 = 1_791_000_000;
 
 #[test]
+fn af283_bootstrap_read_then_other_connection_delete_cannot_cache_or_return_snapshot() {
+    let db = Db::new();
+    let mut req = request("bootstrap-delete");
+    req.bootstrap = true;
+    let mut store = db.open();
+    let state = store.read().unwrap();
+    let safety = recall::SafetySnapshot::capture(&state, &req).unwrap();
+    let policy = StatementSnapshotConfig {
+        enabled: true,
+        ..Default::default()
+    };
+    let output = serde_json::from_value(json!({
+        "version":"recall.v9","request":req.binding,"status":"context_only",
+        "current_message":null,"records":[],"raw":[],"facts":[],"computed":null,
+        "history":[],"conflicts":[],"clarification":null,"semantic_judgment":"skipped",
+        "completeness":{"retrieval_truncated":false,"pending_related_sources":0,
+            "pending_updates":0,"enrichment_gaps":0,"plan_complete":true},
+        "retrieval":{"status":"disabled","sources_total":0,"sources_indexed":0,
+            "segments_total":0,"segments_indexed":0},
+        "degraded_reasons":[],"snapshot":{"read_revision":state.revision,
+            "source_revision":state.source_revision},
+        "statement_snapshot":crate::retrieval::statement_snapshot(&state,&req,&policy,8,AT).unwrap()
+    }))
+    .unwrap();
+    db.open()
+        .transaction(|s| {
+            let source = s.sources.get_mut("s-purple").unwrap();
+            source.enrichment = "deleted".into();
+            source.request = None;
+            Ok(())
+        })
+        .unwrap();
+    let runtime = RecallRuntime::default();
+    let error = runtime
+        .run_bootstrap(
+            &mut store,
+            &req,
+            Budget::default(),
+            output,
+            safety,
+            &crate::embedding::Config::default(),
+            &policy,
+        )
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("recall_snapshot_changed"), "{error}");
+    assert!(!error.contains(TEXT));
+    assert!(runtime.retained(&store, &req.binding.request_id).is_err());
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
 fn r4_routes_by_verified_op_and_failed_r1_falls_back_without_extra_calls() {
     for (op, effort) in [
         ("count", "low"),
@@ -1167,7 +1219,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v8");
+    assert_eq!(out["version"], "recall.v9");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1256,7 +1308,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v8");
+        assert_eq!(result["recall"]["version"], "recall.v9");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1271,7 +1323,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v8");
+    assert_eq!(body["recall"]["version"], "recall.v9");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -2993,7 +3045,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let result = runtime
             .run(&mut db.open(), &req, Budget::default(), Some(&provider))
             .unwrap();
-        assert_eq!(result.version, "recall.v8");
+        assert_eq!(result.version, "recall.v9");
         assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
         let requests = sent.lock().unwrap();
         for (i, (schema, contract, old_schema, old_contract)) in [
@@ -3031,7 +3083,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let r4_digest = fingerprint(&json!([R4_PROMPT, requests[1]["text"]["format"]["schema"]]));
         drop(requests);
         let operation =
-            json!(["recall.v8", fingerprint(&json!(req.binding.request_id))]).to_string();
+            json!(["recall.v9", fingerprint(&json!(req.binding.request_id))]).to_string();
         let state = db.open().read().unwrap();
         let receipt = &state.receipts[&operation];
         assert_eq!(

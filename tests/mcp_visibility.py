@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""target-design 2.6: new inline write + recall.v8 over MCP and synthetic loopback HTTP."""
+"""target-design 2.6: new inline write + recall.v9 over MCP and synthetic loopback HTTP."""
 import argparse
 import contextlib
 import datetime

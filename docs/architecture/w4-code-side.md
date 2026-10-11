@@ -1,6 +1,6 @@
 # W4 的代码侧与运行时离线闭环
 
-> 2026-10-07 M1.5 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。当前 DB v11；契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v8。缺省 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除与授权账本保留，客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定。历史测量与检查点兼容说明不代表旧执行器仍可用。
+> 2026-10-07 M1.5 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。当前 DB v11；契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v9。缺省 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除与授权账本保留，客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定。历史测量与检查点兼容说明不代表旧执行器仍可用。
 
 依据 contracts.md 2.1–2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。W2 在 `src/w2.rs`，W3 类型与机械核验在 `src/contract.rs`，W4 在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，库级入口在 `src/enrichment.rs`。注入提供者实现离线闭环；④-3/④-4 增加显式 W1/W3/W4 模型入口，④-5 接通配置与 CLI 分发。
 
@@ -223,7 +223,7 @@ AF1 升版后的离线回归保留 w4.v2 归档样本的显式 incomplete 输入
 
 该步当时的核心契约为 W1/W3 v2、W4/R4/recall v4；R1 保持 v1，提示词变化仍更新请求指纹。执行器配置名 w4_runtime_v1 / recall_v3 不变。计划仅以 fact 投影执行存储，完整 Candidate 保留 speech=plan、肯定/否定与限定语，投影标为非无损；计划修改/取消/纠错/撤回由 W4 判定，不自动删除或取消预订，日期经过不证明实现。R4 的 statement 必须标计划，current=yes 是最新计划版本。
 
-主体确认/重建、历史补录与 nullable said_on 已在第③④步实现；第②步当时 DB 仍为9，第③步升到10。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。第②步最初遗漏宿主版本分发范围，后来经补充授权完成 chat.rs/chat_recall.rs 等接线；当前 MCP 闭环使用 recall.v8。
+主体确认/重建、历史补录与 nullable said_on 已在第③④步实现；第②步当时 DB 仍为9，第③步升到10。旧阶段与端到端录制的提示词/schema 指纹过期，仅用于历史核验，不改指纹复用为新版。第②步最初遗漏宿主版本分发范围，后来经补充授权完成 chat.rs/chat_recall.rs 等接线；当前 MCP 闭环使用 recall.v9。
 
 ### AF78 实体目录追加
 
@@ -237,4 +237,4 @@ memory_entity_merge 只合并当前 owner 的两个非 self Person，要求已�
 
 ### AF206：通用 fact 的断言定位片段
 
-通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1/W3 v4、W4 v5、R4 v7、recall v8；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
+通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1/W3 v4、W4 v5、R4 v7、recall v9；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。

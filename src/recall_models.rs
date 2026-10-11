@@ -644,7 +644,7 @@ fn request_binding(
     request: &Request,
     budget: Budget,
     provider: Option<&RecallModelProvider>,
-    bootstrap: bool,
+    bootstrap: Option<&crate::StatementSnapshotConfig>,
     retrieval: Option<&recall::Retrieval<'_>>,
 ) -> PersistenceResult<String> {
     let mut binding = fingerprint(&json!([
@@ -658,8 +658,11 @@ fn request_binding(
         budget.relations,
         budget.stored_bytes
     ]));
-    if bootstrap {
+    if let Some(policy) = bootstrap {
         binding = fingerprint(&json!([binding, "global_bootstrap"]));
+        if !policy.is_default() {
+            binding = fingerprint(&json!([binding, policy]));
+        }
     }
     if let Some(p) = provider
         && (["r1", "r4"]
@@ -739,7 +742,7 @@ impl RecallRuntime {
         store: &SqliteMemoryStore,
         request_id: &str,
     ) -> PersistenceResult<RecallOutput> {
-        let operation = json!(["recall.v8", fingerprint(&json!(request_id))]).to_string();
+        let operation = json!(["recall.v9", fingerprint(&json!(request_id))]).to_string();
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
@@ -792,7 +795,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v8", fingerprint(&json!(request_id))]).to_string(),
+            json!(["recall.v9", fingerprint(&json!(request_id))]).to_string(),
         );
         self.cached_in_state(store, state, &key).map(|c| c.output)
     }
@@ -806,7 +809,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v8", fingerprint(&json!(request_id))]).to_string(),
+            json!(["recall.v9", fingerprint(&json!(request_id))]).to_string(),
         );
         store.read_for_publication(|state| {
             self.cached_in_state(store, state, &key)?
@@ -926,10 +929,11 @@ impl RecallRuntime {
         output: RecallOutput,
         safety: recall::SafetySnapshot,
         embedding: &crate::embedding::Config,
+        policy: &crate::StatementSnapshotConfig,
     ) -> PersistenceResult<RecallOutput> {
         if !request.bootstrap
             || output.request != request.binding
-            || output.version != "recall.v8"
+            || output.version != "recall.v9"
             || output.current_message.is_some()
             || !output.raw.is_empty()
             || !output.facts.is_empty()
@@ -943,7 +947,7 @@ impl RecallRuntime {
             request,
             budget,
             None,
-            Some((output, safety)),
+            Some((output, safety, policy.clone())),
             false,
             &|| false,
             Some(&recall::Retrieval {
@@ -960,7 +964,11 @@ impl RecallRuntime {
         request: &Request,
         budget: Budget,
         provider: Option<&RecallModelProvider>,
-        bootstrap: Option<(RecallOutput, recall::SafetySnapshot)>,
+        bootstrap: Option<(
+            RecallOutput,
+            recall::SafetySnapshot,
+            crate::StatementSnapshotConfig,
+        )>,
         implicit_at: bool,
         cancelled: &dyn Fn() -> bool,
         retrieval: Option<&recall::Retrieval<'_>>,
@@ -975,7 +983,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v8", fingerprint(&json!(request.binding.request_id))]).to_string(),
+            json!(["recall.v9", fingerprint(&json!(request.binding.request_id))]).to_string(),
         );
         let mut effective = Request {
             binding: request.binding.clone(),
@@ -1009,8 +1017,13 @@ impl RecallRuntime {
                     freeze_clock(&mut effective, at)?;
                 }
             }
-            let binding =
-                request_binding(&effective, budget, provider, bootstrap.is_some(), retrieval)?;
+            let binding = request_binding(
+                &effective,
+                budget,
+                provider,
+                bootstrap.as_ref().map(|b| &b.2),
+                retrieval,
+            )?;
             if let Some(flight) = flights.get(&key) {
                 if flight.binding != binding {
                     return Err("recall_request_mismatch".into());
@@ -1066,7 +1079,11 @@ impl RecallRuntime {
         request: &Request,
         budget: Budget,
         provider: Option<&RecallModelProvider>,
-        bootstrap: Option<(RecallOutput, recall::SafetySnapshot)>,
+        bootstrap: Option<(
+            RecallOutput,
+            recall::SafetySnapshot,
+            crate::StatementSnapshotConfig,
+        )>,
         cancelled: &dyn Fn() -> bool,
         retrieval: Option<&recall::Retrieval<'_>>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
@@ -1103,13 +1120,19 @@ impl RecallRuntime {
         let initial = stamp(&state)?;
         // request_id 也可能夹带原话；摘要键既避免正文落库，也不会超过账本 ID 长度上限。
         let operation =
-            json!(["recall.v8", fingerprint(&json!(request.binding.request_id))]).to_string();
+            json!(["recall.v9", fingerprint(&json!(request.binding.request_id))]).to_string();
         let cache_key = (
             store.path().to_owned(),
             request.owner.0.clone(),
             operation.clone(),
         );
-        let binding = request_binding(request, budget, provider, bootstrap.is_some(), retrieval)?;
+        let binding = request_binding(
+            request,
+            budget,
+            provider,
+            bootstrap.as_ref().map(|b| &b.2),
+            retrieval,
+        )?;
         let attempt = crate::diagnostics::new_id();
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
@@ -1139,7 +1162,7 @@ impl RecallRuntime {
         let mut r4_audit = None;
         let result: PersistenceResult<RecallOutput> = (|| {
             check_cancelled(cancelled)?;
-            if let Some((output, binding)) = bootstrap {
+            if let Some((output, binding, _)) = bootstrap {
                 binding.check(store.owner(), &state)?;
                 safety = Some(binding);
                 return Ok(output);

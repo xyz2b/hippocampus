@@ -873,6 +873,19 @@ pub struct RecallSnapshot {
     pub source_revision: u64,
 }
 
+/// Bootstrap-only stored statements; no per-question applicability/current judgment.
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct StatementSnapshot {
+    pub records: Vec<CurrentRecordView>,
+    pub snapshot: RecallSnapshot,
+    pub read_at: i64,
+    pub unfinished_sources: usize,
+    pub coverage_unknown: bool,
+    pub truncated: bool,
+    pub notice: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum RecallStatus {
@@ -1093,6 +1106,8 @@ pub struct RecallOutput {
     pub retrieval: RecallRetrieval,
     pub degraded_reasons: Vec<String>,
     pub snapshot: RecallSnapshot,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub statement_snapshot: Option<StatementSnapshot>,
 }
 
 /// Host-only index availability; never establishes evidence or enters R4's completeness.
