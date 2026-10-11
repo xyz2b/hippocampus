@@ -1,0 +1,482 @@
+{
+  "schema": "retrieval-queries.v1",
+  "revision": "AF293",
+  "r1_contract": "r1.v2",
+  "budgets": [
+    64,
+    8
+  ],
+  "queries": [
+    {
+      "id": "D1",
+      "query": "女儿对什么过敏",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "女儿对什么过敏"
+          }
+        },
+        "relation": "女儿对什么过敏",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "TARGET"
+      ],
+      "relevant_records": [
+        "TARGET"
+      ],
+      "forbidden_records": [
+        "FOREIGN"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "D2",
+      "query": "女儿最近怎么样",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "女儿最近怎么样"
+          }
+        },
+        "relation": "女儿最近怎么样",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "TARGET"
+      ],
+      "relevant_records": [
+        "TARGET"
+      ],
+      "forbidden_records": [
+        "FOREIGN"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "D3",
+      "query": "小雨最近怎么样",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "小雨最近怎么样"
+          }
+        },
+        "relation": "小雨最近怎么样",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "TARGET"
+      ],
+      "relevant_records": [
+        "TARGET"
+      ],
+      "forbidden_records": [
+        "FOREIGN"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "D4",
+      "query": "雨宝最近怎么样",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "雨宝最近怎么样"
+          }
+        },
+        "relation": "雨宝最近怎么样",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "TARGET"
+      ],
+      "relevant_records": [
+        "TARGET"
+      ],
+      "forbidden_records": [
+        "FOREIGN"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "D5-bound",
+      "query": "女儿的游泳课报名情况",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "e-daughter"
+        },
+        "relation": "女儿的游泳课报名情况",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "ACTOR"
+      ],
+      "relevant_records": [
+        "ACTOR"
+      ],
+      "forbidden_records": [
+        "FOREIGN"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "D5-wide",
+      "query": "女儿的游泳课报名情况",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "女儿的游泳课报名情况"
+          }
+        },
+        "relation": "女儿的游泳课报名情况",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "ACTOR"
+      ],
+      "relevant_records": [
+        "ACTOR"
+      ],
+      "forbidden_records": [
+        "FOREIGN"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "SAFE",
+      "query": "女儿对什么过敏",
+      "category": "entity-diagnostic",
+      "control": false,
+      "owner": "A",
+      "subject_ids": [
+        "e-daughter"
+      ],
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "e-daughter"
+        },
+        "relation": "女儿对什么过敏",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "TARGET"
+      ],
+      "relevant_records": [
+        "TARGET"
+      ],
+      "forbidden_records": [
+        "FOREIGN",
+        "ACTOR",
+        "OTHER",
+        "S001",
+        "S002",
+        "S003",
+        "S004",
+        "S005",
+        "S006",
+        "S007",
+        "S008",
+        "S009",
+        "S010",
+        "S011",
+        "S012",
+        "S013",
+        "S014",
+        "S015",
+        "S016",
+        "S017",
+        "S018",
+        "S019",
+        "S020",
+        "S021",
+        "S022",
+        "S023",
+        "S024",
+        "S025",
+        "S026",
+        "S027",
+        "S028",
+        "S029",
+        "S030",
+        "S031",
+        "S032",
+        "S033",
+        "S034",
+        "S035",
+        "S036",
+        "S037",
+        "S038",
+        "S039",
+        "S040",
+        "S041",
+        "S042",
+        "S043",
+        "S044",
+        "S045",
+        "S046",
+        "S047",
+        "S048",
+        "S049",
+        "S050",
+        "S051",
+        "S052",
+        "S053",
+        "S054",
+        "S055",
+        "S056",
+        "S057",
+        "S058",
+        "S059",
+        "S060",
+        "S061",
+        "S062",
+        "S063",
+        "S064",
+        "S065",
+        "S066",
+        "S067",
+        "S068",
+        "S069",
+        "S070"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-FOREIGN",
+        "s-ACTOR",
+        "s-OTHER",
+        "s-S001",
+        "s-S002",
+        "s-S003",
+        "s-S004",
+        "s-S005",
+        "s-S006",
+        "s-S007",
+        "s-S008",
+        "s-S009",
+        "s-S010",
+        "s-S011",
+        "s-S012",
+        "s-S013",
+        "s-S014",
+        "s-S015",
+        "s-S016",
+        "s-S017",
+        "s-S018",
+        "s-S019",
+        "s-S020",
+        "s-S021",
+        "s-S022",
+        "s-S023",
+        "s-S024",
+        "s-S025",
+        "s-S026",
+        "s-S027",
+        "s-S028",
+        "s-S029",
+        "s-S030",
+        "s-S031",
+        "s-S032",
+        "s-S033",
+        "s-S034",
+        "s-S035",
+        "s-S036",
+        "s-S037",
+        "s-S038",
+        "s-S039",
+        "s-S040",
+        "s-S041",
+        "s-S042",
+        "s-S043",
+        "s-S044",
+        "s-S045",
+        "s-S046",
+        "s-S047",
+        "s-S048",
+        "s-S049",
+        "s-S050",
+        "s-S051",
+        "s-S052",
+        "s-S053",
+        "s-S054",
+        "s-S055",
+        "s-S056",
+        "s-S057",
+        "s-S058",
+        "s-S059",
+        "s-S060",
+        "s-S061",
+        "s-S062",
+        "s-S063",
+        "s-S064",
+        "s-S065",
+        "s-S066",
+        "s-S067",
+        "s-S068",
+        "s-S069",
+        "s-S070"
+      ],
+      "expected_path": {},
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    }
+  ]
+}

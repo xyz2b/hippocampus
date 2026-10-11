@@ -1,0 +1,249 @@
+{
+  "schema": "entity-diagnostic-corpus.v1",
+  "base": {
+    "schema": "retrieval-corpus.v1",
+    "revision": "AF293",
+    "said_on": "2026-04-15",
+    "at": 1776182400,
+    "utc_offset_seconds": 28800,
+    "entities": [
+      {
+        "id": "self",
+        "owner_id": "A",
+        "entity_type": "Person",
+        "canonical_name": "用户本人",
+        "aliases": [
+          "我"
+        ]
+      },
+      {
+        "id": "e-daughter",
+        "owner_id": "A",
+        "entity_type": "Person",
+        "canonical_name": "小雨",
+        "aliases": [
+          "女儿",
+          "小雨"
+        ]
+      },
+      {
+        "id": "self",
+        "owner_id": "B",
+        "entity_type": "Person",
+        "canonical_name": "其他用户",
+        "aliases": []
+      },
+      {
+        "id": "e-son",
+        "owner_id": "A",
+        "entity_type": "Person",
+        "canonical_name": "小川",
+        "aliases": [
+          "儿子"
+        ]
+      }
+    ],
+    "fill_rule": {},
+    "insertion_orders": [
+      "canonical"
+    ],
+    "sources": [],
+    "records": [],
+    "relations": [],
+    "delete_sources": []
+  },
+  "record_template": {
+    "label": "@label",
+    "memory": {
+      "owner_id": "@owner",
+      "evidence": [
+        {
+          "id": "ev-@label",
+          "session_id": "af173",
+          "turn_id": "@label",
+          "quote": "@text"
+        }
+      ],
+      "memory_type": "Fact",
+      "predicate": "@relation",
+      "value": {
+        "Text": "@text"
+      },
+      "polarity": null,
+      "strength": null,
+      "scope": {
+        "domain": null,
+        "conditions": []
+      },
+      "retention_tier": "LongTerm",
+      "temporal": {
+        "observed_at": 1776182400,
+        "valid_from": null,
+        "valid_to": null,
+        "expires_at": null,
+        "reference": null
+      },
+      "extraction_confidence": "High",
+      "certainty": "High",
+      "explicit_memory_request": false,
+      "tags": [],
+      "id": 3,
+      "subject_id": "@subject",
+      "status": "Active",
+      "supersedes": null,
+      "superseded_by": null,
+      "supersede_reason": null,
+      "reinforcement_count": 0,
+      "retrieval_count": 0,
+      "last_reinforced_at": null,
+      "last_retrieved_at": null
+    },
+    "contract": {
+      "candidate": {
+        "kind": "assertion",
+        "speech": "user_statement",
+        "subject": {
+          "entity_id": "@subject"
+        },
+        "relation": "@relation",
+        "memory_type": "fact",
+        "value": {
+          "kind": "text",
+          "text": "@text",
+          "quote": {
+            "text": "@text"
+          }
+        },
+        "sentence": {
+          "text": "@text"
+        },
+        "polarity": "affirm",
+        "strength": null,
+        "uncertainty": null,
+        "conditions": [],
+        "times": []
+      },
+      "source": {
+        "kind": "stored",
+        "source_id": "s-@label"
+      },
+      "said_on": "2026-04-15",
+      "time_resolutions": []
+    },
+    "receipt": {
+      "group_id": "g-@label",
+      "fingerprint": "{\"candidates\":[{\"candidate\":{\"certainty\":\"High\",\"cross_turn_useful\":true,\"evidence\":[{\"id\":\"ev-@label\",\"quote\":\"@text\",\"session_id\":\"af173\",\"turn_id\":\"@label\"}],\"explicit_memory_request\":false,\"extraction_confidence\":\"High\",\"intent\":\"Assert\",\"memory_type\":\"Fact\",\"owner_id\":\"@owner\",\"polarity\":null,\"predicate\":\"@relation\",\"retention_tier\":\"LongTerm\",\"scope\":{\"conditions\":[],\"domain\":null},\"source\":\"UserStatement\",\"strength\":null,\"subject\":{\"Resolved\":\"@subject\"},\"tags\":[],\"temporal\":{\"expires_at\":null,\"observed_at\":1776182400,\"reference\":null,\"valid_from\":null,\"valid_to\":null},\"value\":{\"Text\":\"@text\"}},\"contract\":{\"candidate\":{\"conditions\":[],\"kind\":\"assertion\",\"memory_type\":\"fact\",\"polarity\":\"affirm\",\"relation\":\"@relation\",\"sentence\":{\"text\":\"@text\"},\"speech\":\"user_statement\",\"strength\":null,\"subject\":{\"entity_id\":\"@subject\"},\"times\":[],\"uncertainty\":null,\"value\":{\"kind\":\"text\",\"quote\":{\"text\":\"@text\"},\"text\":\"@text\"}},\"said_on\":\"2026-04-15\",\"source\":{\"kind\":\"stored\",\"source_id\":\"s-@label\"},\"time_resolutions\":[]},\"index\":0}],\"decisions\":[{\"action\":\"New\",\"basis\":[{\"quote\":{\"text\":\"@text\"},\"source\":{\"kind\":\"stored\",\"source_id\":\"s-@label\"}}],\"basis_sources\":[\"s-@label\"],\"candidate\":0,\"effective\":null,\"reason\":null,\"targets\":[]}],\"id\":\"g-@label\",\"scope_complete\":true,\"seen\":[],\"source_key\":\"s-@label\"}",
+      "status": "Committed",
+      "legacy_fingerprint": false,
+      "products": {
+        "0": 3
+      },
+      "decisions": [
+        {
+          "candidate": 0,
+          "action": "New",
+          "targets": [],
+          "basis_sources": [
+            "s-@label"
+          ],
+          "reason": null,
+          "effective": null,
+          "basis": [
+            {
+              "source": {
+                "kind": "stored",
+                "source_id": "s-@label"
+              },
+              "quote": {
+                "text": "@text"
+              }
+            }
+          ]
+        }
+      ],
+      "updates": {
+        "0": {
+          "status": "judged",
+          "reasons": []
+        }
+      },
+      "merged": {},
+      "form": "v8"
+    },
+    "record_update": {
+      "status": "judged",
+      "reasons": []
+    }
+  },
+  "source_template": {
+    "owner": "@owner",
+    "record": {
+      "id": "s-@label",
+      "session_id": "af173",
+      "turn_id": "@label",
+      "observed_at": 1776182400,
+      "received_sequence": 5,
+      "request": {
+        "text": "@text",
+        "capture_source": true,
+        "task_id": null
+      },
+      "enrichment": "committed",
+      "error": null,
+      "result": null,
+      "base_revision": 0,
+      "index": null,
+      "task": {}
+    }
+  },
+  "records": [
+    {
+      "label": "TARGET",
+      "owner": "A",
+      "subject": "e-daughter",
+      "relation": "fact",
+      "text": "女儿对花生过敏。"
+    },
+    {
+      "label": "ACTOR",
+      "owner": "A",
+      "subject": "self",
+      "relation": "fact",
+      "text": "我给女儿报了游泳课。"
+    },
+    {
+      "label": "OTHER",
+      "owner": "A",
+      "subject": "e-son",
+      "relation": "fact",
+      "text": "儿子对花生过敏。"
+    },
+    {
+      "label": "FOREIGN",
+      "owner": "B",
+      "subject": "self",
+      "relation": "fact",
+      "text": "女儿对花生过敏。"
+    }
+  ],
+  "fillers": [
+    {
+      "prefix": "D",
+      "count": 70,
+      "owner": "A",
+      "subject": "e-daughter",
+      "relation": "fact",
+      "low": "观察编号 {i}：喜欢积木。",
+      "high": "女儿喜欢积木，观察编号 {i}。"
+    },
+    {
+      "prefix": "S",
+      "count": 70,
+      "owner": "A",
+      "subject": "self",
+      "relation": "fact",
+      "low": "收纳编号 {i}：我整理了书架。",
+      "high": "收纳编号 {i}：我整理了书架。"
+    }
+  ]
+}

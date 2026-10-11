@@ -347,6 +347,11 @@ impl Db {
                 assert!(view.open_relations.contains(&relation.id));
             }
         }
+        if c.revision == "AF293" {
+            assert_eq!(c.records.len(), 144);
+            assert_eq!(c.sources.len(), 144);
+            return; // Independent fixture; the F0001–F0100 rule belongs only to AF173.
+        }
         for number in 1..=100 {
             let label = format!("F{number:04}");
             let r = c.records.iter().find(|r| r.label == label).unwrap();
@@ -3066,4 +3071,253 @@ mod af175 {
             .call("memory_forget", json!({"source_id":"s-T03"}), || false)
             .unwrap();
     }
+}
+
+/// AF293 isolates entity diagnostics from the frozen corpus and embedding campaigns.
+#[test]
+fn af293_entity_diagnostics_without_model_calls() {
+    fn expand(value: &mut Json, fields: &Json) {
+        match value {
+            Json::Object(map) => {
+                for (key, value) in map {
+                    if key == "fingerprint" {
+                        let mut group: Json =
+                            serde_json::from_str(value.as_str().unwrap()).unwrap();
+                        expand(&mut group, fields);
+                        *value = json!(serde_json::to_string(&group).unwrap());
+                    } else {
+                        expand(value, fields);
+                    }
+                }
+            }
+            Json::Array(values) => values.iter_mut().for_each(|v| expand(v, fields)),
+            Json::String(text) => {
+                for key in ["label", "owner", "subject", "relation", "text"] {
+                    *text = text.replace(&format!("@{key}"), fields[key].as_str().unwrap());
+                }
+            }
+            _ => {}
+        }
+    }
+    let fixture: Json =
+        serde_json::from_str(include_str!("eval/retrieval/entity-corpus-af293.json")).unwrap();
+    let queries: Queries =
+        serde_json::from_str(include_str!("eval/retrieval/entity-queries-af293.json")).unwrap();
+    assert_eq!(fixture["schema"], "entity-diagnostic-corpus.v1");
+    assert_eq!(queries.revision, "AF293");
+    assert_eq!(queries.r1_contract, "r1.v2");
+    assert_eq!(queries.budgets, [64, 8]);
+    let mut rows = Vec::new();
+    for variant in ["low", "high"] {
+        let mut c: Corpus = serde_json::from_value(fixture["base"].clone()).unwrap();
+        let mut specs = fixture["records"].as_array().unwrap().clone();
+        for rule in fixture["fillers"].as_array().unwrap() {
+            for i in 1..=rule["count"].as_u64().unwrap() {
+                specs.push(
+                    json!({"label":format!("{}{:03}", rule["prefix"].as_str().unwrap(), i),
+                    "owner":rule["owner"],"subject":rule["subject"],"relation":rule["relation"],
+                    "text":rule[variant].as_str().unwrap().replace("{i}", &i.to_string())}),
+                );
+            }
+        }
+        for (i, spec) in specs.iter().enumerate() {
+            let mut r = fixture["record_template"].clone();
+            let mut source = fixture["source_template"].clone();
+            expand(&mut r, spec);
+            expand(&mut source, spec);
+            r["memory"]["id"] = json!(i + 1);
+            r["receipt"]["products"]["0"] = json!(i + 1);
+            source["record"]["received_sequence"] = json!(i + 1);
+            c.records.push(serde_json::from_value(r).unwrap());
+            c.sources.push(serde_json::from_value(source).unwrap());
+        }
+        let db = Db::seed(&c, "canonical");
+        for q in &queries.queries {
+            let (request, plan) = request_and_plan(&c, q);
+            assert_eq!(plan.output.as_ref().unwrap().plan.op, R1Op::Lookup);
+            let store = db.operation(&q.owner);
+            let state = store.read().unwrap();
+            // The fixture has one complete, single-subject record per source: this reproduces
+            // production's trusted-scope source set without duplicating its DF/ranking algorithm.
+            let docs: BTreeMap<_, _> = c
+                .records
+                .iter()
+                .filter(|r| {
+                    r.memory.owner_id == request.owner
+                        && request
+                            .subject_ids
+                            .as_ref()
+                            .is_none_or(|ids| ids.contains(&r.memory.subject_id))
+                })
+                .map(|r| {
+                    let SourceRef::Stored { source_id } = &r.contract.source else {
+                        unreachable!()
+                    };
+                    (
+                        source_id.clone(),
+                        state.sources[source_id].request.as_ref().unwrap()["text"]
+                            .as_str()
+                            .unwrap()
+                            .to_owned(),
+                    )
+                })
+                .collect();
+            let entities = state.entities.list_by_owner(&request.owner);
+            let hint = format!("{} {}", q.query, plan.output.as_ref().unwrap().relation);
+            let df = LexicalDf::new(&hint, &entities, docs.values().map(String::as_str));
+            let daughter = format!(" {} ", LexicalDf::index_text("女儿"));
+            let daughter_df = docs
+                .values()
+                .filter(|text| format!(" {} ", LexicalDf::index_text(text)).contains(&daughter))
+                .count();
+            if q.subject_ids.is_none() {
+                assert_eq!(LexicalDf::kept(daughter_df, docs.len()), variant == "low");
+            }
+            for records in &queries.budgets {
+                for enabled in [false, true] {
+                    let calls = std::cell::Cell::new(0);
+                    let fail_query = |_: &str| -> Result<embedding::QueryVector, String> {
+                        calls.set(calls.get() + 1);
+                        Err("embedding_connect".into())
+                    };
+                    let cfg = embedding::Config {
+                        enabled,
+                        ..Default::default()
+                    };
+                    let budget = Budget {
+                        records: *records,
+                        stored_bytes: q.stored_bytes,
+                        ..Default::default()
+                    };
+                    let started = Instant::now();
+                    let assembly = recall::assemble_with_retrieval(
+                        &store,
+                        &request,
+                        &plan,
+                        budget,
+                        &recall::Retrieval {
+                            config: &cfg,
+                            query: Some(&fail_query),
+                        },
+                        true,
+                    )
+                    .unwrap();
+                    let diagnostic = assembly.retrieval_diagnostic().unwrap();
+                    assert!(
+                        diagnostic.stages["r1_subject"].len() > 64,
+                        "{} {variant}",
+                        q.id
+                    );
+                    assert!(
+                        diagnostic.enumeration.is_none(),
+                        "{} unexpectedly enumerated",
+                        q.id
+                    );
+                    assert_eq!(calls.get(), usize::from(enabled));
+                    assert_eq!(
+                        assembly.retrieval.status,
+                        if enabled {
+                            RetrievalStatus::Unavailable
+                        } else {
+                            RetrievalStatus::Disabled
+                        }
+                    );
+                    assert!(
+                        assembly.evidence.raw.is_empty(),
+                        "completed sources must not gain raw fallback"
+                    );
+                    let mut row = evaluate_assembly(
+                        &c,
+                        q,
+                        &store,
+                        "canonical",
+                        *records,
+                        &request,
+                        &plan,
+                        budget,
+                        &assembly,
+                        started.elapsed().as_micros(),
+                        false,
+                    );
+                    let targets: Vec<_> = q.required_records.iter().map(|label| {
+                        let r = c.records.iter().find(|r| &r.label == label).unwrap();
+                        json!({"label":label,"trusted_scope":diagnostic.stages["trusted_scope"].contains(&r.memory.id),
+                            "r1_subject":diagnostic.stages["r1_subject"].contains(&r.memory.id),
+                            "omitted_at":omitted_at(diagnostic,r.memory.id)})
+                    }).collect();
+                    if q.id == "D5-bound" {
+                        assert_eq!(targets[0]["trusted_scope"], true);
+                        assert_eq!(targets[0]["r1_subject"], false);
+                    }
+                    if q.id == "D5-wide" {
+                        assert_eq!(targets[0]["r1_subject"], true);
+                    }
+                    if q.id == "SAFE" {
+                        assert!(diagnostic.stages["trusted_scope"].iter().all(|id| {
+                            c.records
+                                .iter()
+                                .find(|r| r.memory.id == *id)
+                                .unwrap()
+                                .memory
+                                .subject_id
+                                .0
+                                == "e-daughter"
+                        }));
+                    }
+                    row["variant"] = json!(variant);
+                    row["arm"] = json!(if enabled {
+                        "lexical-df-fallback"
+                    } else {
+                        "embedding-disabled"
+                    });
+                    row["df"] = json!(df);
+                    row["df_applied"] = json!(enabled);
+                    row["targets"] = json!(targets);
+                    row["retrieval"] = json!(assembly.retrieval);
+                    row["injected_failure_calls"] = json!(calls.get());
+                    row["other_child_returned"] = json!(
+                        row["returned"]
+                            .as_array()
+                            .unwrap()
+                            .contains(&json!("OTHER"))
+                    );
+                    rows.push(row);
+                }
+            }
+        }
+    }
+    assert_eq!(rows.len(), queries.queries.len() * 8);
+    let out = Path::new("target/eval-retrieval/af293");
+    std::fs::create_dir_all(out).unwrap();
+    let report = json!({"revision":"AF293","model_calls":0,"embedding_calls":0,"vectors_added":0,
+        "corpus_fingerprint":recall_models::fingerprint(&fixture),
+        "queries_fingerprint":recall_models::fingerprint(&serde_json::from_str::<Json>(include_str!("eval/retrieval/entity-queries-af293.json")).unwrap()),
+        "note":"Injected R1 and complete records; not a W1/R1 accuracy or vector-recall experiment. DF is diagnostic only in disabled arm. Retrieval misses do not fail the test.","rows":rows});
+    std::fs::write(
+        out.join("report.json"),
+        serde_json::to_vec_pretty(&report).unwrap(),
+    )
+    .unwrap();
+    let mut md = String::from(
+        "# AF293 实体检索诊断\n\n真实模型/嵌入调用 0；只注入失败，无向量。命中不是回答正确率；未登记昵称没有指代真值。\n\n|题|DF|预算|臂|目标返回|遗漏阶段|R3原文覆盖|其他孩子返回|\n|---|---|---:|---|---|---|---|---|\n",
+    );
+    for row in report["rows"].as_array().unwrap() {
+        md.push_str(&format!(
+            "|{}|{}|{}|{}|{}|{}|{}|{}|\n",
+            row["id"].as_str().unwrap(),
+            row["variant"].as_str().unwrap(),
+            row["records_budget"],
+            row["arm"].as_str().unwrap(),
+            row["required_all"],
+            row["targets"][0]["omitted_at"].as_str().unwrap(),
+            row["r3_original_coverage"],
+            row["other_child_returned"]
+        ));
+    }
+    std::fs::write(out.join("report.md"), md).unwrap();
+    println!(
+        "AF293: {} rows, 0 model calls, 0 embedding calls; {}",
+        report["rows"].as_array().unwrap().len(),
+        out.display()
+    );
 }
