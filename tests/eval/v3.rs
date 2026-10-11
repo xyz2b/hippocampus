@@ -801,7 +801,20 @@ fn v3_nonblocking_listener_reads_delayed_request_without_panicking() {
         assert!(response.starts_with("HTTP/1.1 200"), "{response}");
     });
     rx.recv().unwrap();
-    let (mut stream, _) = listener.accept().unwrap();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    let (mut stream, _) = loop {
+        match listener.accept() {
+            Ok(connection) => break connection,
+            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                assert!(
+                    Instant::now() < deadline,
+                    "timed out after 5s waiting to accept delayed-request test connection: {error}"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => panic!("failed to accept delayed-request test connection: {error}"),
+        }
+    };
     // Force the inherited macOS flag on every platform, then exercise the actual fix.
     stream.set_nonblocking(true).unwrap();
     configure_connection(&stream).unwrap();
