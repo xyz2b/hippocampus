@@ -1,6 +1,6 @@
 # R1 / R4 单阶段评测
 
-复用 `tests/write_stage_eval.rs` 的录制、预检、请求绑定及离线回放。样本为已复核的 `tests/eval/r1/samples` 与 `tests/eval/r4/samples`；当前R1 20项（dev14/holdout6）、R4 24项（dev14/holdout10），见AF227、AF247修订。默认 W 阶段选择不变。
+复用 `tests/write_stage_eval.rs` 的录制、预检、请求绑定及离线回放。样本为已复核的 `tests/eval/r1/samples` 与 `tests/eval/r4/samples`；当前R1 20项（dev14/holdout6）、R4 24项（dev14/holdout10），见AF227、AF247、AF272修订。默认 W 阶段选择不变。
 
 零调用的干跑与回放：
 
@@ -111,6 +111,28 @@ env -u EVAL_RECORD PMR_MODEL_NETWORK=offline EVAL_STAGES=r1,r4 \
 
 只改期望不改变请求指纹；r4_02完整 uncertainty 输入改变指纹，旧录制如实过期，其他历史正文/录制/账本不改写。新增语料不进入生产提示词。
 
+## AF268/AF270：已撤回的 R1 提示词试验（历史）
+
+AF272 已撤回本轮集合成员判别提示词，恢复原提示词字节。**提示词已撤回，结果仅作历史**。原48次录制、campaign及 `target/eval-r1-af268/report.json`/Markdown 均保留，不再重录或覆盖；原题40槽自动字段34→31，虚构题8/8，不作为当前默认回归门槛。
+
+`EVAL_AF268=history`（兼容 `trial`）只核对原报告与原录制的完整绑定/输出，然后展示历史结果，不生成当前请求、不要求当前提示词指纹、不访问模型、不改写历史产物。默认测试不运行该入口；`EVAL_RECORD` 只允许缺省或0，其他值拒绝。历史输入与虚构期望保留在 `af268.rs` 及原请求绑定中。
+
+```sh
+EVAL_AF268=history EVAL_RECORD=0 PMR_MODEL_NETWORK=offline \
+  cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+### AF272：r1_03 完整分支与 AF250 离线重评
+
+原 aggregate/list 分支保留（relation 为 allergic_to 或 null）；新增 single/lookup 分支必须 `plan.filter.relation=allergic_to`，且 need=judge、current_evidence=query_only、subject=self、无额外条件/时间与原分支一致。有效关系过滤会枚举该关系全部记录，数量/字节预算不足仍须报告截断；不接受无有效关系过滤的 lookup，也不串配两支的 type/op。只改标签，模型输入/ID/请求指纹不变；标签修订为 AF272，2026-10-11。
+
+以下入口用当前恢复的完整 R1 请求严格匹配 AF250 五档200条原录制，0发送；不复用过期输出、不补录、不修改原报告/台账。独立报告为 `target/eval-r1-af272/report.json` 与 `report.md`，分列原/新自动字段分数与 r1_03 每次结果；新增标签的通过仍需人工确认，不冒用旧人工裁定。R4 不重评。
+
+```sh
+EVAL_AF268=af250 EVAL_RECORD=0 PMR_MODEL_NETWORK=offline \
+  cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
 ## AF230：五档召回录制与协议冒烟门控
 
 AF228历史授权为六档正式528＋冒烟18＝546槽；原始 `authorization.json`、旧冒烟录制与账本保留不改。AF230追加ds-flash新冒烟3槽，历史授权上限549；撤销Haiku正式88槽后，当前可用461槽＝旧冒烟18＋新冒烟3＋正式440。撤销的额度不能分配给其他档。实际发送数从账本统计，计划槽位不等于已发送数。
@@ -163,7 +185,7 @@ AF247（2026-10-11）不修改输入、ID、提示词、请求指纹、provider�
 
 - R1_02/17 接受 context_only/judge 完整分支，两支均须 assertion_present/self；02 的到访关系接受 visited/fact/null。
 - R1_11 接受条件或 recurring 时间分支，single/temporal 均可，仍为 lookup。非空 time/filter.time 只能保留周二周期，不接受 unknown、具体日期或相对偏移；两处字段不允许串配。
-- R1_15 不强制条件字段，仍须 judge/query_only；写代码的用途与附加时间/条件由人工检查，不把使用当偏好。R1_03 保留 aggregate/list，仅补共同模型失败的诊断 note。
+- R1_15 不强制条件字段，仍须 judge/query_only；写代码的用途与附加时间/条件由人工检查，不把使用当偏好。AF247 当时保留 R1_03 aggregate/list，仅补诊断 note；该条现由 AF272 的完整分支补充，见上文。
 - R4_03 supported/insufficient 两支均要求同一有出处事实、原条件和 applies=unknown/no，不能变成无条件答案。
 - R4_07 按 AF246 允许旧自述 current=no/unknown 或省略；本轮住址仍须 current=yes，禁止旧值 current=yes、supersedes 与把旧值当真实历史。statement 中的历史/搬家含义仍须人工确认。
 - R4_14 可保留重复条目同组、合并双方依据，或选三月与八月各一个事件代表。代表分支恰好两个条目、不同非空组、exact=2，无额外事件；三月两次提及的同一性留人工核验。R4_21 保留 insufficient 与103/104的 negate，仅加诊断 note。

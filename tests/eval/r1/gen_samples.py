@@ -125,7 +125,12 @@ for s in SAMPLES:
         s["expect"] = {"alternatives": [dict(copy.deepcopy(base), need=n) for n in ("context_only", "judge")]}
         s["note"] = "AF247：可只取上下文或判断陈述支持/新旧关系；两支均须 assertion_present/self，不以可能存在旧记录作为唯一理由。"
     elif number == 3:
-        s["note"] = "AF247：保持 aggregate/list；询问可能有多个成员的集合，即使没有‘所有’字样也须枚举。共同 lookup/single 失败属提示词/模型问题，不放宽标签。"
+        base = copy.deepcopy(s["expect"])
+        lookup = dict(copy.deepcopy(base), type="single", **{
+            "plan.op": "lookup", "plan.filter.relation": "allergic_to"})
+        s["expect"] = {"alternatives": [base, lookup]}
+        s["label_revision"] = {"decision": "AF272", "date": "2026-10-11"}
+        s["note"] = "AF272：保留 aggregate/list；有效 allergic_to 关系过滤会枚举该关系全部记录，因此也接受 single/lookup，但该分支必须有 filter.relation=allergic_to。预算截断仍须如实报告，不接受无关系过滤的 lookup。"
     elif number == 11:
         recurring = {"quote": "周二", "interp": {"kind": "recurring"}}
         base = copy.deepcopy(s["expect"])

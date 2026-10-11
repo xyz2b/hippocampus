@@ -1135,10 +1135,27 @@ fn af247_r1_assertion_alternatives_preserve_subject_evidence_and_question_intent
             output = fake_r1(&sample);
             output["type"] = json!("single");
             output["plan"]["op"] = json!("lookup");
+            output["plan"]["filter"]["relation"] = json!("allergic_to");
             assert_eq!(
                 super::score("r1", &sample, Some(&output.to_string()))["status"],
-                "失败"
+                "通过"
             );
+            for relation in [Value::Null, json!("fact")] {
+                output["plan"]["filter"]["relation"] = relation;
+                assert_eq!(
+                    super::score("r1", &sample, Some(&output.to_string()))["status"],
+                    "失败"
+                );
+            }
+            output["plan"]["filter"]["relation"] = json!("allergic_to");
+            for (kind, op) in [("single", "list"), ("aggregate", "lookup")] {
+                output["type"] = json!(kind);
+                output["plan"]["op"] = json!(op);
+                assert_eq!(
+                    super::score("r1", &sample, Some(&output.to_string()))["status"],
+                    "失败"
+                );
+            }
         }
     }
 }
