@@ -4205,6 +4205,15 @@ fn evaluate_cases_with_native_stop(
     } else {
         Value::Null
     };
+    evaluate_cases_with_review_ledger(cases, limit, send, native_stop, &recall_ledger)
+}
+fn evaluate_cases_with_review_ledger(
+    cases: &[Case],
+    limit: Option<usize>,
+    send: &mut dyn FnMut(&Case) -> Result<Value, String>,
+    native_stop: bool,
+    recall_ledger: &Value,
+) -> Result<Value, String> {
     let mut planned = preflight_with_native_stop(cases, limit, native_stop)?;
     // The OS releases this lock on exit/crash; all arms share one fixed ledger.
     let _trial_lock = if planned > 0 {
@@ -4387,7 +4396,7 @@ fn evaluate_cases_with_native_stop(
             result["structured_mode"] = json!(provider.structured_mode);
         }
         w3_trial_metadata(&mut result, case);
-        recall_review::apply(case, &mut result, &recall_ledger);
+        recall_review::apply(case, &mut result, recall_ledger);
         results.push(result);
     }
     let summary = stage_summaries(&results, cases);

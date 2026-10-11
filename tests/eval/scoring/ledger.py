@@ -140,3 +140,25 @@ def load_ledger(path) -> dict:
             return json.load(fh)
     except FileNotFoundError:
         return {"version": 1, "entries": {}}
+
+
+def question_review_binding(*, name, question, query_meta, expect, actual_input, final_output):
+    """AF255 whole-answer review. Never replace the historical item ledger."""
+    return {"version": "eval.e2e.question-review@1", "question": name,
+            "label": {"question": question, "query_meta": query_meta, "expect_common": expect},
+            "actual_input": actual_input, "final_output": final_output}
+
+
+def question_review(binding, ledger, *, mechanical_ok, automatic_ok):
+    key = "sha256:" + hashlib.sha256(canonical(binding).encode()).hexdigest()
+    entry = ledger.get("entries", {}).get(key)
+    if entry:
+        if entry.get("binding") != binding or entry.get("decision") not in ("accepted", "rejected"):
+            raise ValueError("question review binding/decision mismatch: " + key)
+        if not entry.get("reviewer") or not entry.get("reason"):
+            raise ValueError("question review requires reviewer and reason")
+    state = ("mechanical_failure" if not mechanical_ok else "automatic_failure" if not automatic_ok
+             else "human_confirmed" if entry and entry["decision"] == "accepted"
+             else "human_rejected" if entry else "pending_review")
+    return {"key": key, "binding": binding, "state": state, "review": entry,
+            "mechanical_ok": mechanical_ok, "automatic_ok": automatic_ok}

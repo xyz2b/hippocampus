@@ -1668,6 +1668,7 @@ fn af228_native_failure_stops_after_one_while_other_providers_trip_after_three()
 #[test]
 fn af228_report_separates_stages_compute_modes_usage_cost_and_human_review() {
     let temp = TempRecords::new();
+    let empty_ledger = json!({"version":"recall.review@1","entries":[]});
     let ps = profiles(include_str!("providers.json")).unwrap();
     let mut groups = plan_groups(&temp.0.join("smoke"), &cohort().unwrap(), &ps, true, |_| {
         None
@@ -1689,8 +1690,14 @@ fn af228_report_separates_stages_compute_modes_usage_cost_and_human_review() {
     let reports = groups
         .iter()
         .map(|g| {
-            evaluate_cases_with_native_stop(g, None, &mut |_| panic!("report cannot send"), true)
-                .unwrap()
+            evaluate_cases_with_review_ledger(
+                g,
+                None,
+                &mut |_| panic!("report cannot send"),
+                true,
+                &empty_ledger,
+            )
+            .unwrap()
         })
         .collect::<Vec<_>>();
     let r = report(&groups, &reports, 0, true, json!([]));

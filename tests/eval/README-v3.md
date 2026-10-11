@@ -222,3 +222,43 @@ python3 tests/eval/scoring/compare.py \
 
 M1.5 的 recall.v6 评分、虚构 prepare MVP 和固定 W1 low/medium 对照使用独立入口与目录，
 见 [m15/README.md](m15/README.md)。两组各预留最多 24 次；默认历史评测及 59/4 核验不变。
+
+## AF255：10 例 / 15 问的端到端 A/B（独立授权，默认 AC2 不变）
+
+`EVAL_E2E_AB=A|B` 选择固定子集，不与 `EVAL_CASES/EVAL_QUESTIONS` 混用。保留每题所需的全部先前消息，按稳定 case/question ID 选题（见 `af255.rs` 的 QUESTIONS）。产物独立放在 `target/eval-e2e-af255/{A,B}/`，可用 `EVAL_AB_ROOT` 指向其他 target/ 或临时目录。
+
+- A：全部角色为 `$DEEPSEEK_PRO_MODEL` 的火山 DS-Pro；W1/W3 low、W4 medium、R1/普通 R4 minimal、计算 R4 low。R1/普通 R4 输出上限 4096、计算 16384；W1 32768、W3/W4 16384。读取 `HUOSHAN_DEEPSEEK_BASE_URL/HUOSHAN_DEEPSEEK_API_KEY`。
+- B：只把 R4 换成 `gpt-6.1-sol low`（包括计算），读取 `OPENAI_BASE_URL/OPENAI_API_KEY`，协议 `openai_responses`。生产客户端只连接本机录制代理，代理再按角色发送，统一使用生产 User-Agent；不会绕过槽位记账。B 不需火山密钥。
+- 两组 `embedding.enabled=false`，断言宿主 `retrieval.status=disabled`，不发送嵌入/元数据请求。每条消息先保存再同步显式 `enrich_source`，保留当前 W2/W3/W4/W5、Z18、R5 全部规则；未启动后台整理 worker，避免录制阶段竞争。
+- 顺序执行用例（jobs=1），保证连续三次同类 HTTP 错误（状态/type/code）或 `incomplete(max_output_tokens)` 后没有多批在途请求。熔断剩余槽不占额度，中断在途槽占额度且不自动重发。录制保留完整响应，包括不完整正文，供诊断，不当作评分通过。
+
+先干跑（不读密钥，不建额度文件，不监听端口）：
+
+```sh
+EVAL_E2E_AB=A EVAL_DRY_RUN=1 cargo test --test eval resident_eval_suite -- --exact --nocapture
+EVAL_E2E_AB=B EVAL_DRY_RUN=1 cargo test --test eval resident_eval_suite -- --exact --nocapture
+```
+
+A 的冻结计划为 W1=28、W3=28、W4≤18、R1≤15、R4≤15，总额≤104。B 在 A 未完成前只给≤15上限；A 完成后从其实际 R4 请求生成精确槽位（失败 R4 也可替换；未走 R4 的题不新增调用）。合计≤119。token/费用为过去短场景的容量情景，不是上界，也不是这两条长 LME 的预测。
+
+**下列命令会发送真实请求，仅在本次授权与工具验收后由协调人执行。本实现交付不执行它们。** 以 zsh 加载环境，但勿打印密钥：
+
+```sh
+zsh -ic 'EVAL_E2E_AB=A EVAL_RECORD=104 cargo test --test eval resident_eval_suite -- --exact --nocapture'
+# A 完成后先再次干跑 B；将下面 N 改为 B 输出的精确槽位数（0..15）。
+zsh -ic 'EVAL_E2E_AB=B EVAL_DRY_RUN=1 cargo test --test eval resident_eval_suite -- --exact --nocapture'
+zsh -ic 'EVAL_E2E_AB=B EVAL_RECORD=N cargo test --test eval resident_eval_suite -- --exact --nocapture'
+```
+
+同命令续跑，`EVAL_RECORD` 始终为该组总授权，不是本次新增额度。`campaign.json` 冻结子集/语料/配置/上游端点摘要/父录制摘要/精确槽位与总额，发送前逐槽持久化；OS 锁防重复进程。中断、损坏、指纹变化不清账、不扩额、不补发。`runs/` 保存本次发送轨迹，`campaign.json` 保存跨续跑累计轨迹。历史 AC2 身份、235复用/59缺口与历史59/4评分不变。
+
+B 以共享锁只读加载 A 的完成运行及全部录制，保留失败 HTTP/模型输出；每次 W1/W3/W4/R1 必须匹配阶段身份和完整请求指纹，不允许缺录制回落。每次写入后、召回前对比记录/关系/update/来源整理状态/W2/W3 结果；R4 发送前完整 input（含证据、计划、时钟）必须与 A 相同。模型可见的 session/turn/request ID 使用稳定无语义标识，报告保留原题目对照；仅规范化已知易变的结构化来源 ID 与由它派生的 W5 证据 ID，不改原文。任何不一致立即拒绝后续发送，不用重新提取来修复。
+
+离线回放去掉 `EVAL_RECORD`，输出 `run-replay.json`，不修改录制/累计额度；回放耗时不是在线耗时。分别出报告：
+
+```sh
+python3 tests/eval/scoring/compare.py --run target/eval-e2e-af255/A/run.json --output target/eval-e2e-af255/reports/A
+python3 tests/eval/scoring/compare.py --run target/eval-e2e-af255/B/run.json --output target/eval-e2e-af255/reports/B
+```
+
+报告评分分母为选择的15题，另外48题为未选；缺录制单列。common.v1原评分不变，独立问题级人工确认见 scoring/README.md；报告分开写入不完整、R1机械错误/计划差异待核查、R4机械错误/语义或评分失败、调用错误与R4原始远端P50/P90。A/B只比较同一实际证据包，不以B的回放墙钟比较总在线延迟。

@@ -7,6 +7,8 @@ use std::sync::atomic::AtomicBool;
 mod core;
 use core::run_case;
 use core::*;
+#[path = "af255.rs"]
+mod af255;
 #[path = "m15/runner.rs"]
 mod m15;
 
@@ -291,8 +293,13 @@ fn server(
                                 return Ok((200,json!({"status":"completed","usage":{"input_tokens":10,"output_tokens":20},
                                     "output":[{"type":"message","content":[{"type":"output_text","text":fixture(&request).to_string()}]}]}).to_string()));
                             }
-                            let (url,key) = recorder.live.as_ref().ok_or("live transport unavailable")?;
-                            let response = http.post(url).bearer_auth(key).json(&request).send().map_err(|e| e.to_string())?;
+                            let (url,key) = recorder.ab.as_ref().map_or_else(
+                                || recorder.live.as_ref().ok_or("live transport unavailable".to_owned()),
+                                |arm| arm.upstream(&request),
+                            )?;
+                            let response = hippocampus::provider_http_request(&http, url, key,
+                                hippocampus::model_provider::ProviderProtocol::OpenaiResponses)
+                                .json(&request).send().map_err(|e| e.to_string())?;
                             let status = response.status().as_u16();
                             Ok((status,response.text().map_err(|e| e.to_string())?))
                         });
@@ -341,6 +348,10 @@ fn parallel_cases(
 }
 
 pub(super) fn run() {
+    if let Ok(profile) = std::env::var("EVAL_E2E_AB") {
+        af255::run(&profile);
+        return;
+    }
     if std::env::var("EVAL_M15").as_deref() == Ok("mvp") {
         m15::run();
         return;

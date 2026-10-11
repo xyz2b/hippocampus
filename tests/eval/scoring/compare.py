@@ -15,7 +15,7 @@ import pathlib
 import baseline
 import trial
 from adapters import adapt_recall, question_input
-from ledger import load_ledger
+from ledger import load_ledger, question_review_binding, question_review
 from scoring import MISSING
 
 CLOCK = 1_790_568_000
@@ -250,12 +250,17 @@ def merge_runs(base, targeted, questions, base_name="AC2", targeted_name="定点
     return merged
 
 
-def run(document=None):
+def run(document=None, question_ledger=None):
     document = document or {"cases": []}
     ledger = load_ledger(trial.LEDGER)
     steps = {(c["case"], s["question"]): s for c in document["cases"]
              for s in c["steps"] if s["step"] == "question"}
     questions, new_rows = [], []
+    selected = document.get("selected_questions")
+    if selected is not None:
+        valid = {f"{c['id']}/{q['id']}" for p in trial.CASES.glob("*.json") for c in [trial._load(p)] for q in c["questions"]}
+        if not selected or len(selected) != len(set(selected)) or not set(selected) <= valid:
+            raise ValueError("invalid selected question denominator")
     for path in sorted(trial.CASES.glob("*.json")):
         case = trial._load(path)
         for question in case["questions"]:
@@ -264,6 +269,10 @@ def run(document=None):
                    "state": "not_recorded", "absolute": "not_recorded", "reason": "未录制", "new": None}
             if document.get("result_sources"):
                 row["result_source"] = document["result_sources"][name]
+            if selected is not None and name not in selected:
+                row.update(state="unselected", absolute="unselected", reason="未选择")
+                questions.append(row)
+                continue
             step = steps.get((case["id"], question["id"]))
             if step and step["state"] == "completed":
                 q = trusted_question(question)
@@ -289,20 +298,120 @@ def run(document=None):
         new_summary.pop(key, None)
     for category in new_summary["by_category"].values():
         category.pop("original_pass", None)
-    states = ("pass", "fail", "pending_review", "not_recorded")
+    states = ("pass", "fail", "pending_review", "not_recorded") + (("unselected",) if selected is not None else ())
     absolute = {s: sum(r["absolute"] == s for r in questions) for s in states}
-    absolute["questions"] = len(questions)
+    absolute["questions"] = len(selected) if selected is not None else len(questions)
     by_case = {}
     for row in questions:
         case = row["question"].split("/")[0]
         by_case.setdefault(case, {s: 0 for s in states})[row["absolute"]] += 1
     absolute["by_case"] = by_case
-    return {"scoring_version": "common.v1", "label": document.get("label"),
+    report = {"scoring_version": "common.v1", "label": document.get("label"),
             "absolute_summary": absolute, "new_summary": new_summary,
             "not_recorded": sum(r["state"] == "not_recorded" for r in questions),
             "questions": questions, "execution": execution(document), "reference": reference(questions, ledger),
             "result_sources": document.get("result_sources"), "base_reference": document.get("base_reference"),
             "coverage_note": "仅问答共同评分；27 个 LongMemEval 用例缺逐条入库标注，不能据此评价漏提或错误更新。未录制不计通过、不判模型失败；语义待复核不计最终通过。"}
+    if document.get("af255"):
+        report["af255"] = af255_report(document, questions, question_ledger or {"entries": {}})
+    return report
+
+
+def af255_report(document, rows, ledger):
+    execution_rows = {c["case"]: c for c in execution(document)["cases"]}
+    raw_cases = {c["case"]: c for c in document["cases"]}
+    queue, classifications, latencies, usage = [], collections.defaultdict(list), collections.defaultdict(list), collections.Counter()
+    human = collections.Counter()
+    for row in rows:
+        if row["state"] == "unselected":
+            continue
+        name = row["question"]
+        caseid, qid = name.split("/", 1)
+        case, question, *_ = trial.resolve_question(caseid, qid)
+        step = next((s for s in raw_cases.get(caseid, {}).get("steps", []) if s.get("question") == qid), {})
+        calls = [c for c in execution_rows.get(caseid, {}).get("calls", []) if c["operation"] == "recall:" + qid]
+        model_invalid = [c for c in calls if c.get("failure_category") in ("model_invalid_output", "incomplete_response")]
+        call_failed = [c for c in calls if c.get("failure_category") == "call_failure"]
+        for c in calls:
+            if c.get("failure_category") == "call_failure":
+                classifications["call_failure"].append({"question": name, "stage": c["stage"], "error": c.get("error") or c.get("local_error")})
+            elif c.get("failure_category") in ("model_invalid_output", "incomplete_response"):
+                classifications["R1_error" if c["stage"] == "R1" else "R4_mechanical_error"].append({"question": name, "error": c.get("local_error"), "checks": c.get("checks")})
+            if c["stage"] == "R4" and c.get("recorded_elapsed_ms") is not None:
+                compute = question["query_meta"]["operation"] in ("count", "sum", "elapsed")
+                latencies["R4_compute" if compute else "R4_regular"].append(c["recorded_elapsed_ms"])
+            # Replays preserve original billed usage; report this separately from this run's sends.
+            for k in ("input_tokens", "output_tokens"):
+                if c["stage"] == "R4" and isinstance((c.get("usage") or {}).get(k), (int, float)):
+                    usage[k] += c["usage"][k]
+        if row["state"] != "completed":
+            human["missing_recording"] += 1
+            continue
+        binding = step.get("question_binding")
+        if not binding:
+            raise ValueError("AF255 completed question missing actual input/evidence binding: " + name)
+        final = copy.deepcopy(step["result"])
+        # Use the same structural ID mapping as the Rust recorder; text is never rewritten.
+        mapping = {runtime: stable for stable, runtime in step["source_ids"].items()}
+        def ids(value):
+            if isinstance(value, list):
+                for v in value: ids(v)
+            elif isinstance(value, dict):
+                if value.get("source_id") in mapping: value["source_id"] = mapping[value["source_id"]]
+                if isinstance(value.get("source_snapshot"), list) and value["source_snapshot"] and value["source_snapshot"][0] in mapping:
+                    value["source_snapshot"][0] = mapping[value["source_snapshot"][0]]
+                if isinstance(value.get("sources"), dict): value["sources"] = {mapping.get(k,k):v for k,v in value["sources"].items()}
+                for v in value.values(): ids(v)
+        ids(final)
+        qb = question_review_binding(name=name, question=trusted_question(question), query_meta=question["query_meta"],
+                                    expect=question["expect_common"], actual_input=binding, final_output=final)
+        scored = row["scored"]
+        automatic_ok = not any(i["result"] in ("auto_fail", "missing") for i in scored["items"] + scored["extras"])
+        mechanical_ok = not model_invalid and not call_failed and not row["new_view"].get("binding")
+        review = question_review(qb, ledger, mechanical_ok=mechanical_ok, automatic_ok=automatic_ok)
+        queue.append(review)
+        human[review["state"]] += 1
+        if review.get("review") and review["review"].get("decision") == "rejected":
+            category = "R1_error" if review["review"].get("category") == "R1" else "R4_semantic_error"
+            classifications[category].append({"question": name, "reason": review["review"]["reason"]})
+        if not automatic_ok and mechanical_ok:
+            classifications["R4_semantic_or_scoring_error"].append({"question": name, "fields": row["new"]["failed"], "gaps": row["new"]["gaps"]})
+        # Operation comparison is a diagnostic against the label, not a semantic verdict.
+        r1wire = binding.get("stages", {}).get("R1", {}).get("response")
+        if r1wire:
+            try:
+                envelope = json.loads(r1wire)
+                output = next(p["text"] for m in envelope.get("output", []) for p in m.get("content", []) if p.get("type") == "output_text")
+                r1 = json.loads(output)
+                expected = question["query_meta"]["operation"]
+                if r1.get("plan", {}).get("op") != expected:
+                    classifications["R1_plan_difference_review"].append({"question": name, "actual": r1.get("plan"), "expected_operation": expected})
+            except (ValueError, StopIteration, KeyError):
+                pass
+    write_receipts = []
+    for c in document["cases"]:
+        for step in c.get("steps", []):
+            if step["step"] != "message": continue
+            result = step.get("result", {})
+            payload = result.get("Ok", {}) if isinstance(result, dict) else {}
+            status = (payload.get("enrichment") or {}).get("status") or payload.get("status")
+            write_receipts.append({"case":c["case"], "message":step["message"], "status":status, "receipt":result, "missing":step.get("missing")})
+            if step.get("missing") or (isinstance(result, dict) and "Err" in result) or status in ("failed", "pending", "needs_rejudge"):
+                classifications["write_not_fully_committed"].append({"case": c["case"], "message": step["message"], "result": result, "missing": step.get("missing")})
+    def percentiles(values):
+        values = sorted(values)
+        return {"n":len(values), "p50_ms": values[(len(values)-1)//2], "p90_ms": values[max(0, (len(values)*9+9)//10-1)]} if values else {"n":0, "p50_ms":None, "p90_ms":None}
+    is_b = document["af255"]["arm"] == "B"
+    # Frozen AF163 reference rates; proxy bill may differ. Missing usage is never zero-priced.
+    prices = (14.2, 71.0) if is_b else (9.0, 27.0)
+    cost = (usage["input_tokens"]*prices[0]+usage["output_tokens"]*prices[1])/1e6 if usage else None
+    return {"selected":len(document["selected_questions"]), "unselected":sum(r["state"]=="unselected" for r in rows),
+            "review_summary":dict(human), "review_queue":queue, "diagnostics":dict(classifications),
+            "write_receipts":write_receipts, "write_status_counts":dict(collections.Counter(r["status"] or "unknown" for r in write_receipts)),
+            "r4_latency":{k:percentiles(v) for k,v in latencies.items()}, "latency_note":"原始远端录制耗时；回放墙钟不代表线上端到端延迟",
+            "r4_usage":dict(usage), "r4_official_reference_cost_cny":cost,
+            "price_note":"AF163 冻结官方参考价估算，不代表代理实际账单；未计缓存优惠；缺 usage 不估价",
+            "campaign_accounting":document.get("campaign")}
 
 
 def render(report):
@@ -371,12 +480,16 @@ def render(report):
     for row in ref["questions"]:
         for item in row["transitions"]:
             lines.append(f"- {row['question']} / {item['item']}：{item['old']} → {item['new']}；{item['note'] or ''}")
+    if report.get("af255"):
+        lines += ["", "## AF255 问题级人工确认与归因", "", "未选择与缺录制分开，自动通过仍需人工确认；机械失败不能豁免。", "",
+                  "```json", json.dumps({k:v for k,v in report["af255"].items() if k not in ("review_queue", "write_receipts", "campaign_accounting")}, ensure_ascii=False, indent=2), "```"]
     return "\n".join(lines) + "\n"
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run", type=pathlib.Path, help="不存在的文件明确报告未录制")
+    parser.add_argument("--question-ledger", type=pathlib.Path, default=pathlib.Path(__file__).with_name("af255-review-ledger.json"))
     parser.add_argument("--send-log", type=pathlib.Path, help="指定本次发送日志，含中断时的未完成调用")
     parser.add_argument("--base-run", type=pathlib.Path, help="与AC2其余题合并，不覆盖原报告")
     parser.add_argument("--target-plan", type=pathlib.Path, help="prepare生成的target-plan.json，确定定点覆盖范围")
@@ -406,7 +519,7 @@ def main():
             parser.error("AC2运行与定点计划绑定不符")
         document = merge_runs(trial._load(args.base_run), document, manifest["questions"],
                               str(args.base_run), str(args.run))
-    report = run(document)
+    report = run(document, load_ledger(args.question_ledger))
     output_json = args.output.with_suffix(".json")
     if report["execution"]["mode"] == "replay" and output_json.exists():
         previous = trial._load(output_json)
