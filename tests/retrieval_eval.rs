@@ -2690,12 +2690,12 @@ mod af175 {
             }
             models.push(json!({"model":model.tag(),"strict_reused_slots":slots.len(),"totals":queries.budgets.iter().map(|b|totals(&rows,*b)).collect::<Vec<_>>(),"summary":summary(&rows),"rows":rows}));
         }
-        let report = json!({"revision":"AF185","production_path":true,"new_embedding_requests":0,"safety_violations":0,"disabled_evidence_byte_equal":true,"models":models});
-        let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-retrieval/af185");
+        let report = json!({"revision":"AF288","production_path":true,"new_embedding_requests":0,"safety_violations":0,"disabled_evidence_byte_equal":true,"models":models});
+        let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-retrieval/af288");
         std::fs::create_dir_all(&directory).unwrap();
         atomic_write(&directory.join("report.json"), &report).unwrap();
         let mut md = String::from(
-            "# AF185 生产混合检索严格回放\n\n新嵌入请求 0；两模型均严格复用 AF175 14 槽。disabled R4 输入逐字节相同；安全违规 0。\n\n| 模型 | records | 必需全覆盖 | MRR | precision |\n|---|---|---|---|---|\n",
+            "# AF288 生产混合检索严格回放\n\n新嵌入请求 0；两模型均严格复用 AF175 14 槽。disabled R4 输入逐字节相同；安全违规 0。\n\n| 模型 | records | 必需全覆盖 | MRR | precision |\n|---|---|---|---|---|\n",
         );
         for model in report["models"].as_array().unwrap() {
             for row in model["totals"].as_array().unwrap() {

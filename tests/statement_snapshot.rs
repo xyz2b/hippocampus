@@ -73,7 +73,7 @@ fn af283_default_output_and_global_context_stay_unchanged_except_version() {
     let out = disabled
         .call("memory_recall", boot("disabled"), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v9");
+    assert_eq!(out["version"], "recall.v10");
     assert!(out.get("statement_snapshot").is_none());
     assert_eq!(out["records"], json!([]));
     let mut enabled = snapshot_service(&db, true);
@@ -427,7 +427,7 @@ fn af283_deletion_before_bootstrap_replay_and_publication_never_returns_the_old_
 }
 
 #[test]
-fn af283_v8_is_rejected_by_bootstrap_prepare_and_validate_without_side_effects() {
+fn af288_v9_is_rejected_by_bootstrap_prepare_and_validate_without_side_effects() {
     let db = Db::new();
     let mut service = snapshot_service(&db, true);
     for (name, mut input) in [
@@ -441,7 +441,7 @@ fn af283_v8_is_rejected_by_bootstrap_prepare_and_validate_without_side_effects()
             json!({"query":"住哪？","request_id":"unsupported","draft_answer":"星港"}),
         ),
     ] {
-        input["recall_version"] = json!("recall.v8");
+        input["recall_version"] = json!("recall.v9");
         assert!(
             service
                 .call(name, input, || false)
@@ -452,4 +452,350 @@ fn af283_v8_is_rejected_by_bootstrap_prepare_and_validate_without_side_effects()
     }
     assert!(db.state().sources.is_empty());
     assert_no_calls(&db);
+}
+
+fn af288_request_plan() -> (recall::Request, r1::Plan) {
+    let request = recall::Request {
+        owner: OWNER.into(),
+        subject_ids: None,
+        said_on: "2026-10-11".into(),
+        utc_offset_seconds: 28800,
+        bootstrap: false,
+        binding: RecallRequest {
+            request_id: "af288".into(),
+            query: "我住在哪？".into(),
+            context: vec![],
+            task_id: None,
+            at: 1791676800,
+        },
+    };
+    let entities = vec![EntityId::from("self")];
+    let relations = vec![w2::Relation {
+        id: "lives_in".into(),
+        memory_types: vec![MemoryType::Fact],
+    }];
+    let ctx = r1::Context {
+        query: &request.binding.query,
+        context: &[],
+        entities: &entities,
+        relations: &relations,
+        subject_ids: None,
+        task_id: None,
+        said_on: &request.said_on,
+        utc_offset_seconds: request.utc_offset_seconds,
+        supported_units: &[],
+    };
+    let plan = r1::validate(r1::decode(&json!({"need":"judge","current_evidence":"query_only",
+        "type":"single","subject":{"entity_id":"self"},"relation":"住址","conditions":[],"time":null,
+        "plan":{"op":"lookup","filter":{"relation":"lives_in","time":null},"unit":null}}).to_string()).unwrap(), &ctx).unwrap();
+    (request, plan)
+}
+
+#[test]
+fn af288_four_sources_lookup_enumerates_whole_subject_scope_and_clips_honestly() {
+    let db = Db::new();
+    let old = statement(&db, "old", "我之前住在深圳。", "lives_in");
+    let new = statement(&db, "new", "我现在住在阜阳。", "lives_in");
+    claim_source(&db, "raw-a", "我有一支铅笔。");
+    claim_source(&db, "raw-b", "我喜欢园艺。");
+    assert_eq!(db.state().sources.len(), 4);
+    let (request, plan) = af288_request_plan();
+    let cfg = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let no_query = |_: &str| -> embedding::Result<embedding::QueryVector> {
+        panic!("small scope must not query")
+    };
+    let run = |budget| {
+        recall::assemble_with_retrieval(
+            &db.open(),
+            &request,
+            &plan,
+            budget,
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&no_query),
+            },
+            true,
+        )
+        .unwrap()
+    };
+    let full = run(recall::Budget::default());
+    assert_eq!(full.retrieval.status, RetrievalStatus::NotNeeded);
+    assert_eq!(
+        full.retrieval_diagnostic().unwrap().enumeration.as_deref(),
+        Some("scope_within_record_budget")
+    );
+    assert!(full.retrieval_diagnostic().unwrap().relation_revoked);
+    let ids: BTreeSet<_> = full.evidence.records.iter().map(RecordView::id).collect();
+    assert_eq!(ids, BTreeSet::from([old, new]));
+    let input = recall_models::r4_input(&full, 28800).to_string();
+    assert!(input.contains("深圳") && input.contains("阜阳"));
+    let unrelated = statement(&db, "unrelated", "我喜欢木工。", "likes");
+    assert!(
+        run(recall::Budget::default())
+            .evidence
+            .records
+            .iter()
+            .any(|r| r.id() == unrelated),
+        "enumeration must include records outside the lives_in hint"
+    );
+    let clipped = run(recall::Budget {
+        stored_bytes: 1,
+        ..Default::default()
+    });
+    assert!(clipped.evidence.completeness.retrieval_truncated);
+    assert!(!clipped.evidence.completeness.plan_complete);
+    assert_eq!(clipped.retrieval.status, RetrievalStatus::NotNeeded);
+    // Opt-out keeps the original relation path and exact R4 request bytes.
+    let classic = recall::assemble(&db.open(), &request, &plan, recall::Budget::default()).unwrap();
+    let disabled = recall::assemble_with_retrieval(
+        &db.open(),
+        &request,
+        &plan,
+        recall::Budget::default(),
+        &recall::Retrieval {
+            config: &embedding::Config::default(),
+            query: Some(&no_query),
+        },
+        true,
+    )
+    .unwrap();
+    assert_eq!(
+        recall_models::r4_input(&classic, 28800),
+        recall_models::r4_input(&disabled, 28800)
+    );
+    assert_no_calls(&db);
+}
+
+#[test]
+fn af288_empty_scope_no_embedding_and_failed_query_keeps_rare_lexical_hit() {
+    let _operation = diagnostics::Operation::enter("af288-retrieval-test");
+    let db = Db::new();
+    let (request, plan) = af288_request_plan();
+    let cfg = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let empty = recall::assemble_with_retrieval(
+        &db.open(),
+        &request,
+        &plan,
+        recall::Budget::default(),
+        &recall::Retrieval {
+            config: &cfg,
+            query: Some(&|_| panic!("empty scope queried")),
+        },
+        true,
+    )
+    .unwrap();
+    assert!(empty.evidence.records.is_empty());
+    assert_eq!(empty.retrieval.status, RetrievalStatus::NotNeeded);
+    let home = statement(&db, "home", "我住在阜阳。", "lives_in");
+    statement(&db, "other", "我喜欢园艺。", "likes");
+    claim_source(&db, "raw-a", "我有一支铅笔。");
+    claim_source(&db, "raw-b", "我有一只杯子。");
+    let count = std::cell::Cell::new(0);
+    let fail = |_: &str| {
+        count.set(count.get() + 1);
+        Err("embedding_transport".into())
+    };
+    let (assembly, calls) = diagnostics::capture_model_events(|| {
+        recall::assemble_with_retrieval(
+            &db.open(),
+            &request,
+            &plan,
+            recall::Budget {
+                records: 1,
+                ..Default::default()
+            },
+            &recall::Retrieval {
+                config: &cfg,
+                query: Some(&fail),
+            },
+            true,
+        )
+        .unwrap()
+    });
+    assert!(
+        calls.is_empty(),
+        "retrieval must not count as generative calls"
+    );
+    assert_eq!(count.get(), 1);
+    assert_eq!(assembly.retrieval.status, RetrievalStatus::Unavailable);
+    assert_eq!(
+        assembly
+            .evidence
+            .records
+            .iter()
+            .map(RecordView::id)
+            .collect::<Vec<_>>(),
+        vec![home]
+    );
+    assert!(!assembly.evidence.completeness.plan_complete);
+    assert!(assembly.retrieval_diagnostic().unwrap().relation_revoked);
+    // Broken cache metadata must not discard the lexical result or leak its text.
+    rusqlite::Connection::open(&db.0)
+        .unwrap()
+        .execute(
+            "INSERT INTO source_vector_bindings(owner_id,binding,generation) VALUES (?1,?2,1)",
+            rusqlite::params![OWNER, "private-invalid-binding"],
+        )
+        .unwrap();
+    let timeout = |_: &str| Err("embedding_deadline_exhausted".into());
+    let broken = recall::assemble_with_retrieval(
+        &db.open(),
+        &request,
+        &plan,
+        recall::Budget {
+            records: 1,
+            ..Default::default()
+        },
+        &recall::Retrieval {
+            config: &cfg,
+            query: Some(&timeout),
+        },
+        true,
+    )
+    .unwrap();
+    assert_eq!(broken.retrieval.status, RetrievalStatus::Unavailable);
+    assert_eq!(
+        broken
+            .evidence
+            .records
+            .iter()
+            .map(RecordView::id)
+            .collect::<Vec<_>>(),
+        vec![home]
+    );
+    assert_no_calls(&db);
+}
+
+#[test]
+fn af288_trace_is_private_fixed_metadata_and_does_not_change_results() {
+    let db = Db::new();
+    let dir = db.0.parent().unwrap().join("trace");
+    std::fs::create_dir_all(&dir).unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+    }
+    for enabled in [false, true] {
+        let mut cmd = std::process::Command::new(std::env::current_exe().unwrap());
+        cmd.args([
+            "--exact",
+            "af288_empty_scope_no_embedding_and_failed_query_keeps_rare_lexical_hit",
+            "--nocapture",
+        ])
+        .env("PMR_MODEL_NETWORK", "deny")
+        .env_remove("PMR_TRACE_DIR");
+        if enabled {
+            cmd.env("PMR_TRACE_DIR", &dir);
+        }
+        let out = cmd.output().unwrap();
+        assert!(
+            out.status.success(),
+            "{}{}",
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+        if !enabled {
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 0);
+        }
+    }
+    let mut events = vec![];
+    for file in std::fs::read_dir(&dir).unwrap() {
+        for line in std::fs::read_to_string(file.unwrap().path())
+            .unwrap()
+            .lines()
+        {
+            let event: Json = serde_json::from_str(line).unwrap();
+            if event["kind"] == "retrieval" {
+                events.push(event["data"].clone());
+            }
+        }
+    }
+    assert_eq!(events.len(), 2);
+    assert_eq!(events[1]["query_error"], "timeout");
+    assert_eq!(events[1]["index_state"], "index_read");
+    assert!(!events[1].to_string().contains("private-invalid-binding"));
+    assert_eq!(events[0]["status"], "unavailable");
+    assert_eq!(events[0]["query_error"], "transport");
+    assert_eq!(events[0]["index_state"], "missing");
+    assert_eq!(events[0]["sources_total"], 4);
+    assert_eq!(events[0]["segments_indexed"], 0);
+    assert!(events[0]["query_elapsed_ms"].is_number());
+    assert!(events[0]["cache_elapsed_ms"].is_number());
+    assert_eq!(events[0].as_object().unwrap().len(), 9);
+    let text = events[0].to_string();
+    for forbidden in ["阜阳", "铅笔", "园艺", "http", "embedding_transport"] {
+        assert!(!text.contains(forbidden));
+    }
+}
+
+#[test]
+fn af288_small_scope_closure_over_budget_does_not_claim_complete() {
+    let db = Db::new();
+    let current = statement(&db, "current", "我住在星港。", "lives_in");
+    let other = statement(&db, "other-person", "小石住在月港。", "lives_in");
+    db.open()
+        .transaction(|state| {
+            // An authorized other-subject relation member is outside the R1 subject seed set.
+            let mut memory = state.repository.get(other)?.unwrap();
+            memory.subject_id = EntityId::from("other-person");
+            state.repository.update(memory)?;
+            state
+                .w5_receipts
+                .retain(|_, r| !r.products.values().any(|id| *id == other));
+            state.relations.insert(
+                "closure".into(),
+                StoredRelation {
+                    id: "closure".into(),
+                    kind: hippocampus::RelationKind::Conflict,
+                    members: vec![current, other],
+                    conditions: json!([]),
+                    times: json!([]),
+                    basis: vec![RelationEvidence {
+                        source_id: "current".into(),
+                        quote: "我住在星港。".into(),
+                    }],
+                    status: hippocampus::RelationStatus::Open,
+                    resolution: None,
+                    created_by: "test".into(),
+                    closed_by: None,
+                },
+            );
+            Ok(())
+        })
+        .unwrap();
+    let (request, plan) = af288_request_plan();
+    let cfg = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let out = recall::assemble_with_retrieval(
+        &db.open(),
+        &request,
+        &plan,
+        recall::Budget {
+            records: 1,
+            ..Default::default()
+        },
+        &recall::Retrieval {
+            config: &cfg,
+            query: Some(&|_| panic!("enumeration queried")),
+        },
+        true,
+    )
+    .unwrap();
+    assert_eq!(out.retrieval.status, RetrievalStatus::NotNeeded);
+    assert_eq!(
+        out.retrieval_diagnostic().unwrap().stages["closure"].len(),
+        2
+    );
+    assert_eq!(out.evidence.records.len(), 1);
+    assert!(out.evidence.completeness.retrieval_truncated);
+    assert!(!out.evidence.completeness.plan_complete);
 }

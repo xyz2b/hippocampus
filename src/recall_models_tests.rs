@@ -21,7 +21,7 @@ fn af283_bootstrap_read_then_other_connection_delete_cannot_cache_or_return_snap
         ..Default::default()
     };
     let output = serde_json::from_value(json!({
-        "version":"recall.v9","request":req.binding,"status":"context_only",
+        "version":"recall.v10","request":req.binding,"status":"context_only",
         "current_message":null,"records":[],"raw":[],"facts":[],"computed":null,
         "history":[],"conflicts":[],"clarification":null,"semantic_judgment":"skipped",
         "completeness":{"retrieval_truncated":false,"pending_related_sources":0,
@@ -1219,7 +1219,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v9");
+    assert_eq!(out["version"], "recall.v10");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1308,7 +1308,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v9");
+        assert_eq!(result["recall"]["version"], "recall.v10");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1323,7 +1323,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v9");
+    assert_eq!(body["recall"]["version"], "recall.v10");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -3045,7 +3045,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let result = runtime
             .run(&mut db.open(), &req, Budget::default(), Some(&provider))
             .unwrap();
-        assert_eq!(result.version, "recall.v9");
+        assert_eq!(result.version, "recall.v10");
         assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
         let requests = sent.lock().unwrap();
         for (i, (schema, contract, old_schema, old_contract)) in [
@@ -3083,7 +3083,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let r4_digest = fingerprint(&json!([R4_PROMPT, requests[1]["text"]["format"]["schema"]]));
         drop(requests);
         let operation =
-            json!(["recall.v9", fingerprint(&json!(req.binding.request_id))]).to_string();
+            json!(["recall.v10", fingerprint(&json!(req.binding.request_id))]).to_string();
         let state = db.open().read().unwrap();
         let receipt = &state.receipts[&operation];
         assert_eq!(
@@ -3284,6 +3284,8 @@ fn af119_provider_endpoint_and_revision_invalidate_recall_cache_without_resendin
 fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_bytes() {
     let db = Db::new();
     add_legacy(&db, TEXT);
+    add_legacy(&db, "无关的另一条旧记录。");
+    // AF288: keep the replay test above the small-scope enumeration budget.
     let rt = RecallRuntime::default();
     let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
     let req = request("hybrid-once");
@@ -3305,7 +3307,10 @@ fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_
         .run_with_retrieval(
             &mut db.open(),
             &req,
-            Budget::default(),
+            Budget {
+                records: 1,
+                ..Default::default()
+            },
             Some(&provider),
             &retrieval,
         )
@@ -3316,7 +3321,10 @@ fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_
         rt.run_with_retrieval(
             &mut db.open(),
             &req,
-            Budget::default(),
+            Budget {
+                records: 1,
+                ..Default::default()
+            },
             Some(&provider),
             &retrieval
         )
@@ -3331,7 +3339,10 @@ fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_
             .run_with_retrieval(
                 &mut db.open(),
                 &req,
-                Budget::default(),
+                Budget {
+                    records: 1,
+                    ..Default::default()
+                },
                 Some(&provider),
                 &retrieval
             )
@@ -3384,6 +3395,7 @@ fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_
 fn missing_or_different_index_binding_is_pending_even_with_no_source_segments() {
     let db = Db::new();
     add_legacy(&db, TEXT);
+    add_legacy(&db, "无关的另一条旧记录。");
     crate::chat::ChatMemoryService::new(db.open(), Default::default())
         .unwrap()
         .call("memory_forget", json!({"source_id":"s-purple"}), || false)
@@ -3421,7 +3433,10 @@ fn missing_or_different_index_binding_is_pending_even_with_no_source_segments() 
             .run_with_retrieval(
                 &mut db.open(),
                 &request(&format!("unbound-zero-{attempt}")),
-                Budget::default(),
+                Budget {
+                    records: 1,
+                    ..Default::default()
+                },
                 Some(&p),
                 &recall::Retrieval {
                     config: &cfg,

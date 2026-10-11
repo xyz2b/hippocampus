@@ -1,6 +1,6 @@
 # 召回运行时：证据闭环、R4 核验与 R5
 
-> 2026-10-07 M1.5 收尾：默认且仅支持 w4_runtime_v1 / recall_v3，旧执行器与 v1 输出适配已删除。当前 DB v11；契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v9。legacy 值及旧检索配置字段拒绝，旧数据读取/删除与授权账本保留。客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定，备份见 [切换步骤](m1-cutover.md)。
+> 2026-10-07 M1.5 收尾：默认且仅支持 w4_runtime_v1 / recall_v3，旧执行器与 v1 输出适配已删除。当前 DB v11；契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v10。legacy 值及旧检索配置字段拒绝，旧数据读取/删除与授权账本保留。客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定，备份见 [切换步骤](m1-cutover.md)。
 
 本模块实现 contracts 3.1–3.4 的问题理解、证据组装、R4 核验与 R5，复用 SQLite、原文词法检索、W4 记录/关系投影及整理控制回执。召回④新增可选模型提供者与请求重放；不新增来源、不更新读取计数、不迁移数据库，旧召回入口现已退出。
 
@@ -133,7 +133,7 @@ AE10 的 low 参考来自已提交的首轮40次录制：平均输出2895.5 toke
 
 Z18 对同40项原录制零调用重算：raw 18/40（dev12/28、holdout6/12），final 26/40（dev20/28、holdout6/12）。补入8条旧引用，原8次 record_basis 失败全部通过；5次 operands 核验失败与9次字段评分失败仍保留。请求指纹全部有效，详见[补入后报告](../../tests/eval/recall_stage/r4-old-basis-review.md)。这是同一批响应的机械组装收益，没有新模型测量，也不代替语义人工复核。
 
-回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v9", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、R3 快照版本及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
+回执复用 owner 快照已有 TurnReceipt 字典，用独立命名空间 `["recall.v10", SHA256(request_id)]`；不加表/字段、不升数据库版本。request 只存 form、参数 SHA-256 摘要、首次 at、角色模型与提示词/schema 摘要；result 只存 running/finished/failed/invalidated、执行身份、R3 快照版本及来源 ID。ring 已在锁文件中，通过直接依赖复用其 SHA-256，避免将诊断用 FNV 当作参数身份检查。原始 query/context、R1/R4 输出及完整 RecallOutput 不落入此回执，不借只读查询保存正文或新事实。
 
 同 ID 的 query/context/task_id/at、可信主体/said_on/时区/bootstrap、证据预算、角色推理强度与 R4 计算类输出上限须相同；不同参数拒绝。宿主省略 at 时，运行时从进行中执行、缓存或持久回执复用首次时钟（连同接收日），并发跨秒/跨日也不构成异参；显式不同 at 仍拒绝。库级兼容基准（常规 medium / 计算 low / 计算上限16384）沿用原参数摘要；实际配置与基准不同时，将 R1/R4 常规、R4 计算强度与计算上限一同规范化加入摘要，运行时 minimal 因此进入绑定。缺省与显式相同值等效，不同值不能复用结果。调用方在续等/重放时复用首次 at，不能重新填执行时钟。完整结果最多64个，仅保存在同一个 RecallRuntime 的内存中；有效快照重放直接复用。重新打开/进程崩溃/内存裁剪后没有完整结果时，返回库级 `recall_result_not_retained:no_model_retry`，保持零发送；这只保证重开后的尝试状态，不承诺未获保存授权的只读正文跨进程完整重放。需要这种能力时须另行明确保存授权或客户端携带结果，不能偷偷持久化。
 
@@ -157,7 +157,7 @@ R4 raw/final 随完整结果共同保留在这64项内存缓存中，`run_with_a
 
 `ChatConfig.recall_pipeline` 只接受 `recall_v3`，也是缺省值；`write_pipeline` 缺省且只接受 `w4_runtime_v1`。legacy 值及 retrieval_mode、local_recall_enabled、local_recall_budget、is_a 字段明确报已退出，不自动改写配置。新召回读取旧数据的 LegacyRecordView 和原文，不启动旧执行器或自动语义重建。完整在线示例见 [examples/recall-v3.json](../../examples/recall-v3.json)；升级前按 [手工备份](m1-cutover.md) 操作。
 
-三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 的权威版本都是 recall.v9；recall_version 可省略或指定 recall.v9，recall.v3、recall.v4、recall.v5、recall.v6、recall.v7、recall.v8、answer_contract.v1 及未知版本返回 contract_version_unsupported，不适配或回落。CLI/库 Recall 直接返回冻结对象；MCP 使用 `{recall: <recall.v9>, global_context: ...}` 包络。Prepare 返回冻结3.5的 source/enrichment/recall 三段，MCP 另附 global_context。源未获接收时 recall 为 not_requested；合法原文先接收，召回超限或失败不回滚保存，错误片段无事实答复权限。
+三个入口 `memory_recall`、`memory_prepare`、`memory_validate_answer` 的权威版本都是 recall.v10；recall_version 可省略或指定 recall.v10，recall.v3、recall.v4、recall.v5、recall.v6、recall.v7、recall.v8、recall.v9、answer_contract.v1 及未知版本返回 contract_version_unsupported，不适配或回落。CLI/库 Recall 直接返回冻结对象；MCP 使用 `{recall: <recall.v10>, global_context: ...}` 包络。Prepare 返回冻结3.5的 source/enrichment/recall 三段，MCP 另附 global_context。源未获接收时 recall 为 not_requested；合法原文先接收，召回超限或失败不回滚保存，错误片段无事实答复权限。
 
 Recall（包括 bootstrap）须稳定 request_id，保持 query/context/task_id/limit/离线选择不变。at 首次省略时绑定服务器时钟，重放读取首次时刻；显式时刻须为过去且与绑定一致。Prepare 缺省从 session_id/turn_id 摘要派生 request_id，不用原话作为身份。只读 query/context 不保存原文，预算及只读回执仅保留无正文元数据。跨进程完整结果不保留，重跑已完成 ID 或跨进程 Validate 明确失败、零重调；新尝试须新 ID 及授权预算。
 
@@ -174,7 +174,7 @@ pmr-mcp --db /tmp/recall-demo.sqlite3 --owner demo \
 参数文件示例（在线需另行批准真实调用、提供凭据与有限 model_budget；此文件示例强制离线）：
 
 ```json
-{"query":"请查阅已记录信息。","recall_version":"recall.v9","request_id":"demo-recall-1","offline":true}
+{"query":"请查阅已记录信息。","recall_version":"recall.v10","request_id":"demo-recall-1","offline":true}
 ```
 
 同样支持 `--call memory_prepare` 和 `--call memory_validate_answer`，其参数文件按 tools/list schema 提交。CLI 工具调用要求显式 db/owner，不能与批量整理参数混用。模型 ID 只用于 API 路由及阶段绑定，不放进模型可见 payload；预算仍为每请求 R1/R4 各一次、共最多两次，无自动重试。
@@ -185,7 +185,7 @@ Prepare 仍先保存后召回；接受后的工作继续跨越客户端取消或
 
 **新 Validate 的保守边界。** 提交同一 request_id、query/context/task_id，at 若提供也须一致；只核对同进程保留结果和仍获准可见的原读快照。当前只机械批准单个 answered/model 事实的逐字 statement、完全相同的存储来源集合，且 current/applies=yes、affirm、无强度/不确定/条件/时间、无 pending 更新、无计算/历史/冲突/澄清。任意改写、复杂限定和计算均不因此批准；来源 ID 有效不能证明草稿语义。返回宿主核验回执 `{version, request, snapshot, approved, approved_source_ids, reason}`（version 指所选契约，不是一个 RecallOutput）；缺结果/快照失效报错，不新增第三次模型调用，也不给旧 safe_answer 覆盖新版。宿主仍须按冻结3.4完整呈现事实、限定、grade/update、计算界限和原文依据。
 
-客户端使用单一 recall.v9、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1/W3 low、W4 medium、R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
+客户端使用单一 recall.v10、Prepare 三段和上述校验边界；旧执行器与旧回执适配已删除。默认模型角色由 DEEPSEEK_PRO_MODEL 提供 Pro 接入点（或显式角色配置），W1/W3 low、W4 medium、R1/R4 minimal，R4 计算 low。缺少角色端点只在需要在线提供者时报错；offline/bootstrap 不要求。当前仍未证明生产整链路 P95≤15秒，历史合并及严格回放缺口见 [评测说明](../../tests/eval/README-v3.md)。
 
 ## 第4项④：与后台整理并发
 
@@ -278,17 +278,17 @@ provider 身份不加入 budget policy_json，但进入写入检查点和召回�
 
 `embedding.enabled` 缺省 false；参数沿用③b 的本机配置（模型标签、回环 base_url、batch、query_timeout_ms）。模型/格式/维度/权重 digest 严格绑定，不跨权重使用缓存。DB v11 增加派生向量缓存及索引控制/租约表；迁移只建表，只有明确启用且网络 gate=live 才允许本机后台调用。正文改动、删除/移除与缓存清除同事务完成；向量落盘不改变业务屏障。
 
-小范围实际枚举、R1 失败枚举及 aggregate/list/count/sum 保持旧证据组织且不请求嵌入。其余路径撤销关系过滤/席位：lexical-df（按可信范围独立来源、R1 主体/关系提示之前统计，>20% 截断，零命中不投票）与向量两路各 2×records 种子，等权 RRF(60)，闭包后才执行数量/字节预算。向量按原文引用重叠链接记录，取最佳来源分段相似度；不证明事实真假。plan_complete 只来自实际枚举。
+AF185 原分流（小范围扩展见下文 AF288）：小范围实际枚举、R1 失败枚举及 aggregate/list/count/sum 不请求嵌入。其余路径撤销关系过滤/席位：lexical-df（按可信范围独立来源、R1 主体/关系提示之前统计；AF288 起 df<=1 保留，其余>20% 截断，零命中不投票）与向量两路各 2×records 种子，等权 RRF(60)，闭包后才执行数量/字节预算。向量按原文引用重叠链接记录，取最佳来源分段相似度；不证明事实真假。plan_complete 只来自实际枚举。
 
 R3 一次读取正文/向量/记录映射，释放事务后嵌入原问题（不加 context）。resolve、digest 校验和一次 POST /api/embed 共用 query_timeout_ms 总时限；不重试、不回落云端。超时/请求失败使用 lexical-df；未完成/陈旧/损坏索引用可核准部分。普通后台提交按该读快照返回，删除/授权/正文变化仍失败，不能发布或缓存晚到内容。同参重放复用整个结果；启用后的配置进入宿主缓存绑定，关闭时不改旧模型指纹。
 
 独立 `retrieval={status,sources_total,sources_indexed,segments_total,segments_indexed}`：disabled=关闭，not_needed=实际枚举/bootstrap，ready=查询可用且严格绑定覆盖完整，pending=查询可用但索引不全，unavailable=查询/索引读取失败。本组覆盖数仅统计当前可信范围内链接到候选记录或尚无链接的正文来源/分段；raw 的遗漏另通过 completeness 表达。AF185 当时只升级宿主协议、维持 R1 v2/R4 v6/W4 v4；retrieval 元数据仅给宿主，不扩展 R4 的 RecallCompleteness。当前模型版本见下节 AF206。宿主勿把 ready 等同完整语义答案、pending 等同未收到原话。
 
-bootstrap/offline/deny 不请求查询嵌入或元数据；显式单次 offline 仍不停止已经获准启动的后台索引 worker。服务锁/SQL 事务均不跨嵌入等待。关闭时业务证据与 R1/R4 模型请求逐字节保持原行为，宿主协议为 recall.v9；v8 及更早请求明确 contract_version_unsupported。
+bootstrap/offline/deny 不请求查询嵌入或元数据；显式单次 offline 仍不停止已经获准启动的后台索引 worker。服务锁/SQL 事务均不跨嵌入等待。关闭时业务证据与 R1/R4 模型请求逐字节保持原行为，宿主协议为 recall.v10；v9 及更早请求明确 contract_version_unsupported。
 
 ### AF206：通用 fact 的断言定位片段
 
-通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1/W3 v4、W4 v5、R4 v7、recall v9；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
+通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1/W3 v4、W4 v5、R4 v7、recall v10；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
 
 
 ## AF283：已存陈述快照
@@ -299,7 +299,7 @@ bootstrap/offline/deny 不请求查询嵌入或元数据；显式单次 offline 
 {"statement_snapshot":{"enabled":true,"max_records":8,"max_bytes":16384}}
 ```
 
-`max_records` 允许 1–32，`max_bytes` 允许 512–65536（完整快照 JSON 的 UTF-8 字节）；本次 `limit` 也限制条数。只在 bootstrap 的 `statement_snapshot` 返回完整 CurrentRecordView，普通 Recall、Prepare 与逐工具 global_context 不附带。关闭时字段省略，业务输出不变，宿主版本为 recall.v9；v8 请求明确拒绝。W1/W3 v4、W4 v5、R1 v2、R4 v7、DB v11 及模型提示词/schema/请求不变。
+`max_records` 允许 1–32，`max_bytes` 允许 512–65536（完整快照 JSON 的 UTF-8 字节）；本次 `limit` 也限制条数。只在 bootstrap 的 `statement_snapshot` 返回完整 CurrentRecordView，普通 Recall、Prepare 与逐工具 global_context 不附带。关闭时字段省略，业务输出不变，宿主版本为 recall.v10；v9 请求明确拒绝。W1/W3 v4、W4 v5、R1 v2、R4 v7、DB v11 及模型提示词/schema/请求不变。
 
 固定关系 ID 白名单：`response_language`、`response_style`、`code_example_language`、`likes`、`avoids`（这五项限 preference/constraint）、`job_title`、`works_at`、`lives_in`、`allergic_to`。目前没有其他健康专用关系，不按文本分类或自动扩展白名单。入选须 owner/主体/任务范围获准、self、Active、committed、update=judged、无开放关系，有获准原话及逐字可定位依据；legacy、pending、未知状态不入选；额外沿用既有本地过期策略。按 observed_at 降序、ID 升序选整条记录，超数量或字节标 truncated，不剪掉限定语。多值不合并/择真，计划、否定、时间与不确定性均原样保留。
 
@@ -308,3 +308,9 @@ bootstrap/offline/deny 不请求查询嵌入或元数据；显式单次 offline 
 输出明确“已存陈述，非本轮判断”，不填 facts/current/applies。宿主只能说“按记录你曾说……”，保留计划/否定/限定语和出处；当前状态、条件适用、完整清单或本轮有新相关陈述须普通 recall（获准新原话先 prepare）。健康/居住等会进入宿主上下文，启用者应了解白名单与完整原句的暴露范围；来源文本仍是数据，不执行其中指令。
 
 完整快照仅在现有 64 项内存结果缓存中保留，不落 DB 正文。配置进入 bootstrap 请求绑定，策略变更不得复用旧 ID；新 bootstrap ID 刷新，同参重放仍返回旧 read_at/读版本。普通后台整理/新提交不隐式刷新；删除、授权、正文、任务/控制限制变化沿用召回安全屏障，读取后到发布前也检查，失效不发布、不重调模型。重开无完整结果按现有 not_retained 规则失败。默认关闭不会增加 bootstrap 参数绑定或模型请求内容。
+
+### AF288：小库检索与诊断（recall.v10）
+
+仅 embedding.enabled 时，关系过滤前的完整 R1 主体范围记录数不超过 records 预算即枚举，不调用嵌入；字节与闭包超限仍裁剪且不宣称完整。关闭模式保持原证据与模型请求。DF 按宿主可信范围独立来源统计，documents>0 且 df<=1 的词元保留，其他仍按严格超过20%排除。
+
+retrieval trace 仅含固定错误类别、查询/缓存耗时和覆盖数；不含查询、来源原文或底层错误。transport 表示底层已合并的连接/传输错误，不能从该码确定是否连接失败或网络超时；deadline 明确记 timeout。index_read、missing、binding_mismatch、partial 分列，不新增宿主失败码或生成式调用计数。

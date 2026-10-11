@@ -706,7 +706,7 @@ fn visibility_real_prepare_immediate_recall_success_frequency() {
             )
             .unwrap();
             let body = response.structured_content.as_ref().unwrap();
-            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v9" {
+            if response.is_error != Some(true) && body["recall"]["version"] == "recall.v10" {
                 success += 1;
                 assert_eq!(body["source"]["status"], "stored");
                 assert_eq!(body["recall"]["status"], "answered", "{body}");
@@ -760,6 +760,9 @@ fn query_embedding_releases_host_lock_and_offline_bootstrap_do_not_call_it() {
     let db = Db::new();
     let mut s = service(&db);
     seed(&db, &mut s);
+    // Keep this lock test on the non-enumerating path after AF288.
+    capture(&mut s, &db, "new", NANJING);
+    assert!(s.run_background_once().unwrap());
     let (entered, entry) = mpsc::channel();
     let (release, released) = mpsc::channel();
     let released = Mutex::new(released);
@@ -777,8 +780,13 @@ fn query_embedding_releases_host_lock_and_offline_bootstrap_do_not_call_it() {
         Err("injected_query_failure".into())
     }));
     let shared = Mutex::new(s);
+    let held = || {
+        let mut input = query("embedding:held");
+        input["limit"] = json!(1);
+        shared_call(&shared, "memory_recall", input)["recall"].clone()
+    };
     std::thread::scope(|scope| {
-        let read = scope.spawn(|| read_shared(&shared, "embedding:held"));
+        let read = scope.spawn(&held);
         wait(&entry);
         // This management call must complete before the query embedding is released.
         let boot = shared_call(
@@ -797,7 +805,7 @@ fn query_embedding_releases_host_lock_and_offline_bootstrap_do_not_call_it() {
         release.send(()).unwrap();
         let out = read.join().unwrap();
         assert_eq!(out["retrieval"]["status"], "unavailable");
-        assert_eq!(read_shared(&shared, "embedding:held"), out);
+        assert_eq!(held(), out);
         assert_eq!(count.load(std::sync::atomic::Ordering::SeqCst), 1);
     });
 }

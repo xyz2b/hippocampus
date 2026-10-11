@@ -1045,7 +1045,8 @@ impl LexicalDf {
         }
     }
     pub fn kept(df: usize, documents: usize) -> bool {
-        documents > 0 && (df as u128) * 100 <= (documents as u128) * (LEXICAL_DF_PERCENT as u128)
+        documents > 0
+            && (df <= 1 || (df as u128) * 100 <= (documents as u128) * (LEXICAL_DF_PERCENT as u128))
     }
     pub fn score(&self, text: &str) -> (usize, usize) {
         self.score_words(&format!(" {} ", Self::index_text(text)))
@@ -1076,6 +1077,22 @@ impl LexicalDf {
 #[cfg(test)]
 mod hybrid_df_tests {
     use super::*;
+    #[test]
+    fn rare_terms_survive_small_corpora_without_zero_hit_votes() {
+        for (df, docs, kept) in [
+            (1, 4, true),
+            (2, 4, false),
+            (1, 5, true),
+            (2, 10, true),
+            (0, 0, false),
+        ] {
+            assert_eq!(LexicalDf::kept(df, docs), kept);
+        }
+        let df = LexicalDf::new("住在", &[], ["住在阜阳", "甲", "乙", "丙"]);
+        assert!(df.matches("住在阜阳"));
+        assert!(!df.matches("甲"));
+    }
+
     #[test]
     fn partial_western_tokens_at_segment_edges_cannot_cast_a_vote() {
         let df = LexicalDf::new(

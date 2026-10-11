@@ -6,7 +6,7 @@
 新模式以显式固定的历史 AC2 配置跑生产 `ChatMemoryService`：W1 Pro medium、W4 Pro medium、W3 Pro minimal、
 R1 Pro minimal、R4 Pro 计算类 low / 其余 minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型可见 input。
 这组评测配置不随运行时缺省变化：当前运行时 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low。
-当前 DB v11，契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v9；历史录制按完整指纹核对，不能冒充新版。
+当前 DB v11，契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v10；历史录制按完整指纹核对，不能冒充新版。
 输出预算 W1=32768、W3/W4=16384（生产阶段常量），R1=4096、R4=16384；禁用模型修复。
 
 ```sh
@@ -264,3 +264,5 @@ python3 tests/eval/scoring/compare.py --run target/eval-e2e-af255/B/run.json --o
 报告评分分母为选择的15题，另外48题为未选；缺录制单列。common.v1原评分不变，独立问题级人工确认见 scoring/README.md；报告分开写入不完整、R1机械错误/计划差异待核查、R4机械错误/语义或评分失败、调用错误与R4原始远端P50/P90。A/B只比较同一实际证据包，不以B的回放墙钟比较总在线延迟。
 
 AF283：评分分发支持 recall.v9，历史 v8 等仍使用各自适配器身份。bootstrap 的 statement_snapshot 不当作本轮 facts/current 答案计分；默认关闭，不改 W/R 模型请求或历史录制/59/4。
+
+AF288：当前宿主为 recall.v10，显式 v9 请求拒绝；离线评分保留 v9 的历史适配器身份，新增 v10 身份。模型阶段版本与提示词不变，证据包变化按严格请求指纹核验，不补发。

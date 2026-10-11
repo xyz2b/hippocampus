@@ -104,3 +104,5 @@ python3 -m unittest discover -s tests/eval/scoring -v
 仓库包含核心源码、当前文档和必要的合成回归样本。历史运行日志、冻结二进制、原始会话记录和本机部署资料留在开发者本地；部分历史验收脚本需要这些档案，无法仅凭公开源码重放原批次。当前改名也不会重写旧证据的名称或哈希。
 
 设计与冻结契约见[目标设计](docs/architecture/target-design.md)和[契约](docs/architecture/contracts.md)；旧 architecture_v1 为历史参考。
+
+已存陈述快照默认关闭：`statement_snapshot.enabled=true` 可在 bootstrap 附少量完整、带出处与限定语的历史陈述；它不是当前值/完整清单判断。固定白名单、条数/字节限制及健康信息的上下文暴露边界见 [运行时说明](docs/architecture/recall-runtime.md#af283已存陈述快照)。

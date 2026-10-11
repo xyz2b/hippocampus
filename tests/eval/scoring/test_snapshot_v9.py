@@ -1,6 +1,6 @@
 import copy
 import unittest
-from adapters import adapt_recall, V8_ADAPTER, V9_ADAPTER
+from adapters import adapt_recall, V8_ADAPTER, V9_ADAPTER, V10_ADAPTER
 
 
 class SnapshotV9(unittest.TestCase):
@@ -22,6 +22,11 @@ class SnapshotV9(unittest.TestCase):
         self.assertEqual(new["binding"], [])
         old.pop("adapter"); new.pop("adapter")
         self.assertEqual(new, old)
+        new_raw["version"] = "recall.v10"
+        current = adapt_recall(q, {}, new_raw, {}, source_texts={})
+        self.assertEqual(current["adapter"], V10_ADAPTER)
+        current.pop("adapter")
+        self.assertEqual(current, new)
         del new_raw["retrieval"]
         self.assertTrue(adapt_recall(q, {}, new_raw, {}, source_texts={})["binding"])
 

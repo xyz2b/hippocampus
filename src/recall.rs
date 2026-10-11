@@ -418,7 +418,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v9".into(),
+                version: "recall.v10".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -671,7 +671,7 @@ impl Assembly {
         let clarification =
             (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v9".into(),
+            version: "recall.v10".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
@@ -1032,6 +1032,7 @@ fn assemble_inner(
         o.query_type == R1Type::Aggregate
             || matches!(o.plan.op, R1Op::Count | R1Op::Sum | R1Op::List)
     });
+    let enabled = retrieval.is_some_and(|r| r.config.enabled);
     let mut relation = plan
         .output
         .as_ref()
@@ -1058,6 +1059,11 @@ fn assemble_inner(
             .join(" ");
         phrase_score(&text, &phrases)
     };
+    // Enumerate the whole subject scope, never just the model-selected relation.
+    let small_scope = enabled && scoped.len() <= budget.records;
+    if small_scope {
+        relation = None;
+    }
     if let Some(r) = relation {
         let matching: Vec<_> = scoped.iter().filter(|m| m.predicate.0 == r).collect();
         let best = matching.iter().map(|m| relevance(m)).max().unwrap_or(0);
@@ -1095,7 +1101,6 @@ fn assemble_inner(
     }
     // 小范围实际穷举；大范围仍按词法取候选，不能据 FTS 未截断宣称完整。
     let enumerate = enumerate || (relation.is_none() && candidates.len() <= budget.records);
-    let enabled = retrieval.is_some_and(|r| r.config.enabled);
     let hybrid = enabled && !enumerate && !request.bootstrap;
     if hybrid {
         // Relation is a hint, never a reserved seat or lexical vote in the non-enumeration path.
@@ -1150,6 +1155,7 @@ fn assemble_inner(
             })
         })
         .collect();
+    let cache_started = std::time::Instant::now();
     let cache = if hybrid {
         Some(crate::embedding_index::read_snapshot(
             &tx,
@@ -1160,6 +1166,7 @@ fn assemble_inner(
     } else {
         None
     };
+    let cache_elapsed_ms = cache_started.elapsed().as_millis();
     // FTS 只是候选提示；旧来源无索引时用同一快照的完整值/片段兜底，不据此认证语义。
     let hits = if enumerate || hybrid {
         BTreeSet::new()
@@ -1191,6 +1198,7 @@ fn assemble_inner(
             .iter()
             .map(|s| crate::embedding::segments(crate::lexical::body(s).unwrap()).len())
             .sum();
+        let query_started = std::time::Instant::now();
         let query = retrieval
             .unwrap()
             .query
@@ -1200,6 +1208,7 @@ fn assemble_inner(
                 q.check(retrieval.unwrap().config.model)?;
                 Ok(q)
             });
+        let query_elapsed_ms = query_started.elapsed().as_millis();
         metadata.status = RetrievalStatus::Unavailable;
         if let Some(Ok(cache)) = &cache {
             metadata.segments_indexed = cache.vectors.values().map(Vec::len).sum();
@@ -1260,6 +1269,25 @@ fn assemble_inner(
                 };
             }
         }
+        crate::diagnostics::record("retrieval", || {
+            serde_json::json!({
+                "status": metadata.status,
+                "query_error": query.as_ref().err().map(|e| retrieval_error(e)),
+                "index_state": match &cache {
+                    Some(Err(_)) => "index_read",
+                    Some(Ok(c)) if c.binding.is_none() => "missing",
+                    Some(Ok(c)) if query.as_ref().is_ok_and(|q| c.binding.as_ref() != Some(&q.binding)) => "binding_mismatch",
+                    _ if metadata.segments_indexed < metadata.segments_total => "partial",
+                    _ => "ready",
+                },
+                "query_elapsed_ms": query_elapsed_ms,
+                "cache_elapsed_ms": cache_elapsed_ms,
+                "sources_total": metadata.sources_total,
+                "sources_indexed": metadata.sources_indexed,
+                "segments_total": metadata.segments_total,
+                "segments_indexed": metadata.segments_indexed,
+            })
+        });
     }
     let mut scores = BTreeMap::new();
     let mut selected = BTreeSet::new();
@@ -1822,4 +1850,32 @@ fn assemble_inner(
         },
     };
     Ok(assembly)
+}
+
+// Never put provider error strings (which may contain URLs or content) into trace.
+fn retrieval_error(error: &str) -> &'static str {
+    match error {
+        "embedding_deadline_exhausted" => "timeout",
+        "embedding_transport" => "transport",
+        "embedding_cancelled" => "cancelled",
+        "embedding_network_disabled" | "embedding_network_policy_invalid" => "network_disabled",
+        _ => "query_invalid",
+    }
+}
+
+#[cfg(test)]
+mod af288_tests {
+    #[test]
+    fn errors_are_fixed_categories_not_provider_text() {
+        for (input, output) in [
+            ("embedding_transport", "transport"),
+            ("embedding_deadline_exhausted", "timeout"),
+            (
+                "http://secret:password@host/private original text",
+                "query_invalid",
+            ),
+        ] {
+            assert_eq!(super::retrieval_error(input), output);
+        }
+    }
 }
