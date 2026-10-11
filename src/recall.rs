@@ -418,7 +418,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v10".into(),
+                version: "recall.v11".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -671,7 +671,7 @@ impl Assembly {
         let clarification =
             (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v10".into(),
+            version: "recall.v11".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
@@ -1041,10 +1041,35 @@ fn assemble_inner(
         R1Subject::Entity(s) => Some(s.entity_id.as_str()),
         _ => None,
     });
+    let mentioned_entity = subject
+        .filter(|id| *id != "self")
+        .and_then(|id| entities.iter().find(|e| e.id.0 == id));
+    let mentions: BTreeSet<_> = eligible
+        .values()
+        .filter(|m| {
+            mentioned_entity.is_some_and(|e| {
+                m.subject_id != e.id
+                    && (match &m.value {
+                        crate::MemoryValue::Entity(id) => *id == e.id,
+                        crate::MemoryValue::Text(text) => crate::lexical::mentions_entity(text, e),
+                        _ => false,
+                    } || m
+                        .evidence
+                        .iter()
+                        .any(|v| crate::lexical::mentions_entity(&v.quote, e)))
+            })
+        })
+        .map(|m| m.id)
+        .collect();
+    diagnostic_stage(
+        &mut diagnostic,
+        "r1_subject_mentions",
+        mentions.iter().copied(),
+    );
     let scoped: Vec<_> = eligible
         .values()
         .copied()
-        .filter(|m| subject.is_none_or(|id| m.subject_id.0 == id))
+        .filter(|m| subject.is_none_or(|id| m.subject_id.0 == id) || mentions.contains(&m.id))
         .collect();
     diagnostic_stage(&mut diagnostic, "r1_subject", scoped.iter().map(|m| m.id));
     if let Some(d) = &mut diagnostic {

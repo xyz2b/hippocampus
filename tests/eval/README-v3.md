@@ -265,4 +265,4 @@ python3 tests/eval/scoring/compare.py --run target/eval-e2e-af255/B/run.json --o
 
 AF283：评分分发支持 recall.v9，历史 v8 等仍使用各自适配器身份。bootstrap 的 statement_snapshot 不当作本轮 facts/current 答案计分；默认关闭，不改 W/R 模型请求或历史录制/59/4。
 
-AF288：当前宿主为 recall.v10，显式 v9 请求拒绝；离线评分保留 v9 的历史适配器身份，新增 v10 身份。模型阶段版本与提示词不变，证据包变化按严格请求指纹核验，不补发。
+AF288：当前宿主为 recall.v11，显式 v9 请求拒绝；离线评分保留 v9 的历史适配器身份，新增 v10 身份。模型阶段版本与提示词不变，证据包变化按严格请求指纹核验，不补发。

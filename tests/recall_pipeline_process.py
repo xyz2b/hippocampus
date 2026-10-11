@@ -84,7 +84,7 @@ def main():
         finally:
             client.close()
         result = cli(binary,db,config,root,env,"memory_recall",args)
-        assert result["version"] == "recall.v10" and result["status"] == "answered",result
+        assert result["version"] == "recall.v11" and result["status"] == "answered",result
         assert result["facts"][0]["statement"] == TEXT
         assert "answer_contract" not in result
         assert [r["text"]["format"]["name"] for r in Fixture.requests] == ["r1_v2","r4_v7"] * 2

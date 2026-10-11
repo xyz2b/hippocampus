@@ -328,7 +328,7 @@ fn remember_publication_preserves_committed_result_when_snapshot_is_unreadable()
             first.structured_content.unwrap()["global_context"]["status"],
             "available"
         );
-        let recall_arguments = json!({"recall_version":"recall.v10","request_id":"retained",
+        let recall_arguments = json!({"recall_version":"recall.v11","request_id":"retained",
             "query":"全局回答要求","offline":true,"bootstrap":true});
         let recalled = ChatMemoryService::call_shared(
             &shared,
@@ -907,7 +907,7 @@ fn background_commit_during_foreground_r4_preserves_snapshot_in_three_controlled
             let result = foreground.join().unwrap().unwrap();
             assert!(!result.is_error.unwrap_or(false));
             let recall = &result.structured_content.as_ref().unwrap()["recall"];
-            assert_eq!(recall["version"], "recall.v10");
+            assert_eq!(recall["version"], "recall.v11");
             assert!(
                 recall["snapshot"]["read_revision"].as_u64().unwrap()
                     < db.open().read().unwrap().revision

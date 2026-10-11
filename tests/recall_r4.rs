@@ -3111,3 +3111,277 @@ fn af227_r1_19_injection_cannot_expand_sqlite_owner_task_or_subject_scope() {
         );
     }
 }
+
+#[test]
+fn af296_mentions_preserve_identity_scope_ambiguity_and_budget_boundaries() {
+    let f = Fixture::new(json!({"query":"孩子的报名和画画情况？","at":SAID_ON,
+        "current_evidence":"query_only","plan":{"type":"single","op":"lookup","relation":"孩子的情况"},
+        "records":[],"raw":[],"relations":[]}));
+    f.db.open()
+        .transaction(|s| {
+            let mut child = s
+                .entities
+                .list_by_owner(&UserId::from(OWNER))
+                .into_iter()
+                .find(|e| e.id.0 == "child")
+                .unwrap();
+            child.aliases = vec!["女儿".into(), "小雨".into(), "雨".into()];
+            s.entities.upsert(child);
+            s.entities.upsert(Entity {
+                id: "other".into(),
+                owner_id: OWNER.into(),
+                entity_type: EntityType::Person,
+                canonical_name: "小雨".into(),
+                aliases: vec![],
+            });
+            Ok(())
+        })
+        .unwrap();
+    let actor = seed_on(
+        &f.db,
+        "actor",
+        "我给女儿报名。",
+        "self",
+        None,
+        true,
+        SAID_ON,
+    );
+    let weather = seed_on(
+        &f.db,
+        "weather",
+        "我看到今天有小雨。",
+        "self",
+        None,
+        true,
+        SAID_ON,
+    );
+    let unrelated = seed_on(
+        &f.db,
+        "unrelated",
+        "我养了植物。",
+        "self",
+        None,
+        true,
+        SAID_ON,
+    );
+    let narrow_alias = seed_on(&f.db, "single", "我听到雨声。", "self", None, true, SAID_ON);
+    let direct = seed_on(
+        &f.db,
+        "direct",
+        "孩子喜欢画画。",
+        "child",
+        None,
+        true,
+        SAID_ON,
+    );
+    let outside = seed_on(
+        &f.db,
+        "task",
+        "我给女儿买了书。",
+        "self",
+        Some("private-task"),
+        true,
+        SAID_ON,
+    );
+    let same_name = seed_on(
+        &f.db,
+        "same-name",
+        "另一个孩子小雨喜欢跳绳。",
+        "other",
+        None,
+        true,
+        SAID_ON,
+    );
+    // Structured reference has no registered name in either value text or evidence.
+    let mut structured_ids = Vec::new();
+    for (sid, target) in [("entity", "child"), ("different-entity", "self")] {
+        source(&f.db, sid, "我的联系人是那位。", None, "running");
+        let mut c = candidate(sid, "我的联系人是那位。", "self");
+        c.candidate.relation = "contact".into();
+        c.candidate.value = Some(Value::Entity {
+            entity_id: target.into(),
+            quote: Quote {
+                text: "那位".into(),
+            },
+        });
+        let id = commit(
+            &f.db,
+            sid,
+            None,
+            W4Input {
+                candidates: vec![c],
+                records: vec![],
+                relations: vec![],
+                coverage: W4Coverage {
+                    complete: true,
+                    omitted: 0,
+                },
+            },
+            W4Decision {
+                candidate: 0,
+                status: DecisionStatus::Decided,
+                action: Some(Action::New),
+                targets: vec![],
+                resolves_relations: vec![],
+                basis: vec![stored(sid, "我的联系人是那位。")],
+                effective: None,
+                relation_scope: None,
+                pending_reason: None,
+            },
+        );
+        structured_ids.push(id);
+    }
+    let [structured, different_entity] = structured_ids.as_slice() else {
+        panic!()
+    };
+    let (structured, different_entity) = (*structured, *different_entity);
+    let req = f.request();
+    let mut output = f.plan_json();
+    output["subject"] = json!({"entity_id":"child"});
+    output["plan"]["filter"]["relation"] = Json::Null;
+    let entities = [EntityId::from("self"), EntityId::from("child")];
+    let relations = [w2::Relation {
+        id: "fact".into(),
+        memory_types: vec![MemoryType::Fact],
+    }];
+    let make_plan = |request: &Request, output: &Json| {
+        r1::validate(
+            r1::decode(&output.to_string()).unwrap(),
+            &r1::Context {
+                query: &request.binding.query,
+                context: &request.binding.context,
+                entities: &entities,
+                relations: &relations,
+                subject_ids: request.subject_ids.as_deref(),
+                task_id: None,
+                said_on: &request.said_on,
+                utc_offset_seconds: request.utc_offset_seconds,
+                supported_units: &[],
+            },
+        )
+        .unwrap()
+    };
+    for enabled in [false, true] {
+        let config = embedding::Config {
+            enabled,
+            ..Default::default()
+        };
+        let plan = make_plan(&req, &output);
+        let assemble = |request: &Request, plan: &r1::Plan, budget| {
+            recall::assemble_with_retrieval(
+                &f.db.open(),
+                request,
+                plan,
+                budget,
+                &recall::Retrieval {
+                    config: &config,
+                    query: Some(&|_| Err("embedding_connect".into())),
+                },
+                true,
+            )
+            .unwrap()
+        };
+        let a = assemble(&req, &plan, Budget::default());
+        let ids: Vec<_> = a.evidence.records.iter().map(RecordView::id).collect();
+        for id in [actor, weather, structured, direct, same_name] {
+            assert!(ids.contains(&id));
+        }
+        for id in [unrelated, narrow_alias, outside, different_entity] {
+            assert!(!ids.contains(&id));
+        }
+        let mentions = &a.retrieval_diagnostic().unwrap().stages["r1_subject_mentions"];
+        assert_eq!(
+            mentions
+                .iter()
+                .copied()
+                .collect::<std::collections::BTreeSet<_>>(),
+            [actor, weather, structured, same_name]
+                .into_iter()
+                .collect()
+        );
+        for id in [actor, weather, structured] {
+            let RecordView::Current(v) = a.evidence.records.iter().find(|v| v.id() == id).unwrap()
+            else {
+                panic!()
+            };
+            assert_eq!(
+                v.candidate.subject,
+                Subject::Entity(EntitySubject {
+                    entity_id: "self".into()
+                })
+            );
+            assert_eq!(v.grade, Grade::Committed);
+            assert_eq!(v.update.status, UpdateStatus::Judged);
+        }
+        // Mention is not a semantic binding: a mechanically valid ambiguity decision survives.
+        let out = a
+            .finish_r4(
+                &f.db.open(),
+                Ok(&json!({"verdict":"needs_clarification","facts":[],"compute":null}).to_string()),
+            )
+            .unwrap();
+        assert_eq!(out.status, RecallStatus::NeedsClarification);
+        let mut trusted = req.clone();
+        trusted.subject_ids = Some(vec!["child".into()]);
+        let narrow = assemble(&trusted, &make_plan(&trusted, &output), Budget::default());
+        assert_eq!(
+            narrow
+                .evidence
+                .records
+                .iter()
+                .map(RecordView::id)
+                .collect::<Vec<_>>(),
+            [direct]
+        );
+        assert!(narrow.retrieval_diagnostic().unwrap().stages["r1_subject_mentions"].is_empty());
+        let cut = assemble(
+            &req,
+            &plan,
+            Budget {
+                records: 1,
+                ..Default::default()
+            },
+        );
+        assert!(cut.evidence.completeness.retrieval_truncated);
+        assert!(!cut.evidence.completeness.plan_complete);
+        if enabled {
+            assert!(cut.retrieval_diagnostic().unwrap().enumeration.is_none());
+        }
+        let bytes = assemble(
+            &req,
+            &plan,
+            Budget {
+                stored_bytes: 1,
+                ..Default::default()
+            },
+        );
+        assert!(bytes.evidence.records.is_empty());
+        assert!(!bytes.evidence.completeness.plan_complete);
+        for subject in [
+            json!({"entity_id":"self"}),
+            json!({"unresolved":{"text":"孩子"}}),
+            json!({"ambiguous":["self","child"]}),
+        ] {
+            let mut other = output.clone();
+            other["subject"] = subject;
+            let a = assemble(&req, &make_plan(&req, &other), Budget::default());
+            assert!(a.retrieval_diagnostic().unwrap().stages["r1_subject_mentions"].is_empty());
+            assert!(a.evidence.records.iter().any(|v| v.id() == unrelated));
+        }
+    }
+    // Removing the source after assembly must not publish cached mentions.
+    let plan = make_plan(&req, &output);
+    let before = recall::assemble(&f.db.open(), &req, &plan, Budget::default()).unwrap();
+    let mut service =
+        hippocampus::chat::ChatMemoryService::new(f.db.open(), Default::default()).unwrap();
+    service
+        .call("memory_forget", json!({"source_id":"actor"}), || false)
+        .unwrap();
+    assert!(
+        before
+            .finish_skipped(&f.db.open(), recall::SkipReason::Offline)
+            .is_err()
+    );
+    let reopened = recall::assemble(&f.db.open(), &req, &plan, Budget::default()).unwrap();
+    assert!(!reopened.evidence.records.iter().any(|r| r.id() == actor));
+}

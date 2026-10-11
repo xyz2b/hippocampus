@@ -403,6 +403,18 @@ pub(crate) fn entity_hints(query: &str, entities: &[Entity]) -> BTreeMap<EntityI
         .collect()
 }
 
+/// A name occurrence is a retrieval hint, never an entity binding. No DF or alias inference.
+pub(crate) fn mentions_entity(text: &str, entity: &Entity) -> bool {
+    let words = format!(" {} ", tokens(text).join(" "));
+    std::iter::once(&entity.canonical_name)
+        .chain(&entity.aliases)
+        .filter(|name| name.trim().chars().count() >= 2)
+        .any(|name| {
+            let phrase = tokens(name).join(" ");
+            !phrase.is_empty() && words.contains(&format!(" {phrase} "))
+        })
+}
+
 /// Natural queries share the index tokenizer; adjacent Han pairs avoid single-character noise.
 // ponytail: literal bigrams plus registered aliases, no synonym inference; measure gaps before adding a planner.
 pub(crate) fn natural_phrases(query: &str, entities: &[Entity]) -> Vec<String> {
@@ -1104,5 +1116,33 @@ mod hybrid_df_tests {
         assert!(!df.matches_segment("Rustacean", 0, 4));
         assert!(!df.matches_segment("xRust", 1, 5));
         assert!(df.matches_segment("Rust Java", 0, 4));
+    }
+}
+
+#[cfg(test)]
+mod af296_tests {
+    use super::*;
+    #[test]
+    fn complete_registered_names_only_without_df_or_single_character_aliases() {
+        let entity = Entity {
+            id: "child".into(),
+            owner_id: "owner".into(),
+            entity_type: crate::EntityType::Person,
+            canonical_name: "小雨".into(),
+            aliases: vec!["女儿".into(), "An Na".into(), "雨".into(), " 雨 ".into()],
+        };
+        for text in ["我给女儿报名。", "今天小雨。", "AN   NA joined"] {
+            assert!(mentions_entity(text, &entity), "{text}");
+        }
+        for text in [
+            "雨",
+            "雨宝",
+            "女同学儿子",
+            "Anna joined",
+            "an natasha",
+            "child",
+        ] {
+            assert!(!mentions_entity(text, &entity), "{text}");
+        }
     }
 }

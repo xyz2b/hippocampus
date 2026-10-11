@@ -188,6 +188,8 @@ AF288 当前 AC2 注入回放（无端口）：35个用例均在首个 W1 请求
 
 ### AF293：实体信号诊断（零模型调用）
 
+以下保留 AF293 历史口径与结果；当前实现已升级 AF296，同一测试入口的输出目录及 D5 新断言见下节。
+
 ```sh
 cargo test --test retrieval_eval af293_entity_diagnostics_without_model_calls -- --nocapture
 ```
@@ -228,3 +230,13 @@ D2/D3 低 DF 都命中，高 DF 下关闭臂因数量预算漏目标，回落臂
 D4 均无命中，不据此猜昵称身份。D5-bound 均在 R1 主体过滤处失去 self 记录，
 D5-wide 均命中；值得另议主体提示策略，但不得扩大宿主授权范围。
 SAFE 两臂均命中目标且无其他孩子/self/其他 owner 原文泄露。
+
+### AF296：主体提及候选修复对照
+
+沿用 AF293 独立语料，运行同一 `af293_entity_diagnostics_without_model_calls` 测试，
+新报告写到 `target/eval-retrieval/af296/entity/`，保留 AF293 原报告。D5-bound 改为
+断言目标进入主体候选且返回；SAFE 不放宽。新机制只扩候选，不改变词法计分。
+
+严格回放：`cargo test --test retrieval_eval af185_production_strict_vector_replay -- --ignored --nocapture`。
+使用既有 AF175 向量，发送数为零，新报告写到 `target/eval-retrieval/af296/replay/`。
+冻结 AF173 对照仅忽略新增的诊断 stage（不进入业务证据）；业务字段比较不放宽。

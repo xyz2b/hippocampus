@@ -2674,6 +2674,10 @@ mod af175 {
                             })
                             .unwrap()
                             .clone();
+                        actual["diagnostic"]["stages"]
+                            .as_object_mut()
+                            .unwrap()
+                            .remove("r1_subject_mentions");
                         actual.as_object_mut().unwrap().remove("elapsed_us");
                         expected.as_object_mut().unwrap().remove("elapsed_us");
                         assert_eq!(
@@ -2695,8 +2699,9 @@ mod af175 {
             }
             models.push(json!({"model":model.tag(),"strict_reused_slots":slots.len(),"totals":queries.budgets.iter().map(|b|totals(&rows,*b)).collect::<Vec<_>>(),"summary":summary(&rows),"rows":rows}));
         }
-        let report = json!({"revision":"AF288","production_path":true,"new_embedding_requests":0,"safety_violations":0,"disabled_evidence_byte_equal":true,"models":models});
-        let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-retrieval/af288");
+        let report = json!({"revision":"AF296","production_path":true,"new_embedding_requests":0,"safety_violations":0,"disabled_evidence_byte_equal":true,"models":models});
+        let directory =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("target/eval-retrieval/af296/replay");
         std::fs::create_dir_all(&directory).unwrap();
         atomic_write(&directory.join("report.json"), &report).unwrap();
         let mut md = String::from(
@@ -3247,7 +3252,8 @@ fn af293_entity_diagnostics_without_model_calls() {
                     }).collect();
                     if q.id == "D5-bound" {
                         assert_eq!(targets[0]["trusted_scope"], true);
-                        assert_eq!(targets[0]["r1_subject"], false);
+                        assert_eq!(targets[0]["r1_subject"], true);
+                        assert_eq!(row["required_all"], true);
                     }
                     if q.id == "D5-wide" {
                         assert_eq!(targets[0]["r1_subject"], true);
@@ -3287,9 +3293,9 @@ fn af293_entity_diagnostics_without_model_calls() {
         }
     }
     assert_eq!(rows.len(), queries.queries.len() * 8);
-    let out = Path::new("target/eval-retrieval/af293");
+    let out = Path::new("target/eval-retrieval/af296/entity");
     std::fs::create_dir_all(out).unwrap();
-    let report = json!({"revision":"AF293","model_calls":0,"embedding_calls":0,"vectors_added":0,
+    let report = json!({"revision":"AF296","model_calls":0,"embedding_calls":0,"vectors_added":0,
         "corpus_fingerprint":recall_models::fingerprint(&fixture),
         "queries_fingerprint":recall_models::fingerprint(&serde_json::from_str::<Json>(include_str!("eval/retrieval/entity-queries-af293.json")).unwrap()),
         "note":"Injected R1 and complete records; not a W1/R1 accuracy or vector-recall experiment. DF is diagnostic only in disabled arm. Retrieval misses do not fail the test.","rows":rows});
@@ -3316,7 +3322,7 @@ fn af293_entity_diagnostics_without_model_calls() {
     }
     std::fs::write(out.join("report.md"), md).unwrap();
     println!(
-        "AF293: {} rows, 0 model calls, 0 embedding calls; {}",
+        "AF296: {} rows, 0 model calls, 0 embedding calls; {}",
         report["rows"].as_array().unwrap().len(),
         out.display()
     );

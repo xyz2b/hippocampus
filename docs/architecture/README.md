@@ -2,12 +2,12 @@
 
 M1.5 收尾（2026-10-07）：默认写入 `w4_runtime_v1`、召回 `recall_v3`，旧写入/召回执行器已删除。当前 DB v11；旧数据通过 LegacyRecordView 读取，保留原值、Scope、条件、时间、证据和缺口；不自动调用模型重建。配置名中的 v1/v3 不是模型契约或宿主协议版本。
 
-当前契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v10。缺省角色强度为 W1 low、W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；显式配置仍生效。日常使用的 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 单独列出。
+当前契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v11。缺省角色强度为 W1 low、W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；显式配置仍生效。日常使用的 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 单独列出。
 
 | 当前文档 | 内容 |
 | --- | --- |
 | [target-design.md](target-design.md) | 已冻结目标设计与不变量；实现范围和性能边界以运行时文档为准 |
-| [contracts.md](contracts.md) | 冻结契约：W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v10；旧数据读取与删除边界 |
+| [contracts.md](contracts.md) | 冻结契约：W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v11；旧数据读取与删除边界 |
 | [w4-code-side.md](w4-code-side.md) | 默认写入：W0/T1、W1/W2/W3/W4、后台执行、轮次与恢复 |
 | [w5-storage.md](w5-storage.md) | W5 事务、更新状态、关系、回执及删除清洗 |
 | [contract-types.md](contract-types.md) | 旧 Memory 投影、限定语保留及 LegacyRecordView 兼容 |
@@ -36,6 +36,6 @@ M1 历史合并为 63 题 59/4/0 待复核；已知失败是 conflict_q2 和三�
 | [retain-until-audit.md](retain-until-audit.md)、[w5-acceptance.md](w5-acceptance.md) | 旧 schema 审计与阶段验收记录 |
 | [../architecture_v1.md](../architecture_v1.md) | 旧 V1 设计 |
 
-AF185 混合检索缺省关闭：DB v11 本机来源分段缓存/维护，当前 recall.v10 沿用独立 retrieval 元数据；冻结规则见 contracts 3.2/3.4，接线见 recall-runtime 的 AF185 小节，严格零调用对照见 [检索评测](../../tests/eval/retrieval/README.md)。
+AF185 混合检索缺省关闭：DB v11 本机来源分段缓存/维护，当前 recall.v11 沿用独立 retrieval 元数据；冻结规则见 contracts 3.2/3.4，接线见 recall-runtime 的 AF185 小节，严格零调用对照见 [检索评测](../../tests/eval/retrieval/README.md)。
 
 AF283 已存陈述快照缺省关闭，只在 bootstrap 返回完整 CurrentRecordView 与覆盖未知说明；不能代替当前状态/条件适用/完整清单的普通召回。配置、固定关系白名单与隐私边界见 [运行时说明](recall-runtime.md#af283已存陈述快照)。

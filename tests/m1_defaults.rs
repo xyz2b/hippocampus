@@ -203,7 +203,7 @@ fn m1_legacy_source_less_recall_bootstrap_lifecycle_and_delete_remain_local() {
             || false,
         )
         .unwrap();
-    assert_eq!(boot["version"], "recall.v10");
+    assert_eq!(boot["version"], "recall.v11");
     assert_eq!(boot["semantic_judgment"], "skipped");
     assert!(boot.to_string().contains("中文"));
     assert!(!boot.to_string().contains("限定场景"));
@@ -349,7 +349,7 @@ fn m1_default_capture_permission_version_rejection_and_immediate_recall() {
         .unwrap();
     assert_eq!(prepared["source"]["status"], "stored");
     assert_eq!(prepared["enrichment"]["status"], "queued");
-    assert_eq!(prepared["recall"]["version"], "recall.v10");
+    assert_eq!(prepared["recall"]["version"], "recall.v11");
     assert!(prepared["recall"].to_string().contains("我有一把蓝伞"));
     assert_eq!(
         service.call("memory_prepare", input, || false).unwrap(),

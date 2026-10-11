@@ -73,7 +73,7 @@ fn af283_default_output_and_global_context_stay_unchanged_except_version() {
     let out = disabled
         .call("memory_recall", boot("disabled"), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v10");
+    assert_eq!(out["version"], "recall.v11");
     assert!(out.get("statement_snapshot").is_none());
     assert_eq!(out["records"], json!([]));
     let mut enabled = snapshot_service(&db, true);
@@ -442,6 +442,34 @@ fn af288_v9_is_rejected_by_bootstrap_prepare_and_validate_without_side_effects()
         ),
     ] {
         input["recall_version"] = json!("recall.v9");
+        assert!(
+            service
+                .call(name, input, || false)
+                .unwrap_err()
+                .to_string()
+                .contains("contract_version_unsupported")
+        );
+    }
+    assert!(db.state().sources.is_empty());
+    assert_no_calls(&db);
+}
+
+#[test]
+fn af296_v10_is_rejected_by_bootstrap_prepare_and_validate_without_side_effects() {
+    let db = Db::new();
+    let mut service = snapshot_service(&db, true);
+    for (name, mut input) in [
+        ("memory_recall", boot("unsupported")),
+        (
+            "memory_prepare",
+            json!({"user_turn":{"text":"我住在星港。","session_id":"s","turn_id":"t","capture_source":true}}),
+        ),
+        (
+            "memory_validate_answer",
+            json!({"query":"住哪？","request_id":"unsupported","draft_answer":"星港"}),
+        ),
+    ] {
+        input["recall_version"] = json!("recall.v10");
         assert!(
             service
                 .call(name, input, || false)

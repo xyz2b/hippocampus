@@ -742,7 +742,7 @@ impl RecallRuntime {
         store: &SqliteMemoryStore,
         request_id: &str,
     ) -> PersistenceResult<RecallOutput> {
-        let operation = json!(["recall.v10", fingerprint(&json!(request_id))]).to_string();
+        let operation = json!(["recall.v11", fingerprint(&json!(request_id))]).to_string();
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
@@ -795,7 +795,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v10", fingerprint(&json!(request_id))]).to_string(),
+            json!(["recall.v11", fingerprint(&json!(request_id))]).to_string(),
         );
         self.cached_in_state(store, state, &key).map(|c| c.output)
     }
@@ -809,7 +809,7 @@ impl RecallRuntime {
         let key = (
             store.path().to_owned(),
             store.owner().0.clone(),
-            json!(["recall.v10", fingerprint(&json!(request_id))]).to_string(),
+            json!(["recall.v11", fingerprint(&json!(request_id))]).to_string(),
         );
         store.read_for_publication(|state| {
             self.cached_in_state(store, state, &key)?
@@ -933,7 +933,7 @@ impl RecallRuntime {
     ) -> PersistenceResult<RecallOutput> {
         if !request.bootstrap
             || output.request != request.binding
-            || output.version != "recall.v10"
+            || output.version != "recall.v11"
             || output.current_message.is_some()
             || !output.raw.is_empty()
             || !output.facts.is_empty()
@@ -984,7 +984,7 @@ impl RecallRuntime {
             store.path().to_owned(),
             store.owner().0.clone(),
             json!([
-                "recall.v10",
+                "recall.v11",
                 fingerprint(&json!(request.binding.request_id))
             ])
             .to_string(),
@@ -1124,7 +1124,7 @@ impl RecallRuntime {
         let initial = stamp(&state)?;
         // request_id 也可能夹带原话；摘要键既避免正文落库，也不会超过账本 ID 长度上限。
         let operation = json!([
-            "recall.v10",
+            "recall.v11",
             fingerprint(&json!(request.binding.request_id))
         ])
         .to_string();

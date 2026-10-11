@@ -21,7 +21,7 @@ fn af283_bootstrap_read_then_other_connection_delete_cannot_cache_or_return_snap
         ..Default::default()
     };
     let output = serde_json::from_value(json!({
-        "version":"recall.v10","request":req.binding,"status":"context_only",
+        "version":"recall.v11","request":req.binding,"status":"context_only",
         "current_message":null,"records":[],"raw":[],"facts":[],"computed":null,
         "history":[],"conflicts":[],"clarification":null,"semantic_judgment":"skipped",
         "completeness":{"retrieval_truncated":false,"pending_related_sources":0,
@@ -1219,7 +1219,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v10");
+    assert_eq!(out["version"], "recall.v11");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1308,7 +1308,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v10");
+        assert_eq!(result["recall"]["version"], "recall.v11");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1323,7 +1323,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v10");
+    assert_eq!(body["recall"]["version"], "recall.v11");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -3045,7 +3045,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let result = runtime
             .run(&mut db.open(), &req, Budget::default(), Some(&provider))
             .unwrap();
-        assert_eq!(result.version, "recall.v10");
+        assert_eq!(result.version, "recall.v11");
         assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
         let requests = sent.lock().unwrap();
         for (i, (schema, contract, old_schema, old_contract)) in [
@@ -3083,7 +3083,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let r4_digest = fingerprint(&json!([R4_PROMPT, requests[1]["text"]["format"]["schema"]]));
         drop(requests);
         let operation =
-            json!(["recall.v10", fingerprint(&json!(req.binding.request_id))]).to_string();
+            json!(["recall.v11", fingerprint(&json!(req.binding.request_id))]).to_string();
         let state = db.open().read().unwrap();
         let receipt = &state.receipts[&operation];
         assert_eq!(

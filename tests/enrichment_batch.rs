@@ -1656,7 +1656,7 @@ fn recall_preserves_plan_records_and_injected_plan_wording_without_inferring_exe
     let out = assembly
         .finish_r4(&db.open(), Ok(&model.to_string()))
         .unwrap();
-    assert_eq!(out.version, "recall.v10");
+    assert_eq!(out.version, "recall.v11");
     assert_eq!(out.status, RecallStatus::Answered);
     assert_eq!(
         out.facts[0].statement,
