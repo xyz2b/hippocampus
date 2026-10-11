@@ -1,6 +1,10 @@
-//! 单阶段离线评分；样本标签仍为 draft，未录制与过期录制不冒充模型失败。
+//! 单阶段离线评分；未录制与过期录制不冒充模型失败，语义标签以各样本版本为准。
 #[path = "eval/w3/adapter.rs"]
 mod adapter;
+
+#[allow(dead_code)]
+#[path = "eval/w4/runtime.rs"]
+mod w4_runtime;
 
 #[path = "eval/recall_stage/adapter.rs"]
 mod recall_adapter;
@@ -675,7 +679,13 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             matching.len() == 1,
         );
         let a = matching.first().copied().unwrap_or(&Value::Null);
-        for key in ["status", "action", "targets", "pending_reason"] {
+        for key in [
+            "status",
+            "action",
+            "pending_reason",
+            "effective",
+            "relation_scope",
+        ] {
             check(
                 fields,
                 format!("decisions[{}].{key}", e["candidate"]),
@@ -684,6 +694,17 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
                 !a.is_null() && matches(&a[key], &e[key]),
             );
         }
+        let targets = |v: &Value| {
+            let mut ids = items(v).to_vec();
+            ids.sort_by_key(|id| id.as_u64());
+            json!(ids)
+        };
+        compare(
+            fields,
+            format!("decisions[{}].targets", e["candidate"]),
+            &targets(&e["targets"]),
+            &targets(&a["targets"]),
+        );
         let sources: Vec<_> = items(&a["basis"])
             .iter()
             .map(|b| b["source"]["source_id"].clone())
@@ -692,8 +713,7 @@ fn score_w4(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             .iter()
             .filter(|id| {
                 // coexist 无 targets：不把比较可解释性偏好变成冻结契约的旧方要求。
-                e["action"] != "coexist"
-                    || !items(&e["targets"]).is_empty()
+                (e["status"] != "pending" && e["action"] != "coexist")
                     || input.candidates.iter().any(|c| {
                         c.index == e["candidate"].as_u64().unwrap() as usize
                             && serde_json::to_value(&c.source).unwrap()["source_id"] == **id
@@ -761,7 +781,7 @@ fn expectation_branches(expect: &Value) -> Vec<Value> {
 }
 
 fn score_raw(stage: &str, sample: &Value, text: Option<&str>) -> Value {
-    if matches!(stage, "w1" | "w3" | "r1" | "r4")
+    if matches!(stage, "w1" | "w3" | "w4" | "r1" | "r4")
         && text.is_some()
         && (sample["expect"].get("alternatives").is_some()
             || !items(&sample["expect"]["optional_candidates"]).is_empty())
@@ -1028,6 +1048,41 @@ fn score(stage: &str, sample: &Value, text: Option<&str>) -> Value {
         }
     }
     report["final_result"] = json!({"status":report["status"],"fields":report["fields"],"categories":report["categories"]});
+    if stage == "w4" {
+        report["automatic_fields"] = report["final_result"].clone();
+        let branch = report["expectation_branches"]["selected"]
+            .as_u64()
+            .map(|i| &sample["expect"]["alternatives"][i as usize])
+            .unwrap_or(&sample["expect"]);
+        let mut after = branch["after"].clone();
+        let recall = after.as_object_mut().and_then(|m| m.remove("recall"));
+        let mut runtime = json!({"status":"未执行","reason":"机械核验未通过"});
+        if report["categories"]["contract"]["passed"] == true {
+            if after.is_object() {
+                let mut runtime_sample = sample.clone();
+                runtime_sample["expect"] = branch.clone();
+                runtime = w4_runtime::verify_after(runtime_sample, report["final_output"].clone());
+            } else {
+                runtime = json!({"status":"不适用","reason":"本专项未标注 after"});
+            }
+        }
+        runtime["expected"] = after;
+        report["runtime_state_result"] = runtime;
+        if report["runtime_state_result"]["status"] == "失败" {
+            let diagnostic = report["runtime_state_result"]["error"].clone();
+            let fields = report["fields"].as_array_mut().unwrap();
+            check(fields, "runtime.after", json!(true), diagnostic, false);
+            report["categories"] = categories(fields);
+            report["status"] = json!("失败");
+            report["final_result"] = json!({"status":report["status"],"fields":report["fields"],"categories":report["categories"]});
+        }
+        report["recall_semantic_result"] = json!({"status":"待人工复核", "expected":recall});
+        report["manual_review"] = json!({"status":if report["categories"]["contract"]["passed"] == true && report["runtime_state_result"]["status"] != "失败" {"pending"} else {"not_reviewable"},
+            "binding":{"sample":sample["id"],"label_revision":sample["label_revision"],
+                "input":hippocampus::recall_models::fingerprint(&json!({"input":sample["input"],"sources":sample["sources"]})),
+                "final_output":hippocampus::recall_models::fingerprint(&report["final_output"])},
+            "requirements":branch["must_not"],"note":"机械失败不可人工豁免；after.recall 与自然语言禁项独立复核"});
+    }
     report
 }
 
@@ -4395,6 +4450,13 @@ fn evaluate_cases_with_review_ledger(
         result["repeat"] = json!(case.repeat);
         result["max_output_tokens"] = case.request["max_output_tokens"].clone();
         result["request"] = case_fingerprint(case);
+        if case.stage == "w4" && result["manual_review"].is_object() {
+            result["manual_review"]["binding"]["request"] = case_fingerprint(case);
+            result["manual_review"]["binding"]["repeat"] = json!(case.repeat);
+            result["manual_review"]["dedup_key"] = json!(hippocampus::recall_models::fingerprint(
+                &result["manual_review"]["binding"]
+            ));
+        }
         if let Some(error) = metrics.get("provider_http_error").filter(|v| !v.is_null()) {
             result["provider_http_error"] = error.clone();
         }
@@ -6265,8 +6327,8 @@ fn json_string_response_does_not_turn_into_a_valid_object_on_replay() {
 
 #[test]
 fn stage_and_prefix_filters_skip_non_w4_code_paths() {
-    assert_eq!(selected("w1,w3,w4", "").unwrap().len(), 61);
-    assert_eq!(selected("w4", "").unwrap().len(), 21);
+    assert_eq!(selected("w1,w3,w4", "").unwrap().len(), 65);
+    assert_eq!(selected("w4", "").unwrap().len(), 25);
     assert!(selected("w4", "w4_06,w4_08").unwrap().is_empty());
     let subset = selected("w3", "w3_01,w3_02").unwrap();
     assert_eq!(subset.len(), 2);
@@ -6952,7 +7014,7 @@ fn repeats_models_and_caps_are_independent_and_all_attempts_count() {
         plan_repeated(selected("w1,w4", "").unwrap(), &temp.0, &model, 2)
             .unwrap()
             .len(),
-        82
+        90
     );
     for label in ["../escape", "/tmp/x", ".", ""] {
         let mut bad = model.clone();
@@ -11209,4 +11271,126 @@ fn af227_r4_computations_check_group_identity_operands_precision_and_results() {
         score("r4", &sample, Some(&output.to_string()))["status"],
         "失败"
     );
+}
+
+#[test]
+fn af276_w4_fields_branches_and_manual_semantics_are_separate() {
+    let find = |prefix: &str| {
+        samples("w4")
+            .into_iter()
+            .find(|s| s["id"].as_str().unwrap().starts_with(prefix))
+            .unwrap()
+    };
+    let fixture = |sample: &Value| -> Value {
+        serde_json::from_str(
+            &std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+                "tests/eval/w4/fixtures/{}.output.json",
+                sample["id"].as_str().unwrap()
+            )))
+            .unwrap(),
+        )
+        .unwrap()
+    };
+    let sample = find("w4_01");
+    let mut output = fixture(&sample);
+    output["decisions"][0]["effective"] = Value::Null;
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    let sample = find("w4_12");
+    let mut output = fixture(&sample);
+    output["decisions"][0]["targets"] = json!([63, 62]);
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["decisions"][0]["targets"] = json!([62, 62]);
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "失败"
+    );
+    let sample = find("w4_17");
+    let mut output = fixture(&sample);
+    output["decisions"][0]["targets"] = json!([]);
+    let report = score("w4", &sample, Some(&output.to_string()));
+    assert_eq!(report["status"], "通过");
+    assert_eq!(report["runtime_state_result"]["status"], "通过");
+    assert_eq!(report["recall_semantic_result"]["status"], "待人工复核");
+    assert_eq!(
+        report["manual_review"]["binding"]["label_revision"],
+        "AF276"
+    );
+    assert_eq!(
+        report["manual_review"]["requirements"],
+        sample["expect"]["must_not"]
+    );
+    let mut bad_after = find("w4_04");
+    bad_after["expect"]["after"]["records"]["new"]["update"] =
+        json!({"status":"judged","reasons":[]});
+    let report = score("w4", &bad_after, Some(&fixture(&bad_after).to_string()));
+    assert_eq!(report["automatic_fields"]["status"], "通过");
+    assert_eq!(report["runtime_state_result"]["status"], "失败");
+    assert_eq!(
+        report["status"], "失败",
+        "field success cannot hide a runtime mismatch"
+    );
+    assert_eq!(report["manual_review"]["status"], "not_reviewable");
+    let mut sample = find("w4_01");
+    let first = sample["expect"].clone();
+    let mut second = first.clone();
+    second["decisions"][0]["action"] = json!("correction");
+    second["decisions"][0]["effective"] = Value::Null;
+    second["after"]["records"]["17"]["termination_reason"] = json!("Correction");
+    second["after"]["records"]["17"]["ended"] = json!("end_unknown");
+    sample["expect"]["alternatives"] = json!([first, second]);
+    let mut output = fixture(&sample);
+    output["decisions"][0]["action"] = json!("correction");
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "失败",
+        "branches cannot cross-pair action and effective"
+    );
+    output["decisions"][0]["effective"] = Value::Null;
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    output["decisions"][0]["basis"] = json!([]);
+    let report = score("w4", &sample, Some(&output.to_string()));
+    assert_eq!(
+        report["status"], "失败",
+        "new-side assembly must not hide missing old-side evidence"
+    );
+    assert_eq!(report["manual_review"]["status"], "not_reviewable");
+    let mut sample = find("w4_07");
+    let mut output = fixture(&sample);
+    sample["input"]["candidates"][0]["candidate"]["conditions"] =
+        json!([{"quote":{"text":"栖风读书机"},"resolved":true}]);
+    output["decisions"][0]["relation_scope"]["conditions"] = json!([{"of":"candidate","index":0}]);
+    assert_eq!(
+        score("w4", &sample, Some(&output.to_string()))["status"],
+        "失败",
+        "valid but unexpected conflict scope is scored"
+    );
+}
+
+#[test]
+fn af276_label_only_changes_never_change_the_request_fingerprint() {
+    for mut sample in samples("w4") {
+        let request = stage_request("w4", &sample).unwrap();
+        sample["label_revision"] = json!("synthetic-label");
+        sample["expect"] = json!({});
+        sample["label_status"] = json!("draft");
+        assert_eq!(
+            fingerprint(&request),
+            fingerprint(&stage_request("w4", &sample).unwrap())
+        );
+        sample["input"]["coverage"]["complete"] =
+            json!(sample["input"]["coverage"]["complete"] != true);
+        assert_ne!(
+            fingerprint(&request),
+            fingerprint(&stage_request("w4", &sample).unwrap())
+        );
+    }
 }

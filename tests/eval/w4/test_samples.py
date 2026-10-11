@@ -72,7 +72,7 @@ class Samples(unittest.TestCase):
 
     def test_checker_rejects_scope_and_recurring_errors(self):
         cases = {
-            "通用 fact 标成范围完整": ("w4_03_refine_whole", lambda s: s["input"]["coverage"].update(complete=True)),
+            "范围计数负值": ("w4_03_refine_whole", lambda s: s["input"]["coverage"].update(omitted=-1)),
             "范围不完整却标 judged": ("w4_03_refine_whole",
                                   lambda s: s["expect"]["after"]["records"]["new"].update(update={"status": "judged", "reasons": []})),
             "撤回回执标 judged": ("w4_05_retract",
@@ -129,9 +129,9 @@ class Samples(unittest.TestCase):
                                                                       "end_exclusive": None, "precision": "unknown"}]))),
             "候选截取片段": ("w4_21_confirm_conflict_side",
                          lambda s: s["input"]["candidates"][1]["candidate"].update(sentence={"text": "7英寸那份是记错的"})),
-            "fact 值与原句不同": ("w4_21_confirm_conflict_side",
+            "fact 文本与引用不同": ("w4_21_confirm_conflict_side",
                               lambda s: s["input"]["candidates"][0]["candidate"]["value"].update(
-                                  quote={"text": "栖风读书机的屏幕是8英寸"})),
+                                  text="栖风读书机的屏幕是7英寸")),
         }
         for name, (sid, mutate) in cases.items():
             s = copy.deepcopy(self.samples[sid])
@@ -410,6 +410,45 @@ class CorrectOutputsPass(unittest.TestCase):
         s = copy.deepcopy(self.samples["w4_04_coexist_partial"])
         s["expect"]["after"]["records"]["31"]["update"] = {"status": "judged", "reasons": []}
         self.assertEqual(check_samples.check(s), [])
+
+
+class AF276(unittest.TestCase):
+    def setUp(self):
+        self.samples = {s['id']: s for s in check_samples.load_samples()}
+
+    def test_continuous_fact_span_and_whole_sentence_are_both_valid(self):
+        s = copy.deepcopy(self.samples['w4_21_confirm_conflict_side'])
+        self.assertEqual(check_samples.check(s), [])
+        c = s['input']['candidates'][0]['candidate']
+        c['value'] = {'kind': 'text', 'text': c['sentence']['text'], 'quote': c['sentence'].copy()}
+        self.assertEqual(check_samples.check(s), [])
+        for text in ['屏幕是8英寸记错的', '不存在的原文', '']:
+            c['value'] = {'kind': 'text', 'text': text, 'quote': {'text': text}}
+            self.assertTrue(check_samples.check(s))
+
+    def test_complete_generic_scope_and_nullable_time(self):
+        for id in ['w4_08_complete_no_records', 'w4_14_complete_rejudge']:
+            self.assertEqual(check_samples.check(self.samples[id]), [])
+        s = copy.deepcopy(self.samples['w4_01_state_change'])
+        s['sources']['s-205']['said_on'] = None
+        c = s['input']['candidates'][0]
+        c['said_on'] = None
+        c['time_resolutions'] = [{'status': 'unknown', 'start': None, 'end_exclusive': None, 'precision': 'unknown'}]
+        s['expect']['after']['records']['17']['ended'] = 'end_unknown'
+        self.assertEqual(check_samples.check(s), [])
+        c['time_resolutions'][0].update(status='resolved', start=1, end_exclusive=2, precision='month')
+        self.assertTrue(check_samples.check(s))
+        s['sources']['s-205']['said_on'] = '2026-02-30'
+        c['said_on'] = '2026-02-30'
+        self.assertTrue(check_samples.check(s))
+
+    def test_pending_does_not_need_old_basis_but_decided_does(self):
+        s = copy.deepcopy(self.samples['w4_17_pending_unclear_relation'])
+        self.assertEqual(s['expect']['decisions'][0]['basis_sources'], ['s-390'])
+        self.assertEqual(check_samples.check(s), [])
+        s = copy.deepcopy(self.samples['w4_01_state_change'])
+        s['expect']['decisions'][0]['basis_sources'] = ['s-205']
+        self.assertTrue(check_samples.check(s))
 
 
 if __name__ == "__main__":

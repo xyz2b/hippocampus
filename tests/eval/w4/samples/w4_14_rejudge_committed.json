@@ -1,8 +1,9 @@
 {
   "id": "w4_14_rejudge_committed",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 2,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "重判已提交的断言：committed_id 非空，不重复插入",
   "boundary_with": null,
   "sources": {
@@ -218,11 +219,11 @@
     "must_not": [
       "不得再插入一条“每天两杯”",
       "不得把 70 与自身比较或当作一次强化",
-      "通用 fact 范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"
+      "本次固定输入的授权范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"
     ]
   },
   "rejected_alternatives": [],
-  "note": "70 此前已提交且 update.pending；本次后台检索到旧记录 55 后显式重判。代码不把 70 放进 records（候选不与自身比较）。",
+  "note": "70 此前已提交且 update.pending；本次后台检索到旧记录 55 后显式重判，仍以 coverage=false 注入未穷举范围。预算内穷举完整的对照见 w4_14_complete_rejudge。代码不把 70 放进 records（候选不与自身比较）。",
   "qualifier_marks": {
     "candidate:0": {
       "times": [

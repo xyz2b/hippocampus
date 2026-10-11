@@ -1,8 +1,9 @@
 {
   "id": "w4_08_scope_incomplete_no_records",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 1,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "检索范围不足而非冲突：未检索到相关记录，追加断言并标 pending",
   "boundary_with": "w4_07_conflict",
   "sources": {
@@ -93,6 +94,6 @@
     ]
   },
   "rejected_alternatives": [],
-  "note": "通用关系 fact 只按本次全文检索取候选，范围不保证完整（contracts 2.4）。检索到部分记录但范围不完整、需要调用 W4 的情形在第二批补充。",
+  "note": "本固定输入模拟未能穷举授权范围、覆盖未知的回落检索；空授权范围实际穷举完整的对照见 w4_08_complete_no_records。检索到部分记录但范围不完整、需要调用 W4 的情形在第二批补充。",
   "qualifier_marks": {}
 }

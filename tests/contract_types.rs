@@ -24,7 +24,7 @@ fn samples() -> Vec<(String, Json)> {
 #[test]
 fn reviewed_w4_inputs_decode_and_round_trip() {
     let samples = samples();
-    assert_eq!(samples.len(), 23);
+    assert_eq!(samples.len(), 28);
     let mut formats = std::collections::BTreeSet::new();
     for (name, sample) in samples {
         let input: W4Input = serde_json::from_value(sample["input"].clone())

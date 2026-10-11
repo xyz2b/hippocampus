@@ -1,8 +1,8 @@
-"""Structural checks for the W4 sample set (contracts.md 2.4, w4.v2).
+"""Structural checks for the W4 sample set (contracts.md 2.4, w4.v5).
 
 Checks only what code can check: every quote occurs verbatim in its
 source, ids and references are consistent, and each expected decision
-obeys the w4.v2 output rules. Whether the expected action is the right
+obeys the w4.v5 output rules. Whether the expected action is the right
 judgement is for human review (label_status).
 
     python3 tests/eval/w4/check_samples.py
@@ -60,6 +60,12 @@ def _month_bounds(said_on: str, offset: int):
 
 def _check_times(tag, times, resolutions, said_on, errs):
     """One TimeResolution per TimeInterp, consistent with its kind (contracts 1.2)."""
+    if said_on is not None:
+        try:
+            dt.date.fromisoformat(said_on)
+        except (TypeError, ValueError):
+            errs.append(f"{tag}：said_on 须为合法日期或 null")
+            return
     if len(resolutions) != len(times):
         errs.append(f"{tag}：时间 {len(times)} 个、换算结果 {len(resolutions)} 个，数量不符")
         return
@@ -69,18 +75,25 @@ def _check_times(tag, times, resolutions, said_on, errs):
         if kind in ("recurring", "unknown"):
             if res != {"status": "unknown", "start": None, "end_exclusive": None, "precision": "unknown"}:
                 errs.append(f"{tag}：{kind} 时间 {t['quote']['text']!r} 须保留原文且换算状态为 unknown，不生成日期区间")
+        elif said_on is None and kind in ("relative", "month"):
+            if res != {"status": "unknown", "start": None, "end_exclusive": None, "precision": "unknown"}:
+                errs.append(f"{tag}：原陈述时间未知时不能推算相对日期")
         elif kind == "relative" and it["unit"] == "month":
             if res.get("status") != "resolved" or res.get("precision") != "month" or \
                     (res.get("start"), res.get("end_exclusive")) != _month_bounds(said_on, it["offset"]):
-                errs.append(f"{tag}：相对月份 {t['quote']['text']!r} 的换算与接收日不符或精度不是月")
+                errs.append(f"{tag}：相对月份 {t['quote']['text']!r} 的换算与原陈述日不符或精度不是月")
         elif kind == "relative" and it["unit"] == "day":
             if res.get("status") != "resolved" or res.get("precision") != "day":
                 errs.append(f"{tag}：相对日期须换算到日精度")
 
 
-def _uses_generic_fact(inp):
-    return any(c["candidate"]["relation"] == "fact" for c in inp["candidates"]) or \
-        any(r["candidate"]["relation"] == "fact" for r in inp["records"] if r.get("format") == "current")
+def _check_fact(tag, candidate, errs):
+    value = candidate.get("value")
+    if candidate["relation"] == "fact" and value is not None:
+        if value.get("kind") != "text" or not isinstance(value.get("text"), str) or not value["text"].strip() \
+                or value["text"] != value.get("quote", {}).get("text") \
+                or value["text"] not in candidate["sentence"]["text"]:
+            errs.append(f"{tag}：fact value 须为 text==quote.text 的非空连续原句片段")
 
 
 def _whole_sentences(sentence, source):
@@ -263,9 +276,19 @@ def _check_target_states(decs, after, errs):
 
 
 def check(s) -> list:
+    errors = _check_branch(s)
+    for i, expect in enumerate(s["expect"].get("alternatives", [])):
+        errors += [f"分支 {i}：{e}" for e in _check_branch({**s, "expect": expect})]
+    return errors
+
+
+def _check_branch(s) -> list:
     errs = []
     src = s["sources"]
     inp = s["input"]
+    if not isinstance(inp["coverage"]["complete"], bool) or type(inp["coverage"]["omitted"]) is not int \
+            or inp["coverage"]["omitted"] < 0:
+        errs.append("coverage 须含布尔 complete 与非负整数 omitted")
     marks = s.get("qualifier_marks", {})
     item_keys = {f"candidate:{c['index']}" for c in inp["candidates"]} | \
         {f"record:{r['id']}" for r in inp["records"] if r.get("format") == "current"}
@@ -274,8 +297,14 @@ def check(s) -> list:
     rec_ids = [r["id"] for r in inp["records"]]
     if len(set(rec_ids)) != len(rec_ids):
         errs.append("记录 ID 重复")
-    if s.get("contract") != "w4.v2":
-        errs.append("contract 须为 w4.v2")
+    if s.get("contract") != "w4.v5":
+        errs.append("contract 须为 w4.v5")
+    for sid, source in src.items():
+        if source["said_on"] is not None:
+            try:
+                dt.date.fromisoformat(source["said_on"])
+            except (TypeError, ValueError):
+                errs.append(f"来源 {sid} said_on 须为合法日期或 null")
     for r in inp["records"]:
         # contracts 3.2 RecordView2: a full record carries `end`; it is a resolved
         # TimeResolution exactly when ended = known (older receipts aside, which
@@ -321,6 +350,7 @@ def check(s) -> list:
             if not r["evidence"] and "source_missing" not in r.get("gaps", []):
                 errs.append(f"legacy 记录 {r['id']} 没有可链接依据，gaps 须含 source_missing")
         else:
+            _check_fact(f"记录 {r['id']}", r["candidate"], errs)
             for where, q in _quotes(r["candidate"]):
                 sids = [e["source"]["source_id"] for e in r["evidence"]]
                 if not any(q in src[x]["text"] for x in sids if x in src):
@@ -355,8 +385,7 @@ def check(s) -> list:
         _check_qualifiers(f"候选 {c['index']}", cd, marks.get(f"candidate:{c['index']}", {}), src[sid]["text"], errs)
         if not _whole_sentences(cd["sentence"]["text"], src[sid]):
             errs.append(f"候选 {c['index']}：sentence 须为完整原句，不能截取片段")
-        if cd["relation"] == "fact" and cd["value"] and cd["value"]["quote"]["text"] != cd["sentence"]["text"]:
-            errs.append(f"候选 {c['index']}：通用 fact 的 value.quote 须与 sentence 相同")
+        _check_fact(f"候选 {c['index']}", cd, errs)
     exp = s["expect"]
     by_cand = _bind(inp, exp.get("after", {}), errs)
     merged_ok = _legal_merges(inp, exp.get("decisions", []) if s["call_w4"] else [], by_cand)
@@ -389,7 +418,7 @@ def check(s) -> list:
                     errs.append(f"{tag}：pending 不能解决关系")
             else:
                 errs.append(f"{tag}：status 非法")
-            # w4.v2 relation_scope: present on every decision, non-null only for
+            # w4.v5 relation_scope: present on every decision, non-null only for
             # conflict; it references verified qualifiers of the new candidate or
             # of a target full record, never a retention time.
             if "relation_scope" not in d:
@@ -420,10 +449,13 @@ def check(s) -> list:
             if not set(d["resolves_relations"]) <= {r["id"] for r in inp["relations"] if r["status"] == "open"}:
                 errs.append(f"{tag}：只能解决输入中 open 的关系")
             cand_src = next(c["source"]["source_id"] for c in inp["candidates"] if c["index"] == d["candidate"])
-            need = {cand_src} | {e["source"]["source_id"] for r in inp["records"] if r["id"] in d["targets"]
-                                 for e in r["evidence"]}
-            if not need <= set(d["basis_sources"]) or not set(d["basis_sources"]) <= set(src):
-                errs.append(f"{tag}：依据须覆盖新候选及全部目标的来源")
+            cited = set(d["basis_sources"])
+            if cand_src not in cited or not cited <= set(src):
+                errs.append(f"{tag}：依据须覆盖新候选且仅引用输入来源")
+            if d["status"] == "decided":
+                for r in inp["records"]:
+                    if r["id"] in d["targets"] and not cited & {e["source"]["source_id"] for e in r["evidence"]}:
+                        errs.append(f"{tag}：缺目标 {r['id']} 的旧方依据")
             eff = d.get("effective")
             if eff is not None:
                 cin = next(c for c in inp["candidates"] if c["index"] == d["candidate"])
@@ -445,10 +477,6 @@ def check(s) -> list:
             errs.append("不调用 W4 的样本须写明 code_path")
         if "decisions" in exp:
             errs.append("不调用 W4 的样本不应有 decisions")
-    # Generic `fact` retrieval never guarantees full coverage (contracts 2.4);
-    # with incomplete coverage no update may be recorded as fully judged.
-    if _uses_generic_fact(inp) and inp["coverage"]["complete"]:
-        errs.append("通用 fact 只按本次全文检索取候选，coverage.complete 不能为 true")
     if not inp["coverage"]["complete"]:
         # Only what this run commits or re-judges carries the scope gap: the
         # new record(s), the candidate's receipt, and re-judged committed ids.

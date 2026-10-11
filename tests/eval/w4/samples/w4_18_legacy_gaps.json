@@ -1,8 +1,9 @@
 {
   "id": "w4_18_legacy_gaps",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 2,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "legacy 旧记录缺来源和限定语：不能据此结束旧记录，保持 pending",
   "boundary_with": null,
   "sources": {
@@ -162,6 +163,108 @@
       "不得以“缺字段等于无限定”结束 95（contracts 3.2）",
       "不得为 95 伪造 source_id 或完整原句",
       "不得把 95 从召回中去掉"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "pending",
+            "action": null,
+            "targets": [
+              95
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-400"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": "unclear_relation"
+          }
+        ],
+        "after": {
+          "records": {
+            "95": {
+              "format": "legacy",
+              "status": "Active",
+              "note": "原样保留，不补造 Candidate、Quote 或来源"
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_relation_unclear"
+                ]
+              }
+            }
+          },
+          "recall": {
+            "current": [
+              "new（成都，带 update.pending）"
+            ],
+            "legacy": [
+              "95（广州，带 gaps）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得以“缺字段等于无限定”结束 95（contracts 3.2）",
+          "不得为 95 伪造 source_id 或完整原句",
+          "不得把 95 从召回中去掉"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "pending",
+            "action": null,
+            "targets": [],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-400"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": "unclear_relation"
+          }
+        ],
+        "after": {
+          "records": {
+            "95": {
+              "format": "legacy",
+              "status": "Active",
+              "note": "原样保留，不补造 Candidate、Quote 或来源"
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_relation_unclear"
+                ]
+              }
+            }
+          },
+          "recall": {
+            "current": [
+              "new（成都，带 update.pending）"
+            ],
+            "legacy": [
+              "95（广州，带 gaps）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得以“缺字段等于无限定”结束 95（contracts 3.2）",
+          "不得为 95 伪造 source_id 或完整原句",
+          "不得把 95 从召回中去掉"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [],

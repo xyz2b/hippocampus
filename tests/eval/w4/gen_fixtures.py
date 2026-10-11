@@ -1,4 +1,4 @@
-"""Generates tests/eval/w4/fixtures/<id>.output.json: a w4.v2 model output for each
+"""Generates tests/eval/w4/fixtures/<id>.output.json: a w4.v5 model output for each
 sample that calls W4, derived from the expected decisions.
 
 The samples only say which sources a decision must cite (`basis_sources`); a real

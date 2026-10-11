@@ -1,0 +1,36 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "state_change",
+      "targets": [
+        120
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-600"
+          },
+          "quote": {
+            "text": "我在青禾工坊任职。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-601"
+          },
+          "quote": {
+            "text": "我不再在青禾工坊任职。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}

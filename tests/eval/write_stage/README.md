@@ -700,3 +700,20 @@ points 独立隔离 W4/R4：注入旧已提交记录和核验候选；实际 W4 
 ## AF247 召回标签离线重评
 
 R1/R4 的 AF247 修订与命令见 [召回阶段说明](../recall_stage/README.md)。输入/ID、r1.v2/r4.v7 请求、AF230 录制和冻结额度不变；`EVAL_RECALL_REPORT_DIR=reports-af247` 只选择新的离线报告目录。写入侧样本、评分与历史比较不变；自动字段结果和人工复核队列仍分别报告。
+### W4 标签定稿（AF276）
+
+[W4 样本](../w4/README.md) 已更新为 w4.v5，28 题中 25 题进入模型评分。
+effective、relation_scope、目标集合与完整期望分支均评分；pending 不强制旧方依据。
+报告保留 raw/final、automatic_fields、runtime_state_result、recall_semantic_result
+与 manual_review；机械核验通过后复用 W4 离线夹具，在临时 SQLite 执行该次模型输出、
+重开并核对 after；运行时失败不计通过。机械失败标“未执行”，未标 after 的专项标
+“不适用”；标准夹具另由 `cargo test --test w4_offline` 验收。
+自然语言 must_not 与召回呈现绑定输入/请求/输出待人工复核，机械失败不可豁免。
+
+历史录制、额度和指纹均不改；标签单独修改不改变请求。
+未设置 EVAL_RECORD 时只读报告缺录制/过期情况，不发送、也不写历史目录：
+
+```sh
+env -u EVAL_RECORD EVAL_STAGES=w4 EVAL_GATE=0 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
