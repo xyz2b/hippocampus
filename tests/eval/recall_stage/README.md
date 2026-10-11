@@ -28,6 +28,19 @@ HTTP/未完成/无效响应均保留原始尝试、usage 与 incomplete_details.
 - R1 严格解码并运行 R1 核验；比较 need、current_evidence、type、subject、conditions、time、plan.op、filter.relation，以及标签明确给出的 filter.time 和 unit。time/filter.time 归一化 Quote 与 anchor_quote，省略固定 anchor；标签中的 `plan.filter.time` 按声明字段评分，null 明确要求为空。标量的标签数组是允许集合，结构数组无序一一匹配，嵌套的条件候选数组表示该片段的允许集合。Z8：conditions 要求期望为实际的子集，额外检索提示不扣分，必需条件缺失仍失败；time 标签为 null 时不做语义评分，标签非 null 时继续比较明确的 Quote/interp 字段（如 `[null, recurring对象]` 明确只接受这两种）。模型额外给出的条件/时间仍须通过全部结构、原文引用及时间换算核验，不能靠无效额外内容通过。
 - R4 先严格解码、核对全部引用/限定语/记录 ID，并由代码执行计算；比较 verdict。标签 facts 每行要求唯一匹配：record_ids 集合相同，来源包含标签要求的来源（允许更新双方依据），必须属性逐项比较。标签未指定的附加事实与 statement 含义不做自动语义裁定，原始输出留人工检查；facts=[] 表示没有要求匹配的事实行，不额外创造“模型必须不返回任何事实”的规则。
 - Z18：R4 raw 直接严格核验；final 先通过生产 `r4::assemble_old_basis` 补已选包内目标的真实旧引用，再按同一规则核验、计算和评分。报告保留 raw_output_text/raw_output、final_output、raw_result/final_result；raw_summary/raw_splits 为模型原始分数，summary/splits/per_sample/status 为 final 分数。补入不改标签、请求指纹或原录制；未通过其余核验仍失败，不能把结构补入后的通过解释为替代语义已核准。
+- AF264：同一入口先做有限、唯一的引号引用恢复，再补旧方依据；原始输出评分不使用恢复。R4 提示词补强使旧请求录制严格过期，历史原请求重核只作为历史诊断，不冒充新提示词效果。
+
+AF264 独立诊断使用四个虚构固定输入（引号、问题专属条件、来源真实条件、更新依据），各两次，只调用 R4。模型可见输入不含样本标签或期望；生产对齐 Pro/minimal、4096 输出 token、180 秒。正式额度固定 8，沿用发送前落盘、跨续跑额度、在途缺录制不重发、同类错误/截断熔断。所有自动通过仍需人工核对额外事实和语义。
+
+```sh
+EVAL_AF264=trial EVAL_DRY_RUN=1 EVAL_RECORD=8 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 仅由获准执行方录制；先加载 HUOSHAN_DEEPSEEK_BASE_URL/API_KEY 和 DEEPSEEK_PRO_MODEL。
+EVAL_AF264=trial PMR_MODEL_NETWORK=live EVAL_RECORD=8 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+# 严格复用 AF255 A 的原请求/输出；禁止 EVAL_RECORD，不改原录制或人工台账。
+EVAL_AF264=replay cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+```
+
+新产物只写 `target/eval-r4-af264/`：试验 `report.json` 与独立 campaign/recordings；AF255 原请求指纹自洽核对及 raw/final 机械重核写 `replay-af255.json`。历史输入不使用新提示词构造指纹；该报告明确标记当前提示词过期，不计 common.v1 或人工确认通过。
 - R4 核验失败的 `fields[].field=decode/validate` 对应 `actual={code,rule,field,cause}`：code 保持 `model_invalid_output`，rule 给出生产核验规则，field 定位条目/属性，cause 可选地记录内层时间失败原因。解码错误定位根 `$`；每次只报告首个错误。生产回执不增加字段，诊断不含原文。核验实现与生产共用，不改变录制请求或指纹。
 - compute=null 要求实际为空；其余按标签核对 op、items 个数、operands 个数/端点与条目绑定、数量集合/单位、distinct_groups、coverage。expected_value 由生产代码运算核对，模型不得直接输出最终数值；insufficient_ok 允许空 compute 或有效但无法计算的粗精度计划，不能接受无效引用/日期。未规定的项目不猜标签。
 - must_not 全部留人工，报告明确附带；不能把字段评分“通过”解释为完成了语义人工验收。尤其额外 facts、唯一当前值、statement 限定语、纠错与历史仍需复核。这是现有样本的评分覆盖边界，新增更严要求应先补经复核的标签。

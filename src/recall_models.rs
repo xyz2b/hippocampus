@@ -101,6 +101,7 @@ copy one nonempty continuous span in that named source; never paraphrase, join s
 metadata as original words. A source without verifiable text cannot supply an EvidenceRef.
 Copy the original Markdown delimiters, punctuation and symbols within that span. Never strip
 formatting to make a cleaner quote; statement can summarize, evidence must retain the original.
+Copy original quotation characters verbatim; escape them only as required by JSON syntax.
 current_evidence=query_only forbids current factual/computational evidence. assertion_present
 or unknown allows reviewing actual current assertions, not treating the question as its answer.
 For evidence found in raw, copy that raw entry's source_id and use kind=stored, even when
@@ -156,6 +157,9 @@ between the quoted calendar and the interpretation. A time elsewhere
 in the package does not establish its applicability or count as this fact's evidence.
 conditions describe restrictions asserted by the evidence source, never conditions introduced
 only by the question. A query situation may guide applies, but cannot become a source qualifier.
+Before returning each fact, check every condition against that fact's cited sources. A restriction
+appearing only in request.query or plan.conditions must not enter fact.conditions. Use it only
+to judge applies and the overall verdict. Preserve every restriction actually asserted by the source.
 Do not output a statement first and leave evidence empty: if it has no real supporting reference,
 omit that FactView and reflect missing support in verdict. This also applies to historical facts.
 current and applies are independently yes, no or unknown. Active/committed does not prove them.

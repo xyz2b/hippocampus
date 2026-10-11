@@ -11,6 +11,9 @@ mod recall_compare;
 #[path = "eval/recall_stage/review.rs"]
 mod recall_review;
 
+#[path = "eval/recall_stage/af264.rs"]
+mod af264;
+
 #[path = "eval/fixed_inputs/adapter.rs"]
 mod fixed_adapter;
 
@@ -4559,6 +4562,10 @@ fn historical_reports() -> Result<Value, String> {
 
 #[test]
 fn write_stage_eval_suite() {
+    if std::env::var_os("EVAL_AF264").is_some() {
+        af264::run().unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_RECALL_COMPARE").is_some() {
         recall_compare::run_from_env().unwrap();
         return;

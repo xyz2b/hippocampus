@@ -743,6 +743,148 @@ fn old_basis_assembly_checks_real_sources_and_preserves_missing_new_basis_errors
 }
 
 #[test]
+fn af264_sqlite_quote_recovery_keeps_raw_final_and_computation_separate() {
+    let text = "I'm reading \"Orchid\" today.";
+    let f = Fixture::new(
+        json!({"query":"我阅读过几本书？","at":SAID_ON,"current_evidence":"query_only",
+        "plan":{"type":"aggregate","op":"count","relation":"fact"},"records":[
+            {"id":1,"source":"s-1","sentence":text,"said_on":SAID_ON,"status":"active","termination":null,"update":"judged"}],
+        "raw":[],"relations":[]}),
+    );
+    let mut view = f.fact(1, "yes");
+    let malformed = "I'm reading Ã¢Â€ÂœOrchidÃ¢Â€Â\u{9d} today.";
+    view["evidence"][0]["quote"]["text"] = json!(malformed);
+    let compute = json!({"op":"count","items":[{"id":"one","evidence":view["evidence"],"quantity":null,
+        "date":null,"date_source":null,"event_group":"one-book"}],"operands":[],"unit":null,"coverage":"complete"});
+    let raw = output(vec![view], Some(compute)).to_string();
+    let (result, audit) = f
+        .assembly()
+        .finish_r4_with_audit(&f.db.open(), Ok(&raw))
+        .unwrap();
+    assert_eq!(result.semantic_judgment, SemanticJudgment::Model);
+    assert_eq!(result.computed.unwrap().value, "1");
+    assert_eq!(result.facts[0].evidence[0].quote.text, text);
+    let audit = audit.unwrap();
+    assert_eq!(audit.raw_output, raw);
+    let final_output = audit.final_output.unwrap();
+    assert_eq!(final_output.facts[0].evidence[0].quote.text, text);
+    assert_eq!(
+        final_output.compute.unwrap().items[0].evidence[0]
+            .quote
+            .text,
+        text
+    );
+}
+
+#[test]
+fn af264_recovery_never_repairs_qualifiers_ids_or_inaccessible_clipped_sources() {
+    let text = "我读了\"青灯\"。";
+    let f = Fixture::new(
+        json!({"query":"我读了什么？","at":SAID_ON,"current_evidence":"query_only",
+        "plan":{"type":"single","op":"lookup","relation":"fact"},"records":[
+            {"id":1,"source":"s-1","sentence":text,"said_on":SAID_ON,"status":"active","termination":null,"update":"judged"},
+            {"id":2,"source":"s-2","sentence":"我读了石阶。","said_on":SAID_ON,"status":"active","termination":null,"update":"judged"}],
+        "raw":[],"relations":[]}),
+    );
+    let assembly = f.assembly();
+    let dates = BTreeMap::new();
+    let ctx = r4::Context {
+        evidence: &assembly.evidence,
+        plan: &assembly.plan,
+        request: &assembly.request,
+        utc_offset_seconds: 28800,
+        source_dates: &dates,
+    };
+    let mut view = f.fact(1, "yes");
+    view["evidence"][0]["quote"]["text"] = json!("我读了'青灯'。");
+    let raw = r4::decode(&output(vec![view], None).to_string()).unwrap();
+    let restored = r4::assemble_old_basis(&raw, &ctx, &|_| Some(text.into()));
+    assert!(r4::evaluate(restored.clone(), &ctx).is_ok());
+    for body in [None, Some("正文已修改".into())] {
+        assert_eq!(r4::assemble_old_basis(&raw, &ctx, &|_| body.clone()), raw);
+    }
+    let mut outside = raw.clone();
+    outside.facts[0].evidence[0].source = SourceRef::Stored {
+        source_id: "unauthorized".into(),
+    };
+    assert_eq!(
+        r4::assemble_old_basis(&outside, &ctx, &|_| Some(text.into())),
+        outside
+    );
+    let mut bad_id = raw.clone();
+    bad_id.facts[0].record_ids = vec![MemoryId(99999)];
+    assert_eq!(
+        r4::evaluate(
+            r4::assemble_old_basis(&bad_id, &ctx, &|_| Some(text.into())),
+            &ctx
+        )
+        .err()
+        .unwrap()
+        .0,
+        "record_id"
+    );
+    let mut wrong_selected = raw.clone();
+    wrong_selected.facts[0].record_ids = vec![f.ids[&2]];
+    let after = r4::assemble_old_basis(&wrong_selected, &ctx, &|id| {
+        Some(
+            if id == "s-1" {
+                text
+            } else {
+                "我读了石阶。"
+            }
+            .into(),
+        )
+    });
+    assert_eq!(after.facts[0].evidence.len(), 1);
+    assert_eq!(r4::evaluate(after, &ctx).err().unwrap().0, "record_basis");
+    let mut bad_condition = raw.clone();
+    bad_condition.facts[0].conditions = vec![TextQualifier {
+        quote: Quote {
+            text: "问题中的条件".into(),
+        },
+        resolved: true,
+    }];
+    let after = r4::assemble_old_basis(&bad_condition, &ctx, &|_| Some(text.into()));
+    assert_eq!(after.facts[0].conditions, bad_condition.facts[0].conditions);
+    assert_eq!(
+        r4::evaluate(after, &ctx).err().unwrap().0,
+        "qualifier_source"
+    );
+    let mut clipped = assembly.evidence.clone();
+    if let RecordView::Current(record) = clipped
+        .records
+        .iter_mut()
+        .find(|r| r.id() == f.ids[&1])
+        .unwrap()
+    {
+        record.evidence[0].quote.text = "我读了".into();
+    }
+    let clipped_ctx = r4::Context {
+        evidence: &clipped,
+        ..ctx
+    };
+    assert_eq!(
+        r4::assemble_old_basis(&raw, &clipped_ctx, &|_| Some(text.into())),
+        raw
+    );
+    // A recovered quote still cannot publish after the source is deleted.
+    let mut state = f.db.open();
+    state
+        .transaction(|s| {
+            let source = s.sources.values_mut().find(|s| s.id == "s-1").unwrap();
+            source.enrichment = "deleted".into();
+            source.request = None;
+            Ok(())
+        })
+        .unwrap();
+    assert!(
+        assembly
+            .finish_r4(&state, Ok(&json!(restored).to_string()))
+            .is_err()
+    );
+}
+
+#[test]
 fn record_basis_assembly_requires_package_and_live_exact_source_and_preserves_other_errors() {
     let f = Fixture::new(json!({
         "query":"请核对我住在成都的记录。", "at":SAID_ON, "current_evidence":"query_only",
