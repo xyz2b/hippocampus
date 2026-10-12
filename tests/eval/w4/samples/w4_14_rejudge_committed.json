@@ -3,7 +3,7 @@
   "contract": "w4.v5",
   "batch": 2,
   "label_status": "reviewed",
-  "label_revision": "AF276",
+  "label_revision": "AF322",
   "focus": "重判已提交的断言：committed_id 非空，不重复插入",
   "boundary_with": null,
   "sources": {
@@ -220,6 +220,129 @@
       "不得再插入一条“每天两杯”",
       "不得把 70 与自身比较或当作一次强化",
       "本次固定输入的授权范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              55
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-112",
+              "s-360"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "55": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown"
+            },
+            "70": {
+              "from_candidate": 0,
+              "history": [
+                55
+              ],
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_scope_incomplete"
+                ]
+              }
+            }
+          },
+          "new_records": 0,
+          "recall": {
+            "current": [
+              "70（每天两杯）"
+            ],
+            "history": [
+              "55（每天一杯）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得再插入一条“每天两杯”",
+          "不得把 70 与自身比较或当作一次强化",
+          "本次固定输入的授权范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              55
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-112",
+              "s-360"
+            ],
+            "effective": {
+              "role": "validity",
+              "quote": {
+                "text": "现在"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            },
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "55": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown"
+            },
+            "70": {
+              "from_candidate": 0,
+              "history": [
+                55
+              ],
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_scope_incomplete"
+                ]
+              }
+            }
+          },
+          "new_records": 0,
+          "recall": {
+            "current": [
+              "70（每天两杯）"
+            ],
+            "history": [
+              "55（每天一杯）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得再插入一条“每天两杯”",
+          "不得把 70 与自身比较或当作一次强化",
+          "本次固定输入的授权范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [],

@@ -6,6 +6,21 @@ from review_status import status_for  # noqa: E402
 OUT = pathlib.Path(__file__).resolve().parent / "samples"
 JUDGED = {"status": "judged", "reasons": []}
 
+
+AF322_IDS = {"w4_04_coexist_partial", "w4_11_preference_strength", "w4_13_state_change_date_unknown",
+             "w4_14_rejudge_committed", "w4_14_complete_rejudge", "w4_23_rejudge_merge",
+             "w4_n1a_negative_state_change"}
+
+def af322_labels(d):
+    if d["id"] not in AF322_IDS:
+        return
+    original = copy.deepcopy(d["expect"])
+    original.pop("alternatives", None)
+    alternative = copy.deepcopy(original)
+    alternative["decisions"][0]["effective"] = copy.deepcopy(d["input"]["candidates"][0]["candidate"]["times"][0])
+    d["expect"] = dict(original, alternatives=[original, alternative])
+    d["label_revision"] = "AF322"
+
 def Q(t): return {"text": t}
 def cand(subject, relation, sentence, value=None, value_quote=None, kind="assertion", memory_type="fact",
          speech="user_statement", polarity="affirm", conditions=(), times=(), uncertainty=None, strength=None):
@@ -74,6 +89,7 @@ def sample(id, focus, sources, candidates, records, expect, relations=(), covera
     # JSON already on disk; anything new or changed is written as `draft`.
     d["qualifier_marks"] = MARKS.pop(id, {})
     path = OUT / f"{id}.json"
+    af322_labels(d)
     d["label_status"] = status_for(d, json.loads(path.read_text(encoding="utf-8")) if path.exists() else None)
     path.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -562,6 +578,7 @@ for base_id, control_id in [("w4_08_scope_incomplete_no_records", "w4_08_complet
     d["expect"]["must_not"] = ["不得重复插入；不得跳过必要的来源与身份检查",
                                "完整只指本次授权范围，不证明现实世界不存在其他事实"]
     path = OUT / f"{control_id}.json"
+    af322_labels(d)
     d["label_status"] = status_for(d, json.loads(path.read_text()) if path.exists() else None)
     path.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n")
 

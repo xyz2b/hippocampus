@@ -3,7 +3,7 @@
   "contract": "w4.v5",
   "batch": 3,
   "label_status": "reviewed",
-  "label_revision": "AF276",
+  "label_revision": "AF322",
   "focus": "否定事实：真实状态变化与纠正旧断言分开",
   "boundary_with": null,
   "sources": {
@@ -186,6 +186,129 @@
       "不得把否定改为撤回或强化，不得吞掉否定极性",
       "不得伪造终止日期或删除来源",
       "纠错旧值不得作为真实任职历史返回"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              120
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-600",
+              "s-601"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "120": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown"
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "history": [
+                120
+              ],
+              "polarity": "Negative",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            }
+          },
+          "new_records": 1,
+          "recall": {
+            "current": [
+              "新否定事实"
+            ],
+            "history": [
+              "旧任职事实，结束时间未知"
+            ],
+            "audit_only": []
+          }
+        },
+        "must_not": [
+          "不得把否定改为撤回或强化，不得吞掉否定极性",
+          "不得伪造终止日期或删除来源",
+          "纠错旧值不得作为真实任职历史返回"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              120
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-600",
+              "s-601"
+            ],
+            "effective": {
+              "role": "validity",
+              "quote": {
+                "text": "不再"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            },
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "120": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown"
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "history": [
+                120
+              ],
+              "polarity": "Negative",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            }
+          },
+          "new_records": 1,
+          "recall": {
+            "current": [
+              "新否定事实"
+            ],
+            "history": [
+              "旧任职事实，结束时间未知"
+            ],
+            "audit_only": []
+          }
+        },
+        "must_not": [
+          "不得把否定改为撤回或强化，不得吞掉否定极性",
+          "不得伪造终止日期或删除来源",
+          "纠错旧值不得作为真实任职历史返回"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [],

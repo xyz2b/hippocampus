@@ -1,169 +1,9 @@
 //! Isolated AF302 authorization: no changes to historic provider manifests.
+use super::cost_campaign::*;
 use super::*;
 const ROOT: &str = "target/eval-providers/compare-af302";
 const IDS: [&str; 4] = ["ds-pro", "gpt-6-luna", "gpt-6.1-sol", "claude-haiku-5-5"];
 const CAP: u64 = 20_000_000_000; // nano-CNY; exact integer accounting
-fn rates(id: &str) -> (u64, u64, u64) {
-    match id {
-        "ds-pro" => (9000, 27000, 300),
-        "gpt-6.1-sol" => (14200, 71000, 14200),
-        _ => (710, 3550, 710),
-    }
-}
-fn input_bound(c: &Case) -> u64 {
-    // Conservative byte estimate, including schema and protocol framing allowance.
-    serde_json::to_vec(&c.wire_request).unwrap().len() as u64 + 1024
-}
-fn upper(c: &Case) -> u64 {
-    let (i, o, _) = rates(&c.model.label);
-    input_bound(c) * i + c.request["max_output_tokens"].as_u64().unwrap() * o
-}
-fn actual(c: &Case, usage: &Value) -> Option<u64> {
-    let input = usage["input_tokens"].as_u64()?;
-    let output = usage["output_tokens"].as_u64()?;
-    let cached = usage["input_tokens_details"]["cached_tokens"]
-        .as_u64()
-        .unwrap_or(0);
-    if cached > input {
-        return None;
-    }
-    let (i, o, cache) = rates(&c.model.label);
-    Some((input - cached) * i + cached * cache + output * o)
-}
-fn key(c: &Case) -> String {
-    hippocampus::recall_models::fingerprint(&campaign_slot(c))
-}
-fn read(path: &Path, default: Value) -> Result<Value, String> {
-    match std::fs::read(path) {
-        Ok(b) => serde_json::from_slice(&b).map_err(|e| e.to_string()),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(default),
-        Err(e) => Err(e.to_string()),
-    }
-}
-fn total(ledger: &Value) -> Result<u64, String> {
-    ledger
-        .as_object()
-        .ok_or("invalid cost ledger")?
-        .values()
-        .try_fold(0u64, |n, e| {
-            n.checked_add(e["charged_nano_cny"].as_u64().ok_or("invalid cost entry")?)
-                .ok_or("cost overflow".into())
-        })
-}
-const TRANSPORT: &str = "af308_transport_failed: ";
-fn transport_error(error: &Value) -> bool {
-    error
-        .as_str()
-        .is_some_and(|s| s.starts_with(TRANSPORT) || s.starts_with("error sending request"))
-}
-fn transport_log(log: &Value) -> bool {
-    log["state"] == "responded"
-        && transport_error(&log["error"])
-        && log["usage"].is_null()
-        && log["status"].is_null()
-        && log["provider_http_error"].is_null()
-}
-fn transport_record(record: &Value) -> bool {
-    transport_error(&record["error"])
-        && record["usage"].is_null()
-        && record["response"]["usage"].is_null()
-        && record["response"]["status"].is_null()
-        && record["provider_http_error"].is_null()
-}
-fn campaign_manifest(root: &Path) -> Result<Option<Value>, String> {
-    let Some(base) = root.parent().and_then(Path::parent) else {
-        return Ok(None);
-    };
-    let m = read(&base.join("manifest.json"), Value::Null)?;
-    Ok((m["version"] == "af302.v1").then_some(m))
-}
-fn logs(root: &Path) -> Result<Vec<Value>, String> {
-    let dir = root.join("sends");
-    if !dir.exists() {
-        return Ok(vec![]);
-    }
-    std::fs::read_dir(dir)
-        .map_err(|e| e.to_string())?
-        .filter_map(|e| match e {
-            Ok(e) if e.path().extension().is_some_and(|s| s == "json") => {
-                Some(read(&e.path(), Value::Null))
-            }
-            Ok(_) => None,
-            Err(e) => Some(Err(e.to_string())),
-        })
-        .collect()
-}
-// Only AF302 opted-in retries may discount physical attempts from the slot quota.
-pub(super) fn occupied_slots(root: &Path) -> Result<Option<usize>, String> {
-    if campaign_manifest(root)?.is_none() {
-        return Ok(None);
-    }
-    Ok(Some(
-        logs(root)?
-            .iter()
-            .map(|l| l["slot"].to_string())
-            .collect::<std::collections::BTreeSet<_>>()
-            .len(),
-    ))
-}
-pub(super) fn retryable_send(case: &Case, log: &Value) -> Result<bool, String> {
-    let Some(root) = &case.campaign else {
-        return Ok(false);
-    };
-    let Some(m) = campaign_manifest(root)? else {
-        return Ok(false);
-    };
-    let slot = campaign_slot(case);
-    if !items(&m["profiles"])
-        .iter()
-        .any(|p| items(&p["slots"]).iter().any(|s| s["slot"] == slot))
-    {
-        return Ok(false);
-    }
-    let ledger = read(
-        &root
-            .parent()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .join("cost-ledger.json"),
-        Value::Null,
-    )?;
-    let entry = &ledger[key(case)];
-    Ok(transport_log(log)
-        && (entry["state"] == "transport_failed"
-            || (entry["state"] == "reserved" && entry["retry_transport"] == true)))
-}
-fn settlement(c: &Case, usage: &Value, transport: bool) -> Value {
-    let free = transport && usage.is_null();
-    json!({"state":if free {"transport_failed"}else{"settled"},
-        "charged_nano_cny":if free {0}else{actual(c,usage).unwrap_or(upper(c))},
-        "upper_nano_cny":upper(c),"usage":usage})
-}
-fn enable_retries(groups: &mut [Vec<Case>], ledger: &Value) -> Result<(), String> {
-    for c in groups.iter_mut().flatten() {
-        if ledger[key(c)]["state"] != "transport_failed" {
-            continue;
-        }
-        if !matches!(&c.replay,Replay::Failed(r) if transport_record(r)) {
-            return Err("AF308 retry lacks matching transport recording".into());
-        }
-        let attempts: Vec<_> = logs(c.campaign.as_ref().unwrap())?
-            .into_iter()
-            .filter(|l| l["slot"] == campaign_slot(c))
-            .collect();
-        if attempts.is_empty() {
-            return Err("AF308 retry missing send log".into());
-        }
-        for log in &attempts {
-            if !retryable_send(c, log)? {
-                return Err("AF308 retry has HTTP/inflight attempt".into());
-            }
-        }
-        c.replay = Replay::Missing;
-    }
-    Ok(())
-}
 fn migrate(root: &Path) -> Result<Value, String> {
     let path = root.join("cost-ledger.json");
     let mut ledger = read(&path, Value::Null)?;
@@ -231,15 +71,7 @@ fn migrate(root: &Path) -> Result<Value, String> {
     Ok(json!({"changed":changed.len(),"before_nano_cny":before,"after_nano_cny":total(&ledger)?}))
 }
 fn reserve(ledger: &mut Value, c: &Case) -> Result<bool, String> {
-    let retry = ledger[key(c)]["state"] == "transport_failed";
-    if ledger.get(key(c)).is_some() && !retry {
-        return Err("cost slot already occupied".into());
-    }
-    if total(ledger)?.saturating_add(upper(c)) > CAP {
-        return Ok(false);
-    }
-    ledger[key(c)] = json!({"state":"reserved","charged_nano_cny":upper(c),"upper_nano_cny":upper(c),"retry_transport":retry});
-    Ok(true)
+    reserve_with_cap(ledger, c, CAP)
 }
 fn plan(root: &Path, variable: impl Fn(&str) -> Option<String>) -> Result<Vec<Vec<Case>>, String> {
     let mut profiles = evaluation_profiles(include_str!("providers.json"))?;
@@ -262,57 +94,7 @@ fn manifest(groups: &[Vec<Case>]) -> Value {
 }
 // Label amendments never change authorization, routing, or cost accounting.
 fn refreeze(root: &Path, frozen: &Value, groups: &[Vec<Case>]) -> Result<Value, String> {
-    let path = root.join("manifest.json");
-    let old = read(&path, Value::Null)?;
-    if old["version"] != "af302.v1" {
-        return Err("AF313 requires an existing AF302 manifest".into());
-    }
-    let without_labels = |m: &Value| -> Result<Value, String> {
-        let mut m = m.clone();
-        for p in m["profiles"].as_array_mut().ok_or("invalid profiles")? {
-            for slot in p["slots"].as_array_mut().ok_or("invalid slots")? {
-                slot.as_object_mut()
-                    .ok_or("invalid slot")?
-                    .remove("labels")
-                    .ok_or("missing label digest")?;
-            }
-        }
-        Ok(m)
-    };
-    if without_labels(&old)? != without_labels(frozen)? {
-        return Err(
-            "AF313 only permits label changes; request/config/slot/rate/budget changed".into(),
-        );
-    }
-    let changes: Vec<_> = items(&old["profiles"]).iter().zip(items(&frozen["profiles"]))
-        .flat_map(|(a,b)| items(&a["slots"]).iter().zip(items(&b["slots"])).filter_map(|(x,y)| {
-            if x["labels"] == y["labels"] { return None; }
-            let c = groups.iter().flatten().find(|c| c.model.label == b["id"].as_str().unwrap()
-                && campaign_slot(c) == y["slot"]).unwrap();
-            Some(json!({"profile":b["id"],"slot":y["slot"],"before_labels":x["labels"],
-                "after_labels":y["labels"],"before_label_revision":"not stored in original manifest",
-                "after_label_revision":c.sample["label_revision"]}))
-        })).collect();
-    if changes.iter().any(|c| c["after_label_revision"] != "AF311") {
-        return Err("AF313 amendment must be AF311".into());
-    }
-    let audit = json!({"amendment":"AF311","sent":0,"changes":changes,
-        "before_manifest":hippocampus::recall_models::fingerprint(&old),
-        "after_manifest":hippocampus::recall_models::fingerprint(frozen)});
-    if !changes.is_empty() {
-        let backup = root.join("manifest.before-af311.json");
-        let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-        if backup.exists() {
-            if std::fs::read(&backup).map_err(|e| e.to_string())? != bytes {
-                return Err("AF313 backup already exists with different content".into());
-            }
-        } else {
-            std::fs::copy(&path, &backup).map_err(|e| e.to_string())?;
-        }
-        m15_write_json(&root.join("label-amendment-af311.json"), &audit)?;
-        m15_write_json(&path, frozen)?;
-    }
-    Ok(audit)
+    refreeze_labels(root, frozen, groups, "AF311")
 }
 fn selected(c: &Case, repeat: usize, stage: Option<&str>) -> bool {
     c.repeat == repeat && stage.is_none_or(|stage| c.stage == stage)
@@ -375,6 +157,12 @@ fn summaries(rows: &[Value]) -> Value {
     }))
 }
 pub fn run() -> Result<(), String> {
+    run_campaign(false)
+}
+pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
+    let prefix = if w4_only { "EVAL_AF319" } else { "EVAL_AF302" };
+    let cap = if w4_only { af319::CAP } else { CAP };
+    let slots = if w4_only { 150 } else { 320 };
     let var = |k: &str| std::env::var(k).ok();
     for name in [
         "EVAL_COMPARE",
@@ -386,43 +174,71 @@ pub fn run() -> Result<(), String> {
         "EVAL_CAMPAIGN_DIR",
     ] {
         if var(name).is_some() {
-            return Err(format!("AF302 does not accept {name}"));
+            return Err(format!("{prefix} does not accept {name}"));
         }
     }
-    let repeat = match var("EVAL_AF302_REPEAT").as_deref() {
+    let repeat = match var(&format!("{prefix}_REPEAT")).as_deref() {
         None | Some("1") => 1,
         Some("2") => 2,
         _ => return Err("repeat must be 1 or 2".into()),
     };
-    let stage_var = var("EVAL_AF302_STAGE");
-    let stage = selection(stage_var.as_deref(), repeat)?;
+    let stage_var = var(&format!("{prefix}_STAGE"));
+    let stage = if w4_only {
+        if !matches!(stage_var.as_deref(), None | Some("w4")) {
+            return Err("AF319 only permits stage=w4".into());
+        }
+        Some("w4")
+    } else {
+        selection(stage_var.as_deref(), repeat)?
+    };
+    let profiles = if w4_only {
+        af319::profile_selection(var("EVAL_AF319_PROFILES").as_deref(), repeat)?
+    } else {
+        Vec::new()
+    };
+    let selected = |c: &Case, repeat, stage| {
+        selected(c, repeat, stage) && (!w4_only || profiles.iter().any(|p| p == &c.model.label))
+    };
     let dry = var("EVAL_DRY_RUN").as_deref() == Some("1");
     let record = match var("EVAL_RECORD").as_deref() {
         None | Some("0") => false,
-        Some("320") => true,
-        _ => return Err("AF302 requires EVAL_RECORD=320 (cumulative authorization)".into()),
+        Some(value) if value == slots.to_string() => true,
+        _ => {
+            return Err(format!(
+                "{prefix} requires EVAL_RECORD={slots} (cumulative authorization)"
+            ));
+        }
     };
-    let root = Path::new(ROOT);
+    let root = Path::new(if w4_only { af319::ROOT } else { ROOT });
     let _lock = w3_trial_lock(&root.join("global-lock"))?;
-    if var("EVAL_AF308_MIGRATE").as_deref() == Some("1") {
+    if !w4_only && var("EVAL_AF308_MIGRATE").as_deref() == Some("1") {
         println!("{}", migrate(root)?);
         return Ok(());
     }
-    let mut groups = plan(root, var)?;
-    let frozen = manifest(&groups);
+    let mut groups = if w4_only {
+        af319::plan(root, var)?
+    } else {
+        plan(root, var)?
+    };
+    let frozen = if w4_only {
+        af319::manifest(&groups)
+    } else {
+        manifest(&groups)
+    };
     let path = root.join("manifest.json");
-    if let Some(amendment) = var("EVAL_AF302_REFREEZE") {
-        if amendment != "AF311" || !dry || record {
-            return Err("AF313 refreeze requires AF311, EVAL_DRY_RUN=1 and no EVAL_RECORD".into());
+    if let Some(amendment) = var(&format!("{prefix}_REFREEZE")) {
+        if (!w4_only && amendment != "AF311") || !dry || record {
+            return Err("label refreeze requires EVAL_DRY_RUN=1 and no EVAL_RECORD; AF302 only accepts AF311".into());
         }
         println!(
             "{}",
-            serde_json::to_string_pretty(&refreeze(root, &frozen, &groups)?).unwrap()
+            serde_json::to_string_pretty(&refreeze_labels(root, &frozen, &groups, &amendment)?)
+                .unwrap()
         );
         return Ok(());
     }
     if read(&path, frozen.clone())? != frozen {
-        return Err("AF302 manifest changed; no sends permitted".into());
+        return Err("campaign manifest changed; no sends permitted".into());
     }
     if !path.exists() {
         m15_write_json(&path, &frozen)?;
@@ -436,7 +252,7 @@ pub fn run() -> Result<(), String> {
             .iter()
             .any(|g| count_sends([g[0].campaign.as_ref().unwrap().join("sends")]).unwrap_or(1) > 0)
     {
-        return Err("AF302 sends exist but cost ledger is missing".into());
+        return Err("campaign sends exist but cost ledger is missing".into());
     }
     let mut ledger = read(&ledger_path, json!({}))?;
     total(&ledger)?;
@@ -449,10 +265,10 @@ pub fn run() -> Result<(), String> {
             "rejected":g.iter().filter(|c|matches!(c.replay,Replay::Rejected(_))).count(),
             "worst_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(upper).sum::<u64>() as f64/1e9,
             "scenario_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(|c|input_bound(c)/4*i+3000*o).sum::<u64>() as f64/1e9,
-            "fingerprint":hippocampus::recall_models::fingerprint(&manifest(&[g.clone()]))}));
+            "fingerprint":hippocampus::recall_models::fingerprint(&if w4_only {af319::manifest(&[g.clone()])} else {manifest(&[g.clone()])})}));
     }
-    let dry_report = json!({"campaign":"AF302","fixed_slots":320,"selected_repeat":repeat,"selected_stage":stage,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
-        "sent":0,"cap_cny":20,"charged_cny":total(&ledger)? as f64/1e9,"profiles":summary,
+    let dry_report = json!({"campaign":if w4_only {"AF319"} else {"AF302"},"fixed_slots":slots,"selected_repeat":repeat,"selected_stage":stage,"selected_profiles":profiles,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
+        "sent":0,"cap_cny":cap as f64/1e9,"charged_cny":total(&ledger)? as f64/1e9,"profiles":summary,
         "estimate_note":"scenario only: input bound / 4, output 3000 per call, no cache; not measured usage",
         "manifest_fingerprint":hippocampus::recall_models::fingerprint(&frozen)});
     let suffix = stage.map(|s| format!("-{s}")).unwrap_or_default();
@@ -492,13 +308,13 @@ pub fn run() -> Result<(), String> {
                 c.replay = Replay::Interrupted;
             }
             if matches!(c.replay, Replay::Stale | Replay::Rejected(_)) {
-                return Err("AF302 stale/rejected request; no replacement send".into());
+                return Err("campaign stale/rejected request; no replacement send".into());
             }
             let circuits = provider_circuits(g)?;
             let send =
                 record && matches!(c.replay, Replay::Missing) && !circuit_blocks(&c, &circuits);
             if send {
-                if !reserve(&mut ledger, &c)? {
+                if !reserve_with_cap(&mut ledger, &c, cap)? {
                     rows.push(json!({"id":c.sample["id"],"stage":c.stage,"status":"费用熔断未发送","repeat":repeat}));
                     continue;
                 }
@@ -507,7 +323,7 @@ pub fn run() -> Result<(), String> {
             let mut transport_failed = false;
             let r = evaluate_cases(
                 &[c.clone()],
-                if send { Some(80) } else { None },
+                if send { Some(g.len()) } else { None },
                 &mut |case| {
                     let request = smoke_http_request(&http, case, &keys[&case.model.label])?;
                     let response = http.execute(request).map_err(|e| {
@@ -529,14 +345,25 @@ pub fn run() -> Result<(), String> {
             }
             rows.extend(items(&r["results"]).iter().cloned());
         }
-        reports.push(json!({"profile":g[0].model.label,"charged_cny":g.iter().filter_map(|c|ledger[key(c)]["charged_nano_cny"].as_u64()).sum::<u64>() as f64/1e9,"stages":summaries(&rows),"results":rows,"cost":compare_cost(&g[0].model.label,&rows)}));
+        reports.push(json!({"profile":g[0].model.label,"charged_cny":g.iter().filter_map(|c|ledger[key(c)]["charged_nano_cny"].as_u64()).sum::<u64>() as f64/1e9,"stages":if w4_only {af319::summaries(&rows)} else {summaries(&rows)},"results":rows,"cost":compare_cost(&g[0].model.label,&rows)}));
     }
+    let label_revisions = groups
+        .iter()
+        .flatten()
+        .filter_map(|c| c.sample["label_revision"].as_str())
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>()
+        .join(",");
     m15_write_json(
         &root.join(format!("report-repeat-{repeat}{suffix}.json")),
-        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":"AF311","profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
+        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":if w4_only {label_revisions.as_str()} else {"AF311"},"profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
     )?;
     if stage == Some("w1") {
         combined_w1(root, &groups)?;
+    }
+    if w4_only {
+        af319::combined(root, var)?;
     }
     Ok(())
 }

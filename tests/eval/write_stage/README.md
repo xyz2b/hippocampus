@@ -823,3 +823,82 @@ AF302 两遍 W1（每档40槽）及第一遍 W3（每档20槽，其中w3_19观�
 `target/eval-providers/compare-af302/reports-af317/`。
 请求指纹不变，使用原录制严格重评；缺录制与传输失败不计通过，不补发。
 标签摘要变化仍会触发原 manifest 的续录保护；本次不重冻结、不改账本，不代表新调用授权。
+
+### AF319：W4 三档比较（独立 150 槽、15 元上限）
+
+28 个 AF276 reviewed 样本中，排除 `call_w4=false` 的 06、08 不完整范围、08 完整范围；
+其余 25 个（含 14 完整范围对照及 n1a/n1b/n2）× 三档 × 两遍 = **150 槽**，每遍75。
+不调用 W1/W3/R4，不改历史样本/录制。W4 使用真实 payload，没有题型/样本 ID 标签。
+
+三档为 ds-pro（当前生产 W4：火山 trhj6）、gpt-6.1-sol、gpt-6-luna；均 medium、
+max_output_tokens=16384、超时360秒。独立目录 `target/eval-providers/compare-af319/`。
+复用 AF302/AF308/AF313 的执行、严格指纹、发送前持久化、续跑与错误熔断；
+费用核算/标签重冻结抽到 `cost_campaign.rs`，旧 AF302 manifest 身份不变。
+
+冻结沿用 AF302 的费率（元/百万 token；输入/缓存输入/输出）：
+
+| 档位 | 输入 | 缓存输入 | 输出 |
+| --- | ---: | ---: | ---: |
+| ds-pro | 9 | 0.3 | 27 |
+| gpt-6.1-sol | 14.2 | 14.2 | 71 |
+| gpt-6-luna | 0.71 | 0.71 | 3.55 |
+
+这是冻结估算费率，不保证代理实际计费。发送前按请求 UTF-8 字节数+1024 的输入上界、
+最大输出且无缓存折扣预留；usage 返回后结算。无 HTTP 状态/usage 的发送阶段传输失败
+结算0，可同槽重试并追加尝试；HTTP 错误缺 usage、进程中断的预留仍按上界计。
+累计结算+在途预留不得超15元，未发送槽不占调用额度。每次执行不自动重试；再次运行
+只重试经账本与录制双重确认的传输失败。语义失败不重发。每档连续3次同类错误/截断熔断。
+
+干跑输出每档指纹、pending/rejected、费用上界与假设每次3000输出token的情景估算，
+该估算不是承诺。合成端点零调用测试两遍情景合计约19.63元，超过15元；实际较短输出
+或缓存命中会降低费用。建议先执行第1遍、审核费用与结果，再决定是否执行第2遍。
+
+**只在 Claude 本机生成 manifest**，避免沙箱端点进入冻结指纹。环境变量：
+`HUOSHAN_DEEPSEEK_BASE_URL`、`HUOSHAN_DEEPSEEK_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_API_KEY`。
+不覆盖模型或档位，也不打印密钥。以下命令均在仓库根目录执行：
+
+```sh
+# 干跑并冻结全部150槽；所选第1遍75槽，实际发送0。
+zsh -ic 'unset EVAL_RECORD EVAL_AF302 EVAL_AF319_REFREEZE; EVAL_AF319=1 EVAL_AF319_REPEAT=1 EVAL_AF319_STAGE=w4 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+
+# 第1遍，发送/续跑最多75个唯一槽；150是两遍累计授权，不是每次发送量。
+zsh -ic 'unset EVAL_DRY_RUN EVAL_AF302 EVAL_AF319_REFREEZE; EVAL_AF319=1 EVAL_AF319_REPEAT=1 EVAL_AF319_STAGE=w4 EVAL_RECORD=150 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+
+# 第2遍，共用同一15元账本，最多75个唯一槽。
+zsh -ic 'unset EVAL_DRY_RUN EVAL_AF302 EVAL_AF319_REFREEZE; EVAL_AF319=1 EVAL_AF319_REPEAT=2 EVAL_AF319_STAGE=w4 EVAL_RECORD=150 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+```
+
+不支持其他阶段/遍数或覆盖档位。未来获批标签调整，可使用
+`EVAL_AF319_REFREEZE=<获批且写入样本的label_revision>` 配合 `EVAL_DRY_RUN=1`，并 unset
+`EVAL_RECORD`：只接受标签摘要变化，其他请求/槽位/配置/费率/预算逐项相等；备份原 manifest，
+另写 amendment 审计。没有新授权不得借此修改标签。
+
+输出 `plan-repeat-N-w4.json`、`report-repeat-N-w4.json`、`report-combined-w4.json`。
+报告保留 raw/final、模型字段分、SQLite 运行时状态分、人工语义待复核、usage/估算费用和
+延迟P50/P90；`after.recall`/自然语言 `must_not` 不自动视为通过。合并报告严格离线读取
+两遍录制；未录制/中断/熔断槽如实保留，不为汇总补发。
+
+### AF322：W4 标签重冻结与第二遍两档
+
+7题采用 AF322 完整期望分支；首遍三档严格离线重评保存到 `compare-af319/reports-af322/`。
+`EVAL_AF319_PROFILES` 只筛选执行槽，不改变三档150槽manifest、费率或15元账本。
+第二遍默认 ds-pro,gpt-6.1-sol，共50槽；显式选择Luna第二遍拒绝，Luna原槽保持未发。
+第一遍仍默认三档。未知档、重复档、空列表拒绝。AF319原第二遍75槽说明由本节替代。
+
+Claude 本机加载 HUOSHAN_DEEPSEEK_BASE_URL/API_KEY、OPENAI_BASE_URL/API_KEY 后依次执行：
+
+```sh
+# 只允许标签摘要变化；备份旧manifest，不发送
+zsh -ic 'unset EVAL_RECORD EVAL_AF302 EVAL_AF319_PROFILES; EVAL_AF319=1 EVAL_AF319_REFREEZE=AF322 EVAL_AF319_REPEAT=1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+# 第二遍干跑：总冻结150，选中50，Luna选中0
+zsh -ic 'unset EVAL_RECORD EVAL_AF302 EVAL_AF319_REFREEZE; EVAL_AF319=1 EVAL_AF319_PROFILES=ds-pro,gpt-6.1-sol EVAL_AF319_REPEAT=2 EVAL_AF319_STAGE=w4 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+# 第二遍发送/续跑，原15元累计账本不重置
+zsh -ic 'unset EVAL_DRY_RUN EVAL_AF302 EVAL_AF319_REFREEZE; EVAL_AF319=1 EVAL_AF319_PROFILES=ds-pro,gpt-6.1-sol EVAL_AF319_REPEAT=2 EVAL_AF319_STAGE=w4 EVAL_RECORD=150 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+```
+
+零调用首遍重评命令（从旧录制恢复端点，全量核对原manifest非标签字段；只在临时目录
+演练重冻结，不改真实manifest、录制或费用账本）：
+
+```sh
+EVAL_AF322_REPLAY=1 cargo test --test write_stage_eval af319::af322_offline_first_repeat -- --exact --nocapture
+```

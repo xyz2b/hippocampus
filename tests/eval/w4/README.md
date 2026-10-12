@@ -43,3 +43,11 @@ python3 -m unittest discover -s tests/eval/w4   # 检查器自身的测试
 cargo test --test w4_offline                   # 真实 SQLite 与重开/召回验收
 cargo test --test write_stage_eval af276       # 字段/完整分支/指纹回归
 ```
+
+### AF322 生效时间分支
+
+11、13、14 两变体、n1a 保留 effective=null，并接受对应候选中原样的
+validity/unknown；04 接受对应“周末的时候”、23 接受对应“每天”的已核验周期时间。
+仅这7题标 label_revision=AF322；每支完整复制 decisions/after/recall/must_not，
+除了 effective 外不变。不得接受任意时间、伪造时间或跨分支串配；17/20/22 不放宽。
+检查器已有完整分支逐支核验，无需修改规则。输入、ID、reviewed 状态和请求指纹不变。

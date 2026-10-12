@@ -4,6 +4,10 @@ mod adapter;
 
 #[path = "eval/write_stage/af302.rs"]
 mod af302;
+#[path = "eval/write_stage/af319.rs"]
+mod af319;
+#[path = "eval/write_stage/cost_campaign.rs"]
+mod cost_campaign;
 
 #[allow(dead_code)]
 #[path = "eval/w4/runtime.rs"]
@@ -3922,7 +3926,7 @@ fn campaign_check(cases: &[Case], limit: usize) -> Result<(), String> {
             for c in cases {
                 if matches!(c.replay, Replay::Missing | Replay::Stale)
                     && log["slot"] == campaign_slot(c)
-                    && !af302::retryable_send(c, &log)?
+                    && !cost_campaign::retryable_send(c, &log)?
                 {
                     blocked = true;
                 }
@@ -4092,7 +4096,7 @@ fn circuit_blocks(case: &Case, circuits: &ProviderCircuits) -> bool {
 }
 
 fn logs_for_retry_count(cases: &[Case], root: &Path) -> Result<usize, String> {
-    if af302::occupied_slots(root)?.is_none() {
+    if cost_campaign::occupied_slots(root)?.is_none() {
         return Ok(0);
     }
     let dir = root.join("sends");
@@ -4110,7 +4114,7 @@ fn logs_for_retry_count(cases: &[Case], root: &Path) -> Result<usize, String> {
         for c in cases {
             if matches!(c.replay, Replay::Missing)
                 && log["slot"] == campaign_slot(c)
-                && af302::retryable_send(c, &log)?
+                && cost_campaign::retryable_send(c, &log)?
             {
                 occupied.insert(campaign_slot(c).to_string());
             }
@@ -4176,7 +4180,7 @@ fn preflight_with_native_stop(
     }
     if let (Some(limit), Some(root)) = (limit.filter(|n| *n > 0), campaign_root(cases)?) {
         campaign_check(cases, limit)?;
-        let previous = match af302::occupied_slots(root)? {
+        let previous = match cost_campaign::occupied_slots(root)? {
             Some(n) => n,
             None => count_sends([root.join("sends")])?,
         };
@@ -4714,6 +4718,14 @@ fn write_stage_eval_suite() {
     }
     if std::env::var_os("EVAL_AF193").is_some() || std::env::var_os("EVAL_AF196").is_some() {
         af193::run().unwrap();
+        return;
+    }
+    if std::env::var_os("EVAL_AF319").is_some() {
+        assert!(
+            std::env::var_os("EVAL_AF302").is_none(),
+            "cannot combine campaigns"
+        );
+        af302::run_campaign(true).unwrap();
         return;
     }
     if std::env::var_os("EVAL_AF302").is_some() {
@@ -11412,6 +11424,9 @@ fn af276_w4_fields_branches_and_manual_semantics_are_separate() {
     let mut bad_after = find("w4_04");
     bad_after["expect"]["after"]["records"]["new"]["update"] =
         json!({"status":"judged","reasons":[]});
+    for branch in bad_after["expect"]["alternatives"].as_array_mut().unwrap() {
+        branch["after"]["records"]["new"]["update"] = json!({"status":"judged","reasons":[]});
+    }
     let report = score("w4", &bad_after, Some(&fixture(&bad_after).to_string()));
     assert_eq!(report["automatic_fields"]["status"], "通过");
     assert_eq!(report["runtime_state_result"]["status"], "失败");
