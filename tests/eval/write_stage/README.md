@@ -717,3 +717,64 @@ effective、relation_scope、目标集合与完整期望分支均评分；pendin
 env -u EVAL_RECORD EVAL_STAGES=w4 EVAL_GATE=0 \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
+
+### AF302 / AF303：当前 W1 v4 / W3 v4 四档重测
+
+独立入口 `EVAL_AF302=1`，目录固定为 `target/eval-providers/compare-af302`。
+DS-Pro 使用 trhj6、W1/W3 low；Luna、Sol、Haiku 使用 medium。Haiku 沿用
+prompt_schema（未使用约束解码）。W1/W3 输出上限分别 32768/16384，超时 360 秒。
+旧 providers.json、录制和授权不变。不接人工复核台账；自动分不是人工语义确认。
+每档 20 W1 + 20 W3 × 两遍，共 320 槽；w3_19 每遍单列观察，不进主通过率。
+
+干跑也会冻结 manifest.json 和各档 80 槽授权，但不读密钥、不发送；冻结内容包含
+请求指纹、样本期望摘要、配置、费率与总费用上限。端点由真实环境变量绑定，改变后
+明确拒绝沿用 manifest。密钥值不进入指纹。不要删除账本以恢复额度。
+
+```sh
+# 先加载环境：HUOSHAN_DEEPSEEK_BASE_URL / HUOSHAN_DEEPSEEK_API_KEY
+# OPENAI_BASE_URL / OPENAI_API_KEY；ANTHROPIC_BASE_URL / ANTHROPIC_API_KEY
+# 不设置旧 EVAL_COMPARE 等覆盖项。
+EVAL_AF302=1 EVAL_AF302_REPEAT=1 EVAL_DRY_RUN=1 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# 第一遍，仅 160 槽；EVAL_RECORD 是两遍累计授权，不是本轮调用数。
+EVAL_AF302=1 EVAL_AF302_REPEAT=1 EVAL_RECORD=320 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# 人工检查第一遍后续第二遍，复用同一个 manifest / 全局费用账本。
+EVAL_AF302=1 EVAL_AF302_REPEAT=2 EVAL_RECORD=320 \
+cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+
+# 同一命令可续跑；EVAL_RECORD=0 仅回放所选遍。
+```
+
+费用用整数 nano-CNY 记账，四档/两遍共享一把锁和 20 元预算。发送前持久化预留：
+输入按完整 wire JSON UTF-8 字节数 + 1024 framing allowance 估计 token 上界，
+不预先扣缓存优惠；输出按 max_output_tokens。已结算 + 在途预留 + 本次上界大于
+20 元即标“费用熔断未发送”，不占调用槽。完成按 usage 结算；无 usage、中断保留
+预留上界，不能自动退款或重发。记录成功但结算前中断也保守保留上界。
+费用上限是冻结费率下的估算约束，输入估计不是 provider tokenizer 证明，代理实际
+价格可能不同；若返回 usage 超过预留则如实计入并阻止后续超额发送，不能撤销已计费请求。
+已有同类 HTTP/截断三次熔断继续生效，所有调用均无自动重试。
+
+冻结价格（元/百万 token，输入/输出/缓存输入）：DS 9/27/0.3，Luna 与 Haiku
+0.71/3.55/0.71，Sol 14.2/71/14.2。非 DS 未假定缓存优惠。干跑同时给出全输出上限
+的最坏费用，以及“输入字节估计/4、每次输出 3000 token、无缓存”的情景预估，
+后者不是实测预测；20 元可能提前终止，320 是授权上限而不是保证完成数。
+`plan-repeat-N.json` 保存计划与指纹；`report-repeat-N.json` 分档分阶段列自动分、
+观察题、usage、P50/P90、usage 已知费用及全局保守费用账本。
+
+### AF311 标签校准（零调用）
+
+AF311 仅修订 W1/W3 期望、说明与标签版本，输入/ID 不变，模型请求仍使用当前 W1/W3 v4。
+通用 fact 接受经机械核验的连续断言片段，sentence 仍保留完整原句；不放宽主体、限定语或引用校验。
+W1_11 新增“零候选 + source retention”的完整分支，空 indices 不代表全部旧事实。
+W1_05 的条件“以后”可不另列时间；若列，须为 event/unknown 并保留引用。
+W1_06 保持 fact；W3_07 只接受 contradicted[speech]；W3_01/14 为 contradicted[time]，
+W3_05 为 insufficient[subject]。分支须整支通过，W3_19 仍仅观察。
+
+检查：`python3 tests/eval/w1/check_samples.py w1 w3`；生成器与样本应保持一致。
+AF302 repeat-1 离线重评另存 `target/eval-providers/compare-af302/reports-af311/`，
+读取匹配原请求指纹的最后一次录制，保留机械核验，不发送请求。
+标签不进入请求指纹；AF302 manifest 另冻结标签摘要，因此旧录制入口会拒绝新标签下续录。
+本轮不改 manifest/额度/账本，离线重评不代表重新授权续录。

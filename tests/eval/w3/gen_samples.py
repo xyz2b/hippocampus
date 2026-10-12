@@ -3,6 +3,7 @@
 input.candidates 是 W2 已通过的候选（有些故意带错），expect.reviews 按候选索引给出
 verdict、必须指出的 problems.aspect 集合（supported 时为空）与 episode_value。
 """
+import copy
 import json
 import pathlib
 
@@ -169,6 +170,36 @@ for s in SAMPLES:
         s["observation_only"] = True
         s["observation_reason"] = "频率限定语缺少明确映射，待契约决定"
         s["note"] += " AF155：频率限定语缺少明确映射，待契约决定；只观察，不计主语义通过率或分层，机械失败不豁免。"
+
+
+
+# AF311: expectations only; input, ID and historical contract label remain unchanged.
+for s in SAMPLES:
+    n = s["id"].split("_")[1]
+    e = s["expect"]
+    if n not in {"01", "05", "06", "07", "14"}:
+        continue
+    if n in {"01", "14"}:
+        e["reviews"][0].update(verdict="contradicted", aspects=["time"])
+    if n == "14":
+        e["reviews"][0]["episode_value"] = ["low_value", "unknown"]
+    if n == "05":
+        e["reviews"][0]["verdict"] = "insufficient"
+    if n == "06":
+        b = copy.deepcopy(e)
+        b["reviews"][0]["aspects"] = ["condition"]
+        s["expect"] = {"alternatives": [e, b]}
+    if n == "07":
+        e["reviews"][0].update(verdict="contradicted", aspects=["speech"])
+    s["note"] = "AF311：" + {
+        "01": "输入 times=[] 漏现在；contradicted[time]，不修输入。",
+        "05": "原文缺 self 主体支持，insufficient[subject]；覆盖缺口引用母亲断言的要求不变。",
+        "06": "完整分支接受 contradicted[speech] 或 contradicted[condition]，不要求穷举所有问题。",
+        "07": "用户裁定只接受 contradicted[speech]；不接受 insufficient。",
+        "14": "输入漏刚的时间字段，contradicted[time]；episode_value 可 low_value/unknown。",
+    }[n]
+    s["label_revision"] = "AF311"
+    s["label_status"] = "reviewed"
 
 
 def main():

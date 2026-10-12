@@ -53,40 +53,81 @@
   "task_id": null
  },
  "expect": {
-  "candidate_count": 1,
-  "candidates": [
+  "alternatives": [
    {
-    "kind": "assertion",
-    "speech": "user_statement",
-    "subject": "self",
-    "relation": "lives_in",
-    "memory_type": "fact",
-    "value": "成都",
-    "sentence": [
-     "我上个月刚搬到成都，",
-     "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
-    ],
-    "polarity": "affirm",
-    "uncertainty": null,
-    "conditions": [],
-    "times": [
+    "candidate_count": 1,
+    "candidates": [
      {
-      "role": "event",
-      "quote": "上个月",
-      "interp": {
-       "kind": "relative",
-       "unit": "month",
-       "offset": -1
-      }
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "self",
+      "relation": "lives_in",
+      "memory_type": "fact",
+      "value": "成都",
+      "sentence": [
+       "我上个月刚搬到成都，",
+       "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
+      ],
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": "event",
+        "quote": "上个月",
+        "interp": {
+         "kind": "relative",
+         "unit": "month",
+         "offset": -1
+        }
+       }
+      ],
+      "strength": null
      }
     ],
-    "strength": null
+    "memory_requests": []
+   },
+   {
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "self",
+      "relation": "fact",
+      "memory_type": "episode",
+      "value": "我上个月刚搬到成都",
+      "sentence": [
+       "我上个月刚搬到成都，",
+       "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
+      ],
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": "event",
+        "quote": [
+         "上个月",
+         "上个月刚"
+        ],
+        "interp": {
+         "kind": "relative",
+         "unit": "month",
+         "offset": -1
+        }
+       }
+      ],
+      "strength": null
+     }
+    ],
+    "memory_requests": []
    }
-  ],
-  "memory_requests": []
+  ]
  },
  "must_not": [
   "为“哪里的火锅好吃”生成 user_statement 候选"
  ],
- "note": "sentence 取到逗号或整句均可（可接受集合）。"
+ "note": "AF311：搬家经历允许完整 fact/episode 分支；专用 lives_in 值与 event 时间规则不放宽。",
+ "label_revision": "AF311"
 }

@@ -81,3 +81,18 @@ EVAL_RECORD=61 cargo test --offline --test write_stage_eval write_stage_eval_sui
 请求指纹沿用原评测的 canonical FNV-1a：包含提示词、schema、模型和固定样本输入，排除输出 token 上限及每次运行的时钟/绑定字段。当前模型的指纹缺失或不符记为“录制过期”，不使用旧输出打分；无当前模型录制记为“未录制”。两者单列、不算模型失败，默认离线测试不会因此失败。有效录制的评分失败、输入无效或录制调用失败会使评测入口失败。
 
 报告的 `total` 是所选样本数，`evaluated` 是实际打分数；同时列出 passed、failed、missing、stale、draft。全为未录制时不代表模型通过。`must_not` 与 `note` 原样保留，供人工复核；不自动解释自然语言。标量数组按允许集合核对，条件/时间/索引等结构数组完整匹配、不评分顺序；W3 aspects 与 coverage missing、W4 basis_sources 按要求覆盖。W4 的 `expect.after` 属于提交与召回验收，本脚本不评分。样本没有时区与完整目录类型约束，评测固定为生产默认时区 UTC+8、关系允许四种 memory_type，不宣称验证实际账户的目录限制。
+
+### AF311 标签校准（零调用）
+
+AF311 仅修订 W1/W3 期望、说明与标签版本，输入/ID 不变，模型请求仍使用当前 W1/W3 v4。
+通用 fact 接受经机械核验的连续断言片段，sentence 仍保留完整原句；不放宽主体、限定语或引用校验。
+W1_11 新增“零候选 + source retention”的完整分支，空 indices 不代表全部旧事实。
+W1_05 的条件“以后”可不另列时间；若列，须为 event/unknown 并保留引用。
+W1_06 保持 fact；W3_07 只接受 contradicted[speech]；W3_01/14 为 contradicted[time]，
+W3_05 为 insufficient[subject]。分支须整支通过，W3_19 仍仅观察。
+
+检查：`python3 tests/eval/w1/check_samples.py w1 w3`；生成器与样本应保持一致。
+AF302 repeat-1 离线重评另存 `target/eval-providers/compare-af302/reports-af311/`，
+读取匹配原请求指纹的最后一次录制，保留机械核验，不发送请求。
+标签不进入请求指纹；AF302 manifest 另冻结标签摘要，因此旧录制入口会拒绝新标签下续录。
+本轮不改 manifest/额度/账本，离线重评不代表重新授权续录。

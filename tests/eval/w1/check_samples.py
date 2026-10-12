@@ -36,15 +36,18 @@ def expectation_branches(e):
 
 def check_candidate(c, text, where, relations, entities, errors):
     def quote(q, field):
-        if q is not None and q not in text:
-            errors.append(f"{where}.{field}: {q!r} not in source text")
+        for value in options(q):
+            if value is not None and value not in text:
+                errors.append(f"{where}.{field}: {value!r} not in source text")
 
     for sentence in options(c.get("sentence")):
         quote(sentence, "sentence")
-    # contracts 2.1：fact 的值与完整原句相同。可接受集合含 fact 时，每个 fact 组合都必须合法。
+    # contracts 1.5：通用 fact 值须是完整 sentence 内的连续原文片段。
     if "fact" in options(c["relation"]) and c.get("kind", "assertion") == "assertion":
-        if not set(options(c.get("value"))) & set(options(c.get("sentence"))):
-            errors.append(f"{where}: relation fact requires value == sentence")
+        if any(not isinstance(v, str) or not v.strip() or not any(
+                isinstance(sentence, str) and v in sentence for sentence in options(c.get("sentence")))
+               for v in options(c.get("value"))):
+            errors.append(f"{where}: relation fact requires continuous value within sentence")
     for v in options(c.get("value")):
         # 值可以是规范化值（英文、实体名），只有含中文且看起来是原文片段时才要求逐字。
         if isinstance(v, str) and len(v) > 4:
@@ -79,7 +82,7 @@ def check_w1(s, errors):
     for n, c in enumerate(e["candidates"]):
         check_candidate(c, text, f"candidates[{n}]", i["relations"], entities, errors)
     for n, r in enumerate(e["memory_requests"]):
-        if r["kind"] not in REQUESTS or r["quote"] not in text:
+        if r["kind"] not in REQUESTS or any(q not in text for q in options(r["quote"])):
             errors.append(f"memory_requests[{n}] kind/quote")
         if r.get("target_quote") and r["target_quote"] not in text:
             errors.append(f"memory_requests[{n}].target_quote")
@@ -104,7 +107,7 @@ def check_w3(s, errors):
             errors.append(f"review {r['candidate']} enum")
         if "supported" in options(r["verdict"]) and r["aspects"]:
             errors.append(f"review {r['candidate']} supported with problems")
-        if r["episode_value"] not in EPISODE:
+        if not set(options(r["episode_value"])) <= EPISODE:
             errors.append(f"review {r['candidate']} episode_value")
         if (r["episode_value"] != "not_applicable") != (i["candidates"][r["candidate"]]["memory_type"] == "episode"):
             errors.append(f"review {r['candidate']} episode_value vs memory_type")
@@ -185,7 +188,12 @@ def check_r4(s, errors):
 
 def main():
     failed = 0
-    for contract, check in (("w1", check_w1), ("w3", check_w3), ("r1", check_r1), ("r4", check_r4)):
+    checks = {"w1": check_w1, "w3": check_w3, "r1": check_r1, "r4": check_r4}
+    selected = sys.argv[1:] or list(checks)
+    if any(c not in checks for c in selected):
+        sys.exit("usage: check_samples.py [w1 w3 r1 r4]")
+    for contract in selected:
+        check = checks[contract]
         for path in sorted((ROOT / contract / "samples").glob("*.json")):
             s = json.loads(path.read_text())
             errors = []

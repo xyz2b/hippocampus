@@ -62,7 +62,10 @@
     "relation": "fact",
     "memory_type": "fact",
     "value": "我女儿的生日是3月12日。",
-    "sentence": "我女儿的生日是3月12日。",
+    "sentence": [
+     "我女儿的生日是3月12日。",
+     "记住：我女儿的生日是3月12日。"
+    ],
     "polarity": "affirm",
     "uncertainty": null,
     "conditions": [],
@@ -72,7 +75,11 @@
   "memory_requests": [
    {
     "kind": "remember",
-    "quote": "记住",
+    "quote": [
+     "记住",
+     "记住：",
+     "记住：我女儿的生日是3月12日。"
+    ],
     "target_object": [
      "facts",
      "source"
@@ -84,5 +91,6 @@
   ]
  },
  "must_not": [],
- "note": "生日是否同时作为 times（recurring/date）不评分。"
+ "note": "AF311：允许含记住前缀的完整原句及控制请求精确引用，索引绑定不变。",
+ "label_revision": "AF311"
 }

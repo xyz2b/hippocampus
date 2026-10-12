@@ -53,34 +53,59 @@
   "task_id": null
  },
  "expect": {
-  "candidate_count": 1,
-  "candidates": [
+  "alternatives": [
    {
-    "kind": "assertion",
-    "speech": "user_statement",
-    "subject": "self",
-    "relation": [
-     "avoids",
-     "likes"
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "self",
+      "relation": [
+       "avoids",
+       "likes"
+      ],
+      "memory_type": [
+       "preference",
+       "constraint"
+      ],
+      "value": "香菜",
+      "sentence": "我不吃香菜。",
+      "polarity": [
+       "affirm",
+       "negate"
+      ],
+      "uncertainty": null,
+      "conditions": [],
+      "times": [],
+      "strength": null
+     }
     ],
-    "memory_type": [
-     "preference",
-     "constraint"
+    "memory_requests": []
+   },
+   {
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "self",
+      "relation": "avoids",
+      "memory_type": "fact",
+      "value": "香菜",
+      "sentence": "我不吃香菜。",
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "times": [],
+      "strength": null
+     }
     ],
-    "value": "香菜",
-    "sentence": "我不吃香菜。",
-    "polarity": [
-     "affirm",
-     "negate"
-    ],
-    "uncertainty": null,
-    "conditions": [],
-    "times": [],
-    "strength": null
+    "memory_requests": []
    }
-  ],
-  "memory_requests": []
+  ]
  },
  "must_not": [],
- "note": "只接受 avoids+affirm 或 likes+negate 两种组合。fact 不在可接受集合：fact 的 value 须为整句，与 value=香菜 不能同时成立。"
+ "note": "AF311：允许描述性 avoids+affirm+fact 完整分支；否定方向仍须与关系一致，专用关系值无整句要求。",
+ "label_revision": "AF311"
 }

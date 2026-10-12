@@ -58,7 +58,10 @@
   "memory_requests": [
    {
     "kind": "forget",
-    "quote": "把我住址那条忘掉吧",
+    "quote": [
+     "把我住址那条忘掉吧",
+     "忘掉吧"
+    ],
     "target_object": "facts",
     "candidate_indices": [],
     "target_quote": "我住址那条"
@@ -69,5 +72,6 @@
   "生成 retraction 候选代替 forget",
   "candidate_indices 非空"
  ],
- "note": null
+ "note": "AF311：请求含控制词、target 保留对象；不要求请求 quote 包含对象。",
+ "label_revision": "AF311"
 }

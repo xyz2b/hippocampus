@@ -53,40 +53,78 @@
   "task_id": null
  },
  "expect": {
-  "candidate_count": 1,
-  "candidates": [
+  "alternatives": [
    {
-    "kind": "assertion",
-    "speech": "plan",
-    "subject": "self",
-    "relation": "fact",
-    "memory_type": "fact",
-    "value": "如果我以后去深圳工作，我会考虑租房。",
-    "sentence": "如果我以后去深圳工作，我会考虑租房。",
-    "polarity": "affirm",
-    "uncertainty": [
-     "考虑",
-     "会考虑"
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "plan",
+      "subject": "self",
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": [
+       "如果我以后去深圳工作，我会考虑租房。",
+       "我会考虑租房"
+      ],
+      "sentence": "如果我以后去深圳工作，我会考虑租房。",
+      "polarity": "affirm",
+      "uncertainty": [
+       "考虑",
+       "会考虑"
+      ],
+      "conditions": [
+       "如果我以后去深圳工作"
+      ],
+      "strength": null,
+      "times": []
+     }
     ],
-    "conditions": [
-     "如果我以后去深圳工作"
+    "memory_requests": []
+   },
+   {
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "plan",
+      "subject": "self",
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": [
+       "如果我以后去深圳工作，我会考虑租房。",
+       "我会考虑租房"
+      ],
+      "sentence": "如果我以后去深圳工作，我会考虑租房。",
+      "polarity": "affirm",
+      "uncertainty": [
+       "考虑",
+       "会考虑"
+      ],
+      "conditions": [
+       "如果我以后去深圳工作"
+      ],
+      "strength": null,
+      "times": [
+       {
+        "role": "event",
+        "quote": "以后",
+        "interp": {
+         "kind": "unknown"
+        }
+       }
+      ]
+     }
     ],
-    "strength": null
+    "memory_requests": []
    }
-  ],
-  "memory_requests": []
+  ]
  },
  "must_not": [
   "speech 为 user_statement 或 hypothetical",
   "丢失条件或“考虑”",
   "生成 works_at 候选"
  ],
- "note": "AF151：按有条件的个人计划评分；保留“考虑”或“会考虑”，时间仍不评分。",
- "label_revision": {
-  "decisions": [
-   "AF150",
-   "AF151"
-  ],
-  "date": "2026-10-08"
- }
+ "note": "AF311：条件中的以后可不另列租房时间；若列则 event/unknown，考虑与条件必须保留。",
+ "label_revision": "AF311"
 }

@@ -2,6 +2,9 @@
 #[path = "eval/w3/adapter.rs"]
 mod adapter;
 
+#[path = "eval/write_stage/af302.rs"]
+mod af302;
+
 #[allow(dead_code)]
 #[path = "eval/w4/runtime.rs"]
 mod w4_runtime;
@@ -3895,10 +3898,16 @@ fn campaign_check(cases: &[Case], limit: usize) -> Result<(), String> {
             let log: Value =
                 serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
                     .map_err(|e| e.to_string())?;
-            if cases.iter().any(|c| {
-                matches!(c.replay, Replay::Missing | Replay::Stale)
+            let mut blocked = false;
+            for c in cases {
+                if matches!(c.replay, Replay::Missing | Replay::Stale)
                     && log["slot"] == campaign_slot(c)
-            }) {
+                    && !af302::retryable_send(c, &log)?
+                {
+                    blocked = true;
+                }
+            }
+            if blocked {
                 return Err(
                     "campaign slot already sent but recording missing; no automatic resend".into(),
                 );
@@ -4062,6 +4071,33 @@ fn circuit_blocks(case: &Case, circuits: &ProviderCircuits) -> bool {
             .is_some_and(ProviderCircuit::open)
 }
 
+fn logs_for_retry_count(cases: &[Case], root: &Path) -> Result<usize, String> {
+    if af302::occupied_slots(root)?.is_none() {
+        return Ok(0);
+    }
+    let dir = root.join("sends");
+    if !dir.exists() {
+        return Ok(0);
+    }
+    let mut occupied = std::collections::BTreeSet::new();
+    for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
+        let path = entry.map_err(|e| e.to_string())?.path();
+        if path.extension().is_none_or(|s| s != "json") {
+            continue;
+        }
+        let log: Value = serde_json::from_slice(&std::fs::read(path).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+        for c in cases {
+            if matches!(c.replay, Replay::Missing)
+                && log["slot"] == campaign_slot(c)
+                && af302::retryable_send(c, &log)?
+            {
+                occupied.insert(campaign_slot(c).to_string());
+            }
+        }
+    }
+    Ok(occupied.len())
+}
 fn preflight(cases: &[Case], limit: Option<usize>) -> Result<usize, String> {
     preflight_with_native_stop(cases, limit, false)
 }
@@ -4120,7 +4156,12 @@ fn preflight_with_native_stop(
     }
     if let (Some(limit), Some(root)) = (limit.filter(|n| *n > 0), campaign_root(cases)?) {
         campaign_check(cases, limit)?;
-        let previous = count_sends([root.join("sends")])?;
+        let previous = match af302::occupied_slots(root)? {
+            Some(n) => n,
+            None => count_sends([root.join("sends")])?,
+        };
+        let previously_occupied = logs_for_retry_count(cases, root)?;
+        let needed = needed.saturating_sub(previously_occupied);
         if previous.saturating_add(needed) > limit {
             return Err(format!(
                 "campaign cumulative {previous} + missing {needed} exceeds {limit}"
@@ -4653,6 +4694,10 @@ fn write_stage_eval_suite() {
     }
     if std::env::var_os("EVAL_AF193").is_some() || std::env::var_os("EVAL_AF196").is_some() {
         af193::run().unwrap();
+        return;
+    }
+    if std::env::var_os("EVAL_AF302").is_some() {
+        af302::run().unwrap();
         return;
     }
     if std::env::var_os("EVAL_COMPARE").is_some() {
@@ -5885,6 +5930,17 @@ fn fake_envelope(output: Value) -> Value {
 }
 
 fn fake_w1(sample: &Value) -> Value {
+    let mut sample = sample.clone();
+    if sample["expect"].get("alternatives").is_some() {
+        sample["expect"] = expectation_branches(&sample["expect"]).remove(0);
+    }
+    let scalar = |v: &Value| {
+        if v.is_array() {
+            v[0].clone()
+        } else {
+            v.clone()
+        }
+    };
     let candidates: Vec<_> = items(&sample["expect"]["candidates"])
         .iter()
         .map(|e| {
@@ -5907,18 +5963,18 @@ fn fake_w1(sample: &Value) -> Value {
                 }
             }
             for time in c["times"].as_array_mut().unwrap() {
-                if time["role"].is_array() {
-                    time["role"] = time["role"][0].clone();
+                for field in ["role", "quote"] {
+                    time[field] = scalar(&time[field]);
                 }
             }
             adapter::candidate(&c)
         })
         .collect();
     let requests: Vec<_> = items(&sample["expect"]["memory_requests"]).iter().map(|r| json!({
-        "kind": r["kind"], "quote": adapter::quote(&r["quote"]), "target": {
+        "kind": r["kind"], "quote": adapter::quote(&scalar(&r["quote"])), "target": {
             "object": if r["target_object"].is_array() { &r["target_object"][0] } else { &r["target_object"] },
             "candidate_indices": r["candidate_indices"],
-            "quote": adapter::quote(r.get("target_quote").unwrap_or(&r["quote"]))
+            "quote": adapter::quote(&scalar(r.get("target_quote").unwrap_or(&r["quote"])))
         }, "deadline": adapter::time(&r["deadline"])
     })).collect();
     json!({"candidates": candidates, "memory_requests": requests})
@@ -6610,7 +6666,7 @@ fn negation_uses_labelled_relation_polarity_pairs_only() {
         ("avoids", "negate", "失败"),
         ("likes", "affirm", "失败"),
     ] {
-        let mut candidate = sample["expect"]["candidates"][0].clone();
+        let mut candidate = expectation_branches(&sample["expect"])[0]["candidates"][0].clone();
         candidate["relation"] = json!(relation);
         candidate["polarity"] = json!(polarity);
         candidate["memory_type"] = json!("preference");
@@ -6629,10 +6685,14 @@ fn injected_three_stages_pass_decode_failure_and_missing() {
         let sample = samples(stage).remove(0);
         let response = match stage {
             "w1" => fake_w1(&sample).to_string(),
-            "w3" => json!({"reviews": [{"candidate": 0, "verdict": "supported", "problems": [], "episode_value": "not_applicable"}],
-                "coverage": {"status": "complete", "missing": []}, "request_reviews": []}).to_string(),
-            _ => std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join(format!("tests/eval/w4/fixtures/{}.output.json", sample["id"].as_str().unwrap()))).unwrap(),
+            "w3" => fake_w3(&sample).to_string(),
+            _ => std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+                format!(
+                    "tests/eval/w4/fixtures/{}.output.json",
+                    sample["id"].as_str().unwrap()
+                ),
+            ))
+            .unwrap(),
         };
         assert_eq!(score(stage, &sample, Some(&response))["status"], "通过");
         assert_eq!(score(stage, &sample, Some("{"))["status"], "失败");
@@ -6653,7 +6713,7 @@ fn fake_w3(sample: &Value) -> Value {
         }
     };
     json!({"reviews": items(&sample["expect"]["reviews"]).iter().map(|r| json!({
-        "candidate": r["candidate"], "verdict": scalar(&r["verdict"]), "episode_value": r["episode_value"],
+        "candidate": r["candidate"], "verdict": scalar(&r["verdict"]), "episode_value": scalar(&r["episode_value"]),
         "problems": items(&r["aspects"]).iter().map(|a| json!({"aspect": a,
             "quote": {"text": sample["input"]["text"]}})).collect::<Vec<_>>()
     })).collect::<Vec<_>>(), "coverage": {"status": sample["expect"]["coverage"]["status"],
@@ -11391,6 +11451,84 @@ fn af276_label_only_changes_never_change_the_request_fingerprint() {
         assert_ne!(
             fingerprint(&request),
             fingerprint(&stage_request("w4", &sample).unwrap())
+        );
+    }
+}
+
+#[test]
+fn af311_whole_branches_keep_source_retention_and_time_roles_strict() {
+    let all = samples("w1");
+    let find = |prefix: &str| {
+        all.iter()
+            .find(|s| s["id"].as_str().unwrap().starts_with(prefix))
+            .unwrap()
+            .clone()
+    };
+    let mut retention = find("w1_11");
+    retention["expect"] = expectation_branches(&retention["expect"]).pop().unwrap();
+    let output = fake_w1(&retention);
+    let original = find("w1_11");
+    assert_eq!(
+        score("w1", &original, Some(&output.to_string()))["status"],
+        "通过"
+    );
+    for (object, indices) in [("facts", json!([])), ("source", json!([0]))] {
+        let mut wrong = output.clone();
+        wrong["memory_requests"][0]["target"]["object"] = json!(object);
+        wrong["memory_requests"][0]["target"]["candidate_indices"] = indices;
+        assert_eq!(
+            score("w1", &original, Some(&wrong.to_string()))["status"],
+            "失败"
+        );
+    }
+    let plan = find("w1_05");
+    for branch in expectation_branches(&plan["expect"]) {
+        let mut fixture = plan.clone();
+        fixture["expect"] = branch;
+        let mut output = fake_w1(&fixture);
+        assert_eq!(
+            score("w1", &plan, Some(&output.to_string()))["status"],
+            "通过"
+        );
+        if !items(&output["candidates"][0]["times"]).is_empty() {
+            output["candidates"][0]["times"][0]["role"] = json!("validity");
+            assert_eq!(
+                score("w1", &plan, Some(&output.to_string()))["status"],
+                "失败"
+            );
+        }
+    }
+    let reported = find("w1_06");
+    let mut output = fake_w1(&reported);
+    output["candidates"][0]["memory_type"] = json!("episode");
+    assert_eq!(
+        score("w1", &reported, Some(&output.to_string()))["status"],
+        "失败"
+    );
+}
+
+#[test]
+fn af311_w3_verdict_corrections_do_not_accept_both_verdicts() {
+    let all = samples("w3");
+    for (prefix, rejected) in [
+        ("w3_01", "supported"),
+        ("w3_14", "supported"),
+        ("w3_05", "contradicted"),
+        ("w3_07", "insufficient"),
+    ] {
+        let sample = all
+            .iter()
+            .find(|s| s["id"].as_str().unwrap().starts_with(prefix))
+            .unwrap();
+        let mut output = fake_w3(sample);
+        assert_eq!(
+            score("w3", sample, Some(&output.to_string()))["status"],
+            "通过"
+        );
+        output["reviews"][0]["verdict"] = json!(rejected);
+        assert_eq!(
+            score("w3", sample, Some(&output.to_string()))["status"],
+            "失败"
         );
     }
 }
