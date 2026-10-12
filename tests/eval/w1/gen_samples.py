@@ -230,6 +230,51 @@ for s in SAMPLES:
     s["label_status"] = "reviewed"
 
 
+# AF317: label-authored assertion windows; no inference from model output.
+SPAN_RULES = {
+    "04": ("我上个月刚搬到成都", ["搬到成都"]),
+    "05": ("如果我以后去深圳工作，我会考虑租房。", ["租房"]),
+    "06": ("我妈说我小时候特别怕狗。", ["特别怕狗"]),
+    "07": ("我打算下个月开始学日语。", ["学日语"]),
+    "10": ("我女儿的生日是3月12日。", ["生日", "3月12日"]),
+    "12": ("他上周辞职了。", ["辞职"]),
+    "13": ("他上周辞职了。", ["辞职"]),
+    "17": ("我以前养过一只猫。", ["养过", "猫"]),
+}
+for s in SAMPLES:
+    n = s["id"].split("_")[1]
+    if n not in SPAN_RULES and n != "11":
+        continue
+    branches = copy.deepcopy(s["expect"].get("alternatives", [s["expect"]]))
+    expanded = []
+    for b in branches:
+        if n in SPAN_RULES:
+            c = b["candidates"][0]
+            if isinstance(c["relation"], list) and "fact" in c["relation"]:
+                dedicated = copy.deepcopy(b)
+                dedicated["candidates"][0]["relation"] = [r for r in c["relation"] if r != "fact"]
+                expanded.append(dedicated)
+                c["relation"] = "fact"
+            if c["relation"] == "fact":
+                window, required = SPAN_RULES[n]
+                c["value"] = {"window": window, "required": required}
+        if n == "11":
+            for r in b["memory_requests"]:
+                r["deadline"]["quote"] = {"window": "只保留到明天", "required": ["明天"]}
+        if n == "10":
+            c["times"] = []
+            recurring = copy.deepcopy(b)
+            recurring["candidates"][0]["times"] = [t("event", "3月12日", {"kind": "recurring"})]
+            expanded.append(recurring)
+        expanded.append(b)
+    s["expect"] = {"alternatives": expanded} if len(expanded) > 1 else expanded[0]
+    s["label_revision"] = "AF317"
+    s["label_status"] = "reviewed"
+    s["note"] = (s.get("note") or "") + (" AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。" if n != "11" else " AF317：期限引用可在只保留到明天窗口内包含明天，角色与解释不变。")
+    if n == "10":
+        s["note"] += " 生日月日作为属性可times=[]，或event/recurring；value必须同时保留生日属性与日期，拒绝凭空年份、validity和retention。"
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     for s in SAMPLES:

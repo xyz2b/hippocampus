@@ -260,6 +260,106 @@ fn manifest(groups: &[Vec<Case>]) -> Value {
                 "input_token_bound":input_bound(c),"upper_nano_cny":upper(c),
                 "labels":hippocampus::recall_models::fingerprint(&json!({"expect":c.sample["expect"],"label_revision":c.sample["label_revision"],"observation_only":c.sample["observation_only"]}))})).collect::<Vec<_>>() })).collect::<Vec<_>>()})
 }
+// Label amendments never change authorization, routing, or cost accounting.
+fn refreeze(root: &Path, frozen: &Value, groups: &[Vec<Case>]) -> Result<Value, String> {
+    let path = root.join("manifest.json");
+    let old = read(&path, Value::Null)?;
+    if old["version"] != "af302.v1" {
+        return Err("AF313 requires an existing AF302 manifest".into());
+    }
+    let without_labels = |m: &Value| -> Result<Value, String> {
+        let mut m = m.clone();
+        for p in m["profiles"].as_array_mut().ok_or("invalid profiles")? {
+            for slot in p["slots"].as_array_mut().ok_or("invalid slots")? {
+                slot.as_object_mut()
+                    .ok_or("invalid slot")?
+                    .remove("labels")
+                    .ok_or("missing label digest")?;
+            }
+        }
+        Ok(m)
+    };
+    if without_labels(&old)? != without_labels(frozen)? {
+        return Err(
+            "AF313 only permits label changes; request/config/slot/rate/budget changed".into(),
+        );
+    }
+    let changes: Vec<_> = items(&old["profiles"]).iter().zip(items(&frozen["profiles"]))
+        .flat_map(|(a,b)| items(&a["slots"]).iter().zip(items(&b["slots"])).filter_map(|(x,y)| {
+            if x["labels"] == y["labels"] { return None; }
+            let c = groups.iter().flatten().find(|c| c.model.label == b["id"].as_str().unwrap()
+                && campaign_slot(c) == y["slot"]).unwrap();
+            Some(json!({"profile":b["id"],"slot":y["slot"],"before_labels":x["labels"],
+                "after_labels":y["labels"],"before_label_revision":"not stored in original manifest",
+                "after_label_revision":c.sample["label_revision"]}))
+        })).collect();
+    if changes.iter().any(|c| c["after_label_revision"] != "AF311") {
+        return Err("AF313 amendment must be AF311".into());
+    }
+    let audit = json!({"amendment":"AF311","sent":0,"changes":changes,
+        "before_manifest":hippocampus::recall_models::fingerprint(&old),
+        "after_manifest":hippocampus::recall_models::fingerprint(frozen)});
+    if !changes.is_empty() {
+        let backup = root.join("manifest.before-af311.json");
+        let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
+        if backup.exists() {
+            if std::fs::read(&backup).map_err(|e| e.to_string())? != bytes {
+                return Err("AF313 backup already exists with different content".into());
+            }
+        } else {
+            std::fs::copy(&path, &backup).map_err(|e| e.to_string())?;
+        }
+        m15_write_json(&root.join("label-amendment-af311.json"), &audit)?;
+        m15_write_json(&path, frozen)?;
+    }
+    Ok(audit)
+}
+fn selected(c: &Case, repeat: usize, stage: Option<&str>) -> bool {
+    c.repeat == repeat && stage.is_none_or(|stage| c.stage == stage)
+}
+fn selection(stage: Option<&str>, repeat: usize) -> Result<Option<&str>, String> {
+    match (stage, repeat) {
+        (Some("w1"), _) => Ok(Some("w1")),
+        (None, 1) => Ok(None),
+        _ => Err(
+            "AF313 repeat 2 requires EVAL_AF302_STAGE=w1; other stages are not authorized".into(),
+        ),
+    }
+}
+fn combined_w1(root: &Path, groups: &[Vec<Case>]) -> Result<Value, String> {
+    let mut profiles = Vec::new();
+    for g in groups {
+        let cases: Vec<_> = g.iter().filter(|c| c.stage == "w1").cloned().collect();
+        // Reload strictly from disk after this run; never enable transport retries here.
+        let mut cases = cases;
+        for c in &mut cases {
+            let options = c.provider.clone().map(|provider| ProviderOptions {
+                provider,
+                campaign: c.campaign.clone().unwrap(),
+            });
+            *c = case_from_request_with_provider(
+                c.stage.clone(),
+                c.sample.clone(),
+                c.path.parent().unwrap(),
+                &c.model,
+                c.repeat,
+                c.request.clone(),
+                options.as_ref(),
+                c.timeout_seconds,
+            )?;
+        }
+        compare_mark_interrupted(&mut cases)?;
+        let result = evaluate_cases(&cases, None, &mut |_| panic!("AF313 offline report sent"))?;
+        let rows = items(&result["results"]);
+        profiles.push(
+            json!({"profile":g[0].model.label,"slots":40,"stages":summaries(rows),
+            "results":rows,"cost":compare_cost(&g[0].model.label,rows)}),
+        );
+    }
+    let report = json!({"label_revision":"AF311","sent_calls":0,"profiles":profiles});
+    m15_write_json(&root.join("report-w1-combined-af311.json"), &report)?;
+    Ok(report)
+}
 fn summaries(rows: &[Value]) -> Value {
     json!(["w1","w3"].map(|stage| {
         let selected:Vec<_>=rows.iter().filter(|r|r["stage"]==stage).cloned().collect();
@@ -294,6 +394,8 @@ pub fn run() -> Result<(), String> {
         Some("2") => 2,
         _ => return Err("repeat must be 1 or 2".into()),
     };
+    let stage_var = var("EVAL_AF302_STAGE");
+    let stage = selection(stage_var.as_deref(), repeat)?;
     let dry = var("EVAL_DRY_RUN").as_deref() == Some("1");
     let record = match var("EVAL_RECORD").as_deref() {
         None | Some("0") => false,
@@ -309,6 +411,16 @@ pub fn run() -> Result<(), String> {
     let mut groups = plan(root, var)?;
     let frozen = manifest(&groups);
     let path = root.join("manifest.json");
+    if let Some(amendment) = var("EVAL_AF302_REFREEZE") {
+        if amendment != "AF311" || !dry || record {
+            return Err("AF313 refreeze requires AF311, EVAL_DRY_RUN=1 and no EVAL_RECORD".into());
+        }
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&refreeze(root, &frozen, &groups)?).unwrap()
+        );
+        return Ok(());
+    }
     if read(&path, frozen.clone())? != frozen {
         return Err("AF302 manifest changed; no sends permitted".into());
     }
@@ -332,33 +444,34 @@ pub fn run() -> Result<(), String> {
     let mut summary = Vec::new();
     for g in &groups {
         let (i, o, _) = rates(&g[0].model.label);
-        summary.push(json!({"profile":g[0].model.label,"slots":g.len(),"selected":40,
-            "pending":g.iter().filter(|c|c.repeat==repeat && matches!(c.replay,Replay::Missing) && (ledger.get(key(c)).is_none() || ledger[key(c)]["state"]=="transport_failed")).count(),
+        summary.push(json!({"profile":g[0].model.label,"slots":g.len(),"selected":g.iter().filter(|c|selected(c,repeat,stage)).count(),
+            "pending":g.iter().filter(|c|selected(c,repeat,stage) && matches!(c.replay,Replay::Missing) && (ledger.get(key(c)).is_none() || ledger[key(c)]["state"]=="transport_failed")).count(),
             "rejected":g.iter().filter(|c|matches!(c.replay,Replay::Rejected(_))).count(),
-            "worst_cny":g.iter().map(upper).sum::<u64>() as f64/1e9,
-            "scenario_cny":g.iter().map(|c|input_bound(c)/4*i+3000*o).sum::<u64>() as f64/1e9,
+            "worst_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(upper).sum::<u64>() as f64/1e9,
+            "scenario_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(|c|input_bound(c)/4*i+3000*o).sum::<u64>() as f64/1e9,
             "fingerprint":hippocampus::recall_models::fingerprint(&manifest(&[g.clone()]))}));
     }
-    let dry_report = json!({"campaign":"AF302","fixed_slots":320,"selected_repeat":repeat,"selected_slots":160,
+    let dry_report = json!({"campaign":"AF302","fixed_slots":320,"selected_repeat":repeat,"selected_stage":stage,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
         "sent":0,"cap_cny":20,"charged_cny":total(&ledger)? as f64/1e9,"profiles":summary,
         "estimate_note":"scenario only: input bound / 4, output 3000 per call, no cache; not measured usage",
         "manifest_fingerprint":hippocampus::recall_models::fingerprint(&frozen)});
+    let suffix = stage.map(|s| format!("-{s}")).unwrap_or_default();
     m15_write_json(
-        &root.join(format!("plan-repeat-{repeat}.json")),
+        &root.join(format!("plan-repeat-{repeat}{suffix}.json")),
         &dry_report,
     )?;
     println!("{}", serde_json::to_string_pretty(&dry_report).unwrap());
     if dry {
         return Ok(());
     }
-    let selected: Vec<_> = groups
+    let selected_cases: Vec<_> = groups
         .iter()
         .flatten()
-        .filter(|c| c.repeat == repeat)
+        .filter(|c| selected(c, repeat, stage))
         .cloned()
         .collect();
     let keys = if record {
-        smoke_credentials(&selected, var)?
+        smoke_credentials(&selected_cases, var)?
     } else {
         Default::default()
     };
@@ -370,7 +483,7 @@ pub fn run() -> Result<(), String> {
     let mut reports = Vec::new();
     for g in &groups {
         let mut rows = Vec::new();
-        for original in g.iter().filter(|c| c.repeat == repeat) {
+        for original in g.iter().filter(|c| selected(c, repeat, stage)) {
             let mut c = original.clone();
             if ledger.get(key(&c)).is_some()
                 && ledger[key(&c)]["state"] != "transport_failed"
@@ -419,9 +532,12 @@ pub fn run() -> Result<(), String> {
         reports.push(json!({"profile":g[0].model.label,"charged_cny":g.iter().filter_map(|c|ledger[key(c)]["charged_nano_cny"].as_u64()).sum::<u64>() as f64/1e9,"stages":summaries(&rows),"results":rows,"cost":compare_cost(&g[0].model.label,&rows)}));
     }
     m15_write_json(
-        &root.join(format!("report-repeat-{repeat}.json")),
-        &json!({"profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
+        &root.join(format!("report-repeat-{repeat}{suffix}.json")),
+        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":"AF311","profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
     )?;
+    if stage == Some("w1") {
+        combined_w1(root, &groups)?;
+    }
     Ok(())
 }
 #[test]
@@ -622,4 +738,137 @@ fn af308_migration_checks_recording_and_backs_up_exact_ledger() {
         &json!({"state":"responded","error":"error sending request","usage":{"input_tokens":1}})
     ));
     std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn af313_refreeze_only_labels_keeps_backup_budget_and_request_identity() {
+    let temp = TempRecords::new();
+    let mut groups = plan(&temp.0, |k| {
+        k.ends_with("BASE_URL")
+            .then(|| "https://example.test/v1".into())
+    })
+    .unwrap();
+    // This tests the historical AF311 amendment, independent of current sample labels.
+    for c in groups.iter_mut().flatten() {
+        c.sample["label_revision"] = json!("AF311");
+    }
+    let frozen = manifest(&groups);
+    let mut old = frozen.clone();
+    for p in old["profiles"].as_array_mut().unwrap() {
+        for s in p["slots"].as_array_mut().unwrap() {
+            if s["slot"]["id"].as_str().unwrap().starts_with("w1_05") {
+                s["labels"] = json!("old AF310 label digest");
+            }
+        }
+    }
+    m15_write_json(&temp.0.join("manifest.json"), &old).unwrap();
+    let original = std::fs::read(temp.0.join("manifest.json")).unwrap();
+    let ledger = json!({"prior":{"charged_nano_cny":4_603_130_430u64,"state":"settled"}});
+    m15_write_json(&temp.0.join("cost-ledger.json"), &ledger).unwrap();
+    let ledger_bytes = std::fs::read(temp.0.join("cost-ledger.json")).unwrap();
+    for pointer in [
+        "/budget_nano_cny",
+        "/slots",
+        "/profiles/0/effort",
+        "/profiles/0/rates_nano_cny_per_token/0",
+        "/profiles/0/slots/0/request",
+        "/profiles/0/slots/0/slot/repeat",
+        "/profiles/0/slots/0/input_token_bound",
+    ] {
+        let mut changed = frozen.clone();
+        *changed.pointer_mut(pointer).unwrap() = json!("changed");
+        assert!(refreeze(&temp.0, &changed, &groups).is_err(), "{pointer}");
+        assert_eq!(
+            std::fs::read(temp.0.join("manifest.json")).unwrap(),
+            original
+        );
+        assert!(!temp.0.join("manifest.before-af311.json").exists());
+    }
+    let report = refreeze(&temp.0, &frozen, &groups).unwrap();
+    assert_eq!(items(&report["changes"]).len(), 8);
+    assert!(
+        items(&report["changes"])
+            .iter()
+            .all(|c| c["after_label_revision"] == "AF311")
+    );
+    assert_eq!(
+        std::fs::read(temp.0.join("manifest.before-af311.json")).unwrap(),
+        original
+    );
+    assert_eq!(
+        std::fs::read(temp.0.join("cost-ledger.json")).unwrap(),
+        ledger_bytes
+    );
+    assert_eq!(
+        read(&temp.0.join("manifest.json"), Value::Null).unwrap(),
+        frozen
+    );
+    assert!(items(&refreeze(&temp.0, &frozen, &groups).unwrap()["changes"]).is_empty());
+    let mut near_cap = ledger;
+    near_cap["other"] = json!({"charged_nano_cny":CAP-total(&near_cap).unwrap()});
+    assert!(!reserve(&mut near_cap, &groups[0][0]).unwrap());
+}
+
+#[test]
+fn af313_w1_second_repeat_has_80_slots_and_combined_report_rescores_both() {
+    let temp = TempRecords::new();
+    let groups = plan(&temp.0, |k| {
+        k.ends_with("BASE_URL")
+            .then(|| "https://example.test/v1".into())
+    })
+    .unwrap();
+    assert!(selection(None, 2).is_err());
+    assert!(selection(Some("w3"), 2).is_err());
+    let stage = selection(Some("w1"), 2).unwrap();
+    let chosen: Vec<_> = groups
+        .iter()
+        .flatten()
+        .filter(|c| selected(c, 2, stage))
+        .collect();
+    assert_eq!(chosen.len(), 80);
+    assert!(chosen.iter().all(|c| c.stage == "w1" && c.repeat == 2));
+    let g = &groups[0];
+    compare_freeze(g).unwrap();
+    // A first-repeat recording is rescored using today's labels; old reports are not read.
+    for repeat in [1, 2] {
+        let c = g
+            .iter()
+            .find(|c| c.repeat == repeat && c.sample["id"].as_str().unwrap().starts_with("w1_05"))
+            .unwrap();
+        let output = fake_w1(&c.sample);
+        let mut recorded_case = c.clone();
+        if repeat == 1 {
+            // Only the old label differs; requests and outputs remain strictly reusable.
+            recorded_case.sample["expect"] =
+                json!({"candidate_count":0,"candidates":[],"memory_requests":[]});
+        }
+        let recorded = evaluate_cases(&[recorded_case], Some(80), &mut |_| {
+            Ok(fake_envelope(output.clone()))
+        })
+        .unwrap();
+        assert_eq!(
+            recorded["results"][0]["status"],
+            if repeat == 1 { "失败" } else { "通过" }
+        );
+    }
+    let report = combined_w1(&temp.0, &groups).unwrap();
+    assert_eq!(report["sent_calls"], 0);
+    for p in items(&report["profiles"]) {
+        assert_eq!(items(&p["results"]).len(), 40);
+        assert!(items(&p["results"]).iter().all(|r| r["stage"] == "w1"));
+    }
+    assert_eq!(
+        items(&report["profiles"][0]["results"])
+            .iter()
+            .filter(|r| r["status"] == "通过")
+            .count(),
+        2
+    );
+    assert_eq!(logs(g[0].campaign.as_ref().unwrap()).unwrap().len(), 2);
+    assert!(
+        logs(g[0].campaign.as_ref().unwrap())
+            .unwrap()
+            .iter()
+            .all(|l| l["slot"]["stage"] == "w1")
+    );
 }

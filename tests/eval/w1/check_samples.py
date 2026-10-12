@@ -34,8 +34,24 @@ def expectation_branches(e):
                        candidate_count=len(branch["candidates"]) + 1)
 
 
+def check_span(rule, text, where, errors):
+    window, required = rule.get("window"), rule.get("required")
+    if (set(rule) != {"window", "required"} or not isinstance(window, str)
+            or not window.strip() or text.count(window) != 1
+            or not isinstance(required, list) or not required
+            or any(not isinstance(c, str) or not c.strip() or c not in window for c in required)):
+        errors.append(f"{where}: invalid/ambiguous span rule")
+
+
+
 def check_candidate(c, text, where, relations, entities, errors):
     def quote(q, field):
+        if isinstance(q, dict):
+            if field != "times":
+                errors.append(f"{where}.{field}: span rule not allowed")
+            else:
+                check_span(q, text, f"{where}.{field}", errors)
+            return
         for value in options(q):
             if value is not None and value not in text:
                 errors.append(f"{where}.{field}: {value!r} not in source text")
@@ -43,7 +59,14 @@ def check_candidate(c, text, where, relations, entities, errors):
     for sentence in options(c.get("sentence")):
         quote(sentence, "sentence")
     # contracts 1.5：通用 fact 值须是完整 sentence 内的连续原文片段。
-    if "fact" in options(c["relation"]) and c.get("kind", "assertion") == "assertion":
+    if isinstance(c.get("value"), dict):
+        if c["relation"] != "fact" or c.get("kind", "assertion") != "assertion":
+            errors.append(f"{where}: span rule requires fact assertion only")
+        check_span(c["value"], text, f"{where}.value", errors)
+        window = c["value"].get("window")
+        if not isinstance(window, str) or not any(isinstance(s, str) and window in s for s in options(c.get("sentence"))):
+            errors.append(f"{where}: window outside sentence")
+    elif "fact" in options(c["relation"]) and c.get("kind", "assertion") == "assertion":
         if any(not isinstance(v, str) or not v.strip() or not any(
                 isinstance(sentence, str) and v in sentence for sentence in options(c.get("sentence")))
                for v in options(c.get("value"))):
@@ -89,8 +112,13 @@ def check_w1(s, errors):
         if any(k >= e["candidate_count"] for k in r["candidate_indices"]):
             errors.append(f"memory_requests[{n}] index out of range")
         d = r.get("deadline")
-        if d is not None and (d["role"] != "retention" or d["quote"] not in text):
-            errors.append(f"memory_requests[{n}].deadline")
+        if d is not None:
+            if isinstance(d["quote"], dict):
+                check_span(d["quote"], text, f"memory_requests[{n}].deadline", errors)
+            elif any(q not in text for q in options(d["quote"])):
+                errors.append(f"memory_requests[{n}].deadline quote")
+            if d["role"] != "retention" or d["interp"]["kind"] not in TIME_KINDS:
+                errors.append(f"memory_requests[{n}].deadline role/kind")
         if r["kind"] != "retention" and d is not None:
             errors.append(f"memory_requests[{n}] non-retention with deadline")
 

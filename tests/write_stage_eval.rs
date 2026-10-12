@@ -66,6 +66,26 @@ fn matches(actual: &Value, expected: &Value) -> bool {
 // 不折叠内部标点，不缩短目标指代，不改时间、限定语或专用关系的值。
 fn quote_matches(actual: &Value, expected: &Value, field: &str, source: &str) -> bool {
     match (actual, expected) {
+        (Value::String(a), Value::Object(rule))
+            if matches!(field, "fact_value" | "times.quote" | "deadline.quote") =>
+        {
+            let Some(window) = rule.get("window").and_then(Value::as_str) else {
+                return false;
+            };
+            let Some(required) = rule.get("required").and_then(Value::as_array) else {
+                return false;
+            };
+            rule.len() == 2
+                && !a.trim().is_empty()
+                && !window.trim().is_empty()
+                && source.match_indices(window).count() == 1
+                && window.match_indices(a.as_str()).count() == 1
+                && !required.is_empty()
+                && required.iter().all(|core| {
+                    core.as_str()
+                        .is_some_and(|core| !core.trim().is_empty() && a.contains(core))
+                })
+        }
         (Value::Array(a), Value::Array(e)) => {
             let mut used = vec![false; a.len()];
             a.len() == e.len()
@@ -5937,6 +5957,8 @@ fn fake_w1(sample: &Value) -> Value {
     let scalar = |v: &Value| {
         if v.is_array() {
             v[0].clone()
+        } else if v.get("window").is_some() {
+            v["window"].clone()
         } else {
             v.clone()
         }
@@ -5958,9 +5980,7 @@ fn fake_w1(sample: &Value) -> Value {
                 "polarity",
                 "uncertainty",
             ] {
-                if c[key].is_array() {
-                    c[key] = c[key][0].clone();
-                }
+                c[key] = scalar(&c[key]);
             }
             for time in c["times"].as_array_mut().unwrap() {
                 for field in ["role", "quote"] {
@@ -5975,7 +5995,11 @@ fn fake_w1(sample: &Value) -> Value {
             "object": if r["target_object"].is_array() { &r["target_object"][0] } else { &r["target_object"] },
             "candidate_indices": r["candidate_indices"],
             "quote": adapter::quote(&scalar(r.get("target_quote").unwrap_or(&r["quote"])))
-        }, "deadline": adapter::time(&r["deadline"])
+        }, "deadline": if r["deadline"].is_null() {Value::Null} else {
+            let mut deadline = r["deadline"].clone();
+            deadline["quote"] = scalar(&deadline["quote"]);
+            adapter::time(&deadline)
+        }
     })).collect();
     json!({"candidates": candidates, "memory_requests": requests})
 }
@@ -11528,6 +11552,154 @@ fn af311_w3_verdict_corrections_do_not_accept_both_verdicts() {
         output["reviews"][0]["verdict"] = json!(rejected);
         assert_eq!(
             score("w3", sample, Some(&output.to_string()))["status"],
+            "失败"
+        );
+    }
+}
+
+#[test]
+fn af317_span_rules_are_bounded_mechanical_and_not_dedicated_values() {
+    let source = "我打算下个月开始学日语。另一个人也学日语。";
+    let rule = json!({"window":"我打算下个月开始学日语。","required":["学日语"]});
+    assert!(quote_matches(
+        &json!("开始学日语"),
+        &rule,
+        "fact_value",
+        source
+    ));
+    for value in ["日语", "学", "学日语。另一个人也学日语"] {
+        assert!(!quote_matches(&json!(value), &rule, "fact_value", source));
+    }
+    assert!(!quote_matches(&json!("学日语"), &rule, "value", source));
+    assert!(!quote_matches(
+        &json!("学日语"),
+        &json!({"window":"学日语","required":[]}),
+        "fact_value",
+        source
+    ));
+    assert!(!quote_matches(
+        &json!("学日语"),
+        &json!({"window":"学日语","required":["学日语"]}),
+        "fact_value",
+        source
+    ));
+}
+
+#[test]
+fn af317_fact_fragments_keep_subject_qualifiers_and_w2_checks() {
+    let all = samples("w1");
+    for (prefix, valid, invalid) in [("w1_06", "特别怕狗", "狗"), ("w1_07", "开始学日语", "日语")]
+    {
+        let s = all
+            .iter()
+            .find(|s| s["id"].as_str().unwrap().starts_with(prefix))
+            .unwrap();
+        let mut output = fake_w1(s);
+        for (value, status) in [(valid, "通过"), (invalid, "失败")] {
+            output["candidates"][0]["value"] =
+                json!({"kind":"text","text":value,"quote":{"text":value}});
+            assert_eq!(score("w1", s, Some(&output.to_string()))["status"], status);
+        }
+        output["candidates"][0]["value"] =
+            json!({"kind":"text","text":valid,"quote":{"text":"not in source"}});
+        let r = score("w1", s, Some(&output.to_string()));
+        assert_eq!(r["status"], "失败");
+        assert!(
+            items(&r["fields"])
+                .iter()
+                .any(|f| f["field"] == "w2.candidates[0]" && f["passed"] == false)
+        );
+    }
+    let s = all
+        .iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_05"))
+        .unwrap();
+    for (field, wrong) in [
+        ("uncertainty", Value::Null),
+        ("conditions", json!([])),
+        ("subject", json!({"entity_id":"e-daughter"})),
+        ("polarity", json!("negate")),
+    ] {
+        let mut output = fake_w1(s);
+        output["candidates"][0][field] = wrong;
+        assert_eq!(
+            score("w1", s, Some(&output.to_string()))["status"],
+            "失败",
+            "{field}"
+        );
+    }
+    let s = all
+        .iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_17"))
+        .unwrap();
+    let mut output = fake_w1(s);
+    output["candidates"][0]["value"] = json!({"kind":"text","text":"猫","quote":{"text":"猫"}});
+    assert_eq!(score("w1", s, Some(&output.to_string()))["status"], "通过");
+    output["candidates"][0]["relation"] = json!("fact");
+    assert_eq!(score("w1", s, Some(&output.to_string()))["status"], "失败");
+}
+
+#[test]
+fn af317_retention_window_does_not_allow_outside_quotes_or_changed_time() {
+    let sample = samples("w1")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_11"))
+        .unwrap();
+    for quote in ["明天", "到明天", "只保留到明天"] {
+        let mut output = fake_w1(&sample);
+        output["memory_requests"][0]["deadline"]["quote"]["text"] = json!(quote);
+        assert_eq!(
+            score("w1", &sample, Some(&output.to_string()))["status"],
+            "通过"
+        );
+    }
+    for (field, value) in [
+        ("quote", json!({"text":"这个手机号只保留到明天"})),
+        ("role", json!("event")),
+        ("interp", json!({"kind":"relative","unit":"day","offset":2})),
+    ] {
+        let mut output = fake_w1(&sample);
+        output["memory_requests"][0]["deadline"][field] = value;
+        assert_eq!(
+            score("w1", &sample, Some(&output.to_string()))["status"],
+            "失败",
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn af317_birthday_requires_property_and_explicit_time_branches() {
+    let sample = samples("w1")
+        .into_iter()
+        .find(|s| s["id"].as_str().unwrap().starts_with("w1_10"))
+        .unwrap();
+    for branch in expectation_branches(&sample["expect"]) {
+        let mut fixture = sample.clone();
+        fixture["expect"] = branch;
+        let mut output = fake_w1(&fixture);
+        assert_eq!(
+            score("w1", &sample, Some(&output.to_string()))["status"],
+            "通过"
+        );
+        output["candidates"][0]["value"] =
+            json!({"kind":"text","text":"3月12日","quote":{"text":"3月12日"}});
+        assert_eq!(
+            score("w1", &sample, Some(&output.to_string()))["status"],
+            "失败"
+        );
+    }
+    for (role, interp) in [
+        ("validity", json!({"kind":"recurring"})),
+        ("retention", json!({"kind":"recurring"})),
+        ("event", json!({"kind":"date","date":"2026-03-12"})),
+        ("event", json!({"kind":"relative","unit":"day","offset":1})),
+    ] {
+        let mut output = fake_w1(&sample);
+        output["candidates"][0]["times"] =
+            json!([{"role":role,"quote":{"text":"3月12日"},"anchor":"said_on","interp":interp}]);
+        assert_eq!(
+            score("w1", &sample, Some(&output.to_string()))["status"],
             "失败"
         );
     }

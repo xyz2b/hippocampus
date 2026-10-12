@@ -741,8 +741,8 @@ cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 EVAL_AF302=1 EVAL_AF302_REPEAT=1 EVAL_RECORD=320 \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 
-# 人工检查第一遍后续第二遍，复用同一个 manifest / 全局费用账本。
-EVAL_AF302=1 EVAL_AF302_REPEAT=2 EVAL_RECORD=320 \
+# AF313：第二遍仅 W1，先按下方步骤在本机重冻结标签。
+EVAL_AF302=1 EVAL_AF302_REPEAT=2 EVAL_AF302_STAGE=w1 EVAL_RECORD=320 \
 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 
 # 同一命令可续跑；EVAL_RECORD=0 仅回放所选遍。
@@ -778,3 +778,48 @@ AF302 repeat-1 离线重评另存 `target/eval-providers/compare-af302/reports-a
 读取匹配原请求指纹的最后一次录制，保留机械核验，不发送请求。
 标签不进入请求指纹；AF302 manifest 另冻结标签摘要，因此旧录制入口会拒绝新标签下续录。
 本轮不改 manifest/额度/账本，离线重评不代表重新授权续录。
+
+### AF313：AF311 标签重冻结与第二遍仅 W1
+
+必须在 Claude 本机、使用原 AF302 端点环境执行，不在沙箱生成/替换 manifest。
+重冻结仅允许各槽位 labels 摘要变化，并要求变化样本的 label_revision=AF311；
+请求、槽位顺序、档位配置、费率、输入费用上界、总预算任一不同均拒绝。
+保存原字节备份 `manifest.before-af311.json` 和 `label-amendment-af311.json` 审计。
+原 manifest 只有标签摘要，没有旧 label_revision 明文，审计如实标未知并保留旧摘要。
+成功后重复重冻结为无变化，不覆盖备份。重冻结要求干跑且禁止同时发送。
+
+本机依次执行（zsh 加载 ~/.zshrc；不打印密钥）：
+环境变量仍为 HUOSHAN_DEEPSEEK_BASE_URL/HUOSHAN_DEEPSEEK_API_KEY、
+OPENAI_BASE_URL/OPENAI_API_KEY、ANTHROPIC_BASE_URL/ANTHROPIC_API_KEY。
+勿覆盖模型/端点/档位；旧端点变量不同会明确拒绝，不自动迁移指纹。
+
+```sh
+# 1. 仅标签重冻结：校验全部320槽，备份并更新manifest，不发送。
+zsh -ic 'unset EVAL_RECORD; EVAL_AF302=1 EVAL_AF302_REFREEZE=AF311 EVAL_AF302_REPEAT=1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+
+# 2. 第二遍 W1 干跑：应为四档各20，共80选中槽。
+zsh -ic 'unset EVAL_RECORD EVAL_AF302_REFREEZE; EVAL_AF302=1 EVAL_AF302_REPEAT=2 EVAL_AF302_STAGE=w1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+
+# 3. 发送/续跑所选80槽，共用原20元预算；320是既有累计槽位身份。
+zsh -ic 'unset EVAL_DRY_RUN EVAL_AF302_REFREEZE; EVAL_AF302=1 EVAL_AF302_REPEAT=2 EVAL_AF302_STAGE=w1 EVAL_RECORD=320 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+```
+
+第二遍未指定 w1 或指定 w3 均拒绝。W3 不发送、不预留费用、不占本次槽；
+原320槽manifest及每档80槽授权身份保持不变。已有结算/在途预留继续纳入20元上限，
+传输失败重试沿用 AF308。干跑金额只估算本轮选择，历史实际费用另列 charged_cny。
+
+输出 `plan-repeat-2-w1.json`、`report-repeat-2-w1.json`；
+另生成 `report-w1-combined-af311.json`，严格重读两遍 W1 录制并按当前 AF311 标签评分，
+每档40槽，缺录制/传输失败如实列出，绝不为汇总补发第一遍缺口。
+保留第一遍旧报告与 reports-af311。合并报告自动分不是人工确认。
+
+### AF317：结构性 W1 标签离线重评
+
+W1 部分标签升级 AF317：允许断言窗口＋必含谓词/属性核心，见 W1 README。
+只在 fact value、显式 times.quote/deadline.quote 中启用连续包含规则，不用于专用关系值；
+其他机械核验和完整分支评分保持。W3 标签不变，生产 DS-Pro 配置不变。
+
+AF302 两遍 W1（每档40槽）及第一遍 W3（每档20槽，其中w3_19观察）的离线报告：
+`target/eval-providers/compare-af302/reports-af317/`。
+请求指纹不变，使用原录制严格重评；缺录制与传输失败不计通过，不补发。
+标签摘要变化仍会触发原 manifest 的续录保护；本次不重冻结、不改账本，不代表新调用授权。

@@ -96,7 +96,12 @@
       "subject": "self",
       "relation": "fact",
       "memory_type": "episode",
-      "value": "我上个月刚搬到成都",
+      "value": {
+       "window": "我上个月刚搬到成都",
+       "required": [
+        "搬到成都"
+       ]
+      },
       "sentence": [
        "我上个月刚搬到成都，",
        "我上个月刚搬到成都，你知道那边哪里的火锅好吃吗？"
@@ -128,6 +133,6 @@
  "must_not": [
   "为“哪里的火锅好吃”生成 user_statement 候选"
  ],
- "note": "AF311：搬家经历允许完整 fact/episode 分支；专用 lives_in 值与 event 时间规则不放宽。",
- "label_revision": "AF311"
+ "note": "AF311：搬家经历允许完整 fact/episode 分支；专用 lives_in 值与 event 时间规则不放宽。 AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。",
+ "label_revision": "AF317"
 }

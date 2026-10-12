@@ -89,7 +89,12 @@
       ],
       "deadline": {
        "role": "retention",
-       "quote": "明天",
+       "quote": {
+        "window": "只保留到明天",
+        "required": [
+         "明天"
+        ]
+       },
        "interp": {
         "kind": "relative",
         "unit": "day",
@@ -113,7 +118,12 @@
       "candidate_indices": [],
       "deadline": {
        "role": "retention",
-       "quote": "明天",
+       "quote": {
+        "window": "只保留到明天",
+        "required": [
+         "明天"
+        ]
+       },
        "interp": {
         "kind": "relative",
         "unit": "day",
@@ -128,6 +138,6 @@
  "must_not": [
   "deadline.role 为 event"
  ],
- "note": "AF311：允许一候选及其绑定，或零候选+source retention 完整分支；空 indices 不代表全部旧事实。",
- "label_revision": "AF311"
+ "note": "AF311：允许一候选及其绑定，或零候选+source retention 完整分支；空 indices 不代表全部旧事实。 AF317：期限引用可在只保留到明天窗口内包含明天，角色与解释不变。",
+ "label_revision": "AF317"
 }

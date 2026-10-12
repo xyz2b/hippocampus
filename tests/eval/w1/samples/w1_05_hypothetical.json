@@ -63,10 +63,12 @@
       "subject": "self",
       "relation": "fact",
       "memory_type": "fact",
-      "value": [
-       "如果我以后去深圳工作，我会考虑租房。",
-       "我会考虑租房"
-      ],
+      "value": {
+       "window": "如果我以后去深圳工作，我会考虑租房。",
+       "required": [
+        "租房"
+       ]
+      },
       "sentence": "如果我以后去深圳工作，我会考虑租房。",
       "polarity": "affirm",
       "uncertainty": [
@@ -91,10 +93,12 @@
       "subject": "self",
       "relation": "fact",
       "memory_type": "fact",
-      "value": [
-       "如果我以后去深圳工作，我会考虑租房。",
-       "我会考虑租房"
-      ],
+      "value": {
+       "window": "如果我以后去深圳工作，我会考虑租房。",
+       "required": [
+        "租房"
+       ]
+      },
       "sentence": "如果我以后去深圳工作，我会考虑租房。",
       "polarity": "affirm",
       "uncertainty": [
@@ -125,6 +129,6 @@
   "丢失条件或“考虑”",
   "生成 works_at 候选"
  ],
- "note": "AF311：条件中的以后可不另列租房时间；若列则 event/unknown，考虑与条件必须保留。",
- "label_revision": "AF311"
+ "note": "AF311：条件中的以后可不另列租房时间；若列则 event/unknown，考虑与条件必须保留。 AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。",
+ "label_revision": "AF317"
 }
