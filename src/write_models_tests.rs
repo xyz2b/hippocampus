@@ -4360,3 +4360,53 @@ fn af193_frozen_w1_keeps_its_production_identity_on_a_new_operation() {
     assert_eq!(before, store.read().unwrap().sources[&key].result);
     assert_eq!(sent.lock().unwrap().len(), 2);
 }
+
+#[test]
+fn af326_w4_provider_keeps_existing_w1_w3_checkpoints() {
+    let db = Db::new();
+    let (key, upstream, _) = w4_case(&db, false);
+    let (provider, requests) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+        ],
+    );
+    let (claim, _, _, _) = ready_w4(&db, &key, &provider);
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    let config: crate::model_provider::ProviderConfig = serde_json::from_value(json!({
+        "protocol":"openai_responses", "base_url_env":"OPENAI_BASE_URL", "api_key_env":"OPENAI_API_KEY"
+    })).unwrap();
+    let mixed = provider
+        .client
+        .clone()
+        .with_role_providers([("w4".into(), config)].into(), None);
+    for (name, stage, model, schema) in [
+        ("w1", ModelStage::W1, &provider.models.w1, w1_schema()),
+        ("w3", ModelStage::W3, &provider.models.w3, w3_schema()),
+    ] {
+        let prior = &stages[name]["binding"];
+        assert!(prior.get("provider").is_none());
+        let mut binding = prior.clone();
+        if let Some(identity) = mixed
+            .stage_provider_binding_with(stage, model, provider.models.effort(name), schema, |_| {
+                panic!("unconfigured writer binding must not read provider env")
+            })
+            .unwrap()
+        {
+            binding["provider"] = identity;
+        }
+        assert_eq!(
+            serde_json::to_vec(prior).unwrap(),
+            serde_json::to_vec(&binding).unwrap()
+        );
+        assert!(
+            crate::commit::w4_load_model_stage(&db.open(), &claim, name, &binding)
+                .unwrap()
+                .is_some(),
+            "existing checkpoint must load, not needs_rejudge"
+        );
+    }
+    assert_eq!(requests.lock().unwrap().len(), 2);
+}

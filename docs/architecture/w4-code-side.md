@@ -172,6 +172,30 @@ W1/W3 阶段绑定新增 `stage_identity`（提示词和 schema 的内容摘要�
 - 批处理在 `pmr-mcp` 创建 `Arc<Mutex<ChatMemoryService>>` 之前执行并返回，模型调用不持有服务全局锁；提供者调用期间也无 SQLite 写事务。第4项④/⑤已启用 MCP 新路径 deferred/inline 后台（见第10节）。AA10 将现有 memory_remember 纳入 CLI --call 白名单，返回裸 source/enrichment JSON；单次命令不启动后台，批处理行为保持独立。
 - `tests/write_pipeline.rs` 与 `tests/write_pipeline_process.py` 覆盖严格配置、原文授权、T1 版本绑定、关闭重开后配置切换/同参重放、终态与租约、缺凭证、两种 CLI 入口和混合队列；HTTP 仅使用本机合成 Responses。
 
+### 仅为 W4 更换 provider
+
+可只指定 W4；省略的 W1/W3 继续使用 `DEEPSEEK_PRO_MODEL`、原 DeepSeek 端点与缺省 low，原请求字节和阶段绑定不因 W4 的 provider 配置改变：
+
+```json
+{
+  "write_models": {
+    "w4": "gpt-6.1-sol",
+    "reasoning_effort": { "w4": "medium" },
+    "providers": {
+      "w4": {
+        "protocol": "openai_responses",
+        "base_url_env": "OPENAI_BASE_URL",
+        "api_key_env": "OPENAI_API_KEY"
+      }
+    }
+  }
+}
+```
+
+服务进程须能读取所列环境变量；密钥不写入运行时 JSON。W4 请求与阶段绑定使用所选 provider，改变 W4 不会使已有 W1/W3 检查点需要重判。召回角色已有的端点绑定检查保持不变。
+
+W4 失败不自动重试，也不自动回退其他模型。原话与已保存的候选仍保留，具体状态用 `memory_source_status` 检查；符合“尚无已提交动作”等重提取条件时，用户授权后调用 `memory_source_reprocess`（`mode=reextract`，最新 `expected_state_token` 与新 request_id；授权后台整理时传 `enqueue=true`，缺省 false 仅重建不发模型请求）。该操作可能重新执行 W1/W3，并消耗既有预算；已有提交动作的来源不能用此入口通用重跑。传输失败 trace 只额外记录有界的底层错误类别，不记录底层 URL、凭据或正文，对外失败码和预算处理不变。
+
 ## 9. 提示词版本（W1 第 3 版、W3/W4 第 2 版）、输出上限与分阶段评测
 
 - **W1**：仅 `relation=fact` 要求 value 与完整原句相同，专用关系保存宾语或属性值；`memory_type=fact` 不触发整句规则。polarity 表示命题方向，与不确定性及 speech 分开。活动适用条件放 conditions，时间按各 kind 的字段及原始粒度表达；没有时间时用空数组，禁止空 Quote。请求原话含控制动作，目标 Quote 指对象，unknown 对象不带候选索引。

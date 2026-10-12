@@ -196,6 +196,53 @@ fn http_error(error: reqwest::Error) -> OpenAiAdapterError {
     OpenAiAdapterError::Http(message)
 }
 
+// Only fixed classes leave this boundary; never persist error text, URLs or bodies.
+fn transport_error_classes(error: &(dyn std::error::Error + 'static)) -> Value {
+    let mut current = Some(error);
+    let mut classes = Vec::new();
+    while let Some(cause) = current {
+        if classes.len() == 8 {
+            break;
+        }
+        let message: String = cause
+            .to_string()
+            .chars()
+            .take(512)
+            .collect::<String>()
+            .to_ascii_lowercase();
+        let request = cause.downcast_ref::<reqwest::Error>();
+        let category = if request.is_some_and(reqwest::Error::is_timeout)
+            || message.contains("timed out")
+            || message.contains("timeout")
+        {
+            "timeout"
+        } else if message.contains("tls")
+            || message.contains("certificate")
+            || message.contains("ssl")
+        {
+            "tls"
+        } else if message.contains("connection closed")
+            || message.contains("connection reset")
+            || message.contains("broken pipe")
+            || message.contains("unexpected eof")
+        {
+            "connection_closed"
+        } else if request.is_some_and(reqwest::Error::is_connect)
+            || message.contains("connect")
+            || message.contains("dns")
+        {
+            "connect"
+        } else if request.is_some_and(reqwest::Error::is_body) || message.contains("body") {
+            "body"
+        } else {
+            "other"
+        };
+        classes.push(category);
+        current = cause.source();
+    }
+    json!({"classes":classes,"truncated":current.is_some()})
+}
+
 /// Shared protocol headers; secrets never appear in requests' persisted identity.
 pub fn provider_http_request(
     http: &Client,
@@ -401,7 +448,12 @@ impl OpenAiClient {
         stage: ModelStage,
         schema: Value,
     ) -> Result<Option<Value>, OpenAiAdapterError> {
-        if self.provider.is_none() && self.role_providers.is_empty() {
+        // Default writers historically omit provider identity; another role must not invalidate them.
+        if self.provider.is_none()
+            && (self.role_providers.is_empty()
+                || (matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4)
+                    && !self.role_providers.contains_key(stage.name())))
+        {
             return Ok(None);
         }
         if let Some(config) = &self.provider {
@@ -453,7 +505,10 @@ impl OpenAiClient {
         schema: Value,
         variable: impl Fn(&str) -> Option<String>,
     ) -> Result<Option<Value>, OpenAiAdapterError> {
-        if self.role_providers.is_empty() {
+        if self.role_providers.is_empty()
+            || (matches!(stage, ModelStage::W1 | ModelStage::W3 | ModelStage::W4)
+                && !self.role_providers.contains_key(stage.name()))
+        {
             return self.provider_binding(model, effort, stage, schema);
         }
         let mut client = self.clone();
@@ -717,7 +772,14 @@ impl OpenAiClient {
         let mut usage = None;
         let result = (|| {
             let execute = |request| {
-                let response = self.http.execute(request).map_err(http_error)?;
+                let response = self.http.execute(request).map_err(|error| {
+                    crate::diagnostics::record("model_transport_error", || {
+                        json!({"call_id":attempt_id,"stage":schema_name,
+                            "elapsed_ms":started.elapsed().as_millis(),
+                            "error_chain":transport_error_classes(&error)})
+                    });
+                    http_error(error)
+                })?;
                 model_provider::read_http_response(response, protocol)
             };
             #[cfg(test)]
@@ -1044,6 +1106,126 @@ fn extract_output_text(envelope: &Value) -> Result<String, OpenAiAdapterError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn af326_w4_only_preserves_writer_bytes_and_bindings() {
+        let schema = crate::write_models::object(&[("count", crate::write_models::index())]);
+        let mut outputs = Vec::new();
+        for mixed in [false, true] {
+            let ledger = crate::model_budget::tests::TestLedger::new();
+            let mut client = ledger.client("https://ds.invalid/v1");
+            let captured = Arc::new(Mutex::new(Vec::new()));
+            let sent = captured.clone();
+            client.network_allowed = true;
+            client.transport = Some(Arc::new(move |request| {
+                sent.lock().unwrap().push((
+                    request.url().to_string(),
+                    request.body().unwrap().as_bytes().unwrap().to_vec(),
+                ));
+                Ok((200, json!({"status":"completed","usage":{"input_tokens":2,"output_tokens":3},"output":[{"content":[{"type":"output_text","text":"{\"count\":1}"}]}]}).to_string()))
+            }));
+            if mixed {
+                let mut config = provider_fixture(ProviderProtocol::OpenaiResponses);
+                config.base_url_env = "OPENAI_BASE_URL".into();
+                config.api_key_env = Some("OPENAI_API_KEY".into());
+                client = client.with_role_providers([("w4".into(), config)].into(), None);
+            }
+            let resolve = |name: &str| match name {
+                "DEEPSEEK_BASE_URL" => Some("https://ds.invalid/v1".into()),
+                "OPENAI_BASE_URL" => Some("https://openai.invalid/v1".into()),
+                "DEEPSEEK_API_KEY" | "OPENAI_API_KEY" => Some("fixture-key".into()),
+                _ => panic!("unexpected environment lookup"),
+            };
+            for stage in [ModelStage::W1, ModelStage::W3, ModelStage::W4] {
+                let routed = client.for_stage_with(stage, resolve).unwrap();
+                let binding = routed
+                    .provider_binding(
+                        "gpt-6.1-sol",
+                        ReasoningEffort::Medium,
+                        stage,
+                        schema.clone(),
+                    )
+                    .unwrap();
+                let planned = client
+                    .stage_provider_binding_with(
+                        stage,
+                        "gpt-6.1-sol",
+                        ReasoningEffort::Medium,
+                        schema.clone(),
+                        resolve,
+                    )
+                    .unwrap();
+                assert_eq!(binding, planned);
+                if mixed && matches!(stage, ModelStage::W4) {
+                    let identity = binding.unwrap().to_string();
+                    assert!(identity.contains("openai_responses"));
+                    assert!(identity.contains("openai.invalid"));
+                } else {
+                    assert!(binding.is_none());
+                }
+                routed
+                    .structured_output_for_model_with_effort(
+                        "gpt-6.1-sol",
+                        ReasoningEffort::Medium,
+                        stage,
+                        "test",
+                        "fixed",
+                        json!({"text":"fiction"}),
+                        schema.clone(),
+                    )
+                    .unwrap();
+            }
+            outputs.push(captured.lock().unwrap().clone());
+        }
+        assert_eq!(&outputs[0][..2], &outputs[1][..2]);
+        assert_eq!(outputs[1][2].0, "https://openai.invalid/v1/responses");
+    }
+
+    #[test]
+    fn af326_transport_diagnostics_only_emit_bounded_categories() {
+        #[derive(Debug)]
+        struct Failure(&'static str, Option<Box<Failure>>);
+        impl std::fmt::Display for Failure {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(self.0)
+            }
+        }
+        impl std::error::Error for Failure {
+            fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+                self.1.as_deref().map(|e| e as &dyn std::error::Error)
+            }
+        }
+        let error = Failure(
+            "error sending https://user:SECRET@example.invalid/private?key=SECRET",
+            Some(Box::new(Failure(
+                "TLS certificate failure; body SECRET",
+                None,
+            ))),
+        );
+        assert_eq!(
+            transport_error_classes(&error),
+            json!({"classes":["other","tls"],"truncated":false})
+        );
+        for (text, expected) in [
+            ("connect refused", "connect"),
+            ("timed out", "timeout"),
+            ("connection reset", "connection_closed"),
+            ("body failure", "body"),
+        ] {
+            assert_eq!(
+                transport_error_classes(&Failure(text, None))["classes"][0],
+                expected
+            );
+        }
+        let mut chain = Failure("SECRET", None);
+        for _ in 0..20 {
+            chain = Failure("SECRET", Some(Box::new(chain)));
+        }
+        let diagnostic = transport_error_classes(&chain);
+        assert_eq!(diagnostic["classes"].as_array().unwrap().len(), 8);
+        assert_eq!(diagnostic["truncated"], true);
+        assert!(!diagnostic.to_string().contains("SECRET"));
+    }
 
     fn provider_fixture(protocol: ProviderProtocol) -> ProviderConfig {
         ProviderConfig {
