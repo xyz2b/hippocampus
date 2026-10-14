@@ -1,4 +1,4 @@
-//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v4、§2.4 w4.v5、§3.1 r1.v2、§3.2）。
+//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v5、§2.4 w4.v5、§3.1 r1.v2、§3.2）。
 //!
 //! JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分；包含 W3 输出核验。
 //! Quote 是否逐字存在、日历是否合法、目录与任务是否允许等机械校验属于 W2（§2.2），
@@ -429,7 +429,7 @@ pub struct RequestReview {
     pub verdict: Verdict,
 }
 
-/// §2.3 w3.v4；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
+/// §2.3 w3.v5；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct W3Output {
@@ -467,6 +467,9 @@ impl W3Output {
         text: &str,
     ) -> Result<ReviewedW3, W3InvalidOutput> {
         use std::collections::BTreeSet;
+        if self.coverage.status == CoverageStatus::Gaps && self.coverage.missing.is_empty() {
+            return Err(W3InvalidOutput);
+        }
         let expected: BTreeSet<_> = batch
             .candidates
             .iter()

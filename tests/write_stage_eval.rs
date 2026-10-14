@@ -1217,7 +1217,7 @@ fn stage_request_with_output_tokens(
                         .collect::<std::collections::BTreeSet<_>>()
                 )
             };
-            let mut payload = json!({"contract": if stage == "w1" { "w1.v4" } else { "w3.v4" }, "source_snapshot": {"eval_sample": sample["id"]},
+            let mut payload = json!({"contract": if stage == "w1" { "w1.v4" } else { "w3.v5" }, "source_snapshot": {"eval_sample": sample["id"]},
                 "current_user_message": input["text"], "user_history": input.get("history").cloned().unwrap_or(json!([])),
                 "entities": items(&entities).iter().map(|e| json!({"id": e["id"], "owner_id": "eval",
                     "entity_type": "Person", "canonical_name": e["names"][0], "aliases": e["names"]})).collect::<Vec<_>>(),
@@ -1246,7 +1246,7 @@ fn stage_request_with_output_tokens(
                 payload["memory_requests"] = serde_json::to_value(&batch.memory_requests).unwrap();
                 (
                     ModelStage::W3,
-                    "w3_v4",
+                    "w3_v5",
                     write_models::W3_PROMPT,
                     write_models::w3_schema(),
                     payload,
@@ -5125,7 +5125,7 @@ fn w3_comparison_plan(root: &Path, base: Option<String>) -> Result<Vec<Case>, St
         let mut old = frozen.clone();
         old["instructions"] = structured_request(
             ModelStage::W3,
-            "w3_v4",
+            "w3_v5",
             W3_OLD_PROMPT,
             serde_json::from_str(frozen["input"].as_str().unwrap()).unwrap(),
             frozen["text"]["format"]["schema"].clone(),
@@ -5238,7 +5238,7 @@ fn w3_comparison_dry_run() {
         .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
         .count();
     println!("AF96 W3 对照：旧/新提示词 × 4 虚构场景 × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。");
-    println!("固定 Pro、minimal、w3.v4、said_on=2026-10-07、UTC+8、max_output_tokens=16384。");
+    println!("固定 Pro、minimal、w3.v5、said_on=2026-10-07、UTC+8、max_output_tokens=16384。");
     println!(
         "旧提示词：91a068a，字节指纹 {W3_OLD_FINGERPRINT}；新提示词：{}。",
         w3_prompt_fingerprint(write_models::W3_PROMPT)
@@ -5358,7 +5358,7 @@ fn w3_effort_dry_run() {
         "AF101 W3 强度对照：同一提示词 × 4 虚构场景 × minimal/low × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。"
     );
     println!(
-        "固定 Pro、w3.v4、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
+        "固定 Pro、w3.v5、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
     );
     println!("固定提示词：dc604f8，字节指纹 {W3_EFFORT_PROMPT_FINGERPRINT}。");
     println!(
@@ -5408,7 +5408,7 @@ fn af101_w3_effort_plan_is_frozen_and_rejects_fifteen_before_output() {
             );
             assert_eq!(case.request["model"], "ep-20261003130756-trhj6");
             assert_eq!(case.request["max_output_tokens"], 16384);
-            assert_eq!(case.request["text"]["format"]["name"], "w3_v4");
+            assert_eq!(case.request["text"]["format"]["name"], "w3_v5");
             assert!(matches!(
                 case.sample["label_status"].as_str(),
                 Some("draft" | "reviewed")
@@ -5898,7 +5898,7 @@ fn evaluation_timeout_is_240_only_for_r4_compute_low() {
         ("r4_v7", "minimal", "count", 180),
         ("r4_v7", "high", "count", 180),
         ("r1_v2", "low", "count", 180),
-        ("w3_v4", "low", "count", 180),
+        ("w3_v5", "low", "count", 180),
     ] {
         let request = json!({"text":{"format":{"name":stage}},"reasoning":{"effort":effort},
             "input":json!({"plan":{"plan":{"op":op}}}).to_string()});
@@ -6152,7 +6152,14 @@ fn fingerprints_pin_prompt_schema_input_model_and_reject_stale_outputs() {
         let mut allowance = case.request.clone();
         allowance["max_output_tokens"] = json!(10000);
         assert_eq!(fingerprint(&allowance), original);
-        for request in [Value::Null, json!("old-fingerprint")] {
+        let mut old_request = case.request.clone();
+        if case.stage == "w3" {
+            old_request["text"]["format"]["name"] = json!("w3_v4");
+        } else {
+            old_request["model"] = json!("old-model");
+        }
+        let old_version = fingerprint(&old_request);
+        for request in [Value::Null, json!("old-fingerprint"), old_version] {
             std::fs::create_dir_all(&temp.0).unwrap();
             std::fs::write(&case.path, json!({"recorded": [{"model": MODEL,
                 "schema": case.request["text"]["format"]["name"], "request": request, "output": {"never": "grade this"}}]}).to_string()).unwrap();
@@ -7823,7 +7830,7 @@ fn z8_r1_condition_subset_and_unlabelled_time_keep_required_semantics() {
 fn m15_stage_executors_bind_current_schema_and_input_contracts() {
     for (stage, schema, contract) in [
         ("w1", "w1_v4", "w1.v4"),
-        ("w3", "w3_v4", "w3.v4"),
+        ("w3", "w3_v5", "w3.v5"),
         ("w4", "w4_v5", "w4.v5"),
         ("r1", "r1_v2", "r1.v2"),
         ("r4", "r4_v7", "r4.v7"),
@@ -7846,7 +7853,7 @@ fn m15_stage_executors_bind_current_schema_and_input_contracts() {
             let mut input: Value =
                 serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             let contract = match stage.as_str() {
-                "w3" => "w3.v4",
+                "w3" => "w3.v5",
                 "r1" => "r1.v2",
                 "r4" => "r4.v7",
                 _ => unreachable!(),
@@ -10303,7 +10310,16 @@ fn af151_unscored_coverage_still_requires_exact_nonempty_mother_basis() {
     output["coverage"]["status"] = json!("gaps");
     let report = score("w3", &sample, Some(&output.to_string()));
     assert_eq!(report["status"], "失败");
-    assert_eq!(report["verdict_result"]["passed"], true);
+    assert_eq!(report["verdict_result"]["valid"], false);
+    assert_eq!(report["verdict_result"]["passed"], Value::Null);
+    assert!(
+        items(&report["fields"])
+            .iter()
+            .any(|f| f["field"] == "w3.validate"
+                && f["category"] == "contract"
+                && f["passed"] == false)
+    );
+    assert!(compare_mechanical(&report).contains(&"w3.validate".to_owned()));
     output["coverage"]["missing"] = json!([{"text":"我"}]);
     assert_eq!(
         score("w3", &sample, Some(&output.to_string()))["status"],

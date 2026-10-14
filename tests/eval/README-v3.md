@@ -6,7 +6,7 @@
 新模式以显式固定的历史 AC2 配置跑生产 `ChatMemoryService`：W1 Pro medium、W4 Pro medium、W3 Pro minimal、
 R1 Pro minimal、R4 Pro 计算类 low / 其余 minimal，UTC+8；不复制提示词，也不把模型 ID 加入模型可见 input。
 这组评测配置不随运行时缺省变化：当前运行时 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low。
-当前 DB v11，契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v10；历史录制按完整指纹核对，不能冒充新版。
+当前 DB v11，契约为 W1 v4、W3 v5、W4 v5、R1 v2、R4 v7、recall v10；历史录制按完整指纹核对，不能冒充新版。
 输出预算 W1=32768、W3/W4=16384（生产阶段常量），R1=4096、R4=16384；禁用模型修复。
 
 ```sh

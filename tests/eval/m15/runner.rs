@@ -551,7 +551,7 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
                     "relation":"fact","memory_type":"fact","value":{"kind":"text","text":text,"quote":{"text":text}},
                     "sentence":{"text":text},"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[]}],"memory_requests":[]})
             }
-            "w3_v4" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+            "w3_v5" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
             "w4_v5" => {

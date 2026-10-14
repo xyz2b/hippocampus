@@ -6,7 +6,7 @@
 
 本文描述冻结目标行为；当前实现范围见 [w4-code-side.md](w4-code-side.md) 与 [recall-runtime.md](recall-runtime.md)，旧 overview/write-path/recall-path 已标历史。完整负载延迟目标仍未完成验收。原设计日期：2026-09-30。
 
-第一阶段的具体字段、核验和迁移退出条件见 [contracts.md](contracts.md)；契约已于 2026-09-30 冻结，当前编号为 `w1.v4`、`w3.v4`、`w4.v5`、`r1.v2`、`r4.v7` 与宿主 `recall.v11`（计划语义及各次变更见 contracts.md 第 8 节）。
+第一阶段的具体字段、核验和迁移退出条件见 [contracts.md](contracts.md)；契约已于 2026-09-30 冻结，当前编号为 `w1.v4`、`w3.v5`、`w4.v5`、`r1.v2`、`r4.v7` 与宿主 `recall.v11`（计划语义及各次变更见 contracts.md 第 8 节）。
 
 原则沿用 [../roadmap.md](../roadmap.md) 第 3 节，并明确以下约束：
 
@@ -300,7 +300,7 @@ LongMemEval 的最终答案标签可辅助设计场景，不能直接当作 W1/W
 
 ### AF206：通用 fact 的断言定位片段
 
-通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1/W3 v4、W4 v5、R4 v7、recall v11；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
+通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1 v4、W3 v5、W4 v5、R4 v7、recall v11；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
 
 
 ### AF283：bootstrap 已存陈述快照

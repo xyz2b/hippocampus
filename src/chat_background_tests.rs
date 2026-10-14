@@ -90,7 +90,7 @@ fn output(request: &Json) -> Json {
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     match request["text"]["format"]["name"].as_str().unwrap() {
         "w1_v4" => w1(input["current_user_message"].as_str().unwrap()),
-        "w3_v4" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+        "w3_v5" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
             json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
             "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
         "w4_v5" => {
@@ -424,7 +424,7 @@ fn background_startup_recovers_queued_task_and_preserves_receiving_date() {
     let key = capture(&mut first, &db, "queued", OLD);
     drop(first); // new operation/service has no in-memory notification for this task.
     let (mut c, sent) = client();
-    let (entered, release) = hold(&mut c, "w3_v4");
+    let (entered, release) = hold(&mut c, "w3_v5");
     let mut service = db.service(5);
     service.inject_model_client(c);
     let worker = service.start_background().unwrap().unwrap();
@@ -540,7 +540,7 @@ fn background_reserved_missing_result_fails_once_without_resending() {
     c.transport = Some(Arc::new(move |request| {
         let body: Json =
             serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-        if body["text"]["format"]["name"] == "w3_v4" {
+        if body["text"]["format"]["name"] == "w3_v5" {
             return Err(OpenAiAdapterError::InvalidResponse(
                 "synthetic interrupted response".into(),
             ));

@@ -1,7 +1,7 @@
 # AF236：Anthropic 原生 schema 独立诊断
 
 仅评测用 `native_simplified`，生产入口拒绝。使用六种当前完整 schema：
-W1 v4、W3 v4、W4 v5、R1 v2、R4 v7 stored-only / current-enabled。
+W1 v4、W3 v5、W4 v5、R1 v2、R4 v7 stored-only / current-enabled。
 虚构正文与目录独立于历史评测样本；不读写 AF230 配置、录制、额度。
 
 发送副本仍删除整数上下界，展平无其他约束的嵌套 anyOf，将重复对象

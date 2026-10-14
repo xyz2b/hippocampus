@@ -2,7 +2,7 @@
 
 依据 contracts.md §1、§2.1、§2.4、§3.2，设计经 GPT 复审 0015 确定。代码在 `src/contract.rs`。
 
-当前 DB v11，契约为 W1/W3 v4、W4 v5、R1 v2、R4 v7、recall v11；配置名仍为 w4_runtime_v1 / recall_v3。A 段样本数量与第4节待办保留为历史记录，当前运行时已接通。
+当前 DB v11，契约为 W1 v4、W3 v5、W4 v5、R1 v2、R4 v7、recall v11；配置名仍为 w4_runtime_v1 / recall_v3。A 段样本数量与第4节待办保留为历史记录，当前运行时已接通。
 
 ## 1. 类型
 

@@ -175,7 +175,7 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
             batch(&sample["input"])?;
             (
                 ModelStage::W3,
-                "w3_v4",
+                "w3_v5",
                 write_models::W3_PROMPT,
                 write_models::w3_schema(),
             )
@@ -194,7 +194,7 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
     // Preserve the frozen production fields; only the current protocol binding changes.
     let mut input = sample["input"].clone();
     input["contract"] = json!(match stage {
-        ModelStage::W3 => "w3.v4",
+        ModelStage::W3 => "w3.v5",
         ModelStage::R1 => "r1.v2",
         ModelStage::R4 => "r4.v7",
         _ => unreachable!(),
@@ -322,7 +322,7 @@ fn af11_exact_inputs_bound_sources_and_seven_call_cap() {
         let request = request(stage, sample, 16384).unwrap();
         let mut expected = sample["input"].clone();
         expected["contract"] = json!(match stage.as_str() {
-            "w3" => "w3.v4",
+            "w3" => "w3.v5",
             "r1" => "r1.v2",
             "r4" => "r4.v7",
             _ => unreachable!(),
@@ -412,7 +412,7 @@ fn fixed_inputs_are_exactly_the_33_original_failed_requests() {
         let request = request(&stage, &sample, 16384).unwrap();
         let mut expected = sample["input"].clone();
         expected["contract"] = json!(match stage.as_str() {
-            "w3" => "w3.v4",
+            "w3" => "w3.v5",
             "r1" => "r1.v2",
             "r4" => "r4.v7",
             _ => unreachable!(),

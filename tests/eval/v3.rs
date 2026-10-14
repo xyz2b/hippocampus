@@ -528,7 +528,7 @@ fn v3_targeted_preflight_and_strict_prefixes_bound_sends() {
             .0,
         200
     );
-    let third = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w3_v4"}}});
+    let third = json!({"model":PRO,"input":"{}","text":{"format":{"name":"w3_v5"}}});
     assert_eq!(
         recorder
             .respond("case", &third, || Ok((200, "{}".into())))
@@ -885,7 +885,7 @@ fn v3_parallel_cases_keep_recordings_and_reports_isolated_and_ordered() {
         let id = case["id"].as_str().unwrap();
         barrier.wait();
         let mut steps = Vec::new();
-        for (index, stage) in ["w1_v4", "w3_v4", "r1_v2"].iter().enumerate() {
+        for (index, stage) in ["w1_v4", "w3_v5", "r1_v2"].iter().enumerate() {
             recorder.begin(id, &format!("step:{index}"), &BTreeMap::new());
             let request = json!({"model":PRO,"input":json!({"case":id,"index":index}).to_string(),"text":{"format":{"name":stage}}});
             assert_eq!(
@@ -1093,7 +1093,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         assert_eq!(request["model"], PRO);
         assert_eq!(
             request["reasoning"]["effort"],
-            if name.starts_with('r') || name == "w3_v4" {
+            if name.starts_with('r') || name == "w3_v5" {
                 "minimal"
             } else {
                 "medium"
@@ -1108,7 +1108,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
                 "sentence":{"text":text},"polarity":"affirm","strength":null,"uncertainty":null,
                 "conditions":[],"times":[]}],"memory_requests":[]})
             }
-            "w3_v4" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+            "w3_v5" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
             "w4_v5" => {
@@ -1156,7 +1156,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
         .flat_map(|v| v.as_array().unwrap())
         .map(|r| r["schema"].as_str().unwrap())
         .collect();
-    for stage in ["w1_v4", "w3_v4", "w4_v5", "r1_v2", "r4_v7"] {
+    for stage in ["w1_v4", "w3_v5", "w4_v5", "r1_v2", "r4_v7"] {
         assert!(names.contains(&stage));
     }
     let replay = Arc::new(Recorder::new(dir.clone(), None, None));
