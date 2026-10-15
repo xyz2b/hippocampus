@@ -124,7 +124,7 @@ fn af342_plan_is_24_blind_current_requests_and_budget_is_bounded() {
 #[test]
 fn af342_fixed_candidates_and_scope_coverage_labels_are_executable() {
     for sample in samples_for("w3") {
-        let reviews:Vec<_>=items(&sample["expect"]["reviews"]).iter().map(|r|json!({"candidate":r["candidate"],"verdict":r["verdict"],"problems":[],"episode_value":r["episode_value"]})).collect();
+        let reviews:Vec<_>=items(&sample["expect"]["reviews"]).iter().map(|r|json!({"candidate":r["candidate"],"verdict":r["verdict"],"problems":[],"episode_value":if r["episode_value"].is_array() {r["episode_value"][0].clone()} else {r["episode_value"].clone()}})).collect();
         let missing: Vec<_> = items(&sample["expect"]["coverage"]["missing_contains"])
             .iter()
             .map(|q| json!({"text":q}))
@@ -219,4 +219,130 @@ fn af342_transport_resume_keeps_frozen_slots_and_old_requests_are_stale() {
     .unwrap();
     assert!(matches!(old.replay, Replay::Stale));
     assert!(campaign_check(&[old], 24).is_err());
+}
+
+#[test]
+fn af348_labels_preserve_requests_and_mechanical_checks() {
+    for stage in ["w1", "w3"] {
+        for sample in samples_for(stage)
+            .into_iter()
+            .filter(|s| s["label_revision"] == "AF348")
+        {
+            let mut old = sample.clone();
+            old["label_revision"] = json!("AF342-draft");
+            match sample["id"].as_str().unwrap() {
+                "af342_w1_10" => {
+                    old["expect"]["candidates"][0]["value"]["required"] =
+                        json!(["已决定在青梧项目中采用离线验签"])
+                }
+                "af342_w3_09" => old["expect"]["reviews"][0]["episode_value"] = json!("useful"),
+                _ => {
+                    old["expect"]["coverage"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("ignore_terminal_punctuation");
+                }
+            }
+            assert_eq!(
+                compare_request(stage, &old, 16384).unwrap(),
+                compare_request(stage, &sample, 16384).unwrap()
+            );
+        }
+    }
+    assert!(coverage_contains("甲。乙", "甲。乙。", true));
+    assert!(coverage_contains("甲。乙!", "甲。乙。", true));
+    for bad in ["甲乙", "甲，乙", "甲。", "甲。乙 "] {
+        // Whitespace is not stripped; an internal punctuation change is not accepted.
+        if bad.ends_with(' ') {
+            assert!(!coverage_contains("甲。乙", bad, true));
+        } else {
+            assert!(!coverage_contains(bad, "甲。乙。", true));
+        }
+    }
+    assert!(!coverage_contains("甲。乙", "甲。乙。", false));
+    assert!(!coverage_contains("甲", "。", true));
+    let s = samples_for("w3")
+        .into_iter()
+        .find(|s| s["id"] == "af342_w3_11")
+        .unwrap();
+    for (quote, pass) in [
+        ("我负责白鹭项目的排版设计", true),
+        ("我负责白鹭项目的排版设计!", false),
+        ("我负责白鹭项目设计", false),
+    ] {
+        let output = json!({"reviews":[],"request_reviews":[],"coverage":{"status":"gaps","missing":[{"text":quote}]}});
+        assert_eq!(
+            score("w3", &s, Some(&output.to_string()))["status"] == "通过",
+            pass
+        );
+    }
+    let s = samples_for("w3")
+        .into_iter()
+        .find(|s| s["id"] == "af342_w3_09")
+        .unwrap();
+    for (value, pass) in [("useful", true), ("low_value", true), ("unknown", false)] {
+        let output = json!({"reviews":[{"candidate":0,"verdict":"supported","problems":[],"episode_value":value}],"request_reviews":[],"coverage":{"status":"complete","missing":[]}});
+        assert_eq!(
+            score("w3", &s, Some(&output.to_string()))["status"] == "通过",
+            pass
+        );
+    }
+    let s = samples_for("w1")
+        .into_iter()
+        .find(|s| s["id"] == "af342_w1_10")
+        .unwrap();
+    let mut input = samples_for("w3")
+        .into_iter()
+        .find(|s| s["id"] == "af342_w3_10")
+        .unwrap()["input"]
+        .clone();
+    input["candidates"][0]["value"] = json!("采用离线验签");
+    let out = adapter::expand(&input).unwrap();
+    assert_eq!(
+        score("w1", &s, Some(&serde_json::to_string(&out).unwrap()))["status"],
+        "通过"
+    );
+    input["candidates"][0]["sentence"] = json!("采用离线验签");
+    assert_ne!(
+        score(
+            "w1",
+            &s,
+            Some(&serde_json::to_string(&adapter::expand(&input).unwrap()).unwrap())
+        )["status"],
+        "通过"
+    );
+}
+
+#[test]
+#[ignore = "Explicit AF348 offline re-score of authorized evaluation recordings only"]
+fn af348_replay() {
+    let root = Path::new(ROOT);
+    let path = root.join("recordings/ds-pro/repeat-1/af342_w1_01.json");
+    let file = read(&path, Value::Null).unwrap();
+    let r = items(&file["recorded"]).last().unwrap();
+    let groups = plan(root, |k| match k {
+        "DEEPSEEK_PRO_MODEL" => r["provider_binding"]["model"].as_str().map(str::to_owned),
+        "HUOSHAN_DEEPSEEK_BASE_URL" => r["base_url"].as_str().map(str::to_owned),
+        _ => None,
+    })
+    .unwrap();
+    assert_eq!(groups[0].len(), 24);
+    assert!(
+        groups[0]
+            .iter()
+            .all(|c| matches!(c.replay, Replay::Output(_))),
+        "strict replay gap; no send permitted"
+    );
+    let report = evaluate_cases(&groups[0], None, &mut |_| {
+        panic!("offline replay must not send")
+    })
+    .unwrap();
+    assert_eq!(report["sent_calls"], 0);
+    let before = read(&root.join("report-repeat-1.json"), Value::Null).unwrap();
+    let rows = items(&report["results"]);
+    let summary = json!({"label_revision":"AF348","sent_calls":0,"strict_reused":24,
+        "stages":(["w1","w3"].map(|stage|json!({"stage":stage,"passed":rows.iter().filter(|r|r["stage"]==stage && r["status"]=="通过").count(),"total":12}))),
+        "before_stages":before["profiles"][0]["stages"],"report":report});
+    m15_write_json(&root.join("reports-af348/report-repeat-1.json"), &summary).unwrap();
+    println!("AF348 strict reuse=24 sends=0 stages={}", summary["stages"]);
 }

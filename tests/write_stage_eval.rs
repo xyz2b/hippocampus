@@ -545,6 +545,18 @@ fn score_w1(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<Value
     Ok(serde_json::to_value(checked.ok()).unwrap())
 }
 
+fn coverage_contains(actual: &str, expected: &str, ignore_terminal_punctuation: bool) -> bool {
+    if !ignore_terminal_punctuation {
+        return actual.contains(expected);
+    }
+    let trim = |s: &str| {
+        s.trim_end_matches(['。', '.', '！', '!', '？', '?', '；', ';', '，', ','])
+            .to_owned()
+    };
+    let expected = trim(expected);
+    !expected.is_empty() && trim(actual).contains(&expected)
+}
+
 fn score_w3(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), String> {
     let output = W3Output::decode(text).map_err(|e| e.to_string())?;
     check(fields, "decode", json!(true), json!(true), true);
@@ -647,9 +659,13 @@ fn score_w3(sample: &Value, text: &str, fields: &mut Vec<Value>) -> Result<(), S
             "coverage.missing_contains",
             e.clone(),
             actual["coverage"]["missing"].clone(),
-            items(&actual["coverage"]["missing"])
-                .iter()
-                .any(|a| a["text"].as_str().unwrap().contains(e.as_str().unwrap())),
+            items(&actual["coverage"]["missing"]).iter().any(|a| {
+                coverage_contains(
+                    a["text"].as_str().unwrap(),
+                    e.as_str().unwrap(),
+                    sample["expect"]["coverage"]["ignore_terminal_punctuation"] == true,
+                )
+            }),
         );
     }
     for e in items(&sample["expect"]["request_reviews"]) {

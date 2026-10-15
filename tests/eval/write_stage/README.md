@@ -925,3 +925,15 @@ zsh -ic 'EVAL_AF342=1 EVAL_RECORD=24 cargo test --test write_stage_eval write_st
 ```
 
 产物仅在 `target/eval-providers/af342/`（manifest、campaign 授权、cost-ledger、逐次录制、plan-repeat-1.json、report-repeat-1.json）。同一发送命令可续跑；不设置其他 EVAL campaign/model/effort 变量。
+
+### AF348：AF342 三处标签校准
+
+仅修订 W1_10 的断言核心（完整 sentence 不变）、W3_09 的 episode_value 接受集合，以及 W3_11 的 coverage 期望。后者通过样本级 `ignore_terminal_punctuation=true` 忽略引用/期望末尾的 `。.!！?？;；,，`，不移除空白或句内标点；原始 missing 引用仍须通过 W3 精确原文核验。其余标签、输入、ID、请求均不改；三题 label_revision=AF348。
+
+显式离线重评（只读现有录制、要求 24 条指纹全部有效，无法发送；不改 manifest/费用账本）：
+
+```sh
+cargo test --test write_stage_eval af342::af348_replay -- --exact --ignored --nocapture
+```
+
+输出另存 `target/eval-providers/af342/reports-af348/report-repeat-1.json`。普通 AF342 录制入口仍按原冻结标签摘要检查，标签变更不授权重冻结或重新发送。

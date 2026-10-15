@@ -405,7 +405,7 @@
     "id": "af342_w3_09",
     "contract": "w3.v6",
     "label_status": "draft",
-    "label_revision": "AF342-draft",
+    "label_revision": "AF348",
     "focus": "本人经历保留",
     "input": {
       "text": "我参加过栎湾的陶艺展。",
@@ -449,7 +449,10 @@
           "candidate": 0,
           "verdict": "supported",
           "aspects": [],
-          "episode_value": "useful"
+          "episode_value": [
+            "useful",
+            "low_value"
+          ]
         }
       ],
       "request_reviews": [],
@@ -521,7 +524,7 @@
     "id": "af342_w3_11",
     "contract": "w3.v6",
     "label_status": "draft",
-    "label_revision": "AF342-draft",
+    "label_revision": "AF348",
     "focus": "混合消息遗漏个人职责须报 gaps",
     "input": {
       "text": "我负责白鹭项目的排版设计。这种渲染算法可能更省内存。",
@@ -551,7 +554,8 @@
         "status": "gaps",
         "missing_contains": [
           "我负责白鹭项目的排版设计。"
-        ]
+        ],
+        "ignore_terminal_punctuation": true
       }
     }
   },
