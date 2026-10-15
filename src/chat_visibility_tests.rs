@@ -271,13 +271,52 @@ fn source_status(db: &Db, turn: &str) -> String {
 }
 fn settled(db: &Db, turn: &str, status: &str) {
     let start = Instant::now();
-    while source_status(db, turn) != status {
+    loop {
+        let state = db.open().read().unwrap();
+        let source = state.sources.values().find(|s| s.turn_id == turn).unwrap();
+        if source.enrichment == status {
+            return;
+        }
         assert!(
-            start.elapsed() < Duration::from_secs(8),
-            "{}",
-            source_status(db, turn)
+            matches!(source.enrichment.as_str(), "queued" | "running")
+                && start.elapsed() < Duration::from_secs(8),
+            "turn={turn} expected={status} enrichment={} error={:?} round={:?} diagnostic={}",
+            source.enrichment,
+            source.error,
+            source.task.round,
+            source
+                .result
+                .as_ref()
+                .map(|r| &r["w4_input_meta"]["diagnostic"])
+                .unwrap_or(&Json::Null)
         );
         std::thread::sleep(Duration::from_millis(5));
+    }
+}
+
+#[test]
+fn af336_settled_reports_terminal_source_without_waiting() {
+    for terminal in ["failed", "needs_rejudge", "budget_exhausted", "pending"] {
+        let db = Db::new();
+        let mut s = service(&db);
+        let key = capture(&mut s, &db, "diagnostic", NEW);
+        db.open()
+            .transaction(|state| {
+                let source = state.sources.get_mut(&key).unwrap();
+                source.enrichment = terminal.into();
+                source.error = Some("synthetic_error".into());
+                Ok(())
+            })
+            .unwrap();
+        let failure = std::panic::catch_unwind(|| settled(&db, "diagnostic", "committed"))
+            .expect_err("unexpected terminal state must fail");
+        let message = failure.downcast_ref::<String>().unwrap();
+        assert!(message.contains("turn=diagnostic"));
+        assert!(message.contains(&format!("enrichment={terminal}")));
+        assert!(message.contains("synthetic_error"));
+        assert!(message.contains("round="));
+        assert!(message.contains("diagnostic="));
+        settled(&db, "diagnostic", terminal);
     }
 }
 

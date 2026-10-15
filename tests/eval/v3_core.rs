@@ -890,7 +890,19 @@ pub(super) fn run_case_on(
                 arm.checkpoint(recorder, case_id, &format!("write:{id}"), &db, &source_ids)
                     .unwrap();
             }
-            steps.push(json!({"step":"message","message":id,"received":received,"result":result,"model_diagnostics":model_diagnostics,"missing":blocked}));
+            let mut step = json!({"step":"message","message":id,"received":received,"result":result,"model_diagnostics":model_diagnostics,"missing":blocked});
+            if result
+                .as_ref()
+                .ok()
+                .is_none_or(|r| r["enrichment"]["status"] != "committed")
+            {
+                let state = db.open().read().unwrap();
+                if let Some(source) = state.sources.values().find(|s| s.id == source) {
+                    step["failed_source"] = json!({"enrichment":source.enrichment,"error":source.error,
+                        "round":source.task.round,"diagnostic":source.result.as_ref().map(|r| &r["w4_input_meta"]["diagnostic"])});
+                }
+            }
+            steps.push(step);
         }
         for question in case["questions"]
             .as_array()
@@ -972,4 +984,33 @@ pub(super) fn try_write_json(path: &Path, value: &Value) -> Result<(), String> {
 
 pub(super) fn write_json(path: &Path, value: &Value) {
     try_write_json(path, value).unwrap();
+}
+
+/// Failure-only diagnostics for synthetic loopback tests; never include requests or credentials.
+pub(super) fn assert_fixture_sends(recorder: &Recorder, result: &Value, expected: usize) {
+    let sent = recorder.sent.load(Ordering::Relaxed);
+    if sent != expected {
+        let case = result["case"].as_str().unwrap();
+        let stages: Vec<_> = recorder
+            .calls(case)
+            .iter()
+            .map(|c| json!({"operation":c["operation"],"stage":c["stage"],"origin":c["origin"]}))
+            .collect();
+        let steps: Vec<_> = result["steps"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| {
+                json!({"step":s["step"],"message":s["message"],"question":s["question"],
+                "state":s["state"],"result":s["result"],"source":s["failed_source"],
+                "model_diagnostics":s["model_diagnostics"]})
+            })
+            .collect();
+        eprintln!(
+            "FIXTURE_SEND_MISMATCH {}",
+            json!({"expected":expected,"sent":sent,
+            "steps":steps,"stages":stages,"proxy_errors":recorder.send_log.lock().unwrap()["proxy_errors"]})
+        );
+    }
+    assert_eq!(sent, expected);
 }

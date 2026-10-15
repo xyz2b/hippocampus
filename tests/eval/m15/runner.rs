@@ -610,6 +610,17 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
             .filter(|s| s["step"] == "message")
             .collect();
         assert_eq!(writes.len(), 4);
+        for step in &writes {
+            if step["source"]["enrichment"] != "committed" {
+                eprintln!(
+                    "M15_WRITE_NOT_COMMITTED {}",
+                    json!({"message":step["message"],
+                    "enrichment":step["source"]["enrichment"],"error":step["source"]["error"],
+                    "round":step["source"]["task"]["round"],"model_diagnostics":step["model_diagnostics"],
+                    "diagnostic":step["source"]["result"]["w4_input_meta"]["diagnostic"]})
+                );
+            }
+        }
         assert!(
             writes
                 .iter()

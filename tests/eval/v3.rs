@@ -1145,7 +1145,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
     let first = run_case(&case, &recorder, &address);
     stop.store(true, Ordering::SeqCst);
     handle.join().unwrap();
-    assert_eq!(recorder.sent.load(Ordering::Relaxed), 7);
+    assert_fixture_sends(&recorder, &first, 7);
     assert_eq!(first["steps"][2]["result"]["status"], "answered");
     let document: Value =
         serde_json::from_slice(&std::fs::read(dir.join("synthetic.json")).unwrap()).unwrap();

@@ -1287,7 +1287,7 @@ fn af255_production_loopback_roundtrip_reuses_write_state_and_only_changes_r4() 
     let first = run_case(&case, &ar, &address);
     stop.store(true, Ordering::SeqCst);
     handle.join().unwrap();
-    assert_eq!(ar.sent.load(Ordering::Relaxed), 7);
+    assert_fixture_sends(&ar, &first, 7);
     assert_eq!(first["steps"][2]["state"], "completed");
     let parent = tests::saved_parent(&ar);
     let before = std::fs::read(a.0.join("synthetic.json")).unwrap();
@@ -1302,7 +1302,7 @@ fn af255_production_loopback_roundtrip_reuses_write_state_and_only_changes_r4() 
     let second = run_case(&case, &br, &address);
     stop.store(true, Ordering::SeqCst);
     handle.join().unwrap();
-    assert_eq!(br.sent.load(Ordering::Relaxed), 1);
+    assert_fixture_sends(&br, &second, 1);
     assert_eq!(second["steps"][2]["state"], "completed");
     assert_eq!(std::fs::read(a.0.join("synthetic.json")).unwrap(), before);
     assert_eq!(
