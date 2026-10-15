@@ -97,12 +97,12 @@ fn inputs(cfg: &Config) -> Vec<Value> {
     )
     .unwrap();
     assert_eq!(batch.candidates[0].status, w2::Status::Ok);
-    let base = json!({"contract":"w1.v4","source_snapshot":{"source_id":"s"},
+    let base = json!({"contract":"w1.v5","source_snapshot":{"source_id":"s"},
         "current_user_message":cfg.statement,"user_history":[],"entities":[entity],
         "relations":[{"id":"fact","memory_types":["fact"]}],"said_on":cfg.said_on,
         "utc_offset_seconds":28800,"task_id":null});
     let mut w3 = base.clone();
-    w3["contract"] = json!("w3.v5");
+    w3["contract"] = json!("w3.v6");
     w3["candidates"] = json!(batch.candidates);
     w3["memory_requests"] = json!(batch.memory_requests);
     let w4: W4Input = serde_json::from_value(json!({"candidates":[{"index":0,"committed_id":null,
@@ -184,7 +184,7 @@ fn cases(cfg: &Config, base: &str) -> Result<Vec<Case>, String> {
         ModelStage::R4,
         ModelStage::R4,
     ];
-    let names = ["w1_v4", "w3_v5", "w4_v5", "r1_v2", "r4_v7", "r4_v7"];
+    let names = ["w1_v5", "w3_v6", "w4_v5", "r1_v2", "r4_v7", "r4_v7"];
     let prompts = [
         write_models::W1_PROMPT,
         write_models::W3_PROMPT,

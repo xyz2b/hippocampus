@@ -70,7 +70,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         provider.client.transport = Some(Arc::new(move |request| {
             let body: Json =
                 serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-            if body["text"]["format"]["name"] == "w3_v5" {
+            if body["text"]["format"]["name"] == "w3_v6" {
                 let store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
                 assert!(
                     store
@@ -129,7 +129,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
             let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             assert!(input.get("model").is_none());
             assert_eq!(input["current_user_message"], case["text"]);
-            if request["text"]["format"]["name"] == "w3_v5" {
+            if request["text"]["format"]["name"] == "w3_v6" {
                 assert_eq!(
                     input["candidates"][0]["candidate"],
                     case["w1"]["candidates"][0]
@@ -321,7 +321,7 @@ fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
                 &models.w3,
                 effort,
                 ModelStage::W3,
-                "w3_v5",
+                "w3_v6",
                 W3_PROMPT,
                 json!({"fixture":true}),
                 w3_schema(),
@@ -377,7 +377,7 @@ fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
             &models.w3,
             ReasoningEffort::Low,
             ModelStage::W3,
-            "w3_v5",
+            "w3_v6",
             W3_PROMPT,
             json!({"fixture":true}),
             w3_schema(),
@@ -1956,7 +1956,7 @@ fn w3_for(upstream: &Json) -> Json {
 
 #[test]
 fn entity_registration_during_each_model_preserves_independent_candidates() {
-    for stage in ["w1_v4", "w3_v5", "w4_v5"] {
+    for stage in ["w1_v5", "w3_v6", "w4_v5"] {
         let db = Db::new();
         let first = "我喜欢浅蓝围巾。";
         let old_key = db.start_turn(first, "seed-entity", &[]);
@@ -3329,7 +3329,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W1_PROMPT,
             vec![
-                "w1.v4",
+                "w1.v5",
                 "speech=plan and memory_type=fact",
                 "completed booking or purchase",
                 "Kinship refers",
@@ -3340,7 +3340,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W3_PROMPT,
             vec![
-                "w3.v5",
+                "w3.v6",
                 "user really",
                 "qualifier present only in sentence",
                 "cannot be supported",
@@ -3381,8 +3381,8 @@ fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_
     assert_eq!(requests.len(), 2);
     let state = db.open().read().unwrap();
     for (i, (stage, version, schema, old_schema)) in [
-        ("w1", "w1.v4", "w1_v4", "w1_v2"),
-        ("w3", "w3.v5", "w3_v5", "w3_v4"),
+        ("w1", "w1.v5", "w1_v5", "w1_v2"),
+        ("w3", "w3.v6", "w3_v6", "w3_v4"),
     ]
     .iter()
     .enumerate()
@@ -3727,7 +3727,7 @@ fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
     assert_eq!(final_sent.lock().unwrap().len(), 1);
     assert_eq!(db.calls(), 3);
     let request = &final_sent.lock().unwrap()[0];
-    assert_eq!(request["text"]["format"]["name"], "w3_v5");
+    assert_eq!(request["text"]["format"]["name"], "w3_v6");
     let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     assert_eq!(payload["generation"], 1);
     assert_eq!(payload["utc_offset_seconds"], 28_800);
@@ -3838,7 +3838,7 @@ fn history_import_models_receive_null_original_time_and_frozen_before_parent_pro
             assert_eq!(payload["source_provenance"]["before_source_id"], parent);
             assert_eq!(payload["current_user_message"], text);
             assert!(payload.get("model").is_none());
-            if request["text"]["format"]["name"] == "w3_v5" {
+            if request["text"]["format"]["name"] == "w3_v6" {
                 assert_eq!(
                     payload["candidates"][0]["time_resolutions"][0]["status"],
                     "unknown"
@@ -3972,7 +3972,7 @@ fn af83_all_write_stage_requests_bind_nonempty_schema() {
     );
     let requests = sent.lock().unwrap();
     assert_eq!(requests.len(), 3);
-    for (request, name) in requests.iter().zip(["w1_v4", "w3_v5", "w4_v5"]) {
+    for (request, name) in requests.iter().zip(["w1_v5", "w3_v6", "w4_v5"]) {
         assert_eq!(request["text"]["format"]["name"], name);
         assert_nonempty_model_request(request);
     }
@@ -4448,43 +4448,61 @@ fn af331_w3_coverage_requires_nonempty_exact_gaps() {
 
 #[test]
 fn af331_old_w3_v4_checkpoint_requires_rejudge_without_send() {
-    let db = Db::new();
-    let (key, upstream, _) = w4_case(&db, false);
-    let (provider, requests) = mocked(
-        &db,
-        vec![
-            Ok(envelope(&upstream.to_string())),
-            Ok(envelope(&w3_for(&upstream).to_string())),
-        ],
-    );
-    let (claim, ctx, _, _) = ready_w4(&db, &key, &provider);
-    db.open()
-        .transaction(|state| {
-            let binding = &mut state
-                .sources
-                .get_mut(&key)
-                .unwrap()
+    for (stage, current, old) in [
+        ("w3", "w3.v6", "w3.v4"),
+        ("w1", "w1.v5", "w1.v4"),
+        ("w3", "w3.v6", "w3.v5"),
+    ] {
+        let db = Db::new();
+        let (key, upstream, _) = w4_case(&db, false);
+        let (provider, requests) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+            ],
+        );
+        let (claim, ctx, _, _) = ready_w4(&db, &key, &provider);
+        db.open()
+            .transaction(|state| {
+                let binding = &mut state
+                    .sources
+                    .get_mut(&key)
+                    .unwrap()
+                    .result
+                    .as_mut()
+                    .unwrap()["w4_model_stages"][stage]["binding"];
+                assert_eq!(binding["contract"], current);
+                binding["contract"] = json!(old);
+                binding["input"]["contract"] = json!(old);
+                Ok(())
+            })
+            .unwrap();
+        let (_, input) = inputs(&db.open(), &key, &claim);
+        let error = provider
+            .provide(&mut db.open(), &claim, &ctx, &input)
+            .err()
+            .expect("v4 checkpoint must not be reused");
+        assert!(error.to_string().contains("needs_rejudge"), "{error}");
+        assert_eq!(requests.lock().unwrap().len(), 2);
+        assert_eq!(
+            db.open().read().unwrap().sources[&key]
                 .result
-                .as_mut()
-                .unwrap()["w4_model_stages"]["w3"]["binding"];
-            assert_eq!(binding["contract"], "w3.v5");
-            binding["contract"] = json!("w3.v4");
-            binding["input"]["contract"] = json!("w3.v4");
-            Ok(())
-        })
-        .unwrap();
-    let (_, input) = inputs(&db.open(), &key, &claim);
-    let error = provider
-        .provide(&mut db.open(), &claim, &ctx, &input)
-        .err()
-        .expect("v4 checkpoint must not be reused");
-    assert!(error.to_string().contains("needs_rejudge"), "{error}");
-    assert_eq!(requests.lock().unwrap().len(), 2);
-    assert_eq!(
-        db.open().read().unwrap().sources[&key]
-            .result
-            .as_ref()
-            .unwrap()["w4_model_stages"]["w3"]["binding"]["contract"],
-        "w3.v4"
-    );
+                .as_ref()
+                .unwrap()["w4_model_stages"][stage]["binding"]["contract"],
+            old
+        );
+    }
+}
+
+#[test]
+fn af342_scope_and_coverage_are_semantic_rules_not_new_admission_fields() {
+    assert!(W1_PROMPT.contains("including temporary or conditional ones"));
+    assert!(W1_PROMPT.contains("with an identifiable project scope"));
+    assert!(W1_PROMPT.contains("assertion by assertion in mixed messages"));
+    assert!(W3_PROMPT.contains("Omitting only out-of-scope discussion is complete, not gaps"));
+    assert!(W3_PROMPT.contains("extraction scope is not"));
+    assert!(W3_PROMPT.contains("do not report gaps with missing=[]"));
+    assert!(!w1_schema().to_string().contains("in_scope"));
+    assert!(!w3_schema().to_string().contains("in_scope"));
 }

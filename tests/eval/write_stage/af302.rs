@@ -160,9 +160,30 @@ pub fn run() -> Result<(), String> {
     run_campaign(false)
 }
 pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
-    let prefix = if w4_only { "EVAL_AF319" } else { "EVAL_AF302" };
-    let cap = if w4_only { af319::CAP } else { CAP };
-    let slots = if w4_only { 150 } else { 320 };
+    run_scoped_campaign(w4_only, false)
+}
+pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<(), String> {
+    let prefix = if scope_trial {
+        "EVAL_AF342"
+    } else if w4_only {
+        "EVAL_AF319"
+    } else {
+        "EVAL_AF302"
+    };
+    let cap = if scope_trial {
+        af342::CAP
+    } else if w4_only {
+        af319::CAP
+    } else {
+        CAP
+    };
+    let slots = if scope_trial {
+        24
+    } else if w4_only {
+        150
+    } else {
+        320
+    };
     let var = |k: &str| std::env::var(k).ok();
     for name in [
         "EVAL_COMPARE",
@@ -182,6 +203,9 @@ pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
         Some("2") => 2,
         _ => return Err("repeat must be 1 or 2".into()),
     };
+    if scope_trial && repeat != 1 {
+        return Err("AF342 authorizes one repeat only".into());
+    }
     let stage_var = var(&format!("{prefix}_STAGE"));
     let stage = if w4_only {
         if !matches!(stage_var.as_deref(), None | Some("w4")) {
@@ -209,25 +233,35 @@ pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
             ));
         }
     };
-    let root = Path::new(if w4_only { af319::ROOT } else { ROOT });
+    let root = Path::new(if scope_trial {
+        af342::ROOT
+    } else if w4_only {
+        af319::ROOT
+    } else {
+        ROOT
+    });
     let _lock = w3_trial_lock(&root.join("global-lock"))?;
-    if !w4_only && var("EVAL_AF308_MIGRATE").as_deref() == Some("1") {
+    if !w4_only && !scope_trial && var("EVAL_AF308_MIGRATE").as_deref() == Some("1") {
         println!("{}", migrate(root)?);
         return Ok(());
     }
-    let mut groups = if w4_only {
+    let mut groups = if scope_trial {
+        af342::plan(root, var)?
+    } else if w4_only {
         af319::plan(root, var)?
     } else {
         plan(root, var)?
     };
-    let frozen = if w4_only {
+    let frozen = if scope_trial {
+        af342::manifest(&groups)
+    } else if w4_only {
         af319::manifest(&groups)
     } else {
         manifest(&groups)
     };
     let path = root.join("manifest.json");
     if let Some(amendment) = var(&format!("{prefix}_REFREEZE")) {
-        if (!w4_only && amendment != "AF311") || !dry || record {
+        if scope_trial || (!w4_only && amendment != "AF311") || !dry || record {
             return Err("label refreeze requires EVAL_DRY_RUN=1 and no EVAL_RECORD; AF302 only accepts AF311".into());
         }
         println!(
@@ -265,9 +299,9 @@ pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
             "rejected":g.iter().filter(|c|matches!(c.replay,Replay::Rejected(_))).count(),
             "worst_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(upper).sum::<u64>() as f64/1e9,
             "scenario_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(|c|input_bound(c)/4*i+3000*o).sum::<u64>() as f64/1e9,
-            "fingerprint":hippocampus::recall_models::fingerprint(&if w4_only {af319::manifest(&[g.clone()])} else {manifest(&[g.clone()])})}));
+            "fingerprint":hippocampus::recall_models::fingerprint(&if scope_trial {af342::manifest(&[g.clone()])} else if w4_only {af319::manifest(&[g.clone()])} else {manifest(&[g.clone()])})}));
     }
-    let dry_report = json!({"campaign":if w4_only {"AF319"} else {"AF302"},"fixed_slots":slots,"selected_repeat":repeat,"selected_stage":stage,"selected_profiles":profiles,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
+    let dry_report = json!({"campaign":if scope_trial {"AF342"} else if w4_only {"AF319"} else {"AF302"},"fixed_slots":slots,"selected_repeat":repeat,"selected_stage":stage,"selected_profiles":profiles,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
         "sent":0,"cap_cny":cap as f64/1e9,"charged_cny":total(&ledger)? as f64/1e9,"profiles":summary,
         "estimate_note":"scenario only: input bound / 4, output 3000 per call, no cache; not measured usage",
         "manifest_fingerprint":hippocampus::recall_models::fingerprint(&frozen)});
@@ -357,9 +391,9 @@ pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
         .join(",");
     m15_write_json(
         &root.join(format!("report-repeat-{repeat}{suffix}.json")),
-        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":if w4_only {label_revisions.as_str()} else {"AF311"},"profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
+        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":if w4_only || scope_trial {label_revisions.as_str()} else {"AF311"},"profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
     )?;
-    if stage == Some("w1") {
+    if !scope_trial && stage == Some("w1") {
         combined_w1(root, &groups)?;
     }
     if w4_only {

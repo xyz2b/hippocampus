@@ -1,4 +1,4 @@
-//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v5、§2.4 w4.v5、§3.1 r1.v2、§3.2）。
+//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v6、§2.4 w4.v5、§3.1 r1.v2、§3.2）。
 //!
 //! JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分；包含 W3 输出核验。
 //! Quote 是否逐字存在、日历是否合法、目录与任务是否允许等机械校验属于 W2（§2.2），
@@ -293,7 +293,7 @@ pub enum CandidateKind {
     Retraction,
 }
 
-/// §2.1 w1.v4 候选。`relation` 为目录内关系 ID 或通用关系 `fact`；`memory_type` 由代码对照
+/// §2.1 w1.v5 候选。`relation` 为目录内关系 ID 或通用关系 `fact`；`memory_type` 由代码对照
 /// 关系目录核对（W2），这里保留模型给出的文本。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -429,7 +429,7 @@ pub struct RequestReview {
     pub verdict: Verdict,
 }
 
-/// §2.3 w3.v5；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
+/// §2.3 w3.v6；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct W3Output {

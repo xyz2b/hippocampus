@@ -99,3 +99,7 @@ M1.5 于 2026-10-07 按 AF110 暂告一段落，以下是正常使用时需要�
 recall.v11 的 retrieval 只报告本机检索状态/索引覆盖（disabled/not_needed/ready/pending/unavailable），不代替 completeness、保存回执或 R4 判断。ready 不证明唯一当前值；pending 不表示原话未收到，宿主仍可使用已返回 raw 及其明确限定语。bootstrap/offline 不调用嵌入；默认 embedding.enabled=false。DB 当前 v11，可读旧数据，不自动重新整理。
 
 bootstrap.statement_snapshot（MCP 中位于 recall.statement_snapshot）缺省关闭，不附加到每次工具的 global_context。它是“已存陈述，非本轮判断”：仅可说“按记录你曾说……”，保留出处、计划/否定、条件、不确定性和时间，Active 不表示当前仍成立。问当前状态、条件是否适用、完整清单或本轮有新相关陈述时必须调用普通 recall（有获准新原话先 prepare），不能凭快照直接断言。unfinished_sources 是可信范围内全部未完成来源数，非问题相关数；coverage_unknown=true、空快照或零未完成来源都不证明完整。刷新使用新 bootstrap request_id；同参重放仍用旧读版本/时间，删除或授权/任务限制变化仍失效。当前仅支持 recall.v11，v10 及更旧版本请求明确 contract_version_unsupported。
+
+### AF342：个人陈述提取范围
+
+W1 v5 保留本人职责/工作状态、真实偏好、习惯、选择、计划和经历；项目规则须明确采用且范围可定位，外部方案论证和备选建议不抽取。混合消息逐断言处理，W3 v6 coverage 只计范围内遗漏，gaps 仍须非空精确引用。宿主仍应避免保存纯讨论；已获保存授权的原话不因零候选被删除。模型范围判断可能出错，W3 没有新增范围准入字段；旧讨论记录由用户决定处理，不自动删除或重整理。

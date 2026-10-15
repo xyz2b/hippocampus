@@ -923,7 +923,7 @@ mod tests {
         }
     }
     pub(super) fn request(stage: &str) -> Value {
-        json!({"model":"pro","input":"{\"evidence\":{\"records\":[1]}}","text":{"format":{"name":match stage{"W1"=>"w1_v4","W3"=>"w3_v5","W4"=>"w4_v5","R1"=>"r1_v2",_=>"r4_v7"}}}})
+        json!({"model":"pro","input":"{\"evidence\":{\"records\":[1]}}","text":{"format":{"name":match stage{"W1"=>"w1_v5","W3"=>"w3_v6","W4"=>"w4_v5","R1"=>"r1_v2",_=>"r4_v7"}}}})
     }
     fn envelope() -> String {
         json!({"status":"completed","usage":{"input_tokens":10,"output_tokens":5},"output":[]})

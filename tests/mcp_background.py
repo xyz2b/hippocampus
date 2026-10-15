@@ -42,9 +42,9 @@ class BackgroundFixture(Fixture):
                     "time": None, "plan": {"op": "lookup", "filter": {"relation": "lives_in", "time": None}, "unit": None}}
         if stage == "r4_v7":
             return {"verdict": "insufficient", "facts": [], "compute": None}
-        if stage == "w1_v4" and type(self).invalid:
+        if stage == "w1_v5" and type(self).invalid:
             return {"synthetic_invalid_output": True}
-        if stage == "w1_v4":
+        if stage == "w1_v5":
             result = super().output(body)
             candidate = result["candidates"][0]
             text = candidate["sentence"]["text"]
@@ -96,7 +96,7 @@ def main():
         save_cli(binary, db, env, config, turn("startup", new_text))
         assert calls(db) == 2
         entered, release = threading.Event(), threading.Event()
-        BackgroundFixture.gate = "w1_v4", entered, release
+        BackgroundFixture.gate = "w1_v5", entered, release
         client = ConcurrentClient(binary, db, env, "write-pipeline-fixture", config=config)
         try:
             assert entered.wait(8), "startup scan did not recover the queued source"

@@ -122,7 +122,7 @@ fn fact(
 fn visible_output(body: &Json) -> Json {
     let input: Json = serde_json::from_str(body["input"].as_str().unwrap()).unwrap();
     match body["text"]["format"]["name"].as_str().unwrap() {
-        "w1_v4" => {
+        "w1_v5" => {
             let text = input["current_user_message"].as_str().unwrap();
             if text == HYPOTHESIS {
                 return json!({"candidates":[],"memory_requests":[]});
@@ -326,7 +326,7 @@ fn visibility_a_inline_raw_then_committed_new_version() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, sent) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v4");
+    let (entered, release) = hold(&mut c, "w1_v5");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -415,7 +415,7 @@ fn visibility_d_truncated_related_raw_blocks_old_current_value() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v4");
+    let (entered, release) = hold(&mut c, "w1_v5");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -444,7 +444,7 @@ fn visibility_e_newer_update_commits_first_without_older_overwrite() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v4");
+    let (entered, release) = hold(&mut c, "w1_v5");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();
     let shared = Mutex::new(s);
@@ -519,7 +519,7 @@ fn visibility_f_cross_day_uses_received_day_for_relative_time() {
         .lock()
         .unwrap()
         .iter()
-        .find(|b| b["text"]["format"]["name"] == "w1_v4")
+        .find(|b| b["text"]["format"]["name"] == "w1_v5")
         .unwrap()
         .clone();
     assert!(w1["input"].as_str().unwrap().contains("2026-10-02"));
@@ -533,7 +533,7 @@ fn visibility_g_deletion_invalidates_foreground_and_late_background() {
     let mut s = service(&db);
     seed(&db, &mut s);
     let (mut c, _) = visible_client();
-    let (entered, release) = hold(&mut c, "w1_v4");
+    let (entered, release) = hold(&mut c, "w1_v5");
     let (r4_entered, r4_release) = hold(&mut c, "r4_v7");
     s.inject_model_client(c);
     let worker = s.start_background().unwrap().unwrap();

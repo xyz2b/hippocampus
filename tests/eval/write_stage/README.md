@@ -653,7 +653,7 @@ points 固定 4 槽（W4 2 + R4 2）：预置两条共享完整原句的片段�
 
 每个 campaign 固定总额度和完整槽位/派生规则，各依赖槽在发送前持久化精确请求及上游输出身份；物理发送前占额度，不重试，不重发中断在途槽。干跑不读取密钥、不创建账本或录制。授权后才可去掉 `EVAL_DRY_RUN=1` 并设置 `PMR_MODEL_NETWORK=live` 与 DEEPSEEK 环境变量；离线严格回放用 `EVAL_RECORD=0`，新目录缺口如实报告。不要将本轮授权额度转移给其他 campaign。
 
-当前契约 W1 v4、W3 v5、W4 v5、R4 v7、recall v10（AF288 升宿主协议并修小库检索，W 侧不变）；R1 v2、DB v11 不变。当前请求与旧 W 阶段/R4 的契约及提示词身份不同，旧录制严格报告过期；保留历史录制/标签/报告，不改指纹以复用。AF96/AF101 等历史冻结提示词继续保留，不能当作当前提示词验证结果。
+当前契约 W1 v5、W3 v6、W4 v5、R4 v7、recall v10（AF288 升宿主协议并修小库检索，W 侧不变）；R1 v2、DB v11 不变。当前请求与旧 W 阶段/R4 的契约及提示词身份不同，旧录制严格报告过期；保留历史录制/标签/报告，不改指纹以复用。AF96/AF101 等历史冻结提示词继续保留，不能当作当前提示词验证结果。
 
 
 ### AF216：普通否定 fact 的提交政策与 24 槽诊断
@@ -906,3 +906,22 @@ EVAL_AF322_REPLAY=1 cargo test --test write_stage_eval af319::af322_offline_firs
 ### AF331：W3 v5 本地覆盖核验
 
 当前 W3 v5 拒收 gaps 且 missing 为空；合法连续引用的 gaps 与 complete+空 missing 保持通过。无动态 reviews 长度 schema，无自动重试。旧 W3 v4 请求/检查点因版本与提示词身份变化严格失效，历史录制保留且报告过期；W1/W4/recall/DB 不变。已提交数据不重写，已完成来源不自动重整理。
+
+
+### AF342：个人陈述提取范围（W1 v5 / W3 v6）
+
+独立草案 `af342/w1.json` / `af342/w3.json` 各 12 题，由 Claude 复核；不得将草案自动分称为人工验收。W3 使用固定候选，包含零候选的 coverage 诊断；这不改变生产零候选跳过 W3 的规则，也不声称是串联闭环。
+范围外讨论不提取，coverage 只计范围内遗漏；候选原文支持核验不增加范围准入字段。旧 W1/W3 录制严格过期、原文件不改，已存检查点按版本失效，不自动重整理。
+
+沿用 `cost_campaign`：24 个独立槽，一遍，DS-Pro W1/W3 low，输出上限 32768/16384，超时 360s。模型必须显式来自 `DEEPSEEK_PRO_MODEL`，端点 `HUOSHAN_DEEPSEEK_BASE_URL`，密钥 `HUOSHAN_DEEPSEEK_API_KEY`；无端点/模型拒绝生成占位 manifest。费率输入/缓存/输出为 9/0.3/27 元/M（情景估算，非账单）。总预算 10 元；发送前按 JSON UTF-8 字节+1024 的输入上界与最大输出预留，usage 结算，发送阶段无响应传输失败结算 0 且可手工续跑；HTTP 无 usage/中断按上界，不重发已响应或在途槽。沿用连续同类错误/截断熔断。最大费用之和可能超过 10 元，因此费用门槛可能提前停止，不扩额。
+
+仅在 Claude 本机、确认草案后首次干跑生成 manifest；Codex 仅用临时注入环境检查计划，不能生成实际 manifest。标签或请求变化拒绝续跑（本轮不新增重冻结授权）。无人工复核台账，报告保留 draft、字段/coverage、usage、费用及延迟。
+
+```sh
+# 在仓库根目录；zsh -ic 读取现有环境，不打印密钥。
+zsh -ic 'EVAL_AF342=1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+# 核对 fixed_slots=24、selected_slots=24、cap_cny=10、端点/模型指纹后发送：
+zsh -ic 'EVAL_AF342=1 EVAL_RECORD=24 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+```
+
+产物仅在 `target/eval-providers/af342/`（manifest、campaign 授权、cost-ledger、逐次录制、plan-repeat-1.json、report-repeat-1.json）。同一发送命令可续跑；不设置其他 EVAL campaign/model/effort 变量。

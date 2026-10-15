@@ -1,6 +1,6 @@
 # W4 的代码侧与运行时离线闭环
 
-> 2026-10-07 M1.5 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。当前 DB v11；契约为 W1 v4、W3 v5、W4 v5、R1 v2、R4 v7、recall v11。缺省 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除与授权账本保留，客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定。历史测量与检查点兼容说明不代表旧执行器仍可用。
+> 2026-10-07 M1.5 收尾：默认且仅支持 write_pipeline=w4_runtime_v1 / recall_pipeline=recall_v3；旧写入/召回执行器已删除，legacy 配置、旧检索配置字段及 answer_contract.v1 拒绝。当前 DB v11；契约为 W1 v5、W3 v6、W4 v5、R1 v2、R4 v7、recall v11。缺省 W1/W3 low、W4 medium、R1/R4 minimal、R4 计算类 low；Pro endpoint 从 DEEPSEEK_PRO_MODEL 读取，离线不要求。旧库读取/删除与授权账本保留，客户端及 [M1.5 已知局限](../memory-client-contract.md#m15-已知局限) 见接入约定。历史测量与检查点兼容说明不代表旧执行器仍可用。
 
 依据 contracts.md 2.1–2.5、3.2、3.5。设计经 GPT 复审 0021、0022 确定，用户裁定了三项（见 contracts 第 8 节和下文“例外”）。W2 在 `src/w2.rs`，W3 类型与机械核验在 `src/contract.rs`，W4 在 `src/w4.rs`，W5 与任务持久化在 `src/commit.rs`，库级入口在 `src/enrichment.rs`。注入提供者实现离线闭环；④-3/④-4 增加显式 W1/W3/W4 模型入口，④-5 接通配置与 CLI 分发。
 
@@ -261,8 +261,12 @@ memory_entity_merge 只合并当前 owner 的两个非 self Person，要求已�
 
 ### AF206：通用 fact 的断言定位片段
 
-通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1 v4、W3 v5、W4 v5、R4 v7、recall v11；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
+通用 fact 使用连续原文 value 片段定位单条断言，完整 sentence 与依据保留原句。W2 只核类型、引用、相等及包含，W3/W4/R4 判断含义及限定语归属；独立无关断言不混为一个值，但否定范围、共享限定语、回指、纠正仍按完整原文核验。W4 检索使用完整 sentence；召回仅按明确记录身份取得等级/更新状态，不由整句重叠或单候选整句推定全部整理。旧整句记录继续读取，无数据改写、无需迁移；已核验的普通否定 user_statement+fact 按既有准入条件提交，执行极性为 Negative；否定本身不决定更新、冲突或撤回。否定 episode 仍拒绝投影，polarity=unknown 仍暂存；旧 pending 不自动重整理。当前 W1 v5、W3 v6、W4 v5、R4 v7、recall v11；R1 v2、DB v11 不变，旧召回版本明确拒绝，历史录制按真实指纹报告过期。
 
 ### AF331：W3 v5 本地覆盖核验
 
 当前 W3 v5 拒收 gaps 且 missing 为空；合法连续引用的 gaps 与 complete+空 missing 保持通过。无动态 reviews 长度 schema，无自动重试。旧 W3 v4 请求/检查点因版本与提示词身份变化严格失效，历史录制保留且报告过期；W1/W4/recall/DB 不变。已提交数据不重写，已完成来源不自动重整理。
+
+### AF342：个人陈述提取范围
+
+W1 v5 保留本人职责/工作状态、真实偏好、习惯、选择、计划和经历；项目规则须明确采用且范围可定位，外部方案论证和备选建议不抽取。混合消息逐断言处理，W3 v6 coverage 只计范围内遗漏，gaps 仍须非空精确引用。宿主仍应避免保存纯讨论；已获保存授权的原话不因零候选被删除。模型范围判断可能出错，W3 没有新增范围准入字段；旧讨论记录由用户决定处理，不自动删除或重整理。

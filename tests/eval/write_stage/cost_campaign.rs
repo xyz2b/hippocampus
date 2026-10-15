@@ -72,7 +72,11 @@ pub(super) fn campaign_manifest(root: &Path) -> Result<Option<Value>, String> {
         return Ok(None);
     };
     let m = read(&base.join("manifest.json"), Value::Null)?;
-    Ok(matches!(m["version"].as_str(), Some("af302.v1" | "af319.v1")).then_some(m))
+    Ok(matches!(
+        m["version"].as_str(),
+        Some("af302.v1" | "af319.v1" | "af342.v1")
+    )
+    .then_some(m))
 }
 pub(super) fn logs(root: &Path) -> Result<Vec<Value>, String> {
     let dir = root.join("sends");

@@ -52,7 +52,7 @@ class VisibilityFixture(Fixture):
     def output(self, body):
         stage = body["text"]["format"]["name"]
         payload = json.loads(body["input"])
-        if stage == "w1_v4":
+        if stage == "w1_v5":
             text = payload["current_user_message"]
             if text == HYPOTHESIS:
                 return {"candidates": [], "memory_requests": []}
@@ -133,7 +133,7 @@ def run(case, binary):
             client.call("memory_remember", turn("old", OLD))
             wait_status(db, "old", "committed")
         if case == "a":
-            entered, release = gate("w1_v4", NEW)
+            entered, release = gate("w1_v5", NEW)
             saved = client.finish_call(client.start_call("memory_remember", turn("new", NEW)), timeout=5)
             # Startup/periodic scans can claim between T1 and receipt reading, before the explicit wake.
             assert saved["enrichment"]["status"] in ("queued", "running"), saved
@@ -164,7 +164,7 @@ def run(case, binary):
             assert result["facts"][0]["statement"] == text, result
             assert any(r["enrichment"] == "failed" and r["quote"]["text"] == text for r in result["raw"])
         elif case == "d":
-            entered, release = gate("w1_v4", NEW)
+            entered, release = gate("w1_v5", NEW)
             client.call("memory_remember", turn("omitted", NEW))
             assert entered.wait(8)
             for n in range(32):
@@ -175,7 +175,7 @@ def run(case, binary):
             assert result["facts"][0]["current"] != "yes" and "budget_exhausted" not in result["degraded_reasons"]
             release.set()
         elif case == "e":
-            entered, release = gate("w1_v4", NEW)
+            entered, release = gate("w1_v5", NEW)
             client.call("memory_remember", turn("older", NEW))
             assert entered.wait(8)
             latest = "我已搬到杭州。"
@@ -213,12 +213,12 @@ def run(case, binary):
             dates = [datetime.datetime.fromtimestamp(r["start"] + 28800, datetime.timezone.utc).date().isoformat()
                      for r in resolutions(s["result"]) if r.get("start") is not None]
             assert dates and set(dates) == {"2026-10-01"}, dates
-            w1 = next(r for r in VisibilityFixture.requests if r["text"]["format"]["name"] == "w1_v4")
+            w1 = next(r for r in VisibilityFixture.requests if r["text"]["format"]["name"] == "w1_v5")
             assert json.loads(w1["input"])["said_on"] == "2026-10-02"
             result = recall(client, "relative")
             assert result["facts"][0]["grade"] == "committed", result
         elif case == "g":
-            entered, release = gate("w1_v4", NEW)
+            entered, release = gate("w1_v5", NEW)
             r4_entered, r4_release = gate("r4_v7")
             saved = client.call("memory_remember", turn("deleted", NEW))
             assert entered.wait(8)

@@ -48,7 +48,7 @@ pub(super) fn case(
 
 pub(super) fn w3_request(w1: &Case, batch: Option<&w2::Batch>) -> Value {
     let mut input: Value = serde_json::from_str(w1.request["input"].as_str().unwrap()).unwrap();
-    input["contract"] = json!("w3.v5");
+    input["contract"] = json!("w3.v6");
     input["candidates"] = json!(
         batch
             .map(|b| b
@@ -68,7 +68,7 @@ pub(super) fn w3_request(w1: &Case, batch: Option<&w2::Batch>) -> Value {
     budget.review_output_tokens = 16384;
     let mut request = structured_request(
         ModelStage::W3,
-        "w3_v5",
+        "w3_v6",
         write_models::W3_PROMPT,
         input,
         write_models::w3_schema(),

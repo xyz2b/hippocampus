@@ -6,6 +6,8 @@ mod adapter;
 mod af302;
 #[path = "eval/write_stage/af319.rs"]
 mod af319;
+#[path = "eval/write_stage/af342.rs"]
+mod af342;
 #[path = "eval/write_stage/cost_campaign.rs"]
 mod cost_campaign;
 
@@ -1217,7 +1219,7 @@ fn stage_request_with_output_tokens(
                         .collect::<std::collections::BTreeSet<_>>()
                 )
             };
-            let mut payload = json!({"contract": if stage == "w1" { "w1.v4" } else { "w3.v5" }, "source_snapshot": {"eval_sample": sample["id"]},
+            let mut payload = json!({"contract": if stage == "w1" { "w1.v5" } else { "w3.v6" }, "source_snapshot": {"eval_sample": sample["id"]},
                 "current_user_message": input["text"], "user_history": input.get("history").cloned().unwrap_or(json!([])),
                 "entities": items(&entities).iter().map(|e| json!({"id": e["id"], "owner_id": "eval",
                     "entity_type": "Person", "canonical_name": e["names"][0], "aliases": e["names"]})).collect::<Vec<_>>(),
@@ -1227,7 +1229,7 @@ fn stage_request_with_output_tokens(
             if stage == "w1" {
                 (
                     ModelStage::W1,
-                    "w1_v4",
+                    "w1_v5",
                     write_models::W1_PROMPT,
                     write_models::w1_schema(),
                     payload,
@@ -1246,7 +1248,7 @@ fn stage_request_with_output_tokens(
                 payload["memory_requests"] = serde_json::to_value(&batch.memory_requests).unwrap();
                 (
                     ModelStage::W3,
-                    "w3_v5",
+                    "w3_v6",
                     write_models::W3_PROMPT,
                     write_models::w3_schema(),
                     payload,
@@ -3180,7 +3182,7 @@ fn compare_report(groups: &[Vec<Case>], reports: &[Value], sent: usize) -> Value
             "eval_sample":compare_sample_id(sample["id"].as_str().unwrap()),
             "label_revision":sample["label_revision"],
             "observation_only":sample["observation_only"]==true,"observation_reason":sample["observation_reason"],
-            "request_contract":format!("{stage}.v4"),"tier":if sample["observation_only"]==true {"观察（契约待定）"} else {compare_tier(&cells)},"profiles":cells}),
+            "request_contract":groups.iter().flatten().find(|c|c.stage==stage).and_then(|c|serde_json::from_str::<Value>(c.request["input"].as_str()?).ok()).map(|v|v["contract"].clone()).unwrap_or(Value::Null),"tier":if sample["observation_only"]==true {"观察（契约待定）"} else {compare_tier(&cells)},"profiles":cells}),
         );
     }
     let profile_reports: Vec<_> = groups.iter().zip(reports).map(|(group, report)| {
@@ -4720,6 +4722,14 @@ fn write_stage_eval_suite() {
         af193::run().unwrap();
         return;
     }
+    if std::env::var_os("EVAL_AF342").is_some() {
+        assert!(
+            std::env::var_os("EVAL_AF302").is_none() && std::env::var_os("EVAL_AF319").is_none(),
+            "cannot combine campaigns"
+        );
+        af302::run_scoped_campaign(false, true).unwrap();
+        return;
+    }
     if std::env::var_os("EVAL_AF319").is_some() {
         assert!(
             std::env::var_os("EVAL_AF302").is_none(),
@@ -5125,7 +5135,7 @@ fn w3_comparison_plan(root: &Path, base: Option<String>) -> Result<Vec<Case>, St
         let mut old = frozen.clone();
         old["instructions"] = structured_request(
             ModelStage::W3,
-            "w3_v5",
+            "w3_v6",
             W3_OLD_PROMPT,
             serde_json::from_str(frozen["input"].as_str().unwrap()).unwrap(),
             frozen["text"]["format"]["schema"].clone(),
@@ -5238,7 +5248,7 @@ fn w3_comparison_dry_run() {
         .filter(|c| matches!(c.replay, Replay::Missing | Replay::Stale))
         .count();
     println!("AF96 W3 对照：旧/新提示词 × 4 虚构场景 × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。");
-    println!("固定 Pro、minimal、w3.v5、said_on=2026-10-07、UTC+8、max_output_tokens=16384。");
+    println!("固定 Pro、minimal、w3.v6、said_on=2026-10-07、UTC+8、max_output_tokens=16384。");
     println!(
         "旧提示词：91a068a，字节指纹 {W3_OLD_FINGERPRINT}；新提示词：{}。",
         w3_prompt_fingerprint(write_models::W3_PROMPT)
@@ -5358,7 +5368,7 @@ fn w3_effort_dry_run() {
         "AF101 W3 强度对照：同一提示词 × 4 虚构场景 × minimal/low × 2 次 = 16 个独立 W3 槽位；W1/W4/R1/R4=0。"
     );
     println!(
-        "固定 Pro、w3.v5、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
+        "固定 Pro、w3.v6、said_on=2026-10-07、UTC+8、max_output_tokens=16384；两臂仅 reasoning.effort 不同。"
     );
     println!("固定提示词：dc604f8，字节指纹 {W3_EFFORT_PROMPT_FINGERPRINT}。");
     println!(
@@ -5408,7 +5418,7 @@ fn af101_w3_effort_plan_is_frozen_and_rejects_fifteen_before_output() {
             );
             assert_eq!(case.request["model"], "ep-20261003130756-trhj6");
             assert_eq!(case.request["max_output_tokens"], 16384);
-            assert_eq!(case.request["text"]["format"]["name"], "w3_v5");
+            assert_eq!(case.request["text"]["format"]["name"], "w3_v6");
             assert!(matches!(
                 case.sample["label_status"].as_str(),
                 Some("draft" | "reviewed")
@@ -5898,7 +5908,7 @@ fn evaluation_timeout_is_240_only_for_r4_compute_low() {
         ("r4_v7", "minimal", "count", 180),
         ("r4_v7", "high", "count", 180),
         ("r1_v2", "low", "count", 180),
-        ("w3_v5", "low", "count", 180),
+        ("w3_v6", "low", "count", 180),
     ] {
         let request = json!({"text":{"format":{"name":stage}},"reasoning":{"effort":effort},
             "input":json!({"plan":{"plan":{"op":op}}}).to_string()});
@@ -7829,8 +7839,8 @@ fn z8_r1_condition_subset_and_unlabelled_time_keep_required_semantics() {
 #[test]
 fn m15_stage_executors_bind_current_schema_and_input_contracts() {
     for (stage, schema, contract) in [
-        ("w1", "w1_v4", "w1.v4"),
-        ("w3", "w3_v5", "w3.v5"),
+        ("w1", "w1_v5", "w1.v5"),
+        ("w3", "w3_v6", "w3.v6"),
         ("w4", "w4_v5", "w4.v5"),
         ("r1", "r1_v2", "r1.v2"),
         ("r4", "r4_v7", "r4.v7"),
@@ -7853,7 +7863,7 @@ fn m15_stage_executors_bind_current_schema_and_input_contracts() {
             let mut input: Value =
                 serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             let contract = match stage.as_str() {
-                "w3" => "w3.v5",
+                "w3" => "w3.v6",
                 "r1" => "r1.v2",
                 "r4" => "r4.v7",
                 _ => unreachable!(),
@@ -9648,7 +9658,7 @@ fn af137_routes_both_stages_and_freezes_full_manifests_before_subset_resume() {
     assert_eq!(items(&report["matrix"]).len(), 40);
     assert_eq!(items(&report["results"]).len(), 520);
     assert_eq!(report["matrix"][0]["label_contract"], "w1.v1");
-    assert_eq!(report["matrix"][0]["request_contract"], "w1.v4");
+    assert_eq!(report["matrix"][0]["request_contract"], "w1.v5");
     assert_eq!(
         report["matrix"][0]["profiles"][3]["constrained_decoding"],
         false
