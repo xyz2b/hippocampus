@@ -6,7 +6,7 @@
     "label_status": "draft",
     "focus": "明确先行语",
     "input": {
-      "text": "刚才保管箱编号记错了，是63。",
+      "text": "保管箱编号记错了，是63。",
       "history": [
         "哥哥青垒的保管箱编号是28。"
       ],
@@ -36,8 +36,8 @@
           "subject": "sibling-demo",
           "relation": "fact",
           "memory_type": "fact",
-          "value": "刚才保管箱编号记错了，是63。",
-          "sentence": "刚才保管箱编号记错了，是63。",
+          "value": "保管箱编号记错了，是63。",
+          "sentence": "保管箱编号记错了，是63。",
           "polarity": "affirm",
           "uncertainty": null,
           "conditions": [],
@@ -62,9 +62,9 @@
       },
       "request_reviews": []
     },
-    "note": "移植 AF103 使用的 AF101 虚构场景；输入保留，当前 W3 v6 提示词核验，标签待 Claude 审核。刚才是记错编号的话语回指，不是编号有效时间；不默认加 times。",
+    "note": "AF355：在 AF352 筛查结论形成后移除话语回指“刚才”，避免时间角色干扰主体判断；期望不变，历史结论及录制保留，旧请求严格过期，不重录。",
     "source_sample_id": "af101_w3_01",
-    "label_revision": "AF352-draft"
+    "label_revision": "AF355"
   },
   {
     "id": "af352_w3_02",
@@ -73,7 +73,7 @@
     "label_status": "draft",
     "focus": "历史值矛盾但主体明确",
     "input": {
-      "text": "刚才保管箱编号记错了，是63。",
+      "text": "保管箱编号记错了，是63。",
       "history": [
         "哥哥青垒的保管箱只有一个编号，却同时记成28和47。"
       ],
@@ -103,8 +103,8 @@
           "subject": "sibling-demo",
           "relation": "fact",
           "memory_type": "fact",
-          "value": "刚才保管箱编号记错了，是63。",
-          "sentence": "刚才保管箱编号记错了，是63。",
+          "value": "保管箱编号记错了，是63。",
+          "sentence": "保管箱编号记错了，是63。",
           "polarity": "affirm",
           "uncertainty": null,
           "conditions": [],
@@ -129,9 +129,9 @@
       },
       "request_reviews": []
     },
-    "note": "移植 AF103 使用的 AF101 虚构场景；输入保留，当前 W3 v6 提示词核验，标签待 Claude 审核。刚才是记错编号的话语回指，不是编号有效时间；不默认加 times。",
+    "note": "AF355：在 AF352 筛查结论形成后移除话语回指“刚才”，避免时间角色干扰主体判断；期望不变，历史结论及录制保留，旧请求严格过期，不重录。",
     "source_sample_id": "af101_w3_02",
-    "label_revision": "AF352-draft"
+    "label_revision": "AF355"
   },
   {
     "id": "af352_w3_03",
@@ -140,7 +140,7 @@
     "label_status": "draft",
     "focus": "两个可能主体",
     "input": {
-      "text": "刚才保管箱编号记错了，是63。我打算修理纸灯罩。",
+      "text": "保管箱编号记错了，是63。我打算修理纸灯罩。",
       "history": [
         "哥哥青垒的保管箱编号是28；我的保管箱编号是47。"
       ],
@@ -170,8 +170,8 @@
           "subject": "sibling-demo",
           "relation": "fact",
           "memory_type": "fact",
-          "value": "刚才保管箱编号记错了，是63。",
-          "sentence": "刚才保管箱编号记错了，是63。",
+          "value": "保管箱编号记错了，是63。",
+          "sentence": "保管箱编号记错了，是63。",
           "polarity": "affirm",
           "uncertainty": null,
           "conditions": [],
@@ -218,9 +218,9 @@
       },
       "request_reviews": []
     },
-    "note": "移植 AF103 使用的 AF101 虚构场景；输入保留，当前 W3 v6 提示词核验，标签待 Claude 审核。刚才是记错编号的话语回指，不是编号有效时间；不默认加 times。",
+    "note": "AF355：在 AF352 筛查结论形成后移除话语回指“刚才”，避免时间角色干扰主体判断；期望不变，历史结论及录制保留，旧请求严格过期，不重录。",
     "source_sample_id": "af101_w3_03",
-    "label_revision": "AF352-draft"
+    "label_revision": "AF355"
   },
   {
     "id": "af352_w3_04",
@@ -229,7 +229,7 @@
     "label_status": "draft",
     "focus": "无先行语且目录唯一；核验编号所属的人，不是记错编号或更正发言的人",
     "input": {
-      "text": "刚才保管箱编号记错了，是63。",
+      "text": "保管箱编号记错了，是63。",
       "history": [],
       "entities": [
         {
@@ -250,8 +250,8 @@
           "subject": "self",
           "relation": "fact",
           "memory_type": "fact",
-          "value": "刚才保管箱编号记错了，是63。",
-          "sentence": "刚才保管箱编号记错了，是63。",
+          "value": "保管箱编号记错了，是63。",
+          "sentence": "保管箱编号记错了，是63。",
           "polarity": "affirm",
           "uncertainty": null,
           "conditions": [],
@@ -278,8 +278,8 @@
       },
       "request_reviews": []
     },
-    "note": "移植 AF103 使用的 AF101 虚构场景；输入保留，当前 W3 v6 提示词核验，标签待 Claude 审核。刚才是记错编号的话语回指，不是编号有效时间；不默认加 times。",
+    "note": "AF355：在 AF352 筛查结论形成后移除话语回指“刚才”，避免时间角色干扰主体判断；期望不变，历史结论及录制保留，旧请求严格过期，不重录。",
     "source_sample_id": "af101_w3_04",
-    "label_revision": "AF352-draft"
+    "label_revision": "AF355"
   }
 ]

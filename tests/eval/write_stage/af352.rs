@@ -152,7 +152,7 @@ pub(super) fn write_comparison(
         }).collect::<Vec<_>>() })).collect();
     m15_write_json(
         &root.join("comparison.json"),
-        &json!({"campaign":"AF352","note":"One paired observation per sample, draft labels pending review; fixed W3 inputs, not a chained runtime test","profiles":reports,"comparison":rows}),
+        &json!({"campaign":"AF352","input_revision_note":"AF355: af352_w3_01–04 inputs revised after the historical AF352 screening conclusion; 8 old requests across two arms are stale, not re-recorded. Historical conclusions remain tied to the original inputs.","note":"One paired observation per sample, draft labels pending review; fixed W3 inputs, not a chained runtime test","profiles":reports,"comparison":rows}),
     )
 }
 
@@ -171,16 +171,14 @@ fn af352_paired_plan_is_blind_40_slots_current_and_requires_real_configuration()
         let mut request = a.request.clone();
         request["reasoning"] = b.request["reasoning"].clone();
         assert_eq!(request, b.request);
-        assert!(
-            !a.request
-                .to_string()
-                .contains(a.sample["id"].as_str().unwrap())
-        );
-        assert!(
-            !a.request
-                .to_string()
-                .contains(a.sample["focus"].as_str().unwrap())
-        );
+        assert!(!a
+            .request
+            .to_string()
+            .contains(a.sample["id"].as_str().unwrap()));
+        assert!(!a
+            .request
+            .to_string()
+            .contains(a.sample["focus"].as_str().unwrap()));
         let payload: Value = serde_json::from_str(a.request["input"].as_str().unwrap()).unwrap();
         assert_eq!(
             payload["contract"],
@@ -267,12 +265,10 @@ fn af352_subject_cases_and_report_keep_semantic_safety_and_usage() {
     let samples = selected_samples();
     for (_, s) in samples.iter().filter(|(stage, _)| stage == "w3") {
         let batch = batch(adapter::expand(&s["input"]).unwrap(), &s["input"]).unwrap();
-        assert!(
-            batch
-                .candidates
-                .iter()
-                .all(|c| c.status != w2::Status::Rejected)
-        );
+        assert!(batch
+            .candidates
+            .iter()
+            .all(|c| c.status != w2::Status::Rejected));
     }
     for id in ["af352_w3_03", "af352_w3_04"] {
         let (_, s) = samples.iter().find(|(_, s)| s["id"] == id).unwrap();
@@ -318,4 +314,101 @@ fn af352_comparison_keeps_both_arms_each_question_and_refreeze_rejects_price_cha
         changed["profiles"][0][key] = json!("changed");
         assert!(refreeze_labels(&temp.0, &changed, &groups, "AF352-review").is_err());
     }
+}
+
+#[test]
+fn af355_input_revision_invalidates_exactly_eight_recordings_without_refreeze() {
+    let temp = TempRecords::new();
+    let current = plan(&temp.0, fixture_variable).unwrap();
+    let mut old = current.clone();
+    for c in old.iter_mut().flatten() {
+        if !c.sample["id"].as_str().unwrap().starts_with("af352_w3_") {
+            continue;
+        }
+        let expect = c.sample["expect"].clone();
+        assert_eq!(c.sample["label_revision"], "AF355");
+        assert!(!c.sample["input"].to_string().contains("刚才"));
+        let mut sample = c.sample.clone();
+        sample["label_revision"] = json!("AF352-draft");
+        for pointer in [
+            "/input/text",
+            "/input/candidates/0/sentence",
+            "/input/candidates/0/value",
+        ] {
+            let field = sample.pointer_mut(pointer).unwrap();
+            *field = json!(format!("刚才{}", field.as_str().unwrap()));
+        }
+        assert_eq!(sample["expect"], expect);
+        assert_eq!(
+            sample["input"]["candidates"][1],
+            c.sample["input"]["candidates"][1]
+        );
+        let mut request = compare_request("w3", &sample, 16384).unwrap();
+        request["model"] = c.request["model"].clone();
+        c.model.effort.apply(&mut request);
+        let options = ProviderOptions {
+            provider: c.provider.clone().unwrap(),
+            campaign: c.campaign.clone().unwrap(),
+        };
+        *c = case_from_request_with_provider(
+            c.stage.clone(),
+            sample,
+            c.path.parent().unwrap(),
+            &c.model,
+            1,
+            request,
+            Some(&options),
+            Some(360),
+        )
+        .unwrap();
+    }
+    assert_eq!(
+        old.iter()
+            .flatten()
+            .zip(current.iter().flatten())
+            .filter(|(a, b)| case_fingerprint(a) != case_fingerprint(b))
+            .count(),
+        8
+    );
+    let frozen = manifest(&old);
+    m15_write_json(&temp.0.join("manifest.json"), &frozen).unwrap();
+    for g in &old {
+        compare_freeze(g).unwrap();
+        evaluate_cases(g, Some(20), &mut |c| Ok(compare_fixture_response(c))).unwrap();
+    }
+    let resumed = plan(&temp.0, fixture_variable).unwrap();
+    assert_eq!(
+        resumed
+            .iter()
+            .flatten()
+            .filter(|c| matches!(c.replay, Replay::Stale))
+            .count(),
+        8
+    );
+    assert!(refreeze_labels(&temp.0, &manifest(&resumed), &resumed, "AF355").is_err());
+    assert_eq!(
+        read(&temp.0.join("manifest.json"), Value::Null).unwrap(),
+        frozen
+    );
+    let reports: Vec<_> = resumed
+        .iter()
+        .map(|g| {
+            let r =
+                evaluate_cases(g, None, &mut |_| panic!("offline replay must not send")).unwrap();
+            assert_eq!(
+                items(&r["results"])
+                    .iter()
+                    .filter(|r| r["status"] == "录制过期")
+                    .count(),
+                4
+            );
+            json!({"profile":g[0].model.label,"results":r["results"]})
+        })
+        .collect();
+    write_comparison(&temp.0, &resumed, &reports).unwrap();
+    let report = read(&temp.0.join("comparison.json"), Value::Null).unwrap();
+    assert!(report["input_revision_note"]
+        .as_str()
+        .unwrap()
+        .contains("AF355"));
 }
