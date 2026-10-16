@@ -1823,6 +1823,7 @@ const W4_LEASE_SECONDS: i64 = 900;
 
 #[derive(Clone, Debug)]
 pub struct W4Claim {
+    pub(crate) trace: crate::diagnostics::TraceContext,
     pub claim: W5Claim,
     pub round: u32,
     pub operation_id: String,
@@ -2558,6 +2559,12 @@ pub fn w4_claim_round(store: &mut SqliteMemoryStore, key: &str) -> PersistenceRe
             source.error = None;
         }
         Ok(W4Claim {
+            trace: crate::diagnostics::TraceContext::source(
+                &source.id,
+                source.task.generation,
+                checkpoint.round,
+                &attempt_id,
+            ),
             claim: W5Claim {
                 source_key: key.into(),
                 attempt_id,
@@ -2614,7 +2621,7 @@ pub fn w4_save_plan(
             };
         }
         if !round_order_allowed(state, source)? || source.enrichment == "stale_requires_review" {
-            crate::diagnostics::record_for(&claim.operation_id, "w4_order_blocked", || {
+            claim.trace.record("w4_order_blocked", || {
                 serde_json::json!({"stage":"save_plan","round":claim.round,
                     "order_sequence":source.order_sequence(),
                     "source_less_barrier_sequence":state.source_less_barrier_sequence,

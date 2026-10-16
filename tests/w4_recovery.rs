@@ -487,8 +487,15 @@ fn ordering_diagnostic_survives_rollback_and_writer_failure() {
             .filter(|row| row["kind"] == "w4_order_blocked")
             .collect::<Vec<_>>();
         assert_eq!(events.len(), 1);
-        assert_eq!(events[0]["run_id"], "trace-order");
-        let data = &events[0]["data"];
+        assert_eq!(events[0]["trace_version"], "2");
+        assert!(
+            events[0]["meta"]["trace_id"]
+                .as_str()
+                .unwrap()
+                .starts_with("trace-")
+        );
+        assert!(!events[0]["meta"].to_string().contains("trace-order"));
+        let data = &events[0]["body"];
         assert_eq!(data["stage"], "save_plan");
         assert_eq!(
             data["reason"],

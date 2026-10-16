@@ -276,13 +276,27 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
         if bytes.iter().all(u8::is_ascii_whitespace) {
             continue;
         }
-        let row: Value = match serde_json::from_slice(bytes) {
+        let mut row: Value = match serde_json::from_slice(bytes) {
             Ok(row) => row,
             Err(_) => {
                 parse_errors.push(json!({"event_id":null,"kind":null,"line":line+1,"field":"$: invalid JSON","status":"event_isolated"}));
                 continue;
             }
         };
+        if row["trace_version"] == "2" {
+            if !row["meta"]["trace_id"].is_string()
+                || !row["content_deps"].is_object()
+                || !row["body"].is_object()
+            {
+                parse_errors.push(event_error(
+                    &row,
+                    "$.meta.trace_id / $.content_deps / $.body: invalid v2 envelope".into(),
+                ));
+                continue;
+            }
+            row["run_id"] = row["meta"]["trace_id"].clone();
+            row["data"] = row["body"].clone();
+        }
         index_paths(&row);
         // Collect owner evidence even from malformed events; never discard conflicting ownership.
         if let Some(owner) = row["data"].get("owner").filter(|v| v.is_string()) {
@@ -291,7 +305,7 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
             }
         }
         let checked: ExportResult<()> = (|| {
-            if required(&row, "trace_version")? != "1" {
+            if !matches!(required(&row, "trace_version")?.as_str(), Some("1" | "2")) {
                 return Err("$.trace_version: unsupported".into());
             }
             for key in ["event_id", "kind", "run_id"] {
@@ -436,7 +450,22 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
                 let data = required(row, "data")?;
                 object(data)?;
                 collect_source_ids(data, run["linked_source_ids"].as_array_mut().unwrap());
+                collect_source_ids(
+                    &row["meta"],
+                    run["linked_source_ids"].as_array_mut().unwrap(),
+                );
                 let mut span = json!({"id":required(row,"event_id")?,"name":kind,"status":"completed","recorded_at":required(row,"at")?,"output":data,"llm_call_ids":[]});
+                if row["trace_version"] == "2" {
+                    span["content_deps"] = row["content_deps"].clone();
+                    span["trace_meta"] = row["meta"].clone();
+                    run["trace_context"] = row["meta"].clone();
+                    for key in ["generation", "round", "attempt_id"] {
+                        if !row["meta"][key].is_null() {
+                            run[key] = row["meta"][key].clone();
+                        }
+                    }
+                }
+
                 if let Some(duration) = data.get("duration_ms") {
                     span["duration_ms"] = duration.clone();
                 }
@@ -1224,6 +1253,31 @@ mod tests {
         let result = export_runtime(&path, true);
         std::fs::remove_file(path).unwrap();
         result.unwrap()
+    }
+
+    #[test]
+    fn af368_v2_envelope_and_v1_remain_readable() {
+        let path = std::env::temp_dir().join(format!("af368-trace-{}", std::process::id()));
+        let row = json!({"trace_version":"2","event_id":"event","kind":"model_start","at":"fixture",
+            "meta":{"trace_id":"trace-internal","source_id":"internal-source","round":1,"attempt_id":"attempt"},
+            "content_deps":{"deps_complete":false,"sources":[],"memories":[]},
+            "body":{"stage":"w1_v5","call_id":"call","attempt":1,"request":{"model":"fixture"}}});
+        std::fs::write(&path, format!("{row}\n")).unwrap();
+        let out = export_runtime(&path, false).unwrap();
+        std::fs::remove_file(path).unwrap();
+        assert_eq!(out["llm_calls"][0]["stage"], "w1_v5");
+        assert_eq!(out["runs"][0]["id"], "trace-internal");
+        assert_eq!(out["runs"][0]["round"], 1);
+        assert_eq!(out["runs"][0]["attempt_id"], "attempt");
+        assert_eq!(
+            out["runs"][0]["spans"][0]["content_deps"]["deps_complete"],
+            false
+        );
+        assert_eq!(
+            out["runs"][0]["linked_source_ids"],
+            json!(["internal-source"])
+        );
+        assert_eq!(out["runs"][0]["evidence_status"], "evidence_incomplete");
     }
 
     #[test]

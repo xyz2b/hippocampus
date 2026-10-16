@@ -740,3 +740,5 @@ Codex 排除了“统一降级/整理未完成/空库”（Claude 先前的假�
 - AF364 Inspector ② 复核：用删除前 DB 备份副本 + 4 份较小真实旧 trace（约 11MB）只读验证，四份均 “KeyError” 整体失败（llm_calls=0），合成夹具与真实格式不符。Claude 本地抽取真实 trace 的字段路径结构（仅键名/类型，无内容，ID 归一化）至 target/tmp-trace-shape.json，交 Codex 第 1 轮修复。
 - AF366 Codex 评审 68（③设计）：收窄为“依赖可证明的正文才展示”。history（无来源绑定字符串）、查询/context、实体目录、全库快照均不可证完整→deps_complete=false；模型输出继承全部输入依赖；source/记录需绑定版本指纹；trace_version=2，W/R 契约与 DB 不升；对外关联用内部 trace ID，不用 session/turn/request_id；Inspector 在解析正文前统一过滤（live/dump/导出/下载同一入口），v1/未知/不完整只显示固定元数据白名单；快照默认改为 revision/计数/有界变化摘要（完整快照留独立调试开关默认关）。分 ③a 协议与关联、③b 摘要与依赖、③c 过滤展示；需部署记忆服务与 Inspector；旧 trace 无法补证；原始 trace 磁盘文件不自动撤销。Claude 全部采纳，待 ② 提交后按 ③a→③b→③c 交 Codex。
 - AF365 Inspector ② 验收：第 1 轮修复后真实旧 trace（删除前 DB 副本，只读）4 份全部可导出，live 显示 35 次模型调用（r1 12、r4 12、w1 7、w3 4）含模型/强度/usage/核验；3 份标“含未结束阶段”（进程重启截断，如实标注）。pmr-inspector 20/0，根仓全套 1017 passed, 0 failed, 2 ignored。提交推送。
+- AF367 Inspector ② 提交 855fd4e（根仓全套 1017/0/2，inspector 20/0）。开始 ③a。
+- AF369 Inspector ③a 验收：Claude 复核 diagnostics.rs（TraceContext 显式传递、meta 白名单构造、content_deps 默认 not_proven、旧 run_id 哈希为进程内不透明 ID）；根仓全套 1019 passed, 0 failed, 2 ignored。提交推送（未部署，③ 全部完成后再询问部署）。

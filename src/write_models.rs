@@ -508,6 +508,7 @@ impl WriteModelProvider {
         }
         let client = self
             .operation_client(store, ctx)?
+            .with_trace_context(claim.trace.clone())
             .for_stage(ModelStage::W1)?;
         let mut w1_binding = json!({"contract":"w1.v5","model":self.models.w1,"input":input,
             "stage_identity":stage_identity(W1_PROMPT, &w1_schema())});
@@ -527,7 +528,7 @@ impl WriteModelProvider {
             crate::commit::w4_load_model_stage(store, claim, "w1", &w1_binding)?
         };
         if let Some(output) = &saved_w1 {
-            decode_w1(&output.to_string())?;
+            decode_w1(&output.to_string(), &claim.trace)?;
             crate::commit::w4_save_model_stage(store, claim, "w1", &w1_binding, output)?;
         }
         let output = if let Some(previous) = &ctx.previous_w2 {
@@ -581,7 +582,7 @@ impl WriteModelProvider {
             }
         } else {
             match saved_w1 {
-                Some(output) => decode_w1(&output.to_string())?,
+                Some(output) => decode_w1(&output.to_string(), &claim.trace)?,
                 None => {
                     crate::commit::w4_renew_claim(store, claim)?;
                     no_missing_result(&client, ModelStage::W1)?;
@@ -596,7 +597,7 @@ impl WriteModelProvider {
                             w1_schema(),
                         )
                         .map_err(provider_error)?;
-                    let output = decode_w1(&text)?;
+                    let output = decode_w1(&text, &claim.trace)?;
                     crate::commit::w4_save_model_stage(
                         store,
                         claim,
@@ -608,7 +609,7 @@ impl WriteModelProvider {
                 }
             }
         };
-        let batch = crate::diagnostics::checked(
+        let batch = claim.trace.checked(
             "W1",
             "validate",
             w2::validate(
@@ -625,7 +626,7 @@ impl WriteModelProvider {
         )?;
         for candidate in &batch.candidates {
             if candidate.status == w2::Status::Rejected {
-                crate::diagnostics::record("model_check", || {
+                claim.trace.record("model_check", || {
                     json!({"stage":"W2","phase":"candidate","status":"rejected",
                         "candidate_index":candidate.index,"reasons":candidate.reasons})
                 });
@@ -650,6 +651,7 @@ impl WriteModelProvider {
         }
         let client = self
             .operation_client(store, ctx)?
+            .with_trace_context(claim.trace.clone())
             .for_stage(ModelStage::W3)?;
         input["contract"] = json!("w3.v6");
         let mut w3_binding = json!({"contract":"w3.v6","model":self.models.w3,"input":input,"final_w2":batch,
@@ -665,7 +667,9 @@ impl WriteModelProvider {
         }
         let output = match crate::commit::w4_load_model_stage(store, claim, "w3", &w3_binding)? {
             Some(output) => {
-                crate::diagnostics::checked("W3", "decode", W3Output::decode(&output.to_string()))?
+                claim
+                    .trace
+                    .checked("W3", "decode", W3Output::decode(&output.to_string()))?
             }
             None => {
                 crate::commit::w4_renew_claim(store, claim)?;
@@ -690,10 +694,12 @@ impl WriteModelProvider {
                         w3_schema(),
                     )
                     .map_err(provider_error)?;
-                crate::diagnostics::checked("W3", "decode", W3Output::decode(&text))?
+                claim
+                    .trace
+                    .checked("W3", "decode", W3Output::decode(&text))?
             }
         };
-        let review = crate::diagnostics::checked(
+        let review = claim.trace.checked(
             "W3",
             "validate",
             output.validate(&batch, &ctx.source_binding, &source.text),
@@ -725,6 +731,7 @@ impl WriteModelProvider {
         }
         let client = self
             .operation_client(store, ctx)?
+            .with_trace_context(claim.trace.clone())
             .for_stage(ModelStage::W4)?;
         let payload = json!({"contract":"w4.v5","w4_input":input,"sources":sources});
         // 模型 ID 只绑定阶段结果，不能进入模型可见输入；保留现有检查点结构。
@@ -784,17 +791,19 @@ impl WriteModelProvider {
             let live = crate::lexical::body(source)?;
             (live == provided.text).then(|| live.to_owned())
         };
-        let assembled = crate::diagnostics::checked(
-            "W4",
-            "decode",
-            serde_json::from_value::<W4Output>(raw.clone())
-                .map_err(|_| "w4_invalid_output".to_owned()),
-        )
-        .and_then(|output| {
-            crate::w4::assemble_new_basis(input, &output, &text_of)
-                .map_err(|error| error.to_string())
-        });
-        let checked = crate::diagnostics::checked(
+        let assembled = claim
+            .trace
+            .checked(
+                "W4",
+                "decode",
+                serde_json::from_value::<W4Output>(raw.clone())
+                    .map_err(|_| "w4_invalid_output".to_owned()),
+            )
+            .and_then(|output| {
+                crate::w4::assemble_new_basis(input, &output, &text_of)
+                    .map_err(|error| error.to_string())
+            });
+        let checked = claim.trace.checked(
             "W4",
             "validate",
             assembled.as_ref().map_err(Clone::clone).and_then(|output| {
@@ -878,9 +887,9 @@ fn provider_error(error: OpenAiAdapterError) -> Box<dyn std::error::Error + Send
     .into()
 }
 
-fn decode_w1(text: &str) -> Result<W1Output, w2::Error> {
+fn decode_w1(text: &str, trace: &crate::diagnostics::TraceContext) -> Result<W1Output, w2::Error> {
     let result = w2::decode_detailed(text);
-    crate::diagnostics::record("model_check", || {
+    trace.record("model_check", || {
         let mut event = json!({"stage":"W1","phase":"decode",
             "status":if result.is_ok() {"completed"} else {"failed"},
             "error":result.as_ref().err().map(|d|d.error.to_string())});

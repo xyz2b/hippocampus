@@ -3167,21 +3167,21 @@ fn af83_r1_diagnostics_are_private_and_preserve_broad_recall() {
             .iter()
             .filter(|r| {
                 r["kind"] == "model_check"
-                    && r["data"]["stage"] == "R1"
-                    && r["data"]["phase"] == "validate"
+                    && r["body"]["stage"] == "R1"
+                    && r["body"]["phase"] == "validate"
             })
             .collect();
         assert_eq!(events.len(), 2);
         let fields: BTreeSet<_> = events
             .iter()
-            .map(|r| r["data"]["field"].as_str().unwrap())
+            .map(|r| r["body"]["field"].as_str().unwrap())
             .collect();
         assert_eq!(
             fields,
             BTreeSet::from(["conditions[0].quote.text", "time.quote.text"])
         );
         for event in events {
-            let d = &event["data"];
+            let d = &event["body"];
             assert_eq!(d["status"], "failed");
             assert_eq!(d["error"], "r1_not_understood");
             assert_eq!(d["rule"], "quote_or_source");

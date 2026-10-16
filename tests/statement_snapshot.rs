@@ -741,7 +741,7 @@ fn af288_trace_is_private_fixed_metadata_and_does_not_change_results() {
         {
             let event: Json = serde_json::from_str(line).unwrap();
             if event["kind"] == "retrieval" {
-                events.push(event["data"].clone());
+                events.push(event.get("body").unwrap_or(&event["data"]).clone());
             }
         }
     }

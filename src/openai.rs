@@ -289,6 +289,7 @@ fn model_network_allowed(mode: &str, url: &reqwest::Url) -> Result<bool, OpenAiA
 /// Minimal blocking client shared by both adapters.
 #[derive(Clone)]
 pub struct OpenAiClient {
+    trace: crate::diagnostics::TraceContext,
     /// Responses endpoint derived from `DEEPSEEK_BASE_URL`.
     responses_url: String,
     /// Kept private so debug output cannot accidentally expose the secret.
@@ -308,6 +309,10 @@ pub struct OpenAiClient {
 }
 
 impl OpenAiClient {
+    pub(crate) fn with_trace_context(mut self, context: crate::diagnostics::TraceContext) -> Self {
+        self.trace = context;
+        self
+    }
     pub(crate) fn network_allowed(&self) -> bool {
         self.network_allowed
     }
@@ -352,6 +357,7 @@ impl OpenAiClient {
         }
         let http = builder.build().map_err(http_error)?;
         Ok(Self {
+            trace: crate::diagnostics::TraceContext::new(),
             responses_url,
             api_key: api_key.trim().to_owned(),
             provider: None,
@@ -677,7 +683,7 @@ impl OpenAiClient {
         effort.apply(&mut request);
         let original_schema = request["text"]["format"]["schema"].clone();
         let request = model_provider::provider_request(self.provider.as_ref(), &request).map_err(|error| {
-            crate::diagnostics::record("model_check", || json!({"stage":schema_name,"phase":"provider_preflight","status":"failed","error":error.to_string(),"sent":false}));
+            self.trace.record("model_check", || json!({"stage":schema_name,"phase":"provider_preflight","status":"failed","error":error.to_string(),"sent":false}));
             error
         })?;
         self.send_response(
@@ -755,7 +761,7 @@ impl OpenAiClient {
         let reservation = budget.reserve(stage, &body)?;
         let attempt_id = &reservation.id;
         let started = std::time::Instant::now();
-        crate::diagnostics::record("model_start", || {
+        self.trace.record("model_start", || {
             json!({"call_id":attempt_id,"stage":schema_name,
             "attempt":1,"request":request,"timeout_ms":request_timeout.as_millis(),"budget_group":budget.config.group_id,
             "provider":reqwest::Url::parse(&self.responses_url).ok().and_then(|u| u.host_str().map(str::to_owned))})
@@ -773,7 +779,7 @@ impl OpenAiClient {
         let result = (|| {
             let execute = |request| {
                 let response = self.http.execute(request).map_err(|error| {
-                    crate::diagnostics::record("model_transport_error", || {
+                    self.trace.record("model_transport_error", || {
                         json!({"call_id":attempt_id,"stage":schema_name,
                             "elapsed_ms":started.elapsed().as_millis(),
                             "error_chain":transport_error_classes(&error)})
@@ -866,7 +872,7 @@ impl OpenAiClient {
             .lock()
             .unwrap_or_else(|e| e.into_inner())
             .push(accounting.clone());
-        crate::diagnostics::record("model_end", || {
+        self.trace.record("model_end", || {
             json!({"call_id":attempt_id,"status":outcome,
             "local_outcome":match &result {
                 Ok(_) => "completed",
@@ -1106,6 +1112,130 @@ fn extract_output_text(envelope: &Value) -> Result<String, OpenAiAdapterError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn af368_trace_off_on_and_failed_writer_preserve_requests_budget_and_commit() {
+        struct Sink {
+            rows: Arc<Mutex<Vec<u8>>>,
+            fail: bool,
+        }
+        impl std::io::Write for Sink {
+            fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+                if self.fail {
+                    return Err(std::io::Error::other("synthetic disk failure"));
+                }
+                self.rows.lock().unwrap().extend_from_slice(bytes);
+                Ok(bytes.len())
+            }
+            fn flush(&mut self) -> std::io::Result<()> {
+                Ok(())
+            }
+        }
+        for stage in [
+            ModelStage::W1,
+            ModelStage::W3,
+            ModelStage::W4,
+            ModelStage::R1,
+            ModelStage::R4,
+        ] {
+            let mut results = Vec::new();
+            for mode in 0..3 {
+                let ledger = crate::model_budget::tests::TestLedger::new();
+                let mut store =
+                    crate::SqliteMemoryStore::open(&ledger.path, UserId::from("fixture")).unwrap();
+                let trace = crate::diagnostics::TraceContext::source(
+                    "internal-source",
+                    1,
+                    2,
+                    "internal-attempt",
+                );
+                let mut client = ledger
+                    .client("https://fixture.invalid/v1")
+                    .with_trace_context(trace);
+                let requests = Arc::new(Mutex::new(Vec::new()));
+                let captured = requests.clone();
+                client.network_allowed = true;
+                client.transport = Some(Arc::new(move |request| {
+                    captured
+                        .lock()
+                        .unwrap()
+                        .push(request.body().unwrap().as_bytes().unwrap().to_vec());
+                    Ok((
+                        200,
+                        json!({"status":"completed","usage":{"input_tokens":2,"output_tokens":3},
+                    "output":[{"content":[{"type":"output_text","text":"{}"}]}]})
+                        .to_string(),
+                    ))
+                }));
+                let schema = json!({"type":"object","properties":{},"required":[],"additionalProperties":false});
+                let binding = client
+                    .provider_binding("fixture-model", ReasoningEffort::Low, stage, schema.clone())
+                    .unwrap();
+                let rows = Arc::new(Mutex::new(Vec::new()));
+                let run = || {
+                    let output = client
+                        .structured_output_for_model_with_effort(
+                            "fixture-model",
+                            ReasoningEffort::Low,
+                            stage,
+                            "fixture_v1",
+                            "fixed instructions",
+                            json!({"text":"fictional"}),
+                            schema,
+                        )
+                        .unwrap();
+                    let _operation = crate::diagnostics::Operation::enter("host-private-operation");
+                    store
+                        .transaction(|state| {
+                            state.next_relation += 1;
+                            Ok(())
+                        })
+                        .unwrap();
+                    output
+                };
+                let output = if mode == 0 {
+                    run()
+                } else {
+                    crate::diagnostics::with_test_writer(
+                        Box::new(Sink {
+                            rows: rows.clone(),
+                            fail: mode == 2,
+                        }),
+                        run,
+                    )
+                };
+                let db = rusqlite::Connection::open(&ledger.path).unwrap();
+                let accounting:(String,i64,i64,String,String,i64,i64)=db.query_row(
+                "SELECT request_fingerprint,input_bytes,output_token_limit,outcome,usage_status,input_tokens,output_tokens FROM model_calls",
+                [],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?))).unwrap();
+                let state = store.read().unwrap();
+                results.push((
+                    requests.lock().unwrap().clone(),
+                    binding,
+                    accounting,
+                    output,
+                    state.revision,
+                    state.next_relation,
+                ));
+                if mode == 1 {
+                    let bytes = rows.lock().unwrap();
+                    let events: Vec<Value> = String::from_utf8_lossy(&bytes)
+                        .lines()
+                        .map(|s| serde_json::from_str(s).unwrap())
+                        .collect();
+                    assert!(events.iter().any(|e| e["kind"] == "model_end"));
+                    assert!(events.iter().any(|e| e["kind"] == "transaction_committed"));
+                    for event in events {
+                        assert_eq!(event["trace_version"], "2");
+                        assert_eq!(event["content_deps"]["deps_complete"], false);
+                        assert!(!event["meta"].to_string().contains("host-private"));
+                    }
+                }
+            }
+            assert_eq!(results[0], results[1]);
+            assert_eq!(results[0], results[2]);
+        }
+    }
 
     #[test]
     fn af326_w4_only_preserves_writer_bytes_and_bindings() {

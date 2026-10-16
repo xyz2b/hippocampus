@@ -219,27 +219,31 @@ fn background_candidate_diagnostics_are_durable_and_optional() {
             .map(|line| serde_json::from_str(line).unwrap())
             .collect();
         let checks: Vec<_> = rows.iter().filter(|r| r["kind"] == "model_check").collect();
-        let rejected = checks.iter().find(|r| r["data"]["stage"] == "W2").unwrap();
-        assert_eq!(rejected["data"]["candidate_index"], 0);
+        let rejected = checks.iter().find(|r| r["body"]["stage"] == "W2").unwrap();
+        assert_eq!(rejected["body"]["candidate_index"], 0);
         assert_eq!(
-            rejected["data"]["reasons"],
+            rejected["body"]["reasons"],
             json!(["candidate_rejected:fact_sentence_mismatch"])
         );
-        assert!(checks.iter().any(|r| r["data"]["stage"] == "W1"
-            && r["data"]["phase"] == "validate"
-            && r["data"]["status"] == "completed"));
+        assert!(checks.iter().any(|r| r["body"]["stage"] == "W1"
+            && r["body"]["phase"] == "validate"
+            && r["body"]["status"] == "completed"));
         assert!(
             checks
                 .iter()
-                .any(|r| r["data"]["stage"] == "W3" && r["data"]["status"] == "completed")
+                .any(|r| r["body"]["stage"] == "W3" && r["body"]["status"] == "completed")
         );
         for row in checks {
             assert!(!row.to_string().contains(OLD));
-            assert!(row["data"].get("candidate").is_none());
+            assert_eq!(row["trace_version"], "2");
+            assert!(row["meta"]["source_id"].is_string());
+            assert!(row["meta"]["attempt_id"].is_string());
+            assert_eq!(row["content_deps"]["deps_complete"], false);
+            assert!(row["body"].get("candidate").is_none());
             assert!(
-                row["run_id"]
+                row["meta"]["trace_id"]
                     .as_str()
-                    .is_some_and(|id| id.starts_with("w4:"))
+                    .is_some_and(|id| id.starts_with("trace-"))
             );
         }
     }

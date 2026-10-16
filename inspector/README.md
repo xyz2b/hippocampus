@@ -125,3 +125,10 @@ AF360 当前 DB 隐私按项过滤：未删除来源的自身原文可见；`req
 JSONL 语法/信封错误记在 meta.parse_errors（无法解析 ID 时用行号）；字段错误记在 run.parse_errors，包含 event_id、kind、字段路径及固定错误类别，不包含失败正文，动态来源/回执键以 * 表示。坏事件的派生变更回滚并标为不完整，其前后正常事件仍加载；live 与导出使用同一解析器。混合 owner、删除墓碑等文件级隐私拒绝仍保持。前端显示隔离提示，缺失字段不解释为零调用或业务成功。
 
 合成夹具 tests/fixtures/af364-event-shapes.jsonl 依照获准 shape 清单的 10 种 kind 手工填入虚构内容，包含当前嵌套 recall、opaque receipt keys、accounting 和 response usage；不包含真实记录内容，也不依赖生产文件。路径清单是多事件字段并集，不能证明任何字段每条事件均存在；因此另测缺失/null/错误类型和坏行。
+
+
+### AF368：trace v2 协议准备
+
+运行时新事件使用 trace_version=2，分离 meta / content_deps / body；Inspector 继续兼容 v1。③a 的 content_deps 一律 deps_complete=false，不声称正文依赖已证明，也不改变删除墓碑/导出拒绝策略。③b 收集依赖、③c 按事件过滤尚未实施。
+
+后台 claim 携带诊断专用上下文（内部 trace ID、source_id、generation、round、attempt_id），模型客户端显式克隆传递；请求/阶段绑定/预算不包含该上下文。旧诊断入口用进程内不透明 ID 关联，最多保留 4096 个映射，超限清空后旧关联可能分段，不能按时间猜测恢复。宿主 session/turn/request/operation 标识只可能在受保护正文，不进入安全 meta。

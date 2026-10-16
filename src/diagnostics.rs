@@ -32,6 +32,95 @@ pub fn capture_model_events<T>(run: impl FnOnce() -> T) -> (T, Vec<Value>) {
     (result, events)
 }
 
+/// Diagnostic-only context. Never serialized into model input, checkpoints or budget policy.
+#[derive(Clone, Debug)]
+pub struct TraceContext {
+    trace_id: String,
+    source_id: Option<String>,
+    generation: Option<u64>,
+    round: Option<u32>,
+    attempt_id: Option<String>,
+}
+impl Default for TraceContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl TraceContext {
+    pub(crate) fn attempt(attempt_id: &str) -> Self {
+        Self {
+            attempt_id: Some(attempt_id.into()),
+            ..Self::new()
+        }
+    }
+
+    pub fn new() -> Self {
+        static TRACE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+        Self {
+            trace_id: format!(
+                "trace-{}-{}-{}",
+                std::process::id(),
+                time::OffsetDateTime::now_utc().unix_timestamp_nanos(),
+                TRACE_SEQUENCE.fetch_add(1, Ordering::Relaxed)
+            ),
+            source_id: None,
+            generation: None,
+            round: None,
+            attempt_id: None,
+        }
+    }
+    pub(crate) fn source(source_id: &str, generation: u64, round: u32, attempt_id: &str) -> Self {
+        Self {
+            source_id: Some(source_id.into()),
+            generation: Some(generation),
+            round: Some(round),
+            attempt_id: Some(attempt_id.into()),
+            ..Self::new()
+        }
+    }
+    pub(crate) fn record(&self, kind: &str, data: impl FnOnce() -> Value) {
+        record_context(self, kind, data);
+    }
+    pub(crate) fn checked<T, E: std::fmt::Display>(
+        &self,
+        stage: &str,
+        phase: &str,
+        result: Result<T, E>,
+    ) -> Result<T, E> {
+        self.record("model_check", || {
+            json!({"stage":stage,"phase":phase,
+            "status":if result.is_ok() {"completed"}else{"failed"},
+            "error":result.as_ref().err().map(ToString::to_string)})
+        });
+        result
+    }
+    fn envelope(&self, kind: &str, mut body: Value) -> Value {
+        scrub(&mut body);
+        let mut meta = json!({"trace_id":self.trace_id,"source_id":self.source_id,
+            "generation":self.generation,"round":self.round,"attempt_id":self.attempt_id});
+        // Safe metadata is constructed, not copied wholesale from diagnostic bodies.
+        for key in ["call_id", "stage", "phase", "status", "local_outcome"] {
+            if let Some(text) = body.get(key).and_then(Value::as_str)
+                && text.len() <= 128
+                && text
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"_-.".contains(&b))
+            {
+                meta[key] = json!(text);
+            }
+        }
+        for key in ["duration_ms", "elapsed_ms", "timeout_ms"] {
+            if body[key].is_u64() {
+                meta[key] = body[key].clone();
+            }
+        }
+        json!({"trace_version":"2","event_id":new_id(),"kind":kind,
+            "at":time::OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).ok(),
+            "meta":meta,"content_deps":{"deps_complete":false,"reason":"not_proven",
+                "sources":[],"memories":[]},"body":body})
+    }
+}
+
 pub fn new_id() -> String {
     format!(
         "{}-{}-{}",
@@ -41,7 +130,27 @@ pub fn new_id() -> String {
     )
 }
 
+#[cfg(test)]
+thread_local! {static TEST_WRITER:RefCell<Option<Box<dyn Write>>> = RefCell::new(None);}
+#[cfg(test)]
+pub(crate) fn with_test_writer<T>(writer: Box<dyn Write>, run: impl FnOnce() -> T) -> T {
+    struct Restore(Option<Box<dyn Write>>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            TEST_WRITER.with(|w| w.replace(self.0.take()));
+        }
+    }
+    let _restore = Restore(TEST_WRITER.with(|w| w.replace(Some(writer))));
+    run()
+}
+fn write_row(writer: &mut dyn Write, row: &Value) -> std::io::Result<()> {
+    writeln!(writer, "{row}").and_then(|_| writer.flush())
+}
 pub fn enabled() -> bool {
+    #[cfg(test)]
+    if TEST_WRITER.with(|w| w.borrow().is_some()) {
+        return true;
+    }
     std::env::var_os("PMR_TRACE_DIR").is_some()
 }
 pub fn incomplete() -> bool {
@@ -145,7 +254,56 @@ fn scrub(value: &mut Value) {
 }
 
 pub fn record_for(run_id: &str, kind: &str, data: impl FnOnce() -> Value) {
+    if !enabled() && !collecting(kind) {
+        return;
+    }
+    // Legacy callers cannot prove dependencies. Never expose their host-supplied ID.
+    let context = legacy_context(run_id);
+    record_context(&context, kind, data);
+}
+fn legacy_context(run_id: &str) -> TraceContext {
+    // Process-local opaque IDs preserve legacy correlation without retaining host strings.
+    static IDS: OnceLock<Mutex<std::collections::BTreeMap<Vec<u8>, TraceContext>>> =
+        OnceLock::new();
+    let key = ring::digest::digest(&ring::digest::SHA256, run_id.as_bytes())
+        .as_ref()
+        .to_vec();
+    let Ok(mut ids) = IDS.get_or_init(Default::default).lock() else {
+        return TraceContext::new();
+    };
+    if let Some(context) = ids.get(&key) {
+        return context.clone();
+    }
+    if ids.len() >= 4096 {
+        ids.clear();
+    } // Evicted legacy correlations become separate incomplete runs.
+    let context = TraceContext::new();
+    ids.insert(key, context.clone());
+    context
+}
+fn record_context(context: &TraceContext, kind: &str, data: impl FnOnce() -> Value) {
+    let collect = collecting(kind);
+    if !enabled() && !collect {
+        return;
+    }
+    let data = data();
+    if collect {
+        collect_metadata(kind, &data);
+    }
+    write_context(context, kind, || data);
+}
+fn write_context(context: &TraceContext, kind: &str, data: impl FnOnce() -> Value) {
     if !enabled() {
+        return;
+    }
+    #[cfg(test)]
+    if TEST_WRITER.with(|w| w.borrow().is_some()) {
+        let row = context.envelope(kind, data());
+        TEST_WRITER.with(|w| {
+            if write_row(w.borrow_mut().as_mut().unwrap().as_mut(), &row).is_err() {
+                failed();
+            }
+        });
         return;
     }
     let writer = WRITER.get_or_init(|| {
@@ -169,10 +327,7 @@ pub fn record_for(run_id: &str, kind: &str, data: impl FnOnce() -> Value) {
         }
         Mutex::new(file.ok())
     });
-    let mut value = data();
-    scrub(&mut value);
-    let row = json!({"trace_version":"1", "event_id":new_id(), "run_id":run_id, "kind":kind,
-        "at":time::OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).ok(), "data":value});
+    let row = context.envelope(kind, data());
     let Ok(mut guard) = writer.lock() else {
         failed();
         return;
@@ -182,55 +337,57 @@ pub fn record_for(run_id: &str, kind: &str, data: impl FnOnce() -> Value) {
     };
     // ponytail: synchronous JSONL and full snapshots for bounded local diagnostics;
     // use a bounded collector/deltas if measured profile size makes this expensive.
-    if writeln!(file, "{row}").and_then(|_| file.flush()).is_err() {
+    if write_row(file, &row).is_err() {
         failed();
     }
 }
 
+fn collecting(kind: &str) -> bool {
+    MODEL_EVENTS.with(|events| events.borrow().is_some())
+        && matches!(kind, "model_start" | "model_end" | "model_check")
+}
+fn collect_metadata(kind: &str, data: &Value) {
+    let keys = [
+        "call_id",
+        "stage",
+        "phase",
+        "status",
+        "local_outcome",
+        "error",
+        "timeout_ms",
+        "duration_ms",
+        "parsing_status",
+        "field",
+        "rule",
+        "cause",
+        "candidate_index",
+        "reasons",
+    ];
+    let mut metadata = json!({});
+    for key in keys {
+        if let Some(value) = data.get(key) {
+            metadata[key] = value.clone();
+        }
+    }
+    scrub(&mut metadata);
+    MODEL_EVENTS.with(|events| {
+        events
+            .borrow_mut()
+            .as_mut()
+            .unwrap()
+            .push(json!({"kind":kind,"data":metadata}))
+    });
+}
 pub(crate) fn record(kind: &str, data: impl FnOnce() -> Value) {
-    let collect = MODEL_EVENTS.with(|events| events.borrow().is_some())
-        && matches!(kind, "model_start" | "model_end" | "model_check");
-    if !enabled() && !collect {
+    if !enabled() && !collecting(kind) {
         return;
     }
-    let mut data = data();
-    if collect {
-        let keys = [
-            "call_id",
-            "stage",
-            "phase",
-            "status",
-            "local_outcome",
-            "error",
-            "timeout_ms",
-            "duration_ms",
-            "parsing_status",
-            "field",
-            "rule",
-            "cause",
-            "candidate_index",
-            "reasons",
-        ];
-        let mut metadata = json!({});
-        for key in keys {
-            if let Some(value) = data.get(key) {
-                metadata[key] = value.clone();
-            }
-        }
-        scrub(&mut metadata);
-        MODEL_EVENTS.with(|events| {
-            events
-                .borrow_mut()
-                .as_mut()
-                .unwrap()
-                .push(json!({"kind":kind,"data":metadata}))
-        });
+    let id = RUN.with(|run| run.borrow().clone());
+    if let Some(id) = id {
+        record_context(&legacy_context(&id), kind, data);
+    } else if collecting(kind) {
+        collect_metadata(kind, &data());
     }
-    RUN.with(|run| {
-        if let Some(id) = run.borrow().as_ref() {
-            record_for(id, kind, || std::mem::take(&mut data));
-        }
-    });
 }
 
 pub(crate) fn checked<T, E: std::fmt::Display>(
@@ -264,6 +421,49 @@ pub(crate) fn validation<T: Serialize, E: std::fmt::Display>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn af368_v2_context_is_explicit_private_and_cross_thread() {
+        let context = TraceContext::source("internal-source", 2, 3, "internal-attempt");
+        let body = json!({"stage":"w1_v5","call_id":"internal-call","operation_id":"host-private-operation",
+            "session_id":"host-private-session","turn":"host-private-turn","request_id":"host-private-request",
+            "request":{"input":"private original"}});
+        let first = context.envelope("model_start", body.clone());
+        let worker = context.clone();
+        let other = std::thread::spawn(move || {
+            let _unrelated = Operation::enter("different-host-operation");
+            worker.envelope("model_end", body)
+        })
+        .join()
+        .unwrap();
+        assert_eq!(first["trace_version"], "2");
+        assert_eq!(first["meta"]["trace_id"], other["meta"]["trace_id"]);
+        assert_eq!(first["meta"]["generation"], 2);
+        assert_eq!(first["meta"]["round"], 3);
+        assert_eq!(first["meta"]["source_id"], "internal-source");
+        assert_eq!(first["meta"]["attempt_id"], "internal-attempt");
+        assert_eq!(first["content_deps"]["deps_complete"], false);
+        assert!(!first["meta"].to_string().contains("host-private"));
+        assert!(!first["meta"].to_string().contains("private original"));
+        assert!(first.get("run_id").is_none());
+        let retry = context.envelope("model_start", json!({"call_id":"new-internal-call"}));
+        assert_eq!(retry["meta"]["trace_id"], first["meta"]["trace_id"]);
+        assert_ne!(retry["meta"]["call_id"], first["meta"]["call_id"]);
+        assert_ne!(
+            TraceContext::source("internal-source", 2, 3, "new-attempt").trace_id,
+            context.trace_id
+        );
+        let legacy = legacy_context("host-private-operation");
+        assert_eq!(
+            legacy.trace_id,
+            legacy_context("host-private-operation").trace_id
+        );
+        assert!(
+            !legacy.envelope("run_end", json!({}))["meta"]
+                .to_string()
+                .contains("host-private")
+        );
+    }
 
     #[test]
     fn model_capture_is_scoped_and_restored_after_panics() {

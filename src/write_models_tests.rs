@@ -4027,13 +4027,13 @@ fn af83_w1_diagnostics_are_private_and_do_not_retry() {
             .iter()
             .filter(|r| {
                 r["kind"] == "model_check"
-                    && r["data"]["stage"] == "W1"
-                    && r["data"]["phase"] == "decode"
+                    && r["body"]["stage"] == "W1"
+                    && r["body"]["phase"] == "decode"
             })
             .collect();
         assert_eq!(failures.len(), 3);
         for event in failures {
-            let d = &event["data"];
+            let d = &event["body"];
             assert_eq!(d["status"], "failed");
             assert_eq!(d["error"], "w1_invalid_output");
             assert!(!d.to_string().contains("private-diagnostic-marker"));

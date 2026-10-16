@@ -293,6 +293,15 @@ impl Assembly {
         store: &SqliteMemoryStore,
         response: Result<&str, JudgmentFailure>,
     ) -> PersistenceResult<(RecallOutput, Option<r4::OutputAudit>)> {
+        self.finish_r4_with_trace(store, response, None)
+    }
+
+    pub(crate) fn finish_r4_with_trace(
+        self,
+        store: &SqliteMemoryStore,
+        response: Result<&str, JudgmentFailure>,
+        trace: Option<&crate::diagnostics::TraceContext>,
+    ) -> PersistenceResult<(RecallOutput, Option<r4::OutputAudit>)> {
         if self.plan.need() == R1Need::ContextOnly {
             return self
                 .finish_skipped(store, SkipReason::ContextOnly)
@@ -311,8 +320,12 @@ impl Assembly {
             final_output: None,
         });
         let result = response.and_then(|text| {
-            let raw = crate::diagnostics::checked("R4", "decode", r4::decode(text))
-                .map_err(|_| JudgmentFailure::InvalidOutput)?;
+            let decoded = r4::decode(text);
+            let raw = match trace {
+                Some(trace) => trace.checked("R4", "decode", decoded),
+                None => crate::diagnostics::checked("R4", "decode", decoded),
+            }
+            .map_err(|_| JudgmentFailure::InvalidOutput)?;
             let final_output = r4::assemble_old_basis(&raw, &context, &|id| {
                 source_state
                     .sources
@@ -324,7 +337,7 @@ impl Assembly {
             });
             audit.as_mut().unwrap().final_output = Some(final_output.clone());
             let evaluated = r4::evaluate_detailed(final_output, &context);
-            crate::diagnostics::record("model_check", || {
+            let validation_event = || {
                 let mut event = serde_json::json!({"stage":"R4","phase":"validate",
                     "status":if evaluated.is_ok() {"completed"} else {"failed"},
                     "error":evaluated.as_ref().err().map(|d| d.error.to_string())});
@@ -334,7 +347,12 @@ impl Assembly {
                     event["cause"] = serde_json::json!(diagnostic.cause);
                 }
                 event
-            });
+            };
+            if let Some(trace) = trace {
+                trace.record("model_check", validation_event);
+            } else {
+                crate::diagnostics::record("model_check", validation_event);
+            }
             let evaluated = evaluated.map_err(|_| JudgmentFailure::InvalidOutput)?;
             audit.as_mut().unwrap().final_output = Some(evaluated.output.clone());
             Ok(evaluated)

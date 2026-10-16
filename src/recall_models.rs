@@ -1141,6 +1141,7 @@ impl RecallRuntime {
             retrieval,
         )?;
         let attempt = crate::diagnostics::new_id();
+        let trace = crate::diagnostics::TraceContext::attempt(&attempt);
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
                 if old.request["fingerprint"] != binding { return Err("recall_request_mismatch".into()); }
@@ -1178,7 +1179,11 @@ impl RecallRuntime {
             let client = if offline {
                 None
             } else {
-                provider.unwrap().operation_client(store, &operation).ok()
+                provider
+                    .unwrap()
+                    .operation_client(store, &operation)
+                    .map(|client| client.with_trace_context(trace.clone()))
+                    .ok()
             };
             let mut r1_failure = None;
             if let Some(client) = &client {
@@ -1196,10 +1201,10 @@ impl RecallRuntime {
                 });
                 match response {
                     Ok(text) => {
-                        plan = crate::diagnostics::checked("R1", "decode", r1::decode(&text))
+                        plan = trace.checked("R1", "decode", r1::decode(&text))
                             .and_then(|o| {
                                 let result = r1::validate_detailed(o, &ctx);
-                                crate::diagnostics::record("model_check", || {
+                                trace.record("model_check", || {
                                     let diagnostic = result.as_ref().ok().and_then(|(_, d)| d.as_ref());
                                     let mut event = json!({"stage":"R1","phase":"validate",
                                         "status":if result.is_ok() && diagnostic.is_none() {"completed"} else {"failed"},
@@ -1277,7 +1282,8 @@ impl RecallRuntime {
                 check_cancelled(cancelled)?;
                 match response {
                     Ok(text) => {
-                        let (out, audit) = assembly.finish_r4_with_audit(store, Ok(&text))?;
+                        let (out, audit) =
+                            assembly.finish_r4_with_trace(store, Ok(&text), Some(&trace))?;
                         r4_audit = audit;
                         out
                     }
