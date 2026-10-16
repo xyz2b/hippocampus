@@ -861,7 +861,7 @@ impl ChatMemoryService {
             "arguments":if trace_allowed {arguments.clone()} else {json!({"input_status":"rejected_before_capture"})},
             "owner":self.store.owner()})
         });
-        if crate::diagnostics::enabled() {
+        if crate::diagnostics::full_snapshots() {
             let snapshot_started = std::time::Instant::now();
             crate::diagnostics::validation(
                 "initial_snapshot",

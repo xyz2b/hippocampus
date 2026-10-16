@@ -9,6 +9,121 @@ const TEXT: &str = "我的灯是紫色。";
 const AT: i64 = 1_791_000_000;
 
 #[test]
+fn af371_r3_id_truncation_is_bounded_and_never_complete() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    db.open()
+        .transaction(|state| {
+            let template = state.sources["s-purple"].clone();
+            for n in 0..130 {
+                let mut s = template.clone();
+                s.id = format!("fictional-{n}");
+                s.turn_id = s.id.clone();
+                s.received_sequence = n + 2;
+                state.sources.insert(s.id.clone(), s);
+            }
+            Ok(())
+        })
+        .unwrap();
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        let output = RecallRuntime::default()
+            .run(
+                &mut db.open(),
+                &request("af371-truncated"),
+                Budget {
+                    raw: 150,
+                    ..Default::default()
+                },
+                None,
+            )
+            .unwrap();
+        assert!(output.raw.len() > 128);
+    });
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let r3 = events.iter().find(|e| e["kind"] == "r3_evidence").unwrap();
+    assert_eq!(r3["body"]["ids_truncated"], true);
+    assert_eq!(r3["body"]["source_ids"].as_array().unwrap().len(), 128);
+    assert_eq!(r3["content_deps"]["deps_complete"], false);
+    assert!(
+        r3["content_deps"]["reasons"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("summary_ids_truncated"))
+    );
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
+fn af371_recall_summaries_and_final_inherit_actual_input_dependencies() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        RecallRuntime::default()
+            .run(
+                &mut db.open(),
+                &request("af371"),
+                Budget::default(),
+                Some(&provider),
+            )
+            .unwrap();
+    });
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    for kind in ["retrieval", "r3_evidence", "r5_final"] {
+        assert!(events.iter().any(|e| e["kind"] == kind), "{kind}");
+    }
+    let start = events
+        .iter()
+        .find(|e| e["kind"] == "model_start" && e["body"]["stage"] == "r4_v7")
+        .unwrap();
+    let final_event = events.iter().find(|e| e["kind"] == "r5_final").unwrap();
+    assert_eq!(start["content_deps"], final_event["content_deps"]);
+    assert_eq!(start["content_deps"]["deps_complete"], false);
+    assert!(
+        start["content_deps"]["sources"]
+            .as_object()
+            .unwrap()
+            .contains_key("s-purple")
+    );
+    assert!(start["content_deps"]["frozen_input_fingerprint"].is_string());
+    assert!(
+        start["content_deps"]["reasons"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("unbound_query_context"))
+    );
+}
+
+#[test]
 fn af283_bootstrap_read_then_other_connection_delete_cannot_cache_or_return_snapshot() {
     let db = Db::new();
     let mut req = request("bootstrap-delete");

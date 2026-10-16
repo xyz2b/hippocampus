@@ -218,6 +218,13 @@ fn background_candidate_diagnostics_are_durable_and_optional() {
             .lines()
             .map(|line| serde_json::from_str(line).unwrap())
             .collect();
+        let summary = rows.iter().find(|r| r["kind"] == "w2_summary").unwrap();
+        assert_eq!(summary["body"]["total"], 2);
+        assert_eq!(summary["body"]["rejected"], 1);
+        assert_eq!(
+            summary["body"]["reasons"]["candidate_rejected:fact_sentence_mismatch"],
+            1
+        );
         let checks: Vec<_> = rows.iter().filter(|r| r["kind"] == "model_check").collect();
         let rejected = checks.iter().find(|r| r["body"]["stage"] == "W2").unwrap();
         assert_eq!(rejected["body"]["candidate_index"], 0);

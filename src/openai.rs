@@ -1225,6 +1225,16 @@ mod tests {
                         .collect();
                     assert!(events.iter().any(|e| e["kind"] == "model_end"));
                     assert!(events.iter().any(|e| e["kind"] == "transaction_committed"));
+                    let transaction = events
+                        .iter()
+                        .find(|e| e["kind"] == "transaction_committed")
+                        .unwrap();
+                    assert!(transaction["body"]["before"].is_null());
+                    assert!(transaction["body"]["after"].is_null());
+                    assert!(transaction["body"]["counts"].is_object());
+                    let start = events.iter().find(|e| e["kind"] == "model_start").unwrap();
+                    let end = events.iter().find(|e| e["kind"] == "model_end").unwrap();
+                    assert_eq!(start["content_deps"], end["content_deps"]);
                     for event in events {
                         assert_eq!(event["trace_version"], "2");
                         assert_eq!(event["content_deps"]["deps_complete"], false);

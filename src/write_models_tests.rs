@@ -1888,6 +1888,9 @@ fn run_all(db: &Db, key: &str, provider: &WriteModelProvider) -> Json {
 
 // Use the sample's model response, rebinding only database-assigned source/record IDs.
 fn w4_case(db: &Db, extra: bool) -> (String, Json, Json) {
+    w4_case_with_history(db, extra, &["我曾提到咖啡。"])
+}
+fn w4_case_with_history(db: &Db, extra: bool, history: &[&str]) -> (String, Json, Json) {
     let sample: Json = serde_json::from_str(include_str!(
         "../tests/eval/w4/samples/w4_10_reinforce.json"
     ))
@@ -1911,7 +1914,7 @@ fn w4_case(db: &Db, extra: bool) -> (String, Json, Json) {
     } else {
         text.into()
     };
-    let key = db.start(&text);
+    let key = db.start_turn(&text, "turn", history);
     let state = db.open().read().unwrap();
     let mut upstream =
         json!({"memory_requests":[],"candidates":[sample["input"]["candidates"][0]["candidate"]]});
@@ -4505,4 +4508,61 @@ fn af342_scope_and_coverage_are_semantic_rules_not_new_admission_fields() {
     assert!(W3_PROMPT.contains("do not report gaps with missing=[]"));
     assert!(!w1_schema().to_string().contains("in_scope"));
     assert!(!w3_schema().to_string().contains("in_scope"));
+}
+
+#[test]
+fn af371_w4_proves_frozen_sources_and_records_and_output_inherits_them() {
+    struct Sink(std::sync::Arc<std::sync::Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let (key, upstream, output) = w4_case_with_history(&db, false, &[]);
+    let (provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let rows = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let result = crate::diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        run_all(&db, &key, &provider)
+    });
+    assert_eq!(result["enrichment"]["status"], "committed");
+    let events: Vec<Json> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let start = events
+        .iter()
+        .find(|e| e["kind"] == "model_start" && e["body"]["stage"] == "w4_v5")
+        .unwrap();
+    let end = events
+        .iter()
+        .find(|e| e["kind"] == "model_end" && e["body"]["call_id"] == start["body"]["call_id"])
+        .unwrap();
+    assert_eq!(start["content_deps"], end["content_deps"]);
+    assert_eq!(
+        start["content_deps"]["deps_complete"], true,
+        "{}",
+        start["content_deps"]
+    );
+    assert_eq!(
+        start["content_deps"]["sources"].as_object().unwrap().len(),
+        2
+    );
+    assert_eq!(
+        start["content_deps"]["memories"].as_object().unwrap().len(),
+        1
+    );
+    assert!(events.iter().any(|e| e["kind"] == "w5_commit"));
 }

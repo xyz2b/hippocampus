@@ -129,6 +129,36 @@ JSONL 语法/信封错误记在 meta.parse_errors（无法解析 ID 时用行号
 
 ### AF368：trace v2 协议准备
 
-运行时新事件使用 trace_version=2，分离 meta / content_deps / body；Inspector 继续兼容 v1。③a 的 content_deps 一律 deps_complete=false，不声称正文依赖已证明，也不改变删除墓碑/导出拒绝策略。③b 收集依赖、③c 按事件过滤尚未实施。
+运行时新事件使用 trace_version=2，分离 meta / content_deps / body；Inspector 继续兼容 v1。③a 的 content_deps 一律 deps_complete=false，不声称正文依赖已证明，也不改变删除墓碑/导出拒绝策略。③b 的依赖收集见下节；③c 按事件过滤尚未实施。
 
 后台 claim 携带诊断专用上下文（内部 trace ID、source_id、generation、round、attempt_id），模型客户端显式克隆传递；请求/阶段绑定/预算不包含该上下文。旧诊断入口用进程内不透明 ID 关联，最多保留 4096 个映射，超限清空后旧关联可能分段，不能按时间猜测恢复。宿主 session/turn/request/operation 标识只可能在受保护正文，不进入安全 meta。
+
+
+### AF371：依赖绑定与有界摘要
+
+依赖仅服务诊断，不进入模型请求、阶段绑定、预算或持久业务状态。`content_deps` 包含 `deps_complete`、固定类别 `reasons`、`frozen_input_fingerprint`、`sources` 与 `memories`。来源条目绑定 owner、source_id、generation 和冻结来源内容/管理信息摘要；记录条目绑定 owner、memory_id 和 Memory + 完整记录投影视图摘要。使用现有 canonical JSON SHA-256 指纹。仅有 ID 不足以证明依赖，来源缺失、正文变更、旧记录投影不可证明、目录、查询、未绑定 history 等都保守标为不完整。依赖最多各 128 个来源/记录，超限不标完整；R3 摘要合计最多 128 个 ID，截断也标不完整。原模型输出、核验事件及 final 沿用输入上下文，不根据模型输出自行缩小依赖。
+
+正文写入点分类（所有内容仍在受保护 `body`，本期不放宽 Inspector 删除墓碑门控）：
+
+| 写入点 | 依赖与完整性 |
+|---|---|
+| W1/W3 `model_start/end/check`、W2 候选诊断与 `w2_summary` | 当前来源内容/代际与实际输入摘要；实体目录使其不完整，history 无 source 绑定时追加 `unbound_history`。W2 摘要只含计数和代码产生的拒收原因。 |
+| W4 `model_start/end/check` | 按冻结 sources 与实际记录视图核对当前快照，绑定候选、basis、记录、history 链和关系成员的来源/版本；不匹配、缺失、legacy、未绑定 history/provenance 或超限均不完整。 |
+| R1 `model_start/end/check` | 输入摘要；查询/context/实体目录没有来源证明，`query_context_and_entity_directory`。 |
+| `retrieval(phase=selection)`、`r3_evidence` | 同一 R3 SQLite 读快照收集依赖；R2 记录真实枚举/词法/融合分支及可信范围/主体范围/提及/返回计数；R3 仅计数、限额 ID、完整性。current_message 无绑定、历史 provenance、超限等标不完整。 |
+| R4 `model_start/end/check`、`r5_final` | 继承 R3 依赖，加实际输入摘要；查询/context 使其不完整。R5 仅最终状态、事实/计算/records/raw 数量。 |
+| `w5_commit` | 仅 SQLite commit 成功后写，重放不新增事件；内部 source/generation/round/attempt，组 ID 的哈希、决定类型、产物 ID 与准确 committed revision。按同一事务状态绑定来源、目标和产物版本，截断/缺失不完整。不是 W4 计划。 |
+| `transaction_committed/rollback` | 默认 revision、计数、变化标记（回滚有错误）；不完整。完整快照只允许独立调试开关。 |
+| `validation(initial_snapshot)` | 仅完整快照调试开启时写；`snapshot_or_unbound_state`，永不声称完整。 |
+| `run_start/run_end/rpc_response` | 混合宿主参数/响应含查询、上下文、标识及 global_context，无法从输出 ID 反推完整输入依赖；`unbound_host_payload`。不按结束时的重读快照冒充原读版本。 |
+| `global_context` | 目录/全局投影未逐项证明，`entity_directory_or_unbound_state`。 |
+| `source_receipt` | 含宿主标识与嵌套回执，`unbound_receipt`。 |
+| `lexical_raw` | 旧词法原文结果未携带冻结版本证明，`unbound_retrieval`。 |
+| 原有 `retrieval` 查询诊断 / `fact_index_refresh` | 有界诊断或错误，`unbound_diagnostic`；不推定正文安全。 |
+| `model_transport_error` / preflight、`w4_order_blocked` | 沿用调用/claim 上下文；未证明的 claim 仍不完整。 |
+| `PMR_OPENAI_TRACE_CONTENT` stderr 输出 | 独立的旧调试旁路，不是 trace v2 事件，也没有依赖证明；不能将其当作可按事件安全显示的正文。本期不改变该开关。 |
+| 未列出的未来事件 / 旧入口 | 默认 `not_proven`，不得默认放行。 |
+
+`PMR_TRACE_FULL_SNAPSHOTS=1` 与 `PMR_TRACE_DIR` 同时启用时才写完整 initial/before/after；默认关闭。完整快照可能包含全库及未链接 history，始终不完整，增加同步序列化、磁盘体积与敏感数据留存。默认关闭后，旧 trace 调试工具不能再依靠事务快照重建全库，应使用 Inspector 当前 DB 视图；已有 v1/v2 文件读取不变。
+
+体积对照仅用合成夹具：100 条约 1KB 正文的来源，稳态完整 before+after JSON 314,982 B，默认 transaction 事件约 635 B（减少约 99.8%）。模型请求/响应仍保留，依赖条目会增加每次模型事件体积，不能把事务缩减率当作整份 trace 缩减率。没有读取生产 trace 做估算。

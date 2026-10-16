@@ -256,6 +256,8 @@ fn diagnostic_raw(diagnostic: &mut Option<RetrievalDiagnostic>, name: &str, raw:
 
 /// R4 的注入位置：消费本次组装，沿用原请求、R1 标记与读快照，不另做一次检索。
 pub struct Assembly {
+    pub(crate) trace_deps: crate::diagnostics::ContentDeps,
+    trace_retrieval: serde_json::Value,
     retrieval_diagnostic: Option<RetrievalDiagnostic>,
     pub request: RecallRequest,
     pub plan: r1::Plan,
@@ -273,6 +275,30 @@ pub struct Assembly {
 }
 
 impl Assembly {
+    pub(crate) fn trace_evidence(&self, trace: &crate::diagnostics::TraceContext) {
+        let trace = trace.clone().with_deps(self.trace_deps.clone());
+        trace.record("retrieval", || self.trace_retrieval.clone());
+        trace.record("r3_evidence", || {
+            let records: Vec<_> = self
+                .evidence
+                .records
+                .iter()
+                .take(128)
+                .map(|r| r.id())
+                .collect();
+            let raw: Vec<_> = self
+                .evidence
+                .raw
+                .iter()
+                .take(128 - records.len())
+                .map(|r| &r.source_id)
+                .collect();
+            serde_json::json!({"records":self.evidence.records.len(),"raw":self.evidence.raw.len(),
+                "record_ids":records,"source_ids":raw,"id_limit":128,
+                "ids_truncated":self.evidence.records.len()+self.evidence.raw.len()>128,
+                "completeness":self.evidence.completeness})
+        });
+    }
     pub fn retrieval_diagnostic(&self) -> Option<&RetrievalDiagnostic> {
         self.retrieval_diagnostic.as_ref()
     }
@@ -1821,7 +1847,13 @@ fn assemble_inner(
         enrichment: EnrichmentStatus::NotStored,
         memory_requests: Vec::new(),
     });
-    let assembly = Assembly {
+    let trace_retrieval = serde_json::json!({"phase":"selection","status":metadata.status,"retrieval":metadata,
+        "path":if enumerate {"enumeration"} else if hybrid {"fusion"} else {"lexical"},
+        "plan_complete":complete,"trusted_records":eligible.len(),"subject_records":scoped.len(),
+        "subject_mentions":mentions.len(),"records":views.len(),"raw":raw.len(),"truncated":truncated});
+    let mut assembly = Assembly {
+        trace_retrieval,
+        trace_deps: crate::diagnostics::ContentDeps::incomplete("not_collected"),
         retrieval_diagnostic: diagnostic,
         retrieval: metadata,
         request: request.binding.clone(),
@@ -1892,6 +1924,21 @@ fn assemble_inner(
             },
         },
     };
+    if crate::diagnostics::enabled() {
+        let mut deps = crate::diagnostics::ContentDeps::complete();
+        for record in &assembly.evidence.records {
+            deps.memory(store.owner(), &state, record.id());
+        }
+        deps.references(store.owner(), &state, &serde_json::json!(assembly.evidence));
+        if assembly.evidence.current_message.is_some() {
+            deps.block("unbound_current_message");
+        }
+        if !assembly.source_context.is_empty() {
+            deps.block("unbound_provenance");
+        }
+        deps.summary_ids(assembly.evidence.records.len() + assembly.evidence.raw.len());
+        assembly.trace_deps = deps;
+    }
     Ok(assembly)
 }
 

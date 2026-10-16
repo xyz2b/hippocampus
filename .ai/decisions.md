@@ -742,3 +742,6 @@ Codex 排除了“统一降级/整理未完成/空库”（Claude 先前的假�
 - AF365 Inspector ② 验收：第 1 轮修复后真实旧 trace（删除前 DB 副本，只读）4 份全部可导出，live 显示 35 次模型调用（r1 12、r4 12、w1 7、w3 4）含模型/强度/usage/核验；3 份标“含未结束阶段”（进程重启截断，如实标注）。pmr-inspector 20/0，根仓全套 1017 passed, 0 failed, 2 ignored。提交推送。
 - AF367 Inspector ② 提交 855fd4e（根仓全套 1017/0/2，inspector 20/0）。开始 ③a。
 - AF369 Inspector ③a 验收：Claude 复核 diagnostics.rs（TraceContext 显式传递、meta 白名单构造、content_deps 默认 not_proven、旧 run_id 哈希为进程内不透明 ID）；根仓全套 1019 passed, 0 failed, 2 ignored。提交推送（未部署，③ 全部完成后再询问部署）。
+- AF370 ③a 提交 429ee7b（根仓 1019/0/2，inspector 21/0）。开始 ③b。
+- AF373 Codex 评审 69：反对“与存活文字相同即放行”（只能证明文字当前可见，不能证明历史依赖与关联；子串/拼接风险；字段枚举不可靠）；建议 ③c 保守部分展示 + 后续运行时显式绑定。用户裁定：按删除时间分段 + 清理旧日志——删除之后产生的记录正常显示（当时 DB 已无被删内容；接受宿主在 history 中重发被删文本的残余风险），删除之前的调用日志物理删除；以后每次删除同样处理。已执行：生产 traces 目录 6 个文件（均最后写入于 10-15 22:49，早于 23:31 删除）全部删除；Claude 临时副本（含删除前 DB 拷贝与 trace 拷贝、shape 文件）已删除。另：备份 w3v5-20261015（删除前 18:15）与 aiinfra-forget-20261015/memory-before 含被删内容，待用户决定。
+- AF372 Inspector ③b 验收：依赖绑定（来源 owner+id+内容/代际指纹、记录版本指纹）、W2/W5/R3/R5 摘要、事务快照默认摘要（PMR_TRACE_FULL_SNAPSHOTS=1 才完整，合成夹具 315KB→638B）；根仓全套 1028 passed, 0 failed, 2 ignored。提交推送。Claude 复核发现：按现规则 R1/R4（查询/context）与 W1/W3（history）几乎总是 deps_complete=false，有墓碑时正文将始终隐藏；提议 ③c 中由 Inspector 将 history/查询/实体名逐项与当前存活来源原文/实体做精确匹配，匹配者视为已证明（与可见内容相同不泄露被删内容），待 Codex 复核。

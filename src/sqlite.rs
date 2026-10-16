@@ -513,6 +513,11 @@ impl SqliteMemoryStore {
             .transaction_with_behavior(TransactionBehavior::Immediate)?;
         let mut state = Self::load(&tx, &self.owner)?;
         let sources_before = state.sources.clone();
+        let old_w5: std::collections::BTreeSet<_> = if crate::diagnostics::enabled() {
+            state.w5_receipts.keys().cloned().collect()
+        } else {
+            Default::default()
+        };
         let source_revision = state.source_revision;
         let read_revision = state.revision;
         let applied_before = state.last_applied_source_sequence;
@@ -526,7 +531,7 @@ impl SqliteMemoryStore {
             &state.relations,
             &state.record_updates,
         ))?;
-        let before = crate::diagnostics::enabled()
+        let before = crate::diagnostics::full_snapshots()
             .then(|| serde_json::to_value(&state).ok())
             .flatten();
         let result = match operation(&mut state) {
@@ -608,9 +613,61 @@ impl SqliteMemoryStore {
         tx.commit()?;
         crate::diagnostics::record("transaction_committed", || {
             serde_json::json!({
-            "owner":self.owner,"before":before,"after":state,"read_revision":read_revision,"committed_revision":state.revision,
+            "before":before,"after":if crate::diagnostics::full_snapshots() {Some(&state)} else {None},"counts":{"sources":state.sources.len(),"relations":state.relations.len(),"updates":state.record_updates.len()},"business_changed":business_changed,"sources_changed":source_revision != state.source_revision,"read_revision":read_revision,"committed_revision":state.revision,
             "revision_observability":"persisted","duration_ms":started.elapsed().as_millis()})
         });
+        if crate::diagnostics::enabled() {
+            for (id, receipt) in state
+                .w5_receipts
+                .iter()
+                .filter(|(id, _)| !old_w5.contains(*id))
+            {
+                if !matches!(receipt.status, crate::W5Status::Committed) {
+                    continue;
+                }
+                let group = serde_json::from_str::<crate::W5Group>(&receipt.fingerprint).ok();
+                let source = group
+                    .as_ref()
+                    .and_then(|g| state.sources.get(&g.source_key));
+                let mut deps = crate::diagnostics::ContentDeps::complete();
+                if let Some(source) = source {
+                    deps.source(&self.owner, source);
+                } else {
+                    deps.block("source_unavailable");
+                }
+                for product in receipt.products.values() {
+                    deps.memory(&self.owner, &state, *product);
+                }
+                for decision in &receipt.decisions {
+                    for target in &decision.targets {
+                        deps.memory(&self.owner, &state, *target);
+                    }
+                    for id in &decision.basis_sources {
+                        if let Some(source) = state.sources.values().find(|s| &s.id == id) {
+                            deps.source(&self.owner, source);
+                        } else {
+                            deps.block("source_unavailable");
+                        }
+                    }
+                }
+                deps.summary_ids(receipt.products.len().max(receipt.decisions.len()));
+                let trace = source
+                    .map(|s| {
+                        crate::diagnostics::TraceContext::source(
+                            &s.id,
+                            s.task.generation,
+                            s.task.round.unwrap_or(0),
+                            s.task.attempt_id.as_deref().unwrap_or("unknown"),
+                        )
+                    })
+                    .unwrap_or_default()
+                    .with_deps(deps);
+                trace.record("w5_commit", || serde_json::json!({"group_fingerprint":crate::openai::recall_models::fingerprint(&serde_json::json!(id)),
+                    "decision_types":receipt.decisions.iter().take(128).map(|d|&d.action).collect::<Vec<_>>(),
+                    "product_ids":receipt.products.values().take(128).collect::<Vec<_>>(),
+                    "ids_truncated":receipt.products.len()>128 || receipt.decisions.len()>128,"revision":state.revision}));
+            }
+        }
         self.refresh_fact_index_after_commit();
         Ok(result)
     }

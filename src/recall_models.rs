@@ -1141,7 +1141,9 @@ impl RecallRuntime {
             retrieval,
         )?;
         let attempt = crate::diagnostics::new_id();
-        let trace = crate::diagnostics::TraceContext::attempt(&attempt);
+        let trace = crate::diagnostics::TraceContext::attempt(&attempt).with_deps(
+            crate::diagnostics::ContentDeps::incomplete("query_context_and_entity_directory"),
+        );
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
                 if old.request["fingerprint"] != binding { return Err("recall_request_mismatch".into()); }
@@ -1168,6 +1170,7 @@ impl RecallRuntime {
         let before_r1 = recall::SafetySnapshot::capture(&state, request)?;
         let mut safety = None;
         let mut r4_audit = None;
+        let mut final_trace = trace.clone();
         let result: PersistenceResult<RecallOutput> = (|| {
             check_cancelled(cancelled)?;
             if let Some((output, binding, _)) = bootstrap {
@@ -1185,6 +1188,8 @@ impl RecallRuntime {
                     .map(|client| client.with_trace_context(trace.clone()))
                     .ok()
             };
+            let trace = trace.frozen(&r1_input(&ctx, &entities));
+            let client = client.map(|c| c.with_trace_context(trace.clone()));
             let mut r1_failure = None;
             if let Some(client) = &client {
                 check_cancelled(cancelled)?;
@@ -1234,6 +1239,14 @@ impl RecallRuntime {
                 )?,
                 None => recall::assemble(store, request, &plan, budget)?,
             };
+            assembly.trace_evidence(&trace);
+            let mut deps = assembly.trace_deps.clone();
+            deps.block("unbound_query_context");
+            let trace = trace
+                .clone()
+                .with_deps(deps)
+                .frozen(&r4_input(&assembly, request.utc_offset_seconds));
+            final_trace = trace.clone();
             safety = Some(assembly.safety.clone());
             // 执行身份不变；来源绑定与观察版本取自真正交给 R4 的 R3 读快照。
             store.transaction(|state| {
@@ -1264,7 +1277,10 @@ impl RecallRuntime {
                 check_cancelled(cancelled)?;
                 let models = &provider.unwrap().recall_models;
                 let op = plan.output.as_ref().map(|o| o.plan.op);
-                let client = client.for_stage(ModelStage::R4);
+                let client = client
+                    .clone()
+                    .with_trace_context(trace.clone())
+                    .for_stage(ModelStage::R4);
                 let response = client.and_then(|mut client| {
                     if let Some(budget) = &mut client.budget {
                         budget.r4_compute = models.r4_compute_low(op);
@@ -1381,6 +1397,9 @@ impl RecallRuntime {
         if !valid {
             return Err("recall_snapshot_changed".into());
         }
+
+        final_trace.record("r5_final", || json!({"status":output.status,"facts":output.facts.len(),
+                "computed":usize::from(output.computed.is_some()),"records":output.records.len(),"raw":output.raw.len()}));
 
         Ok((output, r4_audit))
     }

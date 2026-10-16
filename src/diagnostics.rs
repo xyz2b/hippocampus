@@ -32,10 +32,170 @@ pub fn capture_model_events<T>(run: impl FnOnce() -> T) -> (T, Vec<Value>) {
     (result, events)
 }
 
+/// Bind only frozen, actually consumed content. Unknown text never becomes complete
+/// merely because it contains an ID. Dependency lists are bounded independently of bodies.
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct ContentDeps {
+    deps_complete: bool,
+    frozen_input_fingerprint: Option<String>,
+    reasons: std::collections::BTreeSet<&'static str>,
+    sources: std::collections::BTreeMap<String, Value>,
+    memories: std::collections::BTreeMap<crate::MemoryId, Value>,
+}
+impl ContentDeps {
+    pub(crate) fn complete() -> Self {
+        Self {
+            deps_complete: true,
+            frozen_input_fingerprint: None,
+            reasons: Default::default(),
+            sources: Default::default(),
+            memories: Default::default(),
+        }
+    }
+    pub(crate) fn incomplete(reason: &'static str) -> Self {
+        let mut deps = Self::complete();
+        deps.block(reason);
+        deps
+    }
+    pub(crate) fn block(&mut self, reason: &'static str) {
+        self.deps_complete = false;
+        self.reasons.insert(reason);
+    }
+    pub(crate) fn summary_ids(&mut self, count: usize) {
+        if count > 128 {
+            self.block("summary_ids_truncated");
+        }
+    }
+    pub(crate) fn source(&mut self, owner: &crate::UserId, source: &crate::SourceRecord) {
+        if self.sources.contains_key(&source.id) {
+            return;
+        }
+        if self.sources.len() >= 128 {
+            self.block("dependency_limit");
+            return;
+        }
+        match crate::enrichment::SourceInput::of(source) {
+            Ok(input) if source.enrichment != "deleted" => {
+                if !input.history.is_empty() {
+                    self.block("unbound_history");
+                }
+                if input.provenance.is_some() {
+                    self.block("unbound_provenance");
+                }
+                self.sources.insert(source.id.clone(), json!({"owner":owner,"source_id":source.id,
+                    "generation":source.task.generation,"fingerprint":digest(&json!([input,source.task.generation,source.request,source.management,source.observed_at,source.received_sequence]))}));
+            }
+            _ => self.block("source_unavailable"),
+        }
+    }
+    pub(crate) fn references(
+        &mut self,
+        owner: &crate::UserId,
+        state: &crate::PersistedMemoryState,
+        value: &Value,
+    ) {
+        match value {
+            Value::Object(fields) => {
+                if let Some(id) = fields.get("source_id").and_then(Value::as_str) {
+                    if let Some(source) = state.sources.values().find(|s| s.id == id) {
+                        self.source(owner, source);
+                    } else {
+                        self.block("source_unavailable");
+                    }
+                }
+                if fields.get("kind").and_then(Value::as_str) == Some("current") {
+                    self.block("unbound_current_message");
+                }
+                for (key, value) in fields {
+                    if matches!(key.as_str(), "history" | "members") {
+                        if let Some(ids) = value.as_array() {
+                            for id in ids {
+                                if let Some(id) = id.as_u64() {
+                                    self.memory(owner, state, crate::MemoryId(id));
+                                }
+                            }
+                        }
+                    }
+                    self.references(owner, state, value);
+                }
+            }
+            Value::Array(values) => {
+                for value in values {
+                    self.references(owner, state, value);
+                }
+            }
+            _ => {}
+        }
+    }
+    pub(crate) fn memory(
+        &mut self,
+        owner: &crate::UserId,
+        state: &crate::PersistedMemoryState,
+        id: crate::MemoryId,
+    ) {
+        if self.memories.contains_key(&id) {
+            return;
+        }
+        if self.memories.len() >= 128 {
+            self.block("dependency_limit");
+            return;
+        }
+        use crate::MemoryRepository;
+        let Some(memory) = state.repository.get(id).ok().flatten() else {
+            self.block("record_unavailable");
+            return;
+        };
+        if memory.owner_id != *owner || memory.status == crate::MemoryStatus::Deleted {
+            self.block("record_unavailable");
+            return;
+        }
+        if memory.evidence.is_empty() {
+            self.block("record_evidence_unbound");
+        }
+        for evidence in &memory.evidence {
+            let mut matches = state.sources.values().filter(|source| {
+                source.session_id == evidence.session_id.0 && source.turn_id == evidence.turn_id.0
+            });
+            match (matches.next(), matches.next()) {
+                (Some(source), None) => {
+                    self.source(owner, source);
+                    if !crate::lexical::body(source)
+                        .is_some_and(|text| text.contains(&evidence.quote))
+                    {
+                        self.block("record_evidence_unbound");
+                    }
+                }
+                _ => self.block("record_evidence_unbound"),
+            }
+        }
+        let Some(view) = crate::w4::record_view(state, id) else {
+            self.block("record_unavailable");
+            return;
+        };
+        let view = json!(view);
+        self.memories.insert(
+            id,
+            json!({"owner":owner,"memory_id":id,"fingerprint":digest(&json!([memory,view]))}),
+        );
+        if view["format"] == "legacy" {
+            self.block("legacy_record");
+        }
+        self.references(owner, state, &view);
+    }
+}
+fn digest(value: &Value) -> String {
+    crate::openai::recall_models::fingerprint(value)
+}
+/// Expensive full snapshots are a separate, explicit local debug option.
+pub(crate) fn full_snapshots() -> bool {
+    enabled() && std::env::var("PMR_TRACE_FULL_SNAPSHOTS").as_deref() == Ok("1")
+}
+
 /// Diagnostic-only context. Never serialized into model input, checkpoints or budget policy.
 #[derive(Clone, Debug)]
 pub struct TraceContext {
     trace_id: String,
+    deps: ContentDeps,
     source_id: Option<String>,
     generation: Option<u64>,
     round: Option<u32>,
@@ -63,6 +223,7 @@ impl TraceContext {
                 time::OffsetDateTime::now_utc().unix_timestamp_nanos(),
                 TRACE_SEQUENCE.fetch_add(1, Ordering::Relaxed)
             ),
+            deps: ContentDeps::incomplete("not_proven"),
             source_id: None,
             generation: None,
             round: None,
@@ -77,6 +238,20 @@ impl TraceContext {
             attempt_id: Some(attempt_id.into()),
             ..Self::new()
         }
+    }
+    pub(crate) fn unbound(mut self, reason: &'static str) -> Self {
+        self.deps.block(reason);
+        self
+    }
+    pub(crate) fn frozen(mut self, input: &Value) -> Self {
+        if enabled() {
+            self.deps.frozen_input_fingerprint = Some(digest(input));
+        }
+        self
+    }
+    pub(crate) fn with_deps(mut self, deps: ContentDeps) -> Self {
+        self.deps = deps;
+        self
     }
     pub(crate) fn record(&self, kind: &str, data: impl FnOnce() -> Value) {
         record_context(self, kind, data);
@@ -116,8 +291,7 @@ impl TraceContext {
         }
         json!({"trace_version":"2","event_id":new_id(),"kind":kind,
             "at":time::OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).ok(),
-            "meta":meta,"content_deps":{"deps_complete":false,"reason":"not_proven",
-                "sources":[],"memories":[]},"body":body})
+            "meta":meta,"content_deps":self.deps,"body":body})
     }
 }
 
@@ -253,12 +427,25 @@ fn scrub(value: &mut Value) {
     }
 }
 
+fn unbound_reason(kind: &str) -> &'static str {
+    match kind {
+        "run_start" | "run_end" | "rpc_response" => "unbound_host_payload",
+        "validation" | "transaction_committed" | "transaction_rollback" => {
+            "snapshot_or_unbound_state"
+        }
+        "global_context" => "entity_directory_or_unbound_state",
+        "source_receipt" => "unbound_receipt",
+        "lexical_raw" => "unbound_retrieval",
+        "retrieval" | "fact_index_refresh" => "unbound_diagnostic",
+        _ => "not_proven",
+    }
+}
 pub fn record_for(run_id: &str, kind: &str, data: impl FnOnce() -> Value) {
     if !enabled() && !collecting(kind) {
         return;
     }
     // Legacy callers cannot prove dependencies. Never expose their host-supplied ID.
-    let context = legacy_context(run_id);
+    let context = legacy_context(run_id).with_deps(ContentDeps::incomplete(unbound_reason(kind)));
     record_context(&context, kind, data);
 }
 fn legacy_context(run_id: &str) -> TraceContext {
@@ -384,7 +571,11 @@ pub(crate) fn record(kind: &str, data: impl FnOnce() -> Value) {
     }
     let id = RUN.with(|run| run.borrow().clone());
     if let Some(id) = id {
-        record_context(&legacy_context(&id), kind, data);
+        record_context(
+            &legacy_context(&id).with_deps(ContentDeps::incomplete(unbound_reason(kind))),
+            kind,
+            data,
+        );
     } else if collecting(kind) {
         collect_metadata(kind, &data());
     }
@@ -421,6 +612,177 @@ pub(crate) fn validation<T: Serialize, E: std::fmt::Display>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn source(history: Vec<&str>) -> crate::SourceRecord {
+        serde_json::from_value(json!({"id":"s-fictional","session_id":"host-session","turn_id":"host-turn",
+            "observed_at":1,"request":{"text":"虚构记录正文","history":history,"capture_source":true},"enrichment":"committed",
+            "error":null,"result":null,"base_revision":0,"index":{},"task":{}})).unwrap()
+    }
+    #[test]
+    fn af371_dependency_bindings_and_output_inheritance() {
+        let owner = crate::UserId::from("fixture-owner");
+        let mut source = source(vec![]);
+        let mut deps = ContentDeps::complete();
+        deps.source(&owner, &source);
+        assert!(deps.deps_complete);
+        let old = deps.sources[&source.id].clone();
+        assert_eq!(old["owner"], "fixture-owner");
+        source.task.generation += 1;
+        let mut newer = ContentDeps::complete();
+        newer.source(&owner, &source);
+        assert_ne!(old["fingerprint"], newer.sources[&source.id]["fingerprint"]);
+        source.request.as_mut().unwrap()["text"] = json!("另一段虚构正文");
+        let mut changed = ContentDeps::complete();
+        changed.source(&owner, &source);
+        assert_ne!(
+            newer.sources[&source.id]["fingerprint"],
+            changed.sources[&source.id]["fingerprint"]
+        );
+        let ctx = TraceContext::new()
+            .with_deps(deps)
+            .frozen(&json!({"source":"s-fictional"}));
+        let start = ctx.envelope("model_start", json!({}));
+        let end =
+            std::thread::spawn(move || ctx.envelope("model_end", json!({"output":"fictional"})))
+                .join()
+                .unwrap();
+        assert_eq!(start["content_deps"], end["content_deps"]);
+        assert!(!start["content_deps"].to_string().contains("虚构记录正文"));
+    }
+    #[test]
+    fn af371_unbound_history_query_and_missing_dependencies_never_complete() {
+        let owner = crate::UserId::from("fixture");
+        let mut deps = ContentDeps::complete();
+        deps.source(&owner, &source(vec!["未绑定的历史"]));
+        assert!(!deps.deps_complete);
+        assert!(deps.reasons.contains("unbound_history"));
+        let mut deps = ContentDeps::complete();
+        deps.references(
+            &owner,
+            &crate::PersistedMemoryState::default(),
+            &json!({"source_id":"missing"}),
+        );
+        assert!(!deps.deps_complete);
+        let mut deps = ContentDeps::complete();
+        deps.references(&owner, &Default::default(), &json!({"kind":"current"}));
+        assert!(deps.reasons.contains("unbound_current_message"));
+        for reason in [
+            "unbound_query_context",
+            "entity_directory",
+            "snapshot_or_unbound_state",
+            "summary_ids_truncated",
+        ] {
+            let ctx = TraceContext::new().with_deps(ContentDeps::incomplete(reason));
+            assert_eq!(
+                ctx.envelope("test", json!({}))["content_deps"]["deps_complete"],
+                false
+            );
+        }
+        let mut deps = ContentDeps::complete();
+        for n in 0..129 {
+            let mut s = source(vec![]);
+            s.id = format!("source-{n}");
+            deps.source(&owner, &s);
+        }
+        assert_eq!(deps.sources.len(), 128);
+        assert!(deps.reasons.contains("dependency_limit"));
+    }
+
+    #[test]
+    fn af371_memory_binding_changes_and_deleted_records_are_not_proven() {
+        use crate::*;
+        let owner = UserId::from("fixture");
+        let candidate = CandidateMemory::new(
+            owner.clone(),
+            EntityId::from("self"),
+            MemoryType::Fact,
+            Predicate::from("fact"),
+            MemoryValue::Text("虚构断言".into()),
+            Timestamp(1),
+            Evidence::new(
+                EvidenceId::from("e"),
+                SessionId::from("host-session"),
+                TurnId::from("host-turn"),
+                "虚构记录正文",
+            ),
+        );
+        let mut state = PersistedMemoryState::default();
+        state.sources.insert("key".into(), source(vec![]));
+        let mut memory = Memory::from_candidate(MemoryId(1), &candidate, None);
+        state.repository.insert(memory.clone()).unwrap();
+        let mut deps = ContentDeps::complete();
+        deps.memory(&owner, &state, memory.id);
+        let old = deps.memories[&memory.id].clone();
+        assert!(deps.reasons.contains("legacy_record"));
+        memory.value = MemoryValue::Text("改过的虚构断言".into());
+        state.repository.update(memory.clone()).unwrap();
+        let mut changed = ContentDeps::complete();
+        changed.memory(&owner, &state, memory.id);
+        assert_ne!(
+            old["fingerprint"],
+            changed.memories[&memory.id]["fingerprint"]
+        );
+        memory.status = MemoryStatus::Deleted;
+        state.repository.update(memory.clone()).unwrap();
+        let mut deleted = ContentDeps::complete();
+        deleted.memory(&owner, &state, memory.id);
+        assert!(!deleted.deps_complete);
+        assert!(deleted.memories.is_empty());
+        let mut bounded = ContentDeps::complete();
+        bounded.summary_ids(128);
+        assert!(bounded.deps_complete);
+        bounded.summary_ids(129);
+        assert!(!bounded.deps_complete);
+    }
+
+    #[test]
+    fn af371_transaction_snapshot_is_summary_by_default() {
+        use std::sync::{Arc, Mutex};
+        struct Sink(Arc<Mutex<Vec<u8>>>);
+        impl Write for Sink {
+            fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+                self.0.lock().unwrap().extend_from_slice(bytes);
+                Ok(bytes.len())
+            }
+            fn flush(&mut self) -> std::io::Result<()> {
+                Ok(())
+            }
+        }
+        let ledger = crate::model_budget::tests::TestLedger::new();
+        let mut store =
+            crate::SqliteMemoryStore::open(&ledger.path, crate::UserId::from("fixture")).unwrap();
+        let rows = Arc::new(Mutex::new(Vec::new()));
+        with_test_writer(Box::new(Sink(rows.clone())), || {
+            let _op = Operation::enter("private-host-id");
+            store
+                .transaction(|state| {
+                    for n in 0..100 {
+                        let mut source = source(vec![]);
+                        source.id = format!("source-{n}");
+                        source.request.as_mut().unwrap()["text"] =
+                            json!("fictional-content-".repeat(60));
+                        state.sources.insert(n.to_string(), source);
+                    }
+                    Ok(())
+                })
+                .unwrap();
+        });
+        let bytes = rows.lock().unwrap();
+        let event: Value =
+            serde_json::from_slice(bytes.split(|b| *b == b'\n').next().unwrap()).unwrap();
+        assert_eq!(event["kind"], "transaction_committed");
+        assert!(event["body"]["before"].is_null());
+        assert!(event["body"]["after"].is_null());
+        assert_eq!(event["body"]["counts"]["sources"], 100);
+        assert!(!String::from_utf8_lossy(&bytes).contains("fictional-content"));
+        let state = store.read().unwrap();
+        let old_size = json!({"before":state,"after":state}).to_string().len();
+        eprintln!(
+            "AF371 synthetic steady-state transaction: full_snapshots={old_size} bytes; summary={} bytes",
+            bytes.len()
+        );
+        assert!(bytes.len() * 10 < old_size);
+    }
 
     #[test]
     fn af368_v2_context_is_explicit_private_and_cross_thread() {
