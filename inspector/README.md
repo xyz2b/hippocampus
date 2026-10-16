@@ -85,3 +85,23 @@ S0 只验证历史 Inspector 包；MCP 测试使用 debug `pmr-mcp` 和新默认
 
 历史报告、原型资料和 `.ai-coding-flow/` 早期验收资料中的 Python 命令描述当时的实现，
 不再是可执行的当前入口；保留这些记录不表示旧实现仍在项目中。
+
+## AF359：当前 DB 视图
+
+来源详情把 **W0 原文接收** 与 **结构化整理** 分开：显示状态、error、轮次、operation_id，以及当前留存的 W2 核验、W3 verdict/aspects/coverage、准入原因、候选最终回执和计划。缺字段是未记录，不能解释为通过；这些检查点不是完整执行历史。
+
+记录详情通过根库 `w4::record_view` 纯投影区分 CurrentRecordView 与 LegacyRecordView，展示完整候选（值、极性、限定语、时间）、grade、update 与原因、历史记录 ID、来源依据和相关关系。这里只展示已存陈述，不生成“当前事实”判断；Legacy 缺口与未知 update 保持未知。
+
+读取仍使用 SQLite `READ_ONLY` + `PRAGMA query_only=ON` + 一致性读事务；不调用运行时 store 打开、迁移、维护、模型或嵌入。根库依赖只用于内存快照反序列化及纯投影/回执函数。
+
+AF360 当前 DB 隐私按项过滤：未删除来源的自身原文可见；`request.history` 未链接 source_id，始终不导出并显示原因。W1/W2/W3 只展示可核对为当前消息精确片段的块，未核验原始输出、绑定快照不直接导出。记录先检查原始 evidence（不能依赖投影丢弃缺失引用后的子集），再检查前后版本、生产 history、关系成员/依据及 owner；依赖不存在、已删除或不可确认时隐藏该记录/块并标注原因。W4 只导出核对依赖后的决策摘要，不导出 seen/绑定快照。无关墓碑不再隐藏安全记录与原文。旧 trace、日志与无法关联的旧回执仍沿用保守隐藏；数据库不可读时不展示历史正文。
+
+来源页与记录页显示隐私过滤/读取错误提示。Trace 超过 16 MiB 显示 `trace_size_limit`；当前 retrieval 诊断与旧解析形状不兼容时显示 `trace_retrieval_schema_unsupported`，不会误报为无模型调用。本期不新增完整时间线、费用估算或大文件增量解析。
+
+零调用验证：`cargo test -p pmr-inspector --no-fail-fast`（仅生成临时虚构 SQLite/trace 夹具）。
+
+### AF361：删除回执最小化
+
+已删除来源不再进入普通 runs/sources 模板，仅通过 `deleted_sources` 输出 `status=deleted`、内部 `source_id`、`received_at`。不输出 session/turn/message、operation、工具参数、整理内容或宿主文本。时间按用户默认取舍保留，用于核对接收时间；它仍可能暴露活动时点。来源/记录页单独列出这份最小回执，页面下载使用同一服务端已过滤 bundle。
+
+`--dump` 与 `/api/live` 共用当前 DB 过滤；独立 `--export-trace` 也必须用 `--db/--owner` 核验当前删除状态，存在墓碑、数据库不可读或 owner 不匹配时拒绝导出历史正文。已另存的离线文件不可能追溯撤销。

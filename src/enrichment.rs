@@ -560,7 +560,7 @@ pub fn receipt(store: &SqliteMemoryStore, key: &str) -> PersistenceResult<serde_
 }
 
 /// 同一次 R3 读取的回执；不再另外读取正在推进的后台状态。
-pub(crate) fn receipt_from_state(
+pub fn receipt_from_state(
     state: &crate::PersistedMemoryState,
     key: &str,
 ) -> PersistenceResult<serde_json::Value> {

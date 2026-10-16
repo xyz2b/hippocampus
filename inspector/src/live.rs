@@ -191,6 +191,23 @@ fn id(v: &Value) -> String {
         .unwrap_or_else(|| v.to_string())
 }
 
+/// Explicit export shares the live deletion gate; old trace dependencies are incomplete.
+pub(super) fn export_trace(config: &Config, path: &Path) -> Result<Value, String> {
+    let state = read_state(&config.db, &config.owner)
+        .map_err(|_| "privacy_filtered: 无法核验当前删除状态，禁止导出历史 Trace".to_owned())?;
+    if state["sources"]
+        .as_object()
+        .is_some_and(|sources| sources.values().any(|s| s["request"].is_null()))
+    {
+        return Err("privacy_filtered: 存在删除墓碑，禁止导出历史 Trace 正文".into());
+    }
+    let bundle = export_runtime(path, true)?;
+    if bundle["memory_snapshot"]["scope"] != config.owner {
+        return Err("privacy_filtered: Trace owner 不匹配".into());
+    }
+    Ok(bundle)
+}
+
 pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
     let Config {
         db,
@@ -203,7 +220,7 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
     let mut state_available = false;
     let mut result = json!({"schema_version":"0.1.0","meta":{"title":"当前本机记忆与服务日志","data_kind":"recorded","notes":"当前数据库快照及持久保存回执；回执不是完整 MCP 轨迹。未记录的模型请求、失败操作与宿主输入保持未知。"},
         "memory_snapshot":{"completeness":"not_captured","scope":owner,"revision":null,"captured_at":captured},
-        "sources":[],"memories":[],"runs":[],"llm_calls":[],
+        "sources":[],"memories":[],"runs":[],"llm_calls":[],"deleted_sources":[],
         "live":{"captured_at":captured,"database":db.to_string_lossy(),"owner":owner,"status":"connected","errors":[],"logs":logs.iter().map(|p|log_tail(p)).collect::<Vec<_>>(),"refresh_seconds":2,"observability":"正式服务未采集完整 MCP / 模型请求链。这里读取已有记录，不触发业务调用。"}});
     match read_state(db, owner) {
         Err(e) => result["live"]["errors"]
@@ -212,19 +229,37 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
             .push(json!(format!("数据库不可读取：{e}"))),
         Ok(state) => {
             state_available = true;
+            privacy_filtered = state["sources"]
+                .as_object()
+                .is_some_and(|sources| sources.values().any(|s| s["request"].is_null()));
+            let visibility = super::current::Visibility::new(&state, owner);
+            let projected = match super::current::project(&state) {
+                Ok(value) => Some(value),
+                Err(reason) => {
+                    result["live"]["errors"]
+                        .as_array_mut()
+                        .unwrap()
+                        .push(json!(reason));
+                    None
+                }
+            };
             let memories = object(&state["repository"]["memories"])?;
             let receipts = object(&state["receipts"])?;
             let snapshot = &mut result["memory_snapshot"];
-            snapshot["completeness"] = json!("complete");
+            snapshot["completeness"] = json!(if privacy_filtered {
+                "partial"
+            } else {
+                "complete"
+            });
             snapshot["snapshot_sha256"] = json!(fingerprint(&state));
             snapshot["identity_note"] = json!(
                 "数据库没有原生revision；版本字段是记录内容指纹，不是事务版本或历史读取证明。"
             );
-            snapshot["pending"] = json!(
-                object(&state["staging"]["pending"])?
-                    .values()
-                    .collect::<Vec<_>>()
+            snapshot["pending"] = json!([]);
+            snapshot["pending_note"] = json!(
+                "旧 staging 未提供完整来源依赖，已隐藏；逐来源候选见已核对的 candidate_receipt"
             );
+            snapshot["content_status"] = json!("dependency_filtered");
             snapshot["receipt_count"] = json!(receipts.len());
             if let Some(revision) = state.get("revision") {
                 snapshot["revision"] = json!(id(revision));
@@ -252,20 +287,38 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                     let request = get(record, "request")?;
                     let deleted = request.is_null();
                     privacy_filtered |= deleted;
-                    let index = record
+                    if deleted {
+                        // Tombstones must never enter the normal run/source template.
+                        result["deleted_sources"].as_array_mut().unwrap().push(json!({
+                            "status":"deleted","source_id":sid,"received_at":utc(&record["observed_at"])?
+                        }));
+                        continue;
+                    }
+                    let mut index = record
                         .get("index")
                         .cloned()
                         .unwrap_or_else(|| json!({"status":"not_requested"}));
+                    if privacy_filtered {
+                        index = json!({"status":index["status"]});
+                    }
                     if index["status"] == "ready" {
                         result["meta"]["channels"]["lexical_index"] = json!("enabled");
                     }
-                    let status = json!({"source":{"status":if deleted{"deleted"}else{"stored"},"source_id":sid,"provenance":"mcp_received","message_id_trust":"client_supplied","received_sequence":record.get("received_sequence")},"index":index,"enrichment":{"status":get(record,"enrichment")?,"error":if deleted{Value::Null}else{record["error"].clone()}}});
+                    let status = json!({"source":{"status":if deleted{"deleted"}else{"stored"},"source_id":sid,"provenance":"mcp_received","message_id_trust":"client_supplied","received_sequence":record.get("received_sequence")},"index":index,"enrichment":{"status":get(record,"enrichment")?,"error":if privacy_filtered{Value::Null}else{record["error"].clone()}}});
                     if !deleted {
-                        sources.insert(sid.into(), json!({"id":sid,"kind":"persisted_source","text":request["text"],"session_id":record["session_id"],"message_id":record["turn_id"],"captured_at":utc(&record["observed_at"])?,"verification":"SQLite 独立留存的 MCP 接收原文；客户端提供消息标识，不代表网页来源认证"}));
+                        sources.insert(sid.into(), json!({"id":sid,"kind":"persisted_source","text":request["text"],"source_status":"stored","enrichment":record["enrichment"],"error":if privacy_filtered {Value::Null} else {record["error"].clone()},"round":record["task"]["round"],"operation_id":record["task"]["operation_id"],"workflow":visibility.workflow(record),"session_id":record["session_id"],"message_id":record["turn_id"],"captured_at":utc(&record["observed_at"])?,"verification":"SQLite 独立留存的 MCP 接收原文；客户端提供消息标识，不代表网页来源认证"}));
+                    }
+                    if let Some(source) = sources.get_mut(sid) {
+                        source["candidate_receipt"] = projected
+                            .as_ref()
+                            .and_then(|p| p["sources"].get(sid))
+                            .cloned()
+                            .map(|v| visibility.block(v, Some(sid)))
+                            .unwrap_or(Value::Null);
                     }
                     result["runs"].as_array_mut().unwrap().push(json!({
                         "id":format!("source-receipt:{sid}"),"tool":"memory_remember · 原文接收回执","status":"completed","started_at":utc(&record["observed_at"])?,"session_id":record["session_id"],"source_ids":if deleted{vec![]}else{vec![sid]},
-                        "source":status["source"],"index":status["index"],"enrichment":status["enrichment"],"enrichment_task":record.get("task"),
+                        "source":status["source"],"index":status["index"],"enrichment":status["enrichment"],"enrichment_task":if privacy_filtered {Value::Null} else {record["task"].clone()},
                         "save_status":record["enrichment"],"recall_status":"not_applicable","input":{"mcp_text":if deleted{Value::Null}else{request["text"].clone()},"arguments":null},
                         "spans":[{"id":"source-receipt","name":"source_receipt","status":"completed","output":status,"llm_call_ids":[]}],"write_changes":[],
                         "retrieval":{"query":null,"query_status":"unknown","scanned_count":null,"candidates":null,"selected_refs":null},
@@ -275,6 +328,17 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                 }
             }
             for m in memories.values() {
+                if !visibility.record(&id(&m["id"])) {
+                    result["memory_snapshot"]["completeness"] = json!("partial");
+                    result["live"]["errors"]
+                        .as_array_mut()
+                        .unwrap()
+                        .push(json!(format!(
+                            "记录 {} 已隐藏：依赖已删除或不可确认",
+                            id(&m["id"])
+                        )));
+                    continue;
+                }
                 if get(m, "owner_id")? != owner {
                     return Err("快照 owner 不一致".into());
                 }
@@ -311,6 +375,11 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                 }
                 memory["valid_to_unbounded"] =
                     json!(!temporal["valid_to"].is_null() && memory["valid_to"].is_null());
+                memory["current_view"] = projected
+                    .as_ref()
+                    .and_then(|p| p["records"].get(&id(&m["id"])))
+                    .cloned()
+                    .unwrap_or_else(|| json!({"status":"unknown"}));
                 result["memories"].as_array_mut().unwrap().push(memory);
             }
             for (key, receipt) in receipts {
@@ -319,6 +388,10 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                 }
                 let sid = format!("receipt-source:{}", &fingerprint(&json!(key))[..16]);
                 let request = get(receipt, "request")?;
+                if request["history"].as_array().is_some_and(|h| !h.is_empty()) {
+                    // Legacy receipts cannot prove dependencies of unlinked history.
+                    continue;
+                }
                 sources.insert(sid.clone(),json!({"id":sid,"kind":"receipt_request","text":request.get("text").unwrap_or(&json!("")),"verification":"SQLite 保存回执中的规范化参数；非原始 MCP wire 输入"}));
                 let mut changes = Vec::new();
                 if let Some(outcomes) = receipt["result"].get("outcomes") {
@@ -352,7 +425,7 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
     if privacy_filtered || !state_available {
         result["live"]["trace_status"] = json!("privacy_filtered");
         result["live"]["observability"] = json!(if state_available {
-            "检测到原文删除标记，已隐藏历史 Trace、旧保存回执和日志正文，避免旧快照或模型请求重新显示被删内容；不是没有执行记录。已导出的离线文件不会自动撤销，诊断磁盘文件仍按原审计保留策略保存。"
+            "检测到原文删除标记，当前 DB 按项核对来源与记录依赖，未链接 history 及不可确认块已隐藏；历史 Trace、旧保存回执和日志正文，避免旧快照或模型请求重新显示被删内容；不是没有执行记录。已导出的离线文件不会自动撤销，诊断磁盘文件仍按原审计保留策略保存。"
         } else {
             "当前数据库快照不可读取，无法核验删除状态；已隐藏历史 Trace 和日志正文，不能解释为空库或没有执行记录。"
         });
@@ -382,7 +455,10 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
             for path in files {
                 total += path.metadata().map_err(|e| io_class(&e))?.len();
                 if total > 16 * 1024 * 1024 {
-                    return Err("ValueError".into());
+                    return Err(
+                        "trace_size_limit: Trace 总量超过 16 MiB，本期未加载正文；不是无调用"
+                            .into(),
+                    );
                 }
                 let trace = export_runtime(&path, true)?;
                 if trace["memory_snapshot"]["scope"] != *owner {
@@ -397,7 +473,14 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                                 && (field != "memories" || v["version"] == item["version"])
                         }) {
                             if field != "sources" || items[index]["kind"] != "persisted_source" {
-                                items[index] = item.clone()
+                                let current_view = items[index].get("current_view").cloned();
+                                items[index] = item.clone();
+                                // The matching current DB version retains its pure projection.
+                                if field == "memories" {
+                                    if let Some(view) = current_view {
+                                        items[index]["current_view"] = view;
+                                    }
+                                }
                             }
                         } else {
                             items.push(item.clone())
@@ -479,6 +562,125 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn af359_live_projection_is_read_only_and_tombstones_hide_cross_source_details() {
+        let dir = std::env::temp_dir().join(format!(
+            "pmr-af359-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&dir).unwrap();
+        let db = dir.join("fixture.sqlite");
+        let mut fixture = crate::current::tests::fixture();
+        fixture["sources"]["s"] = json!({"id":"s-205","session_id":"session","turn_id":"turn","observed_at":1,"request":{"text":"fictional-sensitive-text","history":[]},"enrichment":"pending","error":"review_insufficient","result":null,"base_revision":0,"received_sequence":1,"task":{"round":1,"operation_id":"op"}});
+        fixture["sources"]["s"]["request"]["text"] =
+            fixture["repository"]["memories"]["1"]["evidence"][0]["quote"].clone();
+        let conn = Connection::open(&db).unwrap();
+        conn.execute_batch("CREATE TABLE memory_profiles(owner_id TEXT PRIMARY KEY,state_json TEXT NOT NULL); PRAGMA user_version=11;").unwrap();
+        conn.execute(
+            "INSERT INTO memory_profiles VALUES ('owner',?1)",
+            [fixture.to_string()],
+        )
+        .unwrap();
+        drop(conn);
+        let before = std::fs::read(&db).unwrap();
+        let mut config = Config {
+            db: db.clone(),
+            owner: "owner".into(),
+            logs: vec![],
+            trace_dir: None,
+        };
+        let bundle = live_bundle(&config).unwrap();
+        assert_eq!(
+            bundle["memories"][0]["current_view"]["record"]["format"],
+            "current"
+        );
+        let source = bundle["sources"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|s| s["id"] == "s-205")
+            .unwrap();
+        assert_eq!(source["source_status"], "stored");
+        assert_eq!(source["enrichment"], "pending");
+        assert_eq!(source["error"], "review_insufficient");
+        assert_eq!(source["round"], 1);
+        assert_eq!(source["operation_id"], "op");
+        assert_eq!(std::fs::read(&db).unwrap(), before);
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 1);
+        let trace = dir.join("trace-fixture.jsonl");
+        std::fs::File::create(&trace)
+            .unwrap()
+            .set_len(16 * 1024 * 1024 + 1)
+            .unwrap();
+        config.trace_dir = Some(dir.clone());
+        let oversized = live_bundle(&config).unwrap();
+        assert!(
+            oversized["live"]["errors"]
+                .to_string()
+                .contains("trace_size_limit")
+        );
+        assert_eq!(oversized["memories"].as_array().unwrap().len(), 2);
+        let rows = [
+            json!({"trace_version":"1","event_id":"1","run_id":"r","kind":"run_start","at":"2026-10-16T00:00:00Z","data":{"owner":"owner","tool":"memory_recall","arguments":{"query":"fictional"}}}),
+            json!({"trace_version":"1","event_id":"2","run_id":"r","kind":"retrieval","at":"2026-10-16T00:00:01Z","data":{"status":"unavailable","segments_total":4}}),
+        ];
+        std::fs::write(
+            &trace,
+            rows.iter().map(|r| format!("{r}\n")).collect::<String>(),
+        )
+        .unwrap();
+        let incompatible = live_bundle(&config).unwrap();
+        assert!(
+            incompatible["live"]["errors"]
+                .to_string()
+                .contains("trace_retrieval_schema_unsupported")
+        );
+        assert_eq!(incompatible["llm_calls"], json!([]));
+        config.trace_dir = None;
+        // A retained source / staging / active record may still contain deleted text.
+        fixture["sources"]["deleted"] = fixture["sources"]["s"].clone();
+        fixture["sources"]["deleted"]["id"] = json!("gone");
+        fixture["sources"]["deleted"]["request"] = Value::Null;
+        fixture["sources"]["deleted"]["turn_id"] = json!("deleted-turn");
+        fixture["sources"]["s"]["request"]["history"] = json!(["fictional-sensitive-text"]);
+        fixture["repository"]["memories"]["3"] = fixture["repository"]["memories"]["2"].clone();
+        fixture["repository"]["memories"]["3"]["id"] = json!(3);
+        fixture["repository"]["memories"]["3"]["evidence"][0]["turn_id"] = json!("deleted-turn");
+        fixture["repository"]["memories"]["3"]["evidence"][0]["quote"] =
+            json!("fictional-sensitive-text");
+        let conn = Connection::open(&db).unwrap();
+        conn.execute(
+            "UPDATE memory_profiles SET state_json=?1",
+            [fixture.to_string()],
+        )
+        .unwrap();
+        drop(conn);
+        let before = std::fs::read(&db).unwrap();
+        let hidden = live_bundle(&config).unwrap();
+        assert!(!hidden.to_string().contains("fictional-sensitive-text"));
+        assert_eq!(hidden["memories"].as_array().unwrap().len(), 2);
+        assert!(
+            hidden["sources"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|s| s["id"] == "s-205" && !s["text"].as_str().unwrap().is_empty())
+        );
+        assert!(
+            hidden["live"]["errors"]
+                .to_string()
+                .contains("依赖已删除或不可确认")
+        );
+        assert_eq!(hidden["memory_snapshot"]["pending"], json!([]));
+        assert_eq!(hidden["memory_snapshot"]["completeness"], "partial");
+        assert_eq!(std::fs::read(&db).unwrap(), before);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 
     #[test]
     fn source_receipts_survive_model_failure_and_hide_deleted_diagnostics() {
@@ -623,6 +825,10 @@ mod tests {
         state["sources"]["turn-key"]["enrichment"] = json!("deleted");
         state["sources"]["turn-key"]["index"] = json!({"status":"deleted"});
         state["sources"]["turn-key"]["error"] = json!("delete-this-original");
+        state["sources"]["turn-key"]["session_id"] = json!("private-host-session-topic");
+        state["sources"]["turn-key"]["turn_id"] = json!("private-host-turn-topic");
+        state["sources"]["turn-key"]["task"] = json!({"operation_id":"private-host-operation"});
+        state["sources"]["turn-key"]["index"]["detail"] = json!("private-index-text");
         state["receipts"]["old"] = json!({"request":{"text":"delete-this-original"},"result":{"value":"delete-this-original"}});
         state["repository"]["memories"]["1"] =
             json!({"id":1,"owner_id":"owner","status":"Deleted","value":"delete-this-original"});
@@ -634,14 +840,43 @@ mod tests {
         assert!(!bundle.to_string().contains("delete-this-original"));
         assert_eq!(bundle["live"]["trace_status"], "privacy_filtered");
         assert_eq!(bundle["live"]["logs"][0]["status"], "privacy_filtered");
-        assert_eq!(bundle["runs"][0]["source"]["status"], "deleted");
-        assert_eq!(bundle["runs"][0]["index"]["status"], "deleted");
+        assert_eq!(bundle["runs"], json!([]));
+        assert_eq!(bundle["deleted_sources"][0]["status"], "deleted");
+        assert_eq!(
+            bundle["deleted_sources"][0],
+            json!({"status":"deleted","source_id":"source-one","received_at":utc(&json!(1)).unwrap()})
+        );
+        for secret in [
+            "private-host-session-topic",
+            "private-host-turn-topic",
+            "private-host-operation",
+            "private-index-text",
+        ] {
+            assert!(!bundle.to_string().contains(secret));
+        }
+        assert!(
+            bundle["sources"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|s| s["id"] != "source-one")
+        );
+        assert!(
+            export_trace(&config, &dir.join("trace-old.jsonl"))
+                .unwrap_err()
+                .contains("privacy_filtered")
+        );
         assert_eq!(bundle["memories"], json!([]));
         conn.execute("UPDATE memory_profiles SET state_json='invalid-json'", [])
             .unwrap();
         let unreadable = live_bundle(&config).unwrap();
         assert_eq!(unreadable["live"]["status"], "partial");
         assert_eq!(unreadable["live"]["trace_status"], "privacy_filtered");
+        assert!(
+            export_trace(&config, &dir.join("trace-old.jsonl"))
+                .unwrap_err()
+                .contains("privacy_filtered")
+        );
         assert!(!unreadable.to_string().contains("delete-this-original"));
         drop(conn);
         std::fs::remove_dir_all(dir).unwrap();

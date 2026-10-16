@@ -567,6 +567,9 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
                     run["read_revision"] = json!(data["read_revision"].to_string());
                 }
                 "retrieval" => {
+                    if data.get("result").is_none() || data.get("runtime").is_none() {
+                        return Err("trace_retrieval_schema_unsupported: 当前 retrieval 是覆盖/错误诊断，旧解析器要求 result/runtime；本期未恢复此 Trace 正文".into());
+                    }
                     retrieval = Some(data);
                     let result = required(data, "result")?;
                     let references = captured.result_refs(result)?;
