@@ -1,4 +1,4 @@
-use super::{fingerprint, now, python_json, safe, trace::export_runtime, utc};
+use super::{fingerprint, now, python_json, safe, trace::export_filtered, utc};
 use rusqlite::{Connection, OpenFlags, OptionalExtension};
 use serde_json::{Value, json};
 use std::{
@@ -191,21 +191,51 @@ fn id(v: &Value) -> String {
         .unwrap_or_else(|| v.to_string())
 }
 
-/// Explicit export shares the live deletion gate; old trace dependencies are incomplete.
+/// Live/dump/export/download all enter the same pre-aggregation filter.
 pub(super) fn export_trace(config: &Config, path: &Path) -> Result<Value, String> {
     let state = read_state(&config.db, &config.owner)
-        .map_err(|_| "privacy_filtered: 无法核验当前删除状态，禁止导出历史 Trace".to_owned())?;
-    if state["sources"]
-        .as_object()
-        .is_some_and(|sources| sources.values().any(|s| s["request"].is_null()))
-    {
-        return Err("privacy_filtered: 存在删除墓碑，禁止导出历史 Trace 正文".into());
+        .map_err(|_| "privacy_filtered: 无法核验当前删除状态".to_owned())?;
+    let dir = config
+        .trace_dir
+        .as_deref()
+        .ok_or("privacy_filtered: 未配置诊断目录")?;
+    if path.parent().and_then(|p| p.canonicalize().ok()) != dir.canonicalize().ok() {
+        return Err("privacy_filtered: Trace 不在配置的诊断目录".into());
     }
-    let bundle = export_runtime(path, true)?;
-    if bundle["memory_snapshot"]["scope"] != config.owner {
+    let before_epoch = std::fs::read(dir.join("deletion-epoch.json")).ok();
+    let policy = super::privacy::Policy::new(&state, &config.owner, dir);
+    let mut bundle = export_filtered(path, &policy)?;
+    if !bundle["memory_snapshot"]["scope"].is_null()
+        && bundle["memory_snapshot"]["scope"] != config.owner
+    {
         return Err("privacy_filtered: Trace owner 不匹配".into());
     }
+    let after = read_state(&config.db, &config.owner)?;
+    if privacy_stamp(&after) != privacy_stamp(&state)
+        || before_epoch != std::fs::read(dir.join("deletion-epoch.json")).ok()
+        || dir.join("deletion-pending").exists()
+    {
+        return Err("privacy_filtered: 删除状态在读取期间变化".into());
+    }
+    bundle["memory_snapshot"]["scope"] = json!(config.owner);
     Ok(bundle)
+}
+fn privacy_stamp(state: &Value) -> Value {
+    json!([
+        state["sources"].as_object().map(|m| m
+            .iter()
+            .map(|(k, v)| json!([
+                k,
+                v["id"],
+                v["request"].is_null(),
+                v["enrichment"] == "deleted"
+            ]))
+            .collect::<Vec<_>>()),
+        state["repository"]["memories"].as_object().map(|m| m
+            .iter()
+            .map(|(k, v)| json!([k, v["owner_id"], v["status"] == "Deleted"]))
+            .collect::<Vec<_>>())
+    ])
 }
 
 pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
@@ -215,9 +245,19 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
         logs,
         trace_dir,
     } = config;
+    let epoch_state = || {
+        trace_dir.as_ref().map(|dir| {
+            (
+                std::fs::read(dir.join("deletion-epoch.json")).ok(),
+                dir.join("deletion-pending").exists(),
+            )
+        })
+    };
+    let initial_epoch = epoch_state();
     let captured = now();
     let mut privacy_filtered = false;
     let mut state_available = false;
+    let mut initial_privacy_stamp = Value::Null;
     let mut result = json!({"schema_version":"0.1.0","meta":{"title":"当前本机记忆与服务日志","data_kind":"recorded","notes":"当前数据库快照及持久保存回执；回执不是完整 MCP 轨迹。未记录的模型请求、失败操作与宿主输入保持未知。"},
         "memory_snapshot":{"completeness":"not_captured","scope":owner,"revision":null,"captured_at":captured},
         "sources":[],"memories":[],"runs":[],"llm_calls":[],"deleted_sources":[],
@@ -229,6 +269,11 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
             .push(json!(format!("数据库不可读取：{e}"))),
         Ok(state) => {
             state_available = true;
+            initial_privacy_stamp = privacy_stamp(&state);
+            if let Some(dir) = trace_dir {
+                result["meta"]["deletion_epoch"] =
+                    super::privacy::Policy::new(&state, owner, dir).summary();
+            }
             privacy_filtered = state["sources"]
                 .as_object()
                 .is_some_and(|sources| sources.values().any(|s| s["request"].is_null()));
@@ -415,17 +460,18 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
             result["sources"] = json!(sources.into_values().collect::<Vec<_>>());
         }
     }
+    result["meta"]["filtered_events"] = json!([]);
     let mut trace_hashes = Vec::new();
     result["live"]["trace_status"] = json!(if trace_dir.is_some() {
         "empty"
     } else {
         "not_enabled"
     });
-    // ponytail: any source deletion hides all old diagnostics; add source-level redaction only if history visibility matters.
+    // Unstructured stderr stays conservative; JSONL uses the deletion epoch.
     if privacy_filtered || !state_available {
         result["live"]["trace_status"] = json!("privacy_filtered");
         result["live"]["observability"] = json!(if state_available {
-            "检测到原文删除标记，当前 DB 按项核对来源与记录依赖，未链接 history 及不可确认块已隐藏；历史 Trace、旧保存回执和日志正文，避免旧快照或模型请求重新显示被删内容；不是没有执行记录。已导出的离线文件不会自动撤销，诊断磁盘文件仍按原审计保留策略保存。"
+            "检测到原文删除标记，当前 DB 按项核对来源与记录依赖，未链接 history 及不可确认块已隐藏；历史 Trace、旧保存回执和日志正文，避免旧快照或模型请求重新显示被删内容；不是没有执行记录。已导出的离线文件不会自动撤销，删除纪元前的调用日志由运行时清理；删除失败的文件仍受纪元门控。"
         } else {
             "当前数据库快照不可读取，无法核验删除状态；已隐藏历史 Trace 和日志正文，不能解释为空库或没有执行记录。"
         });
@@ -433,7 +479,8 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
             log["lines"] = json!([]);
             log["status"] = json!("privacy_filtered");
         }
-    } else if let Some(dir) = trace_dir {
+    }
+    if state_available && let Some(dir) = trace_dir {
         result["live"]["observability"] =
             json!("执行采集已接入；等待新的工具调用。旧持久回执不能补出历史执行过程。");
         let traces = (|| -> Result<(), String> {
@@ -461,28 +508,15 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                             .into(),
                     );
                 }
-                let mut trace = export_runtime(&path, true)?;
-                if trace["memory_snapshot"]["scope"].is_null() {
-                    let all_bound = trace["runs"].as_array().unwrap().iter().all(|run| {
-                        let ids = run["linked_source_ids"].as_array().unwrap();
-                        (!ids.is_empty()
-                            && ids
-                                .iter()
-                                .all(|id| known_sources.iter().any(|source| source["id"] == *id)))
-                            || (ids.is_empty()
-                                && known_sources.iter().any(|source| {
-                                    !source["operation_id"].is_null()
-                                        && source["operation_id"] == run["operation_id"]
-                                }))
-                    });
-                    if !all_bound {
-                        return Err("trace_owner_unconfirmed: 后台事件缺少 owner 且无法确认全部来源 ID / operation_id".into());
-                    }
-                    trace["memory_snapshot"]["scope"] = json!(owner);
-                }
-                if trace["memory_snapshot"]["scope"] != *owner {
-                    continue;
-                }
+                let mut trace = export_trace(config, &path)?;
+                let filtered = trace["meta"]["filtered_events"]
+                    .as_array()
+                    .cloned()
+                    .unwrap_or_default();
+                result["meta"]["filtered_events"]
+                    .as_array_mut()
+                    .unwrap()
+                    .extend(filtered);
                 for run in trace["runs"].as_array_mut().unwrap() {
                     for source in &known_sources {
                         if !source["operation_id"].is_null()
@@ -541,7 +575,15 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                         .unwrap()
                         .push(json!(format!("trace_event_isolated: {error}")));
                 }
-                result["live"]["trace_status"] = json!("available");
+                result["live"]["trace_status"] = json!(if !result["meta"]["filtered_events"]
+                    .as_array()
+                    .unwrap()
+                    .is_empty()
+                {
+                    "privacy_filtered"
+                } else {
+                    "available"
+                });
                 if trace["meta"]["tail_status"] == "partial_line"
                     || array(&trace["runs"])?
                         .iter()
@@ -601,6 +643,12 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
     if !result["live"]["errors"].as_array().unwrap().is_empty() {
         result["live"]["status"] = json!("partial")
     }
+    if state_available
+        && (read_state(db, owner).ok().as_ref().map(privacy_stamp) != Some(initial_privacy_stamp)
+            || epoch_state() != initial_epoch)
+    {
+        return Err("privacy_filtered: 删除状态在聚合期间变化，请刷新".into());
+    }
     let mut content = safe(&result);
     content["live"]["revision"] = json!(fingerprint(
         &json!({"snapshot":content["memory_snapshot"]["snapshot_sha256"],"logs":content["live"]["logs"],"errors":content["live"]["errors"],"traces":trace_hashes})
@@ -612,6 +660,90 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
 mod tests {
     use super::*;
 
+    fn current_trace_fixture(path: &Path) {
+        let text = std::fs::read_to_string(path).unwrap();
+        let rows = text
+            .lines()
+            .map(|line| {
+                let mut row: Value = serde_json::from_str(line).unwrap();
+                row["trace_version"] = json!("2");
+                row["body"] = row["data"].clone();
+                row["meta"] =
+                    json!({"trace_id":row["run_id"],"written_at_unix_ns":1,"origin_at_unix_ns":1});
+                if let Some(input) = row["body"]["request"]["input"]
+                    .as_str()
+                    .and_then(|s| serde_json::from_str::<Value>(s).ok())
+                {
+                    if input["source_snapshot"][0].is_string() {
+                        row["meta"]["source_id"] = input["source_snapshot"][0].clone();
+                    }
+                }
+                row["content_deps"] = json!({"sources":{},"memories":{},"deps_complete":false});
+                format!("{row}\n")
+            })
+            .collect::<String>();
+        std::fs::write(path, rows).unwrap();
+    }
+    #[test]
+    fn af375_live_dump_export_share_epoch_filter() {
+        let dir = std::env::temp_dir().join(format!(
+            "af375-exits-{}",
+            hippocampus::diagnostics::new_id()
+        ));
+        std::fs::create_dir(&dir).unwrap();
+        let db = dir.join("fixture.sqlite");
+        let conn = Connection::open(&db).unwrap();
+        conn.execute_batch(
+            "CREATE TABLE memory_profiles(owner_id TEXT PRIMARY KEY,state_json TEXT NOT NULL)",
+        )
+        .unwrap();
+        let mut state = serde_json::to_value(hippocampus::PersistedMemoryState::default()).unwrap();
+        state["sources"]["gone"] = json!({"id":"gone","session_id":"secret-session","turn_id":"secret-turn","observed_at":1,"request":null,"enrichment":"deleted","error":null,"result":null,"base_revision":0,"index":{},"task":{}});
+        conn.execute(
+            "INSERT INTO memory_profiles VALUES('owner',?)",
+            [state.to_string()],
+        )
+        .unwrap();
+        let config = Config {
+            db,
+            owner: "owner".into(),
+            logs: vec![],
+            trace_dir: Some(dir.clone()),
+        };
+        std::fs::write(dir.join("deletion-epoch.json"),json!({"version":1,"epoch_id":"e","written_at_unix_ns":10,"revision":1,"owners":{"owner":hippocampus::diagnostics::deletion_signature(vec!["gone".into()])}}).to_string()).unwrap();
+        let path = dir.join("trace-test.jsonl");
+        let base = json!({"trace_version":"2","event_id":"new","at":"2026-10-16T00:00:00Z","kind":"model_check","meta":{"trace_id":"internal","deletion_epoch":"e","written_at_unix_ns":11,"origin_at_unix_ns":11},"content_deps":{"sources":{},"memories":{},"deps_complete":false},"body":{"stage":"w3_v6","phase":"validate","status":"completed","output":{"text":"live-fictional-output"}}});
+        let mut old = base.clone();
+        old["event_id"] = json!("old");
+        old["meta"]["written_at_unix_ns"] = json!(9);
+        old["meta"]["origin_at_unix_ns"] = json!(9);
+        old["meta"]["trace_id"] = json!("old-trace");
+        old["body"]["output"] = json!("deleted-fictional-output");
+        let mut deleted = base.clone();
+        deleted["event_id"] = json!("deleted");
+        deleted["body"]["output"] = json!("explicit-deleted-output");
+        deleted["content_deps"]["sources"]["gone"] = json!({"owner":"owner","source_id":"gone"});
+        std::fs::write(&path, format!("{old}\n{base}\n{deleted}\n")).unwrap();
+        let exported = export_trace(&config, &path).unwrap();
+        let live = live_bundle(&config).unwrap();
+        for bundle in [&live, &exported] {
+            let text = bundle.to_string();
+            assert!(text.contains("live-fictional-output"));
+            for secret in [
+                "deleted-fictional-output",
+                "explicit-deleted-output",
+                "secret-session",
+                "secret-turn",
+            ] {
+                assert!(!text.contains(secret));
+            }
+        }
+        assert_eq!(
+            live["meta"]["filtered_events"],
+            exported["meta"]["filtered_events"]
+        );
+        std::fs::remove_dir_all(dir).unwrap();
+    }
     #[test]
     fn af359_live_projection_is_read_only_and_tombstones_hide_cross_source_details() {
         let dir = std::env::temp_dir().join(format!(
@@ -683,6 +815,7 @@ mod tests {
             rows.iter().map(|r| format!("{r}\n")).collect::<String>(),
         )
         .unwrap();
+        current_trace_fixture(&trace);
         let incompatible = live_bundle(&config).unwrap();
         assert!(
             !incompatible["live"]["errors"]
@@ -701,6 +834,7 @@ mod tests {
             "at":"2026-10-16T00:00:00Z","data":{"call_id":"bg-call","stage":"w1_v123","attempt":1,
                 "request":{"model":"fixture","input":json!({"source_snapshot":["s-205","session","turn"]}).to_string()}}});
         std::fs::write(&trace, format!("{background}\n")).unwrap();
+        current_trace_fixture(&trace);
         let background_bundle = live_bundle(&config).unwrap();
         assert_eq!(background_bundle["llm_calls"][0]["id"], "bg-call");
         assert!(
@@ -716,12 +850,13 @@ mod tests {
         unbound["data"]["request"]["input"] =
             json!({"source_snapshot":["not-owned"]}).to_string().into();
         std::fs::write(&trace, format!("{unbound}\n")).unwrap();
+        current_trace_fixture(&trace);
         let rejected = live_bundle(&config).unwrap();
         assert_eq!(rejected["llm_calls"], json!([]));
         assert!(
-            rejected["live"]["errors"]
+            rejected["meta"]["filtered_events"]
                 .to_string()
-                .contains("trace_owner_unconfirmed")
+                .contains("source_deleted_or_missing")
         );
         // AF364: the same synthetic current trace works through both public read paths.
         let shapes = include_str!("../tests/fixtures/af364-event-shapes.jsonl")
@@ -729,6 +864,7 @@ mod tests {
         let broken = json!({"trace_version":"1","event_id":"isolated","run_id":"fixture-run",
             "kind":"validation","at":"2026-10-16T00:00:00Z","data":{"status":"failed"}});
         std::fs::write(&trace, format!("{shapes}{broken}\n")).unwrap();
+        current_trace_fixture(&trace);
         let exported = export_trace(&config, &trace).unwrap();
         assert_eq!(exported["llm_calls"].as_array().unwrap().len(), 1);
         assert_eq!(
@@ -870,8 +1006,8 @@ mod tests {
         );
         save(&state);
         let with_trace = live_bundle(&config).unwrap();
-        assert_eq!(with_trace["live"]["trace_status"], "available");
-        assert_eq!(with_trace["runs"].as_array().unwrap().len(), 2);
+        assert_eq!(with_trace["live"]["trace_status"], "privacy_filtered");
+        assert_eq!(with_trace["runs"].as_array().unwrap().len(), 1);
         assert_eq!(
             with_trace["meta"]["channels"]["source_capture"], "enabled",
             "old traces cannot override source capability"
@@ -904,23 +1040,27 @@ mod tests {
             "delete-this-original",
             "current persisted sources remain authoritative"
         );
-        assert_eq!(
-            merged["runs"]
+        assert!(
+            !merged["runs"]
                 .as_array()
                 .unwrap()
                 .iter()
-                .find(|run| run["id"] == "old-run")
-                .unwrap()["enrichment"]["status"],
-            "pending",
-            "historical status stays on its own run"
+                .any(|run| run["id"] == "old-run"),
+            "legacy body is filtered before aggregation"
+        );
+        assert!(
+            !merged["meta"]["filtered_events"]
+                .as_array()
+                .unwrap()
+                .is_empty()
         );
         let mut legacy = state.clone();
         legacy.as_object_mut().unwrap().remove("sources");
         save(&legacy);
         assert_eq!(
             live_bundle(&config).unwrap()["live"]["trace_status"],
-            "available",
-            "valid v1 snapshots still allow legacy diagnostics"
+            "privacy_filtered",
+            "v1 snapshots expose metadata only under AF375"
         );
         state["sources"]["turn-key"]["request"] = Value::Null;
         state["sources"]["turn-key"]["enrichment"] = json!("deleted");
@@ -962,10 +1102,14 @@ mod tests {
                 .iter()
                 .all(|s| s["id"] != "source-one")
         );
+        let filtered_export = export_trace(&config, &dir.join("trace-old.jsonl")).unwrap();
+        assert_eq!(filtered_export["runs"], json!([]));
+        assert!(!filtered_export.to_string().contains("delete-this-original"));
         assert!(
-            export_trace(&config, &dir.join("trace-old.jsonl"))
-                .unwrap_err()
-                .contains("privacy_filtered")
+            !filtered_export["meta"]["filtered_events"]
+                .as_array()
+                .unwrap()
+                .is_empty()
         );
         assert_eq!(bundle["memories"], json!([]));
         conn.execute("UPDATE memory_profiles SET state_json='invalid-json'", [])

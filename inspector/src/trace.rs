@@ -254,7 +254,21 @@ fn collect_source_ids(value: &Value, ids: &mut Vec<Value>) {
     }
 }
 
+#[cfg(test)]
 pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<Value> {
+    export_with_policy(path, allow_partial, None)
+}
+pub(super) fn export_filtered(
+    path: &Path,
+    policy: &super::privacy::Policy<'_>,
+) -> ExportResult<Value> {
+    export_with_policy(path, true, Some(policy))
+}
+fn export_with_policy(
+    path: &Path,
+    allow_partial: bool,
+    policy: Option<&super::privacy::Policy<'_>>,
+) -> ExportResult<Value> {
     let raw = std::fs::read(path).map_err(|error| {
         match error.kind() {
             std::io::ErrorKind::NotFound => "FileNotFoundError",
@@ -268,6 +282,21 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
     } else {
         &raw[..raw.iter().rposition(|byte| *byte == b'\n').unwrap_or(0)]
     };
+    let origin_rows: Vec<Value> = complete
+        .split(|b| *b == b'\n')
+        .filter_map(|b| serde_json::from_slice(b).ok())
+        .collect();
+    let origins = super::privacy::Origins::collect(&origin_rows);
+    drop(origin_rows);
+    // A mixed-owner file cannot lend unbound model events to the requested owner.
+    let foreign_owner = policy.is_some_and(|p| {
+        complete.split(|b| *b == b'\n').any(|b| {
+            serde_json::from_slice::<Value>(b)
+                .ok()
+                .is_some_and(|r| p.foreign_owner(&r))
+        })
+    });
+    let mut filtered_events = Vec::new();
     let mut rows: Vec<Value> = Vec::new();
     let mut parse_errors = Vec::new();
     let mut event_ids = HashSet::new();
@@ -283,6 +312,21 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
                 continue;
             }
         };
+        if let Some(policy) = policy {
+            if let Some(reason) = if foreign_owner {
+                Some("owner_mismatch")
+            } else {
+                policy.reason_with_origin(&row, origins.get(&row))
+            } {
+                filtered_events.push(super::privacy::metadata(&row, reason));
+                continue;
+            }
+            if let Some(summary) =
+                super::privacy::summary(row["kind"].as_str().unwrap_or(""), &row["body"])
+            {
+                row["body"] = summary;
+            }
+        }
         if row["trace_version"] == "2" {
             if !row["meta"]["trace_id"].is_string()
                 || !row["content_deps"].is_object()
@@ -329,7 +373,7 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
     let mut bundle = json!({
         "schema_version":"0.1.0", "meta":{
             "title":"S1 运行时诊断记录", "data_kind":"recorded", "trace_sha256":digest(&raw),
-            "tail_status":if complete == raw {"complete"}else{"partial_line"}, "parse_errors":parse_errors,
+            "deletion_epoch":policy.map(|p|p.summary()),"filtered_events":filtered_events,"tail_status":if complete == raw {"complete"}else{"partial_line"}, "parse_errors":parse_errors,
             "channels":{"source_capture":"not_enabled", "lexical_index":"not_enabled"},
             "notes":"实际运行记录；是否使用本地合成模型桩由验收 manifest 标注。费用未知；读取不执行模型。"
         },
@@ -1108,6 +1152,9 @@ pub(super) fn export_runtime(path: &Path, allow_partial: bool) -> ExportResult<V
                         }
                     }
                     "global_context" => {}
+                    "w2_summary" | "w5_commit" | "r3_evidence" | "r5_final" => {
+                        span["recognition"] = json!("summary");
+                    }
                     _ => {
                         span["recognition"] = json!("unrecognized");
                     }

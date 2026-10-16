@@ -1653,7 +1653,7 @@ pub fn memory_tools() -> Vec<Tool> {
         ),
         tool::<Forget>(
             "memory_forget",
-            "On the user's deletion request, provide exactly one of memory_id, staged_id or source_id. Source deletion removes its current raw body and linked receipts, and forgets derived memories/pending candidates. Whole-message retention can also remove connected facts and sources; inspect forgotten_ids/deleted_source_ids. Tombstones prevent replay and late model completion. Existing diagnostic files, backups and WAL are not physically erased; this is not an all-media privacy purge. Works offline.",
+            "On the user's deletion request, provide exactly one of memory_id, staged_id or source_id. Source deletion removes its current raw body and linked receipts, and forgets derived memories/pending candidates. Whole-message retention can also remove connected facts and sources; inspect forgotten_ids/deleted_source_ids. Tombstones prevent replay and late model completion. Configured runtime trace files written before source deletion are rotated and removed on a best-effort basis. Backups, prior exports and WAL are not erased; this is not an all-media privacy purge. Works offline.",
             true,
             true,
             false,

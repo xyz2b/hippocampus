@@ -162,7 +162,7 @@ function render(){hideStageHelp();if(!bundle)return;const titles={runs:['请求�
  $('page-title').textContent=titles[view][0];$('page-description').textContent=titles[view][1];
  document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
  $('sources-count').textContent=savedSources().length;$('runs-count').textContent=bundle.runs.length;$('memories-count').textContent=memoryVersions().length;$('calls-count').textContent=bundle.llm_calls.length;$('logs-count').textContent=bundle.live?.logs?.length||0;$('data-scope').textContent=bundle.live?'本机当前数据':'历史 / 导入记录';
- const demo=bundle.meta.data_kind==='demo';$('banner').className='banner'+(demo?'':' recorded');$('banner').innerHTML=`<strong>${demo?'演示数据 · 非真实日志':bundle.live?'本地后台快照':'导入记录 · 非实时连接'}</strong><span>${esc(bundle.meta.title)}。${esc(bundle.meta.notes||'记录来源由导出方提供，界面不自动核验其真实性。')}</span>${bundle.live?.observability?`<span>${esc(bundle.live.observability)}</span>`:''}`;
+ const demo=bundle.meta.data_kind==='demo';$('banner').className='banner'+(demo?'':' recorded');$('banner').innerHTML=`<strong>${demo?'演示数据 · 非真实日志':bundle.live?'本地后台快照':'导入记录 · 非实时连接'}</strong><span>${esc(bundle.meta.title)}。${esc(bundle.meta.notes||'记录来源由导出方提供，界面不自动核验其真实性。')}</span>${bundle.live?.observability?`<span>${esc(bundle.live.observability)}</span>`:''}${bundle.meta.deletion_epoch?.cleanup_failures?`<span>旧日志物理清理有 ${Number(bundle.meta.deletion_epoch.cleanup_failures)} 项失败；正文仍受删除纪元保护。</span>`:''}${bundle.meta.filtered_events?.length?`<details><summary>${bundle.meta.filtered_events.length} 条历史事件正文已隐藏（删除纪元/依赖保护）</summary><pre>${esc(JSON.stringify(bundle.meta.filtered_events,null,2))}</pre></details>`:''}`;
  const ac=aggregateCosts(),fails=bundle.runs.filter(r=>bad(r.status)).length;
  const metrics=[['运行记录',bundle.runs.length,'工具完成不代表端到端验收通过'],['异常 / 未完成',fails,'状态按已导出记录显示'],['记忆条目',memoryVersions().length,bundle.memory_snapshot.completeness==='not_captured'?'快照未采集，不代表空库':'已合并仅召回次数和时间不同的快照'],['已知费用',ac.text,ac.unknown?`${ac.unknown} 次调用费用未知，不能当作 0`:(bundle.llm_calls.length?'按币种分别合计':'没有导入模型调用，不能推断实际费用')]];
  $('metrics').innerHTML=metrics.map(m=>`<div class="metric"><div class="label">${esc(m[0])}</div><div class="value" style="${String(m[1]).length>15?'font-size:17px':''}">${esc(m[1])}</div><div class="note">${esc(m[2])}</div></div>`).join('');
@@ -198,6 +198,10 @@ const STAGE_INFO={
  'run_end':['汇总工具执行结果','汇总本次保存、召回、全局要求和错误，构造工具响应。此处耗时是整次工具执行的总耗时，不是单独汇总的耗时。'],
  'rpc_response':['记录工具响应','记录服务端返回的处理进度或结果；轮询共用同一操作，不代表又执行一次模型调用，也不能证明宿主已收到。'],
  '持久保存回执':['读取历史保存回执','展示 SQLite 中留存的保存参数与结果。回执可证明当时的保存结果，不能还原未采集的模型请求和执行过程。'],
+ 'w2_summary':['W2 机械核验摘要','候选总数、准入/暂存/拒收计数及固定拒收原因；不等于提交成功。'],
+ 'w5_commit':['W5 已提交摘要','仅在 SQLite 提交成功后记录的决定类型、产物 ID 与修订号。'],
+ 'r3_evidence':['R3 证据包摘要','证据记录/原话数量、有限 ID 与截断标记。'],
+ 'r5_final':['R5 最终核验摘要','最终状态、事实与计算数量；不是模型原始判断。'],
  'model_start':['发送模型请求','记录一次实际模型请求的参数和尝试编号；对应的响应见后续模型返回阶段或关联调用。'],
  'model_end':['接收并解析模型响应','记录本次模型请求的业务输出、错误、用量和耗时；模型完成不等于输出通过本地校验或已保存。'],
  '首次输出 JSON 检查（离线诊断）':['离线检查首次输出格式','根据留存的首次模型输出检查 JSON 格式；从错误文本中识别出的候选只用于诊断，不表示运行时接受或保存。'],

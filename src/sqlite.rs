@@ -611,9 +611,28 @@ impl SqliteMemoryStore {
         crate::embedding_index::synchronize(&tx, &self.owner, &sources_before, &state.sources)?;
         Self::save(&tx, &self.owner, &state)?;
         tx.commit()?;
+        let sources_deleted = sources_before.iter().any(|(key, old)| {
+            old.request.is_some()
+                && state
+                    .sources
+                    .get(key)
+                    .is_none_or(|new| new.request.is_none() || new.enrichment == "deleted")
+        });
+        if sources_deleted {
+            crate::diagnostics::sources_deleted(
+                state.revision,
+                &self.owner.0,
+                state
+                    .sources
+                    .values()
+                    .filter(|s| s.request.is_none() || s.enrichment == "deleted")
+                    .map(|s| s.id.clone())
+                    .collect(),
+            );
+        }
         crate::diagnostics::record("transaction_committed", || {
             serde_json::json!({
-            "before":before,"after":if crate::diagnostics::full_snapshots() {Some(&state)} else {None},"counts":{"sources":state.sources.len(),"relations":state.relations.len(),"updates":state.record_updates.len()},"business_changed":business_changed,"sources_changed":source_revision != state.source_revision,"read_revision":read_revision,"committed_revision":state.revision,
+            "before":if sources_deleted {None} else {before},"after":if crate::diagnostics::full_snapshots() && !sources_deleted {Some(&state)} else {None},"counts":{"sources":state.sources.len(),"relations":state.relations.len(),"updates":state.record_updates.len()},"business_changed":business_changed,"sources_changed":source_revision != state.source_revision,"read_revision":read_revision,"committed_revision":state.revision,
             "revision_observability":"persisted","duration_ms":started.elapsed().as_millis()})
         });
         if crate::diagnostics::enabled() {

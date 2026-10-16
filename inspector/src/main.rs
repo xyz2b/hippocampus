@@ -2,6 +2,7 @@
 mod compat;
 mod current;
 mod live;
+mod privacy;
 mod trace;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use bytes::Bytes;

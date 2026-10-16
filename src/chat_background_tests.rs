@@ -212,6 +212,15 @@ fn background_candidate_diagnostics_are_durable_and_optional() {
             }
             continue;
         }
+        assert!(
+            files
+                .iter()
+                .any(|p| p.file_name().is_some_and(|n| n == "trace.lock"))
+        );
+        let files: Vec<_> = files
+            .into_iter()
+            .filter(|p| p.extension().is_some_and(|e| e == "jsonl"))
+            .collect();
         assert_eq!(files.len(), 1);
         let rows: Vec<Json> = std::fs::read_to_string(&files[0])
             .unwrap()

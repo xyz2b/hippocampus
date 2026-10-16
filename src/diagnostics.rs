@@ -6,14 +6,146 @@ use std::{
     fs::File,
     io::Write,
     sync::{
-        Mutex, OnceLock,
-        atomic::{AtomicBool, AtomicU64, Ordering},
+        Arc, Mutex, OnceLock,
+        atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
     },
 };
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 static FAILED: AtomicBool = AtomicBool::new(false);
-static WRITER: OnceLock<Mutex<Option<File>>> = OnceLock::new();
+static WRITER: OnceLock<Mutex<Option<TraceWriter>>> = OnceLock::new();
+struct TraceWriter {
+    file: File,
+    path: std::path::PathBuf,
+    epoch: Option<String>,
+}
+
+fn private_options() -> std::fs::OpenOptions {
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options
+}
+fn directory_lock(dir: &std::path::Path) -> std::io::Result<File> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if std::fs::metadata(dir)?.permissions().mode() & 0o077 != 0 {
+            return Err(std::io::Error::other("trace directory must be private"));
+        }
+    }
+    let lock = private_options()
+        .create(true)
+        .truncate(false)
+        .open(dir.join("trace.lock"))?;
+    lock.lock()?;
+    Ok(lock)
+}
+fn epoch_id(dir: &std::path::Path) -> std::io::Result<Option<String>> {
+    match std::fs::read(dir.join("deletion-epoch.json")) {
+        Ok(bytes) => {
+            let value: Value = serde_json::from_slice(&bytes)?;
+            value["epoch_id"]
+                .as_str()
+                .map(|s| Some(s.to_owned()))
+                .ok_or_else(|| std::io::Error::other("invalid deletion epoch"))
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(e),
+    }
+}
+
+// The directory lock serializes writes and rotations across runtime processes.
+// Other processes drop their old (possibly unlinked) descriptor on their next write.
+fn delete_epoch(
+    dir: &std::path::Path,
+    revision: u64,
+    owner: &str,
+    deleted: Vec<String>,
+) -> std::io::Result<usize> {
+    let _lock = directory_lock(dir)?;
+    let pending = dir.join("deletion-pending");
+    private_options()
+        .create(true)
+        .truncate(true)
+        .open(&pending)?
+        .sync_all()?;
+    let mut owners = std::fs::read(dir.join("deletion-epoch.json"))
+        .ok()
+        .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
+        .and_then(|v| v["owners"].as_object().cloned())
+        .unwrap_or_default();
+    owners.insert(owner.to_owned(), json!(deletion_signature(deleted)));
+    let mut epoch = json!({"owners":owners,"version":1,"epoch_id":new_id(),"revision":revision,
+        "written_at_unix_ns":time::OffsetDateTime::now_utc().unix_timestamp_nanos() as i64});
+    let temp = dir.join(format!("epoch-{}.tmp", new_id()));
+    let mut file = private_options().create_new(true).open(&temp)?;
+    write_row(&mut file, &epoch)?;
+    file.sync_all()?;
+    std::fs::rename(&temp, dir.join("deletion-epoch.json"))?;
+    File::open(dir)?.sync_all()?;
+    let mut failures = 0;
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with("trace-") && name.ends_with(".jsonl") {
+            if std::fs::remove_file(entry.path()).is_err() {
+                failures += 1;
+            }
+        }
+    }
+    epoch["cleanup_failures"] = json!(failures);
+    epoch["cleanup_status"] = json!(if failures == 0 { "complete" } else { "partial" });
+    let mut file = private_options().create_new(true).open(&temp)?;
+    write_row(&mut file, &epoch)?;
+    file.sync_all()?;
+    std::fs::rename(&temp, dir.join("deletion-epoch.json"))?;
+    std::fs::remove_file(pending)?;
+    File::open(dir)?.sync_all()?;
+    Ok(failures)
+}
+
+/// Inspector compares the current tombstones with the last successfully persisted epoch.
+/// A failed metadata write must not let an older epoch authorize newer deleted content.
+pub fn deletion_signature(mut ids: Vec<String>) -> String {
+    ids.sort();
+    ids.dedup();
+    digest(&json!(ids))
+}
+
+/// Called only after a source deletion has committed. Never alters its business result.
+pub(crate) fn sources_deleted(revision: u64, owner: &str, deleted: Vec<String>) {
+    let Some(dir) = std::env::var_os("PMR_TRACE_DIR") else {
+        return;
+    };
+    let writer = WRITER.get_or_init(|| Mutex::new(None));
+    let Ok(mut guard) = writer.lock() else {
+        failed();
+        return;
+    };
+    *guard = None;
+    let result = delete_epoch(std::path::Path::new(&dir), revision, owner, deleted);
+    drop(guard);
+    match result {
+        Ok(0) => {}
+        Ok(_) => {
+            failed();
+            eprintln!("[pmr-trace] deletion_cleanup_failed: old files remain hidden");
+        }
+        Err(_) => {
+            failed();
+            eprintln!(
+                "[pmr-trace] deletion_epoch_failed: forget committed; trace cleanup incomplete"
+            );
+        }
+    }
+}
+
 thread_local! { static RUN: RefCell<Option<String>> = const { RefCell::new(None) }; }
 thread_local! { static MODEL_EVENTS: RefCell<Option<Vec<Value>>> = const { RefCell::new(None) }; }
 
@@ -200,6 +332,8 @@ pub struct TraceContext {
     generation: Option<u64>,
     round: Option<u32>,
     attempt_id: Option<String>,
+    constructed_at_ns: i64,
+    origin_at_ns: Arc<AtomicI64>,
 }
 impl Default for TraceContext {
     fn default() -> Self {
@@ -210,6 +344,7 @@ impl TraceContext {
     pub(crate) fn attempt(attempt_id: &str) -> Self {
         Self {
             attempt_id: Some(attempt_id.into()),
+            origin_at_ns: attempt_origin(attempt_id),
             ..Self::new()
         }
     }
@@ -228,6 +363,8 @@ impl TraceContext {
             generation: None,
             round: None,
             attempt_id: None,
+            constructed_at_ns: time::OffsetDateTime::now_utc().unix_timestamp_nanos() as i64,
+            origin_at_ns: Arc::new(AtomicI64::new(0)),
         }
     }
     pub(crate) fn source(source_id: &str, generation: u64, round: u32, attempt_id: &str) -> Self {
@@ -236,6 +373,7 @@ impl TraceContext {
             generation: Some(generation),
             round: Some(round),
             attempt_id: Some(attempt_id.into()),
+            origin_at_ns: attempt_origin(attempt_id),
             ..Self::new()
         }
     }
@@ -245,6 +383,7 @@ impl TraceContext {
     }
     pub(crate) fn frozen(mut self, input: &Value) -> Self {
         if enabled() {
+            self.mark_origin();
             self.deps.frozen_input_fingerprint = Some(digest(input));
         }
         self
@@ -269,10 +408,25 @@ impl TraceContext {
         });
         result
     }
+    fn mark_origin(&self) {
+        let _ = self
+            .origin_at_ns
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |old| {
+                Some(if old == 0 {
+                    self.constructed_at_ns
+                } else {
+                    old.min(self.constructed_at_ns)
+                })
+            });
+    }
     fn envelope(&self, kind: &str, mut body: Value) -> Value {
+        if matches!(kind, "model_start" | "run_start") {
+            self.mark_origin();
+        }
         scrub(&mut body);
         let mut meta = json!({"trace_id":self.trace_id,"source_id":self.source_id,
-            "generation":self.generation,"round":self.round,"attempt_id":self.attempt_id});
+            "generation":self.generation,"round":self.round,"attempt_id":self.attempt_id,
+            "origin_at_unix_ns":match self.origin_at_ns.load(Ordering::Relaxed) {0=>None,n=>Some(n)}});
         // Safe metadata is constructed, not copied wholesale from diagnostic bodies.
         for key in ["call_id", "stage", "phase", "status", "local_outcome"] {
             if let Some(text) = body.get(key).and_then(Value::as_str)
@@ -293,6 +447,27 @@ impl TraceContext {
             "at":time::OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).ok(),
             "meta":meta,"content_deps":self.deps,"body":body})
     }
+}
+
+// Shared across stage clones and the post-commit W5 context. Missing history stays
+// unknown (not "now"). Eviction only loses visibility; live contexts retain their Arc.
+fn attempt_origin(id: &str) -> Arc<AtomicI64> {
+    static ORIGINS: OnceLock<Mutex<std::collections::BTreeMap<String, Arc<AtomicI64>>>> =
+        OnceLock::new();
+    let Ok(mut origins) = ORIGINS.get_or_init(Default::default).lock() else {
+        return Arc::new(AtomicI64::new(0));
+    };
+    if let Some(origin) = origins.get(id) {
+        return origin.clone();
+    }
+    if origins.len() >= 4096 {
+        origins.retain(|_, v| Arc::strong_count(v) > 1);
+    }
+    let origin = Arc::new(AtomicI64::new(0));
+    if origins.len() < 4096 {
+        origins.insert(id.to_owned(), origin.clone());
+    }
+    origin
 }
 
 pub fn new_id() -> String {
@@ -493,38 +668,39 @@ fn write_context(context: &TraceContext, kind: &str, data: impl FnOnce() -> Valu
         });
         return;
     }
-    let writer = WRITER.get_or_init(|| {
-        let file = (|| -> std::io::Result<File> {
-            let dir = std::path::PathBuf::from(std::env::var_os("PMR_TRACE_DIR").unwrap());
-            // Caller supplies an existing private directory; never create paths or overwrite evidence.
-            let mut options = std::fs::OpenOptions::new();
-            options.write(true).create_new(true);
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
-                if std::fs::metadata(&dir)?.permissions().mode() & 0o077 != 0 {
-                    return Err(std::io::Error::other("trace directory must be private"));
-                }
-                options.mode(0o600);
-            }
-            options.open(dir.join(format!("trace-{}.jsonl", new_id())))
-        })();
-        if file.is_err() {
-            failed();
-        }
-        Mutex::new(file.ok())
-    });
-    let row = context.envelope(kind, data());
+    let Some(dir) = std::env::var_os("PMR_TRACE_DIR").map(std::path::PathBuf::from) else {
+        return;
+    };
+    let writer = WRITER.get_or_init(|| Mutex::new(None));
     let Ok(mut guard) = writer.lock() else {
         failed();
         return;
     };
-    let Some(file) = guard.as_mut() else {
-        return;
-    };
-    // ponytail: synchronous JSONL and full snapshots for bounded local diagnostics;
-    // use a bounded collector/deltas if measured profile size makes this expensive.
-    if write_row(file, &row).is_err() {
+    let result = (|| -> std::io::Result<()> {
+        let _lock = directory_lock(&dir)?;
+        if dir.join("deletion-pending").exists() {
+            return Err(std::io::Error::other("deletion epoch incomplete"));
+        }
+        let epoch = epoch_id(&dir)?;
+        if guard.as_ref().is_none_or(|w| {
+            w.epoch != epoch || w.path.parent() != Some(dir.as_path()) || !w.path.exists()
+        }) {
+            let path = dir.join(format!("trace-{}.jsonl", new_id()));
+            let file = private_options().create_new(true).open(&path)?;
+            *guard = Some(TraceWriter {
+                file,
+                path,
+                epoch: epoch.clone(),
+            });
+        }
+        let mut row = context.envelope(kind, data());
+        // Written time is assigned under the same cross-process lock as deletion.
+        row["meta"]["written_at_unix_ns"] =
+            json!(time::OffsetDateTime::now_utc().unix_timestamp_nanos() as i64);
+        row["meta"]["deletion_epoch"] = json!(epoch);
+        write_row(&mut guard.as_mut().unwrap().file, &row)
+    })();
+    if result.is_err() {
         failed();
     }
 }
@@ -618,6 +794,132 @@ mod tests {
             "observed_at":1,"request":{"text":"虚构记录正文","history":history,"capture_source":true},"enrichment":"committed",
             "error":null,"result":null,"base_revision":0,"index":{},"task":{}})).unwrap()
     }
+    #[test]
+    fn af375_rotation_cleanup_and_failure_do_not_change_forget() {
+        // A child isolates PMR_TRACE_DIR from concurrently running test threads.
+        if std::env::var_os("AF375_TRACE_CHILD").is_none() {
+            let dir = std::env::temp_dir().join(format!("af375-runtime-{}", new_id()));
+            std::fs::create_dir(&dir).unwrap();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+            }
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "diagnostics::tests::af375_rotation_cleanup_and_failure_do_not_change_forget",
+                    "--nocapture",
+                ])
+                .env("AF375_TRACE_CHILD", "1")
+                .env("PMR_TRACE_DIR", &dir)
+                .status()
+                .unwrap();
+            std::fs::remove_dir_all(dir).unwrap();
+            assert!(status.success());
+            return;
+        }
+        let dir = std::path::PathBuf::from(std::env::var_os("PMR_TRACE_DIR").unwrap());
+        let owner = crate::UserId::from("fixture-owner");
+        let mut store =
+            crate::SqliteMemoryStore::open(dir.join("fixture.sqlite"), owner.clone()).unwrap();
+        store
+            .transaction(|s| {
+                s.sources.insert("fixture".into(), source(vec![]));
+                Ok(())
+            })
+            .unwrap();
+        let ctx = TraceContext::attempt("af376-inflight");
+        ctx.record("model_start", || json!({"input":"old-fictional-text"}));
+        let origin = ctx.origin_at_ns.load(Ordering::Relaxed);
+        let paths = || {
+            std::fs::read_dir(&dir)
+                .unwrap()
+                .filter_map(Result::ok)
+                .map(|e| e.path())
+                .filter(|p| {
+                    p.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .starts_with("trace-")
+                        && p.extension().is_some_and(|s| s == "jsonl")
+                })
+                .collect::<Vec<_>>()
+        };
+        let old = paths();
+        assert!(!old.is_empty());
+        // A failing unlink is reported without rolling back the successful deletion.
+        std::fs::create_dir(dir.join("trace-obstructed.jsonl")).unwrap();
+        let result = store
+            .transaction(|s| crate::forget::forget(s, &owner, None, None, Some("s-fictional")))
+            .unwrap();
+        assert_eq!(result["removed"], true);
+        assert!(store.read().unwrap().sources["fixture"].request.is_none());
+        assert!(old.iter().all(|p| !p.exists()));
+        let epoch: Value =
+            serde_json::from_slice(&std::fs::read(dir.join("deletion-epoch.json")).unwrap())
+                .unwrap();
+        assert_eq!(epoch["revision"], store.read().unwrap().revision);
+        assert!(incomplete());
+        ctx.record("model_check", || json!({"output":"new-fictional-text"}));
+        let new = paths().into_iter().find(|p| p.is_file()).unwrap();
+        let bytes = std::fs::read_to_string(&new).unwrap();
+        assert!(!bytes.contains("old-fictional-text"));
+        let last: Value = serde_json::from_str(bytes.lines().last().unwrap()).unwrap();
+        assert_eq!(last["meta"]["deletion_epoch"], epoch["epoch_id"]);
+        assert_eq!(last["meta"]["origin_at_unix_ns"], origin);
+        assert!(origin < epoch["written_at_unix_ns"].as_i64().unwrap());
+        assert!(
+            last["meta"]["written_at_unix_ns"].as_i64().unwrap()
+                > epoch["written_at_unix_ns"].as_i64().unwrap()
+        );
+        let inherited = std::thread::spawn(|| {
+            let resumed = TraceContext::attempt("af376-inflight");
+            resumed.envelope("w5_commit", json!({"group":0}))
+        })
+        .join()
+        .unwrap();
+        assert_eq!(inherited["meta"]["origin_at_unix_ns"], origin);
+        let orphan = TraceContext::new().envelope("model_end", json!({}));
+        assert!(orphan["meta"]["origin_at_unix_ns"].is_null());
+        let fresh = TraceContext::new().envelope("model_start", json!({}));
+        assert!(
+            fresh["meta"]["origin_at_unix_ns"].as_i64().unwrap()
+                > epoch["written_at_unix_ns"].as_i64().unwrap()
+        );
+
+        // Simulate another process rotating while this process still owns its writer.
+        delete_epoch(&dir, 42, "fixture-owner", vec!["s-fictional".into()]).unwrap();
+        ctx.record(
+            "model_check",
+            || json!({"output":"after-external-rotation"}),
+        );
+        assert!(!new.exists());
+        assert!(paths().iter().filter(|p| p.is_file()).any(|p| {
+            std::fs::read_to_string(p)
+                .unwrap()
+                .contains("after-external-rotation")
+        }));
+        // Metadata write failure also leaves business deletion committed.
+        store
+            .transaction(|s| {
+                let mut next = source(vec![]);
+                next.id = "s-second".into();
+                next.turn_id = "turn-second".into();
+                s.sources.insert("second".into(), next);
+                Ok(())
+            })
+            .unwrap();
+        std::fs::remove_file(dir.join("deletion-epoch.json")).unwrap();
+        std::fs::create_dir(dir.join("deletion-epoch.json")).unwrap();
+        let result = store
+            .transaction(|s| crate::forget::forget(s, &owner, None, None, Some("s-second")))
+            .unwrap();
+        assert_eq!(result["removed"], true);
+        assert!(store.read().unwrap().sources["second"].request.is_none());
+        assert!(dir.join("deletion-pending").exists());
+    }
+
     #[test]
     fn af371_dependency_bindings_and_output_inheritance() {
         let owner = crate::UserId::from("fixture-owner");

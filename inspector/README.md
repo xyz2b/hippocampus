@@ -37,7 +37,7 @@ cargo build -p pmr-inspector --release
 访问凭据仅用于本机页面，不是模型 API Key。按 `Ctrl-C` 停止；同一端口已有服务时先停止旧服务，或指定其他端口。
 
 页面每 2 秒获取最新记录；暂停刷新、切换历史记录或导入 JSON 的行为与原页面相同。
-独立原文回执直接从 SQLite 读取，即使关闭诊断采集也能显示保存及整理状态；本地原文索引按记录的实际状态展示。存在 source 删除墓碑或无法核验当前数据库时，会保守隐藏旧 Trace、保存回执及日志正文，并明确显示原因；静态导出文件不会自动撤销。
+独立原文回执直接从 SQLite 读取，即使关闭诊断采集也能显示保存及整理状态；本地原文索引按记录的实际状态展示。Trace 按 AF375 删除纪元逐事件过滤；无法核验当前数据库时隐藏正文。未链接旧回执与普通日志仍保守隐藏；静态导出文件不会自动撤销。
 
 数据库以只读模式访问并启用 `query_only`，保留 WAL 可见性；日志只读取末尾 64 KiB / 100 行。
 未采集、未完成、不可读等状态直接展示，不能用当前快照补造历史执行过程。
@@ -104,7 +104,7 @@ AF360 当前 DB 隐私按项过滤：未删除来源的自身原文可见；`req
 
 已删除来源不再进入普通 runs/sources 模板，仅通过 `deleted_sources` 输出 `status=deleted`、内部 `source_id`、`received_at`。不输出 session/turn/message、operation、工具参数、整理内容或宿主文本。时间按用户默认取舍保留，用于核对接收时间；它仍可能暴露活动时点。来源/记录页单独列出这份最小回执，页面下载使用同一服务端已过滤 bundle。
 
-`--dump` 与 `/api/live` 共用当前 DB 过滤；独立 `--export-trace` 也必须用 `--db/--owner` 核验当前删除状态，存在墓碑、数据库不可读或 owner 不匹配时拒绝导出历史正文。已另存的离线文件不可能追溯撤销。
+`--dump` 与 `/api/live` 共用当前 DB 过滤；独立 `--export-trace` 也必须用 `--db/--owner` 核验当前删除状态，纪元前事件只导出白名单元数据；数据库不可读则拒绝导出，owner 不符的事件正文隐藏。已另存的离线文件不可能追溯撤销。
 
 
 ## AF363：阶段调用与来源时间线
@@ -129,7 +129,7 @@ JSONL 语法/信封错误记在 meta.parse_errors（无法解析 ID 时用行号
 
 ### AF368：trace v2 协议准备
 
-运行时新事件使用 trace_version=2，分离 meta / content_deps / body；Inspector 继续兼容 v1。③a 的 content_deps 一律 deps_complete=false，不声称正文依赖已证明，也不改变删除墓碑/导出拒绝策略。③b 的依赖收集见下节；③c 按事件过滤尚未实施。
+运行时新事件使用 trace_version=2，分离 meta / content_deps / body；Inspector 继续兼容 v1。③a 的 content_deps 一律 deps_complete=false，不声称正文依赖已证明，也不改变删除墓碑/导出拒绝策略。③b 的依赖收集见下节；③c 当前采用 AF373/AF375 删除纪元政策，见下节。
 
 后台 claim 携带诊断专用上下文（内部 trace ID、source_id、generation、round、attempt_id），模型客户端显式克隆传递；请求/阶段绑定/预算不包含该上下文。旧诊断入口用进程内不透明 ID 关联，最多保留 4096 个映射，超限清空后旧关联可能分段，不能按时间猜测恢复。宿主 session/turn/request/operation 标识只可能在受保护正文，不进入安全 meta。
 
@@ -162,3 +162,18 @@ JSONL 语法/信封错误记在 meta.parse_errors（无法解析 ID 时用行号
 `PMR_TRACE_FULL_SNAPSHOTS=1` 与 `PMR_TRACE_DIR` 同时启用时才写完整 initial/before/after；默认关闭。完整快照可能包含全库及未链接 history，始终不完整，增加同步序列化、磁盘体积与敏感数据留存。默认关闭后，旧 trace 调试工具不能再依靠事务快照重建全库，应使用 Inspector 当前 DB 视图；已有 v1/v2 文件读取不变。
 
 体积对照仅用合成夹具：100 条约 1KB 正文的来源，稳态完整 before+after JSON 314,982 B，默认 transaction 事件约 635 B（减少约 99.8%）。模型请求/响应仍保留，依赖条目会增加每次模型事件体积，不能把事务缩减率当作整份 trace 缩减率。没有读取生产 trace 做估算。
+
+
+### AF375 / Inspector ③c：删除纪元与日志清理
+
+当前政策替代③a/③b阶段的“有墓碑就整体隐藏 Trace”。成功提交来源删除后，运行时在 `PMR_TRACE_DIR` 写入 `deletion-epoch.json`（内部纪元 ID、写入时间、DB revision、各 owner 墓碑摘要、清理结果），关闭本进程旧文件并删除目录内全部 `trace-*.jsonl`。`trace.lock` 串行化跨进程写入/轮换；其他进程下一次写入检查纪元并换文件。纪元使用原子替换和同步落盘；失败通过固定 stderr 诊断及 `diagnostics::incomplete()` 报告，不改变 forget 的成功结果。物理清理部分失败会在纪元文件记录 `cleanup_failures`；残留旧文件仍不可展示正文。
+
+Inspector 在解析正文和聚合之前统一过滤（live、dump、export-trace、页面下载与搜索使用同一已过滤 bundle）：
+- 起点与写入均在纪元后的 v2 事件可展示完整正文，允许 `deps_complete=false`。写入时刻必须可确定，且写入纪元 ID 匹配；显式来源/记录依赖已删除、缺失或 owner 不符仍隐藏。混合 owner 文件保守隐藏全部事件正文。
+- 纪元前、未知写入时刻、v1/未知版本只显示固定元数据（模型/阶段 token、用量、耗时），不保留宿主 session/turn/operation、自由错误或正文。旧 v2 没有写入时钟字段也按未知处理。
+- 有历史墓碑但无纪元，纪元损坏/尚未完成，或墓碑摘要不一致时，所有现存 Trace 正文隐藏。这也覆盖删除已提交但纪元写入失败/进程崩溃的窗口。读取聚合后再次核对删除状态，变化时拒绝本次结果并提示刷新。
+- W2/W5/R3/R5 使用明确摘要字段显示；R2 复用 retrieval 路径/计数诊断。未采集的内容不补造。普通 stderr 日志仍无事件纪元，存在墓碑时继续隐藏。
+
+**已接受的边界**：宿主在新的 history/query/context 中重发已删除文字，可能出现在纪元后日志；这不是原来源恢复。AF376 按同一 call/attempt/run 的最早起点判定：跨纪元返回的在途输出隐藏；缺起点的孤立输出、核验或摘要也隐藏。运行时通过同一 TraceContext 携带内部起点时间，旧文件清理后仍可判定；未携带起点的事件仅能依赖同文件中关联的 model_start/run_start。删除会清空此前所有调用日志（包含无关来源/其他 owner 的日志）。备份、已导出或浏览器已取得的文件/内容不会自动撤销；文件 unlink 也不是介质安全擦除。需部署新运行时与 Inspector；旧进程不会执行新轮换协议。未设置 `PMR_TRACE_DIR` 时无法定位并清理历史目录，Inspector 以当前 DB 墓碑保守隐藏；重新配置目录并不自动追认历史文件。
+
+不改变模型请求、指纹、预算或提交语义；不升 W/R、recall、DB 版本。完整事务快照调试开关默认仍关闭，执行删除的事务不记录删除前后全文快照。
