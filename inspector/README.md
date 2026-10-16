@@ -177,3 +177,16 @@ Inspector 在解析正文和聚合之前统一过滤（live、dump、export-trac
 **已接受的边界**：宿主在新的 history/query/context 中重发已删除文字，可能出现在纪元后日志；这不是原来源恢复。AF376 按同一 call/attempt/run 的最早起点判定：跨纪元返回的在途输出隐藏；缺起点的孤立输出、核验或摘要也隐藏。运行时通过同一 TraceContext 携带内部起点时间，旧文件清理后仍可判定；未携带起点的事件仅能依赖同文件中关联的 model_start/run_start。删除会清空此前所有调用日志（包含无关来源/其他 owner 的日志）。备份、已导出或浏览器已取得的文件/内容不会自动撤销；文件 unlink 也不是介质安全擦除。需部署新运行时与 Inspector；旧进程不会执行新轮换协议。未设置 `PMR_TRACE_DIR` 时无法定位并清理历史目录，Inspector 以当前 DB 墓碑保守隐藏；重新配置目录并不自动追认历史文件。
 
 不改变模型请求、指纹、预算或提交语义；不升 W/R、recall、DB 版本。完整事务快照调试开关默认仍关闭，执行删除的事务不记录删除前后全文快照。
+
+
+### AF378：已有历史墓碑的首次部署
+
+若旧版已删除来源却没有 `deletion-epoch.json`，先停止记忆服务，再显式执行一次：
+
+```sh
+PMR_TRACE_DIR=/path/to/private-traces pmr-mcp --init-trace-epoch --db /path/to/memory.sqlite3 --owner OWNER
+```
+
+诊断目录须已存在且权限为 0700；必须明确给出数据库和 owner，不读取运行时配置、不启动 worker、不调用模型。命令只读打开现有 DB（不迁移、不创建 owner、不写业务表），在 `trace.lock` 下读取当前 revision/墓碑摘要，清理所有 `trace-*.jsonl` 后原子发布与运行时相同的删除纪元。返回 JSON 的 `cleanup_status=partial` / `cleanup_failures` 表示仍有旧文件未清理，其正文仍被隐藏；需人工排查目录权限。数据库不可读、owner 不存在或目录权限不当时拒绝初始化。
+
+已有有效纪元且该 owner 墓碑摘要一致时返回 `already_initialized`，不清理新日志、不改纪元。成功后重启服务与 Inspector：新起点的 v2 事件可显示，旧/缺失起点、显式已删依赖仍隐藏。此命令会清空该目录内所有 owner 的旧调用日志；备份和已导出文件不受影响。不要用此命令把运行中的旧调用追认为新调用。

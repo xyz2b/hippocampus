@@ -364,6 +364,62 @@ mod tests {
         std::fs::write(dir.join("deletion-epoch.json"),json!({"version":1,"epoch_id":"epoch","written_at_unix_ns":100,"revision":12,"owners":{"owner":hippocampus::diagnostics::deletion_signature(vec!["gone".into()])}}).to_string()).unwrap();
     }
     #[test]
+    fn af378_runtime_initialized_epoch_unblocks_only_new_events() {
+        let dir = std::env::temp_dir().join(format!(
+            "af378-inspector-{}",
+            hippocampus::diagnostics::new_id()
+        ));
+        std::fs::create_dir(&dir).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        let mut state = serde_json::to_value(hippocampus::PersistedMemoryState::default()).unwrap();
+        state["sources"]["gone"] = json!({"id":"gone","session_id":"fixture-session","turn_id":"fixture-turn","observed_at":1,"request":null,"enrichment":"deleted","error":null,"result":null,"base_revision":0,"index":{},"task":{}});
+        let db = dir.join("fixture.sqlite");
+        let connection = rusqlite::Connection::open(&db).unwrap();
+        connection
+            .execute_batch(
+                "CREATE TABLE memory_profiles(owner_id TEXT PRIMARY KEY,state_json TEXT NOT NULL)",
+            )
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO memory_profiles VALUES('owner',?)",
+                [state.to_string()],
+            )
+            .unwrap();
+        drop(connection);
+        assert!(Policy::new(&state, "owner", &dir).reason(&row()).is_some());
+        hippocampus::diagnostics::init_trace_epoch(&db, "owner", &dir).unwrap();
+        let epoch: Value =
+            serde_json::from_slice(&std::fs::read(dir.join("deletion-epoch.json")).unwrap())
+                .unwrap();
+        let at = epoch["written_at_unix_ns"].as_i64().unwrap();
+        let mut event = row();
+        event["meta"]["written_at_unix_ns"] = json!(at + 2);
+        event["meta"]["origin_at_unix_ns"] = json!(at + 1);
+        event["meta"]["deletion_epoch"] = epoch["epoch_id"].clone();
+        let policy = Policy::new(&state, "owner", &dir);
+        assert_eq!(policy.reason(&event), None);
+        let path = dir.join("trace-new.jsonl");
+        std::fs::write(&path, format!("{event}\n")).unwrap();
+        assert!(
+            crate::trace::export_filtered(&path, &policy)
+                .unwrap()
+                .to_string()
+                .contains("surviving-body")
+        );
+        event["content_deps"]["sources"]["gone"] = json!({"source_id":"gone","owner":"owner"});
+        assert!(policy.reason(&event).is_some());
+        event["content_deps"]["sources"] = json!({});
+        event["meta"]["origin_at_unix_ns"] = json!(at - 1);
+        assert_eq!(policy.reason(&event), Some("origin_before_deletion_epoch"));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
     fn af376_call_and_run_origins_gate_all_outputs() {
         let dir =
             std::env::temp_dir().join(format!("af376-{}", hippocampus::diagnostics::new_id()));

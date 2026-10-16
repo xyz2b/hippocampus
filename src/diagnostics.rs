@@ -68,6 +68,15 @@ fn delete_epoch(
     deleted: Vec<String>,
 ) -> std::io::Result<usize> {
     let _lock = directory_lock(dir)?;
+    write_delete_epoch_locked(dir, revision, owner, deleted)
+}
+
+fn write_delete_epoch_locked(
+    dir: &std::path::Path,
+    revision: u64,
+    owner: &str,
+    deleted: Vec<String>,
+) -> std::io::Result<usize> {
     let pending = dir.join("deletion-pending");
     private_options()
         .create(true)
@@ -82,12 +91,6 @@ fn delete_epoch(
     owners.insert(owner.to_owned(), json!(deletion_signature(deleted)));
     let mut epoch = json!({"owners":owners,"version":1,"epoch_id":new_id(),"revision":revision,
         "written_at_unix_ns":time::OffsetDateTime::now_utc().unix_timestamp_nanos() as i64});
-    let temp = dir.join(format!("epoch-{}.tmp", new_id()));
-    let mut file = private_options().create_new(true).open(&temp)?;
-    write_row(&mut file, &epoch)?;
-    file.sync_all()?;
-    std::fs::rename(&temp, dir.join("deletion-epoch.json"))?;
-    File::open(dir)?.sync_all()?;
     let mut failures = 0;
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
@@ -99,8 +102,11 @@ fn delete_epoch(
             }
         }
     }
+    epoch["written_at_unix_ns"] =
+        json!(time::OffsetDateTime::now_utc().unix_timestamp_nanos() as i64);
     epoch["cleanup_failures"] = json!(failures);
     epoch["cleanup_status"] = json!(if failures == 0 { "complete" } else { "partial" });
+    let temp = dir.join(format!("epoch-{}.tmp", new_id()));
     let mut file = private_options().create_new(true).open(&temp)?;
     write_row(&mut file, &epoch)?;
     file.sync_all()?;
@@ -108,6 +114,69 @@ fn delete_epoch(
     std::fs::remove_file(pending)?;
     File::open(dir)?.sync_all()?;
     Ok(failures)
+}
+
+/// Explicit deployment repair. Never opens the migrating store or writes business tables.
+pub fn init_trace_epoch(
+    db: &std::path::Path,
+    owner: &str,
+    dir: &std::path::Path,
+) -> crate::PersistenceResult<Value> {
+    if owner.trim().is_empty() {
+        return Err("explicit nonempty owner required".into());
+    }
+    let metadata = std::fs::symlink_metadata(dir)?;
+    if !metadata.is_dir() {
+        return Err("trace directory must be a real directory".into());
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if metadata.permissions().mode() & 0o7777 != 0o700 {
+            return Err("trace directory permissions must be 0700".into());
+        }
+    }
+    let _lock = directory_lock(dir)?;
+    let connection =
+        rusqlite::Connection::open_with_flags(db, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+    connection.busy_timeout(std::time::Duration::from_secs(5))?;
+    connection.execute_batch("PRAGMA query_only=ON; BEGIN")?;
+    // query_row deliberately rejects an absent owner, unlike the normal store's empty default.
+    let raw: String = connection.query_row(
+        "SELECT state_json FROM memory_profiles WHERE owner_id=?1",
+        [owner],
+        |r| r.get(0),
+    )?;
+    let state: crate::sqlite::PersistedMemoryState =
+        serde_json::from_str(&raw).map_err(|_| "unreadable owner snapshot")?;
+    let deleted: Vec<_> = state
+        .sources
+        .values()
+        .filter(|s| s.request.is_none() || s.enrichment == "deleted")
+        .map(|s| s.id.clone())
+        .collect();
+    let signature = deletion_signature(deleted.clone());
+    let existing = std::fs::read(dir.join("deletion-epoch.json"))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok());
+    let valid = existing.as_ref().is_some_and(|v| {
+        v["version"] == 1
+            && v["epoch_id"].as_str().is_some_and(|s| !s.is_empty())
+            && v["written_at_unix_ns"].as_i64().is_some_and(|t| t > 0)
+            && v["revision"].is_u64()
+            && v["owners"][owner] == signature
+            && !dir.join("deletion-pending").exists()
+    });
+    if valid {
+        let epoch = existing.unwrap();
+        return Ok(
+            json!({"status":"already_initialized","revision":epoch["revision"],
+            "cleanup_status":epoch["cleanup_status"],"cleanup_failures":epoch["cleanup_failures"]}),
+        );
+    }
+    let failures = write_delete_epoch_locked(dir, state.revision, owner, deleted)?;
+    Ok(json!({"status":"initialized","revision":state.revision,
+        "cleanup_status":if failures == 0 {"complete"} else {"partial"}, "cleanup_failures":failures}))
 }
 
 /// Inspector compares the current tombstones with the last successfully persisted epoch.
@@ -794,6 +863,78 @@ mod tests {
             "observed_at":1,"request":{"text":"虚构记录正文","history":history,"capture_source":true},"enrichment":"committed",
             "error":null,"result":null,"base_revision":0,"index":{},"task":{}})).unwrap()
     }
+    #[test]
+    fn af378_init_is_read_only_idempotent_and_rejects_invalid_inputs() {
+        let dir = std::env::temp_dir().join(format!("af378-{}", new_id()));
+        std::fs::create_dir(&dir).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        let db = dir.join("fixture.sqlite");
+        let conn = rusqlite::Connection::open(&db).unwrap();
+        conn.execute_batch("CREATE TABLE memory_profiles(owner_id TEXT PRIMARY KEY,state_json TEXT NOT NULL); PRAGMA user_version=11;").unwrap();
+        let mut state = crate::sqlite::PersistedMemoryState::default();
+        state.revision = 37;
+        let mut tombstone = source(vec![]);
+        tombstone.request = None;
+        tombstone.enrichment = "deleted".into();
+        state.sources.insert("s".into(), tombstone);
+        conn.execute(
+            "INSERT INTO memory_profiles VALUES('owner', ?)",
+            [serde_json::to_string(&state).unwrap()],
+        )
+        .unwrap();
+        drop(conn);
+        let before = std::fs::read(&db).unwrap();
+        let old = dir.join("trace-old.jsonl");
+        std::fs::write(&old, b"private fixture").unwrap();
+        assert!(init_trace_epoch(&dir.join("missing.sqlite"), "owner", &dir).is_err());
+        assert!(!dir.join("missing.sqlite").exists());
+        std::fs::write(dir.join("corrupt.sqlite"), b"not a database").unwrap();
+        assert!(init_trace_epoch(&dir.join("corrupt.sqlite"), "owner", &dir).is_err());
+
+        assert!(init_trace_epoch(&db, "wrong-owner", &dir).is_err());
+        assert!(old.exists());
+        assert!(!dir.join("deletion-epoch.json").exists());
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o755)).unwrap();
+            assert!(init_trace_epoch(&db, "owner", &dir).is_err());
+            std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        let result = init_trace_epoch(&db, "owner", &dir).unwrap();
+        assert_eq!(result["status"], "initialized");
+        assert_eq!(result["revision"], 37);
+        assert_eq!(result["cleanup_failures"], 0);
+        assert!(!old.exists());
+        let epoch_bytes = std::fs::read(dir.join("deletion-epoch.json")).unwrap();
+        let epoch: Value = serde_json::from_slice(&epoch_bytes).unwrap();
+        assert_eq!(
+            epoch["owners"]["owner"],
+            deletion_signature(vec!["s-fictional".into()])
+        );
+        assert_eq!(epoch_id(&dir).unwrap().unwrap(), epoch["epoch_id"]);
+        std::fs::write(&old, b"new surviving trace").unwrap();
+        assert_eq!(
+            init_trace_epoch(&db, "owner", &dir).unwrap()["status"],
+            "already_initialized"
+        );
+        assert!(old.exists());
+        assert_eq!(
+            epoch_bytes,
+            std::fs::read(dir.join("deletion-epoch.json")).unwrap()
+        );
+        assert_eq!(
+            before,
+            std::fs::read(&db).unwrap(),
+            "business DB must remain byte-identical"
+        );
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
     #[test]
     fn af375_rotation_cleanup_and_failure_do_not_change_forget() {
         // A child isolates PMR_TRACE_DIR from concurrently running test threads.

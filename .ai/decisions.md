@@ -748,3 +748,5 @@ Codex 排除了“统一降级/整理未完成/空库”（Claude 先前的假�
 - AF374 用户批准：删除含被删 AI infra 内容的两份备份 w3v5-20261015、aiinfra-forget-20261015。③b 已提交 602e701（根仓 1028/0/2）。
 - AF376 Inspector ③c 复核：删除纪元/轮换/清理、统一过滤入口已实现。残余：跨纪元在途调用（请求在删除前构造、输出在删除后写入）无显式删除依赖时仍可能展示。交 Codex 第 1 轮修复：按调用起点判定——事件所属 call/attempt 的 model_start（或输入构造时刻）早于纪元、或起点缺失（孤立 model_end/check 等，例如起点所在旧文件已被清理）时，按纪元前处理，只显示元数据。
 - AF377 Inspector ③c 验收：第 1 轮修复按 call/attempt/run 最早起点判定纪元，起点缺失按纪元前处理；根仓全套 1030 passed, 0 failed, 2 ignored，inspector 25/0。提交推送；③ 完成，部署待用户确认。
+- AF378 ③c 提交 56695c7（根仓 1030/0/2，inspector 25/0）。部署前发现缺口：生产 DB 有历史墓碑但无 deletion-epoch.json（旧版删除未写），按规则部署后新 trace 正文也会全部隐藏。需一次性初始化命令：按当前 DB 墓碑摘要与 revision 写纪元、清理目录内既有 trace（当前为空）。交 Codex 实现（零调用）。
+- AF379 --init-trace-epoch 验收：只读 DB、trace.lock 下清理并原子写纪元、幂等、拒绝错误输入；根仓全套 1032 passed, 0 failed, 2 ignored，inspector 26/0。提交推送；部署待用户确认。
