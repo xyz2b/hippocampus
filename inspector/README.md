@@ -96,7 +96,7 @@ S0 只验证历史 Inspector 包；MCP 测试使用 debug `pmr-mcp` 和新默认
 
 AF360 当前 DB 隐私按项过滤：未删除来源的自身原文可见；`request.history` 未链接 source_id，始终不导出并显示原因。W1/W2/W3 只展示可核对为当前消息精确片段的块，未核验原始输出、绑定快照不直接导出。记录先检查原始 evidence（不能依赖投影丢弃缺失引用后的子集），再检查前后版本、生产 history、关系成员/依据及 owner；依赖不存在、已删除或不可确认时隐藏该记录/块并标注原因。W4 只导出核对依赖后的决策摘要，不导出 seen/绑定快照。无关墓碑不再隐藏安全记录与原文。旧 trace、日志与无法关联的旧回执仍沿用保守隐藏；数据库不可读时不展示历史正文。
 
-来源页与记录页显示隐私过滤/读取错误提示。Trace 超过 16 MiB 显示 `trace_size_limit`；当前 retrieval 诊断与旧解析形状不兼容时显示 `trace_retrieval_schema_unsupported`，不会误报为无模型调用。本期不新增完整时间线、费用估算或大文件增量解析。
+来源页与记录页显示隐私过滤/读取错误提示。Trace 超过 16 MiB 显示 `trace_size_limit`；新版 retrieval 的覆盖/错误诊断与旧 result/runtime 均可读取。未采集与无法确认归属会明确提示，不解释为无调用；仍不做费用估算或大文件增量解析。
 
 零调用验证：`cargo test -p pmr-inspector --no-fail-fast`（仅生成临时虚构 SQLite/trace 夹具）。
 
@@ -105,3 +105,23 @@ AF360 当前 DB 隐私按项过滤：未删除来源的自身原文可见；`req
 已删除来源不再进入普通 runs/sources 模板，仅通过 `deleted_sources` 输出 `status=deleted`、内部 `source_id`、`received_at`。不输出 session/turn/message、operation、工具参数、整理内容或宿主文本。时间按用户默认取舍保留，用于核对接收时间；它仍可能暴露活动时点。来源/记录页单独列出这份最小回执，页面下载使用同一服务端已过滤 bundle。
 
 `--dump` 与 `/api/live` 共用当前 DB 过滤；独立 `--export-trace` 也必须用 `--db/--owner` 核验当前删除状态，存在墓碑、数据库不可读或 owner 不匹配时拒绝导出历史正文。已另存的离线文件不可能追溯撤销。
+
+
+## AF363：阶段调用与来源时间线
+
+来源卡片按显式 source_id（含请求 source_snapshot 绑定）或当前 DB operation_id 关联多轮整理和相关召回，不按时间相邻猜测。轮次只展示 DB 明确提供的值。无 run_start、缺 model_start / model_end 或 run_end 的事件保留并标为不完整；未知事件独立列出，不丢弃其他事件。无 owner 的后台文件只有在全部运行的显式来源 ID 均属于当前可见来源，或在没有来源 ID 时可绑定当前来源 operation_id 时才加载；否则显示 trace_owner_unconfirmed。独立导出的 owner 校验仍保持严格。
+
+调用展示实际请求的 schema 名称、模型、推理强度、用量（输入/缓存/输出/推理）、耗时、local_outcome、错误与传输错误类别。原始响应/JSON raw、model_check 的 decode/validate、明确记录的 final、事务提交是不同证据。当前运行时通常只记录核验结论，不记录 final 正文，此时显示“未采集”，不能把 raw 视作核验通过或提交。无 call_id 的核验只关联唯一同阶段调用；无法确认则保留在事件列表。
+
+召回详情展示 R1 raw 计划、R2 新旧检索诊断、实际 R4 请求中的 R3 证据包、R4 raw 判决/facts，以及最终服务响应（含 statement_snapshot）。来源时间线中的召回关联表示引用过该来源，不表示对其完成整理。
+
+隐私策略不变：存在删除墓碑时整体隐藏历史 Trace；--export-trace 仍拒绝导出。16 MiB 上限保持。全部测试使用合成夹具，无模型调用、无生产数据。
+
+
+### AF364：事件级兼容与隔离
+
+当前 recall 的 facts 是判决事实，不是旧 Memory；仅明确旧分栏结果进入旧 Memory 适配。快照 receipts 的 JSON 字符串键作为不透明键保留，不按点号或协议版本拆解；其他类型回执不冒充 W5 outcomes。model_end 缺少 response/accounting/parsed_result 等字段时记录 missing_fields；有 accounting 用量但无 response 用量时注明 recorded_accounting，不补造缓存/推理 token。
+
+JSONL 语法/信封错误记在 meta.parse_errors（无法解析 ID 时用行号）；字段错误记在 run.parse_errors，包含 event_id、kind、字段路径及固定错误类别，不包含失败正文，动态来源/回执键以 * 表示。坏事件的派生变更回滚并标为不完整，其前后正常事件仍加载；live 与导出使用同一解析器。混合 owner、删除墓碑等文件级隐私拒绝仍保持。前端显示隔离提示，缺失字段不解释为零调用或业务成功。
+
+合成夹具 tests/fixtures/af364-event-shapes.jsonl 依照获准 shape 清单的 10 种 kind 手工填入虚构内容，包含当前嵌套 recall、opaque receipt keys、accounting 和 response usage；不包含真实记录内容，也不依赖生产文件。路径清单是多事件字段并集，不能证明任何字段每条事件均存在；因此另测缺失/null/错误类型和坏行。

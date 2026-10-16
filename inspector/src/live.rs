@@ -452,6 +452,7 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                 .collect::<Vec<_>>();
             files.sort();
             let mut total = 0;
+            let known_sources = result["sources"].as_array().unwrap().clone();
             for path in files {
                 total += path.metadata().map_err(|e| io_class(&e))?.len();
                 if total > 16 * 1024 * 1024 {
@@ -460,9 +461,40 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                             .into(),
                     );
                 }
-                let trace = export_runtime(&path, true)?;
+                let mut trace = export_runtime(&path, true)?;
+                if trace["memory_snapshot"]["scope"].is_null() {
+                    let all_bound = trace["runs"].as_array().unwrap().iter().all(|run| {
+                        let ids = run["linked_source_ids"].as_array().unwrap();
+                        (!ids.is_empty()
+                            && ids
+                                .iter()
+                                .all(|id| known_sources.iter().any(|source| source["id"] == *id)))
+                            || (ids.is_empty()
+                                && known_sources.iter().any(|source| {
+                                    !source["operation_id"].is_null()
+                                        && source["operation_id"] == run["operation_id"]
+                                }))
+                    });
+                    if !all_bound {
+                        return Err("trace_owner_unconfirmed: 后台事件缺少 owner 且无法确认全部来源 ID / operation_id".into());
+                    }
+                    trace["memory_snapshot"]["scope"] = json!(owner);
+                }
                 if trace["memory_snapshot"]["scope"] != *owner {
                     continue;
+                }
+                for run in trace["runs"].as_array_mut().unwrap() {
+                    for source in &known_sources {
+                        if !source["operation_id"].is_null()
+                            && source["operation_id"] == run["operation_id"]
+                        {
+                            let ids = run["linked_source_ids"].as_array_mut().unwrap();
+                            if !ids.contains(&source["id"]) {
+                                ids.push(source["id"].clone());
+                            }
+                            run["round"] = source["round"].clone();
+                        }
+                    }
                 }
                 trace_hashes.push(trace["meta"]["trace_sha256"].clone());
                 for field in ["sources", "memories", "runs", "llm_calls"] {
@@ -491,6 +523,23 @@ pub(super) fn live_bundle(config: &Config) -> Result<Value, String> {
                     if trace["meta"]["channels"][channel] == "enabled" {
                         result["meta"]["channels"][channel] = json!("enabled");
                     }
+                }
+                let event_errors = trace["meta"]["parse_errors"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .chain(
+                        trace["runs"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .flat_map(|run| run["parse_errors"].as_array().into_iter().flatten()),
+                    );
+                for error in event_errors {
+                    result["live"]["errors"]
+                        .as_array_mut()
+                        .unwrap()
+                        .push(json!(format!("trace_event_isolated: {error}")));
                 }
                 result["live"]["trace_status"] = json!("available");
                 if trace["meta"]["tail_status"] == "partial_line"
@@ -636,11 +685,63 @@ mod tests {
         .unwrap();
         let incompatible = live_bundle(&config).unwrap();
         assert!(
-            incompatible["live"]["errors"]
+            !incompatible["live"]["errors"]
                 .to_string()
                 .contains("trace_retrieval_schema_unsupported")
         );
+        assert!(
+            incompatible["runs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|r| r["retrieval_diagnostics"]["status"] == "unavailable")
+        );
         assert_eq!(incompatible["llm_calls"], json!([]));
+        let background = json!({"trace_version":"1","event_id":"bg","run_id":"old-round","kind":"model_start",
+            "at":"2026-10-16T00:00:00Z","data":{"call_id":"bg-call","stage":"w1_v123","attempt":1,
+                "request":{"model":"fixture","input":json!({"source_snapshot":["s-205","session","turn"]}).to_string()}}});
+        std::fs::write(&trace, format!("{background}\n")).unwrap();
+        let background_bundle = live_bundle(&config).unwrap();
+        assert_eq!(background_bundle["llm_calls"][0]["id"], "bg-call");
+        assert!(
+            background_bundle["runs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|r| r["id"] == "old-round"
+                    && r["linked_source_ids"] == json!(["s-205"])
+                    && r["evidence_status"] == "evidence_incomplete")
+        );
+        let mut unbound = background;
+        unbound["data"]["request"]["input"] =
+            json!({"source_snapshot":["not-owned"]}).to_string().into();
+        std::fs::write(&trace, format!("{unbound}\n")).unwrap();
+        let rejected = live_bundle(&config).unwrap();
+        assert_eq!(rejected["llm_calls"], json!([]));
+        assert!(
+            rejected["live"]["errors"]
+                .to_string()
+                .contains("trace_owner_unconfirmed")
+        );
+        // AF364: the same synthetic current trace works through both public read paths.
+        let shapes = include_str!("../tests/fixtures/af364-event-shapes.jsonl")
+            .replace("fixture-owner", "owner");
+        let broken = json!({"trace_version":"1","event_id":"isolated","run_id":"fixture-run",
+            "kind":"validation","at":"2026-10-16T00:00:00Z","data":{"status":"failed"}});
+        std::fs::write(&trace, format!("{shapes}{broken}\n")).unwrap();
+        let exported = export_trace(&config, &trace).unwrap();
+        assert_eq!(exported["llm_calls"].as_array().unwrap().len(), 1);
+        assert_eq!(
+            exported["runs"][0]["parse_errors"][0]["field"],
+            "$.data.stage: missing"
+        );
+        let partial = live_bundle(&config).unwrap();
+        assert_eq!(partial["llm_calls"].as_array().unwrap().len(), 1);
+        assert!(
+            partial["live"]["errors"]
+                .to_string()
+                .contains("$.data.stage: missing")
+        );
         config.trace_dir = None;
         // A retained source / staging / active record may still contain deleted text.
         fixture["sources"]["deleted"] = fixture["sources"]["s"].clone();
