@@ -2,7 +2,7 @@
 use super::*;
 pub(super) fn rates(id: &str) -> (u64, u64, u64) {
     match id {
-        "ds-pro" => (9000, 27000, 300),
+        "ds-pro" | "ds-pro-minimal" | "ds-pro-low" => (9000, 27000, 300),
         "gpt-6.1-sol" => (14200, 71000, 14200),
         _ => (710, 3550, 710),
     }
@@ -74,7 +74,7 @@ pub(super) fn campaign_manifest(root: &Path) -> Result<Option<Value>, String> {
     let m = read(&base.join("manifest.json"), Value::Null)?;
     Ok(matches!(
         m["version"].as_str(),
-        Some("af302.v1" | "af319.v1" | "af342.v1")
+        Some("af302.v1" | "af319.v1" | "af342.v1" | "af352.v1")
     )
     .then_some(m))
 }
@@ -191,8 +191,10 @@ pub(super) fn refreeze_labels(
     }
     let path = root.join("manifest.json");
     let old = read(&path, Value::Null)?;
-    if !matches!(old["version"].as_str(), Some("af302.v1" | "af319.v1"))
-        || old["version"] != frozen["version"]
+    if !matches!(
+        old["version"].as_str(),
+        Some("af302.v1" | "af319.v1" | "af352.v1")
+    ) || old["version"] != frozen["version"]
     {
         return Err("label refreeze requires an existing matching campaign manifest".into());
     }

@@ -8,6 +8,8 @@ mod af302;
 mod af319;
 #[path = "eval/write_stage/af342.rs"]
 mod af342;
+#[path = "eval/write_stage/af352.rs"]
+mod af352;
 #[path = "eval/write_stage/cost_campaign.rs"]
 mod cost_campaign;
 
@@ -2987,7 +2989,7 @@ fn compare_tier(cells: &[Value]) -> &str {
 // AF163 prices are the user-approved scenario, not proxy billing quotes.
 fn compare_price(id: &str) -> Option<(f64, f64, Option<f64>)> {
     Some(match id {
-        "ds-pro" => (9.0, 27.0, Some(0.3)),
+        "ds-pro" | "ds-pro-minimal" | "ds-pro-low" => (9.0, 27.0, Some(0.3)),
         "ds-flash" => (1.0, 4.0, Some(0.02)), // AF163 off-peak scenario.
         "gpt-6.1-sol" | "claude-sonnet-5-5" => (2.0 * 7.1, 10.0 * 7.1, None),
         "opus-5.5" => (4.0 * 7.1, 20.0 * 7.1, None),
@@ -4736,6 +4738,16 @@ fn write_stage_eval_suite() {
     }
     if std::env::var_os("EVAL_AF193").is_some() || std::env::var_os("EVAL_AF196").is_some() {
         af193::run().unwrap();
+        return;
+    }
+    if std::env::var_os("EVAL_AF352").is_some() {
+        assert!(
+            ["EVAL_AF302", "EVAL_AF319", "EVAL_AF342"]
+                .iter()
+                .all(|k| std::env::var_os(k).is_none()),
+            "cannot combine campaigns"
+        );
+        af302::run_kind(af302::Campaign::Af352).unwrap();
         return;
     }
     if std::env::var_os("EVAL_AF342").is_some() {

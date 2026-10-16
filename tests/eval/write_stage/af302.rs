@@ -163,21 +163,46 @@ pub(super) fn run_campaign(w4_only: bool) -> Result<(), String> {
     run_scoped_campaign(w4_only, false)
 }
 pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<(), String> {
-    let prefix = if scope_trial {
+    run_kind(if w4_only {
+        Campaign::Af319
+    } else if scope_trial {
+        Campaign::Af342
+    } else {
+        Campaign::Af302
+    })
+}
+#[derive(Clone, Copy)]
+pub(super) enum Campaign {
+    Af302,
+    Af319,
+    Af342,
+    Af352,
+}
+pub(super) fn run_kind(kind: Campaign) -> Result<(), String> {
+    let w4_only = matches!(kind, Campaign::Af319);
+    let scope_trial = matches!(kind, Campaign::Af342);
+    let effort_trial = matches!(kind, Campaign::Af352);
+    let prefix = if effort_trial {
+        "EVAL_AF352"
+    } else if scope_trial {
         "EVAL_AF342"
     } else if w4_only {
         "EVAL_AF319"
     } else {
         "EVAL_AF302"
     };
-    let cap = if scope_trial {
+    let cap = if effort_trial {
+        af352::CAP
+    } else if scope_trial {
         af342::CAP
     } else if w4_only {
         af319::CAP
     } else {
         CAP
     };
-    let slots = if scope_trial {
+    let slots = if effort_trial {
+        40
+    } else if scope_trial {
         24
     } else if w4_only {
         150
@@ -203,8 +228,8 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
         Some("2") => 2,
         _ => return Err("repeat must be 1 or 2".into()),
     };
-    if scope_trial && repeat != 1 {
-        return Err("AF342 authorizes one repeat only".into());
+    if (scope_trial || effort_trial) && repeat != 1 {
+        return Err(format!("{prefix} authorizes one repeat only"));
     }
     let stage_var = var(&format!("{prefix}_STAGE"));
     let stage = if w4_only {
@@ -233,7 +258,9 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
             ));
         }
     };
-    let root = Path::new(if scope_trial {
+    let root = Path::new(if effort_trial {
+        af352::ROOT
+    } else if scope_trial {
         af342::ROOT
     } else if w4_only {
         af319::ROOT
@@ -241,18 +268,26 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
         ROOT
     });
     let _lock = w3_trial_lock(&root.join("global-lock"))?;
-    if !w4_only && !scope_trial && var("EVAL_AF308_MIGRATE").as_deref() == Some("1") {
+    if !w4_only
+        && !scope_trial
+        && !effort_trial
+        && var("EVAL_AF308_MIGRATE").as_deref() == Some("1")
+    {
         println!("{}", migrate(root)?);
         return Ok(());
     }
-    let mut groups = if scope_trial {
+    let mut groups = if effort_trial {
+        af352::plan(root, var)?
+    } else if scope_trial {
         af342::plan(root, var)?
     } else if w4_only {
         af319::plan(root, var)?
     } else {
         plan(root, var)?
     };
-    let frozen = if scope_trial {
+    let frozen = if effort_trial {
+        af352::manifest(&groups)
+    } else if scope_trial {
         af342::manifest(&groups)
     } else if w4_only {
         af319::manifest(&groups)
@@ -261,7 +296,7 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
     };
     let path = root.join("manifest.json");
     if let Some(amendment) = var(&format!("{prefix}_REFREEZE")) {
-        if scope_trial || (!w4_only && amendment != "AF311") || !dry || record {
+        if scope_trial || (!w4_only && !effort_trial && amendment != "AF311") || !dry || record {
             return Err("label refreeze requires EVAL_DRY_RUN=1 and no EVAL_RECORD; AF302 only accepts AF311".into());
         }
         println!(
@@ -299,9 +334,9 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
             "rejected":g.iter().filter(|c|matches!(c.replay,Replay::Rejected(_))).count(),
             "worst_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(upper).sum::<u64>() as f64/1e9,
             "scenario_cny":g.iter().filter(|c|selected(c,repeat,stage)).map(|c|input_bound(c)/4*i+3000*o).sum::<u64>() as f64/1e9,
-            "fingerprint":hippocampus::recall_models::fingerprint(&if scope_trial {af342::manifest(&[g.clone()])} else if w4_only {af319::manifest(&[g.clone()])} else {manifest(&[g.clone()])})}));
+            "fingerprint":hippocampus::recall_models::fingerprint(&if effort_trial {af352::manifest(&[g.clone()])} else if scope_trial {af342::manifest(&[g.clone()])} else if w4_only {af319::manifest(&[g.clone()])} else {manifest(&[g.clone()])})}));
     }
-    let dry_report = json!({"campaign":if scope_trial {"AF342"} else if w4_only {"AF319"} else {"AF302"},"fixed_slots":slots,"selected_repeat":repeat,"selected_stage":stage,"selected_profiles":profiles,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
+    let dry_report = json!({"campaign":if effort_trial {"AF352"} else if scope_trial {"AF342"} else if w4_only {"AF319"} else {"AF302"},"fixed_slots":slots,"selected_repeat":repeat,"selected_stage":stage,"selected_profiles":profiles,"selected_slots":groups.iter().flatten().filter(|c|selected(c,repeat,stage)).count(),
         "sent":0,"cap_cny":cap as f64/1e9,"charged_cny":total(&ledger)? as f64/1e9,"profiles":summary,
         "estimate_note":"scenario only: input bound / 4, output 3000 per call, no cache; not measured usage",
         "manifest_fingerprint":hippocampus::recall_models::fingerprint(&frozen)});
@@ -379,7 +414,7 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
             }
             rows.extend(items(&r["results"]).iter().cloned());
         }
-        reports.push(json!({"profile":g[0].model.label,"charged_cny":g.iter().filter_map(|c|ledger[key(c)]["charged_nano_cny"].as_u64()).sum::<u64>() as f64/1e9,"stages":if w4_only {af319::summaries(&rows)} else {summaries(&rows)},"results":rows,"cost":compare_cost(&g[0].model.label,&rows)}));
+        reports.push(json!({"profile":g[0].model.label,"charged_cny":g.iter().filter_map(|c|ledger[key(c)]["charged_nano_cny"].as_u64()).sum::<u64>() as f64/1e9,"stages":if effort_trial {af352::summaries(&rows)} else if w4_only {af319::summaries(&rows)} else {summaries(&rows)},"results":rows,"cost":compare_cost(&g[0].model.label,&rows)}));
     }
     let label_revisions = groups
         .iter()
@@ -389,11 +424,14 @@ pub(super) fn run_scoped_campaign(w4_only: bool, scope_trial: bool) -> Result<()
         .into_iter()
         .collect::<Vec<_>>()
         .join(",");
+    if effort_trial {
+        af352::write_comparison(root, &groups, &reports)?;
+    }
     m15_write_json(
         &root.join(format!("report-repeat-{repeat}{suffix}.json")),
-        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":if w4_only || scope_trial {label_revisions.as_str()} else {"AF311"},"profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
+        &json!({"selected_repeat":repeat,"selected_stage":stage,"label_revision":if w4_only || scope_trial || effort_trial {label_revisions.as_str()} else {"AF311"},"profiles":reports,"cost_ledger":ledger,"charged_cny":total(&ledger)? as f64/1e9}),
     )?;
-    if !scope_trial && stage == Some("w1") {
+    if !scope_trial && !effort_trial && stage == Some("w1") {
         combined_w1(root, &groups)?;
     }
     if w4_only {

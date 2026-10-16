@@ -937,3 +937,48 @@ cargo test --test write_stage_eval af342::af348_replay -- --exact --ignored --no
 ```
 
 输出另存 `target/eval-providers/af342/reports-af348/report-repeat-1.json`。普通 AF342 录制入口仍按原冻结标签摘要检查，标签变更不授权重冻结或重新发送。
+
+### AF352：W1/W3 minimal 与 low 同版本配对筛查
+
+独立目录 `target/eval-providers/af352/`；DS-Pro 两档 `ds-pro-minimal`、`ds-pro-low`，每档 W1 12 + W3 8、各一次，共 40 槽，总费用上限 10 元。当前 W1 v5/W3 v6，输出上限 W1 32768/W3 16384，超时 360s；两臂仅 effort 不同。模型须显式提供 `DEEPSEEK_PRO_MODEL=生产接入点ID（ep-...）`，评测端点/凭据为 `HUOSHAN_DEEPSEEK_BASE_URL` / `HUOSHAN_DEEPSEEK_API_KEY`，无占位 manifest，不读取生产配置。
+
+选题（不修改原样本）：
+
+| W1 | 覆盖 |
+|---|---|
+| af342_w1_01 / 02 / 03 | 外部评价、因果推演、项目备选建议均不抽取 |
+| af342_w1_04 / 06 | 个人职责、真实技术偏好保留 |
+| af342_w1_08 | 条件与不确定性计划保留 |
+| af342_w1_10 / 11 | 采用决定、混合句只抽个人断言 |
+| w1_07_plan | 计划与相对时间 |
+| w1_12_unresolved_subject | 无法绑定主体时保留 unresolved |
+| w1_13_history_disambiguates | 依据明确历史绑定人物 |
+| w1_18_pure_question | 纯问题零候选 |
+
+| W3 | 覆盖 |
+|---|---|
+| af352_w3_01 / 02 | 明确先行语应支持；历史值冲突不等于主体不明 |
+| af352_w3_03 / 04 | 多主体不得选定；目录唯一但无先行语不得默认 self |
+| w3_02_dropped_uncertainty / w3_03_dropped_condition | 丢不确定性、条件不能 supported |
+| af342_w3_11 / 12 | 漏个人事实报 gaps；仅遗漏讨论报 complete |
+
+新四题在 `af352/w3-subject.json`：原样移植 AF103 所用 `m15/w3-effort.json` 的虚构输入，使用当前提示词、独立 ID、标签 draft 待 Claude 审。此处“刚才”是记错编号的话语回指，不是编号有效时间。保留原标签状态（AF342 中部分也为 draft），不自动把机器通过计为人工确认。固定 W3 输入，不证明 W1→W3 串联质量；无先行语被 supported 的危险放行单独由逐题 verdict 看出。
+
+复用 cost_campaign：输入字节上界+最大输出发送前预留、usage 结算、传输失败 0 可手工续跑；HTTP 无 usage/中断按上界，已响应/在途不重发，连续同类错误/截断熔断。每臂独立 20 槽授权，共用 10 元费用账本。冻结费率 9/0.3/27 元/M（输入/缓存/输出）；上界合计大于预算时允许逐次结算释放预留，但不保证 40 槽全部执行，不能提高费用上限。先 minimal 后 low，缓存及顺序影响实测费用/延迟；单次配对仅为筛查，不证明统计显著。
+
+Claude 在本机确认题目/标签后执行（需已有上述三项环境变量，不打印密钥；不得同时设置其他 EVAL campaign/model/effort 变量）：
+
+```sh
+# 生成本机 manifest，核对 fixed_slots=40、selected_slots=40、cap_cny=10。
+zsh -ic 'EVAL_AF352=1 EVAL_DRY_RUN=1 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+# 批准发送后；同命令续跑不会扩额。
+zsh -ic 'EVAL_AF352=1 EVAL_RECORD=40 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+```
+
+若标签在生成 manifest 后经批准修订，为变动样本写实际 `label_revision`，在本机显式重冻结（下面 AFxxx 替换为批准编号）：
+
+```sh
+zsh -ic 'EVAL_AF352=1 EVAL_DRY_RUN=1 EVAL_AF352_REFREEZE=AFxxx cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture'
+```
+
+仅允许标签摘要变化；请求指纹、槽位、模型/端点/effort、费率/预算不同全部拒绝，备份旧 manifest 并写审计。输出 `report-repeat-1.json` 与 `comparison.json`：两臂逐题并列、每阶段通过数、draft、output/reasoning token（缺 usage 标未知）、p50、已知 usage 估算费用与账本计费分别展示。无新人工台账，不改历史录制。
