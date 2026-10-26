@@ -1,0 +1,229 @@
+{
+  "id": "w4_n2_sibling_fragments",
+  "contract": "w4.v5",
+  "batch": 3,
+  "label_status": "reviewed",
+  "label_revision": "AF276",
+  "focus": "同句兄弟片段：一个更新、一个独立新增",
+  "boundary_with": null,
+  "sources": {
+    "s-610": {
+      "text": "我的书房灯是冷白光。",
+      "said_on": "2026-03-01"
+    },
+    "s-611": {
+      "text": "我已经把书房灯换成了暖白光，我使用木制书架。",
+      "said_on": "2026-10-01"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我已经把书房灯换成了暖白光",
+            "quote": {
+              "text": "我已经把书房灯换成了暖白光"
+            }
+          },
+          "sentence": {
+            "text": "我已经把书房灯换成了暖白光，我使用木制书架。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-611"
+        },
+        "said_on": "2026-10-01",
+        "time_resolutions": []
+      },
+      {
+        "index": 1,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我使用木制书架",
+            "quote": {
+              "text": "我使用木制书架"
+            }
+          },
+          "sentence": {
+            "text": "我已经把书房灯换成了暖白光，我使用木制书架。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-611"
+        },
+        "said_on": "2026-10-01",
+        "time_resolutions": []
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 122,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我的书房灯是冷白光。",
+            "quote": {
+              "text": "我的书房灯是冷白光。"
+            }
+          },
+          "sentence": {
+            "text": "我的书房灯是冷白光。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-610"
+            },
+            "quote": {
+              "text": "我的书房灯是冷白光。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-03-01",
+        "time_resolutions": [],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          122
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-610",
+          "s-611"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      },
+      {
+        "candidate": 1,
+        "status": "decided",
+        "action": "new",
+        "targets": [],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-611"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "122": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "new_light": {
+          "from_candidate": 0,
+          "stored_status": "active",
+          "history": [
+            122
+          ],
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        },
+        "new_shelf": {
+          "from_candidate": 1,
+          "stored_status": "active",
+          "history": [],
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "new_records": 2,
+      "recall": {
+        "current": [
+          "暖白灯",
+          "木制书架"
+        ],
+        "history": [
+          "旧冷白灯"
+        ]
+      }
+    },
+    "must_not": [
+      "不得因共用 sentence 合并两候选、互借记录身份或 grade/update",
+      "不得把书架追加判为灯具强化或细化"
+    ]
+  },
+  "rejected_alternatives": [],
+  "qualifier_marks": {}
+}

@@ -1,0 +1,17 @@
+{
+  "version": "af240.schema-diagnostic@1",
+  "model": "claude-haiku-5-5",
+  "provider": {
+    "protocol": "anthropic_messages",
+    "structured_mode": "native_simplified_nopattern",
+    "base_url_env": "ANTHROPIC_BASE_URL",
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "thinking": true
+  },
+  "effort": "low",
+  "max_output_tokens": 4096,
+  "timeout_seconds": 360,
+  "statement": "我住在白杉镇。",
+  "query": "我住在哪里？",
+  "said_on": "2026-10-10"
+}

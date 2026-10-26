@@ -416,7 +416,7 @@ fn check_candidate(
         }
         if c.relation == "fact"
             && !matches!(value, Value::Text { text, quote }
-                if text == &c.sentence.text && quote == &c.sentence)
+                if text == &quote.text && c.sentence.text.contains(&quote.text))
         {
             return Err("fact_sentence_mismatch");
         }

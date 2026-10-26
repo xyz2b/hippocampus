@@ -19,6 +19,11 @@ NEW_ADAPTER = "recall_v3@1"
 V4_ADAPTER = "recall_v4@1"
 V5_ADAPTER = "recall_v5@1"
 V6_ADAPTER = "recall_v6@1"
+V7_ADAPTER = "recall_v7@1"
+V8_ADAPTER = "recall_v8@1"
+V9_ADAPTER = "recall_v9@1"
+V10_ADAPTER = "recall_v10@1"
+V11_ADAPTER = "recall_v11@1"
 TZ = _dt.timezone(_dt.timedelta(seconds=28800))  # eval time zone, UTC+8
 RECALL_VERSION = "recall.v3"
 
@@ -264,7 +269,7 @@ def _map_ids(obj, rev):
 
 
 # --------------------------------------------------------------------------
-# recall.v3/v4/v5 historical / recall.v6 current (contracts.md 3.4)
+# recall.v3/v4/v5/v6 historical / recall.v7 historical / recall.v8 historical / recall.v9 historical / recall.v10 historical / recall.v11 current (contracts.md 3.4)
 # --------------------------------------------------------------------------
 
 def _date(s: str) -> _dt.date:
@@ -301,8 +306,18 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
     deleted = {k for k, v in (source_state or {}).items() if v.get("deleted") or v.get("linkable") is False}
     req = raw.get("request") or {}
     binding = []
-    if raw.get("version") not in (RECALL_VERSION, "recall.v4", "recall.v5", "recall.v6"):
-        binding.append(f"version={raw.get('version')!r}，期望 recall.v3、recall.v4、recall.v5 或 recall.v6")
+    if raw.get("version") not in (RECALL_VERSION, "recall.v4", "recall.v5", "recall.v6", "recall.v7", "recall.v8", "recall.v9", "recall.v10", "recall.v11"):
+        binding.append(f"version={raw.get('version')!r}，期望 recall.v3、recall.v4、recall.v5 、recall.v6 、recall.v7 、recall.v8 、recall.v9 、recall.v10 或 recall.v11")
+    if raw.get("version") in ("recall.v7", "recall.v8", "recall.v9", "recall.v10", "recall.v11"):
+        retrieval = raw.get("retrieval")
+        fields = {"status", "sources_total", "sources_indexed", "segments_total", "segments_indexed"}
+        valid = isinstance(retrieval, dict) and set(retrieval) == fields
+        if valid:
+            valid = retrieval["status"] in {"disabled", "not_needed", "ready", "pending", "unavailable"}
+            valid = valid and all(type(retrieval[k]) is int and retrieval[k] >= 0 for k in fields - {"status"})
+            valid = valid and retrieval["sources_indexed"] <= retrieval["sources_total"] and retrieval["segments_indexed"] <= retrieval["segments_total"]
+        if not valid:
+            binding.append("retrieval 元数据缺失或不合法（不改变业务证据评分）")
     for k, want in (("query", q["query"]), ("context", q["context"]), ("task_id", q["task_id"]), ("at", q["at"])):
         if req.get(k) != want:
             binding.append(f"request.{k}={req.get(k)!r}，问题为 {want!r}")
@@ -516,7 +531,7 @@ def adapt_recall(q: dict, query_meta: dict, raw: dict, source_ids: dict, *,
                     "sources": _sorted_unique(s for it in items.values() for s in it["sources"])}
 
     view = {
-        "adapter": {"recall.v4": V4_ADAPTER, "recall.v5": V5_ADAPTER, "recall.v6": V6_ADAPTER}.get(raw.get("version"), NEW_ADAPTER),
+        "adapter": {"recall.v4": V4_ADAPTER, "recall.v5": V5_ADAPTER, "recall.v6": V6_ADAPTER, "recall.v7": V7_ADAPTER, "recall.v8": V8_ADAPTER, "recall.v9": V9_ADAPTER, "recall.v10": V10_ADAPTER, "recall.v11": V11_ADAPTER}.get(raw.get("version"), NEW_ADAPTER),
         "status": NEW_STATUS.get(raw.get("status"), "unknown"),
         "status_raw": raw.get("status"),
         "binding": binding,

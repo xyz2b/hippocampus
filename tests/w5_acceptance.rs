@@ -1,4 +1,4 @@
-//! W5 验收第一段（docs/architecture/w5-acceptance.md A1–A3）：真实 SQLite 文件、真实写事务，
+//! W5 验收第一段（docs/architecture/contracts.md Write contracts）：真实 SQLite 文件、真实写事务，
 //! 每项提交后关闭并重新打开数据库再核对。场景对应 W4 样本 01、05、09、10、12、13。
 
 use std::{
@@ -755,7 +755,7 @@ fn a3_receipts_live_in_a_version_older_binaries_reject() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 10);
+    assert_eq!(version, 11);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1220,7 +1220,7 @@ fn a3_v6_receipts_without_status_still_open_and_replay() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .unwrap();
-    assert_eq!(version, 10);
+    assert_eq!(version, 11);
     let raw: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
             row.get(0)
@@ -1413,7 +1413,7 @@ fn a3_new_receipts_accept_only_the_current_fingerprint() {
     assert_eq!(snapshot(&db), before);
 }
 
-// ---------------- 存储第 1 段（docs/architecture/w5-storage.md）：版本 8、真实旧数据迁移与重放
+// ---------------- 存储第 1 段（docs/architecture.md）：版本 8、真实旧数据迁移与重放
 
 /// 把 `tests/fixtures/w5_storage/<name>.sql` 还原成数据库文件。这些脚本由对应提交自己的
 /// 程序写出的数据库导出（模式 + 行 + user_version），不是从新格式删字段近似出来的。
@@ -1519,7 +1519,7 @@ fn s1_committed_receipts_of_every_released_version_migrate_and_replay() {
 
         // 迁移：版本 8，回执显式写出 form=pre8，快照补齐新字段。
         drop(db.open());
-        assert_eq!(user_version(&db), 10, "{name}");
+        assert_eq!(user_version(&db), 11, "{name}");
         assert_pre8_receipts(&db, name);
         // 关闭 → 重开 → 再保存一次（任务字段写入也会改写快照）→ 重开：标记仍在。
         reclaim(&db, "s-205");
@@ -1573,7 +1573,7 @@ fn s1_needs_rejudge_receipts_of_released_versions_stay_needs_rejudge() {
     ] {
         let db = restore_fixture(name);
         drop(db.open());
-        assert_eq!(user_version(&db), 10, "{name}");
+        assert_eq!(user_version(&db), 11, "{name}");
         assert_pre8_receipts(&db, name);
         reclaim(&db, "s-205");
         let before = snapshot(&db);
@@ -1592,7 +1592,7 @@ fn s1_v5_database_migrates_and_new_receipts_are_v8() {
     let db = restore_fixture("v5");
     assert_eq!(user_version(&db), 5);
     drop(db.open());
-    assert_eq!(user_version(&db), 10);
+    assert_eq!(user_version(&db), 11);
     reclaim(&db, "s-205");
     let old = MemoryId(1);
     assert_eq!(memory(&db, old).status, MemoryStatus::Active);
@@ -1798,7 +1798,7 @@ fn s1_unknown_fields_fail_closed_instead_of_being_dropped() {
     drop(db.open());
 }
 
-// ---------------- 存储第 2 段：更新状态（w5-storage.md 第 3 节）
+// ---------------- 存储第 2 段：更新状态（docs/architecture.md Storage, concurrency and deletion）
 
 fn scope_incomplete() -> UpdateState {
     UpdateState {
@@ -2190,7 +2190,7 @@ fn u2_candidate_kind_must_match_the_action() {
     assert_eq!(memory(&db, old).status, MemoryStatus::Active);
 }
 
-// ---------------- 第 3 段：冲突关系（w5-storage.md 第 4 节；w5-acceptance.md D1、E1）
+// ---------------- 第 3 段：冲突关系（docs/architecture.md Storage, concurrency and deletion；docs/architecture/contracts.md Write contracts）
 
 /// 已整理完成的旧原文（不是本次认领的任务），带原文正文，供关系依据逐字核对。
 fn stored_source(db: &TestDb, key: &str, text: &str) {
@@ -2694,7 +2694,7 @@ fn r2_resolving_rechecks_every_member_not_only_the_targets() {
     assert_eq!(memory(&db, seven).status, MemoryStatus::Active);
 }
 
-// ---------------- 第 3 段后半：删除范围与关系失效（w5-storage.md 第 4 节）
+// ---------------- 第 3 段后半：删除范围与关系失效（docs/architecture.md Storage, concurrency and deletion）
 
 fn forget(db: &TestDb, arguments: serde_json::Value) -> serde_json::Value {
     let mut service = hippocampus::chat::ChatMemoryService::new(
@@ -3373,7 +3373,7 @@ fn f17_a_surviving_legacy_reinforcement_keeps_its_receipt_time() {
     assert_eq!(kept.last_reinforced_at, Some(Timestamp(1_700_000_100)));
 }
 
-// ---------------- 第 4 段：重判复用与归并（w5-acceptance.md B2、B3、B3a、E3）
+// ---------------- 第 4 段：重判复用与归并（docs/architecture/contracts.md Write contracts）
 
 const ONE_CUP: &str = "我每天喝一杯咖啡。";
 

@@ -1,8 +1,9 @@
 {
   "id": "w4_04_coexist_partial",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 1,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF322",
   "focus": "局部补充 coexist：只在新条件下成立，不结束较一般的旧事实",
   "boundary_with": "w4_03_refine_whole",
   "sources": {
@@ -11,7 +12,7 @@
       "said_on": "2026-05-06"
     },
     "s-241": {
-      "text": "周末的时候我更喜欢喝手冲咖啡。",
+      "text": "周末的时候我喜欢喝手冲咖啡。",
       "said_on": "2026-09-15"
     }
   },
@@ -30,33 +31,44 @@
           "memory_type": "preference",
           "value": {
             "kind": "text",
-            "text": "周末的时候我更喜欢喝手冲咖啡。",
+            "text": "周末的时候我喜欢喝手冲咖啡。",
             "quote": {
-              "text": "周末的时候我更喜欢喝手冲咖啡。"
+              "text": "周末的时候我喜欢喝手冲咖啡。"
             }
           },
           "sentence": {
-            "text": "周末的时候我更喜欢喝手冲咖啡。"
+            "text": "周末的时候我喜欢喝手冲咖啡。"
           },
           "polarity": "affirm",
           "strength": null,
           "uncertainty": null,
-          "conditions": [
+          "conditions": [],
+          "times": [
             {
+              "role": "validity",
               "quote": {
                 "text": "周末的时候"
               },
-              "resolved": true
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
             }
-          ],
-          "times": []
+          ]
         },
         "source": {
           "kind": "stored",
           "source_id": "s-241"
         },
         "said_on": "2026-09-15",
-        "time_resolutions": []
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
       }
     ],
     "records": [
@@ -153,21 +165,159 @@
               "update_scope_incomplete"
             ]
           },
-          "conditions": [
-            "周末的时候"
+          "times": [
+            {
+              "role": "validity",
+              "quote": {
+                "text": "周末的时候"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
           ]
         }
       },
       "recall": {
         "current": [
           "31（喜欢喝咖啡）",
-          "new（周末更喜欢手冲，带条件）"
+          "new（周末喜欢手冲，带周期时间与 update.pending）"
         ]
       }
     },
     "must_not": [
       "不得结束 31（现有 Refine 会结束旧版本，这里必须避免）",
-      "新记录不得丢掉“周末的时候”条件"
+      "新记录不得丢掉“周末的时候”的周期时间"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "coexist",
+            "targets": [],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-111",
+              "s-241"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "31": {
+              "stored_status": "active",
+              "termination_reason": null,
+              "ended": "not_ended"
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_scope_incomplete"
+                ]
+              },
+              "times": [
+                {
+                  "role": "validity",
+                  "quote": {
+                    "text": "周末的时候"
+                  },
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "anchor": "said_on"
+                }
+              ]
+            }
+          },
+          "recall": {
+            "current": [
+              "31（喜欢喝咖啡）",
+              "new（周末喜欢手冲，带周期时间与 update.pending）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得结束 31（现有 Refine 会结束旧版本，这里必须避免）",
+          "新记录不得丢掉“周末的时候”的周期时间"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "coexist",
+            "targets": [],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-111",
+              "s-241"
+            ],
+            "effective": {
+              "role": "validity",
+              "quote": {
+                "text": "周末的时候"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            },
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "31": {
+              "stored_status": "active",
+              "termination_reason": null,
+              "ended": "not_ended"
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_scope_incomplete"
+                ]
+              },
+              "times": [
+                {
+                  "role": "validity",
+                  "quote": {
+                    "text": "周末的时候"
+                  },
+                  "interp": {
+                    "kind": "recurring"
+                  },
+                  "anchor": "said_on"
+                }
+              ]
+            }
+          },
+          "recall": {
+            "current": [
+              "31（喜欢喝咖啡）",
+              "new（周末喜欢手冲，带周期时间与 update.pending）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得结束 31（现有 Refine 会结束旧版本，这里必须避免）",
+          "新记录不得丢掉“周末的时候”的周期时间"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [
@@ -180,10 +330,10 @@
       "why": "两者不互斥"
     }
   ],
-  "note": "通用 fact 范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。",
+  "note": "本次固定输入的授权范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。",
   "qualifier_marks": {
     "candidate:0": {
-      "conditions": [
+      "times": [
         "周末的时候"
       ]
     }

@@ -1,0 +1,94 @@
+{
+  "id": "w4_08_complete_no_records",
+  "contract": "w4.v5",
+  "batch": 1,
+  "label_status": "reviewed",
+  "label_revision": "AF276",
+  "focus": "授权范围实际穷举完整的对照",
+  "boundary_with": "w4_08_scope_incomplete_no_records",
+  "sources": {
+    "s-270": {
+      "text": "我的读书灯是暖白光。",
+      "said_on": "2026-09-22"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我的读书灯是暖白光。",
+            "quote": {
+              "text": "我的读书灯是暖白光。"
+            }
+          },
+          "sentence": {
+            "text": "我的读书灯是暖白光。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-270"
+        },
+        "said_on": "2026-09-22",
+        "time_resolutions": []
+      }
+    ],
+    "records": [],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": false,
+  "expect": {
+    "code_path": {
+      "w4_called": false,
+      "candidate_status": "committed",
+      "memory_id": "new",
+      "update": {
+        "status": "judged",
+        "reasons": []
+      }
+    },
+    "after": {
+      "records": {
+        "new": {
+          "from_candidate": 0,
+          "stored_status": "active",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "relations": [],
+      "recall": {
+        "current_note": "可返回已提交、update.judged 的断言；完整只指授权范围。"
+      }
+    },
+    "must_not": [
+      "不得重复插入；不得跳过必要的来源与身份检查",
+      "完整只指本次授权范围，不证明现实世界不存在其他事实"
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "授权范围与必要闭包预算内实际穷举完整；显式重判仅清除本次覆盖的旧缺口。",
+  "qualifier_marks": {}
+}

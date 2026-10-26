@@ -61,7 +61,12 @@
     "subject": "self",
     "relation": "fact",
     "memory_type": "fact",
-    "value": "我妈说我小时候特别怕狗。",
+    "value": {
+     "window": "我妈说我小时候特别怕狗。",
+     "required": [
+      "特别怕狗"
+     ]
+    },
     "sentence": "我妈说我小时候特别怕狗。",
     "polarity": "affirm",
     "uncertainty": null,
@@ -74,5 +79,6 @@
  "must_not": [
   "speech 为 user_statement"
  ],
- "note": "主体是“我”（被转述的内容关于用户），来源是我妈。是否另给 times“小时候”（unknown）不评分。"
+ "note": "AF311：连续断言片段；仍为 reported/fact，不接受 episode。 AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。",
+ "label_revision": "AF317"
 }

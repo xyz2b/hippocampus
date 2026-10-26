@@ -279,8 +279,11 @@ fn main() -> PersistenceResult<()> {
     let mut owner_explicit = false;
     let mut config = ChatConfig::default();
     let mut config_explicit = false;
+    let mut init_trace_epoch = false;
     let mut drain = false;
     let mut max_jobs = None;
+    let mut drain_embeddings = false;
+    let mut max_batches = None;
     let mut enrich_source = None;
     let mut tool_call = None;
     let mut arguments_file = None;
@@ -288,14 +291,20 @@ fn main() -> PersistenceResult<()> {
         match arg.as_str() {
             "--help" | "-h" => {
                 eprintln!(
-                    "pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3; owner: local-user; timezone: UTC+08:00.\n--print-default-config prints the editable config. Default pipelines: write_pipeline=w4_runtime_v1, recall_pipeline=recall_v3; legacy values and retired keys retrieval_mode/local_recall_enabled/local_recall_budget/is_a are rejected before opening the database; edit configuration manually. Old executors are removed; current contracts are r4.v6/recall.v6; earlier recall versions and answer_contract.v1 are unsupported. Existing DB data stays readable; schema is v10; v9 writers refuse v10.\n--call memory_remember|memory_recall|memory_prepare|memory_validate_answer|memory_source_status --arguments JSON_FILE requires explicit --db/--owner. Recall including bootstrap needs stable request_id; Prepare derives one from session/turn. capture_source=true requires authorization for the whole message/history; false or omitted is rejected.\ninline/deferred capture returns after raw storage; MCP runs one background worker outside the service lock. CLI --call starts no worker; memory_source_status is read-only and sends no model requests. --enrich-source explicitly processes one source; drain requires deferred. Batch commands require explicit --db/--owner/--config and finite model_budget. Source processing versions remain bound.\nRole defaults: W1/W3 Pro low; W4 Pro medium; R1/R4 Pro minimal; computational R4 low. Set DEEPSEEK_PRO_MODEL to your Pro endpoint/model ID, or explicitly configure required roles. Missing default endpoint is an error only when online models are needed. DEEPSEEK_BASE_URL/API_KEY remain transport settings.\nOffline recall and bootstrap make no recall model calls; single-request offline does not disable an existing background worker. Use enrichment_mode=off and PMR_MODEL_NETWORK=deny for a completely model-free service. Calls need finite persistent model_budget and the network gate; default PMR_MODEL_NETWORK=offline permits literal loopback fixtures only, live allows configured providers. Existing budget policy and spent calls are never reset or expanded. background_operation_limit (1..3) separates background from foreground operation caps while sharing total authorization. No automatic retry.\nMCP online recall uses independent connections and shared replay. Ordinary commits preserve the R3 read snapshot; deletion/input/scope/control changes fail without retry. memory_clarify staged submission is disabled."
+                    "pmr-mcp --init-trace-epoch --db PATH --owner ID (requires PMR_TRACE_DIR, mode 0700; read-only DB, removes old traces)\n pmr-mcp [--db PATH] [--owner ID] [--config JSON_FILE] [--drain-enrichment --max-jobs N | --enrich-source SOURCE_ID]\nDefault DB: $HOME/.local/share/personal-memory-runtime/memory.sqlite3; owner: local-user; timezone: UTC+08:00.\n--print-default-config prints the editable config. Default pipelines: write_pipeline=w4_runtime_v1, recall_pipeline=recall_v3; legacy values and retired keys retrieval_mode/local_recall_enabled/local_recall_budget/is_a are rejected before opening the database; edit configuration manually. Old executors are removed; current contracts are r4.v7/recall.v11; earlier recall versions and answer_contract.v1 are unsupported. Existing DB data stays readable; schema is v11; v10 writers refuse v11.\n--call memory_remember|memory_recall|memory_prepare|memory_validate_answer|memory_source_status --arguments JSON_FILE requires explicit --db/--owner. Recall including bootstrap needs stable request_id; Prepare derives one from session/turn. capture_source=true requires authorization for the whole message/history; false or omitted is rejected.\ninline/deferred capture returns after raw storage; MCP runs one background worker outside the service lock. CLI --call starts no worker; memory_source_status is read-only and sends no model requests. --enrich-source explicitly processes one source; drain requires deferred. Batch commands require explicit --db/--owner/--config and finite model_budget. Source processing versions remain bound.\nRole defaults: W1/W3 Pro low; W4 Pro medium; R1/R4 Pro minimal; computational R4 low. Set DEEPSEEK_PRO_MODEL to your Pro endpoint/model ID, or explicitly configure required roles. Missing default endpoint is an error only when online models are needed. DEEPSEEK_BASE_URL/API_KEY remain transport settings.\nOffline recall and bootstrap make no recall model calls; single-request offline does not disable an existing background worker. Use enrichment_mode=off and PMR_MODEL_NETWORK=deny for a completely model-free service. Calls need finite persistent model_budget and the network gate; default PMR_MODEL_NETWORK=offline permits literal loopback fixtures only, live allows configured providers. Existing budget policy and spent calls are never reset or expanded. background_operation_limit (1..3) separates background from foreground operation caps while sharing total authorization. No automatic retry.\nStatement snapshot defaults: enabled=false, max_records=8, max_bytes=16384; opt-in bootstrap-only stored statements, not current judgments. Refresh with a new request_id; current status/condition applicability/complete lists require ordinary recall.\nEmbedding defaults: enabled=false, model=qwen3-embedding:0.6b, base_url=http://127.0.0.1:11434, batch=16, query_timeout_ms=10000 (total, including metadata). Only PMR_MODEL_NETWORK=live enables this separate local worker; offline/deny send no embedding or metadata requests. No cloud, proxy, redirects or automatic fallback. Embedding does not use model_budget or W-stage modes. CLI --drain-embeddings --max-batches N (1..100) requires explicit --db/--owner/--config and embedding.enabled=true; starts no resident worker. At least 5 seconds between owner batch attempts (at most 12/minute); per-source failure backoff 30 seconds to 5 minutes. Counters are separately persisted, not generative calls. Opt-in recall uses one local query embedding outside SQL/service locks; enumeration/bootstrap skip it, offline/deny use lexical DF only. Retrieval status/coverage are separate from R4 completeness.\nMCP online recall uses independent connections and shared replay. Ordinary commits preserve the R3 read snapshot; deletion/input/scope/control changes fail without retry. memory_clarify staged submission is disabled."
                 );
                 return Ok(());
             }
             "--print-default-config" => {
-                println!("{}", serde_json::to_string_pretty(&ChatConfig::default())?);
+                let mut config = serde_json::to_value(ChatConfig::default())?;
+                config["embedding"] =
+                    serde_json::to_value(hippocampus::embedding::Config::default())?;
+                config["statement_snapshot"] =
+                    serde_json::to_value(hippocampus::StatementSnapshotConfig::default())?;
+                println!("{}", serde_json::to_string_pretty(&config)?);
                 return Ok(());
             }
+            "--init-trace-epoch" if !init_trace_epoch => init_trace_epoch = true,
             "--db" => db = Some(PathBuf::from(args.next().ok_or("--db requires a path")?)),
             "--owner" => {
                 owner = args.next().ok_or("--owner requires an ID")?;
@@ -330,6 +339,14 @@ fn main() -> PersistenceResult<()> {
                 ));
             }
             "--drain-enrichment" if !drain => drain = true,
+            "--drain-embeddings" if !drain_embeddings => drain_embeddings = true,
+            "--max-batches" if max_batches.is_none() => {
+                max_batches = Some(
+                    args.next()
+                        .ok_or("--max-batches requires a count")?
+                        .parse::<usize>()?,
+                );
+            }
             "--max-jobs" if max_jobs.is_none() => {
                 max_jobs = Some(
                     args.next()
@@ -343,12 +360,44 @@ fn main() -> PersistenceResult<()> {
             _ => return Err(format!("unknown argument {arg}; use --help").into()),
         }
     }
+    if init_trace_epoch {
+        if db.is_none()
+            || !owner_explicit
+            || config_explicit
+            || drain
+            || drain_embeddings
+            || max_jobs.is_some()
+            || max_batches.is_some()
+            || enrich_source.is_some()
+            || tool_call.is_some()
+            || arguments_file.is_some()
+        {
+            return Err(
+                "--init-trace-epoch requires explicit --db/--owner and no other operation/config"
+                    .into(),
+            );
+        }
+        let dir = std::env::var_os("PMR_TRACE_DIR")
+            .filter(|s| !s.is_empty())
+            .ok_or("--init-trace-epoch requires PMR_TRACE_DIR")?;
+        println!(
+            "{}",
+            hippocampus::diagnostics::init_trace_epoch(
+                db.as_deref().unwrap(),
+                &owner,
+                std::path::Path::new(&dir)
+            )?
+        );
+        return Ok(());
+    }
     config.validate()?;
     if tool_call.is_some() || arguments_file.is_some() {
         if tool_call.is_none()
             || arguments_file.is_none()
             || drain
             || max_jobs.is_some()
+            || drain_embeddings
+            || max_batches.is_some()
             || enrich_source.is_some()
         {
             return Err(
@@ -357,6 +406,22 @@ fn main() -> PersistenceResult<()> {
         }
         if db.is_none() || !owner_explicit {
             return Err("CLI tool calls require explicit --db and --owner".into());
+        }
+    }
+    if drain_embeddings || max_batches.is_some() {
+        if !drain_embeddings
+            || max_batches.is_none()
+            || drain
+            || max_jobs.is_some()
+            || enrich_source.is_some()
+        {
+            return Err("choose --drain-embeddings --max-batches N or another command".into());
+        }
+        if db.is_none() || !owner_explicit || !config_explicit || !config.embedding.enabled {
+            return Err("embedding maintenance requires explicit --db, --owner, --config with embedding.enabled=true".into());
+        }
+        if max_batches.is_some_and(|count| !(1..=100).contains(&count)) {
+            return Err("--max-batches must be between 1 and 100".into());
         }
     }
     if drain || max_jobs.is_some() || enrich_source.is_some() {
@@ -398,11 +463,19 @@ fn main() -> PersistenceResult<()> {
         println!("{}", serde_json::to_string(&result)?);
         return Ok(());
     }
+    if drain_embeddings {
+        println!(
+            "{}",
+            serde_json::to_string(&service.drain_embeddings(max_batches.unwrap())?)?
+        );
+        return Ok(());
+    }
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?
         .block_on(async {
             let _background = service.start_background()?;
+            let _embedding = service.start_embedding_background()?;
             let server = Server {
                 service: Arc::new(Mutex::new(service)),
                 prepares: Arc::new(Mutex::new(HashMap::new())),
@@ -459,7 +532,7 @@ mod tests {
         };
         let body = resumed.structured_content.unwrap();
         assert_eq!(body["source"]["status"], "stored");
-        assert_eq!(body["recall"]["version"], "recall.v6");
+        assert_eq!(body["recall"]["version"], "recall.v11");
         assert_eq!(body["recall"]["semantic_judgment"], "skipped");
         assert!(server.prepares.lock().unwrap().is_empty());
         let store = SqliteMemoryStore::open_operation(&path, "prepare-timeout".into()).unwrap();
@@ -486,7 +559,7 @@ mod tests {
             (
                 "new",
                 Some(
-                    json!({"source":{"status":"stored"},"enrichment":{},"recall":{"version":"recall.v6","current_message":"原话"}}),
+                    json!({"source":{"status":"stored"},"enrichment":{},"recall":{"version":"recall.v11","current_message":"原话"}}),
                 ),
             ),
             (

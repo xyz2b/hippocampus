@@ -53,25 +53,29 @@
     "must": {
      "current": "yes"
     }
-   },
+   }
+  ],
+  "compute": null,
+  "forbid_facts": [
    {
     "record_ids": [
      4
     ],
-    "sources": [
-     "s-4"
-    ],
+    "sources": [],
     "must": {
-     "current": "no"
+     "current": "yes"
     }
    }
-  ],
-  "compute": null
+  ]
  },
  "must_not": [
   "上海 current=yes",
   "忽略未整理的南京原文",
   "判为 conflict（先后变化不是冲突）"
  ],
- "note": "用户裁定（2026-10-03）：原文明确“已经搬到”，必须 supported；南京来自未整理原文，grade 由代码标为 uncommitted。"
+ "note": "用户裁定（2026-10-03）：原文明确“已经搬到”，必须 supported；南京来自未整理原文，grade 由代码标为 uncommitted。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

@@ -1,0 +1,57 @@
+{
+  "decisions": [
+    {
+      "candidate": 0,
+      "status": "decided",
+      "action": "state_change",
+      "targets": [
+        122
+      ],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-610"
+          },
+          "quote": {
+            "text": "我的书房灯是冷白光。"
+          }
+        },
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-611"
+          },
+          "quote": {
+            "text": "我已经把书房灯换成了暖白光，我使用木制书架。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    },
+    {
+      "candidate": 1,
+      "status": "decided",
+      "action": "new",
+      "targets": [],
+      "resolves_relations": [],
+      "basis": [
+        {
+          "source": {
+            "kind": "stored",
+            "source_id": "s-611"
+          },
+          "quote": {
+            "text": "我已经把书房灯换成了暖白光，我使用木制书架。"
+          }
+        }
+      ],
+      "effective": null,
+      "relation_scope": null,
+      "pending_reason": null
+    }
+  ]
+}

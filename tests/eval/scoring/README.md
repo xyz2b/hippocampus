@@ -42,3 +42,18 @@ AF2/AF3：`expect_common.status` 可为单值或非空集合（common.v1 使用 
 从 AC2、两轮定点的原始 run.json/target-plan.json 和当前 confirmed 复核台账重算，不读取已有最终报告作为答案。校验两份计划均绑定原 AC2 的 SHA-256，断言63题59通过/4失败/0待复核以及准确失败集合。最小数据路径及来源见 [历史归档](../end_to_end/README.md)。
 
 当前严格回放仍为235复用/59缺口/0发送，63题未录制，不计通过；历史59/4不能补齐当前缺口。补录须另行授权。
+
+## AF255 问题级人工确认
+
+历史 `review_ledger.json` 及 59/4 离线检查保持不变。AF255 使用独立 `af255-review-ledger.json`（可通过 `compare.py --question-ledger PATH` 指定）。报告 JSON 中 `af255.review_queue` 列出完整 binding：题目与现有期望、实际模型请求/原始响应、写入快照、完整最终宿主输出；key 是规范 JSON 的 SHA-256，不只绑定输出摘要。结构化来源 ID 规范化，原话不替换。同 binding 复用判断；输入、标签或任意最终输出字段变化都产生新 key。
+
+```json
+{"version":"eval.e2e.question-review@1","entries":{
+  "sha256:<完整key>":{"binding":"复制该队列项的完整binding对象",
+    "decision":"accepted","reviewer":"姓名","reason":"核对所有事实、额外输出、极性、条件、时间、人物及来源"}
+}}
+```
+
+`binding` 必须为队列中的完整对象，上例字符串仅为填写提示。`decision` 为 accepted/rejected；可附 `category=R1` 标注已人工确认的规划错误。自动字段正确也先 pending_review，只有已确认的 accepted 才 human_confirmed；已知自动失败/缺项和机械失败不能人工豁免。原 common.v1 通过/失败仍单列，禁止把人工确认率与自动通过率混算。机械失败保留队列和具体规则。新台账不预填通过项。
+
+子集报告分开15题评分分母与48题未选择，以及未录制；对比旧基线只作参考。R1 operation 与标注不符仅是待核查诊断，代码不据此推断语义错误。R4 延迟用原始远端录制毫秒数，按计算/非计算分列；不把回放墙钟当线上速度。

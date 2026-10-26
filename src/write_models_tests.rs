@@ -21,7 +21,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         String::from_utf8_lossy(&output.stderr)
     );
     let cases: Vec<Json> = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(cases.len(), 10);
+    assert_eq!(cases.len(), 11);
     for case in cases {
         let db = Db::new();
         let mut ctx = context();
@@ -70,7 +70,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
         provider.client.transport = Some(Arc::new(move |request| {
             let body: Json =
                 serde_json::from_slice(request.body().unwrap().as_bytes().unwrap()).unwrap();
-            if body["text"]["format"]["name"] == "w3_v3" {
+            if body["text"]["format"]["name"] == "w3_v6" {
                 let store = SqliteMemoryStore::open(&path, UserId::from("alice")).unwrap();
                 assert!(
                     store
@@ -129,7 +129,7 @@ fn grounding_process_fixtures_pass_new_stages_without_a_port() {
             let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
             assert!(input.get("model").is_none());
             assert_eq!(input["current_user_message"], case["text"]);
-            if request["text"]["format"]["name"] == "w3_v3" {
+            if request["text"]["format"]["name"] == "w3_v6" {
                 assert_eq!(
                     input["candidates"][0]["candidate"],
                     case["w1"]["candidates"][0]
@@ -321,7 +321,7 @@ fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
                 &models.w3,
                 effort,
                 ModelStage::W3,
-                "w3_v3",
+                "w3_v6",
                 W3_PROMPT,
                 json!({"fixture":true}),
                 w3_schema(),
@@ -377,7 +377,7 @@ fn af105_w3_effort_changes_keep_budget_policy_and_spent_calls() {
             &models.w3,
             ReasoningEffort::Low,
             ModelStage::W3,
-            "w3_v3",
+            "w3_v6",
             W3_PROMPT,
             json!({"fixture":true}),
             w3_schema(),
@@ -694,7 +694,7 @@ fn third_revision_w1_prompt_covers_remaining_relation_and_qualifier_errors() {
         "every candidate copies that whole sentence",
         "negative-direction relation such as avoids",
         "every other memory_type requires strength=null",
-        "calendar time actually expressed",
+        "observation-relative, historical or future temporal qualifiers",
         "kind=relative, unit=month and signed offset",
     ] {
         assert!(W1_PROMPT.contains(rule), "missing W1 rule: {rule}");
@@ -1888,6 +1888,9 @@ fn run_all(db: &Db, key: &str, provider: &WriteModelProvider) -> Json {
 
 // Use the sample's model response, rebinding only database-assigned source/record IDs.
 fn w4_case(db: &Db, extra: bool) -> (String, Json, Json) {
+    w4_case_with_history(db, extra, &["我曾提到咖啡。"])
+}
+fn w4_case_with_history(db: &Db, extra: bool, history: &[&str]) -> (String, Json, Json) {
     let sample: Json = serde_json::from_str(include_str!(
         "../tests/eval/w4/samples/w4_10_reinforce.json"
     ))
@@ -1911,7 +1914,7 @@ fn w4_case(db: &Db, extra: bool) -> (String, Json, Json) {
     } else {
         text.into()
     };
-    let key = db.start(&text);
+    let key = db.start_turn(&text, "turn", history);
     let state = db.open().read().unwrap();
     let mut upstream =
         json!({"memory_requests":[],"candidates":[sample["input"]["candidates"][0]["candidate"]]});
@@ -1956,7 +1959,7 @@ fn w3_for(upstream: &Json) -> Json {
 
 #[test]
 fn entity_registration_during_each_model_preserves_independent_candidates() {
-    for stage in ["w1_v3", "w3_v3", "w4_v4"] {
+    for stage in ["w1_v5", "w3_v6", "w4_v5"] {
         let db = Db::new();
         let first = "我喜欢浅蓝围巾。";
         let old_key = db.start_turn(first, "seed-entity", &[]);
@@ -2242,10 +2245,10 @@ fn w4_fixture_closes_the_model_pipeline_with_three_sends_and_reopen() {
         json!(memories[0].id)
     );
     let request = &sent.lock().unwrap()[2];
-    assert_eq!(request["text"]["format"]["name"], "w4_v4");
+    assert_eq!(request["text"]["format"]["name"], "w4_v5");
     assert_eq!(request["text"]["format"]["strict"], true);
     let input: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
-    assert_eq!(input["contract"], "w4.v4");
+    assert_eq!(input["contract"], "w4.v5");
     let mut old = request.clone();
     old["text"]["format"]["name"] = json!("w4_v2");
     let mut old_input = input.clone();
@@ -3134,7 +3137,7 @@ fn w4_unrelated_source_and_audit_survive_source_deletion() {
     let old = state.sources[&old_key].id.clone();
     let id = &state.sources[&key].id;
     let text = crate::lexical::body(&state.sources[&key]).unwrap();
-    let binding = json!({"contract":"w4.v4","sources":{id:{"text":text,"history":[]}}});
+    let binding = json!({"contract":"w4.v5","sources":{id:{"text":text,"history":[]}}});
     let decision = json!({"decisions":[{
         "candidate":0,"status":"decided","action":"new","targets":[],"resolves_relations":[],
         "basis":[{"source":{"kind":"stored","source_id":id},"quote":{"text":text}}],
@@ -3299,12 +3302,12 @@ fn w4_late_old_source_deletion_cannot_restore_raw_audit_or_input_copies() {
 #[test]
 fn prompts_distinguish_assertions_and_intentions_without_rewriting_quotes() {
     for rule in [
-        "value.quote.text exactly",
-        "including final punctuation",
-        "never by shortening a generic fact value",
+        "value.text must equal value.quote.text, a continuous original span within sentence",
+        "this one assertion sufficiently. It need not be the shortest span",
+        "this quote is continuous within the full sentence",
         "Output each assertion",
-        "each copying the whole",
-        "does not merge different types or qualifiers",
+        "every candidate copies that whole sentence",
+        "a shared sentence does not merge different assertions",
         "do not use a relation describing an accomplished",
     ] {
         assert!(W1_PROMPT.contains(rule), "{rule}");
@@ -3329,7 +3332,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W1_PROMPT,
             vec![
-                "w1.v3",
+                "w1.v5",
                 "speech=plan and memory_type=fact",
                 "completed booking or purchase",
                 "Kinship refers",
@@ -3340,7 +3343,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W3_PROMPT,
             vec![
-                "w3.v3",
+                "w3.v6",
                 "user really",
                 "qualifier present only in sentence",
                 "cannot be supported",
@@ -3349,7 +3352,7 @@ fn m15_prompts_pin_plan_and_subject_semantics_without_example_sentences() {
         (
             W4_PROMPT,
             vec![
-                "w4.v4",
+                "w4.v5",
                 "plan change or cancellation",
                 "automatically cancels a booking",
                 "normally uses state_change",
@@ -3381,8 +3384,8 @@ fn m15_write_contract_versions_bind_stages_and_change_requests_without_model_id_
     assert_eq!(requests.len(), 2);
     let state = db.open().read().unwrap();
     for (i, (stage, version, schema, old_schema)) in [
-        ("w1", "w1.v3", "w1_v3", "w1_v2"),
-        ("w3", "w3.v3", "w3_v3", "w3_v2"),
+        ("w1", "w1.v5", "w1_v5", "w1_v2"),
+        ("w3", "w3.v6", "w3_v6", "w3_v4"),
     ]
     .iter()
     .enumerate()
@@ -3727,7 +3730,7 @@ fn subject_confirmation_calls_fresh_w3_without_w1_and_replay_spends_nothing() {
     assert_eq!(final_sent.lock().unwrap().len(), 1);
     assert_eq!(db.calls(), 3);
     let request = &final_sent.lock().unwrap()[0];
-    assert_eq!(request["text"]["format"]["name"], "w3_v3");
+    assert_eq!(request["text"]["format"]["name"], "w3_v6");
     let payload: Json = serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
     assert_eq!(payload["generation"], 1);
     assert_eq!(payload["utc_offset_seconds"], 28_800);
@@ -3838,7 +3841,7 @@ fn history_import_models_receive_null_original_time_and_frozen_before_parent_pro
             assert_eq!(payload["source_provenance"]["before_source_id"], parent);
             assert_eq!(payload["current_user_message"], text);
             assert!(payload.get("model").is_none());
-            if request["text"]["format"]["name"] == "w3_v3" {
+            if request["text"]["format"]["name"] == "w3_v6" {
                 assert_eq!(
                     payload["candidates"][0]["time_resolutions"][0]["status"],
                     "unknown"
@@ -3972,7 +3975,7 @@ fn af83_all_write_stage_requests_bind_nonempty_schema() {
     );
     let requests = sent.lock().unwrap();
     assert_eq!(requests.len(), 3);
-    for (request, name) in requests.iter().zip(["w1_v3", "w3_v3", "w4_v4"]) {
+    for (request, name) in requests.iter().zip(["w1_v5", "w3_v6", "w4_v5"]) {
         assert_eq!(request["text"]["format"]["name"], name);
         assert_nonempty_model_request(request);
     }
@@ -4027,13 +4030,13 @@ fn af83_w1_diagnostics_are_private_and_do_not_retry() {
             .iter()
             .filter(|r| {
                 r["kind"] == "model_check"
-                    && r["data"]["stage"] == "W1"
-                    && r["data"]["phase"] == "decode"
+                    && r["body"]["stage"] == "W1"
+                    && r["body"]["phase"] == "decode"
             })
             .collect();
         assert_eq!(failures.len(), 3);
         for event in failures {
-            let d = &event["data"];
+            let d = &event["body"];
             assert_eq!(d["status"], "failed");
             assert_eq!(d["error"], "w1_invalid_output");
             assert!(!d.to_string().contains("private-diagnostic-marker"));
@@ -4083,4 +4086,573 @@ fn af83_w1_diagnostics_are_private_and_do_not_retry() {
         assert_eq!(db.calls(), 1);
     }
     assert!(!diagnostics::incomplete());
+}
+
+#[test]
+fn af119_provider_identity_is_checked_before_reusing_write_stages() {
+    let db = Db::new();
+    let key = db.start("我使用玻璃茶壶。");
+    let upstream = w1("我使用玻璃茶壶。");
+    let (mut first, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    first.models.w1 = "gpt-6.1-sol".into();
+    first.models.w3 = "gpt-6.1-sol".into();
+    first.models.reasoning_effort = [
+        ("w1".into(), ReasoningEffort::Medium),
+        ("w3".into(), ReasoningEffort::Medium),
+    ]
+    .into();
+    first.client.provider = Some(super::super::model_provider::ProviderConfig {
+        protocol: super::super::model_provider::ProviderProtocol::OpenaiResponses,
+        structured_mode: Default::default(),
+        base_url_env: "FIXTURE_BASE".into(),
+        api_key_env: None,
+        model_revision: Some("revision-one".into()),
+        thinking: None,
+        context_tokens: None,
+        context_proof: None,
+    });
+    let claim = w4_claim_round(&mut db.open(), &key).unwrap();
+    let (ctx, source) = inputs(&db.open(), &key, &claim);
+    first
+        .provide(&mut db.open(), &claim, &ctx, &source)
+        .unwrap();
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    first
+        .provide(&mut db.open(), &claim, &ctx, &source)
+        .unwrap();
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    assert_eq!(stages["w1"]["binding"]["provider"]["model"], "gpt-6.1-sol");
+    assert_eq!(stages["w1"]["binding"]["provider"]["schema"], w1_schema());
+    first.client.provider.as_mut().unwrap().model_revision = Some("revision-two".into());
+    assert!(
+        first
+            .provide(&mut db.open(), &claim, &ctx, &source)
+            .unwrap_err()
+            .to_string()
+            .contains("needs_rejudge")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+fn af193_extraction(scene: &Json) -> Json {
+    let candidates = scene["input"]["candidates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| {
+            let mut c = c.clone();
+            c["subject"] = json!({"entity_id":c["subject"]});
+            c["sentence"] = json!({"text":c["sentence"]});
+            c["value"] = json!({"kind":"text","text":c["value"],"quote":{"text":c["value"]}});
+            for time in c["times"].as_array_mut().unwrap() {
+                time["quote"] = json!({"text":time["quote"]});
+                time["anchor"] = json!("said_on");
+            }
+            c
+        })
+        .collect::<Vec<_>>();
+    json!({"candidates":candidates,"memory_requests":[]})
+}
+
+#[test]
+fn af193_unknown_times_survive_w2_w5_reopen_without_invented_endpoints() {
+    let scenes: Vec<Json> =
+        serde_json::from_str(include_str!("../tests/eval/write_stage/af193/samples.json")).unwrap();
+    for scene in &scenes {
+        let db = Db::new();
+        let text = scene["input"]["text"].as_str().unwrap();
+        let key = db.start_turn(text, "af193", &[]);
+        let extraction = af193_extraction(scene);
+        let mut review = w3_for(&extraction);
+        for (c, r) in extraction["candidates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .zip(review["reviews"].as_array_mut().unwrap())
+        {
+            if c["memory_type"] == "episode" {
+                r["episode_value"] = json!("useful");
+            }
+        }
+        let (mut provider, sent) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&extraction.to_string())),
+                Ok(envelope(&review.to_string())),
+            ],
+        );
+        let config = ChatConfig::default();
+        provider.context.known_predicates = config.predicates;
+        provider.context.predicate_memory_types = config.memory_types;
+        let result = run(&db, &key, &provider);
+        assert_eq!(
+            result["enrichment"]["status"], "committed",
+            "{scene}: {result}"
+        );
+        assert_eq!(sent.lock().unwrap().len(), 2);
+        let state = db.open().read().unwrap();
+        let memories = state.repository.list_by_owner(&"alice".into()).unwrap();
+        assert_eq!(
+            memories.len(),
+            extraction["candidates"].as_array().unwrap().len()
+        );
+        for memory in memories {
+            assert!(memory.temporal.valid_from.is_none());
+            assert!(memory.temporal.valid_to.is_none());
+            assert_eq!(memory.status, MemoryStatus::Active);
+            let contract = crate::w5_record_contract(&state, memory.id).unwrap();
+            let original = extraction["candidates"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|c| {
+                    c["relation"] == contract.candidate.relation
+                        && c["value"] == serde_json::to_value(&contract.candidate.value).unwrap()
+                })
+                .unwrap();
+            assert_eq!(
+                serde_json::to_value(&contract.candidate).unwrap(),
+                *original
+            );
+            for (time, resolution) in contract
+                .candidate
+                .times
+                .iter()
+                .zip(&contract.time_resolutions)
+            {
+                assert!(text.contains(&time.quote.text));
+                if matches!(time.interp, crate::contract::Interp::Unknown {}) {
+                    assert_eq!(
+                        resolution.status,
+                        crate::contract::ResolutionStatus::Unknown
+                    );
+                    assert!(resolution.start.is_none() && resolution.end_exclusive.is_none());
+                }
+            }
+            if scene["id"] == "t05" {
+                assert!(contract.candidate.times.is_empty());
+            }
+        }
+    }
+    for prompt in [W1_PROMPT, W3_PROMPT] {
+        assert!(prompt.contains("earlier utterance"));
+        assert!(prompt.contains("interp.kind=unknown"));
+        for scene in &scenes {
+            assert!(!prompt.contains(scene["input"]["text"].as_str().unwrap()));
+        }
+    }
+}
+
+#[test]
+fn af193_stage_identity_prevents_old_results_from_becoming_current() {
+    for stage in ["w1", "w3"] {
+        for part in ["missing", "prompt", "schema"] {
+            let db = Db::new();
+            let text = "我偏好青铜色笔筒。";
+            let key = db.start_turn(text, "identity", &[]);
+            let (provider, sent) = mocked(
+                &db,
+                vec![
+                    Ok(envelope(&w1(text).to_string())),
+                    Ok(envelope(&w3().to_string())),
+                ],
+            );
+            let mut store = db.open();
+            let claim = w4_claim_round(&mut store, &key).unwrap();
+            let (ctx, input) = inputs(&store, &key, &claim);
+            provider.provide(&mut store, &claim, &ctx, &input).unwrap();
+            provider.provide(&mut store, &claim, &ctx, &input).unwrap();
+            assert_eq!(sent.lock().unwrap().len(), 2);
+            let state = store.read().unwrap();
+            for (role, prompt, schema) in [
+                ("w1", W1_PROMPT, w1_schema()),
+                ("w3", W3_PROMPT, w3_schema()),
+            ] {
+                assert_eq!(
+                    state.sources[&key].result.as_ref().unwrap()["w4_model_stages"][role]["binding"]
+                        ["stage_identity"],
+                    stage_identity(prompt, &schema)
+                );
+            }
+            for request in sent.lock().unwrap().iter() {
+                let payload: Json =
+                    serde_json::from_str(request["input"].as_str().unwrap()).unwrap();
+                assert!(payload.get("stage_identity").is_none());
+            }
+            store
+                .transaction(|state| {
+                    let binding = &mut state
+                        .sources
+                        .get_mut(&key)
+                        .unwrap()
+                        .result
+                        .as_mut()
+                        .unwrap()["w4_model_stages"][stage]["binding"];
+                    if part == "missing" {
+                        binding.as_object_mut().unwrap().remove("stage_identity");
+                    } else {
+                        binding["stage_identity"][part] = json!("previous identity");
+                    }
+                    Ok(())
+                })
+                .unwrap();
+            let before = store.read().unwrap();
+            let err = provider
+                .provide(&mut store, &claim, &ctx, &input)
+                .unwrap_err()
+                .to_string();
+            assert!(err.starts_with("needs_rejudge"), "{stage}/{part}: {err}");
+            let after = store.read().unwrap();
+            assert_eq!(before.sources[&key].result, after.sources[&key].result);
+            assert_eq!(before.sources[&key].request, after.sources[&key].request);
+            assert_eq!(sent.lock().unwrap().len(), 2);
+        }
+    }
+}
+
+#[test]
+fn af193_frozen_w1_keeps_its_production_identity_on_a_new_operation() {
+    let db = Db::new();
+    let text = "我偏好青铜色笔筒。";
+    let key = db.start_turn(text, "frozen-identity", &[]);
+    let (provider, sent) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&w1(text).to_string())),
+            Ok(envelope(&w3().to_string())),
+        ],
+    );
+    let mut store = db.open();
+    let claim = w4_claim_round(&mut store, &key).unwrap();
+    let (mut ctx, input) = inputs(&store, &key, &claim);
+    let batch = provider.provide(&mut store, &claim, &ctx, &input).unwrap();
+    ctx.previous_w2 = Some(batch.w2);
+    store
+        .transaction(|state| {
+            let stage = &mut state
+                .sources
+                .get_mut(&key)
+                .unwrap()
+                .result
+                .as_mut()
+                .unwrap()["w4_model_stages"]["w1"];
+            stage["binding"]
+                .as_object_mut()
+                .unwrap()
+                .remove("stage_identity");
+            stage["operation_id"] = json!("previous operation");
+            Ok(())
+        })
+        .unwrap();
+    let before = store.read().unwrap().sources[&key].result.clone();
+    assert!(
+        provider
+            .provide(&mut store, &claim, &ctx, &input)
+            .unwrap_err()
+            .to_string()
+            .contains("frozen W1 prompt or schema changed")
+    );
+    assert_eq!(before, store.read().unwrap().sources[&key].result);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn af326_w4_provider_keeps_existing_w1_w3_checkpoints() {
+    let db = Db::new();
+    let (key, upstream, _) = w4_case(&db, false);
+    let (provider, requests) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+        ],
+    );
+    let (claim, _, _, _) = ready_w4(&db, &key, &provider);
+    let state = db.open().read().unwrap();
+    let stages = &state.sources[&key].result.as_ref().unwrap()["w4_model_stages"];
+    let config: crate::model_provider::ProviderConfig = serde_json::from_value(json!({
+        "protocol":"openai_responses", "base_url_env":"OPENAI_BASE_URL", "api_key_env":"OPENAI_API_KEY"
+    })).unwrap();
+    let mixed = provider
+        .client
+        .clone()
+        .with_role_providers([("w4".into(), config)].into(), None);
+    for (name, stage, model, schema) in [
+        ("w1", ModelStage::W1, &provider.models.w1, w1_schema()),
+        ("w3", ModelStage::W3, &provider.models.w3, w3_schema()),
+    ] {
+        let prior = &stages[name]["binding"];
+        assert!(prior.get("provider").is_none());
+        let mut binding = prior.clone();
+        if let Some(identity) = mixed
+            .stage_provider_binding_with(stage, model, provider.models.effort(name), schema, |_| {
+                panic!("unconfigured writer binding must not read provider env")
+            })
+            .unwrap()
+        {
+            binding["provider"] = identity;
+        }
+        assert_eq!(
+            serde_json::to_vec(prior).unwrap(),
+            serde_json::to_vec(&binding).unwrap()
+        );
+        assert!(
+            crate::commit::w4_load_model_stage(&db.open(), &claim, name, &binding)
+                .unwrap()
+                .is_some(),
+            "existing checkpoint must load, not needs_rejudge"
+        );
+    }
+    assert_eq!(requests.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn af331_w3_coverage_requires_nonempty_exact_gaps() {
+    for (status, missing, accepted) in [
+        ("gaps", json!([]), false),
+        ("gaps", json!([{"text":"咖啡"}]), true),
+        ("complete", json!([]), true),
+        ("gaps", json!([{"text":"原文不存在"}]), false),
+    ] {
+        let db = Db::new();
+        let text = "我喜欢咖啡。";
+        let key = db.start(text);
+        let mut review = w3();
+        review["coverage"] = json!({"status":status,"missing":missing});
+        let (provider, _) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&w1(text).to_string())),
+                Ok(envelope(&review.to_string())),
+            ],
+        );
+        let result = run(&db, &key, &provider);
+        if accepted {
+            assert_eq!(result["enrichment"]["candidates"][0]["status"], "committed");
+        } else {
+            assert_eq!(result["enrichment"]["status"], "failed");
+            assert_eq!(
+                db.open().read().unwrap().sources[&key].error.as_deref(),
+                Some("model_invalid_output")
+            );
+            assert_eq!(run(&db, &key, &provider)["enrichment"]["status"], "failed");
+        }
+        assert_eq!(provider.client.model_call_count(), 2);
+    }
+}
+
+#[test]
+fn af331_old_w3_v4_checkpoint_requires_rejudge_without_send() {
+    for (stage, current, old) in [
+        ("w3", "w3.v6", "w3.v4"),
+        ("w1", "w1.v5", "w1.v4"),
+        ("w3", "w3.v6", "w3.v5"),
+    ] {
+        let db = Db::new();
+        let (key, upstream, _) = w4_case(&db, false);
+        let (provider, requests) = mocked(
+            &db,
+            vec![
+                Ok(envelope(&upstream.to_string())),
+                Ok(envelope(&w3_for(&upstream).to_string())),
+            ],
+        );
+        let (claim, ctx, _, _) = ready_w4(&db, &key, &provider);
+        db.open()
+            .transaction(|state| {
+                let binding = &mut state
+                    .sources
+                    .get_mut(&key)
+                    .unwrap()
+                    .result
+                    .as_mut()
+                    .unwrap()["w4_model_stages"][stage]["binding"];
+                assert_eq!(binding["contract"], current);
+                binding["contract"] = json!(old);
+                binding["input"]["contract"] = json!(old);
+                Ok(())
+            })
+            .unwrap();
+        let (_, input) = inputs(&db.open(), &key, &claim);
+        let error = provider
+            .provide(&mut db.open(), &claim, &ctx, &input)
+            .err()
+            .expect("v4 checkpoint must not be reused");
+        assert!(error.to_string().contains("needs_rejudge"), "{error}");
+        assert_eq!(requests.lock().unwrap().len(), 2);
+        assert_eq!(
+            db.open().read().unwrap().sources[&key]
+                .result
+                .as_ref()
+                .unwrap()["w4_model_stages"][stage]["binding"]["contract"],
+            old
+        );
+    }
+}
+
+#[test]
+fn af342_scope_and_coverage_are_semantic_rules_not_new_admission_fields() {
+    assert!(W1_PROMPT.contains("including temporary or conditional ones"));
+    assert!(W1_PROMPT.contains("with an identifiable project scope"));
+    assert!(W1_PROMPT.contains("assertion by assertion in mixed messages"));
+    assert!(W3_PROMPT.contains("Omitting only out-of-scope discussion is complete, not gaps"));
+    assert!(W3_PROMPT.contains("extraction scope is not"));
+    assert!(W3_PROMPT.contains("do not report gaps with missing=[]"));
+    assert!(!w1_schema().to_string().contains("in_scope"));
+    assert!(!w3_schema().to_string().contains("in_scope"));
+}
+
+#[test]
+fn af371_w4_proves_frozen_sources_and_records_and_output_inherits_them() {
+    struct Sink(std::sync::Arc<std::sync::Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let (key, upstream, output) = w4_case_with_history(&db, false, &[]);
+    let (provider, _) = mocked(
+        &db,
+        vec![
+            Ok(envelope(&upstream.to_string())),
+            Ok(envelope(&w3_for(&upstream).to_string())),
+            Ok(envelope(&output.to_string())),
+        ],
+    );
+    let rows = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let result = crate::diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        run_all(&db, &key, &provider)
+    });
+    assert_eq!(result["enrichment"]["status"], "committed");
+    let events: Vec<Json> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let start = events
+        .iter()
+        .find(|e| e["kind"] == "model_start" && e["body"]["stage"] == "w4_v5")
+        .unwrap();
+    let end = events
+        .iter()
+        .find(|e| e["kind"] == "model_end" && e["body"]["call_id"] == start["body"]["call_id"])
+        .unwrap();
+    assert_eq!(start["content_deps"], end["content_deps"]);
+    assert_eq!(
+        start["content_deps"]["deps_complete"], true,
+        "{}",
+        start["content_deps"]
+    );
+    assert_eq!(
+        start["content_deps"]["sources"].as_object().unwrap().len(),
+        2
+    );
+    assert_eq!(
+        start["content_deps"]["memories"].as_object().unwrap().len(),
+        1
+    );
+    assert!(events.iter().any(|e| e["kind"] == "w5_commit"));
+}
+
+#[test]
+fn af383_w3_skip_and_code_only_w4_have_explicit_summaries() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    for mode in ["empty", "rejected", "new"] {
+        let db = Db::new();
+        let text = "我使用铅笔。";
+        let key = db.start(text);
+        let mut input = if mode == "empty" {
+            json!({"memory_requests":[],"candidates":[]})
+        } else {
+            w1(text)
+        };
+        if mode == "rejected" {
+            input["candidates"][0]["value"]["quote"]["text"] = json!("原文不存在的片段");
+        }
+        let mut responses = vec![Ok(envelope(&input.to_string()))];
+        if mode == "new" {
+            responses.push(Ok(envelope(&w3().to_string())));
+        }
+        let (provider, sent) = mocked(&db, responses);
+        let rows = Arc::new(Mutex::new(Vec::new()));
+        crate::diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+            let _operation = crate::diagnostics::Operation::enter("af383-write");
+            crate::diagnostics::record("run_start", || json!({"tool":"memory_remember"}));
+            crate::diagnostics::record("source_receipt", || {
+                db.open().read().unwrap().sources[&key].status()
+            });
+            run_all(&db, &key, &provider)
+        });
+        let events: Vec<Json> = String::from_utf8(rows.lock().unwrap().clone())
+            .unwrap()
+            .lines()
+            .map(|s| serde_json::from_str(s).unwrap())
+            .collect();
+        let root = events.iter().find(|e| e["kind"] == "run_start").unwrap();
+        for event in events.iter().filter(|e| {
+            matches!(
+                e["kind"].as_str(),
+                Some("model_start" | "w2_summary" | "w4_plan" | "w5_commit")
+            )
+        }) {
+            assert_eq!(event["meta"]["parent_trace_id"], root["meta"]["trace_id"]);
+        }
+        let plan = events
+            .iter()
+            .find(|e| e["kind"] == "w4_plan")
+            .expect("code-only W4 still has a plan summary");
+        assert_eq!(plan["body"]["model_called"], false);
+        assert_eq!(plan["body"]["held"], 0);
+        assert_eq!(
+            plan["body"]["not_admitted"],
+            if mode == "rejected" { 1 } else { 0 }
+        );
+        assert_eq!(
+            plan["body"]["reason"],
+            if mode == "new" {
+                "all_new_code_decided"
+            } else {
+                "no_supported_candidates"
+            }
+        );
+        if mode != "new" {
+            let skipped = events.iter().find(|e| e["kind"] == "w3_skipped").unwrap();
+            assert_eq!(
+                skipped["body"]["reason"],
+                if mode == "empty" {
+                    "no_candidates"
+                } else {
+                    "all_rejected"
+                }
+            );
+        } else {
+            assert!(events.iter().any(|e| e["kind"] == "w5_commit"));
+        }
+        assert_eq!(
+            sent.lock().unwrap().len(),
+            if mode == "new" { 2 } else { 1 }
+        );
+    }
 }

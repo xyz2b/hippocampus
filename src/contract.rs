@@ -1,4 +1,4 @@
-//! 第一阶段契约类型（docs/architecture/contracts.md §1、§2.1、§2.3 w3.v3、§2.4 w4.v4、§3.1 r1.v2、§3.2）。
+//! 第一阶段契约类型（docs/architecture/contracts.md：W1 v5、W3 v6、W4 v5、R1 v2、R4 v7）。
 //!
 //! JSON 字段名与契约逐字一致，拒绝未知字段，`null` 与缺省按契约区分；包含 W3 输出核验。
 //! Quote 是否逐字存在、日历是否合法、目录与任务是否允许等机械校验属于 W2（§2.2），
@@ -293,7 +293,7 @@ pub enum CandidateKind {
     Retraction,
 }
 
-/// §2.1 w1.v3 候选。`relation` 为目录内关系 ID 或通用关系 `fact`；`memory_type` 由代码对照
+/// §2.1 w1.v5 候选。`relation` 为目录内关系 ID 或通用关系 `fact`；`memory_type` 由代码对照
 /// 关系目录核对（W2），这里保留模型给出的文本。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -429,7 +429,7 @@ pub struct RequestReview {
     pub verdict: Verdict,
 }
 
-/// §2.3 w3.v3；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
+/// §2.3 w3.v6；形状及逐项覆盖由代码核验，不改变旧 SourceReview。
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct W3Output {
@@ -467,6 +467,9 @@ impl W3Output {
         text: &str,
     ) -> Result<ReviewedW3, W3InvalidOutput> {
         use std::collections::BTreeSet;
+        if self.coverage.status == CoverageStatus::Gaps && self.coverage.missing.is_empty() {
+            return Err(W3InvalidOutput);
+        }
         let expected: BTreeSet<_> = batch
             .candidates
             .iter()
@@ -873,6 +876,19 @@ pub struct RecallSnapshot {
     pub source_revision: u64,
 }
 
+/// Bootstrap-only stored statements; no per-question applicability/current judgment.
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct StatementSnapshot {
+    pub records: Vec<CurrentRecordView>,
+    pub snapshot: RecallSnapshot,
+    pub read_at: i64,
+    pub unfinished_sources: usize,
+    pub coverage_unknown: bool,
+    pub truncated: bool,
+    pub notice: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum RecallStatus {
@@ -900,7 +916,7 @@ pub enum Qualification {
     Unknown,
 }
 
-/// §3.3 r4.v6；不把写入侧 insufficient/contradicted 枚举混入召回判断。
+/// §3.3 r4.v7；不把写入侧 insufficient/contradicted 枚举混入召回判断。
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum R4Verdict {
@@ -1090,8 +1106,32 @@ pub struct RecallOutput {
     pub clarification: Option<RecallClarification>,
     pub semantic_judgment: SemanticJudgment,
     pub completeness: RecallCompleteness,
+    pub retrieval: RecallRetrieval,
     pub degraded_reasons: Vec<String>,
     pub snapshot: RecallSnapshot,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub statement_snapshot: Option<StatementSnapshot>,
+}
+
+/// Host-only index availability; never establishes evidence or enters R4's completeness.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum RetrievalStatus {
+    #[default]
+    Disabled,
+    NotNeeded,
+    Ready,
+    Pending,
+    Unavailable,
+}
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default)]
+#[serde(deny_unknown_fields)]
+pub struct RecallRetrieval {
+    pub status: RetrievalStatus,
+    pub sources_total: usize,
+    pub sources_indexed: usize,
+    pub segments_total: usize,
+    pub segments_indexed: usize,
 }
 
 /// §3.2 w4.v2 输入用的完整记录视图：CurrentRecordView 的全部字段，加结束时间 `end`
@@ -1167,7 +1207,7 @@ pub enum Unprojectable {
     NotUserStatement(Speech),
     UnknownMemoryType(String),
     MissingValue,
-    /// 普通非方向型否定断言，或任何类型的方向未知；计划的极性保留在完整候选中。
+    /// 否定 episode 等不可投影断言，或任何类型的方向未知；计划极性保留在完整候选中。
     Polarity(Polarity),
     UnknownStrength,
 }
@@ -1243,6 +1283,11 @@ impl ContractCandidate {
             // 撤回本身就是否定，不是否定事实。
             (Polarity::Negate, false, CandidateKind::Retraction) => None,
             (Polarity::Negate, false, CandidateKind::Assertion) if plan => None,
+            (Polarity::Negate, false, CandidateKind::Assertion)
+                if c.speech == Speech::UserStatement && memory_type == MemoryType::Fact =>
+            {
+                Some(crate::Polarity::Negative)
+            }
             (Polarity::Negate, false, CandidateKind::Assertion) => {
                 return Err(Unprojectable::Polarity(Polarity::Negate));
             }

@@ -403,6 +403,18 @@ pub(crate) fn entity_hints(query: &str, entities: &[Entity]) -> BTreeMap<EntityI
         .collect()
 }
 
+/// A name occurrence is a retrieval hint, never an entity binding. No DF or alias inference.
+pub(crate) fn mentions_entity(text: &str, entity: &Entity) -> bool {
+    let words = format!(" {} ", tokens(text).join(" "));
+    std::iter::once(&entity.canonical_name)
+        .chain(&entity.aliases)
+        .filter(|name| name.trim().chars().count() >= 2)
+        .any(|name| {
+            let phrase = tokens(name).join(" ");
+            !phrase.is_empty() && words.contains(&format!(" {phrase} "))
+        })
+}
+
 /// Natural queries share the index tokenizer; adjacent Han pairs avoid single-character noise.
 // ponytail: literal bigrams plus registered aliases, no synonym inference; measure gaps before adding a planner.
 pub(crate) fn natural_phrases(query: &str, entities: &[Entity]) -> Vec<String> {
@@ -996,5 +1008,141 @@ impl SqliteMemoryStore {
         };
         result["duration_ms"] = json!(started.elapsed().as_millis());
         Ok(result)
+    }
+}
+
+/// Frozen opt-in lexical channel; statistics are only over caller-authorized unique sources.
+pub const LEXICAL_DF_PERCENT: usize = 20;
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct LexicalDf {
+    pub documents: usize,
+    pub terms: Vec<LexicalDfTerm>,
+    entities: Vec<Vec<String>>,
+}
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct LexicalDfTerm {
+    pub term: String,
+    pub df: usize,
+    pub kept: bool,
+}
+impl LexicalDf {
+    /// The production index tokenizer; also used to check experimental corpus parity.
+    pub fn index_text(text: &str) -> String {
+        tokens(text).join(" ")
+    }
+    pub fn new<'a>(
+        hint: &str,
+        entities: &[Entity],
+        documents: impl IntoIterator<Item = &'a str>,
+    ) -> Self {
+        let documents: Vec<_> = documents
+            .into_iter()
+            .map(|s| format!(" {} ", Self::index_text(s)))
+            .collect();
+        let terms = natural_phrases(hint, entities)
+            .into_iter()
+            .map(|term| {
+                let df = documents
+                    .iter()
+                    .filter(|d| d.contains(&format!(" {term} ")))
+                    .count();
+                let kept = Self::kept(df, documents.len());
+                LexicalDfTerm { term, df, kept }
+            })
+            .collect();
+        Self {
+            documents: documents.len(),
+            terms,
+            entities: entity_hints(hint, entities).into_values().collect(),
+        }
+    }
+    pub fn kept(df: usize, documents: usize) -> bool {
+        documents > 0
+            && (df <= 1 || (df as u128) * 100 <= (documents as u128) * (LEXICAL_DF_PERCENT as u128))
+    }
+    pub fn score(&self, text: &str) -> (usize, usize) {
+        self.score_words(&format!(" {} ", Self::index_text(text)))
+    }
+    fn score_words(&self, words: &str) -> (usize, usize) {
+        let hit = |term: &str| {
+            self.terms.iter().any(|t| t.kept && t.term == term)
+                && words.contains(&format!(" {term} "))
+        };
+        (
+            self.entities
+                .iter()
+                .filter(|names| names.iter().any(|n| hit(n)))
+                .count(),
+            self.terms.iter().filter(|t| t.kept && hit(&t.term)).count(),
+        )
+    }
+    pub fn matches(&self, text: &str) -> bool {
+        self.score(text).1 > 0
+    }
+    pub(crate) fn matches_segment(&self, text: &str, start: usize, end: usize) -> bool {
+        self.score_words(&format!(" {} ", index_tokens(text, start, end).join(" ")))
+            .1
+            > 0
+    }
+}
+
+#[cfg(test)]
+mod hybrid_df_tests {
+    use super::*;
+    #[test]
+    fn rare_terms_survive_small_corpora_without_zero_hit_votes() {
+        for (df, docs, kept) in [
+            (1, 4, true),
+            (2, 4, false),
+            (1, 5, true),
+            (2, 10, true),
+            (0, 0, false),
+        ] {
+            assert_eq!(LexicalDf::kept(df, docs), kept);
+        }
+        let df = LexicalDf::new("住在", &[], ["住在阜阳", "甲", "乙", "丙"]);
+        assert!(df.matches("住在阜阳"));
+        assert!(!df.matches("甲"));
+    }
+
+    #[test]
+    fn partial_western_tokens_at_segment_edges_cannot_cast_a_vote() {
+        let df = LexicalDf::new(
+            "Rust",
+            &[],
+            ["Rustacean", "Java", "Python", "Ruby", "Swift"],
+        );
+        assert!(df.matches("Rust"));
+        assert!(!df.matches_segment("Rustacean", 0, 4));
+        assert!(!df.matches_segment("xRust", 1, 5));
+        assert!(df.matches_segment("Rust Java", 0, 4));
+    }
+}
+
+#[cfg(test)]
+mod af296_tests {
+    use super::*;
+    #[test]
+    fn complete_registered_names_only_without_df_or_single_character_aliases() {
+        let entity = Entity {
+            id: "child".into(),
+            owner_id: "owner".into(),
+            entity_type: crate::EntityType::Person,
+            canonical_name: "小雨".into(),
+            aliases: vec!["女儿".into(), "An Na".into(), "雨".into(), " 雨 ".into()],
+        };
+        for text in ["我给女儿报名。", "今天小雨。", "AN   NA joined"] {
+            assert!(mentions_entity(text, &entity), "{text}");
+        }
+        for text in [
+            "雨",
+            "雨宝",
+            "女同学儿子",
+            "Anna joined",
+            "an natasha",
+            "child",
+        ] {
+            assert!(!mentions_entity(text, &entity), "{text}");
+        }
     }
 }

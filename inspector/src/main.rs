@@ -1,6 +1,8 @@
-//! Local read-only Inspector. No dependency on the memory runtime or model clients.
+//! Local read-only Inspector. Uses runtime pure projections only; never opens a runtime store.
 mod compat;
+mod current;
 mod live;
+mod privacy;
 mod trace;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use bytes::Bytes;
@@ -427,7 +429,7 @@ async fn run() -> Result<(), String> {
     if let Some(path) = export {
         println!(
             "{}",
-            python_json(&trace::export_runtime(&path, true)?, false)
+            python_json(&live::export_trace(&config, &path)?, false)
         );
         return Ok(());
     }

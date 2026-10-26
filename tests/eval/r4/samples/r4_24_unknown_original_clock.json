@@ -1,0 +1,184 @@
+{
+ "id": "r4_24_unknown_original_clock",
+ "contract": "r4.v7",
+ "label_status": "reviewed",
+ "split": "holdout",
+ "focus": "补录无可信原话时间不借接收日定年",
+ "input": {
+  "format": "recall.full@1",
+  "owner_id": "eval",
+  "request": {
+   "request_id": "stage-eval",
+   "query": "我去过哪里，是什么时候？",
+   "context": [],
+   "task_id": null,
+   "at": 1790956800
+  },
+  "plan": {
+   "need": "judge",
+   "current_evidence": "query_only",
+   "type": "open",
+   "subject": {
+    "entity_id": "self"
+   },
+   "relation": "fact",
+   "conditions": [],
+   "time": null,
+   "plan": {
+    "op": "list",
+    "filter": {
+     "relation": "fact",
+     "time": null
+    },
+    "unit": null
+   }
+  },
+  "entities": [
+   {
+    "id": "self",
+    "owner_id": "eval",
+    "entity_type": "Person",
+    "canonical_name": "本人",
+    "aliases": []
+   }
+  ],
+  "relations": [
+   "fact"
+  ],
+  "subject_ids": null,
+  "utc_offset_seconds": 28800,
+  "sources": {
+   "n4": {
+    "text": "我3月15日去了白沙湾。",
+    "said_on": null
+   }
+  },
+  "evidence": {
+   "current_message": {
+    "source_id": null,
+    "text": "我去过哪里，是什么时候？",
+    "said_on": "2026-10-03",
+    "sequence": null,
+    "enrichment": "not_stored",
+    "memory_requests": []
+   },
+   "records": [
+    {
+     "format": "current",
+     "id": 401,
+     "stored_status": "active",
+     "termination_reason": null,
+     "ended": "not_ended",
+     "candidate": {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": {
+       "entity_id": "self"
+      },
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "kind": "text",
+       "text": "我3月15日去了白沙湾。",
+       "quote": {
+        "text": "我3月15日去了白沙湾。"
+       }
+      },
+      "sentence": {
+       "text": "我3月15日去了白沙湾。"
+      },
+      "polarity": "affirm",
+      "strength": null,
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": "event",
+        "quote": {
+         "text": "3月15日"
+        },
+        "interp": {
+         "kind": "unknown"
+        },
+        "anchor": "said_on"
+       }
+      ]
+     },
+     "evidence": [
+      {
+       "source": {
+        "kind": "stored",
+        "source_id": "n4"
+       },
+       "quote": {
+        "text": "我3月15日去了白沙湾。"
+       }
+      }
+     ],
+     "grade": "committed",
+     "said_on": null,
+     "time_resolutions": [
+      {
+       "status": "unknown",
+       "start": null,
+       "end_exclusive": null,
+       "precision": "unknown"
+      }
+     ],
+     "history": [],
+     "open_relations": [],
+     "update": {
+      "status": "judged",
+      "reasons": []
+     }
+    }
+   ],
+   "raw": [],
+   "relations": [],
+   "completeness": {
+    "retrieval_truncated": false,
+    "pending_related_sources": 0,
+    "pending_updates": 0,
+    "enrichment_gaps": 0,
+    "plan_complete": true
+   }
+  }
+ },
+ "expect": {
+  "verdict": "supported",
+  "facts": [
+   {
+    "record_ids": [
+     401
+    ],
+    "sources": [
+     "n4"
+    ],
+    "must": {
+     "time_quotes": [
+      "3月15日"
+     ],
+     "time_kinds": [
+      "unknown"
+     ]
+    }
+   }
+  ],
+  "compute": null,
+  "must_not": [
+   "借本请求、接收日或其他来源补年份",
+   "把未知时间换成精确日期",
+   "因年份未知否认有出处的去过陈述"
+  ]
+ },
+ "must_not": [
+  "借本请求、接收日或其他来源补年份",
+  "把未知时间换成精确日期",
+  "因年份未知否认有出处的去过陈述"
+ ],
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ },
+ "note": "AF227 虚构完整输入；语义检查需人工确认，自动字段通过不等于完整语义通过。"
+}

@@ -107,6 +107,8 @@ fn r4_input(sample: &Value) -> Result<recall_adapter::R4Input, String> {
         source_dates,
         source_texts: serde_json::from_value(sample["source_texts"].clone())
             .map_err(|e| e.to_string())?,
+        utc_offset_seconds: 28_800,
+        source_context: BTreeMap::new(),
     })
 }
 
@@ -173,7 +175,7 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
             batch(&sample["input"])?;
             (
                 ModelStage::W3,
-                "w3_v3",
+                "w3_v6",
                 write_models::W3_PROMPT,
                 write_models::w3_schema(),
             )
@@ -182,7 +184,7 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
             let input = r4_input(sample)?;
             (
                 ModelStage::R4,
-                "r4_v6",
+                "r4_v7",
                 recall_models::R4_PROMPT,
                 recall_models::r4_schema_for_plan(&input.plan),
             )
@@ -192,9 +194,9 @@ pub fn request(stage: &str, sample: &Value, tokens: u32) -> Result<Value, String
     // Preserve the frozen production fields; only the current protocol binding changes.
     let mut input = sample["input"].clone();
     input["contract"] = json!(match stage {
-        ModelStage::W3 => "w3.v3",
+        ModelStage::W3 => "w3.v6",
         ModelStage::R1 => "r1.v2",
-        ModelStage::R4 => "r4.v6",
+        ModelStage::R4 => "r4.v7",
         _ => unreachable!(),
     });
     let mut request = structured_request(
@@ -320,9 +322,9 @@ fn af11_exact_inputs_bound_sources_and_seven_call_cap() {
         let request = request(stage, sample, 16384).unwrap();
         let mut expected = sample["input"].clone();
         expected["contract"] = json!(match stage.as_str() {
-            "w3" => "w3.v3",
+            "w3" => "w3.v6",
             "r1" => "r1.v2",
-            "r4" => "r4.v6",
+            "r4" => "r4.v7",
             _ => unreachable!(),
         });
         assert_eq!(
@@ -410,9 +412,9 @@ fn fixed_inputs_are_exactly_the_33_original_failed_requests() {
         let request = request(&stage, &sample, 16384).unwrap();
         let mut expected = sample["input"].clone();
         expected["contract"] = json!(match stage.as_str() {
-            "w3" => "w3.v3",
+            "w3" => "w3.v6",
             "r1" => "r1.v2",
-            "r4" => "r4.v6",
+            "r4" => "r4.v7",
             _ => unreachable!(),
         });
         assert_eq!(

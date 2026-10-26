@@ -25,21 +25,45 @@
   "requests": []
  },
  "expect": {
-  "reviews": [
+  "alternatives": [
    {
-    "candidate": 0,
-    "verdict": "contradicted",
-    "aspects": [
-     "speech"
+    "reviews": [
+     {
+      "candidate": 0,
+      "verdict": "contradicted",
+      "aspects": [
+       "speech"
+      ],
+      "episode_value": "not_applicable"
+     }
     ],
-    "episode_value": "not_applicable"
+    "coverage": {
+     "status": "complete",
+     "missing_contains": [],
+     "scored": false
+    },
+    "request_reviews": []
+   },
+   {
+    "reviews": [
+     {
+      "candidate": 0,
+      "verdict": "contradicted",
+      "aspects": [
+       "condition"
+      ],
+      "episode_value": "not_applicable"
+     }
+    ],
+    "coverage": {
+     "status": "complete",
+     "missing_contains": [],
+     "scored": false
+    },
+    "request_reviews": []
    }
-  ],
-  "coverage": {
-   "status": "complete",
-   "missing_contains": []
-  },
-  "request_reviews": []
+  ]
  },
- "note": "value 也不被支持（并没有在深圳工作）；aspects 至少含 speech，是否另含 value 不扣分。"
+ "note": "AF311：完整分支接受 contradicted[speech] 或 contradicted[condition]，不要求穷举所有问题。",
+ "label_revision": "AF311"
 }

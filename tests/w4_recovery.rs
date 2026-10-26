@@ -50,7 +50,7 @@ fn v8_migrates_to_v9_without_enrolling_legacy_tasks() {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |r| r.get(0))
         .unwrap();
-    assert_eq!(version, 10);
+    assert_eq!(version, 11);
     assert!(
         !(1..=8).contains(&version),
         "the released v8 writer rejects this version"
@@ -473,10 +473,9 @@ fn ordering_diagnostic_survives_rollback_and_writer_failure() {
         }
         let file = std::fs::read_dir(&root)
             .unwrap()
-            .next()
-            .unwrap()
-            .unwrap()
-            .path();
+            .map(|entry| entry.unwrap().path())
+            .find(|path| path.extension().is_some_and(|ext| ext == "jsonl"))
+            .expect("diagnostic JSONL file");
         let rows = std::fs::read_to_string(file)
             .unwrap()
             .lines()
@@ -487,8 +486,15 @@ fn ordering_diagnostic_survives_rollback_and_writer_failure() {
             .filter(|row| row["kind"] == "w4_order_blocked")
             .collect::<Vec<_>>();
         assert_eq!(events.len(), 1);
-        assert_eq!(events[0]["run_id"], "trace-order");
-        let data = &events[0]["data"];
+        assert_eq!(events[0]["trace_version"], "2");
+        assert!(
+            events[0]["meta"]["trace_id"]
+                .as_str()
+                .unwrap()
+                .starts_with("trace-")
+        );
+        assert!(!events[0]["meta"].to_string().contains("trace-order"));
+        let data = &events[0]["body"];
         assert_eq!(data["stage"], "save_plan");
         assert_eq!(
             data["reason"],
@@ -1039,7 +1045,7 @@ fn real_v8_receipt_replays_unchanged_and_future_v10_is_rejected() {
         .unwrap(),
         before
     );
-    connection.pragma_update(None, "user_version", 11).unwrap();
+    connection.pragma_update(None, "user_version", 12).unwrap();
     assert!(SqliteMemoryStore::open(&db.0, UserId::from("alice")).is_err());
     assert!(SqliteMemoryStore::open_read_only(&db.0, UserId::from("alice")).is_err());
 }
@@ -1130,4 +1136,78 @@ fn plan_must_be_durable_and_complete_before_any_group_can_commit() {
             .values()
             .all(|u| u.status == UpdateStatus::Pending)
     );
+}
+
+#[test]
+fn af371_commit_trace_probe() {
+    if std::env::var_os("AF371_COMMIT_TRACE_PROBE").is_none() {
+        return;
+    }
+    let db = Db::new();
+    let _operation = diagnostics::Operation::enter("af371-host-operation");
+    let (claim, _, plan) = planned(&db, "s");
+    assert!(matches!(
+        w4_commit_group(&mut db.open(), &claim, &plan.groups[0]).unwrap(),
+        W5Outcome::Committed(_)
+    ));
+    assert!(matches!(
+        w4_commit_group(&mut db.open(), &claim, &plan.groups[0]).unwrap(),
+        W5Outcome::AlreadyApplied(_)
+    ));
+}
+
+#[test]
+fn af371_w5_only_follows_successful_commit_and_full_snapshots_are_opt_in() {
+    for full in ["0", "1"] {
+        let root = std::env::temp_dir().join(format!("af371-{}", diagnostics::new_id()));
+        let trace = root.join("trace");
+        std::fs::create_dir_all(&trace).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&trace, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+
+        let result = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "af371_commit_trace_probe", "--nocapture"])
+            .env("AF371_COMMIT_TRACE_PROBE", "1")
+            .env("PMR_TRACE_DIR", &trace)
+            .env("PMR_TRACE_FULL_SNAPSHOTS", full)
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let events: Vec<serde_json::Value> = std::fs::read_dir(&trace)
+            .unwrap()
+            .flat_map(|p| {
+                std::fs::read_to_string(p.unwrap().path())
+                    .unwrap()
+                    .lines()
+                    .map(|s| serde_json::from_str(s).unwrap())
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        let commits: Vec<_> = events.iter().filter(|e| e["kind"] == "w5_commit").collect();
+        assert_eq!(commits.len(), 1, "replay must not claim a new commit");
+        assert!(commits[0]["body"]["revision"].is_u64());
+        assert!(
+            !commits[0]["body"]["product_ids"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+        assert!(commits[0]["meta"]["attempt_id"].is_string());
+        let transactions: Vec<_> = events
+            .iter()
+            .filter(|e| e["kind"] == "transaction_committed")
+            .collect();
+        for event in transactions {
+            assert_eq!(event["body"]["after"].is_object(), full == "1");
+            assert_eq!(event["content_deps"]["deps_complete"], false);
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

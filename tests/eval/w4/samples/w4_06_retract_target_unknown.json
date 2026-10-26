@@ -1,8 +1,9 @@
 {
   "id": "w4_06_retract_target_unknown",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 1,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "撤回目标不明：代码保留 pending，不调用 W4",
   "boundary_with": "w4_05_retract",
   "sources": {
@@ -75,6 +76,6 @@
     ]
   },
   "rejected_alternatives": [],
-  "note": "contracts 2.4：retraction 找不到目标时由代码保留 pending/target_unknown，不调用 W4；通用 fact 范围不完整，原因中同时含 update_scope_incomplete（contracts 1.6：范围不完整必含该原因）。",
+  "note": "contracts 2.4：retraction 找不到目标时由代码保留 pending/target_unknown，不调用 W4；本次固定输入的授权范围不完整，原因中同时含 update_scope_incomplete（contracts 1.6：范围不完整必含该原因）。",
   "qualifier_marks": {}
 }

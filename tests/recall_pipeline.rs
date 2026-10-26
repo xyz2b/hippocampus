@@ -26,7 +26,7 @@ impl Drop for Db {
     }
 }
 fn query(id: &str) -> Value {
-    json!({"query":"我记录了哪些内容？","recall_version":"recall.v6","request_id":id,"at":AT,"offline":true})
+    json!({"query":"我记录了哪些内容？","recall_version":"recall.v11","request_id":id,"at":AT,"offline":true})
 }
 fn turn(id: &str) -> Value {
     json!({"text":"我在学习陶艺。","session_id":"recall-fixture","turn_id":id,"capture_source":true,"observed_at":AT})
@@ -85,7 +85,7 @@ fn recall_pipeline_explicit_version_single_output_and_offline_replay() {
         .call("memory_recall", query("one"), || false)
         .unwrap();
     let frozen: hippocampus::contract::RecallOutput = serde_json::from_value(out.clone()).unwrap();
-    assert_eq!(frozen.version, "recall.v6");
+    assert_eq!(frozen.version, "recall.v11");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(out["semantic_judgment"], "skipped");
     assert_eq!(out["raw"].as_array().unwrap().len(), 1);
@@ -112,6 +112,16 @@ fn recall_pipeline_explicit_version_single_output_and_offline_replay() {
             .to_string()
             .contains("contract_version_unsupported")
     );
+    for tool in ["memory_recall", "memory_prepare", "memory_validate_answer"] {
+        let args = json!({"recall_version":"recall.v6"});
+        assert!(
+            service
+                .call(tool, args, || false)
+                .unwrap_err()
+                .to_string()
+                .contains("contract_version_unsupported")
+        );
+    }
     let mut missing = query("bad");
     missing.as_object_mut().unwrap().remove("request_id");
     assert!(service.call("memory_recall", missing, || false).is_err());
@@ -142,7 +152,7 @@ fn recall_pipeline_prepare_three_fragments_default_and_explicit_new_write() {
         assert_eq!(out.as_object().unwrap().len(), 3);
         assert_eq!(out["source"]["status"], "stored");
         assert_eq!(out["enrichment"]["status"], "not_requested");
-        assert_eq!(out["recall"]["version"], "recall.v6");
+        assert_eq!(out["recall"]["version"], "recall.v11");
         serde_json::from_value::<hippocampus::contract::RecallOutput>(out["recall"].clone())
             .unwrap();
         assert!(out.get("remember").is_none());
@@ -191,7 +201,7 @@ fn recall_pipeline_offline_validator_rejects_source_only_claim_and_reopen() {
     let out = service
         .call("memory_validate_answer", validate.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v6");
+    assert_eq!(out["version"], "recall.v11");
     assert_eq!(out["approved"], false);
     assert!(out.get("safe_answer").is_none());
     let mut mismatch = validate.clone();
@@ -250,7 +260,7 @@ fn recall_pipeline_cli_offline_dispatch_and_bootstrap() {
             String::from_utf8_lossy(&result.stderr)
         );
         let out: Value = serde_json::from_slice(&result.stdout).unwrap();
-        assert_eq!(out["version"], "recall.v6");
+        assert_eq!(out["version"], "recall.v11");
         assert_eq!(out["semantic_judgment"], "skipped");
         assert!(out.get("answer_contract").is_none());
         if bootstrap {
@@ -340,4 +350,23 @@ fn mcp_online_recall_http_concurrency_barriers() {
         String::from_utf8_lossy(&out.stdout),
         String::from_utf8_lossy(&out.stderr)
     );
+}
+
+#[test]
+fn af206_previous_recall_version_is_explicitly_unsupported() {
+    let db = Db::new();
+    let mut service = db.service(serde_json::json!({"enrichment_mode":"off"}));
+    for tool in ["memory_recall", "memory_prepare", "memory_validate_answer"] {
+        assert!(
+            service
+                .call(
+                    tool,
+                    serde_json::json!({"recall_version":"recall.v7"}),
+                    || false
+                )
+                .unwrap_err()
+                .to_string()
+                .contains("contract_version_unsupported")
+        );
+    }
 }

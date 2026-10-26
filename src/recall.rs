@@ -207,12 +207,63 @@ impl SafetySnapshot {
     }
 }
 
+/// 离线检索诊断；独立于冻结证据结构，普通 assemble 不收集。
+#[derive(Clone, Debug, Default, serde::Serialize)]
+pub struct RetrievalDiagnostic {
+    pub stages: BTreeMap<String, Vec<MemoryId>>,
+    pub raw_stages: BTreeMap<String, Vec<String>>,
+    pub relation_stages: BTreeMap<String, Vec<String>>,
+    pub requested_relation: Option<String>,
+    pub effective_relation: Option<String>,
+    pub relation_revoked: bool,
+    pub enumeration: Option<String>,
+    pub fts_called: bool,
+    pub fts_error: bool,
+    pub ranking: Vec<RetrievalRank>,
+    pub lexical_df: Option<crate::LexicalDf>,
+    pub lexical_ranked: Vec<MemoryId>,
+    pub vector_ranked: Vec<MemoryId>,
+    pub fused_ranked: Vec<MemoryId>,
+    pub selection: BTreeMap<MemoryId, Vec<String>>,
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct RetrievalRank {
+    pub id: MemoryId,
+    pub entity_hits: usize,
+    pub phrase_hits: usize,
+    pub received_sequence: u64,
+}
+
+fn diagnostic_stage(
+    diagnostic: &mut Option<RetrievalDiagnostic>,
+    name: &str,
+    ids: impl Iterator<Item = MemoryId>,
+) {
+    if let Some(d) = diagnostic {
+        d.stages.insert(name.into(), ids.collect());
+    }
+}
+
+fn diagnostic_raw(diagnostic: &mut Option<RetrievalDiagnostic>, name: &str, raw: &[RawEvidence]) {
+    if let Some(d) = diagnostic {
+        d.raw_stages.insert(
+            name.into(),
+            raw.iter().map(|r| r.source_id.clone()).collect(),
+        );
+    }
+}
+
 /// R4 的注入位置：消费本次组装，沿用原请求、R1 标记与读快照，不另做一次检索。
 pub struct Assembly {
+    pub(crate) trace_deps: crate::diagnostics::ContentDeps,
+    trace_retrieval: serde_json::Value,
+    retrieval_diagnostic: Option<RetrievalDiagnostic>,
     pub request: RecallRequest,
     pub plan: r1::Plan,
     pub evidence: RecallEvidence,
     pub snapshot: RecallSnapshot,
+    pub retrieval: RecallRetrieval,
     pub(crate) safety: SafetySnapshot,
     utc_offset_seconds: i32,
     source_dates: BTreeMap<String, Option<String>>,
@@ -224,6 +275,34 @@ pub struct Assembly {
 }
 
 impl Assembly {
+    pub(crate) fn trace_evidence(&self, trace: &crate::diagnostics::TraceContext) {
+        let trace = trace.clone().with_deps(self.trace_deps.clone());
+        trace.record("retrieval", || self.trace_retrieval.clone());
+        trace.record("r3_evidence", || {
+            let records: Vec<_> = self
+                .evidence
+                .records
+                .iter()
+                .take(128)
+                .map(|r| r.id())
+                .collect();
+            let raw: Vec<_> = self
+                .evidence
+                .raw
+                .iter()
+                .take(128 - records.len())
+                .map(|r| &r.source_id)
+                .collect();
+            serde_json::json!({"records":self.evidence.records.len(),"raw":self.evidence.raw.len(),
+                "record_ids":records,"source_ids":raw,"id_limit":128,
+                "ids_truncated":self.evidence.records.len()+self.evidence.raw.len()>128,
+                "completeness":self.evidence.completeness})
+        });
+    }
+    pub fn retrieval_diagnostic(&self) -> Option<&RetrievalDiagnostic> {
+        self.retrieval_diagnostic.as_ref()
+    }
+
     /// 人工离线输出与后续模型提供者共用此入口；生产不读取评测夹具。
     pub fn finish_r4(
         self,
@@ -239,6 +318,15 @@ impl Assembly {
         self,
         store: &SqliteMemoryStore,
         response: Result<&str, JudgmentFailure>,
+    ) -> PersistenceResult<(RecallOutput, Option<r4::OutputAudit>)> {
+        self.finish_r4_with_trace(store, response, None)
+    }
+
+    pub(crate) fn finish_r4_with_trace(
+        self,
+        store: &SqliteMemoryStore,
+        response: Result<&str, JudgmentFailure>,
+        trace: Option<&crate::diagnostics::TraceContext>,
     ) -> PersistenceResult<(RecallOutput, Option<r4::OutputAudit>)> {
         if self.plan.need() == R1Need::ContextOnly {
             return self
@@ -258,8 +346,12 @@ impl Assembly {
             final_output: None,
         });
         let result = response.and_then(|text| {
-            let raw = crate::diagnostics::checked("R4", "decode", r4::decode(text))
-                .map_err(|_| JudgmentFailure::InvalidOutput)?;
+            let decoded = r4::decode(text);
+            let raw = match trace {
+                Some(trace) => trace.checked("R4", "decode", decoded),
+                None => crate::diagnostics::checked("R4", "decode", decoded),
+            }
+            .map_err(|_| JudgmentFailure::InvalidOutput)?;
             let final_output = r4::assemble_old_basis(&raw, &context, &|id| {
                 source_state
                     .sources
@@ -271,7 +363,7 @@ impl Assembly {
             });
             audit.as_mut().unwrap().final_output = Some(final_output.clone());
             let evaluated = r4::evaluate_detailed(final_output, &context);
-            crate::diagnostics::record("model_check", || {
+            let validation_event = || {
                 let mut event = serde_json::json!({"stage":"R4","phase":"validate",
                     "status":if evaluated.is_ok() {"completed"} else {"failed"},
                     "error":evaluated.as_ref().err().map(|d| d.error.to_string())});
@@ -281,7 +373,12 @@ impl Assembly {
                     event["cause"] = serde_json::json!(diagnostic.cause);
                 }
                 event
-            });
+            };
+            if let Some(trace) = trace {
+                trace.record("model_check", validation_event);
+            } else {
+                crate::diagnostics::record("model_check", validation_event);
+            }
             let evaluated = evaluated.map_err(|_| JudgmentFailure::InvalidOutput)?;
             audit.as_mut().unwrap().final_output = Some(evaluated.output.clone());
             Ok(evaluated)
@@ -365,7 +462,7 @@ impl Assembly {
         self.check_snapshot(store)?;
         Ok((
             RecallOutput {
-                version: "recall.v6".into(),
+                version: "recall.v11".into(),
                 request: self.request,
                 status,
                 current_message: self.evidence.current_message,
@@ -378,8 +475,10 @@ impl Assembly {
                 clarification,
                 semantic_judgment: semantic,
                 completeness: self.evidence.completeness,
+                retrieval: self.retrieval,
                 degraded_reasons: reasons,
                 snapshot: self.snapshot,
+                statement_snapshot: None,
             },
             audit,
         ))
@@ -390,17 +489,7 @@ impl Assembly {
             .evidence
             .records
             .iter()
-            .filter(|r| {
-                f.record_ids.contains(&r.id())
-                    || f.supersedes_record_ids.contains(&r.id())
-                    || f.evidence.iter().any(|e| {
-                        r4::record_evidence(r).iter().any(|re| {
-                            e.source == re.source
-                                && (locate_quote(&re.quote.text, &e.quote.text).is_some()
-                                    || locate_quote(&e.quote.text, &re.quote.text).is_some())
-                        })
-                    })
-            })
+            .filter(|r| f.record_ids.contains(&r.id()) || f.supersedes_record_ids.contains(&r.id()))
             .collect();
         // 无法定位的遗漏可能改变当前结论，不能用词法不命中证明无关。
         // 仅有截断标记、或完整可见的 queued/failed 原文，不触发此门控。
@@ -417,7 +506,8 @@ impl Assembly {
                 });
         let grade = if f.evidence.iter().all(|e|
             !self.evidence.raw.iter().any(|raw| matches!(&e.source, SourceRef::Stored {source_id} if source_id == &raw.source_id))
-            && self.evidence.records.iter().any(|r| r4::supports_record(e, r)))
+            && !f.record_ids.is_empty()
+            && related.iter().any(|r| f.record_ids.contains(&r.id()) && r4::supports_record(e, r)))
             { RecallGrade::Committed } else { RecallGrade::Uncommitted };
         let mut pending = Vec::new();
         let mut has_pending = false;
@@ -625,7 +715,7 @@ impl Assembly {
         let clarification =
             (!context_only && self.plan.needs_clarification()).then(|| self.clarification(&[]));
         Ok(RecallOutput {
-            version: "recall.v6".into(),
+            version: "recall.v11".into(),
             request: self.request,
             status: if context_only {
                 RecallStatus::ContextOnly
@@ -650,8 +740,10 @@ impl Assembly {
             clarification,
             semantic_judgment: SemanticJudgment::Skipped,
             completeness: self.evidence.completeness,
+            retrieval: self.retrieval,
             degraded_reasons,
             snapshot: self.snapshot,
+            statement_snapshot: None,
         })
     }
 }
@@ -711,7 +803,7 @@ fn record_slot(record: &RecordView) -> Option<(String, String)> {
     }
 }
 
-fn source_in_task(source: &SourceRecord, request: &Request) -> bool {
+pub(crate) fn source_in_task(source: &SourceRecord, request: &Request) -> bool {
     source.enrichment != "deleted"
         && crate::lexical::body(source).is_some()
         && crate::lexical::task(source)
@@ -731,7 +823,11 @@ fn sources_of<'a>(state: &'a PersistedMemoryState, memory: &Memory) -> Vec<&'a S
         .collect()
 }
 
-fn record_in_scope(state: &PersistedMemoryState, memory: &Memory, request: &Request) -> bool {
+pub(crate) fn record_in_scope(
+    state: &PersistedMemoryState,
+    memory: &Memory,
+    request: &Request,
+) -> bool {
     let sources = sources_of(state, memory);
     let origin_allowed =
         crate::w5_record_contract(state, memory.id).is_none_or(|c| match c.source {
@@ -777,7 +873,7 @@ pub(crate) fn projection(state: &PersistedMemoryState, id: MemoryId) -> Option<R
     }
 }
 
-fn enrichment(source: &SourceRecord) -> Option<EnrichmentStatus> {
+pub(crate) fn enrichment(source: &SourceRecord) -> Option<EnrichmentStatus> {
     use EnrichmentStatus::*;
     match source.enrichment.as_str() {
         "stale_requires_review" => Some(NeedsRejudge),
@@ -880,6 +976,55 @@ pub fn assemble(
     plan: &r1::Plan,
     budget: Budget,
 ) -> PersistenceResult<Assembly> {
+    assemble_inner(store, request, plan, budget, false, None)
+}
+
+/// 基线专用观察入口；不改变排序、过滤、裁剪或证据输出。
+pub fn assemble_diagnosed(
+    store: &SqliteMemoryStore,
+    request: &Request,
+    plan: &r1::Plan,
+    budget: Budget,
+) -> PersistenceResult<Assembly> {
+    assemble_inner(store, request, plan, budget, true, None)
+}
+
+/// Injection seam for offline replay; the production callback never reads recordings.
+pub struct Retrieval<'a> {
+    pub config: &'a crate::embedding::Config,
+    pub query: Option<&'a dyn Fn(&str) -> crate::embedding::Result<crate::embedding::QueryVector>>,
+}
+pub fn assemble_with_retrieval(
+    store: &SqliteMemoryStore,
+    request: &Request,
+    plan: &r1::Plan,
+    budget: Budget,
+    retrieval: &Retrieval<'_>,
+    diagnose: bool,
+) -> PersistenceResult<Assembly> {
+    retrieval.config.validate()?;
+    assemble_inner(store, request, plan, budget, diagnose, Some(retrieval))
+}
+
+fn rrf(lexical: &[MemoryId], vector: &[(MemoryId, f64)], seeds: usize) -> BTreeMap<MemoryId, f64> {
+    let mut scores = BTreeMap::new();
+    for ids in [lexical.to_vec(), vector.iter().map(|r| r.0).collect()] {
+        for (rank, id) in ids.into_iter().take(seeds).enumerate() {
+            *scores.entry(id).or_default() += 1.0 / (60.0 + rank as f64 + 1.0);
+        }
+    }
+    scores
+}
+
+fn assemble_inner(
+    store: &SqliteMemoryStore,
+    request: &Request,
+    plan: &r1::Plan,
+    budget: Budget,
+    diagnose: bool,
+    retrieval: Option<&Retrieval<'_>>,
+) -> PersistenceResult<Assembly> {
+    let mut diagnostic = diagnose.then(RetrievalDiagnostic::default);
     if store.owner() != &request.owner
         || request.binding.request_id.trim().is_empty()
         || crate::temporal::parse_iso_date(&request.said_on).is_none()
@@ -910,6 +1055,8 @@ pub fn assemble(
         .filter(|m| record_in_scope(&state, m, request))
         .map(|m| (m.id, m))
         .collect();
+    diagnostic_stage(&mut diagnostic, "owner", all.iter().map(|m| m.id));
+    diagnostic_stage(&mut diagnostic, "trusted_scope", eligible.keys().copied());
     let entities = state.entities.list_by_owner(store.owner());
     let mut hint = std::iter::once(request.binding.query.as_str())
         .chain(request.binding.context.iter().map(String::as_str))
@@ -929,6 +1076,7 @@ pub fn assemble(
         o.query_type == R1Type::Aggregate
             || matches!(o.plan.op, R1Op::Count | R1Op::Sum | R1Op::List)
     });
+    let enabled = retrieval.is_some_and(|r| r.config.enabled);
     let mut relation = plan
         .output
         .as_ref()
@@ -937,11 +1085,40 @@ pub fn assemble(
         R1Subject::Entity(s) => Some(s.entity_id.as_str()),
         _ => None,
     });
+    let mentioned_entity = subject
+        .filter(|id| *id != "self")
+        .and_then(|id| entities.iter().find(|e| e.id.0 == id));
+    let mentions: BTreeSet<_> = eligible
+        .values()
+        .filter(|m| {
+            mentioned_entity.is_some_and(|e| {
+                m.subject_id != e.id
+                    && (match &m.value {
+                        crate::MemoryValue::Entity(id) => *id == e.id,
+                        crate::MemoryValue::Text(text) => crate::lexical::mentions_entity(text, e),
+                        _ => false,
+                    } || m
+                        .evidence
+                        .iter()
+                        .any(|v| crate::lexical::mentions_entity(&v.quote, e)))
+            })
+        })
+        .map(|m| m.id)
+        .collect();
+    diagnostic_stage(
+        &mut diagnostic,
+        "r1_subject_mentions",
+        mentions.iter().copied(),
+    );
     let scoped: Vec<_> = eligible
         .values()
         .copied()
-        .filter(|m| subject.is_none_or(|id| m.subject_id.0 == id))
+        .filter(|m| subject.is_none_or(|id| m.subject_id.0 == id) || mentions.contains(&m.id))
         .collect();
+    diagnostic_stage(&mut diagnostic, "r1_subject", scoped.iter().map(|m| m.id));
+    if let Some(d) = &mut diagnostic {
+        d.requested_relation = relation.map(str::to_owned);
+    }
     let relevance = |m: &Memory| {
         let text = m
             .evidence
@@ -951,6 +1128,11 @@ pub fn assemble(
             .join(" ");
         phrase_score(&text, &phrases)
     };
+    // Enumerate the whole subject scope, never just the model-selected relation.
+    let small_scope = enabled && scoped.len() <= budget.records;
+    if small_scope {
+        relation = None;
+    }
     if let Some(r) = relation {
         let matching: Vec<_> = scoped.iter().filter(|m| m.predicate.0 == r).collect();
         let best = matching.iter().map(|m| relevance(m)).max().unwrap_or(0);
@@ -963,22 +1145,219 @@ pub fn assemble(
             relation = None;
         }
     }
-    let candidates: Vec<_> = scoped
-        .into_iter()
+    let mut candidates: Vec<_> = scoped
+        .iter()
+        .copied()
         .filter(|m| relation.is_none_or(|r| m.predicate.0 == r))
         .collect();
+    diagnostic_stage(
+        &mut diagnostic,
+        "relation_filter",
+        candidates.iter().map(|m| m.id),
+    );
+    if let Some(d) = &mut diagnostic {
+        d.effective_relation = relation.map(str::to_owned);
+        d.relation_revoked = d.requested_relation.is_some() && relation.is_none();
+        d.enumeration = if plan.output.is_none() {
+            Some("r1_not_understood".into())
+        } else if enumerate {
+            Some("aggregate_or_list".into())
+        } else if relation.is_none() && candidates.len() <= budget.records {
+            Some("scope_within_record_budget".into())
+        } else {
+            None
+        };
+    }
     // 小范围实际穷举；大范围仍按词法取候选，不能据 FTS 未截断宣称完整。
     let enumerate = enumerate || (relation.is_none() && candidates.len() <= budget.records);
+    let hybrid = enabled && !enumerate && !request.bootstrap;
+    if hybrid {
+        // Relation is a hint, never a reserved seat or lexical vote in the non-enumeration path.
+        relation = None;
+        candidates = scoped.clone();
+        diagnostic_stage(
+            &mut diagnostic,
+            "relation_filter",
+            candidates.iter().map(|m| m.id),
+        );
+        if let Some(d) = &mut diagnostic {
+            d.effective_relation = None;
+            d.relation_revoked = d.requested_relation.is_some();
+        }
+    }
+    let df_sources: Vec<_> = if hybrid {
+        state
+            .sources
+            .values()
+            .filter(|s| {
+                source_in_task(s, request)
+                    && !source_links
+                        .get(s.id.as_str())
+                        .into_iter()
+                        .flatten()
+                        .any(|m| m.status != MemoryStatus::Deleted && !eligible.contains_key(&m.id))
+                    && (request.subject_ids.is_none()
+                        || source_links.get(s.id.as_str()).is_some_and(|links| {
+                            links.iter().any(|m| eligible.contains_key(&m.id))
+                        }))
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let df = hybrid.then(|| {
+        crate::LexicalDf::new(
+            &hint,
+            &entities,
+            df_sources.iter().map(|s| crate::lexical::body(s).unwrap()),
+        )
+    });
+    let vector_sources: Vec<_> = df_sources
+        .iter()
+        .copied()
+        .filter(|s| {
+            source_links.get(s.id.as_str()).is_none_or(|links| {
+                !links.iter().any(|m| m.status != MemoryStatus::Deleted)
+                    || links
+                        .iter()
+                        .any(|m| candidates.iter().any(|c| c.id == m.id))
+            })
+        })
+        .collect();
+    let cache_started = std::time::Instant::now();
+    let cache = if hybrid {
+        Some(crate::embedding_index::read_snapshot(
+            &tx,
+            store.owner(),
+            &vector_sources,
+            retrieval.unwrap().config.model,
+        ))
+    } else {
+        None
+    };
+    let cache_elapsed_ms = cache_started.elapsed().as_millis();
     // FTS 只是候选提示；旧来源无索引时用同一快照的完整值/片段兜底，不据此认证语义。
-    let hits = if enumerate {
+    let hits = if enumerate || hybrid {
         BTreeSet::new()
     } else {
-        store
-            .search_w4_facts(&tx, &state, &hint, &candidates)
-            .unwrap_or_default()
-            .into_iter()
-            .collect()
+        if let Some(d) = &mut diagnostic {
+            d.fts_called = true;
+        }
+        let result = store.search_w4_facts(&tx, &state, &hint, &candidates);
+        if let Some(d) = &mut diagnostic {
+            d.fts_error = result.is_err();
+        }
+        result.unwrap_or_default().into_iter().collect()
     };
+    diagnostic_stage(&mut diagnostic, "fts_hits", hits.iter().copied());
+    // All source bodies, cached vectors, FTS hits and record mappings share this R3 snapshot.
+    tx.commit()?;
+    let mut metadata = RecallRetrieval {
+        status: if enabled {
+            RetrievalStatus::NotNeeded
+        } else {
+            RetrievalStatus::Disabled
+        },
+        ..Default::default()
+    };
+    let mut vector_rank = Vec::new();
+    if hybrid {
+        metadata.sources_total = vector_sources.len();
+        metadata.segments_total = vector_sources
+            .iter()
+            .map(|s| crate::embedding::segments(crate::lexical::body(s).unwrap()).len())
+            .sum();
+        let query_started = std::time::Instant::now();
+        let query = retrieval
+            .unwrap()
+            .query
+            .ok_or_else(|| "embedding_network_disabled".to_owned())
+            .and_then(|query| query(&request.binding.query))
+            .and_then(|q| {
+                q.check(retrieval.unwrap().config.model)?;
+                Ok(q)
+            });
+        let query_elapsed_ms = query_started.elapsed().as_millis();
+        metadata.status = RetrievalStatus::Unavailable;
+        if let Some(Ok(cache)) = &cache {
+            metadata.segments_indexed = cache.vectors.values().map(Vec::len).sum();
+            metadata.sources_indexed = cache
+                .totals
+                .iter()
+                .filter(|(id, total)| cache.vectors.get(*id).is_some_and(|v| v.len() == **total))
+                .count();
+            if let Ok(query) = &query {
+                if cache.binding.as_ref() == Some(&query.binding) {
+                    let mut record_scores: BTreeMap<MemoryId, f64> = BTreeMap::new();
+                    for (id, vectors) in &cache.vectors {
+                        let source = vector_sources.iter().find(|s| s.id == *id).unwrap();
+                        let body = crate::lexical::body(source).unwrap();
+                        for v in vectors {
+                            let score = v
+                                .vector
+                                .iter()
+                                .zip(&query.vector)
+                                .map(|(a, b)| f64::from(*a) * f64::from(*b))
+                                .sum::<f64>();
+                            for memory in source_links
+                                .get(id.as_str())
+                                .into_iter()
+                                .flatten()
+                                .filter(|m| candidates.iter().any(|c| c.id == m.id))
+                            {
+                                let overlaps = memory
+                                    .evidence
+                                    .iter()
+                                    .filter(|e| {
+                                        e.session_id.0 == source.session_id
+                                            && e.turn_id.0 == source.turn_id
+                                    })
+                                    .filter_map(|e| locate_quote(body, &e.quote))
+                                    .any(|q| v.start < q.end && q.start < v.end);
+                                if overlaps {
+                                    record_scores
+                                        .entry(memory.id)
+                                        .and_modify(|n| *n = n.max(score))
+                                        .or_insert(score);
+                                }
+                            }
+                        }
+                    }
+                    vector_rank = record_scores.into_iter().collect();
+                    vector_rank.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+                } else {
+                    metadata.sources_indexed = 0;
+                    metadata.segments_indexed = 0;
+                }
+                metadata.status = if cache.binding.as_ref() == Some(&query.binding)
+                    && metadata.segments_indexed == metadata.segments_total
+                {
+                    RetrievalStatus::Ready
+                } else {
+                    RetrievalStatus::Pending
+                };
+            }
+        }
+        crate::diagnostics::record("retrieval", || {
+            serde_json::json!({
+                "status": metadata.status,
+                "query_error": query.as_ref().err().map(|e| retrieval_error(e)),
+                "index_state": match &cache {
+                    Some(Err(_)) => "index_read",
+                    Some(Ok(c)) if c.binding.is_none() => "missing",
+                    Some(Ok(c)) if query.as_ref().is_ok_and(|q| c.binding.as_ref() != Some(&q.binding)) => "binding_mismatch",
+                    _ if metadata.segments_indexed < metadata.segments_total => "partial",
+                    _ => "ready",
+                },
+                "query_elapsed_ms": query_elapsed_ms,
+                "cache_elapsed_ms": cache_elapsed_ms,
+                "sources_total": metadata.sources_total,
+                "sources_indexed": metadata.sources_indexed,
+                "segments_total": metadata.segments_total,
+                "segments_indexed": metadata.segments_indexed,
+            })
+        });
+    }
     let mut scores = BTreeMap::new();
     let mut selected = BTreeSet::new();
     for m in candidates {
@@ -986,17 +1365,98 @@ pub fn assemble(
             .chain(m.evidence.iter().map(|e| e.quote.clone()))
             .collect::<Vec<_>>()
             .join(" ");
-        let score = phrase_score(&text, &phrases);
-        let entity_score = entity_hints
-            .values()
-            .filter(|names| crate::lexical::matches_phrases(&text, names))
-            .count();
+        let score = df
+            .as_ref()
+            .map_or_else(|| phrase_score(&text, &phrases), |df| df.score(&text).1);
+        let entity_score = if let Some(df) = &df {
+            df.score(&text).0
+        } else {
+            entity_hints
+                .values()
+                .filter(|names| crate::lexical::matches_phrases(&text, names))
+                .count()
+        };
         scores.insert(m.id, (entity_score, score));
-        if enumerate || relation.is_some() || hits.contains(&m.id) || score > 0 {
+        let source_hit = df.as_ref().is_some_and(|df| {
+            sources_of(&state, m).iter().any(|s| {
+                if !df_sources.iter().any(|d| d.id == s.id) {
+                    return false;
+                }
+                let body = crate::lexical::body(s).unwrap();
+                crate::embedding::segments(body)
+                    .into_iter()
+                    .any(|(start, end)| {
+                        df.matches_segment(body, start, end)
+                            && m.evidence
+                                .iter()
+                                .filter(|e| {
+                                    e.session_id.0 == s.session_id && e.turn_id.0 == s.turn_id
+                                })
+                                .filter_map(|e| locate_quote(body, &e.quote))
+                                .any(|q| start < q.end && q.start < end)
+                    })
+            })
+        });
+        if enumerate
+            || relation.is_some()
+            || hits.contains(&m.id)
+            || score > 0
+            || (hybrid && entity_score > 0)
+            || source_hit
+        {
             selected.insert(m.id);
+            if let Some(d) = &mut diagnostic {
+                let mechanisms = [
+                    (enumerate, "enumeration"),
+                    (relation.is_some(), "relation"),
+                    (hits.contains(&m.id), "fts"),
+                    (source_hit, "source_literal"),
+                    (score > 0, "literal"),
+                ];
+                d.selection.insert(
+                    m.id,
+                    mechanisms
+                        .into_iter()
+                        .filter(|(yes, _)| *yes)
+                        .map(|(_, name)| name.into())
+                        .collect(),
+                );
+            }
         }
     }
-    let mut complete = plan.output.is_some() && (enumerate || relation.is_some());
+    let sequence = |id: &MemoryId| {
+        sources_of(&state, eligible[id])
+            .iter()
+            .map(|s| s.received_sequence)
+            .max()
+            .unwrap_or(0)
+    };
+    let mut fused = BTreeMap::new();
+    let mut seed_truncated = false;
+    if hybrid {
+        let mut lexical: Vec<_> = selected.iter().copied().collect();
+        lexical.sort_by_key(|id| {
+            (
+                std::cmp::Reverse(scores[id]),
+                std::cmp::Reverse(sequence(id)),
+                *id,
+            )
+        });
+        let limit = budget.records.saturating_mul(2);
+        seed_truncated = lexical.len() > limit || vector_rank.len() > limit;
+        fused = rrf(&lexical, &vector_rank, limit);
+        selected = fused.keys().copied().collect();
+        if let Some(d) = &mut diagnostic {
+            d.lexical_df = df.clone();
+            d.lexical_ranked = lexical;
+            d.vector_ranked = vector_rank.iter().map(|r| r.0).collect();
+            for (id, _) in vector_rank.iter().take(limit) {
+                d.selection.entry(*id).or_default().push("vector".into());
+            }
+        }
+    }
+    diagnostic_stage(&mut diagnostic, "seeds", selected.iter().copied());
+    let mut complete = plan.output.is_some() && (enumerate || (!enabled && relation.is_some()));
     complete &= plan
         .filter_time_resolution
         .as_ref()
@@ -1019,6 +1479,14 @@ pub fn assemble(
         }) {
             complete = false;
         }
+        if let Some(d) = &mut diagnostic {
+            for id in parents.iter().filter(|id| eligible.contains_key(id)) {
+                let reasons = d.selection.entry(*id).or_default();
+                if !reasons.iter().any(|r| r == "version_chain") {
+                    reasons.push("version_chain".into());
+                }
+            }
+        }
         selected.extend(parents.into_iter().filter(|id| eligible.contains_key(id)));
         let links: Vec<_> = state
             .relations
@@ -1034,6 +1502,14 @@ pub fn assemble(
             if outside {
                 complete = false;
             } else {
+                if let Some(d) = &mut diagnostic {
+                    for id in link.members.iter().filter(|id| eligible.contains_key(id)) {
+                        let reasons = d.selection.entry(*id).or_default();
+                        if !reasons.iter().any(|r| r == "relation_member") {
+                            reasons.push("relation_member".into());
+                        }
+                    }
+                }
                 selected.extend(
                     link.members
                         .iter()
@@ -1046,6 +1522,7 @@ pub fn assemble(
             break;
         }
     }
+    diagnostic_stage(&mut diagnostic, "closure", selected.iter().copied());
     let sequence = |id: &MemoryId| {
         sources_of(&state, eligible[id])
             .iter()
@@ -1054,17 +1531,51 @@ pub fn assemble(
             .unwrap_or(0)
     };
     let mut ordered: Vec<_> = selected.iter().copied().collect();
-    ordered.sort_by_key(|id| {
-        (
-            std::cmp::Reverse(scores.get(id).copied().unwrap_or_default()),
-            std::cmp::Reverse(sequence(id)),
-            *id,
-        )
-    });
+    if hybrid {
+        ordered.sort_by(|a, b| {
+            fused
+                .get(b)
+                .copied()
+                .unwrap_or_default()
+                .total_cmp(&fused.get(a).copied().unwrap_or_default())
+                .then_with(|| a.cmp(b))
+        });
+        if let Some(d) = &mut diagnostic {
+            d.fused_ranked = ordered.clone();
+        }
+    } else {
+        ordered.sort_by_key(|id| {
+            (
+                std::cmp::Reverse(scores.get(id).copied().unwrap_or_default()),
+                std::cmp::Reverse(sequence(id)),
+                *id,
+            )
+        });
+    }
+    diagnostic_stage(&mut diagnostic, "ranked", ordered.iter().copied());
+    if let Some(d) = &mut diagnostic {
+        d.ranking = ordered
+            .iter()
+            .map(|id| {
+                let (entity_hits, phrase_hits) = scores.get(id).copied().unwrap_or_default();
+                RetrievalRank {
+                    id: *id,
+                    entity_hits,
+                    phrase_hits,
+                    received_sequence: sequence(id),
+                }
+            })
+            .collect();
+    }
     let mut views: Vec<_> = ordered
         .into_iter()
         .filter_map(|id| projection(&state, id))
         .collect();
+    diagnostic_stage(
+        &mut diagnostic,
+        "projected",
+        views.iter().map(RecordView::id),
+    );
     let valid_evidence = |e: &EvidenceRef| match &e.source {
         SourceRef::Stored { source_id } => state
             .sources
@@ -1224,12 +1735,18 @@ pub fn assemble(
         link.resolution = link.resolution.filter(&valid_evidence);
         relations.push(link);
     }
+    diagnostic_raw(&mut diagnostic, "eligible", &raw);
     let mut remaining = budget.stored_bytes;
-    let mut truncated = false;
+    let mut truncated = seed_truncated;
     if views.len() > budget.records {
         truncated = true;
         views.truncate(budget.records);
     }
+    diagnostic_stage(
+        &mut diagnostic,
+        "record_count_budget",
+        views.iter().map(RecordView::id),
+    );
     views.retain(|v| {
         let size = serde_json::to_vec(v).expect("record serialization").len();
         let keep = size <= remaining;
@@ -1240,10 +1757,16 @@ pub fn assemble(
         }
         keep
     });
+    diagnostic_stage(
+        &mut diagnostic,
+        "record_byte_budget",
+        views.iter().map(RecordView::id),
+    );
     if raw.len() > budget.raw {
         truncated = true;
         raw.truncate(budget.raw);
     }
+    diagnostic_raw(&mut diagnostic, "count_budget", &raw);
     let mut bounded_raw = Vec::new();
     for mut item in raw {
         let original_size = serde_json::to_vec(&item)?.len();
@@ -1258,6 +1781,7 @@ pub fn assemble(
     }
     bounded_raw.sort_by_key(|r| (r.sequence, r.source_id.clone()));
     let raw = bounded_raw;
+    diagnostic_raw(&mut diagnostic, "byte_budget", &raw);
     let uncovered_sources = pending_sources
         .into_iter()
         .filter_map(|source| {
@@ -1277,35 +1801,26 @@ pub fn assemble(
             if covered {
                 return None;
             }
-            // 仅单条已提交 Current 候选的整句覆盖整个来源时，才用其槽位排除无关事实。
-            // 片段链接、legacy 或未整理原文都不足以排除来源中尚未理解的其他断言。
-            let linked: Vec<_> = source_links
-                .get(id)
-                .into_iter()
-                .flatten()
-                .filter(|m| m.status != MemoryStatus::Deleted)
-                .collect();
-            let slot = if linked.len() == 1 {
-                projection(&state, linked[0].id).and_then(|view| match &view {
-                    RecordView::Current(v)
-                        if v.candidate.sentence.text == body && v.evidence.iter().any(|e| {
-                            matches!(&e.source, SourceRef::Stored {source_id} if source_id == id)
-                                && locate_quote(body, &e.quote.text).is_some()
-                        }) =>
-                    {
-                        record_slot(&view)
-                    }
-                    _ => None,
-                })
-            } else {
-                None
-            };
-            Some(slot)
+            // 整句引用只证明原文可见，不证明其中所有断言已整理；已提交单条候选
+            // 不能替该来源的其他未提交候选证明主体/关系槽位。遗漏来源仍保守门控。
+            Some(None)
         })
         .collect();
+    if let Some(d) = &mut diagnostic {
+        d.relation_stages.insert(
+            "eligible".into(),
+            relations.iter().map(|r| r.id.clone()).collect(),
+        );
+    }
     if relations.len() > budget.relations {
         truncated = true;
         relations.truncate(budget.relations);
+    }
+    if let Some(d) = &mut diagnostic {
+        d.relation_stages.insert(
+            "count_budget".into(),
+            relations.iter().map(|r| r.id.clone()).collect(),
+        );
     }
     relations.retain(|r| {
         let size = serde_json::to_vec(r).expect("relation serialization").len();
@@ -1317,6 +1832,12 @@ pub fn assemble(
         }
         keep
     });
+    if let Some(d) = &mut diagnostic {
+        d.relation_stages.insert(
+            "byte_budget".into(),
+            relations.iter().map(|r| r.id.clone()).collect(),
+        );
+    }
     complete &= !truncated;
     let current_message = (!request.bootstrap).then(|| CurrentMessage {
         source_id: None,
@@ -1326,7 +1847,15 @@ pub fn assemble(
         enrichment: EnrichmentStatus::NotStored,
         memory_requests: Vec::new(),
     });
-    let assembly = Assembly {
+    let trace_retrieval = serde_json::json!({"phase":"selection","status":metadata.status,"retrieval":metadata,
+        "path":if enumerate {"enumeration"} else if hybrid {"fusion"} else {"lexical"},
+        "plan_complete":complete,"trusted_records":eligible.len(),"subject_records":scoped.len(),
+        "subject_mentions":mentions.len(),"records":views.len(),"raw":raw.len(),"truncated":truncated});
+    let mut assembly = Assembly {
+        trace_retrieval,
+        trace_deps: crate::diagnostics::ContentDeps::incomplete("not_collected"),
+        retrieval_diagnostic: diagnostic,
+        retrieval: metadata,
         request: request.binding.clone(),
         plan: plan.clone(),
         uncovered_sources,
@@ -1395,6 +1924,48 @@ pub fn assemble(
             },
         },
     };
-    tx.commit()?;
+    if crate::diagnostics::enabled() {
+        let mut deps = crate::diagnostics::ContentDeps::complete();
+        for record in &assembly.evidence.records {
+            deps.memory(store.owner(), &state, record.id());
+        }
+        deps.references(store.owner(), &state, &serde_json::json!(assembly.evidence));
+        if assembly.evidence.current_message.is_some() {
+            deps.block("unbound_current_message");
+        }
+        if !assembly.source_context.is_empty() {
+            deps.block("unbound_provenance");
+        }
+        deps.summary_ids(assembly.evidence.records.len() + assembly.evidence.raw.len());
+        assembly.trace_deps = deps;
+    }
     Ok(assembly)
+}
+
+// Never put provider error strings (which may contain URLs or content) into trace.
+fn retrieval_error(error: &str) -> &'static str {
+    match error {
+        "embedding_deadline_exhausted" => "timeout",
+        "embedding_transport" => "transport",
+        "embedding_cancelled" => "cancelled",
+        "embedding_network_disabled" | "embedding_network_policy_invalid" => "network_disabled",
+        _ => "query_invalid",
+    }
+}
+
+#[cfg(test)]
+mod af288_tests {
+    #[test]
+    fn errors_are_fixed_categories_not_provider_text() {
+        for (input, output) in [
+            ("embedding_transport", "transport"),
+            ("embedding_deadline_exhausted", "timeout"),
+            (
+                "http://secret:password@host/private original text",
+                "query_invalid",
+            ),
+        ] {
+            assert_eq!(super::retrieval_error(input), output);
+        }
+    }
 }

@@ -1,8 +1,9 @@
 {
   "id": "w4_16_pending_scope_incomplete",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 2,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "W4 返回 pending/scope_incomplete：结论依赖检索未覆盖的记录",
   "boundary_with": "w4_08_scope_incomplete_no_records",
   "sources": {
@@ -175,7 +176,7 @@
     ]
   },
   "rejected_alternatives": [],
-  "note": "“只用这一台”意味着其他设备已不再使用，但检索范围不完整，这一结论不能成立；W3 支持的断言本身仍可提交（contracts 2.4）。",
+  "note": "候选作为 W3 已支持的固定输入，设备回指的可信 USER 前提由上游负责。“只用这一台”涉及其他设备，但检索范围不完整，这一结论不能成立；W3 支持的断言本身仍可提交（contracts 2.4）。",
   "qualifier_marks": {
     "candidate:0": {
       "times": [

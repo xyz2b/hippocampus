@@ -28,9 +28,14 @@
   "reviews": [
    {
     "candidate": 0,
-    "verdict": "supported",
-    "aspects": [],
-    "episode_value": "low_value"
+    "verdict": "contradicted",
+    "aspects": [
+     "time"
+    ],
+    "episode_value": [
+     "low_value",
+     "unknown"
+    ]
    }
   ],
   "coverage": {
@@ -39,5 +44,6 @@
   },
   "request_reviews": []
  },
- "note": null
+ "note": "AF311：输入漏刚的时间字段，contradicted[time]；episode_value 可 low_value/unknown。",
+ "label_revision": "AF311"
 }

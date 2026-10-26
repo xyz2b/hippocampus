@@ -1,0 +1,198 @@
+{
+  "version": "recall.compare@1",
+  "profiles": [
+    {
+      "id": "ds-pro",
+      "model": "ep-20261003130756-trhj6",
+      "provider": {
+        "protocol": "openai_responses",
+        "base_url_env": "DEEPSEEK_BASE_URL",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "thinking": null,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "minimal",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "minimal",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "low",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "生产基线强度",
+      "endpoint_env": "HUOSHAN_DEEPSEEK_BASE_URL"
+    },
+    {
+      "id": "ds-flash",
+      "model": "ep-20260923215039-vxgxg",
+      "provider": {
+        "protocol": "openai_responses",
+        "base_url_env": "DEEPSEEK_BASE_URL",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "thinking": null,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "minimal",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "minimal",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "low",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "AF230 评测专用输出上限16384，与生产普通阶段4096不同；生产基线强度与超时不变",
+      "endpoint_env": "HUOSHAN_DEEPSEEK_BASE_URL"
+    },
+    {
+      "id": "gpt-6.1-sol",
+      "model": "gpt-6.1-sol",
+      "provider": {
+        "protocol": "openai_responses",
+        "base_url_env": "OPENAI_BASE_URL",
+        "api_key_env": "OPENAI_API_KEY",
+        "thinking": null,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "low",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "low 替代配置，并非 minimal 等价；Anthropic 先测原生，不自动回落"
+    },
+    {
+      "id": "gpt-6-luna",
+      "model": "gpt-6-luna",
+      "provider": {
+        "protocol": "openai_responses",
+        "base_url_env": "OPENAI_BASE_URL",
+        "api_key_env": "OPENAI_API_KEY",
+        "thinking": null,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "low",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "low 替代配置，并非 minimal 等价；Anthropic 先测原生，不自动回落"
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "model": "claude-haiku-5-5",
+      "provider": {
+        "protocol": "anthropic_messages",
+        "base_url_env": "ANTHROPIC_BASE_URL",
+        "api_key_env": "ANTHROPIC_API_KEY",
+        "thinking": true,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "low",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "low 替代配置，并非 minimal 等价；Anthropic 先测原生，不自动回落"
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "model": "claude-sonnet-5-5",
+      "provider": {
+        "protocol": "anthropic_messages",
+        "base_url_env": "ANTHROPIC_BASE_URL",
+        "api_key_env": "ANTHROPIC_API_KEY",
+        "thinking": true,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "low",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "low",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "low 替代配置，并非 minimal 等价；Anthropic 先测原生，不自动回落"
+    },
+    {
+      "id": "qwen38-flash-nothink",
+      "model": "qwen3.8-flash",
+      "provider": {
+        "protocol": "openai_chat",
+        "base_url_env": "QWEN_BASE_URL",
+        "api_key_env": "QWEN_API_KEY",
+        "thinking": false,
+        "model_revision": "qwen3.8-flash;dashscope-text-context.v1;alias",
+        "context_tokens": 1000000,
+        "structured_mode": "native_schema"
+      },
+      "r1": {
+        "effort": "omit",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4": {
+        "effort": "omit",
+        "max_output_tokens": 4096,
+        "timeout_seconds": 180
+      },
+      "r4_compute": {
+        "effort": "omit",
+        "max_output_tokens": 16384,
+        "timeout_seconds": 240
+      },
+      "note": "关思考；别名可能漂移；计算档容量固定为比较设置"
+    }
+  ]
+}

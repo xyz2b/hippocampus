@@ -1,0 +1,656 @@
+[
+  {
+    "id": "t01",
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF193 2026-10-09",
+    "input": {
+      "text": "我现在住在橙湾。",
+      "history": [],
+      "said_on": "2026-10-09",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "lives_in",
+        "works_at",
+        "visited",
+        "fact"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "我现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "现在",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "我现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "现在",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "memory_requests": []
+    },
+    "w3_expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    }
+  },
+  {
+    "id": "t02",
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF193 2026-10-09",
+    "input": {
+      "text": "我之前住在蓝港，现在住在橙湾。",
+      "history": [],
+      "said_on": "2026-10-09",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "lives_in",
+        "works_at",
+        "visited",
+        "fact"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "蓝港",
+          "sentence": "我之前住在蓝港，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "之前",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "我之前住在蓝港，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "现在",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "蓝港",
+          "sentence": "我之前住在蓝港，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "之前",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "我之前住在蓝港，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "现在",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "memory_requests": []
+    },
+    "w3_expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        },
+        {
+          "candidate": 1,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    }
+  },
+  {
+    "id": "t03",
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF193 2026-10-09",
+    "input": {
+      "text": "我目前在星垣公司工作。",
+      "history": [],
+      "said_on": "2026-10-09",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "lives_in",
+        "works_at",
+        "visited",
+        "fact"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "星垣公司",
+          "sentence": "我目前在星垣公司工作。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "目前",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "星垣公司",
+          "sentence": "我目前在星垣公司工作。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "目前",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "memory_requests": []
+    },
+    "w3_expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    }
+  },
+  {
+    "id": "t04",
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF193 2026-10-09",
+    "input": {
+      "text": "以后我打算去赤湾学习陶艺。",
+      "history": [],
+      "said_on": "2026-10-09",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "lives_in",
+        "works_at",
+        "visited",
+        "fact"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "以后我打算去赤湾学习陶艺。",
+          "sentence": "以后我打算去赤湾学习陶艺。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": "以后",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "以后我打算去赤湾学习陶艺。",
+          "sentence": "以后我打算去赤湾学习陶艺。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": "以后",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "memory_requests": []
+    },
+    "w3_expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    }
+  },
+  {
+    "id": "t05",
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF193 2026-10-09",
+    "input": {
+      "text": "我之前说过住在蓝港，那次说错了；我住在橙湾。",
+      "history": [],
+      "said_on": "2026-10-09",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "lives_in",
+        "works_at",
+        "visited",
+        "fact"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "我之前说过住在蓝港，那次说错了；我住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "我之前说过住在蓝港，那次说错了；我住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": []
+        }
+      ],
+      "memory_requests": []
+    },
+    "w3_expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    }
+  },
+  {
+    "id": "t06",
+    "fictional": true,
+    "label_status": "draft",
+    "label_revision": "AF193 2026-10-09",
+    "input": {
+      "text": "2024-03-16我去过青岚湖，现在住在橙湾。",
+      "history": [],
+      "said_on": "2026-10-09",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "lives_in",
+        "works_at",
+        "visited",
+        "fact"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "visited",
+          "memory_type": "episode",
+          "value": "青岚湖",
+          "sentence": "2024-03-16我去过青岚湖，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": "2024-03-16",
+              "interp": {
+                "kind": "date",
+                "date": "2024-03-16"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "2024-03-16我去过青岚湖，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "现在",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "requests": []
+    },
+    "w1_expect": {
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "visited",
+          "memory_type": "episode",
+          "value": "青岚湖",
+          "sentence": "2024-03-16我去过青岚湖，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": "2024-03-16",
+              "interp": {
+                "kind": "date",
+                "date": "2024-03-16"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "lives_in",
+          "memory_type": "fact",
+          "value": "橙湾",
+          "sentence": "2024-03-16我去过青岚湖，现在住在橙湾。",
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": "现在",
+              "interp": {
+                "kind": "unknown"
+              }
+            }
+          ]
+        }
+      ],
+      "memory_requests": []
+    },
+    "w3_expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": [
+            "useful",
+            "low_value",
+            "unknown"
+          ]
+        },
+        {
+          "candidate": 1,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      },
+      "request_reviews": []
+    }
+  }
+]

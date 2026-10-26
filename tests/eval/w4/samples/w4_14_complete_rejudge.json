@@ -1,0 +1,354 @@
+{
+  "id": "w4_14_complete_rejudge",
+  "contract": "w4.v5",
+  "batch": 2,
+  "label_status": "reviewed",
+  "label_revision": "AF322",
+  "focus": "授权范围实际穷举完整的对照",
+  "boundary_with": "w4_14_rejudge_committed",
+  "sources": {
+    "s-112": {
+      "text": "我每天喝一杯咖啡。",
+      "said_on": "2026-05-06"
+    },
+    "s-360": {
+      "text": "我现在每天喝两杯咖啡。",
+      "said_on": "2026-09-20"
+    }
+  },
+  "input": {
+    "candidates": [
+      {
+        "index": 0,
+        "committed_id": 70,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我现在每天喝两杯咖啡。",
+            "quote": {
+              "text": "我现在每天喝两杯咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我现在每天喝两杯咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "validity",
+              "quote": {
+                "text": "现在"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            },
+            {
+              "role": "event",
+              "quote": {
+                "text": "每天"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "source": {
+          "kind": "stored",
+          "source_id": "s-360"
+        },
+        "said_on": "2026-09-20",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          },
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "format": "current",
+        "id": 55,
+        "stored_status": "active",
+        "termination_reason": null,
+        "ended": "not_ended",
+        "end": null,
+        "candidate": {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": {
+            "entity_id": "self"
+          },
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": {
+            "kind": "text",
+            "text": "我每天喝一杯咖啡。",
+            "quote": {
+              "text": "我每天喝一杯咖啡。"
+            }
+          },
+          "sentence": {
+            "text": "我每天喝一杯咖啡。"
+          },
+          "polarity": "affirm",
+          "strength": null,
+          "uncertainty": null,
+          "conditions": [],
+          "times": [
+            {
+              "role": "event",
+              "quote": {
+                "text": "每天"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            }
+          ]
+        },
+        "evidence": [
+          {
+            "source": {
+              "kind": "stored",
+              "source_id": "s-112"
+            },
+            "quote": {
+              "text": "我每天喝一杯咖啡。"
+            }
+          }
+        ],
+        "grade": "committed",
+        "said_on": "2026-05-06",
+        "time_resolutions": [
+          {
+            "status": "unknown",
+            "start": null,
+            "end_exclusive": null,
+            "precision": "unknown"
+          }
+        ],
+        "history": [],
+        "open_relations": [],
+        "update": {
+          "status": "judged",
+          "reasons": []
+        }
+      }
+    ],
+    "relations": [],
+    "coverage": {
+      "complete": true,
+      "omitted": 0
+    }
+  },
+  "call_w4": true,
+  "expect": {
+    "decisions": [
+      {
+        "candidate": 0,
+        "status": "decided",
+        "action": "state_change",
+        "targets": [
+          55
+        ],
+        "resolves_relations": [],
+        "basis_sources": [
+          "s-112",
+          "s-360"
+        ],
+        "effective": null,
+        "relation_scope": null,
+        "pending_reason": null
+      }
+    ],
+    "after": {
+      "records": {
+        "55": {
+          "stored_status": "superseded",
+          "termination_reason": "StateChanged",
+          "ended": "end_unknown"
+        },
+        "70": {
+          "from_candidate": 0,
+          "history": [
+            55
+          ],
+          "stored_status": "active",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
+        }
+      },
+      "new_records": 0,
+      "recall": {
+        "current": [
+          "70（每天两杯）"
+        ],
+        "history": [
+          "55（每天一杯）"
+        ]
+      }
+    },
+    "must_not": [
+      "不得重复插入；不得跳过必要的来源与身份检查",
+      "完整只指本次授权范围，不证明现实世界不存在其他事实"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              55
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-112",
+              "s-360"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "55": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown"
+            },
+            "70": {
+              "from_candidate": 0,
+              "history": [
+                55
+              ],
+              "stored_status": "active",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            }
+          },
+          "new_records": 0,
+          "recall": {
+            "current": [
+              "70（每天两杯）"
+            ],
+            "history": [
+              "55（每天一杯）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得重复插入；不得跳过必要的来源与身份检查",
+          "完整只指本次授权范围，不证明现实世界不存在其他事实"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              55
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-112",
+              "s-360"
+            ],
+            "effective": {
+              "role": "validity",
+              "quote": {
+                "text": "现在"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            },
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "55": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown"
+            },
+            "70": {
+              "from_candidate": 0,
+              "history": [
+                55
+              ],
+              "stored_status": "active",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            }
+          },
+          "new_records": 0,
+          "recall": {
+            "current": [
+              "70（每天两杯）"
+            ],
+            "history": [
+              "55（每天一杯）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得重复插入；不得跳过必要的来源与身份检查",
+          "完整只指本次授权范围，不证明现实世界不存在其他事实"
+        ]
+      }
+    ]
+  },
+  "rejected_alternatives": [],
+  "note": "授权范围与必要闭包预算内实际穷举完整；显式重判仅清除本次覆盖的旧缺口。",
+  "qualifier_marks": {
+    "candidate:0": {
+      "times": [
+        "现在",
+        "每天"
+      ]
+    },
+    "record:55": {
+      "times": [
+        "每天"
+      ]
+    }
+  }
+}

@@ -83,7 +83,7 @@ def main():
 
         run("--rebuild")
         with sqlite3.connect(db) as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 10
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 11
         trace = root / "trace"
         trace.mkdir(mode=0o700)
         found = run("--query", "SQLite", trace=trace)
@@ -110,9 +110,9 @@ def main():
 
         events = [json.loads(line) for path in trace.glob("*.jsonl") for line in path.read_text().splitlines()]
         assert {event["kind"] for event in events} >= {"run_start", "lexical_raw", "run_end"}, events
-        assert len({event["run_id"] for event in events}) == 1
+        assert len({event.get("meta", {}).get("trace_id", event.get("run_id")) for event in events}) == 1
         assert not any(event["kind"] in ("rpc_response", "model_start") for event in events)
-        end = next(event["data"] for event in events if event["kind"] == "run_end")
+        end = next(event.get("body", event.get("data")) for event in events if event["kind"] == "run_end")
         assert end["entrypoint"] == "internal_cli" and end["status"] == "completed"
         assert "response" not in end and "另一用户机密" not in json.dumps(events, ensure_ascii=False)
         checks.append("correlated internal lexical trace contains no fake MCP response, model call, or other-owner text")

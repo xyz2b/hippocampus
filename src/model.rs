@@ -442,7 +442,7 @@ pub struct CandidateMemory {
     pub predicate: Predicate,
     /// 断言的对象或值。
     pub value: MemoryValue,
-    /// Preference / Constraint 的方向；其他类型通常为 `None`。
+    /// Preference / Constraint 的方向；普通否定事实为 Negative，普通肯定事实为 None。
     pub polarity: Option<Polarity>,
     /// Preference 的强度；没有明确强度时为 `None`。
     pub strength: Option<Strength>,
@@ -546,7 +546,7 @@ pub struct Memory {
     pub predicate: Predicate,
     /// 断言的对象或值。
     pub value: MemoryValue,
-    /// Preference / Constraint 的正负方向。
+    /// Preference / Constraint 的方向，或普通否定事实的 Negative；计划见完整候选。
     pub polarity: Option<Polarity>,
     /// Preference 的软强度。
     pub strength: Option<Strength>,

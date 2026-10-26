@@ -19,22 +19,64 @@ def options(v):
     return v if isinstance(v, list) else [v]
 
 
+def expectation_branches(e):
+    bases = e.get("alternatives", [e])
+    if not bases:
+        raise ValueError("empty expectation alternatives")
+    for base in bases:
+        optional = base.get("optional_candidates", [])
+        if len(optional) > 1:
+            raise ValueError("only one optional candidate is supported")
+        branch = {k: v for k, v in base.items() if k != "optional_candidates"}
+        yield branch
+        if optional:
+            yield dict(branch, candidates=branch["candidates"] + optional,
+                       candidate_count=len(branch["candidates"]) + 1)
+
+
+def check_span(rule, text, where, errors):
+    window, required = rule.get("window"), rule.get("required")
+    if (set(rule) != {"window", "required"} or not isinstance(window, str)
+            or not window.strip() or text.count(window) != 1
+            or not isinstance(required, list) or not required
+            or any(not isinstance(c, str) or not c.strip() or c not in window for c in required)):
+        errors.append(f"{where}: invalid/ambiguous span rule")
+
+
+
 def check_candidate(c, text, where, relations, entities, errors):
     def quote(q, field):
-        if q is not None and q not in text:
-            errors.append(f"{where}.{field}: {q!r} not in source text")
+        if isinstance(q, dict):
+            if field != "times":
+                errors.append(f"{where}.{field}: span rule not allowed")
+            else:
+                check_span(q, text, f"{where}.{field}", errors)
+            return
+        for value in options(q):
+            if value is not None and value not in text:
+                errors.append(f"{where}.{field}: {value!r} not in source text")
 
     for sentence in options(c.get("sentence")):
         quote(sentence, "sentence")
-    # contracts 2.1：fact 的值与完整原句相同。可接受集合含 fact 时，每个 fact 组合都必须合法。
-    if "fact" in options(c["relation"]) and c.get("kind", "assertion") == "assertion":
-        if not set(options(c.get("value"))) & set(options(c.get("sentence"))):
-            errors.append(f"{where}: relation fact requires value == sentence")
+    # contracts 1.5：通用 fact 值须是完整 sentence 内的连续原文片段。
+    if isinstance(c.get("value"), dict):
+        if c["relation"] != "fact" or c.get("kind", "assertion") != "assertion":
+            errors.append(f"{where}: span rule requires fact assertion only")
+        check_span(c["value"], text, f"{where}.value", errors)
+        window = c["value"].get("window")
+        if not isinstance(window, str) or not any(isinstance(s, str) and window in s for s in options(c.get("sentence"))):
+            errors.append(f"{where}: window outside sentence")
+    elif "fact" in options(c["relation"]) and c.get("kind", "assertion") == "assertion":
+        if any(not isinstance(v, str) or not v.strip() or not any(
+                isinstance(sentence, str) and v in sentence for sentence in options(c.get("sentence")))
+               for v in options(c.get("value"))):
+            errors.append(f"{where}: relation fact requires continuous value within sentence")
     for v in options(c.get("value")):
         # 值可以是规范化值（英文、实体名），只有含中文且看起来是原文片段时才要求逐字。
         if isinstance(v, str) and len(v) > 4:
             quote(v, "value")
-    quote(c.get("uncertainty"), "uncertainty")
+    for q in options(c.get("uncertainty")):
+        quote(q, "uncertainty")
     for q in c.get("conditions", []):
         quote(q["quote"] if isinstance(q, dict) else q, "conditions")
     for tm in c.get("times", []):
@@ -63,15 +105,20 @@ def check_w1(s, errors):
     for n, c in enumerate(e["candidates"]):
         check_candidate(c, text, f"candidates[{n}]", i["relations"], entities, errors)
     for n, r in enumerate(e["memory_requests"]):
-        if r["kind"] not in REQUESTS or r["quote"] not in text:
+        if r["kind"] not in REQUESTS or any(q not in text for q in options(r["quote"])):
             errors.append(f"memory_requests[{n}] kind/quote")
         if r.get("target_quote") and r["target_quote"] not in text:
             errors.append(f"memory_requests[{n}].target_quote")
         if any(k >= e["candidate_count"] for k in r["candidate_indices"]):
             errors.append(f"memory_requests[{n}] index out of range")
         d = r.get("deadline")
-        if d is not None and (d["role"] != "retention" or d["quote"] not in text):
-            errors.append(f"memory_requests[{n}].deadline")
+        if d is not None:
+            if isinstance(d["quote"], dict):
+                check_span(d["quote"], text, f"memory_requests[{n}].deadline", errors)
+            elif any(q not in text for q in options(d["quote"])):
+                errors.append(f"memory_requests[{n}].deadline quote")
+            if d["role"] != "retention" or d["interp"]["kind"] not in TIME_KINDS:
+                errors.append(f"memory_requests[{n}].deadline role/kind")
         if r["kind"] != "retention" and d is not None:
             errors.append(f"memory_requests[{n}] non-retention with deadline")
 
@@ -84,17 +131,17 @@ def check_w3(s, errors):
     if [r["candidate"] for r in e["reviews"]] != list(range(len(i["candidates"]))):
         errors.append("reviews must map 1:1 to candidates")
     for r in e["reviews"]:
-        if r["verdict"] not in VERDICTS or not set(r["aspects"]) <= ASPECTS:
+        if not set(options(r["verdict"])) <= VERDICTS or not set(r["aspects"]) <= ASPECTS:
             errors.append(f"review {r['candidate']} enum")
-        if r["verdict"] == "supported" and r["aspects"]:
+        if "supported" in options(r["verdict"]) and r["aspects"]:
             errors.append(f"review {r['candidate']} supported with problems")
-        if r["episode_value"] not in EPISODE:
+        if not set(options(r["episode_value"])) <= EPISODE:
             errors.append(f"review {r['candidate']} episode_value")
         if (r["episode_value"] != "not_applicable") != (i["candidates"][r["candidate"]]["memory_type"] == "episode"):
             errors.append(f"review {r['candidate']} episode_value vs memory_type")
     if e["coverage"]["status"] not in {"complete", "gaps"}:
         errors.append("coverage.status")
-    if (e["coverage"]["status"] == "gaps") != bool(e["coverage"]["missing_contains"]):
+    if e["coverage"].get("scored", True) and (e["coverage"]["status"] == "gaps") != bool(e["coverage"]["missing_contains"]):
         errors.append("coverage gaps need missing quotes")
     for q in e["coverage"]["missing_contains"]:
         if q not in text:
@@ -102,7 +149,7 @@ def check_w3(s, errors):
     if len(e["request_reviews"]) != len(i["requests"]):
         errors.append("request_reviews must map 1:1 to requests")
     for r in e["request_reviews"]:
-        if r["verdict"] not in VERDICTS:
+        if not set(options(r["verdict"])) <= VERDICTS:
             errors.append("request verdict")
 
 
@@ -169,13 +216,27 @@ def check_r4(s, errors):
 
 def main():
     failed = 0
-    for contract, check in (("w1", check_w1), ("w3", check_w3), ("r1", check_r1), ("r4", check_r4)):
+    checks = {"w1": check_w1, "w3": check_w3, "r1": check_r1, "r4": check_r4}
+    selected = sys.argv[1:] or list(checks)
+    if any(c not in checks for c in selected):
+        sys.exit("usage: check_samples.py [w1 w3 r1 r4]")
+    for contract in selected:
+        check = checks[contract]
         for path in sorted((ROOT / contract / "samples").glob("*.json")):
             s = json.loads(path.read_text())
             errors = []
+            if "observation_only" in s and not isinstance(s["observation_only"], bool):
+                errors.append("observation_only must be boolean")
+            if s.get("observation_only") is True and not (
+                    isinstance(s.get("observation_reason"), str) and s["observation_reason"].strip()):
+                errors.append("observation needs a nonempty reason")
             if s["contract"] != {"r4": "r4.v3"}.get(contract, f"{contract}.v1") or s["label_status"] not in {"draft", "reviewed"}:
                 errors.append("contract/label_status")
-            check(s, errors)
+            if contract in {"w1", "w3"}:
+                for expect in expectation_branches(s["expect"]):
+                    check(dict(s, expect=expect), errors)
+            else:
+                check(s, errors)
             failed += bool(errors)
             print(("ok  " if not errors else "FAIL") + f" {s['id']}" + "".join(f"\n     {x}" for x in errors))
     sys.exit(1 if failed else 0)

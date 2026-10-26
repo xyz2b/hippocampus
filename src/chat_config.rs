@@ -25,6 +25,28 @@ pub(super) fn role_defaults(mut value: Value, write: bool) -> PersistenceResult<
             object.insert((*role).into(), json!(PRO_MODEL_DEFAULT));
         }
     }
+    let provider_defaults = object
+        .get("providers")
+        .and_then(Value::as_object)
+        .map(|providers| {
+            providers
+                .iter()
+                .map(|(role, value)| {
+                    let effort = if value["protocol"] == "openai_chat" {
+                        "omit"
+                    } else {
+                        "medium"
+                    };
+                    (role.clone(), effort)
+                })
+                .collect::<std::collections::BTreeMap<_, _>>()
+        })
+        .unwrap_or_default();
+    if !write && let Some(effort) = provider_defaults.get("r4") {
+        object
+            .entry("r4_compute_reasoning_effort")
+            .or_insert_with(|| json!(effort));
+    }
     let efforts = object
         .entry("reasoning_effort")
         .or_insert_with(|| json!({}));
@@ -32,7 +54,9 @@ pub(super) fn role_defaults(mut value: Value, write: bool) -> PersistenceResult<
         .as_object_mut()
         .ok_or("reasoning_effort must be an object")?;
     for (role, effort) in defaults {
-        efforts.entry(*role).or_insert_with(|| json!(effort));
+        efforts
+            .entry(*role)
+            .or_insert_with(|| json!(provider_defaults.get(*role).unwrap_or(effort)));
     }
     Ok(value)
 }
@@ -91,6 +115,76 @@ mod tests {
     use super::*;
     use crate::ReasoningEffort::{Low, Medium, Minimal};
 
+    #[test]
+    fn af283_snapshot_is_opt_in_bounded_and_default_binding_is_unchanged() {
+        let implicit: ChatConfig = serde_json::from_value(json!({})).unwrap();
+        let explicit: ChatConfig =
+            serde_json::from_value(json!({"statement_snapshot":{}})).unwrap();
+        assert_eq!(
+            serde_json::to_value(&implicit).unwrap(),
+            serde_json::to_value(&explicit).unwrap()
+        );
+        assert!(!implicit.statement_snapshot.enabled);
+        assert!(
+            serde_json::to_value(implicit)
+                .unwrap()
+                .get("statement_snapshot")
+                .is_none()
+        );
+        let configured: ChatConfig = serde_json::from_value(json!({"statement_snapshot":{
+            "enabled":true, "max_records":4, "max_bytes":8192
+        }}))
+        .unwrap();
+        configured.validate().unwrap();
+        let reopened: ChatConfig =
+            serde_json::from_value(serde_json::to_value(&configured).unwrap()).unwrap();
+        assert_eq!(reopened.statement_snapshot, configured.statement_snapshot);
+        for invalid in [
+            json!({"max_records":0}),
+            json!({"max_records":33}),
+            json!({"max_bytes":511}),
+            json!({"max_bytes":65537}),
+            json!({"enabled":"true"}),
+            json!({"relations":["fact"]}),
+        ] {
+            assert!(
+                serde_json::from_value::<ChatConfig>(json!({"statement_snapshot":invalid}))
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn embedding_config_is_opt_in_strict_and_default_serialization_stays_compatible() {
+        let implicit: ChatConfig = serde_json::from_value(json!({})).unwrap();
+        let explicit: ChatConfig = serde_json::from_value(json!({"embedding":{}})).unwrap();
+        assert!(!implicit.embedding.enabled);
+        assert_eq!(
+            serde_json::to_value(&implicit).unwrap(),
+            serde_json::to_value(&explicit).unwrap()
+        );
+        assert!(
+            serde_json::to_value(&implicit)
+                .unwrap()
+                .get("embedding")
+                .is_none()
+        );
+        let configured:ChatConfig=serde_json::from_value(json!({"enrichment_mode":"off","embedding":{"enabled":true,"model":"bge-m3","base_url":"http://localhost:11434","batch":8,"query_timeout_ms":90000}})).unwrap();
+        configured.validate().unwrap();
+        assert!(configured.model_budget.is_none());
+        let reopened: ChatConfig =
+            serde_json::from_value(serde_json::to_value(&configured).unwrap()).unwrap();
+        assert_eq!(reopened.embedding, configured.embedding);
+        for invalid in [
+            json!({"embedding":{"base_url":"https://cloud.example"}}),
+            json!({"embedding":{"batch":17}}),
+            json!({"embedding":{"query_timeout_ms":0}}),
+            json!({"embedding":{"fallback":true}}),
+            json!({"embedding":{"model":"qwen-cloud"}}),
+        ] {
+            assert!(serde_json::from_value::<ChatConfig>(invalid).is_err());
+        }
+    }
     #[test]
     fn omitted_roles_use_environment_pro_and_ac2_efforts_only_when_needed() {
         let config: ChatConfig = serde_json::from_value(json!({})).unwrap();
@@ -195,5 +289,44 @@ mod tests {
         ] {
             assert!(serde_json::from_value::<ChatConfig>(invalid).is_err());
         }
+    }
+    #[test]
+    fn af119_new_providers_get_explicit_role_defaults_without_changing_production_defaults() {
+        let config: ChatConfig=serde_json::from_value(json!({"write_models":{
+            "w1":"gpt-6.1-sol","w3":"claude-opus-5-5","w4":"qwen3.8:27b-q4_K_M",
+            "providers":{"w1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL","api_key_env":"OPENAI_API_KEY"},
+                "w3":{"protocol":"anthropic_messages","base_url_env":"ANTHROPIC_BASE_URL","api_key_env":"ANTHROPIC_API_KEY"},
+                "w4":{"protocol":"openai_chat","base_url_env":"QWEN_BASE_URL","thinking":false,"context_tokens":65536}}},
+            "recall_models":{"r1":"gpt-6.1-sol","r4":"claude-opus-5-5","providers":{
+                "r1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL","api_key_env":"OPENAI_API_KEY"},
+                "r4":{"protocol":"anthropic_messages","base_url_env":"ANTHROPIC_BASE_URL","api_key_env":"ANTHROPIC_API_KEY"}}}})).unwrap();
+        let write = config.write_models_for(None).unwrap();
+        assert_eq!(write.effort("w1"), Medium);
+        assert_eq!(write.effort("w3"), Medium);
+        assert_eq!(write.effort("w4"), crate::ReasoningEffort::Omit);
+        let recall = config.recall_models_for(None).unwrap();
+        assert_eq!(recall.effort("r1"), Medium);
+        assert_eq!(recall.r4_compute_reasoning_effort, Medium);
+        let reopened: ChatConfig =
+            serde_json::from_value(serde_json::to_value(&config).unwrap()).unwrap();
+        assert_eq!(
+            reopened.write_models_for(None).unwrap().providers,
+            write.providers
+        );
+        for invalid in [
+            json!({"write_models":{"w1":"gpt-6.1-sol","reasoning_effort":{"w1":"minimal"},
+            "providers":{"w1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL"}}}}),
+            json!({"recall_models":{"r4":"claude-opus-5-5","providers":{"r4":{"protocol":"anthropic_messages","base_url_env":"ANTHROPIC_BASE_URL","thinking":false}}}}),
+            json!({"write_models":{"w1":"gpt-6.1-sol","providers":{"w1":{"protocol":"openai_responses","base_url_env":"OPENAI_BASE_URL","api_key":"secret"}}}}),
+        ] {
+            assert!(serde_json::from_value::<ChatConfig>(invalid).is_err());
+        }
+        let old: ChatConfig = serde_json::from_value(json!({})).unwrap();
+        assert!(
+            serde_json::to_value(old.write_models_for(Some("pro")).unwrap())
+                .unwrap()
+                .get("providers")
+                .is_none()
+        );
     }
 }

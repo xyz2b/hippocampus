@@ -62,14 +62,89 @@
   }
  },
  "expect": {
-  "verdict": "supported",
-  "facts": [],
-  "compute": {
-   "op": "count",
-   "items": 3,
-   "distinct_groups": 2
-  }
+  "alternatives": [
+   {
+    "verdict": "supported",
+    "facts": [],
+    "compute": {
+     "op": "count",
+     "distinct_groups": 2,
+     "expected_value": "2",
+     "expected_bound": "exact",
+     "groups": [
+      [
+       "s-18",
+       "s-19"
+      ],
+      [
+       "s-20"
+      ]
+     ]
+    },
+    "must_not": [
+     "将三月两次提及计为不同事件",
+     "将八月事件合并到三月",
+     "加入无依据的额外事件"
+    ]
+   },
+   {
+    "verdict": "supported",
+    "facts": [],
+    "compute": {
+     "op": "count",
+     "distinct_groups": 2,
+     "expected_value": "2",
+     "expected_bound": "exact",
+     "groups": [
+      [
+       "s-18"
+      ],
+      [
+       "s-20"
+      ]
+     ],
+     "items": 2
+    },
+    "must_not": [
+     "将三月两次提及计为不同事件",
+     "将八月事件合并到三月",
+     "加入无依据的额外事件"
+    ]
+   },
+   {
+    "verdict": "supported",
+    "facts": [],
+    "compute": {
+     "op": "count",
+     "distinct_groups": 2,
+     "expected_value": "2",
+     "expected_bound": "exact",
+     "groups": [
+      [
+       "s-19"
+      ],
+      [
+       "s-20"
+      ]
+     ],
+     "items": 2
+    },
+    "must_not": [
+     "将三月两次提及计为不同事件",
+     "将八月事件合并到三月",
+     "加入无依据的额外事件"
+    ]
+   }
+  ]
  },
- "must_not": [],
- "note": "18、19 指同一次出差，event_group 应相同；代码按组去重得 2。"
+ "must_not": [
+  "将三月两次提及计为不同事件",
+  "将八月事件合并到三月",
+  "加入无依据的额外事件"
+ ],
+ "note": "AF247：允许保留重复条目同组、合并双方依据，或取三月/八月各一个事件代表；两组、exact=2 不变。代表分支的重复事件同一性须人工确认。",
+ "label_revision": {
+  "decision": "AF247",
+  "date": "2026-10-11"
+ }
 }

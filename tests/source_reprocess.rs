@@ -544,7 +544,7 @@ fn v9_fixture_migrates_all_owners_without_rewriting_old_receipts_or_enqueuing() 
     assert_eq!(
         sql.pragma_query_value::<i64, _>(None, "user_version", |row| row.get(0))
             .unwrap(),
-        10
+        11
     );
     for (owner, raw) in before {
         let old: Json = serde_json::from_str(&raw).unwrap();

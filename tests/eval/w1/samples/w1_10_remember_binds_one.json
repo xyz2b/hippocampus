@@ -53,36 +53,108 @@
   "task_id": null
  },
  "expect": {
-  "candidate_count": 1,
-  "candidates": [
+  "alternatives": [
    {
-    "kind": "assertion",
-    "speech": "user_statement",
-    "subject": "e-daughter",
-    "relation": "fact",
-    "memory_type": "fact",
-    "value": "我女儿的生日是3月12日。",
-    "sentence": "我女儿的生日是3月12日。",
-    "polarity": "affirm",
-    "uncertainty": null,
-    "conditions": [],
-    "strength": null
-   }
-  ],
-  "memory_requests": [
-   {
-    "kind": "remember",
-    "quote": "记住",
-    "target_object": [
-     "facts",
-     "source"
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "e-daughter",
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "window": "我女儿的生日是3月12日。",
+       "required": [
+        "生日",
+        "3月12日"
+       ]
+      },
+      "sentence": [
+       "我女儿的生日是3月12日。",
+       "记住：我女儿的生日是3月12日。"
+      ],
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "strength": null,
+      "times": [
+       {
+        "role": "event",
+        "quote": "3月12日",
+        "interp": {
+         "kind": "recurring"
+        }
+       }
+      ]
+     }
     ],
-    "candidate_indices": [
-     0
+    "memory_requests": [
+     {
+      "kind": "remember",
+      "quote": [
+       "记住",
+       "记住：",
+       "记住：我女儿的生日是3月12日。"
+      ],
+      "target_object": [
+       "facts",
+       "source"
+      ],
+      "candidate_indices": [
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "e-daughter",
+      "relation": "fact",
+      "memory_type": "fact",
+      "value": {
+       "window": "我女儿的生日是3月12日。",
+       "required": [
+        "生日",
+        "3月12日"
+       ]
+      },
+      "sentence": [
+       "我女儿的生日是3月12日。",
+       "记住：我女儿的生日是3月12日。"
+      ],
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "strength": null,
+      "times": []
+     }
+    ],
+    "memory_requests": [
+     {
+      "kind": "remember",
+      "quote": [
+       "记住",
+       "记住：",
+       "记住：我女儿的生日是3月12日。"
+      ],
+      "target_object": [
+       "facts",
+       "source"
+      ],
+      "candidate_indices": [
+       0
+      ]
+     }
     ]
    }
   ]
  },
  "must_not": [],
- "note": "生日是否同时作为 times（recurring/date）不评分。"
+ "note": "AF311：允许含记住前缀的完整原句及控制请求精确引用，索引绑定不变。 AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。 生日月日作为属性可times=[]，或event/recurring；value必须同时保留生日属性与日期，拒绝凭空年份、validity和retention。",
+ "label_revision": "AF317"
 }

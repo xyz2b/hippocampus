@@ -1,8 +1,9 @@
 {
   "id": "w4_17_pending_unclear_relation",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 2,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "W4 返回 pending/unclear_relation：可能改学、也可能同时在学",
   "boundary_with": null,
   "sources": {
@@ -142,7 +143,6 @@
         ],
         "resolves_relations": [],
         "basis_sources": [
-          "s-306",
           "s-390"
         ],
         "effective": null,
@@ -154,7 +154,11 @@
       "records": {
         "90": {
           "stored_status": "active",
-          "ended": "not_ended"
+          "ended": "not_ended",
+          "update": {
+            "status": "judged",
+            "reasons": []
+          }
         },
         "new": {
           "from_candidate": 0,
@@ -173,13 +177,121 @@
           "90（学日语）",
           "new（学韩语）"
         ],
-        "note": "两条都带待判定标注，不断言已放弃日语"
+        "note": "旧 90 保持 judged；新记录带 pending，不断言已放弃日语"
       }
     },
     "must_not": [
       "不得结束 90",
       "不得判为 conflict（两者并不互斥）",
       "不得判为 coexist 并标 judged 而掩盖关系不明"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "pending",
+            "action": null,
+            "targets": [
+              90
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-390"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": "unclear_relation"
+          }
+        ],
+        "after": {
+          "records": {
+            "90": {
+              "stored_status": "active",
+              "ended": "not_ended",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_relation_unclear",
+                  "update_scope_incomplete"
+                ]
+              }
+            }
+          },
+          "recall": {
+            "current": [
+              "90（学日语）",
+              "new（学韩语）"
+            ],
+            "note": "旧 90 保持 judged；新记录带 pending，不断言已放弃日语"
+          }
+        },
+        "must_not": [
+          "不得结束 90",
+          "不得判为 conflict（两者并不互斥）",
+          "不得判为 coexist 并标 judged 而掩盖关系不明"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "pending",
+            "action": null,
+            "targets": [],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-390"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": "unclear_relation"
+          }
+        ],
+        "after": {
+          "records": {
+            "90": {
+              "stored_status": "active",
+              "ended": "not_ended",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            },
+            "new": {
+              "from_candidate": 0,
+              "stored_status": "active",
+              "update": {
+                "status": "pending",
+                "reasons": [
+                  "update_relation_unclear",
+                  "update_scope_incomplete"
+                ]
+              }
+            }
+          },
+          "recall": {
+            "current": [
+              "90（学日语）",
+              "new（学韩语）"
+            ],
+            "note": "旧 90 保持 judged；新记录带 pending，不断言已放弃日语"
+          }
+        },
+        "must_not": [
+          "不得结束 90",
+          "不得判为 conflict（两者并不互斥）",
+          "不得判为 coexist 并标 judged 而掩盖关系不明"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [

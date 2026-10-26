@@ -28,8 +28,10 @@
   "reviews": [
    {
     "candidate": 0,
-    "verdict": "supported",
-    "aspects": [],
+    "verdict": "contradicted",
+    "aspects": [
+     "time"
+    ],
     "episode_value": "not_applicable"
    }
   ],
@@ -39,5 +41,6 @@
   },
   "request_reviews": []
  },
- "note": null
+ "note": "AF311：输入 times=[] 漏现在；contradicted[time]，不修输入。",
+ "label_revision": "AF311"
 }

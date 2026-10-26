@@ -1,17 +1,33 @@
 # Generates tests/eval/w4/samples/*.json. The JSON files are the reviewed source of truth;
 # edit here and regenerate, then re-run check_samples.py and get the changes reviewed.
-import json, pathlib, sys
+import copy, json, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from review_status import status_for  # noqa: E402
 OUT = pathlib.Path(__file__).resolve().parent / "samples"
 JUDGED = {"status": "judged", "reasons": []}
+
+
+AF322_IDS = {"w4_04_coexist_partial", "w4_11_preference_strength", "w4_13_state_change_date_unknown",
+             "w4_14_rejudge_committed", "w4_14_complete_rejudge", "w4_23_rejudge_merge",
+             "w4_n1a_negative_state_change"}
+
+def af322_labels(d):
+    if d["id"] not in AF322_IDS:
+        return
+    original = copy.deepcopy(d["expect"])
+    original.pop("alternatives", None)
+    alternative = copy.deepcopy(original)
+    alternative["decisions"][0]["effective"] = copy.deepcopy(d["input"]["candidates"][0]["candidate"]["times"][0])
+    d["expect"] = dict(original, alternatives=[original, alternative])
+    d["label_revision"] = "AF322"
 
 def Q(t): return {"text": t}
 def cand(subject, relation, sentence, value=None, value_quote=None, kind="assertion", memory_type="fact",
          speech="user_statement", polarity="affirm", conditions=(), times=(), uncertainty=None, strength=None):
     if kind == "assertion":
         if relation == "fact":
-            v = {"kind": "text", "text": sentence, "quote": Q(sentence)}
+            span = value if value is not None else sentence
+            v = {"kind": "text", "text": span, "quote": Q(value_quote or span)}
         else:
             v = {"kind": "text", "text": value, "quote": Q(value_quote or value)}
     else:
@@ -22,7 +38,7 @@ def cand(subject, relation, sentence, value=None, value_quote=None, kind="assert
             "conditions": [{"quote": Q(c), "resolved": True} for c in conditions], "times": list(times)}
 def ev(sid, quote): return {"source": {"kind": "stored", "source_id": sid}, "quote": Q(quote)}
 UNKNOWN_RES = {"status": "unknown", "start": None, "end_exclusive": None, "precision": "unknown"}
-def recurring(q): return {"role": "event", "quote": Q(q), "interp": {"kind": "recurring"}, "anchor": "said_on"}
+def recurring(q, role="event"): return {"role": role, "quote": Q(q), "interp": {"kind": "recurring"}, "anchor": "said_on"}
 # A time expression that is present but has no computable interval ("现在", "最近"):
 # the quote is kept with interp unknown, never dropped (contracts 1.2/1.3).
 def vague(q, role="validity"): return {"role": role, "quote": Q(q), "interp": {"kind": "unknown"}, "anchor": "said_on"}
@@ -41,7 +57,7 @@ SCOPE_PENDING = {"status": "pending", "reasons": ["update_scope_incomplete"]}
 PARTIAL = {"complete": False, "omitted": 0}
 def sample(id, focus, sources, candidates, records, expect, relations=(), coverage=None, call_w4=True,
            boundary_with=None, rejected=(), note=None, batch=1):
-    # w4.v2: every decision carries relation_scope (null unless conflict). Existing
+    # w4.v5: every decision carries relation_scope (null unless conflict). Existing
     # conflict examples have no qualifier on the conflict itself: both lists empty.
     def with_scope(dec):
         if "relation_scope" in dec:
@@ -55,7 +71,14 @@ def sample(id, focus, sources, candidates, records, expect, relations=(), covera
         return out
     if "decisions" in expect:
         expect = dict(expect, decisions=[with_scope(x) for x in expect["decisions"]])
-    d = {"id": id, "contract": "w4.v2", "batch": batch, "label_status": None, "focus": focus,
+        # Pending targets are optional located records, not executable targets.
+        if any(x["status"] == "pending" and x["targets"] for x in expect["decisions"]):
+            alternative = copy.deepcopy(expect)
+            for decision in alternative["decisions"]:
+                if decision["status"] == "pending":
+                    decision["targets"] = []
+            expect["alternatives"] = [copy.deepcopy(expect), alternative]
+    d = {"id": id, "contract": "w4.v5", "batch": batch, "label_status": None, "label_revision": "AF276", "focus": focus,
          "boundary_with": boundary_with, "sources": sources,
          "input": {"candidates": candidates, "records": records, "relations": list(relations),
                    "coverage": coverage or {"complete": True, "omitted": 0}},
@@ -66,6 +89,7 @@ def sample(id, focus, sources, candidates, records, expect, relations=(), covera
     # JSON already on disk; anything new or changed is written as `draft`.
     d["qualifier_marks"] = MARKS.pop(id, {})
     path = OUT / f"{id}.json"
+    af322_labels(d)
     d["label_status"] = status_for(d, json.loads(path.read_text(encoding="utf-8")) if path.exists() else None)
     path.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -128,25 +152,25 @@ sample("w4_03_refine_whole", "细化 refine：新断言覆盖并修订整个旧�
              "recall": {"current": ["new（每天早上跑五公里，带 update.pending）"], "history": ["30 作为被细化的旧版本"]}},
    "must_not": ["不得判为 reinforce（新句增加了距离，不只是重复）", "不得保留 30 为并列的当前记录，造成同一习惯两条当前断言"]},
   coverage=PARTIAL, boundary_with="w4_04_coexist_partial",
-  note="通用 fact 只按本次全文检索取候选，范围不完整；对已明确定位的目标 30，细化仍可执行，但新记录的更新状态保留 pending/update_scope_incomplete。“每天早上”为周期时间，保留原文，换算状态 unknown，不生成连续日期区间。",
+  note="本固定输入模拟未能穷举授权范围的检索，coverage=false（不是通用 fact 永远不完整）；对已明确定位的目标 30，细化仍可执行，但新记录的更新状态保留 pending/update_scope_incomplete。“每天早上”为周期时间，保留原文，换算状态 unknown，不生成连续日期区间。",
   rejected=[{"action": "reinforce", "why": "新断言更具体，不是同一断言的重复"},
             {"action": "coexist", "why": "新句以“更准确地说”修订同一个整体习惯，没有新的限定条件"}])
 
 # ---------------- W04 局部补充（并存）
-t = "周末的时候我更喜欢喝手冲咖啡。"
-MARKS["w4_04_coexist_partial"] = {'candidate:0': {'conditions': ['周末的时候']}}
+t = "周末的时候我喜欢喝手冲咖啡。"
+MARKS["w4_04_coexist_partial"] = {'candidate:0': {'times': ['周末的时候']}}
 sample("w4_04_coexist_partial", "局部补充 coexist：只在新条件下成立，不结束较一般的旧事实",
   {"s-111": S("我喜欢喝咖啡。", "2026-05-06"), "s-241": S(t, "2026-09-15")},
-  [incand(cand("self", "fact", t, memory_type="preference", conditions=["周末的时候"]), "s-241", "2026-09-15")],
+  [incand(cand("self", "fact", t, memory_type="preference", times=[recurring("周末的时候", "validity")]), "s-241", "2026-09-15")],
   [rec(31, cand("self", "fact", "我喜欢喝咖啡。", memory_type="preference"), "s-111", "2026-05-06")],
   {"decisions": [{"candidate": 0, "status": "decided", "action": "coexist", "targets": [], "resolves_relations": [],
                   "basis_sources": ["s-111", "s-241"], "effective": None, "pending_reason": None}],
    "after": {"records": {"31": {"stored_status": "active", "termination_reason": None, "ended": "not_ended"},
-                         "new": {"from_candidate": 0, "stored_status": "active", "update": SCOPE_PENDING, "conditions": ["周末的时候"]}},
-             "recall": {"current": ["31（喜欢喝咖啡）", "new（周末更喜欢手冲，带条件）"]}},
-   "must_not": ["不得结束 31（现有 Refine 会结束旧版本，这里必须避免）", "新记录不得丢掉“周末的时候”条件"]},
+                         "new": {"from_candidate": 0, "stored_status": "active", "update": SCOPE_PENDING, "times": [recurring("周末的时候", "validity")]}},
+             "recall": {"current": ["31（喜欢喝咖啡）", "new（周末喜欢手冲，带周期时间与 update.pending）"]}},
+   "must_not": ["不得结束 31（现有 Refine 会结束旧版本，这里必须避免）", "新记录不得丢掉“周末的时候”的周期时间"]},
   coverage=PARTIAL, boundary_with="w4_03_refine_whole",
-  note="通用 fact 范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。",
+  note="本次固定输入的授权范围不完整：并存决定成立，但不能据此确认没有其他相关偏好，新记录更新状态为 pending/update_scope_incomplete。",
   rejected=[{"action": "refine", "why": "新断言只覆盖周末，不能替代无条件的旧偏好"},
             {"action": "conflict", "why": "两者不互斥"}])
 
@@ -181,7 +205,7 @@ sample("w4_06_retract_target_unknown", "撤回目标不明：代码保留 pendin
    "must_not": ["不得调用 W4", "不得结束或修改任何现有记录", "不得作为有值断言提交",
                 "不得把“没检索到”当作“没有旧记录”而丢弃该撤回"]},
   coverage=PARTIAL, call_w4=False, boundary_with="w4_05_retract",
-  note="contracts 2.4：retraction 找不到目标时由代码保留 pending/target_unknown，不调用 W4；通用 fact 范围不完整，原因中同时含 update_scope_incomplete（contracts 1.6：范围不完整必含该原因）。")
+  note="contracts 2.4：retraction 找不到目标时由代码保留 pending/target_unknown，不调用 W4；本次固定输入的授权范围不完整，原因中同时含 update_scope_incomplete（contracts 1.6：范围不完整必含该原因）。")
 
 # ---------------- W07 真实冲突
 t = "我又查到栖风读书机的屏幕是8英寸，和之前记的7英寸对不上，还没核实哪个对。"
@@ -216,7 +240,7 @@ sample("w4_08_scope_incomplete_no_records", "检索范围不足而非冲突：�
              "recall": {"current_note": "可返回该断言，但须带 update.pending，不得声称是唯一当前值"}},
    "must_not": ["不得调用 W4", "不得因检索不足创建冲突关系", "不得把 update 标为 judged"]},
   coverage={"complete": False, "omitted": 0}, call_w4=False, boundary_with="w4_07_conflict",
-  note="通用关系 fact 只按本次全文检索取候选，范围不保证完整（contracts 2.4）。检索到部分记录但范围不完整、需要调用 W4 的情形在第二批补充。")
+  note="本固定输入模拟未能穷举授权范围、覆盖未知的回落检索；空授权范围实际穷举完整的对照见 w4_08_complete_no_records。检索到部分记录但范围不完整、需要调用 W4 的情形在第二批补充。")
 print("batch1 ok")
 
 # ======================= 第二批 =======================
@@ -323,13 +347,13 @@ sample("w4_14_rejudge_committed", "重判已提交的断言：committed_id 非�
              "new_records": 0,
              "recall": {"current": ["70（每天两杯）"], "history": ["55（每天一杯）"]}},
    "must_not": ["不得再插入一条“每天两杯”", "不得把 70 与自身比较或当作一次强化",
-                "通用 fact 范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"]},
+                "本次固定输入的授权范围仍不完整，70 的 pending/update_scope_incomplete 不得因本次重判清除"]},
   coverage=PARTIAL, batch=2,
-  note="70 此前已提交且 update.pending；本次后台检索到旧记录 55 后显式重判。代码不把 70 放进 records（候选不与自身比较）。")
+  note="70 此前已提交且 update.pending；本次后台检索到旧记录 55 后显式重判，仍以 coverage=false 注入未穷举范围。预算内穷举完整的对照见 w4_14_complete_rejudge。代码不把 70 放进 records（候选不与自身比较）。")
 
 # ---------------- W15 已有冲突的解决（撤回其中一方）
 t = "我核实过了，栖风读书机屏幕7英寸那份是记错的。"
-t2 = "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+t2 = "我记得栖风读书机的屏幕是8英寸，但我还没核实哪份对。"
 link = {"id": "rel-1", "kind": "conflict", "members": [50, 51], "conditions": [], "times": [],
         "basis": [ev("s-130", "我已确认栖风读书机的屏幕尺寸是7英寸。"), ev("s-261", t2)], "status": "open", "resolution": None}
 MARKS["w4_15_resolve_conflict"] = {'record:51': {'uncertainty': ['我还没核实哪份对']}}
@@ -368,7 +392,7 @@ sample("w4_16_pending_scope_incomplete", "W4 返回 pending/scope_incomplete：�
    "must_not": ["不得结束任何未送入 W4 的记录", "不得把 81 以外的设备推断为已停用",
                 "不得改判为 conflict"]},
   coverage=PARTIAL, batch=2, boundary_with="w4_08_scope_incomplete_no_records",
-  note="“只用这一台”意味着其他设备已不再使用，但检索范围不完整，这一结论不能成立；W3 支持的断言本身仍可提交（contracts 2.4）。")
+  note="候选作为 W3 已支持的固定输入，设备回指的可信 USER 前提由上游负责。“只用这一台”涉及其他设备，但检索范围不完整，这一结论不能成立；W3 支持的断言本身仍可提交（contracts 2.4）。")
 
 # ---------------- W17 W4 返回 pending：新旧关系不明
 t = "我最近在学韩语。"
@@ -378,11 +402,11 @@ sample("w4_17_pending_unclear_relation", "W4 返回 pending/unclear_relation：�
   [incand(cand("self", "fact", t, times=[vague("最近")]), "s-390", "2026-09-27")],
   [rec(90, cand("self", "fact", "我在学日语。"), "s-306", "2026-03-20")],
   {"decisions": [{"candidate": 0, "status": "pending", "action": None, "targets": [90], "resolves_relations": [],
-                  "basis_sources": ["s-306", "s-390"], "effective": None, "pending_reason": "unclear_relation"}],
-   "after": {"records": {"90": {"stored_status": "active", "ended": "not_ended"},
+                  "basis_sources": ["s-390"], "effective": None, "pending_reason": "unclear_relation"}],
+   "after": {"records": {"90": {"stored_status": "active", "ended": "not_ended", "update": JUDGED},
                          "new": {"from_candidate": 0, "stored_status": "active",
                                  "update": {"status": "pending", "reasons": ["update_relation_unclear", "update_scope_incomplete"]}}},
-             "recall": {"current": ["90（学日语）", "new（学韩语）"], "note": "两条都带待判定标注，不断言已放弃日语"}},
+             "recall": {"current": ["90（学日语）", "new（学韩语）"], "note": "旧 90 保持 judged；新记录带 pending，不断言已放弃日语"}},
    "must_not": ["不得结束 90", "不得判为 conflict（两者并不互斥）", "不得判为 coexist 并标 judged 而掩盖关系不明"]},
   coverage=PARTIAL, batch=2,
   rejected=[{"action": "state_change", "why": "原文没说不学日语了"}, {"action": "coexist", "why": "也没说两门同时在学，关系不能确定"}])
@@ -422,12 +446,12 @@ sample("w4_18_legacy_gaps", "legacy 旧记录缺来源和限定语：不能据�
   note="95 只有旧数据中的片段，没有可链接原文，也缺限定语，无法核准完整断言；新断言可提交，但与 95 的关系待判定。")
 
 # ---------------- W19 跨任务范围
-t = "在潮汐展陈任务中，折页导航终端的开机显示语言改为葡萄牙语。"
-old_t = "在潮汐展陈任务中，我们正在为折页导航终端配置展台演示；该任务要求它的开机显示语言设为西班牙语。"
+t = "在潮汐展陈任务中，折页导航终端的开机显示语言已改为葡萄牙语。"
+old_t = "在潮汐展陈任务中，折页导航终端的开机显示语言已设为西班牙语。"
 sample("w4_19_task_scope", "任务范围：只在可信任务内判定，其他任务的记录不进入输入",
   {"s-501": S(old_t, "2026-09-28"), "s-510": S(t, "2026-09-28")},
-  [incand(cand("device_zheye_terminal", "fact", t), "s-510", "2026-09-28")],
-  [rec(97, cand("device_zheye_terminal", "fact", old_t), "s-501", "2026-09-28")],
+  [incand(cand("device_zheye_terminal", "fact", t, value="折页导航终端的开机显示语言已改为葡萄牙语"), "s-510", "2026-09-28")],
+  [rec(97, cand("device_zheye_terminal", "fact", old_t, value="折页导航终端的开机显示语言已设为西班牙语"), "s-501", "2026-09-28")],
   {"decisions": [{"candidate": 0, "status": "decided", "action": "state_change", "targets": [97], "resolves_relations": [],
                   "basis_sources": ["s-501", "s-510"], "effective": None, "pending_reason": None}],
    "after": {"records": {"97": {"stored_status": "superseded", "termination_reason": "StateChanged", "ended": "end_unknown"},
@@ -456,14 +480,14 @@ sample("w4_20_pending_target_unknown", "W4 返回 pending/target_unknown：撤�
   note="与 w4_06 不同：这里检索到了两条候选目标，W4 被调用，但无法确定指的是哪一条。可在后续交互中请用户澄清。")
 # ---------------- W21 确认冲突一方：胜方被细化为已核实，败方撤回，关系解决
 t = "我核实过了，栖风读书机的屏幕是8英寸，7英寸那份是记错的。"
-t2 = "另一份资料写栖风读书机的屏幕是8英寸，我还没核实哪份对。"
+t2 = "我记得栖风读书机的屏幕是8英寸，但我还没核实哪份对。"
 t50 = "我已确认栖风读书机的屏幕尺寸是7英寸。"
 link = {"id": "rel-1", "kind": "conflict", "members": [50, 51], "conditions": [], "times": [],
         "basis": [ev("s-130", t50), ev("s-261", t2)], "status": "open", "resolution": None}
 MARKS["w4_21_confirm_conflict_side"] = {'record:51': {'uncertainty': ['我还没核实哪份对']}}
 sample("w4_21_confirm_conflict_side", "确认冲突一方并重述其值：败方 retract 并解决关系，胜方由“未核实”细化为已核实",
   {"s-130": S(t50, "2026-07-01"), "s-261": S(t2, "2026-09-20"), "s-371": S(t, "2026-09-27")},
-  [incand(cand("device_qifeng_reader", "fact", t), "s-371", "2026-09-27", index=0),
+  [incand(cand("device_qifeng_reader", "fact", t, value="栖风读书机的屏幕是8英寸"), "s-371", "2026-09-27", index=0),
    incand(cand("device_qifeng_reader", "fact", t, kind="retraction"), "s-371", "2026-09-27", index=1)],
   [rec(50, cand("device_qifeng_reader", "fact", t50), "s-130", "2026-07-01", rel=["rel-1"]),
    rec(51, cand("device_qifeng_reader", "fact", t2, uncertainty={"quote": Q("我还没核实哪份对"), "resolved": True}),
@@ -481,13 +505,13 @@ sample("w4_21_confirm_conflict_side", "确认冲突一方并重述其值：败�
              "recall": {"current": ["new（8 英寸，已核实）"], "history": ["51（8 英寸，当时未核实）"], "conflicts": []}},
    "must_not": ["不得把候选 0 判为 reinforce 51：51 带“还没核实”的不确定表达，新断言没有，限定语不同，不满足强化前提",
                 "不得只关闭 rel-1 而让 50 与 51 或新记录同时作为当前结论",
-                "不得由代码看到 refine 就推断 rel-1 已解决；解决只来自 W4 在撤回决定上给出的 resolves_relations",
+                "不得由代码看到 refine 就推断 rel-1 已解决；整组由一个合格决定明确解决关系",
                 "不得删除 s-130、s-261 原文",
                 "两个决定不得部分提交（W5 验收项）"]},
   relations=[link], coverage=PARTIAL, batch=2, boundary_with="w4_15_resolve_conflict",
   rejected=[{"action": "reinforce", "why": "不确定变确定属于限定语变化，不是同一断言；强化会把“还没核实”吞掉"},
             {"action": "correction", "why": "51 没有说错，它如实记录了当时未核实；新断言是在其基础上确认"}],
-  note="一条原文拆成两个候选（W1）：有值断言与撤回，两者都引用同一完整原句（通用 fact 的 value.quote 与 sentence 相同）。关系由撤回决定解决：败方 50 结束，胜方 51 被新记录细化后进入历史，新记录不是关系成员。"
+  note="一条原文拆成两个候选（W1）：有值断言与撤回，两者都引用同一完整原句；断言 value 只定位 8 英寸片段，撤回 value=null。关系由整组一个合格决定明确解决：败方 50 结束，胜方 51 被新记录细化后进入历史，新记录不是关系成员。"
        "W5（contracts 2.5）：两个决定相互依赖，同一 T2 原子提交，任一 needs_rejudge 则整组重判，失败整组回滚；"
        "若只有细化而未解决关系，rel-1 保持 open 且成员不变，替代记录标 update_relation_unclear 并经 history 带出该关系（见 w4_22）。")
 # ---------------- W22 冲突双方被同一新版本替代，关系不解决、成员不迁移
@@ -537,4 +561,62 @@ sample("w4_23_rejudge_merge", "重判已提交断言为 reinforce：值与限定
   rejected=[{"action": "state_change", "why": "值与限定语都没有变化"}, {"action": "new", "why": "与 55 是同一断言"}],
   note="70 首次提交时范围不完整、带 update.pending；后台检索到 55 后重判。二者值与限定语相同、来源不同，按 contracts 2.5 归并：证据按来源幂等并入 55，回执保存 70→55 的替代映射。")
 print("batch2 ok")
+
+# AF276 complete-scope controls: same assertions, actual enumeration is complete.
+for base_id, control_id in [("w4_08_scope_incomplete_no_records", "w4_08_complete_no_records"),
+                            ("w4_14_rejudge_committed", "w4_14_complete_rejudge")]:
+    d = json.loads((OUT / f"{base_id}.json").read_text())
+    d.update(id=control_id, focus="授权范围实际穷举完整的对照", boundary_with=base_id,
+             note="授权范围与必要闭包预算内实际穷举完整；显式重判仅清除本次覆盖的旧缺口。")
+    d["input"]["coverage"] = {"complete": True, "omitted": 0}
+    for product in d["expect"]["after"]["records"].values():
+        if "from_candidate" in product:
+            product["update"] = JUDGED
+    if "code_path" in d["expect"]:
+        d["expect"]["code_path"]["update"] = JUDGED
+        d["expect"]["after"]["recall"]["current_note"] = "可返回已提交、update.judged 的断言；完整只指授权范围。"
+    d["expect"]["must_not"] = ["不得重复插入；不得跳过必要的来源与身份检查",
+                               "完整只指本次授权范围，不证明现实世界不存在其他事实"]
+    path = OUT / f"{control_id}.json"
+    af322_labels(d)
+    d["label_status"] = status_for(d, json.loads(path.read_text()) if path.exists() else None)
+    path.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n")
+
+# AF276 negative fact updates, with explicit temporal qualifiers kept intact.
+for id, sid, text, time, action, reason, record_id in [
+    ("w4_n1a_negative_state_change", "s-601", "我不再在青禾工坊任职。", "不再", "state_change", "StateChanged", 120),
+    ("w4_n1b_negative_correction", "s-602", "我从来没在青禾工坊任职过。", "从来", "correction", "Correction", 121),
+]:
+    old = "我在青禾工坊任职。"
+    MARKS[id] = {"candidate:0": {"times": [time]}}
+    sample(id, "否定事实：真实状态变化与纠正旧断言分开", {"s-600": S(old, "2026-03-01"), sid: S(text, "2026-10-01")},
+           [incand(cand("self", "works_at", text, "青禾工坊", polarity="negate", times=[vague(time)]), sid, "2026-10-01")],
+           [rec(record_id, cand("self", "works_at", old, "青禾工坊"), "s-600", "2026-03-01")],
+           {"decisions": [{"candidate": 0, "status": "decided", "action": action, "targets": [record_id],
+                           "resolves_relations": [], "basis_sources": ["s-600", sid], "effective": None, "pending_reason": None}],
+            "after": {"records": {str(record_id): {"stored_status": "superseded", "termination_reason": reason, "ended": "end_unknown"},
+                                   "new": {"from_candidate": 0, "stored_status": "active", "history": [record_id], "polarity": "Negative", "update": JUDGED}},
+                      "new_records": 1, "recall": {"current": ["新否定事实"],
+                          "history": ["旧任职事实，结束时间未知"] if action == "state_change" else [],
+                          "audit_only": ["被纠正的旧任职断言"] if action == "correction" else []}},
+            "must_not": ["不得把否定改为撤回或强化，不得吞掉否定极性", "不得伪造终止日期或删除来源",
+                         "纠错旧值不得作为真实任职历史返回"]}, coverage=COMPLETE, batch=3)
+
+t = "我已经把书房灯换成了暖白光，我使用木制书架。"
+old = "我的书房灯是冷白光。"
+sample("w4_n2_sibling_fragments", "同句兄弟片段：一个更新、一个独立新增",
+       {"s-610": S(old, "2026-03-01"), "s-611": S(t, "2026-10-01")},
+       [incand(cand("self", "fact", t, value="我已经把书房灯换成了暖白光"), "s-611", "2026-10-01", index=0),
+        incand(cand("self", "fact", t, value="我使用木制书架"), "s-611", "2026-10-01", index=1)],
+       [rec(122, cand("self", "fact", old), "s-610", "2026-03-01")],
+       {"decisions": [{"candidate": 0, "status": "decided", "action": "state_change", "targets": [122], "resolves_relations": [],
+                       "basis_sources": ["s-610", "s-611"], "effective": None, "pending_reason": None},
+                      {"candidate": 1, "status": "decided", "action": "new", "targets": [], "resolves_relations": [],
+                       "basis_sources": ["s-611"], "effective": None, "pending_reason": None}],
+        "after": {"records": {"122": {"stored_status": "superseded", "termination_reason": "StateChanged", "ended": "end_unknown"},
+                               "new_light": {"from_candidate": 0, "stored_status": "active", "history": [122], "update": JUDGED},
+                               "new_shelf": {"from_candidate": 1, "stored_status": "active", "history": [], "update": JUDGED}},
+                  "new_records": 2, "recall": {"current": ["暖白灯", "木制书架"], "history": ["旧冷白灯"]}},
+        "must_not": ["不得因共用 sentence 合并两候选、互借记录身份或 grade/update", "不得把书架追加判为灯具强化或细化"]},
+       coverage=COMPLETE, batch=3)
 

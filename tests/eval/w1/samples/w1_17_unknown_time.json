@@ -53,49 +53,93 @@
   "task_id": null
  },
  "expect": {
-  "candidate_count": 1,
-  "candidates": [
+  "alternatives": [
    {
-    "kind": "assertion",
-    "speech": "user_statement",
-    "subject": "self",
-    "relation": [
-     "owns",
-     "fact"
-    ],
-    "memory_type": [
-     "fact",
-     "episode"
-    ],
-    "value": [
-     "猫",
-     "一只猫",
-     "我以前养过一只猫。"
-    ],
-    "sentence": "我以前养过一只猫。",
-    "polarity": "affirm",
-    "uncertainty": null,
-    "conditions": [],
-    "times": [
+    "candidate_count": 1,
+    "candidates": [
      {
-      "role": [
-       "validity",
-       "event"
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "self",
+      "relation": [
+       "owns"
       ],
-      "quote": "以前",
-      "interp": {
-       "kind": "unknown"
-      }
+      "memory_type": [
+       "fact",
+       "episode"
+      ],
+      "value": [
+       "猫",
+       "一只猫",
+       "我以前养过一只猫。"
+      ],
+      "sentence": "我以前养过一只猫。",
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": [
+         "validity",
+         "event"
+        ],
+        "quote": "以前",
+        "interp": {
+         "kind": "unknown"
+        }
+       }
+      ],
+      "strength": null
      }
     ],
-    "strength": null
+    "memory_requests": []
+   },
+   {
+    "candidate_count": 1,
+    "candidates": [
+     {
+      "kind": "assertion",
+      "speech": "user_statement",
+      "subject": "self",
+      "relation": "fact",
+      "memory_type": [
+       "fact",
+       "episode"
+      ],
+      "value": {
+       "window": "我以前养过一只猫。",
+       "required": [
+        "养过",
+        "猫"
+       ]
+      },
+      "sentence": "我以前养过一只猫。",
+      "polarity": "affirm",
+      "uncertainty": null,
+      "conditions": [],
+      "times": [
+       {
+        "role": [
+         "validity",
+         "event"
+        ],
+        "quote": "以前",
+        "interp": {
+         "kind": "unknown"
+        }
+       }
+      ],
+      "strength": null
+     }
+    ],
+    "memory_requests": []
    }
-  ],
-  "memory_requests": []
+  ]
  },
  "must_not": [
   "丢掉“以前”（会变成现在养猫）",
   "把“以前”换算成具体日期"
  ],
- "note": "用户确认（2026-10-03）：role 取 validity 或 event 均可；关键是保留“以前”且不换算成日期。"
+ "note": "用户确认（2026-10-03）：role 取 validity 或 event 均可；关键是保留“以前”且不换算成日期。 AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。",
+ "label_revision": "AF317"
 }

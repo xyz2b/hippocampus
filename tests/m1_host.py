@@ -46,7 +46,11 @@ def main():
         client = Client(args.binary.resolve(), db, env, "alice", config=config)
         try:
             tools = {t["name"]: t for t in client.rpc("tools/list", {})["tools"]}
-            assert len(tools) == 11
+            assert len(tools) == 12
+            assert "memory_entity_merge" in tools
+            assert tools["memory_entity_merge"]["annotations"]["readOnlyHint"] is False
+            assert tools["memory_entity_merge"]["annotations"]["destructiveHint"] is True
+            assert tools["memory_entity_merge"]["annotations"]["idempotentHint"] is True
             assert "memory_source_import_history" in tools
             assert tools["memory_source_import_history"]["annotations"]["readOnlyHint"] is False
             assert "memory_source_reprocess" in tools
@@ -73,7 +77,7 @@ def main():
                 client.call("memory_remember", {**turn, "text": "同键换原话。"}, error=True)
                 assert profile(db) == before
                 offline = client.call("memory_recall", {"query": "我的伞", "request_id": "raw", "offline": True})
-                assert offline["recall"]["version"] == "recall.v6"
+                assert offline["recall"]["version"] == "recall.v11"
                 assert offline["recall"]["semantic_judgment"] == "skipped"
                 assert any(r["source_id"] == saved["source"]["source_id"] for r in offline["recall"]["raw"])
                 client.call("memory_forget", {"source_id": saved["source"]["source_id"]})

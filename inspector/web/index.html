@@ -162,7 +162,7 @@ function render(){hideStageHelp();if(!bundle)return;const titles={runs:['请求�
  $('page-title').textContent=titles[view][0];$('page-description').textContent=titles[view][1];
  document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
  $('sources-count').textContent=savedSources().length;$('runs-count').textContent=bundle.runs.length;$('memories-count').textContent=memoryVersions().length;$('calls-count').textContent=bundle.llm_calls.length;$('logs-count').textContent=bundle.live?.logs?.length||0;$('data-scope').textContent=bundle.live?'本机当前数据':'历史 / 导入记录';
- const demo=bundle.meta.data_kind==='demo';$('banner').className='banner'+(demo?'':' recorded');$('banner').innerHTML=`<strong>${demo?'演示数据 · 非真实日志':bundle.live?'本地后台快照':'导入记录 · 非实时连接'}</strong><span>${esc(bundle.meta.title)}。${esc(bundle.meta.notes||'记录来源由导出方提供，界面不自动核验其真实性。')}</span>${bundle.live?.observability?`<span>${esc(bundle.live.observability)}</span>`:''}`;
+ const demo=bundle.meta.data_kind==='demo';$('banner').className='banner'+(demo?'':' recorded');$('banner').innerHTML=`<strong>${demo?'演示数据 · 非真实日志':bundle.live?'本地后台快照':'导入记录 · 非实时连接'}</strong><span>${esc(bundle.meta.title)}。${esc(bundle.meta.notes||'记录来源由导出方提供，界面不自动核验其真实性。')}</span>${bundle.live?.observability?`<span>${esc(bundle.live.observability)}</span>`:''}${bundle.meta.deletion_epoch?.cleanup_failures?`<span>旧日志物理清理有 ${Number(bundle.meta.deletion_epoch.cleanup_failures)} 项失败；正文仍受删除纪元保护。</span>`:''}${bundle.meta.filtered_events?.length?`<details><summary>${bundle.meta.filtered_events.length} 条历史事件正文已隐藏（删除纪元/依赖保护）</summary><pre>${esc(JSON.stringify(bundle.meta.filtered_events,null,2))}</pre></details>`:''}`;
  const ac=aggregateCosts(),fails=bundle.runs.filter(r=>bad(r.status)).length;
  const metrics=[['运行记录',bundle.runs.length,'工具完成不代表端到端验收通过'],['异常 / 未完成',fails,'状态按已导出记录显示'],['记忆条目',memoryVersions().length,bundle.memory_snapshot.completeness==='not_captured'?'快照未采集，不代表空库':'已合并仅召回次数和时间不同的快照'],['已知费用',ac.text,ac.unknown?`${ac.unknown} 次调用费用未知，不能当作 0`:(bundle.llm_calls.length?'按币种分别合计':'没有导入模型调用，不能推断实际费用')]];
  $('metrics').innerHTML=metrics.map(m=>`<div class="metric"><div class="label">${esc(m[0])}</div><div class="value" style="${String(m[1]).length>15?'font-size:17px':''}">${esc(m[1])}</div><div class="note">${esc(m[2])}</div></div>`).join('');
@@ -198,6 +198,12 @@ const STAGE_INFO={
  'run_end':['汇总工具执行结果','汇总本次保存、召回、全局要求和错误，构造工具响应。此处耗时是整次工具执行的总耗时，不是单独汇总的耗时。'],
  'rpc_response':['记录工具响应','记录服务端返回的处理进度或结果；轮询共用同一操作，不代表又执行一次模型调用，也不能证明宿主已收到。'],
  '持久保存回执':['读取历史保存回执','展示 SQLite 中留存的保存参数与结果。回执可证明当时的保存结果，不能还原未采集的模型请求和执行过程。'],
+ 'w3_skipped':['W3 跳过','按明确条件跳过模型语义复核；不会将跳过解释为复核通过。'],
+ 'w4_plan':['W4 更新判定计划','区分代码判定、模型调用及暂存；计划不等于 W5 已提交。'],
+ 'w2_summary':['W2 机械核验摘要','候选总数、准入/暂存/拒收计数及固定拒收原因；不等于提交成功。'],
+ 'w5_commit':['W5 已提交摘要','仅在 SQLite 提交成功后记录的决定类型、产物 ID 与修订号。'],
+ 'r3_evidence':['R3 证据包摘要','证据记录/原话数量、有限 ID 与截断标记。'],
+ 'r5_final':['R5 最终核验摘要','最终状态、事实与计算数量；不是模型原始判断。'],
  'model_start':['发送模型请求','记录一次实际模型请求的参数和尝试编号；对应的响应见后续模型返回阶段或关联调用。'],
  'model_end':['接收并解析模型响应','记录本次模型请求的业务输出、错误、用量和耗时；模型完成不等于输出通过本地校验或已保存。'],
  '首次输出 JSON 检查（离线诊断）':['离线检查首次输出格式','根据留存的首次模型输出检查 JSON 格式；从错误文本中识别出的候选只用于诊断，不表示运行时接受或保存。'],
@@ -270,6 +276,7 @@ function retrievalMemoryItem(record,id,decision,reference=null){
 }
 function renderRetrievalDetail(span){
  const output=span.output||{},result=output.result,runtime=output.runtime;
+ if(!result||!runtime)return renderPipelineSummary('retrieval',output);
  const trace=Array.isArray(result?.trace)?result.trace:null;
  const completeTrace=trace!==null&&trace.every(entry=>retrievalDecisionKind(entry?.decision));
  const snapshot=id=>{const matches=(Array.isArray(output.memories)?output.memories:[]).filter(m=>m&&String(m.id)===String(id));return matches.length===1?matches[0]:null;};
@@ -438,7 +445,7 @@ function renderLexicalDetail(output){
 function stageBody(s,candidate=false){
  candidate=candidate||s.name==='候选规则裁决（提交结果见事务）';
  const retrieval=(STAGE_ALIASES[s.name]||s.name)==='retrieval',transaction=s.name==='transaction_committed',lexical=s.name==='lexical_raw';
- return `<div class="keyline mono">${esc(s.id)}${s.parent_span_id?' · parent '+esc(s.parent_span_id):''}</div>${s.error?`<div class="notice bad">${esc(s.error.reason||s.error.kind||'处理失败')}${s.error.note?'<br>'+esc(s.error.note):''}</div>`:''}${candidate?renderCandidateDetail(s):`${s.input!==null&&s.input!==undefined?raw('输入',s.input):''}${lexical?renderLexicalDetail(s.output):retrieval?renderRetrievalDetail(s):transaction?renderTransactionDetail(s):''}${s.output!==null&&s.output!==undefined?raw(lexical?'完整原文检索记录':retrieval?'完整检索原始记录':transaction?'完整事务提交 JSON':'输出 / 状态',s.output):''}`}<div class="link-row">${(s.llm_call_ids||[]).map(linkCall).join('')}</div>${!candidate&&!retrieval&&!transaction&&!lexical&&!s.error&&!present(s.input)&&!present(s.output)&&!s.llm_call_ids?.length?'<span class="muted small">没有导出更多阶段数据</span>':''}`;
+ return `<div class="keyline mono">${esc(s.id)}${s.parent_span_id?' · parent '+esc(s.parent_span_id):''}</div>${s.error?`<div class="notice bad">${esc(s.error.reason||s.error.kind||'处理失败')}${s.error.note?'<br>'+esc(s.error.note):''}</div>`:''}${candidate?renderCandidateDetail(s):`${s.input!==null&&s.input!==undefined?raw('输入',s.input):''}${lexical?renderLexicalDetail(s.output):retrieval?renderRetrievalDetail(s):transaction?renderTransactionDetail(s):renderPipelineSummary(s.name,s.output)}${s.output!==null&&s.output!==undefined?raw(lexical?'完整原文检索记录':retrieval?'完整检索原始记录':transaction?'完整事务提交 JSON':'输出 / 状态',s.output):''}`}<div class="link-row">${(s.llm_call_ids||[]).map(linkCall).join('')}</div>${!candidate&&!retrieval&&!transaction&&!lexical&&!s.error&&!present(s.input)&&!present(s.output)&&!s.llm_call_ids?.length?'<span class="muted small">没有导出更多阶段数据</span>':''}`;
 }
 function stageGroups(spans){
  const groups=[];
@@ -531,7 +538,28 @@ function transactionResult(changes){
  if(!changes.total&&!changes.sourceChanges?.rows.length)parts.push('其他状态已提交');
  return parts.join(' · ');
 }
+function isTransactionSummary(output){
+ return output?.after==null&&Number.isInteger(output?.committed_revision)&&output.revision_observability==='persisted';
+}
+function renderPipelineSummary(name,output={}){
+ const fields={
+  w3_skipped:[['reason','跳过原因'],['candidates','候选数量']],
+  w4_plan:[['groups','依赖组数'],['held','计划暂存数量'],['not_admitted','未送入 W4 候选数'],['model_required','需要模型'],['model_called','本 attempt 已调用模型'],['reason','未调用原因'],['decisions','决定计数']],
+  w2_summary:[['total','候选总数'],['admitted','准入'],['unresolved','未解析'],['rejected','拒收'],['reasons','原因计数']],
+  w5_commit:[['revision','已提交修订'],['decision_types','决定类型'],['ids_truncated','ID 是否截断']],
+  r3_evidence:[['records','记录数量'],['raw','原话数量'],['record_ids','记录 ID'],['source_ids','来源 ID'],['ids_truncated','ID 是否截断'],['id_limit','ID 上限'],['completeness','完整性']],
+  r5_final:[['status','最终状态'],['facts','事实数量'],['computed','计算数量'],['records','记录数量'],['raw','原话数量']],
+  retrieval:[['path','检索路径'],['plan_complete','是否实际完整穷举'],['trusted_records','可信范围记录数'],['subject_records','主体候选数'],['subject_mentions','主体提及扩展数'],['records','选中记录数'],['raw','选中原话数'],['truncated','是否裁剪'],['retrieval','索引覆盖元数据'],['status','检索状态'],['query_error','查询错误类别'],['index_state','索引状态'],['query_elapsed_ms','查询耗时 ms'],['cache_elapsed_ms','缓存耗时 ms'],['sources_total','来源总数'],['sources_indexed','已索引来源'],['segments_total','片段总数'],['segments_indexed','已索引片段']]
+ }[name];
+ if(!fields)return '';
+ const value=v=>typeof v==='object'?JSON.stringify(v):typeof v==='boolean'?String(v):v;
+ return `<section class="transaction-section"><h4>${esc(STAGE_INFO[name]?.[0]||name)}</h4><div class="facts">${fields.map(([key,title])=>fact(title,value(output?.[key]))).join('')}${name==='w5_commit'?factHtml('已提交产物 ID',Array.isArray(output?.product_ids)?output.product_ids.map(id=>linkMemoryId(id)).join('、')||'无':'未采集'):''}</div>${name==='w5_commit'?'<p class="muted small">来自提交成功后的 W5 摘要；决定类型与产物 ID 分列，不推断逐项对应关系或完整记录内容。</p>':''}</section>`;
+}
 function renderTransactionDetail(span){
+ if(span.status==='completed'&&isTransactionSummary(span.output)){
+  const o=span.output;
+  return `<section class="transaction-section"><h4>已提交 · 事务变更摘要</h4><div class="facts">${fact('修订（读取 → 已提交）',`${o.read_revision??'未采集'} → ${o.committed_revision}`)}${fact('业务状态变化',String(o.business_changed??'未采集'))}${fact('来源变化',String(o.sources_changed??'未采集'))}${fact('来源总数',o.counts?.sources)}${fact('关系总数',o.counts?.relations)}${fact('更新回执总数',o.counts?.updates)}</div><p class="muted small">完整快照未采集（默认摘要模式，PMR_TRACE_FULL_SNAPSHOTS=1 可开启）。计数为提交后总量，不是本次新增数量；逐条记忆产物见 W5 已提交摘要，未采集时不推断。</p></section>`;
+ }
  const changes=span.status==='completed'?transactionChanges(span.output):null;
  if(sourceTransactionKind(span)==='enrichment')return `<section class="transaction-section" aria-label="结构化整理状态"><h4>结构化整理状态</h4>${fact('记录时间',eventTime(span.recorded_at))}${changes.sourceChanges.rows.map(({old,next,id})=>`<div class="facts">${factHtml('关联原文',linkSource(id))}${fact('整理状态',`${STATES[old.enrichment]?.[0]||old.enrichment||'未记录'} → ${STATES[next.enrichment]?.[0]||next.enrichment||'未记录'}`)}${next.task?fact('整理尝试次数',next.task.attempt_count):''}${next.task?.accepted_mode?fact('接收时整理方式',next.task.accepted_mode):''}${fact('失败原因',next.error==='model_network_disabled'?'后台模型网络被禁用（model_network_disabled）':next.error||'无')}</div>`).join('')}</section>`;
  const rows=changes?[["新增记忆",changes.added],["修改记忆",changes.modified],["移除记忆",changes.removed],["仅召回统计更新",changes.statistics]]:[];
@@ -546,6 +574,7 @@ function selectedMemoryCount(result){
  return lanes.every(key=>Array.isArray(result?.[key]))?lanes.reduce((count,key)=>count+result[key].length,0):null;
 }
 function retrievalStageResult(output){
+ if(output?.status&&!output.result&&!output.runtime)return `检索状态 ${output.status} · 已索引片段 ${output.segments_indexed??'未知'}/${output.segments_total??'未知'}`;
  // Each step describes its own recorded result, not the run's final retrieval.
  const selected=Array.isArray(output?.selected_refs)?output.selected_refs.length:selectedMemoryCount(output?.result);
  const trace=output?.result?.trace;
@@ -574,7 +603,7 @@ function stageResult(span,run){
   const count=context?.status==='available'?selectedMemoryCount(context.result):null;
   return count===null?'全局要求数量未采集':`读取 ${count} 条全局要求`;
  }
- if(span.name==='transaction_committed'){if(sourceTransactionKind(span)==='enrichment')return '已记录整理状态';const sources=sourceTransactionChanges(output);return transactionResult(transactionChanges(output))+(sources?' · '+sourceTransactionSummary(sources):'');}
+ if(span.name==='transaction_committed'){if(isTransactionSummary(output))return `已提交 · 修订 ${output.read_revision??'未知'} → ${output.committed_revision}`;if(sourceTransactionKind(span)==='enrichment')return '已记录整理状态';const sources=sourceTransactionChanges(output);return transactionResult(transactionChanges(output))+(sources?' · '+sourceTransactionSummary(sources):'');}
  const candidates=Array.isArray(parsed)?parsed:parsed?.candidates;
  if(!Array.isArray(candidates))return '';
  if(candidates.length===0&&output?.stage==='extraction_review'&&emptySaveConfirmed(run))return '复核确认无需保存';
@@ -645,13 +674,73 @@ function renderLocalRecall(data){
 }
 
 function relatedSourceRuns(r){const id=r.source?.source_id;return id&&Array.isArray(bundle?.runs)?bundle.runs.filter(other=>other.id!==r.id&&other.source?.source_id===id):[];}
-function runDetail(r){const cand=r.retrieval?.candidates,selected=r.retrieval?.selected_refs,returned=r.mcp_response?.returned_refs;
+function stageInput(c){try{return typeof c.request?.input==='string'?JSON.parse(c.request.input):c.request?.input;}catch{return null;}}
+function stagePanels(c){
+ const family=(c.stage||'').split('_')[0].toUpperCase();
+ return '<section><h3>'+esc(c.stage)+' · '+esc(c.model||'模型未采集')+'</h3>'+raw(family==='R4'?'R3：实际送入 R4 的证据包（非重新检索）':'实际阶段输入',stageInput(c))+raw(family==='R1'?'R1 计划 raw':family==='R4'?'R4 判决 / facts raw':'模型 raw',c.parsed_result)+raw('本地 decode / validate',c.checks)+(c.verified_final==null?'<p class="muted">已核验 final 正文未采集；不能从 raw 推定提交。</p>':raw('明确记录的 final',c.verified_final))+'</section>';
+}
+const PIPELINE_LANES=[['W0','原文接收'],['W1','抽取'],['W2','机械核验'],['W3','语义复核'],['W4','更新判定'],['W5','提交'],['R1','计划'],['R2','检索'],['R3','证据包'],['R4','判定'],['R5','最终响应']];
+function pipelineIdentity(run){
+ const meta=[run.trace_context,...(run.spans||[]).map(s=>s.trace_meta)].filter(Boolean);
+ return {traces:new Set([run.id,...meta.map(m=>m.trace_id)].filter(Boolean)),
+ parents:new Set(meta.map(m=>m.parent_trace_id).filter(Boolean)),
+ sources:new Set([run.source?.source_id,...meta.map(m=>m.source_id)].filter(Boolean))};
+}
+function messageRuns(seed){
+ const chosen=new Set([seed]),identities=new Map((bundle.runs||[]).map(r=>[r,pipelineIdentity(r)]));
+ const overlap=(a,b)=>[...a].some(x=>b.has(x));
+ let changed=true;
+ while(changed){changed=false;for(const r of bundle.runs||[]){
+  if(chosen.has(r))continue;
+  const a=identities.get(r);
+  if([...chosen].some(c=>{const b=identities.get(c)||pipelineIdentity(c);return overlap(a.sources,b.sources)||overlap(a.parents,b.traces)||overlap(b.parents,a.traces);})){chosen.add(r);changed=true;}
+ }}
+ return [...chosen];
+}
+function pipelineLane(span){
+ const named={source_receipt:'W0',w2_summary:'W2',w3_skipped:'W3',w4_plan:'W4',w5_commit:'W5',retrieval:'R2',r3_evidence:'R3',r5_final:'R5'};
+ if(named[span.name])return named[span.name];
+ const call=(bundle.llm_calls||[]).find(c=>(span.llm_call_ids||[]).includes(c.id));
+ const stage=span.trace_meta?.stage||span.output?.stage||call?.schema_name||call?.stage||span.name;
+ return String(stage).match(/^([wr][1-5])(?:_|$|\s)/i)?.[1].toUpperCase()||null;
+}
+function pipelineResult(span){
+ const calls=(span.llm_call_ids||[]).map(id=>(bundle.llm_calls||[]).find(c=>c.id===id)).filter(Boolean);
+ const structured=c=>{let p=c.verified_final||c.parsed_result;if(typeof p==='string'){try{p=JSON.parse(p)}catch{return null}}return p};
+ const counts={};
+ for(const c of calls){const p=structured(c);if(!p)continue;
+  if(Array.isArray(p.candidates))counts.candidates=p.candidates.length;
+  if(Array.isArray(p.reviews))counts.verdicts=p.reviews.reduce((m,r)=>(m[r.verdict]=(m[r.verdict]||0)+1,m),{});
+  if(p.plan)counts.plan=p.plan;
+  if(p.coverage)counts.coverage=p.coverage;
+  if(p.verdict)counts.verdict=p.verdict;
+  if(Array.isArray(p.facts))counts.facts=p.facts.length;
+ }
+ return (Object.keys(counts).length?raw('关键结果（按已采集输出）',counts):'')+
+ calls.map(c=>`<div class="facts">${fact('模型',c.model)}${fact('强度',c.effort)}${fact('输入 / 缓存 / 输出 / 推理 token',`${c.usage?.input_tokens??'?'} / ${c.usage?.cached_input_tokens??'?'} / ${c.usage?.output_tokens??'?'} / ${c.usage?.reasoning_tokens??'?'}`)}${fact('耗时',dur(c.duration_ms))}</div>`).join('');
+}
+function renderMessagePipeline(seed){
+ const runs=messageRuns(seed),events=runs.flatMap(r=>(r.spans||[]).map(s=>({run:r,span:s})));
+ const reasons={no_candidates:'零候选',all_rejected:'全部候选被机械核验拒收',no_supported_candidates:'无获准候选',no_targets:'无旧目标',all_new_code_decided:'全为代码可判定的新记录',reused_plan:'复用已保存计划'};
+ return `<section class="panel-body message-pipeline"><h2>消息流水线</h2><p class="muted">仅按来源 ID 与显式 parent_trace_id 关联，共 ${runs.length} 个运行。多轮、多 attempt 分列；无关联事件保留为独立运行，不按时间猜测。</p>${PIPELINE_LANES.map(([key,title])=>{
+ const rows=events.filter(e=>pipelineLane(e.span)===key);
+ return `<section class="transaction-section" data-pipeline-lane="${key}"><h3>${key} · ${title}</h3>${!rows.length?'<div class="muted">未记录</div>':rows.map(({run,span:s})=>{
+ const m=s.trace_meta||run.trace_context||{},skip=s.name==='w3_skipped',bad=['failed','rejected'].includes(s.status);
+ const label=skip?'跳过':bad?'失败':s.status==='completed'?'已执行':'未完成（尾部未记录）';
+ return `<details class="stage"><summary><strong>${label}</strong> · ${esc(stageInfo(s).name)} · ${esc(skip?(reasons[s.output?.reason]||s.output?.reason||'原因未记录'):'')}<span class="mono small"> 代次 ${esc(m.generation??'未记录')} · 轮次 ${esc(m.round??'未记录')} · attempt ${esc(m.attempt_id??'未记录')}</span></summary><div class="stage-body">${pipelineResult(s)}${stageBody(s)}</div></details>`;
+ }).join('')}</section>`;
+ }).join('')}</section>`;
+}
+function runDetail(r){return renderMessagePipeline(r)+`<details class="raw"><summary>原始运行详情 · ${esc(r.id)}</summary>${runTechnicalDetail(r)}</details>`;}
+function runTechnicalDetail(r){const cand=r.retrieval?.candidates,selected=r.retrieval?.selected_refs,returned=r.mcp_response?.returned_refs;
  const sources=(r.source_ids||[]).map(source).filter(Boolean),web=sources.find(s=>['synthetic_web_transcript','manual_web_transcript','host_capture'].includes(s.kind));
  const mcp=r.input?.mcp_text,match=web&&present(mcp)?(web.text===mcp?'正文逐字一致；来源真实性仍按记录方式判断':'正文不同：需要检查改写、遗漏或标准化；这里不自动作语义判断'):'未形成网页原话与 MCP 入参的双侧记录，无法比较';
  const failure=r.spans.find(s=>['failed','incomplete'].includes(s.status));
  const sameSource=relatedSourceRuns(r);
+ const stageCalls=bundle.llm_calls.filter(c=>c.run_id===r.id);
+ const currentFlow=raw('隔离的事件：ID / kind / 字段路径（无正文）',r.parse_errors)+stageCalls.map(stagePanels).join('')+raw('R2 检索诊断（覆盖 / 错误 / 耗时）',r.retrieval_diagnostics)+raw('最终服务响应（含 statement_snapshot；不是模型 raw）',r.mcp_response?.body)+raw('未识别事件',r.spans.filter(s=>s.recognition==='unrecognized'));
  return `<div class="detail-header"><div class="id mono">${esc(r.id)}　/　${esc(r.operation_id||'操作 ID 未采集')}</div><div class="horizontal"><h2>${esc(r.tool)}</h2>${state(r.status)}</div>
- ${r.evidence_status==='evidence_incomplete'?'<div class="notice bad">evidence_incomplete：诊断证据不完整，不影响已完成的业务结果。</div>':''}
+ ${currentFlow}${r.evidence_status==='evidence_incomplete'?'<div class="notice bad">evidence_incomplete：诊断证据不完整，不影响已完成的业务结果。</div>':''}
  ${bundle.meta.channels?`<div class="notice">独立原文留存：${esc(bundle.meta.channels.source_capture==='not_enabled'?'该版本未启用':bundle.meta.channels.source_capture==='enabled'?'已启用':bundle.meta.channels.source_capture==='unknown'?'尚未观测到':bundle.meta.channels.source_capture||'未知')} · 全文索引：${esc(bundle.meta.channels.lexical_index==='not_enabled'?'该版本未启用':bundle.meta.channels.lexical_index==='enabled'?'已观测启用':bundle.meta.channels.lexical_index==='unknown'?'尚未观测到':bundle.meta.channels.lexical_index||'未知')}</div>`:''}
  <div class="notice">原文接收：${state(r.source?.status||'未记录')} · 索引：${state(r.index?.status||'未记录')} · 结构化整理：${state(r.enrichment?.status||'未记录')}${r.enrichment?.error?`<div class="failure-reason">${esc(r.enrichment.error)}</div>`:''}${r.source?`<div class="keyline">来源：${val(r.source.provenance)} · 消息标识：${val(r.source.message_id_trust)}${present(r.source.received_sequence)?` · 接收序号：${val(r.source.received_sequence)}`:''}</div>`:'<div class="keyline">此记录未提供独立原文回执，无法判断原文是否已留存；结构化保存结果见下方保存状态。</div>'}</div>
  ${r.index?raw('索引回执与版本',r.index):''}
@@ -660,7 +749,7 @@ function runDetail(r){const cand=r.retrieval?.candidates,selected=r.retrieval?.s
  ${r.notes?`<div class="small muted">${esc(r.notes)}</div>`:''}</div><div class="panel-body">
  <h3>01　入口：原文与实际入参</h3><div class="two"><div><div class="box-label">网页文本 / 人工记录</div>${sourceText(web?web.text:'未采集；MCP 服务端本身没有网页原文证明')}<div class="hint-line">${web?'来源类型：'+esc(web.kind):'可在网页验收时单独记录并关联'}</div></div><div><div class="box-label">${r.entrypoint==='internal_cli'?(r.tool==='source_enrichment'?'内部原文整理参数':'内部索引操作输入'):'MCP 实际收到的文本'}</div>${sourceText(mcp)}<div class="hint-line">接口输入，不自动视为已验证的用户原话</div></div></div><div class="notice">${esc(match)}</div>${raw('展开工具完整参数',r.input?.arguments??null)}${r.input?.receipt_request?raw('保存回执参数（非 MCP 原始输入）',r.input.receipt_request):''}
  <hr class="divider"><h3>02　执行阶段</h3>${renderExecution(r)}
- <hr class="divider"><h3>03　写入 / 修改证据链</h3>${r.write_changes?.length?r.write_changes.map((w,i)=>`<details class="stage" ${w.commit_status!=='committed'?'open':''}><summary><span class="stage-name">候选 ${esc(w.candidate_id||String(i+1))}</span>${state(w.commit_status)}</summary><div class="stage-body"><div class="two"><div><div class="box-label">支持原文</div>${sourceText((w.source_ids||[]).map(s=>source(s)?source(s).text:s+'（未导出）').join('\n\n')||'未导出来源')}</div><div><div class="box-label">抽取候选，不等于已入库</div><div class="text-box mono small">${json(w.candidate)}</div></div></div>${raw('Rust 校验与决策',w.validation)}<div class="two"><div>${raw('变更前版本',w.before)}</div><div>${raw('已提交的新版本',w.after)}</div></div><div class="keyline">回执：${val(w.receipt_id)}　关联版本：${w.memory_ref?linkMem(w.memory_ref):'没有正式提交'}</div><div class="link-row">${(w.llm_call_ids||[]).map(linkCall).join('')}</div></div></details>`).join(''):'<div class="notice">本记录没有导出结构化记忆写入变更；原文保存情况见上方原文保存状态与事务详情。</div>'}
+ <hr class="divider"><h3>03　写入 / 修改证据链</h3>${r.write_changes?.length?r.write_changes.map((w,i)=>`<details class="stage" ${w.commit_status!=='committed'?'open':''}><summary><span class="stage-name">候选 ${esc(w.candidate_id||String(i+1))}</span>${state(w.commit_status)}</summary><div class="stage-body"><div class="two"><div><div class="box-label">支持原文</div>${sourceText((w.source_ids||[]).map(s=>source(s)?source(s).text:s+'（未导出）').join('\n\n')||'未导出来源')}</div><div><div class="box-label">抽取候选，不等于已入库</div><div class="text-box mono small">${json(w.candidate)}</div></div></div>${raw('Rust 校验与决策',w.validation)}<div class="two"><div>${raw('变更前版本',w.before)}</div><div>${raw('已提交的新版本',w.after)}</div></div><div class="keyline">回执：${val(w.receipt_id)}　关联版本：${w.memory_ref?linkMem(w.memory_ref):'没有正式提交'}</div><div class="link-row">${(w.llm_call_ids||[]).map(linkCall).join('')}</div></div></details>`).join(''):(r.spans||[]).some(s=>s.name==='w5_commit'&&s.status==='completed')?(r.spans||[]).filter(s=>s.name==='w5_commit'&&s.status==='completed').map(s=>renderPipelineSummary(s.name,s.output)).join(''):'<div class="notice">本记录没有导出结构化记忆写入变更；原文保存情况见上方原文保存状态与事务详情。</div>'}
  <hr class="divider"><h3>04　检索、选择与响应边界</h3><div class="pipeline"><div class="pipe"><span>结构化候选</span><b>${Array.isArray(cand)?cand.length:'—'}</b></div><div class="pipe"><span>结构化选中</span><b>${Array.isArray(selected)?selected.length:'—'}</b></div><div class="pipe"><span>返回结构化记忆</span><b>${r.mcp_response.recorded&&Array.isArray(returned)?returned.length:'—'}</b></div>${r.local_recall?`<div class="pipe"><span>返回原文证据</span><b>${num(r.mcp_response.returned_source_count)}</b></div>`:''}<div class="pipe unknown"><span>宿主最终输入</span><b style="font-size:14px">${r.host.input_observability==='provided'&&r.host.request?'有提供记录':'不可观测'}</b></div></div>
  <div class="hint-line">候选数是实际导出的候选记录数，不自动等于扫描量。当前扫描量：${num(r.retrieval.scanned_count)}。未采集显示“—”，不是 0。</div>
  ${r.lexical_raw?renderLexicalDetail(r.lexical_raw):''}
@@ -673,23 +762,30 @@ function runDetail(r){const cand=r.retrieval?.candidates,selected=r.retrieval?.s
  ${sameSource.length?`<div class="notice">同一原文的其他记录（按 source_id 关联）：${sameSource.map(x=>linkRun(x.id)).join('、')}<div class="keyline">这只证明记录引用同一原文，不证明宿主已使用整理结果。</div></div>`:''}${(r.related_runs||[]).length?`<div class="notice">关联运行：${r.related_runs.map(x=>linkRun(x.run_id)+'<div class="keyline">'+esc(x.note||x.relation)+'</div>').join('')}</div>`:''}
  ${raw('查看本运行完整脱敏记录',r)}</div>`;
 }
+function sourceTimeline(s){
+ const runs=bundle.runs.filter(r=>(r.linked_source_ids||[]).includes(s.id)||(!s.operation_id?false:r.operation_id===s.operation_id));
+ return '<section><h3>来源时间线：整理轮次与相关召回</h3><p class="muted">只按明确 source_id / operation_id 关联；引用来源不等于本次整理提交。</p>'+ (runs.length?runs.map(r=>'<div class="snapshot">'+linkRun(r.id)+' · '+esc(r.operation_id)+' · 轮次 '+esc(r.round??'未采集')+' '+state(r.status)+(r.evidence_status==='evidence_incomplete'?' · 不完整':'')+raw('阶段、发送、核验与提交事件',r.spans)+'</div>').join(''):'<p>未采集可明确关联的 Trace。</p>')+'</section>';
+}
+function currentSource(s){return `${sourceTimeline(s)}<section aria-label="来源整理状态"><h3>W0 原文接收与结构化整理</h3><div class="facts">${fact('原文接收',s.source_status||'未知')}${fact('整理状态',s.enrichment||'未知')}${fact('error',s.error)}${fact('判定轮次',s.round)}${fact('operation_id',s.operation_id)}</div><p class="muted small">原文保存不等于候选已提交；以下仅为当前留存检查点。</p>${s.workflow?.status==='privacy_filtered'?'<div class="notice warn">删除隐私保护：正文与跨来源派生详情已隐藏。</div>':`${raw('USER history 隐藏说明',s.workflow?.history)}${raw('W1 已核对当前消息的输出',s.workflow?.w1)}${raw('W2 候选与机械核验（含拒收原因）',s.workflow?.w2)}${raw('W3 已核验回执：verdict / aspects / coverage gaps',s.workflow?.w3)}${!s.workflow?.w3?raw('W3 留存模型输出（不代表本地核验通过）',s.workflow?.w3_recorded_output):''}${raw('逐候选最终回执：committed / held / rejected',s.candidate_receipt)}${raw('准入 / held / insufficient 原因',s.workflow?.admission)}${raw('候选检查点与提交计划',s.workflow?.checkpoint)}`}</section>`;}
+function currentRecord(m){const v=m.current_view,r=v?.record;if(!r)return '<div class="notice warn">当前投影视图未知或不可读；不推断 judged。</div>';return `<section aria-label="当前记录投影"><h3>${r.format==='current'?'CurrentRecordView · 完整候选':'LegacyRecordView · 旧数据缺口'}</h3><p class="muted small">已存陈述，非本轮 current 判断；这是 DB 当前视图，不是历史召回快照。</p><div class="facts">${fact('提交等级',r.grade)}${fact('更新状态',r.update?.status??'未知')}${fact('更新原因',r.update?.reasons)}${fact('来源陈述日期',r.said_on)}${fact('版本链',r.history)}${fact('开放关系',r.open_relations)}</div>${raw('完整断言：值 / 极性 / 限定语 / 时间',r.candidate??r.data)}${raw('更新判定',r.update)}${raw('时间换算与终止', {times:r.time_resolutions,ended:r.ended,end:r.end})}${raw('来源依据',r.evidence)}${raw('关系（含已关闭）',v.relations)}${r.gaps?raw('旧数据缺口',r.gaps):''}</section>`;}
+function liveWarnings(){return (bundle.meta?.parse_errors?.length?raw('隔离的 JSONL / 信封错误（无正文）',bundle.meta.parse_errors):'')+(bundle.live?`<div class="notice">Trace：${esc(bundle.live.trace_status??'未知')} · ${esc(bundle.live.observability||'')}</div>${(bundle.deleted_sources||[]).length?raw('已删除来源回执（仅内部编号与接收时间）',bundle.deleted_sources):''}${(bundle.live.errors||[]).map(e=>`<div class="notice warn">${esc(e)}</div>`).join('')}`:'');}
 function renderSources(){
  const all=savedSources(),rows=all.filter(searchMatch);
  if(sourceIdFilter===null&&!rows.some(s=>s.id===selectedSource))selectedSource=rows[0]?.id||null;
  const s=rows.find(s=>s.id===selectedSource);
- $('content').innerHTML=`<div class="snapshot">${bundle.live?'当前用户已保存的原文':'当前导出记录中的独立原文'} · 共 ${all.length} 条${query?` · 匹配 ${rows.length} 条`:''}<br>只展示当前数据源提供的原文；查询入参和记忆摘录不计入原文列表。</div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">原文列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${x.id===selectedSource?'selected':''}" data-source="${esc(x.id)}" data-list-selection="true"><div class="small">${esc(Array.from(x.text).slice(0,100).join(''))}${Array.from(x.text).length>100?'…':''}</div><div class="item-meta">${esc(x.captured_at||'时间未采集')}</div><div class="mono small">${esc(x.id)}</div></button>`).join(''):'<div class="empty">没有匹配的原文；当前数据源未导出原文时，不代表数据库没有原文。</div>'}</div></section><section class="panel">${s?`<div class="panel-head"><h3 style="margin:0">原文详情</h3><span class="count-label">${num(Array.from(s.text).length)} 字符</span></div><div class="panel-body"><h3>完整原文</h3><div class="text-box">${esc(s.text)}</div><h3>来源信息</h3><div class="facts">${fact('原文编号',s.id)}${fact('接收时间',s.captured_at)}${fact('会话',s.session_id)}${fact('消息',s.message_id)}</div><div class="notice">${val(s.verification,'来源说明未采集')}</div>${raw('原文记录',s)}</div>`:`<div class="empty">${sourceIdFilter!==null?'所链接的原文未随当前数据源导出，无法查看完整原文。':'选择一条原文查看详情。'}</div>`}</section></div>`;
+ $('content').innerHTML=`${liveWarnings()}<div class="snapshot">${bundle.live?'当前用户已保存的原文':'当前导出记录中的独立原文'} · 共 ${all.length} 条${query?` · 匹配 ${rows.length} 条`:''}<br>只展示当前数据源提供的原文；查询入参和记忆摘录不计入原文列表。</div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">原文列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${x.id===selectedSource?'selected':''}" data-source="${esc(x.id)}" data-list-selection="true"><div class="small">${esc(Array.from(x.text).slice(0,100).join(''))}${Array.from(x.text).length>100?'…':''}</div><div class="item-meta">${esc(x.captured_at||'时间未采集')}</div><div class="mono small">${esc(x.id)}</div></button>`).join(''):'<div class="empty">没有匹配的原文；当前数据源未导出原文时，不代表数据库没有原文。</div>'}</div></section><section class="panel">${s?`<div class="panel-head"><h3 style="margin:0">原文详情</h3><span class="count-label">${num(Array.from(s.text).length)} 字符</span></div><div class="panel-body"><h3>完整原文</h3><div class="text-box">${esc(s.text)}</div><h3>来源信息</h3><div class="facts">${fact('原文编号',s.id)}${fact('接收时间',s.captured_at)}${fact('会话',s.session_id)}${fact('消息',s.message_id)}</div><div class="notice">${val(s.verification,'来源说明未采集')}</div>${currentSource(s)}${raw('原文记录',s)}</div>`:`<div class="empty">${sourceIdFilter!==null?'所链接的原文未随当前数据源导出，无法查看完整原文。':'选择一条原文查看详情。'}</div>`}</section></div>`;
 }
 function renderMemories(){const all=memoryVersions();const types=[...new Set(all.map(m=>m.memory_type).filter(Boolean))];const rows=memoryVersions(bundle.memories.filter(m=>(memoryIdFilter===null||String(m.id)===memoryIdFilter)&&searchMatch(m)&&(memFilter==='all'||m.memory_type===memFilter)));
  if(!rows.some(m=>ref(m)===selectedMemory)&&memoryIdFilter===null&&(!selectedMemory||memory(selectedMemory)))selectedMemory=rows[0]?ref(rows[0]):null;const m=rows.find(m=>ref(m)===selectedMemory),ss=bundle.memory_snapshot;
  const snap=ss.completeness==='not_captured'?'没有采集记忆快照；空页面不代表数据库为空。':ss.completeness==='partial'?'这是部分导出快照，不能据此判断完整数据库内容。':bundle.live?'本地后台读取的当前 owner 一致性快照；下方时间为读取时间。':'这是导出方声明的完整范围快照；不是实时连接，也不代表其他用户的数据库。';
- $('content').innerHTML=`<div class="snapshot">${memoryIdFilter!==null?`<strong>记忆 #${esc(memoryIdFilter)} · 已导出的版本</strong><br>${m?'已显示所选版本详情，可在列表中切换版本。':'请选择要查看的快照。'}<br>`:''}${esc(snap)}<br>范围：${val(ss.scope)}　修订：${val(ss.revision)}　采集时间：${val(ss.captured_at)}</div><div class="memory-tools"><select id="memory-type-filter" aria-label="记忆类型"><option value="all">所有内容类型</option>${types.map(t=>`<option value="${esc(t)}" ${memFilter===t?'selected':''}>${esc(t)}</option>`).join('')}</select><span class="muted small">相同记忆仅展示一次；召回次数和时间的变化不计为新版本。</span></div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">记忆列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${ref(x)===selectedMemory?'selected':''}" data-memory="${esc(ref(x))}" data-list-selection="true"><div class="item-top"><span class="mono small">${esc(ref(x))}</span>${state(x.status)}</div><div class="small">${esc(x.content)}</div><div class="item-meta">${esc(x.memory_type||'类型未采集')} · ${esc(x.subject||'主体未采集')}</div></button>`).join(''):`<div class="empty">${ss.completeness==='not_captured'?'快照未采集':query||memFilter!=='all'||memoryIdFilter!==null?'没有匹配结果':'本次快照包含 0 条正式记忆'}<br><br>首次抽取完成但复核失败时，候选仍可在请求追踪里查看。</div>`}</div></section><section class="panel">${m?memoryDetail(m):`<div class="empty">${selectedMemory&&!memory(selectedMemory)?'所链接的记忆版本未随当前数据源导出。':'请选择一条已导出的记忆版本。'}<br>当前快照由所选数据源提供，不会生成记忆。</div>`}</section></div>`;
+ $('content').innerHTML=`${liveWarnings()}<div class="snapshot">${memoryIdFilter!==null?`<strong>记忆 #${esc(memoryIdFilter)} · 已导出的版本</strong><br>${m?'已显示所选版本详情，可在列表中切换版本。':'请选择要查看的快照。'}<br>`:''}${esc(snap)}<br>范围：${val(ss.scope)}　修订：${val(ss.revision)}　采集时间：${val(ss.captured_at)}</div><div class="memory-tools"><select id="memory-type-filter" aria-label="记忆类型"><option value="all">所有内容类型</option>${types.map(t=>`<option value="${esc(t)}" ${memFilter===t?'selected':''}>${esc(t)}</option>`).join('')}</select><span class="muted small">相同记忆仅展示一次；召回次数和时间的变化不计为新版本。</span></div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">记忆列表</h3><span class="count-label">${rows.length} 条</span></div><div class="run-list">${rows.length?rows.map(x=>`<button class="item ${ref(x)===selectedMemory?'selected':''}" data-memory="${esc(ref(x))}" data-list-selection="true"><div class="item-top"><span class="mono small">${esc(ref(x))}</span>${state(x.status)}</div><div class="small">${esc(x.content)}</div><div class="item-meta">${esc(x.memory_type||'类型未采集')} · ${esc(x.subject||'主体未采集')}</div></button>`).join(''):`<div class="empty">${ss.completeness==='not_captured'?'快照未采集':query||memFilter!=='all'||memoryIdFilter!==null?'没有匹配结果':'本次快照包含 0 条正式记忆'}<br><br>首次抽取完成但复核失败时，候选仍可在请求追踪里查看。</div>`}</div></section><section class="panel">${m?memoryDetail(m):`<div class="empty">${selectedMemory&&!memory(selectedMemory)?'所链接的记忆版本未随当前数据源导出。':'请选择一条已导出的记忆版本。'}<br>当前快照由所选数据源提供，不会生成记忆。</div>`}</section></div>`;
  if(ss.pending) $('content').insertAdjacentHTML('afterbegin',raw('待处理候选（不计入正式记忆）',ss.pending));
  $('memory-type-filter').addEventListener('change',e=>{memFilter=e.target.value;renderMemories()});
 }
 function memoryDetail(m){const versions=memoryVersions(bundle.memories.filter(x=>x.id===m.id&&x.owner===m.owner)),rref=ref(m);
  const returned=bundle.runs.filter(r=>(r.mcp_response.returned_refs||[]).includes(rref));const selected=bundle.runs.filter(r=>(r.retrieval.selected_refs||[]).includes(rref));
  const depend=bundle.memories.filter(x=>(x.derived_from||[]).includes(rref));
- return `<div class="detail-header"><div class="horizontal"><h2 class="mono">${esc(rref)}</h2>${state(m.status)}</div><div class="memory-body">${esc(m.content)}</div><div class="facts">${fact('内容类型',m.memory_type)}${fact('时间层次',m.time_horizon)}${fact('归属用户 owner',m.owner)}${fact('描述主体 subject',m.subject)}${fact('目标 target',m.target)}${fact('作用范围 scope',m.scope)}</div></div><div class="panel-body"><h3>原始依据与处理后内容</h3><div class="two"><div><div class="box-label">原始证据</div>${sourceText(m.source_ids.map(id=>source(id)?source(id).text+'\n['+id+']':id+'（未导出）').join('\n\n')||'来源未导出')}</div><div><div class="box-label">当前选中版本的记忆</div><div class="text-box">${esc(m.content)}</div></div></div>
+ return `<div class="detail-header"><div class="horizontal"><h2 class="mono">${esc(rref)}</h2>${state(m.status)}</div><div class="memory-body">${esc(m.content)}</div><div class="facts">${fact('内容类型',m.memory_type)}${fact('时间层次',m.time_horizon)}${fact('归属用户 owner',m.owner)}${fact('描述主体 subject',m.subject)}${fact('目标 target',m.target)}${fact('作用范围 scope',m.scope)}</div></div><div class="panel-body">${m.current_view?currentRecord(m):''}<h3>原始依据与处理后内容</h3><div class="two"><div><div class="box-label">原始证据</div>${sourceText(m.source_ids.map(id=>source(id)?source(id).text+'\n['+id+']':id+'（未导出）').join('\n\n')||'来源未导出')}</div><div><div class="box-label">当前选中版本的记忆</div><div class="text-box">${esc(m.content)}</div></div></div>
  <hr class="divider"><h3>时间含义分别展示</h3><div class="facts">${fact('observed_at · 系统得知时间',m.observed_at)}${fact('valid_from · 事实开始成立',m.valid_from)}${fact('valid_to · 事实结束成立',m.valid_to_unbounded?'无结束时间':m.valid_to)}${fact('expires_at · 记录过期时间',m.expires_at)}</div><div class="hint-line">时间字段不自动决定短／中／长期；未提供时保持未知。</div>
  ${versions.length>1?`<hr class="divider"><h3>不同的记忆版本</h3><div class="link-row">${versions.map(v=>linkMem(ref(v))).join('')}</div><p class="small muted">不使用最新版本替代历史运行实际读取的旧版本。</p>`:''}${m.superseded_by?'<div class="small">被替代为：'+linkMem(m.superseded_by)+'</div>':present(m.superseded_by_id)?'<div class="small">被替代为：'+linkMemoryId(m.superseded_by_id)+'</div>':''}${m.created_by_call_id?'<div class="link-row">'+linkCall(m.created_by_call_id)+'</div>':''}
  <hr class="divider"><h3>反向关联：选中与返回，不声明实际影响</h3><div class="box-label">曾被引擎选中</div><div class="link-row">${selected.map(r=>linkRun(r.id)).join('')||'<span class="muted small">当前导入包中未记录</span>'}</div><div class="box-label" style="margin-top:14px">曾进入服务端 MCP 响应</div><div class="link-row">${returned.map(r=>linkRun(r.id)).join('')||'<span class="muted small">当前导入包中未记录</span>'}</div><div class="notice warn">这些关联只能证明选择或返回记录，不能证明宿主模型内部依赖了此记忆。</div>
@@ -699,10 +795,10 @@ function renderCalls(){const rows=bundle.llm_calls.filter(c=>searchMatch(c)&&(fi
  if(!rows.some(c=>c.id===selectedCall))selectedCall=rows[0]?.id||null;const c=rows.find(c=>c.id===selectedCall);
  $('content').innerHTML=`<div class="notice">推理 token 是单独展示的用量明细，不自动额外加到输出总量上。费用未知保持未知；未取得宿主回答调用时，不计入也不伪造其成本。</div><div class="workspace"><section class="panel"><div class="panel-head"><h3 style="margin:0">独立调用 / 尝试</h3><span class="count-label">${rows.length} 次</span></div><div class="call-list">${rows.length?rows.map(x=>`<button class="item ${x.id===selectedCall?'selected':''}" data-call="${esc(x.id)}" data-list-selection="true"><div class="item-top"><span class="item-title">${esc(x.stage)}</span>${state(x.status)}</div><div class="mono small">${esc(x.id)}</div><div class="item-meta">${esc(x.model||'模型未采集')} · 尝试 ${esc(x.attempt??'未知')}</div><div class="item-meta">输入 ${num(x.usage.input_tokens)} → 输出 ${num(x.usage.output_tokens)}</div><div class="item-meta">其中推理 ${num(x.usage.reasoning_tokens)}</div>${x.finish_reason?'<div class="failure-reason mono">'+esc(x.finish_reason)+'</div>':''}</button>`).join(''):'<div class="empty">未导出匹配的调用记录。<br>不能据此认定没有发生 API 调用。</div>'}</div></section><section class="panel">${c?callDetail(c):'<div class="empty">选择一条调用查看真实请求、返回和用量。</div>'}</section></div>`;
 }
-function callDetail(c){return `<div class="detail-header"><div class="id mono">${esc(c.id)}</div><div class="horizontal"><h2>${esc(c.stage)}</h2>${state(c.status)}</div><div class="facts">${fact('实际模型',c.model)}${fact('服务商',c.provider)}${fact('提示词版本',c.prompt_version)}${fact('服务商请求 ID',c.provider_request_id)}${fact('开始时间',c.started_at)}${fact('耗时（ms）',c.duration_ms)}</div><div class="link-row">所属运行：${linkRun(c.run_id)}</div></div><div class="panel-body">
+function callDetail(c){return `<div class="detail-header"><div class="id mono">${esc(c.id)}</div><div class="horizontal"><h2>${esc(c.stage)}</h2>${state(c.status)}</div><div class="facts">${fact('实际模型',c.model)}${fact('推理强度',c.effort)}${fact('实际 schema',c.schema_name||c.stage)}${fact('local_outcome',c.local_outcome)}${fact('服务商',c.provider)}${fact('提示词版本',c.prompt_version)}${fact('服务商请求 ID',c.provider_request_id)}${fact('开始时间',c.started_at)}${fact('耗时（ms）',c.duration_ms)}</div><div class="link-row">所属运行：${linkRun(c.run_id)}</div></div><div class="panel-body">
  ${c.finish_reason?`<div class="notice ${c.status==='incomplete'?'bad':''}"><strong>终止原因：<span class="mono">${esc(c.finish_reason)}</span></strong>${c.status==='incomplete'?'<br>生成未完成不能解释为“没有需要保存的事实”。返回的业务候选是否能提交，仍由既有校验策略决定。':''}</div>`:''}
  <h3>请求参数与实际输出用量</h3><div class="table-wrap"><table><thead><tr><th>输入</th><th>输出总量</th><th>其中推理</th><th>缓存输入</th><th>费用</th></tr></thead><tbody><tr><td>${num(c.usage.input_tokens)}</td><td>${num(c.usage.output_tokens)}</td><td>${num(c.usage.reasoning_tokens)}</td><td>${num(c.usage.cached_input_tokens)}</td><td>${cost(c)}</td></tr></tbody></table></div><div class="hint-line">用量来源：${val(c.usage.source)}。输出包含推理时，不重复相加；具体计费按导出方口径记录。</div>
- ${raw('实际请求（脱敏；不是模板）',c.request,true)}${raw('原始响应（脱敏；推理正文不展示）',c.response,true)}${raw('解析后的业务结果',c.parsed_result)}${raw('完整调用元数据与费用依据',c)}</div>`}
+ ${raw('实际请求（脱敏；不是模板）',c.request,true)}${raw('原始响应（脱敏；推理正文不展示）',c.response,true)}${raw('raw：JSON 解析输出（不等于核验通过）',c.parsed_result)}${raw('decode / validate 检查',c.checks)}${c.verified_final==null?'<p class="muted">final：未采集已核验正文；不以 raw 代替。</p>':raw('final：事件明确记录的已核验输出',c.verified_final)}${raw('传输错误类别',c.transport_error)}${raw('完整调用元数据与费用依据',c)}</div>`}
 function clearDetailRoute(){sourceIdFilter=null;memoryIdFilter=null;runIdFilter=null;if(/^#(?:memory(?:-id)?|run|source)=/.test(location.hash||''))window.history?.replaceState(null,'',location.pathname+location.search);}
 function navigateRunHash(){
  const match=/^#run=(.*)$/.exec(location.hash||'');

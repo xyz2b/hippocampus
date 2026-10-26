@@ -1,6 +1,6 @@
-# personal_memory 客户端接入约定（recall.v6）
+# personal_memory 客户端接入约定（recall.v11）
 
-启动后继续处理同一条 USER 消息：bootstrap 只加载全局要求，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；只读问个人安排、经历、状态等具体问题时，调用普通 memory_recall，不用 bootstrap 代替。memory_prepare 已返回保存与本次召回的结果/状态，分别核对；没有新问题时，不再用同一段陈述调用 memory_recall，核实/更正类查询仍可调用。在线请求不要自行加 offline=true。
+启动后继续处理同一条 USER 消息：bootstrap 加载全局要求及显式启用的已存陈述快照，空结果不代表没有个人记忆。首轮或后续消息含获准个人背景、计划、补充、更正时，调用 memory_prepare 保存当前整条原话；只读问个人安排、经历、状态等具体问题时，调用普通 memory_recall，不用 bootstrap 代替。memory_prepare 已返回保存与本次召回的结果/状态，分别核对；没有新问题时，不再用同一段陈述调用 memory_recall，核实/更正类查询仍可调用。在线请求不要自行加 offline=true。
 
 主体澄清以最终 recall.status/clarification 为准：R1 是初步判断，通过完整核验的 R4 按授权证据终审。
 开放列表不要求先选一个人；真正的指代歧义仍先澄清。跳过/失败不代表已解决歧义，不把返回的记录数量当作答案资格。
@@ -11,7 +11,7 @@
 
 ## 输入与调用顺序
 
-1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求，零模型调用；完成后继续处理同一条消息，不是普通个人事实查询。
+1. 新聊天首次调用 memory_recall，传 `{"query":"全局回答要求","bootstrap":true,"request_id":"boot:<session_id>"}`。bootstrap 只读已整理全局要求及显式启用的已存陈述快照，零模型调用；完成后继续处理同一条消息，不是普通个人事实查询。
 2. 获准保存的个人背景、计划原话、补充、更正使用 memory_prepare，首轮也要独立保存；user_turn.text 是当前整条 USER 原话，history 按时间顺序携带当前消息所依赖的全部必要且获准留存的先前 USER 原话，不限于上一条、不带无关内容；不自动补写已保存来源，也不能代替先前消息的独立保存。同聊复用 session_id，每条新消息使用新 turn_id；相同消息重试保持 ID 和全部参数不变。原话留存不保证结构化提交；计划按完整断言与限定语保存、呈现，不当作已发生事件。
 3. 只有整条当前消息及必要 history 均获准留存时传 capture_source=true。省略/false 被拒绝，不转为事实保存。明确不保存、无法满足的保存期限、秘密、假设或引用不调用持久写入工具；改用只读 recall 或本轮上下文。
 4. 只读查询提交完整原问，context 仅放必要 USER 澄清，不能拼接不同消息或增加事实。Recall 包括 bootstrap 都须稳定 request_id；新查询/刷新使用新 ID。同参重放复用首次 at 和结果，不追加模型尝试。Prepare 缺省从 session/turn 派生 request_id。
@@ -21,7 +21,7 @@
 
 memory_source_status 输入 `source_id`，只读取服务器当前 owner 的来源。返回 `source/enrichment`、`generation`、`round`、`state_token`、`provenance`、`time_anchor`、`uncommitted_candidates`（index/status/reasons）与 `pending_update_candidates`，不含原文或事实值；未找到或属于其他 owner 时 `source_not_found`，已删除时 `source_deleted`。管理状态是读快照，不能用它代替 memory_recall 的证据或事实判断。
 
-DB 10 的 generation 初始为 0，每次确认或重提取加 1；未开始判定时 round 为 null。普通来源的出处包含接收身份，parent_source_id/history_index 为 null；新来源保存接收时的时间锚，旧库缺省按现有 observed_at 提供，不推断历史时间。subject_confirmations 仅给候选身份、实体、来源引用与片段哈希，audit_generations 给出旧代际号，不返回确认原文。历史补录另在第④步实现。state_token 是单来源及其候选/组回执状态的绑定；来源正文、任务/租约、控制或回执改变会改变令牌，无关来源或全局 revision 推进不改变令牌。此入口不续跑、不触发重建、不调用模型。
+来源的 generation 初始为 0，每次确认或重提取加 1；未开始判定时 round 为 null。普通来源的出处包含接收身份，parent_source_id/history_index 为 null；新来源保存接收时的时间锚，旧库缺省按现有 observed_at 提供，不推断历史时间。subject_confirmations 仅给候选身份、实体、来源引用与片段哈希，audit_generations 给出旧代际号，不返回确认原文。历史补录见下文。state_token 是单来源及其候选/组回执状态的绑定；来源正文、任务/租约、控制或回执改变会改变令牌，无关来源或全局 revision 推进不改变令牌。此入口不续跑、不触发重建、不调用模型。
 
 memory_list 原有 `pending_total/pending` 仍表示旧 staged 暂存；新增 `pending_source_total/pending_sources` 显示尚未成功整理、失败、未解析或仍有待处理候选/更新的已保存来源，删除来源不显示。`offset/limit` 分页记忆与旧暂存，`source_offset/source_limit` 独立分页来源（缺省 0/20，limit 均为 1–100）。每个来源仅给 ID、保存/整理状态、未提交候选和待定更新的索引/状态/原因，不返回事实值或原文。已提交但 update.pending 的候选属于 pending_update_candidates，不冒充未提交。
 
@@ -34,7 +34,19 @@ memory_list 原有 `pending_total/pending` 仍表示旧 staged 暂存；新增 `
 5. 同参数/ID 重放返回首次管理回执（replayed=true），不重新入队、不追加调用；这是首次接受状态，当前进度另查 status。异参 request_id_conflict；source_busy 等租约结束，source_changed 重新 status 后由宿主决定是否发新操作，不隐式重试。source_not_found/source_deleted、invalid_confirmation、rebuild_requires_uncommitted_source、operation_not_authorized 直接报告，不能放入召回 degraded_reasons。
 6. 删除来源清除其确认、审计与派生内容；删除确认依据会撤销依赖它的主体绑定和产品、使待处理来源 needs_rejudge，并使旧回执/缓存/晚到执行失效；不删除该原事实来源或其他独立候选。
 
-DB 9→10 沿用现有快照与索引，不新增存储系统。所有 owner 缺省代际 0、普通来源；旧回执不改写、不自动入队，已删墓碑保留。v9 写程序拒绝 v10；只读范围 3–10。升级前手动备份，不能用旧程序直接回退写入新库。
+当前 DB v11。旧回执不改写、不自动入队，已删墓碑保留。升级前手动备份，不能用旧程序回退写入新库。
+
+## 人物重名预检与受限合并（零模型调用）
+
+`memory_entity_upsert` 检查同 owner 其他实体的规范名与别名：与解析器共用首尾空白裁剪、Unicode小写比较，不折叠内部空白、不做近似匹配。同一实体可更新自身名称；第三实体冲突返回 `{error:"alias_conflict",conflicts:[{id,canonical_name,aliases}]}`，目录不变。冲突只说明名称重叠，不说明同一人。人物泛称有多个候选或冲突时，宿主先列目录并请 USER 确认，不自行创建或按唯一/最近者选择。不同人物应使用可区分名称并去掉冲突泛称；历史冲突不会自动修复。
+
+`memory_list.entities[]` 和 upsert 成功返回的 `entity` 新增 `state_token`，只绑定该实体完整状态，不依赖全局 revision。调用 `memory_entity_merge` 需 `from`、`into`、稳定 `request_id`、`expected_from_state_token`、`expected_into_state_token` 与 `user_confirmation={source:{kind:"stored",source_id},quote:{text}}`。双方必须为当前 owner 的 Person，不能是 self 或相同 ID。USER 必须明确确认两者是同一人，并明确保留哪一个 ID；宿主先保存获准完整确认原话，不自造原文。代码只检查本 owner 已保存、capture_source=true 的来源及精确连续片段，不判断自然语言是否表达同一人。
+
+事务内核对双方令牌、确认出处与引用。`from` 的记录主体/实体值（含历史版本）、旧暂存解析身份、新候选/W4检查点、主体确认、W5指纹和保留的旧代际候选引用均阻止合并，返回 `{error:"entity_has_references",references:[{path,entity_id}]}`；无法读懂的W5身份绑定也拒绝。原文中碰巧出现ID不是引用，模型输入目录/绑定只作审计、保持原样。保存确认后若它已整理为 from 引用，同样拒绝，不为合并豁免或改写。此工具不支持带引用的通用合并。
+
+成功时合并规范名/别名、按同一名称规则去重，保留 into 的规范名和ID，删除 from；与第三实体冲突或超出别名上限时拒绝。返回 `merged/from/into/entity/replayed/audit`，身份审计写入确认来源的既有 management.audits，接受回执用既有 receipts，DB仍为11。合并删除按现有目录屏障规则失效旧执行者，并清除本 owner 的召回保留缓存；跨连接返回前仍核验目录。它不重写模型审计、不自动绑定或重整理 pending。
+
+同 request_id/同参数重放接受的动作，不再次合并；改参 `request_id_conflict`，令牌变化 `entity_changed`，不存在/越权实体统一 `entity_not_found`，无效或已删除确认来源 `invalid_user_confirmation`，非 Person `entity_merge_requires_person`，self `self_protected`。拒绝不执行目录修改，不自动重试。from 已删除后 W2 不能引用它，也不能用 upsert 重新登记旧ID（`entity_id_retired`）。删除确认来源会清除原话与该来源的合并审计并阻止旧合并重放；最小ID元数据仍保留以防旧ID复活，已完成的目录合并不反向撤销。
 
 ## 历史 USER 原话补录
 
@@ -60,7 +72,7 @@ MCP 无法强制第三方聊天客户端遵守这些表达规则；此边界仍�
 
 ## 校验、删除与预算
 
-memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v6 保守回答，不使用旧 safe_answer。
+memory_validate_answer 提交同 request_id、完整 query/context/task_id 及可选 at，只核对同进程仍有效的保留结果，零模型调用。来源 ID 不足以批准任意改写、复杂限定或计算；只可能机械批准简单未改写事实及对应来源集合。缺失/失效明确失败，不自动再召回；未批准时依据完整 recall.v11 保守回答，不使用旧 safe_answer。
 
 用户明确要求遗忘且目标可定位时调用 memory_forget；对象不明先澄清。旧记录和暂存仍可删除；墓碑、索引、回执及迟到任务保护不变。
 
@@ -70,16 +82,21 @@ offline=true 与 bootstrap 只关闭召回模型，不关闭已获授权的后�
 
 旧库升级与手工备份见 [本地数据库切换步骤](architecture/m1-cutover.md)。
 
-## 验收与已知局限
+## 已知局限
 
-M1 历史全量加两轮定点的 common.v1 合并为 63 题 59 通过 / 4 失败 / 0 待复核，默认离线检查重新计算并核对失败题集合。conflict_q2 仍可能在冲突说明外给出唯一尺寸，三道 LME（7a87bd0c、a2f3aa27、59524333）是已知提取/计划/判断局限；宿主仍须保留完整冲突和不确定标注，不能把验收分数当作单题保证。M1 收尾时严格回放为 235 复用 / 59 缺口 / 0 发送；M1.5 协议与提示词变化后旧录制仍须按完整指纹核对，过期/缺口不计通过。补录另行授权，命令见[评测说明](../tests/eval/README-v3.md)。
-
-## M1.5 已知局限
-
-M1.5 于 2026-10-07 按 AF110 暂告一段落，以下是正常使用时需要如实呈现的边界：
+历史评分与当前严格回放是独立检查，见[评测说明](../tests/eval/README-v3.md)。
+离线测试通过不保证真实模型质量或完整负载延迟。
 
 - W1 可能未给子计划附上该计划适用的时间，导致 W3 拒收；原话已保存不等于这些候选已提交。
 - 保存时附带召回的 R4 偶发把时间片段引用到错误来源，核验后整份召回降级。宿主可读取返回的 raw 原话保守兜底，说明本轮未核准；不能把原话兜底冒充已核准的当前事实，也不自动重调模型。
 - W3 low 在已观察到的长消息中约需 2–3 分钟完成整理；inline/deferred 先报告原文已收到，后台进度以 memory_source_status 为准，不提前宣称整理完成。
-- “我们”等多人主语不能表示为多主体候选，普通否定事实也不提交为结构化事实；两者目前依靠原话召回，宿主保留主体、否定与不确定性，不擅自归到某个家人。否定计划、偏好、约束与撤回仍按各自契约资格处理。
+- “我们”等多人主语不能表示为多主体候选，目前依靠原话召回；宿主保留主体、否定与不确定性，不擅自归到某个家人。已核验的普通否定 user_statement+fact 按既有准入条件提交，否定 episode、极性 unknown 仍以原话兜底，旧 pending 不自动重整理；否定不自动表示更新、冲突或撤回。否定计划、偏好、约束与撤回仍按各自契约资格处理。
 - 旧 pending 来源不会因升级、模型强度变化或实体登记自动重整理。需要补处理时先查 memory_source_status，再显式使用主体确认或候选重建入口，遵守授权、已提交候选限制和有限预算；无需重说已保存原话。
+
+recall.v11 的 retrieval 只报告本机检索状态/索引覆盖（disabled/not_needed/ready/pending/unavailable），不代替 completeness、保存回执或 R4 判断。ready 不证明唯一当前值；pending 不表示原话未收到，宿主仍可使用已返回 raw 及其明确限定语。bootstrap/offline 不调用嵌入；默认 embedding.enabled=false。DB 当前 v11，可读旧数据，不自动重新整理。
+
+bootstrap.statement_snapshot（MCP 中位于 recall.statement_snapshot）缺省关闭，不附加到每次工具的 global_context。它是“已存陈述，非本轮判断”：仅可说“按记录你曾说……”，保留出处、计划/否定、条件、不确定性和时间，Active 不表示当前仍成立。问当前状态、条件是否适用、完整清单或本轮有新相关陈述时必须调用普通 recall（有获准新原话先 prepare），不能凭快照直接断言。unfinished_sources 是可信范围内全部未完成来源数，非问题相关数；coverage_unknown=true、空快照或零未完成来源都不证明完整。刷新使用新 bootstrap request_id；同参重放仍用旧读版本/时间，删除或授权/任务限制变化仍失效。当前仅支持 recall.v11，v10 及更旧版本请求明确 contract_version_unsupported。
+
+### 个人陈述提取范围
+
+W1 v5 保留本人职责/工作状态、真实偏好、习惯、选择、计划和经历；项目规则须明确采用且范围可定位，外部方案论证和备选建议不抽取。混合消息逐断言处理，W3 v6 coverage 只计范围内遗漏，gaps 仍须非空精确引用。宿主仍应避免保存纯讨论；已获保存授权的原话不因零候选被删除。模型范围判断可能出错，W3 没有新增范围准入字段；旧讨论记录由用户决定处理，不自动删除或重整理。

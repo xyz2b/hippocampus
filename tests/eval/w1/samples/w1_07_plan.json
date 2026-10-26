@@ -61,7 +61,12 @@
     "subject": "self",
     "relation": "fact",
     "memory_type": "fact",
-    "value": "我打算下个月开始学日语。",
+    "value": {
+     "window": "我打算下个月开始学日语。",
+     "required": [
+      "学日语"
+     ]
+    },
     "sentence": "我打算下个月开始学日语。",
     "polarity": "affirm",
     "uncertainty": null,
@@ -85,5 +90,6 @@
  "must_not": [
   "speech 为 user_statement（还没开始学）"
  ],
- "note": "用户确认（2026-10-03）：“打算”由 speech=plan 表达，不属于 uncertainty。"
+ "note": "AF311：连续断言片段，完整原句与 plan 不变。 AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。",
+ "label_revision": "AF317"
 }

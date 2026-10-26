@@ -2,8 +2,10 @@
 name = "pmr-inspector"
 version = "0.1.0"
 edition = "2024"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
+hippocampus = { path = ".." }
 serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 time = { version = "0.3", features = ["formatting"] }

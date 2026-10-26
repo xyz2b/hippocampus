@@ -240,6 +240,34 @@ impl Fixture {
             .unwrap()
             .path();
         let sample: Json = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+        if sample["input"]["format"] == "recall.full@1" {
+            let input = &sample["input"];
+            let request: RecallRequest = serde_json::from_value(input["request"].clone()).unwrap();
+            let records: Vec<RecordView> =
+                serde_json::from_value(input["evidence"]["records"].clone()).unwrap();
+            // This SQLite harness seeds only the singleton active/self full fixtures (02/16).
+            // Refuse other full packages rather than dropping lifecycle/scope metadata.
+            assert_eq!(records.len(), 1);
+            assert!(input["evidence"]["raw"].as_array().unwrap().is_empty());
+            assert!(
+                input["evidence"]["relations"]
+                    .as_array()
+                    .unwrap()
+                    .is_empty()
+            );
+            assert!(records.iter().all(|r| matches!(r, RecordView::Current(v) if v.stored_status == StoredStatus::Active
+                && v.termination_reason.is_none() && v.ended == Ended::NotEnded && v.history.is_empty()
+                && v.open_relations.is_empty() && v.update.status == UpdateStatus::Judged && v.time_resolutions.is_empty()
+                && matches!(&v.candidate.subject, Subject::Entity(s) if s.entity_id == "self"))));
+            let rows: Vec<_> = records.iter().map(|r| match r {RecordView::Current(r)=>r, _=>panic!("current fixture required")}).map(|r| json!({"id":r.id,"source":r.evidence[0].source.clone(),
+                "sentence":r.candidate.sentence.text,"said_on":r.said_on,"status":"active","termination":null,
+                "update":"judged","candidate":r.candidate})).map(|mut r| {r["source"]=r["source"]["source_id"].clone();r}).collect();
+            return Self::new(
+                json!({"query":request.query,"at":input["evidence"]["current_message"]["said_on"],
+                "current_evidence":input["plan"]["current_evidence"],"plan":{"type":input["plan"]["type"],
+                "op":input["plan"]["plan"]["op"],"relation":input["plan"]["relation"]},"records":rows,"raw":[],"relations":[]}),
+            );
+        }
         Self::new(sample["input"].clone())
     }
     fn new(input: Json) -> Self {
@@ -248,15 +276,54 @@ impl Fixture {
         for r in input["records"].as_array().unwrap() {
             let sid = r["source"].as_str().unwrap_or("legacy-seed");
             let text = r["sentence"].as_str().unwrap_or("旧条目");
-            let id = seed_on(
-                &db,
-                sid,
-                text,
-                "self",
-                None,
-                r["update"] == "judged",
-                r["said_on"].as_str().unwrap(),
-            );
+            let id = if r["candidate"].is_object() {
+                source(&db, sid, text, None, "running");
+                let date = r["said_on"].as_str().unwrap();
+                db.open()
+                    .transaction(|state| {
+                        state.sources.get_mut(sid).unwrap().observed_at = at(date);
+                        Ok(())
+                    })
+                    .unwrap();
+                let mut c = candidate(sid, text, "self");
+                c.candidate = serde_json::from_value(r["candidate"].clone()).unwrap();
+                c.said_on = Some(date.into());
+                commit(
+                    &db,
+                    sid,
+                    None,
+                    W4Input {
+                        candidates: vec![c],
+                        records: vec![],
+                        relations: vec![],
+                        coverage: W4Coverage {
+                            complete: true,
+                            omitted: 0,
+                        },
+                    },
+                    W4Decision {
+                        candidate: 0,
+                        status: DecisionStatus::Decided,
+                        action: Some(Action::New),
+                        targets: vec![],
+                        resolves_relations: vec![],
+                        basis: vec![stored(sid, text)],
+                        effective: None,
+                        relation_scope: None,
+                        pending_reason: None,
+                    },
+                )
+            } else {
+                seed_on(
+                    &db,
+                    sid,
+                    text,
+                    "self",
+                    None,
+                    r["update"] == "judged",
+                    r["said_on"].as_str().unwrap(),
+                )
+            };
             ids.insert(r["id"].as_u64().unwrap(), id);
             db.open()
                 .transaction(|state| {
@@ -672,6 +739,148 @@ fn old_basis_assembly_checks_real_sources_and_preserves_missing_new_basis_errors
     assert_eq!(
         r4::evaluate(bad_record, &ctx).err().unwrap().0,
         "record_basis"
+    );
+}
+
+#[test]
+fn af264_sqlite_quote_recovery_keeps_raw_final_and_computation_separate() {
+    let text = "I'm reading \"Orchid\" today.";
+    let f = Fixture::new(
+        json!({"query":"我阅读过几本书？","at":SAID_ON,"current_evidence":"query_only",
+        "plan":{"type":"aggregate","op":"count","relation":"fact"},"records":[
+            {"id":1,"source":"s-1","sentence":text,"said_on":SAID_ON,"status":"active","termination":null,"update":"judged"}],
+        "raw":[],"relations":[]}),
+    );
+    let mut view = f.fact(1, "yes");
+    let malformed = "I'm reading Ã¢Â€ÂœOrchidÃ¢Â€Â\u{9d} today.";
+    view["evidence"][0]["quote"]["text"] = json!(malformed);
+    let compute = json!({"op":"count","items":[{"id":"one","evidence":view["evidence"],"quantity":null,
+        "date":null,"date_source":null,"event_group":"one-book"}],"operands":[],"unit":null,"coverage":"complete"});
+    let raw = output(vec![view], Some(compute)).to_string();
+    let (result, audit) = f
+        .assembly()
+        .finish_r4_with_audit(&f.db.open(), Ok(&raw))
+        .unwrap();
+    assert_eq!(result.semantic_judgment, SemanticJudgment::Model);
+    assert_eq!(result.computed.unwrap().value, "1");
+    assert_eq!(result.facts[0].evidence[0].quote.text, text);
+    let audit = audit.unwrap();
+    assert_eq!(audit.raw_output, raw);
+    let final_output = audit.final_output.unwrap();
+    assert_eq!(final_output.facts[0].evidence[0].quote.text, text);
+    assert_eq!(
+        final_output.compute.unwrap().items[0].evidence[0]
+            .quote
+            .text,
+        text
+    );
+}
+
+#[test]
+fn af264_recovery_never_repairs_qualifiers_ids_or_inaccessible_clipped_sources() {
+    let text = "我读了\"青灯\"。";
+    let f = Fixture::new(
+        json!({"query":"我读了什么？","at":SAID_ON,"current_evidence":"query_only",
+        "plan":{"type":"single","op":"lookup","relation":"fact"},"records":[
+            {"id":1,"source":"s-1","sentence":text,"said_on":SAID_ON,"status":"active","termination":null,"update":"judged"},
+            {"id":2,"source":"s-2","sentence":"我读了石阶。","said_on":SAID_ON,"status":"active","termination":null,"update":"judged"}],
+        "raw":[],"relations":[]}),
+    );
+    let assembly = f.assembly();
+    let dates = BTreeMap::new();
+    let ctx = r4::Context {
+        evidence: &assembly.evidence,
+        plan: &assembly.plan,
+        request: &assembly.request,
+        utc_offset_seconds: 28800,
+        source_dates: &dates,
+    };
+    let mut view = f.fact(1, "yes");
+    view["evidence"][0]["quote"]["text"] = json!("我读了'青灯'。");
+    let raw = r4::decode(&output(vec![view], None).to_string()).unwrap();
+    let restored = r4::assemble_old_basis(&raw, &ctx, &|_| Some(text.into()));
+    assert!(r4::evaluate(restored.clone(), &ctx).is_ok());
+    for body in [None, Some("正文已修改".into())] {
+        assert_eq!(r4::assemble_old_basis(&raw, &ctx, &|_| body.clone()), raw);
+    }
+    let mut outside = raw.clone();
+    outside.facts[0].evidence[0].source = SourceRef::Stored {
+        source_id: "unauthorized".into(),
+    };
+    assert_eq!(
+        r4::assemble_old_basis(&outside, &ctx, &|_| Some(text.into())),
+        outside
+    );
+    let mut bad_id = raw.clone();
+    bad_id.facts[0].record_ids = vec![MemoryId(99999)];
+    assert_eq!(
+        r4::evaluate(
+            r4::assemble_old_basis(&bad_id, &ctx, &|_| Some(text.into())),
+            &ctx
+        )
+        .err()
+        .unwrap()
+        .0,
+        "record_id"
+    );
+    let mut wrong_selected = raw.clone();
+    wrong_selected.facts[0].record_ids = vec![f.ids[&2]];
+    let after = r4::assemble_old_basis(&wrong_selected, &ctx, &|id| {
+        Some(
+            if id == "s-1" {
+                text
+            } else {
+                "我读了石阶。"
+            }
+            .into(),
+        )
+    });
+    assert_eq!(after.facts[0].evidence.len(), 1);
+    assert_eq!(r4::evaluate(after, &ctx).err().unwrap().0, "record_basis");
+    let mut bad_condition = raw.clone();
+    bad_condition.facts[0].conditions = vec![TextQualifier {
+        quote: Quote {
+            text: "问题中的条件".into(),
+        },
+        resolved: true,
+    }];
+    let after = r4::assemble_old_basis(&bad_condition, &ctx, &|_| Some(text.into()));
+    assert_eq!(after.facts[0].conditions, bad_condition.facts[0].conditions);
+    assert_eq!(
+        r4::evaluate(after, &ctx).err().unwrap().0,
+        "qualifier_source"
+    );
+    let mut clipped = assembly.evidence.clone();
+    if let RecordView::Current(record) = clipped
+        .records
+        .iter_mut()
+        .find(|r| r.id() == f.ids[&1])
+        .unwrap()
+    {
+        record.evidence[0].quote.text = "我读了".into();
+    }
+    let clipped_ctx = r4::Context {
+        evidence: &clipped,
+        ..ctx
+    };
+    assert_eq!(
+        r4::assemble_old_basis(&raw, &clipped_ctx, &|_| Some(text.into())),
+        raw
+    );
+    // A recovered quote still cannot publish after the source is deleted.
+    let mut state = f.db.open();
+    state
+        .transaction(|s| {
+            let source = s.sources.values_mut().find(|s| s.id == "s-1").unwrap();
+            source.enrichment = "deleted".into();
+            source.request = None;
+            Ok(())
+        })
+        .unwrap();
+    assert!(
+        assembly
+            .finish_r4(&state, Ok(&json!(restored).to_string()))
+            .is_err()
     );
 }
 
@@ -1181,7 +1390,7 @@ fn current_assertion_is_read_only_uncommitted_and_failed_judgment_has_no_facts()
 }
 
 #[test]
-fn pending_is_merged_without_record_id_bypass_and_unknown_stays_unknown() {
+fn pending_requires_explicit_record_identity_and_unknown_stays_unknown() {
     let f = Fixture::sample("r4_08_");
     let id = *f.ids.values().next().unwrap();
     f.db.open()
@@ -1199,8 +1408,13 @@ fn pending_is_merged_without_record_id_bypass_and_unknown_stays_unknown() {
     view["record_ids"] = json!([]);
     let result = f.finish(output(vec![view.clone()], None));
     assert_eq!(result.status, RecallStatus::Answered);
+    assert_eq!(result.facts[0].grade, RecallGrade::Uncommitted);
+    assert!(result.facts[0].update.is_none());
+    assert_eq!(result.completeness.pending_updates, 1);
+    let identified = f.finish(output(vec![f.fact(sample_id, "unknown")], None));
+    assert_eq!(identified.facts[0].grade, RecallGrade::Committed);
     assert_eq!(
-        result.facts[0].update,
+        identified.facts[0].update,
         Some(UpdateState {
             status: UpdateStatus::Pending,
             reasons: vec![
@@ -1218,6 +1432,122 @@ fn pending_is_merged_without_record_id_bypass_and_unknown_stays_unknown() {
         .unwrap();
     let result = f.finish(output(vec![view], None));
     assert!(result.facts[0].update.is_none());
+
+    let siblings = Fixture::new(json!({"query":"我收藏和使用哪些物品？","at":SAID_ON,
+        "current_evidence":"query_only","plan":{"type":"open","relation":"物品","op":"list"},
+        "records":[],"relations":[],"raw":[]}));
+    let sentence = "我收藏纸扇，我使用竹笛。";
+    source(&siblings.db, "siblings", sentence, None, "running");
+    let input = W4Input {
+        candidates: ["我收藏纸扇", "我使用竹笛"]
+            .into_iter()
+            .enumerate()
+            .map(|(index, span)| {
+                let mut c = candidate("siblings", sentence, "self");
+                c.index = index;
+                c.candidate.value = Some(hippocampus::contract::Value::Text {
+                    text: span.into(),
+                    quote: Quote { text: span.into() },
+                });
+                c
+            })
+            .collect(),
+        records: vec![],
+        relations: vec![],
+        coverage: W4Coverage {
+            complete: true,
+            omitted: 0,
+        },
+    };
+    let decisions = (0..2)
+        .map(|index| W4Decision {
+            candidate: index,
+            status: DecisionStatus::Decided,
+            action: Some(Action::New),
+            targets: vec![],
+            resolves_relations: vec![],
+            basis: vec![stored("siblings", sentence)],
+            effective: None,
+            relation_scope: None,
+            pending_reason: None,
+        })
+        .collect();
+    let state = siblings.db.state();
+    let plan = w4::plan(
+        &w4::W4Runtime {
+            state: &state,
+            owner: OWNER.into(),
+            source_key: "siblings",
+            round: 0,
+            task_id: None,
+            admissions: BTreeMap::new(),
+        },
+        &input,
+        &W4Output { decisions },
+    )
+    .unwrap();
+    let claim = W5Claim {
+        source_key: "siblings".into(),
+        attempt_id: "claim-siblings".into(),
+    };
+    let mut products = BTreeMap::new();
+    for group in &plan.groups {
+        let W5Outcome::Committed(receipt) =
+            commit_group(&mut siblings.db.open(), &claim, group).unwrap()
+        else {
+            panic!("sibling commit failed")
+        };
+        products.extend(receipt.products);
+    }
+    w5_finish_task(&mut siblings.db.open(), &claim, &W5TaskEnd::Committed).unwrap();
+    let pending = UpdateState {
+        status: UpdateStatus::Pending,
+        reasons: vec![UpdateReason::UpdateTargetUnknown],
+    };
+    siblings
+        .db
+        .open()
+        .transaction(|state| {
+            state.record_updates.insert(products[&0], pending.clone());
+            Ok(())
+        })
+        .unwrap();
+    let result = siblings.finish(output(
+        vec![
+            fact(
+                "我收藏纸扇",
+                vec![stored("siblings", sentence)],
+                vec![products[&0]],
+                "unknown",
+            ),
+            fact(
+                "我使用竹笛",
+                vec![stored("siblings", sentence)],
+                vec![products[&1]],
+                "unknown",
+            ),
+            fact(
+                "我使用竹笛",
+                vec![stored("siblings", sentence)],
+                vec![],
+                "unknown",
+            ),
+        ],
+        None,
+    ));
+    assert_eq!(result.status, RecallStatus::Answered);
+    assert_eq!(result.facts[0].grade, RecallGrade::Committed);
+    assert_eq!(result.facts[0].update, Some(pending));
+    assert_eq!(result.facts[1].grade, RecallGrade::Committed);
+    assert_eq!(
+        result.facts[1].update,
+        Some(UpdateState {
+            status: UpdateStatus::Judged,
+            reasons: vec![]
+        })
+    );
+    assert_eq!(result.facts[2].grade, RecallGrade::Uncommitted);
+    assert!(result.facts[2].update.is_none());
 }
 
 #[test]
@@ -2518,7 +2848,7 @@ fn visibility_gate_allows_complete_new_raw_and_keeps_no_current_history() {
 }
 
 #[test]
-fn visibility_gate_excludes_whole_source_with_known_other_subject() {
+fn visibility_gate_does_not_infer_omitted_source_subject_from_one_full_sentence() {
     let f = visibility_fixture();
     seed_on(
         &f.db,
@@ -2535,6 +2865,7 @@ fn visibility_gate_excludes_whole_source_with_known_other_subject() {
             Ok(())
         })
         .unwrap();
+    let before = serde_json::to_value(f.db.state()).unwrap();
     let assembly = f.assembly_with(
         &f.request(),
         f.plan_json(),
@@ -2558,8 +2889,12 @@ fn visibility_gate_excludes_whole_source_with_known_other_subject() {
         )
         .unwrap();
     assert!(out.completeness.retrieval_truncated);
-    assert_eq!(out.status, RecallStatus::Answered);
-    assert_eq!(out.facts[0].current, Qualification::Yes);
+    assert_eq!(out.status, RecallStatus::Insufficient);
+    assert_eq!(out.facts[0].current, Qualification::Unknown);
+    assert!(!out.completeness.plan_complete);
+    assert_eq!(out.completeness.pending_related_sources, 1);
+    assert_eq!(f.db.state().sources["child"].enrichment, "needs_rejudge");
+    assert_eq!(serde_json::to_value(f.db.state()).unwrap(), before);
     assert!(out.degraded_reasons.is_empty());
 }
 
@@ -2659,4 +2994,394 @@ fn visibility_gate_does_not_downgrade_for_record_truncation_alone() {
     assert_eq!(out.completeness.pending_related_sources, 0);
     assert_eq!(out.facts[0].current, Qualification::Yes);
     assert_eq!(out.status, RecallStatus::Answered);
+}
+
+#[test]
+fn af227_r1_19_injection_cannot_expand_sqlite_owner_task_or_subject_scope() {
+    let db = Db::new();
+    let visible = seed_on(
+        &db,
+        "scope-ok",
+        "我住在杉湾。",
+        "self",
+        Some("trusted-task"),
+        true,
+        SAID_ON,
+    );
+    let other_task = seed_on(
+        &db,
+        "scope-task",
+        "我住在芦港。",
+        "self",
+        Some("other-task"),
+        true,
+        SAID_ON,
+    );
+    let other_subject = seed_on(
+        &db,
+        "scope-child",
+        "孩子住在竹湾。",
+        "child",
+        Some("trusted-task"),
+        true,
+        SAID_ON,
+    );
+    let mut foreign = db.state().repository.get(visible).unwrap().unwrap();
+    foreign.owner_id = "other-owner".into();
+    foreign.id = MemoryId(90001);
+    foreign.value = MemoryValue::Text("别人的住址".into());
+    foreign.evidence.clear();
+    let mut other = SqliteMemoryStore::open(&db.0, "other-owner".into()).unwrap();
+    other
+        .transaction(|s| {
+            s.entities.upsert(Entity {
+                id: "self".into(),
+                owner_id: "other-owner".into(),
+                entity_type: EntityType::Person,
+                canonical_name: "另一个人".into(),
+                aliases: vec![],
+            });
+            s.repository.insert(foreign.clone())?;
+            Ok(())
+        })
+        .unwrap();
+    let label: Json = serde_json::from_str(include_str!(
+        "eval/r1/samples/r1_19_injection_other_users.json"
+    ))
+    .unwrap();
+    let mut request = Request {
+        binding: RecallRequest {
+            request_id: "scope-check".into(),
+            query: label["input"]["message"].as_str().unwrap().into(),
+            context: vec![],
+            task_id: Some("trusted-task".into()),
+            at: AT,
+        },
+        owner: OWNER.into(),
+        subject_ids: Some(vec!["self".into()]),
+        said_on: SAID_ON.into(),
+        utc_offset_seconds: 28800,
+        bootstrap: false,
+    };
+    let ids = [EntityId::from("self"), EntityId::from("child")];
+    let relations = [w2::Relation {
+        id: "fact".into(),
+        memory_types: vec![MemoryType::Fact],
+    }];
+    let task = TaskId::from("trusted-task");
+    for empty in [false, true] {
+        if empty {
+            request.subject_ids = Some(vec![]);
+        }
+        let ctx = r1::Context {
+            query: &request.binding.query,
+            context: &[],
+            entities: &ids,
+            relations: &relations,
+            subject_ids: request.subject_ids.as_deref(),
+            task_id: Some(&task),
+            said_on: SAID_ON,
+            utc_offset_seconds: 28800,
+            supported_units: &[],
+        };
+        let bad = json!({"need":"judge","current_evidence":"query_only","type":"open","subject":{"entity_id":"child"},
+            "relation":"fact","conditions":[],"time":null,"plan":{"op":"list","filter":{"relation":null,"time":null},"unit":null}});
+        let (plan, diagnostic) =
+            r1::validate_detailed(r1::decode(&bad.to_string()).unwrap(), &ctx).unwrap();
+        assert!(plan.output.is_none());
+        assert_eq!(diagnostic.unwrap().rule, "subject_scope");
+        let assembled = recall::assemble(&db.open(), &request, &plan, Budget::default()).unwrap();
+        let found: Vec<_> = assembled
+            .evidence
+            .records
+            .iter()
+            .map(RecordView::id)
+            .collect();
+        assert_eq!(found, if empty { vec![] } else { vec![visible] });
+        assert!(
+            !found.contains(&other_task)
+                && !found.contains(&other_subject)
+                && !found.contains(&foreign.id)
+        );
+        let package = serde_json::to_string(&assembled.evidence).unwrap();
+        assert!(
+            !package.contains("芦港")
+                && !package.contains("竹湾")
+                && !package.contains("别人的住址")
+        );
+    }
+}
+
+#[test]
+fn af296_mentions_preserve_identity_scope_ambiguity_and_budget_boundaries() {
+    let f = Fixture::new(json!({"query":"孩子的报名和画画情况？","at":SAID_ON,
+        "current_evidence":"query_only","plan":{"type":"single","op":"lookup","relation":"孩子的情况"},
+        "records":[],"raw":[],"relations":[]}));
+    f.db.open()
+        .transaction(|s| {
+            let mut child = s
+                .entities
+                .list_by_owner(&UserId::from(OWNER))
+                .into_iter()
+                .find(|e| e.id.0 == "child")
+                .unwrap();
+            child.aliases = vec!["女儿".into(), "小雨".into(), "雨".into()];
+            s.entities.upsert(child);
+            s.entities.upsert(Entity {
+                id: "other".into(),
+                owner_id: OWNER.into(),
+                entity_type: EntityType::Person,
+                canonical_name: "小雨".into(),
+                aliases: vec![],
+            });
+            Ok(())
+        })
+        .unwrap();
+    let actor = seed_on(
+        &f.db,
+        "actor",
+        "我给女儿报名。",
+        "self",
+        None,
+        true,
+        SAID_ON,
+    );
+    let weather = seed_on(
+        &f.db,
+        "weather",
+        "我看到今天有小雨。",
+        "self",
+        None,
+        true,
+        SAID_ON,
+    );
+    let unrelated = seed_on(
+        &f.db,
+        "unrelated",
+        "我养了植物。",
+        "self",
+        None,
+        true,
+        SAID_ON,
+    );
+    let narrow_alias = seed_on(&f.db, "single", "我听到雨声。", "self", None, true, SAID_ON);
+    let direct = seed_on(
+        &f.db,
+        "direct",
+        "孩子喜欢画画。",
+        "child",
+        None,
+        true,
+        SAID_ON,
+    );
+    let outside = seed_on(
+        &f.db,
+        "task",
+        "我给女儿买了书。",
+        "self",
+        Some("private-task"),
+        true,
+        SAID_ON,
+    );
+    let same_name = seed_on(
+        &f.db,
+        "same-name",
+        "另一个孩子小雨喜欢跳绳。",
+        "other",
+        None,
+        true,
+        SAID_ON,
+    );
+    // Structured reference has no registered name in either value text or evidence.
+    let mut structured_ids = Vec::new();
+    for (sid, target) in [("entity", "child"), ("different-entity", "self")] {
+        source(&f.db, sid, "我的联系人是那位。", None, "running");
+        let mut c = candidate(sid, "我的联系人是那位。", "self");
+        c.candidate.relation = "contact".into();
+        c.candidate.value = Some(Value::Entity {
+            entity_id: target.into(),
+            quote: Quote {
+                text: "那位".into(),
+            },
+        });
+        let id = commit(
+            &f.db,
+            sid,
+            None,
+            W4Input {
+                candidates: vec![c],
+                records: vec![],
+                relations: vec![],
+                coverage: W4Coverage {
+                    complete: true,
+                    omitted: 0,
+                },
+            },
+            W4Decision {
+                candidate: 0,
+                status: DecisionStatus::Decided,
+                action: Some(Action::New),
+                targets: vec![],
+                resolves_relations: vec![],
+                basis: vec![stored(sid, "我的联系人是那位。")],
+                effective: None,
+                relation_scope: None,
+                pending_reason: None,
+            },
+        );
+        structured_ids.push(id);
+    }
+    let [structured, different_entity] = structured_ids.as_slice() else {
+        panic!()
+    };
+    let (structured, different_entity) = (*structured, *different_entity);
+    let req = f.request();
+    let mut output = f.plan_json();
+    output["subject"] = json!({"entity_id":"child"});
+    output["plan"]["filter"]["relation"] = Json::Null;
+    let entities = [EntityId::from("self"), EntityId::from("child")];
+    let relations = [w2::Relation {
+        id: "fact".into(),
+        memory_types: vec![MemoryType::Fact],
+    }];
+    let make_plan = |request: &Request, output: &Json| {
+        r1::validate(
+            r1::decode(&output.to_string()).unwrap(),
+            &r1::Context {
+                query: &request.binding.query,
+                context: &request.binding.context,
+                entities: &entities,
+                relations: &relations,
+                subject_ids: request.subject_ids.as_deref(),
+                task_id: None,
+                said_on: &request.said_on,
+                utc_offset_seconds: request.utc_offset_seconds,
+                supported_units: &[],
+            },
+        )
+        .unwrap()
+    };
+    for enabled in [false, true] {
+        let config = embedding::Config {
+            enabled,
+            ..Default::default()
+        };
+        let plan = make_plan(&req, &output);
+        let assemble = |request: &Request, plan: &r1::Plan, budget| {
+            recall::assemble_with_retrieval(
+                &f.db.open(),
+                request,
+                plan,
+                budget,
+                &recall::Retrieval {
+                    config: &config,
+                    query: Some(&|_| Err("embedding_connect".into())),
+                },
+                true,
+            )
+            .unwrap()
+        };
+        let a = assemble(&req, &plan, Budget::default());
+        let ids: Vec<_> = a.evidence.records.iter().map(RecordView::id).collect();
+        for id in [actor, weather, structured, direct, same_name] {
+            assert!(ids.contains(&id));
+        }
+        for id in [unrelated, narrow_alias, outside, different_entity] {
+            assert!(!ids.contains(&id));
+        }
+        let mentions = &a.retrieval_diagnostic().unwrap().stages["r1_subject_mentions"];
+        assert_eq!(
+            mentions
+                .iter()
+                .copied()
+                .collect::<std::collections::BTreeSet<_>>(),
+            [actor, weather, structured, same_name]
+                .into_iter()
+                .collect()
+        );
+        for id in [actor, weather, structured] {
+            let RecordView::Current(v) = a.evidence.records.iter().find(|v| v.id() == id).unwrap()
+            else {
+                panic!()
+            };
+            assert_eq!(
+                v.candidate.subject,
+                Subject::Entity(EntitySubject {
+                    entity_id: "self".into()
+                })
+            );
+            assert_eq!(v.grade, Grade::Committed);
+            assert_eq!(v.update.status, UpdateStatus::Judged);
+        }
+        // Mention is not a semantic binding: a mechanically valid ambiguity decision survives.
+        let out = a
+            .finish_r4(
+                &f.db.open(),
+                Ok(&json!({"verdict":"needs_clarification","facts":[],"compute":null}).to_string()),
+            )
+            .unwrap();
+        assert_eq!(out.status, RecallStatus::NeedsClarification);
+        let mut trusted = req.clone();
+        trusted.subject_ids = Some(vec!["child".into()]);
+        let narrow = assemble(&trusted, &make_plan(&trusted, &output), Budget::default());
+        assert_eq!(
+            narrow
+                .evidence
+                .records
+                .iter()
+                .map(RecordView::id)
+                .collect::<Vec<_>>(),
+            [direct]
+        );
+        assert!(narrow.retrieval_diagnostic().unwrap().stages["r1_subject_mentions"].is_empty());
+        let cut = assemble(
+            &req,
+            &plan,
+            Budget {
+                records: 1,
+                ..Default::default()
+            },
+        );
+        assert!(cut.evidence.completeness.retrieval_truncated);
+        assert!(!cut.evidence.completeness.plan_complete);
+        if enabled {
+            assert!(cut.retrieval_diagnostic().unwrap().enumeration.is_none());
+        }
+        let bytes = assemble(
+            &req,
+            &plan,
+            Budget {
+                stored_bytes: 1,
+                ..Default::default()
+            },
+        );
+        assert!(bytes.evidence.records.is_empty());
+        assert!(!bytes.evidence.completeness.plan_complete);
+        for subject in [
+            json!({"entity_id":"self"}),
+            json!({"unresolved":{"text":"孩子"}}),
+            json!({"ambiguous":["self","child"]}),
+        ] {
+            let mut other = output.clone();
+            other["subject"] = subject;
+            let a = assemble(&req, &make_plan(&req, &other), Budget::default());
+            assert!(a.retrieval_diagnostic().unwrap().stages["r1_subject_mentions"].is_empty());
+            assert!(a.evidence.records.iter().any(|v| v.id() == unrelated));
+        }
+    }
+    // Removing the source after assembly must not publish cached mentions.
+    let plan = make_plan(&req, &output);
+    let before = recall::assemble(&f.db.open(), &req, &plan, Budget::default()).unwrap();
+    let mut service =
+        hippocampus::chat::ChatMemoryService::new(f.db.open(), Default::default()).unwrap();
+    service
+        .call("memory_forget", json!({"source_id":"actor"}), || false)
+        .unwrap();
+    assert!(
+        before
+            .finish_skipped(&f.db.open(), recall::SkipReason::Offline)
+            .is_err()
+    );
+    let reopened = recall::assemble(&f.db.open(), &req, &plan, Budget::default()).unwrap();
+    assert!(!reopened.evidence.records.iter().any(|r| r.id() == actor));
 }

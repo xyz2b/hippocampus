@@ -1,0 +1,2259 @@
+{
+  "schema": "retrieval-queries.v1",
+  "revision": "AF173",
+  "r1_contract": "r1.v2",
+  "budgets": [
+    64,
+    8
+  ],
+  "queries": [
+    {
+      "id": "Q01",
+      "query": "我平时喝什么饮料？",
+      "category": "上位词",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我平时喝什么饮料？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T01"
+      ],
+      "relevant_records": [
+        "T01",
+        "T24"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q02",
+      "query": "我在哪家公司上班？",
+      "category": "改写",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我在哪家公司上班？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "works_at",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T02"
+      ],
+      "relevant_records": [
+        "T02",
+        "T21"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q03",
+      "query": "我的职业是什么？",
+      "category": "改写",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我的职业是什么？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T03"
+      ],
+      "relevant_records": [
+        "T03"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q04",
+      "query": "我家在哪个城市？",
+      "category": "改写",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我家在哪个城市？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T04"
+      ],
+      "relevant_records": [
+        "T04",
+        "T20"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q05",
+      "query": "我有什么药不能用？",
+      "category": "上位词",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我有什么药不能用？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T05"
+      ],
+      "relevant_records": [
+        "T05"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q06",
+      "query": "我的车是什么牌子？",
+      "category": "改写",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我的车是什么牌子？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T06"
+      ],
+      "relevant_records": [
+        "T06"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q07",
+      "query": "我用什么编辑器写程序？",
+      "category": "同义",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我用什么编辑器写程序？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T07"
+      ],
+      "relevant_records": [
+        "T07"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q08",
+      "query": "我有哪些户外运动爱好？",
+      "category": "上位词",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我有哪些户外运动爱好？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "likes",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T08"
+      ],
+      "relevant_records": [
+        "T08"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q09",
+      "query": "我吃饭有什么忌口？",
+      "category": "同义",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我吃饭有什么忌口？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T09"
+      ],
+      "relevant_records": [
+        "T09",
+        "T24",
+        "T22",
+        "T23"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q10",
+      "query": "孩子读几年级了？",
+      "category": "主体注入",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "e-daughter"
+        },
+        "relation": "孩子读几年级了？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T10"
+      ],
+      "relevant_records": [
+        "T10"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "scope_within_record_budget",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q11",
+      "query": "我妈妈对什么过敏？",
+      "category": "主体隔离",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "e-mom"
+        },
+        "relation": "我妈妈对什么过敏？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "allergic_to",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T11"
+      ],
+      "relevant_records": [
+        "T11"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q12",
+      "query": "老王在哪工作？",
+      "category": "字面",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "e-laowang"
+        },
+        "relation": "老王在哪工作？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "works_at",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T12"
+      ],
+      "relevant_records": [
+        "T12"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q13",
+      "query": "我去过哪些地方旅行？",
+      "category": "聚合",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "aggregate",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我去过哪些地方旅行？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "list",
+          "filter": {
+            "relation": "visited",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T13"
+      ],
+      "relevant_records": [
+        "T13"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "aggregate_or_list",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q14",
+      "query": "我最近有什么出行安排？",
+      "category": "计划",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我最近有什么出行安排？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T14"
+      ],
+      "relevant_records": [
+        "T14"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q15",
+      "query": "回答我的时候用什么语言？",
+      "category": "字面",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "回答我的时候用什么语言？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T15"
+      ],
+      "relevant_records": [
+        "T15"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q16",
+      "query": "我养宠物了吗？",
+      "category": "上位词",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我养宠物了吗？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T17"
+      ],
+      "relevant_records": [
+        "T17"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q17",
+      "query": "我一般几点睡？",
+      "category": "改写",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我一般几点睡？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T18"
+      ],
+      "relevant_records": [
+        "T18"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q18",
+      "query": "What is my blood type?",
+      "category": "跨语言",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "What is my blood type?",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T19"
+      ],
+      "relevant_records": [
+        "T19"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q19",
+      "query": "我的 GitHub 账号叫什么？",
+      "category": "跨语言",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我的 GitHub 账号叫什么？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T25"
+      ],
+      "relevant_records": [
+        "T25"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q20",
+      "query": "我能吃芒果吗？",
+      "category": "关系闭包",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我能吃芒果吗？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T22",
+        "T23"
+      ],
+      "relevant_records": [
+        "T22",
+        "T23"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q21",
+      "query": "我喝酒吗？",
+      "category": "否定",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我喝酒吗？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T24"
+      ],
+      "relevant_records": [
+        "T24"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q22",
+      "query": "车牌号多少？",
+      "category": "字面",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "车牌号多少？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T26"
+      ],
+      "relevant_records": [
+        "T26"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q23",
+      "query": "浙A12345 是谁的车？",
+      "category": "精确串",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "谁"
+          }
+        },
+        "relation": "浙A12345 是谁的车？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T26"
+      ],
+      "relevant_records": [
+        "T26"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q24",
+      "query": "我喜欢读什么类型的书？",
+      "category": "改写",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我喜欢读什么类型的书？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "likes",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T27"
+      ],
+      "relevant_records": [
+        "T27"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q25",
+      "query": "我的身份证号是多少？",
+      "category": "删除",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我的身份证号是多少？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q26",
+      "query": "我住在北京吗？",
+      "category": "归属隔离",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我住在北京吗？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T04"
+      ],
+      "relevant_records": [
+        "T04",
+        "T20"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q27",
+      "query": "京都的住宿订在哪？",
+      "category": "任务隔离",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "京都的住宿订在哪？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [],
+      "relevant_records": [
+        "T13"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q27b",
+      "query": "京都的住宿订在哪？",
+      "category": "任务可见",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": "旅行规划",
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "京都的住宿订在哪？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T29"
+      ],
+      "relevant_records": [
+        "T29",
+        "T13"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q28",
+      "query": "我以前在哪家公司？",
+      "category": "历史",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我以前在哪家公司？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "works_at",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T21"
+      ],
+      "relevant_records": [
+        "T21",
+        "T02"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q29",
+      "query": "我住在哪里？",
+      "category": "关系回归",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我住在哪里？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "lives_in",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T04"
+      ],
+      "relevant_records": [
+        "T04",
+        "T20"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q29b",
+      "query": "我住在哪里？",
+      "category": "关系对照",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我住在哪里？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T04"
+      ],
+      "relevant_records": [
+        "T04",
+        "T20"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q30",
+      "query": "小雨上几年级？",
+      "category": "别名",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "e-daughter"
+        },
+        "relation": "小雨上几年级？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T10"
+      ],
+      "relevant_records": [
+        "T10"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "scope_within_record_budget",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q31",
+      "query": "我平时喝什么饮料？",
+      "category": "错误关系",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我平时喝什么饮料？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "fact",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T01"
+      ],
+      "relevant_records": [
+        "T01",
+        "T24"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": false
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "Q32",
+      "query": "代码示例应该用什么语言？",
+      "category": "代码语言",
+      "control": false,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "代码示例应该用什么语言？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [
+        "T16"
+      ],
+      "relevant_records": [
+        "T16"
+      ],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "C01",
+      "query": "我用哪种墨盒？",
+      "category": "未整理原文",
+      "control": true,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我用哪种墨盒？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [
+        "s-raw-C01"
+      ],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": true,
+        "enumeration": null,
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": [
+        {
+          "id": "s-raw-C01",
+          "session_id": "af173",
+          "turn_id": "raw-C01",
+          "observed_at": 1776182400,
+          "received_sequence": 1000,
+          "request": {
+            "text": "我的陶罐放在柜子里。",
+            "capture_source": true,
+            "task_id": null
+          },
+          "enrichment": "queued",
+          "error": null,
+          "result": null,
+          "base_revision": 0,
+          "index": null,
+          "task": {}
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "query": "谁的陶片？",
+      "category": "可信空范围",
+      "control": true,
+      "owner": "A",
+      "subject_ids": [],
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "谁"
+          }
+        },
+        "relation": "谁的陶片？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29",
+        "s-T01",
+        "s-T02",
+        "s-T03",
+        "s-T04",
+        "s-T05",
+        "s-T06",
+        "s-T07",
+        "s-T08",
+        "s-T09",
+        "s-T10",
+        "s-T11",
+        "s-T12",
+        "s-T13",
+        "s-T14",
+        "s-T15",
+        "s-T16",
+        "s-T17",
+        "s-T18",
+        "s-T19",
+        "s-T20",
+        "s-T21",
+        "s-T22",
+        "s-T23",
+        "s-T24",
+        "s-T25",
+        "s-T26",
+        "s-T27",
+        "s-T28",
+        "s-T29",
+        "s-D01",
+        "s-D02",
+        "s-D03",
+        "s-D04",
+        "s-D05",
+        "s-D06",
+        "s-D07",
+        "s-F0001",
+        "s-F0002",
+        "s-F0003",
+        "s-F0004",
+        "s-F0005",
+        "s-F0006",
+        "s-F0007",
+        "s-F0008",
+        "s-F0009",
+        "s-F0010",
+        "s-F0011",
+        "s-F0012",
+        "s-F0013",
+        "s-F0014",
+        "s-F0015",
+        "s-F0016",
+        "s-F0017",
+        "s-F0018",
+        "s-F0019",
+        "s-F0020",
+        "s-F0021",
+        "s-F0022",
+        "s-F0023",
+        "s-F0024",
+        "s-F0025",
+        "s-F0026",
+        "s-F0027",
+        "s-F0028",
+        "s-F0029",
+        "s-F0030",
+        "s-F0031",
+        "s-F0032",
+        "s-F0033",
+        "s-F0034",
+        "s-F0035",
+        "s-F0036",
+        "s-F0037",
+        "s-F0038",
+        "s-F0039",
+        "s-F0040",
+        "s-F0041",
+        "s-F0042",
+        "s-F0043",
+        "s-F0044",
+        "s-F0045",
+        "s-F0046",
+        "s-F0047",
+        "s-F0048",
+        "s-F0049",
+        "s-F0050",
+        "s-F0051",
+        "s-F0052",
+        "s-F0053",
+        "s-F0054",
+        "s-F0055",
+        "s-F0056",
+        "s-F0057",
+        "s-F0058",
+        "s-F0059",
+        "s-F0060",
+        "s-F0061",
+        "s-F0062",
+        "s-F0063",
+        "s-F0064",
+        "s-F0065",
+        "s-F0066",
+        "s-F0067",
+        "s-F0068",
+        "s-F0069",
+        "s-F0070",
+        "s-F0071",
+        "s-F0072",
+        "s-F0073",
+        "s-F0074",
+        "s-F0075",
+        "s-F0076",
+        "s-F0077",
+        "s-F0078",
+        "s-F0079",
+        "s-F0080",
+        "s-F0081",
+        "s-F0082",
+        "s-F0083",
+        "s-F0084",
+        "s-F0085",
+        "s-F0086",
+        "s-F0087",
+        "s-F0088",
+        "s-F0089",
+        "s-F0090",
+        "s-F0091",
+        "s-F0092",
+        "s-F0093",
+        "s-F0094",
+        "s-F0095",
+        "s-F0096",
+        "s-F0097",
+        "s-F0098",
+        "s-F0099",
+        "s-F0100"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "scope_within_record_budget",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "C03",
+      "query": "谁的陶片？",
+      "category": "R1失败枚举",
+      "control": true,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {},
+      "r1_failure": "decode",
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "r1_not_understood",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "C04",
+      "query": "谁的陶片？",
+      "category": "R1失败枚举",
+      "control": true,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "single",
+        "subject": {
+          "unresolved": {
+            "text": "谁"
+          }
+        },
+        "relation": "谁的陶片？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "lookup",
+          "filter": {
+            "relation": "not-in-catalogue",
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": "validate",
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "r1_not_understood",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "C05",
+      "query": "谁的陶片？",
+      "category": "R1失败枚举",
+      "control": true,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": null,
+      "r1_failure": "not_called",
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "r1_not_understood",
+        "relation_revoked": null
+      },
+      "stored_bytes": 262144,
+      "overlay_sources": []
+    },
+    {
+      "id": "C06",
+      "query": "我的陶片有什么标记？",
+      "category": "字节裁剪",
+      "control": true,
+      "owner": "A",
+      "subject_ids": null,
+      "task_id": null,
+      "r1_output": {
+        "need": "judge",
+        "current_evidence": "query_only",
+        "type": "aggregate",
+        "subject": {
+          "entity_id": "self"
+        },
+        "relation": "我的陶片有什么标记？",
+        "conditions": [],
+        "time": null,
+        "plan": {
+          "op": "list",
+          "filter": {
+            "relation": null,
+            "time": null
+          },
+          "unit": null
+        }
+      },
+      "r1_failure": null,
+      "required_records": [],
+      "relevant_records": [],
+      "forbidden_records": [
+        "T28",
+        "T30",
+        "T29"
+      ],
+      "required_raw": [],
+      "forbidden_sources": [
+        "s-T28",
+        "s-T30",
+        "s-T29"
+      ],
+      "expected_path": {
+        "fts_called": false,
+        "enumeration": "aggregate_or_list",
+        "relation_revoked": null
+      },
+      "stored_bytes": 1,
+      "overlay_sources": [
+        {
+          "id": "s-raw-C06",
+          "session_id": "af173",
+          "turn_id": "raw-C06",
+          "observed_at": 1776182400,
+          "received_sequence": 1000,
+          "request": {
+            "text": "我的陶罐放在柜子里。",
+            "capture_source": true,
+            "task_id": null
+          },
+          "enrichment": "queued",
+          "error": null,
+          "result": null,
+          "base_revision": 0,
+          "index": null,
+          "task": {}
+        }
+      ]
+    }
+  ]
+}

@@ -103,7 +103,7 @@ fn migration_preserves_old_snapshots_and_is_repeatable() {
         connection
             .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
             .unwrap(),
-        10
+        11
     );
     let saved: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -111,7 +111,7 @@ fn migration_preserves_old_snapshots_and_is_repeatable() {
         })
         .unwrap();
     assert_eq!(serde_json::from_str::<Value>(&saved).unwrap(), old);
-    connection.pragma_update(None, "user_version", 11).unwrap();
+    connection.pragma_update(None, "user_version", 12).unwrap();
     assert!(SqliteMemoryStore::open(&db.0, UserId::from("alice")).is_err());
 }
 
@@ -166,7 +166,7 @@ fn v4_upgrade_preserves_legacy_pending_without_queueing_it() {
         connection
             .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
             .unwrap(),
-        10
+        11
     );
     let saved: String = connection
         .query_row("SELECT state_json FROM memory_profiles", [], |row| {
@@ -287,7 +287,7 @@ fn s5_migration_keeps_v3_sources_facts_and_index_read_only_until_opened_for_writ
         connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
             .unwrap(),
-        10
+        11
     );
     assert_eq!(
         connection
@@ -488,7 +488,7 @@ fn operation_connection_and_service_handle_do_not_initialize_under_a_writer() {
     let version: i64 = tx
         .pragma_query_value(None, "user_version", |r| r.get(0))
         .unwrap();
-    assert_eq!(version, 10);
+    assert_eq!(version, 11);
 }
 
 #[test]
@@ -496,7 +496,7 @@ fn operation_connection_never_creates_or_migrates_a_database() {
     let missing = TestDb::new();
     assert!(SqliteMemoryStore::open_operation(&missing.0, "alice".into()).is_err());
     assert!(!missing.0.exists());
-    for version in [0, 8, 9, 11] {
+    for version in [0, 8, 9, 10, 12] {
         let db = TestDb::new();
         drop(db.open("alice"));
         let connection = Connection::open(&db.0).unwrap();

@@ -1,0 +1,620 @@
+[
+  {
+    "id": "af342_w3_01",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "对外部设计的评价不提取",
+    "input": {
+      "text": "我认为这种图像压缩方案并不划算。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_02",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "因果推演不提取",
+    "input": {
+      "text": "如果把所有索引放进缓存，冷启动可能更慢。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_03",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "项目备选建议不算决定",
+    "input": {
+      "text": "青梧项目是否应该改用分块传输？我建议先比较方案。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_04",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "本人职责保留",
+    "input": {
+      "text": "我负责青梧项目的接口测试。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我负责青梧项目的接口测试",
+          "sentence": "我负责青梧项目的接口测试。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_05",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "职业工作状态保留",
+    "input": {
+      "text": "我在白桦书店任职。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "白桦书店",
+          "sentence": "我在白桦书店任职。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_06",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "真实技术偏好保留",
+    "input": {
+      "text": "我喜欢使用静态类型语言。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "likes",
+          "memory_type": "preference",
+          "value": "使用静态类型语言",
+          "sentence": "我喜欢使用静态类型语言。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_07",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "实际工作习惯保留",
+    "input": {
+      "text": "我写接口文档时会附上错误码清单。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我写接口文档时会附上错误码清单",
+          "sentence": "我写接口文档时会附上错误码清单。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [
+            "写接口文档时"
+          ],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_08",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "带条件和不确定性的计划保留",
+    "input": {
+      "text": "如果休假获批，我考虑去青岬练习帆船。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "plan",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我考虑去青岬练习帆船",
+          "sentence": "如果休假获批，我考虑去青岬练习帆船。",
+          "polarity": "affirm",
+          "uncertainty": "考虑",
+          "conditions": [
+            "如果休假获批"
+          ],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_09",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF348",
+    "focus": "本人经历保留",
+    "input": {
+      "text": "我参加过栎湾的陶艺展。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "episode",
+          "value": "我参加过栎湾的陶艺展",
+          "sentence": "我参加过栎湾的陶艺展。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": [
+            "useful",
+            "low_value"
+          ]
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_10",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "范围明确的项目采用决定保留",
+    "input": {
+      "text": "我已决定在青梧项目中采用离线验签。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "fact",
+          "memory_type": "fact",
+          "value": "我已决定在青梧项目中采用离线验签",
+          "sentence": "我已决定在青梧项目中采用离线验签。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  },
+  {
+    "id": "af342_w3_11",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF348",
+    "focus": "混合消息遗漏个人职责须报 gaps",
+    "input": {
+      "text": "我负责白鹭项目的排版设计。这种渲染算法可能更省内存。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [],
+      "request_reviews": [],
+      "coverage": {
+        "status": "gaps",
+        "missing_contains": [
+          "我负责白鹭项目的排版设计。"
+        ],
+        "ignore_terminal_punctuation": true
+      }
+    }
+  },
+  {
+    "id": "af342_w3_12",
+    "contract": "w3.v6",
+    "label_status": "draft",
+    "label_revision": "AF342-draft",
+    "focus": "混合消息只遗漏讨论应 complete",
+    "input": {
+      "text": "我在霁川出版社任职。共享队列也许会增加锁竞争。",
+      "history": [],
+      "said_on": "2026-10-16",
+      "entities": [
+        {
+          "id": "self",
+          "names": [
+            "我"
+          ]
+        }
+      ],
+      "relations": [
+        "fact",
+        "works_at",
+        "likes"
+      ],
+      "task_id": null,
+      "candidates": [
+        {
+          "kind": "assertion",
+          "speech": "user_statement",
+          "subject": "self",
+          "relation": "works_at",
+          "memory_type": "fact",
+          "value": "霁川出版社",
+          "sentence": "我在霁川出版社任职。",
+          "polarity": "affirm",
+          "uncertainty": null,
+          "conditions": [],
+          "times": [],
+          "strength": null
+        }
+      ],
+      "requests": []
+    },
+    "expect": {
+      "reviews": [
+        {
+          "candidate": 0,
+          "verdict": "supported",
+          "aspects": [],
+          "episode_value": "not_applicable"
+        }
+      ],
+      "request_reviews": [],
+      "coverage": {
+        "status": "complete",
+        "missing_contains": []
+      }
+    }
+  }
+]

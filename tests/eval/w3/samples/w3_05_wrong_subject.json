@@ -28,7 +28,7 @@
   "reviews": [
    {
     "candidate": 0,
-    "verdict": "contradicted",
+    "verdict": "insufficient",
     "aspects": [
      "subject"
     ],
@@ -37,9 +37,13 @@
   ],
   "coverage": {
    "status": "complete",
-   "missing_contains": []
+   "missing_contains": [
+    "我妈对青霉素过敏"
+   ],
+   "scored": false
   },
   "request_reviews": []
  },
- "note": null
+ "note": "AF311：原文缺 self 主体支持，insufficient[subject]；覆盖缺口引用母亲断言的要求不变。",
+ "label_revision": "AF311"
 }

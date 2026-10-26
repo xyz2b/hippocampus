@@ -59,19 +59,87 @@
   "task_id": null
  },
  "expect": {
-  "need": "judge",
-  "current_evidence": "query_only",
-  "type": "single",
-  "subject": "self",
-  "conditions": [
-   "周二"
-  ],
-  "time": null,
-  "plan.op": "lookup",
-  "plan.filter.relation": [
-   "fact",
-   null
+  "alternatives": [
+   {
+    "need": "judge",
+    "current_evidence": "query_only",
+    "type": [
+     "single",
+     "temporal"
+    ],
+    "subject": "self",
+    "conditions": [
+     "周二"
+    ],
+    "time": [
+     null,
+     {
+      "quote": "周二",
+      "interp": {
+       "kind": "recurring"
+      }
+     }
+    ],
+    "plan.op": "lookup",
+    "plan.filter.relation": [
+     "fact",
+     null
+    ],
+    "plan.filter.time": [
+     null,
+     {
+      "quote": "周二",
+      "interp": {
+       "kind": "recurring"
+      }
+     }
+    ],
+    "must_not": [
+     "丢失周二的周期限制",
+     "把一般周二解释为某一具体日或相对偏移",
+     "凭空添加适用限制"
+    ]
+   },
+   {
+    "need": "judge",
+    "current_evidence": "query_only",
+    "type": [
+     "single",
+     "temporal"
+    ],
+    "subject": "self",
+    "conditions": [],
+    "time": {
+     "quote": "周二",
+     "interp": {
+      "kind": "recurring"
+     }
+    },
+    "plan.op": "lookup",
+    "plan.filter.relation": [
+     "fact",
+     null
+    ],
+    "plan.filter.time": [
+     null,
+     {
+      "quote": "周二",
+      "interp": {
+       "kind": "recurring"
+      }
+     }
+    ],
+    "must_not": [
+     "丢失周二的周期限制",
+     "把一般周二解释为某一具体日或相对偏移",
+     "凭空添加适用限制"
+    ]
+   }
   ]
  },
- "note": null
+ "note": "AF247：周二可在 conditions 或 time(recurring)；非空 time/filter.time 均须保留周期，不接受 unknown、单日或偏移解释。",
+ "label_revision": {
+  "decision": "AF247",
+  "date": "2026-10-11"
+ }
 }

@@ -2,7 +2,7 @@
  "id": "w3_18_unresolved_subject_ok",
  "contract": "w3.v1",
  "label_status": "reviewed",
- "focus": "如实保留的未解析主体应 supported",
+ "focus": "未明确指代的主体应 insufficient[subject]",
  "input": {
   "text": "他上周辞职了。",
   "said_on": "2026-09-20",
@@ -40,8 +40,10 @@
   "reviews": [
    {
     "candidate": 0,
-    "verdict": "supported",
-    "aspects": [],
+    "verdict": "insufficient",
+    "aspects": [
+     "subject"
+    ],
     "episode_value": "not_applicable"
    }
   ],
@@ -51,5 +53,12 @@
   },
   "request_reviews": []
  },
- "note": null
+ "note": null,
+ "label_revision": {
+  "decisions": [
+   "AF150",
+   "AF151"
+  ],
+  "date": "2026-10-08"
+ }
 }

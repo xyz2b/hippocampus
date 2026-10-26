@@ -1,4 +1,4 @@
-//! `memory_forget` 的删除范围（docs/architecture/w5-storage.md 第 4 节）。
+//! `memory_forget` 的删除范围（docs/architecture.md Storage, concurrency and deletion）。
 //!
 //! 1. 起点：source_id / staged_id 为对应原文；memory_id 为目标记录。
 //! 2. 谱系（只对 memory_id）：从原始目标分别求全部前身与全部继任，取并集；向上只向上、向下只向下，

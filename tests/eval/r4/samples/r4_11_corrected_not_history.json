@@ -49,24 +49,45 @@
   }
  },
  "expect": {
-  "verdict": "supported",
-  "facts": [
+  "alternatives": [
    {
-    "record_ids": [
-     13
+    "verdict": "supported",
+    "facts": [
+     {
+      "record_ids": [
+       13
+      ],
+      "sources": [
+       "s-13"
+      ],
+      "must": {
+       "current": "yes"
+      }
+     }
     ],
-    "sources": [
-     "s-13"
-    ],
-    "must": {
-     "current": "yes"
-    }
+    "compute": null,
+    "must_not": [
+     "把字节当作曾经的雇主",
+     "未说明更正及历史任职缺证据"
+    ]
+   },
+   {
+    "verdict": "insufficient",
+    "facts": [],
+    "compute": null,
+    "must_not": [
+     "把字节当作曾经的雇主",
+     "未说明更正及历史任职缺证据"
+    ]
    }
-  ],
-  "compute": null
+  ]
  },
  "must_not": [
   "把字节当作曾经的雇主"
  ],
- "note": null
+ "note": null,
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

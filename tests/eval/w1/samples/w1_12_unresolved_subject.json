@@ -62,8 +62,16 @@
      "unresolved": "他"
     },
     "relation": "fact",
-    "memory_type": "fact",
-    "value": "他上周辞职了。",
+    "memory_type": [
+     "fact",
+     "episode"
+    ],
+    "value": {
+     "window": "他上周辞职了。",
+     "required": [
+      "辞职"
+     ]
+    },
     "sentence": "他上周辞职了。",
     "polarity": "affirm",
     "uncertainty": null,
@@ -88,5 +96,6 @@
   "subject 绑定为 self 或 e-laowang（没有任何依据）",
   "编造不在目录中的 entity_id"
  ],
- "note": null
+ "note": " AF317：仅通用fact使用允许断言窗口+必含核心；专用关系及其他字段不放宽。",
+ "label_revision": "AF317"
 }

@@ -3,6 +3,7 @@
 input.candidates 是 W2 已通过的候选（有些故意带错），expect.reviews 按候选索引给出
 verdict、必须指出的 problems.aspect 集合（supported 时为空）与 episode_value。
 """
+import copy
 import json
 import pathlib
 
@@ -131,6 +132,74 @@ SAMPLES = [
            [cand("我在用 Neovim 写代码。", relation="owns", value="Neovim")],
            [review("contradicted", ["relation"])]),
 ]
+
+UNSCORED_COVERAGE = {"02", "03", "04", "05", "06", "08", "09", "10", "16", "20"}
+for s in SAMPLES:
+    n, e = s["id"].split("_")[1], s["expect"]
+    if n in UNSCORED_COVERAGE | {"17", "18"}:
+        s["label_revision"] = {"decisions": ["AF150", "AF151"], "date": "2026-10-08"}
+    if n in UNSCORED_COVERAGE:
+        e["coverage"]["scored"] = False
+    if n == "04":
+        e["reviews"][0].update(verdict="insufficient", aspects=["relation"])
+    if n == "05":
+        e["coverage"]["missing_contains"] = ["我妈对青霉素过敏"]
+    if n == "06":
+        s["note"] = "AF151：w1_05 按 plan 评分；此冻结候选仍误标 user_statement，故 contradicted[speech]。coverage 不计分。"
+    if n == "16":
+        e["reviews"][1].update(verdict=["contradicted", "insufficient"], aspects=["time"])
+        e["request_reviews"][0]["verdict"] = ["contradicted", "insufficient"]
+        s["note"] += " AF150：输入不动；候选1漏时间，不得 supported；episode_value 仍为 low_value，时间错误不改变经历的跨轮价值。请求扩绑不得 supported。"
+    if n == "17":
+        e["request_reviews"][0]["verdict"] = ["contradicted", "insufficient"]
+    if n == "18":
+        e["reviews"][0].update(verdict="insufficient", aspects=["subject"])
+        s["focus"] = "未明确指代的主体应 insufficient[subject]"
+    if n == "20":
+        e["reviews"][0].update(verdict="insufficient", aspects=["relation"])
+    if n in {"10", "12", "19"}:
+        s["label_revision"] = {"decisions": ["AF154", "AF155"], "date": "2026-10-08"}
+    if n == "10":
+        e["reviews"][0]["verdict"] = ["contradicted", "insufficient"]
+        s["note"] = "AF155：现行提示词有歧义，本轮比较临时双收 contradicted/insufficient[value]，不得 supported；两者在生产的 rejected/pending 语义不等价。长期按 insufficient 收窄提示词另立待办。"
+    if n == "12":
+        s["expect"] = {"alternatives": [dict(e), dict(e, coverage=dict(
+            e["coverage"], status="gaps", missing_contains=["一家银行"]))]}
+        s["note"] = "AF155 覆盖此前 complete 裁定：complete 或 gaps 两个完整分支；gaps 须精确引用且含“一家银行”，两个候选仍须 supported。"
+    if n == "19":
+        s["observation_only"] = True
+        s["observation_reason"] = "频率限定语缺少明确映射，待契约决定"
+        s["note"] += " AF155：频率限定语缺少明确映射，待契约决定；只观察，不计主语义通过率或分层，机械失败不豁免。"
+
+
+
+# AF311: expectations only; input, ID and historical contract label remain unchanged.
+for s in SAMPLES:
+    n = s["id"].split("_")[1]
+    e = s["expect"]
+    if n not in {"01", "05", "06", "07", "14"}:
+        continue
+    if n in {"01", "14"}:
+        e["reviews"][0].update(verdict="contradicted", aspects=["time"])
+    if n == "14":
+        e["reviews"][0]["episode_value"] = ["low_value", "unknown"]
+    if n == "05":
+        e["reviews"][0]["verdict"] = "insufficient"
+    if n == "06":
+        b = copy.deepcopy(e)
+        b["reviews"][0]["aspects"] = ["condition"]
+        s["expect"] = {"alternatives": [e, b]}
+    if n == "07":
+        e["reviews"][0].update(verdict="contradicted", aspects=["speech"])
+    s["note"] = "AF311：" + {
+        "01": "输入 times=[] 漏现在；contradicted[time]，不修输入。",
+        "05": "原文缺 self 主体支持，insufficient[subject]；覆盖缺口引用母亲断言的要求不变。",
+        "06": "完整分支接受 contradicted[speech] 或 contradicted[condition]，不要求穷举所有问题。",
+        "07": "用户裁定只接受 contradicted[speech]；不接受 insufficient。",
+        "14": "输入漏刚的时间字段，contradicted[time]；episode_value 可 low_value/unknown。",
+    }[n]
+    s["label_revision"] = "AF311"
+    s["label_status"] = "reviewed"
 
 
 def main():

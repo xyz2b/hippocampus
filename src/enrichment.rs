@@ -481,7 +481,28 @@ fn run_claimed(
             &assembly.input,
             &output,
         )?;
+        claim.trace.record("w4_plan", || {
+            let mut decisions = BTreeMap::<String,usize>::new();
+            for decision in &output.decisions {
+                let action = serde_json::to_value(decision).ok()
+                    .and_then(|v|v["action"].as_str().or(v["status"].as_str()).map(str::to_owned))
+                    .unwrap_or_else(||"unknown".into());
+                *decisions.entry(action).or_default() += 1;
+            }
+            serde_json::json!({"groups":plan.groups.len(),"held":plan.held.len(),"not_admitted":candidate_count.saturating_sub(candidates.len()),
+                "model_required":assembly.call_w4,"model_called":claim.trace.model_called("w4"),
+                "reason":if assembly.call_w4 {if claim.trace.model_called("w4") {None} else {Some("reused_or_injected_output")}} else if candidates.is_empty() {Some("no_supported_candidates")} else if output.decisions.iter().all(|d|d.action == Some(crate::contract::Action::New)) {Some("all_new_code_decided")} else {Some("no_targets")},
+                "decisions":decisions})
+        });
         w4_save_plan(store, claim, &candidates, &plan)?;
+    } else {
+        claim.trace.record("w4_plan", || {
+            serde_json::json!({
+                "groups":saved.remaining.len()+saved.committed.len(),"held":saved.held.len(),
+                "model_required":false,"model_called":false,"reason":"reused_plan",
+                "decisions":null
+            })
+        });
     }
     for group in w4_progress(store, key)?.remaining {
         crate::commit::w4_renew_claim(store, claim)?;
@@ -560,7 +581,7 @@ pub fn receipt(store: &SqliteMemoryStore, key: &str) -> PersistenceResult<serde_
 }
 
 /// 同一次 R3 读取的回执；不再另外读取正在推进的后台状态。
-pub(crate) fn receipt_from_state(
+pub fn receipt_from_state(
     state: &crate::PersistedMemoryState,
     key: &str,
 ) -> PersistenceResult<serde_json::Value> {

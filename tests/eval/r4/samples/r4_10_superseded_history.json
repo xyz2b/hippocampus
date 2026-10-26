@@ -61,21 +61,25 @@
     "must": {
      "current": "no"
     }
-   },
+   }
+  ],
+  "compute": null,
+  "forbid_facts": [
    {
     "record_ids": [
-     11
+     10
     ],
-    "sources": [
-     "s-11"
-    ],
+    "sources": [],
     "must": {
      "current": "yes"
     }
    }
-  ],
-  "compute": null
+  ]
  },
  "must_not": [],
- "note": null
+ "note": null,
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

@@ -56,11 +56,29 @@
    "coverage": [
     "incomplete",
     "unknown"
+   ],
+   "items": 2,
+   "distinct_groups": 2,
+   "expected_value": "2",
+   "expected_bound": "at_least",
+   "groups": [
+    [
+     "s-27"
+    ],
+    [
+     "s-28"
+    ]
    ]
   }
  },
  "must_not": [
-  "coverage=complete"
+  "coverage=complete",
+  "将两个明确不同国家归为同一组或身份未知",
+  "computed.bound=exact"
  ],
- "note": null
+ "note": "AF227：已确认日本、泰国两个国家，范围截断只影响总量完整性，不抹掉已知下限。",
+ "label_revision": {
+  "decision": "AF227",
+  "date": "2026-10-10"
+ }
 }

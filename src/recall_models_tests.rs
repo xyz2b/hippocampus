@@ -9,6 +9,173 @@ const TEXT: &str = "我的灯是紫色。";
 const AT: i64 = 1_791_000_000;
 
 #[test]
+fn af371_r3_id_truncation_is_bounded_and_never_complete() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    db.open()
+        .transaction(|state| {
+            let template = state.sources["s-purple"].clone();
+            for n in 0..130 {
+                let mut s = template.clone();
+                s.id = format!("fictional-{n}");
+                s.turn_id = s.id.clone();
+                s.received_sequence = n + 2;
+                state.sources.insert(s.id.clone(), s);
+            }
+            Ok(())
+        })
+        .unwrap();
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        let output = RecallRuntime::default()
+            .run(
+                &mut db.open(),
+                &request("af371-truncated"),
+                Budget {
+                    raw: 150,
+                    ..Default::default()
+                },
+                None,
+            )
+            .unwrap();
+        assert!(output.raw.len() > 128);
+    });
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let r3 = events.iter().find(|e| e["kind"] == "r3_evidence").unwrap();
+    assert_eq!(r3["body"]["ids_truncated"], true);
+    assert_eq!(r3["body"]["source_ids"].as_array().unwrap().len(), 128);
+    assert_eq!(r3["content_deps"]["deps_complete"], false);
+    assert!(
+        r3["content_deps"]["reasons"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("summary_ids_truncated"))
+    );
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
+fn af371_recall_summaries_and_final_inherit_actual_input_dependencies() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        RecallRuntime::default()
+            .run(
+                &mut db.open(),
+                &request("af371"),
+                Budget::default(),
+                Some(&provider),
+            )
+            .unwrap();
+    });
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    for kind in ["retrieval", "r3_evidence", "r5_final"] {
+        assert!(events.iter().any(|e| e["kind"] == kind), "{kind}");
+    }
+    let start = events
+        .iter()
+        .find(|e| e["kind"] == "model_start" && e["body"]["stage"] == "r4_v7")
+        .unwrap();
+    let final_event = events.iter().find(|e| e["kind"] == "r5_final").unwrap();
+    assert_eq!(start["content_deps"], final_event["content_deps"]);
+    assert_eq!(start["content_deps"]["deps_complete"], false);
+    assert!(
+        start["content_deps"]["sources"]
+            .as_object()
+            .unwrap()
+            .contains_key("s-purple")
+    );
+    assert!(start["content_deps"]["frozen_input_fingerprint"].is_string());
+    assert!(
+        start["content_deps"]["reasons"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("unbound_query_context"))
+    );
+}
+
+#[test]
+fn af283_bootstrap_read_then_other_connection_delete_cannot_cache_or_return_snapshot() {
+    let db = Db::new();
+    let mut req = request("bootstrap-delete");
+    req.bootstrap = true;
+    let mut store = db.open();
+    let state = store.read().unwrap();
+    let safety = recall::SafetySnapshot::capture(&state, &req).unwrap();
+    let policy = StatementSnapshotConfig {
+        enabled: true,
+        ..Default::default()
+    };
+    let output = serde_json::from_value(json!({
+        "version":"recall.v11","request":req.binding,"status":"context_only",
+        "current_message":null,"records":[],"raw":[],"facts":[],"computed":null,
+        "history":[],"conflicts":[],"clarification":null,"semantic_judgment":"skipped",
+        "completeness":{"retrieval_truncated":false,"pending_related_sources":0,
+            "pending_updates":0,"enrichment_gaps":0,"plan_complete":true},
+        "retrieval":{"status":"disabled","sources_total":0,"sources_indexed":0,
+            "segments_total":0,"segments_indexed":0},
+        "degraded_reasons":[],"snapshot":{"read_revision":state.revision,
+            "source_revision":state.source_revision},
+        "statement_snapshot":crate::retrieval::statement_snapshot(&state,&req,&policy,8,AT).unwrap()
+    }))
+    .unwrap();
+    db.open()
+        .transaction(|s| {
+            let source = s.sources.get_mut("s-purple").unwrap();
+            source.enrichment = "deleted".into();
+            source.request = None;
+            Ok(())
+        })
+        .unwrap();
+    let runtime = RecallRuntime::default();
+    let error = runtime
+        .run_bootstrap(
+            &mut store,
+            &req,
+            Budget::default(),
+            output,
+            safety,
+            &crate::embedding::Config::default(),
+            &policy,
+        )
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("recall_snapshot_changed"), "{error}");
+    assert!(!error.contains(TEXT));
+    assert!(runtime.retained(&store, &req.binding.request_id).is_err());
+    assert_eq!(db.calls(), 0);
+}
+
+#[test]
 fn r4_routes_by_verified_op_and_failed_r1_falls_back_without_extra_calls() {
     for (op, effort) in [
         ("count", "low"),
@@ -1118,7 +1285,7 @@ fn long_request_id_is_bound_without_persisting_its_original_words() {
             .connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
             .unwrap(),
-        10
+        11
     );
 }
 
@@ -1167,7 +1334,7 @@ fn host_dispatch_online_replay_validator_and_mcp_share_one_result() {
     let out = service
         .call("memory_recall", args.clone(), || false)
         .unwrap();
-    assert_eq!(out["version"], "recall.v6");
+    assert_eq!(out["version"], "recall.v11");
     assert_eq!(out["status"], "answered", "{out}");
     assert!(out.get("answer_contract").is_none());
     assert_eq!(sent.lock().unwrap().len(), 2);
@@ -1256,7 +1423,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
         );
         assert_ne!(result.is_error, Some(true), "{result:?}");
         let result = result.structured_content.unwrap();
-        assert_eq!(result["recall"]["version"], "recall.v6");
+        assert_eq!(result["recall"]["version"], "recall.v11");
         assert!(result.get("answer_contract").is_none());
         assert!(result["recall"].get("answer_contract").is_none());
         serde_json::from_value::<RecallOutput>(result["recall"].clone()).unwrap();
@@ -1271,7 +1438,7 @@ fn host_dispatch_mcp_offline_and_bootstrap_do_not_use_injected_provider() {
     let response = service.call_with_global_context("memory_prepare", args.clone(), || false);
     let body = response.structured_content.as_ref().unwrap();
     assert_eq!(body["source"]["status"], "stored");
-    assert_eq!(body["recall"]["version"], "recall.v6");
+    assert_eq!(body["recall"]["version"], "recall.v11");
     assert!(body.get("remember").is_none());
     assert_eq!(
         service
@@ -2794,7 +2961,7 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
         assert!(R1_PROMPT.contains(rule), "{rule}");
     }
     for rule in [
-        "r4.v6",
+        "r4.v7",
         "candidate.speech",
         "latest supported plan version",
         "otherwise remains insufficient",
@@ -2809,7 +2976,7 @@ fn m15_recall_prompts_preserve_plans_and_do_not_resolve_kinship_as_self() {
 
 #[test]
 fn r4_unknown_original_time_keeps_v4_and_never_uses_the_receiving_day() {
-    assert!(R4_PROMPT.contains("r4.v6"));
+    assert!(R4_PROMPT.contains("r4.v7"));
     assert_eq!(
         R4_PROMPT.matches("trusted original utterance time").count(),
         2
@@ -2938,7 +3105,7 @@ fn af83_recall_requests_bind_nonempty_schema_in_both_current_branches() {
         );
         let requests = sent.lock().unwrap();
         assert_eq!(requests.len(), 2);
-        for (request, name) in requests.iter().zip(["r1_v2", "r4_v6"]) {
+        for (request, name) in requests.iter().zip(["r1_v2", "r4_v7"]) {
             assert_eq!(request["text"]["format"]["name"], name);
             crate::write_models::tests::assert_nonempty_model_request(request);
         }
@@ -2993,12 +3160,12 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let result = runtime
             .run(&mut db.open(), &req, Budget::default(), Some(&provider))
             .unwrap();
-        assert_eq!(result.version, "recall.v6");
+        assert_eq!(result.version, "recall.v11");
         assert_eq!(result.status, RecallStatus::Answered, "{result:?}");
         let requests = sent.lock().unwrap();
         for (i, (schema, contract, old_schema, old_contract)) in [
             ("r1_v2", "r1.v2", "r1_v1", "r1.v1"),
-            ("r4_v6", "r4.v6", "r4_v5", "r4.v5"),
+            ("r4_v7", "r4.v7", "r4_v5", "r4.v5"),
         ]
         .iter()
         .enumerate()
@@ -3031,7 +3198,7 @@ fn af90_recall_versions_and_clocks_bind_actual_requests_and_cached_results() {
         let r4_digest = fingerprint(&json!([R4_PROMPT, requests[1]["text"]["format"]["schema"]]));
         drop(requests);
         let operation =
-            json!(["recall.v6", fingerprint(&json!(req.binding.request_id))]).to_string();
+            json!(["recall.v11", fingerprint(&json!(req.binding.request_id))]).to_string();
         let state = db.open().read().unwrap();
         let receipt = &state.receipts[&operation];
         assert_eq!(
@@ -3115,21 +3282,21 @@ fn af83_r1_diagnostics_are_private_and_preserve_broad_recall() {
             .iter()
             .filter(|r| {
                 r["kind"] == "model_check"
-                    && r["data"]["stage"] == "R1"
-                    && r["data"]["phase"] == "validate"
+                    && r["body"]["stage"] == "R1"
+                    && r["body"]["phase"] == "validate"
             })
             .collect();
         assert_eq!(events.len(), 2);
         let fields: BTreeSet<_> = events
             .iter()
-            .map(|r| r["data"]["field"].as_str().unwrap())
+            .map(|r| r["body"]["field"].as_str().unwrap())
             .collect();
         assert_eq!(
             fields,
             BTreeSet::from(["conditions[0].quote.text", "time.quote.text"])
         );
         for event in events {
-            let d = &event["data"];
+            let d = &event["body"];
             assert_eq!(d["status"], "failed");
             assert_eq!(d["error"], "r1_not_understood");
             assert_eq!(d["rule"], "quote_or_source");
@@ -3177,4 +3344,336 @@ fn af83_r1_diagnostics_are_private_and_preserve_broad_recall() {
         assert_eq!(db.calls(), 2);
     }
     assert!(!diagnostics::incomplete());
+}
+
+#[test]
+fn af119_provider_endpoint_and_revision_invalidate_recall_cache_without_resending() {
+    let db = Db::new();
+    let (mut p, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    p.recall_models.r1 = "gpt-6.1-sol".into();
+    p.recall_models.r4 = "gpt-6.1-sol".into();
+    p.client.provider = Some(super::super::model_provider::ProviderConfig {
+        protocol: super::super::model_provider::ProviderProtocol::OpenaiResponses,
+        structured_mode: Default::default(),
+        base_url_env: "FIXTURE_BASE".into(),
+        api_key_env: None,
+        model_revision: Some("revision-one".into()),
+        thinking: None,
+        context_tokens: None,
+        context_proof: None,
+    });
+    let runtime = RecallRuntime::default();
+    let req = request("provider-cache");
+    let first = runtime
+        .run(&mut db.open(), &req, Budget::default(), Some(&p))
+        .unwrap();
+    assert_eq!(
+        runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap(),
+        first
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let endpoint = p.client.responses_url.clone();
+    p.client.responses_url = "https://other-fixture.invalid/v1/responses".into();
+    assert!(
+        runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("mismatch")
+    );
+    p.client.responses_url = endpoint;
+    p.client.provider.as_mut().unwrap().model_revision = Some("revision-two".into());
+    assert!(
+        runtime
+            .run(&mut db.open(), &req, Budget::default(), Some(&p))
+            .unwrap_err()
+            .to_string()
+            .contains("mismatch")
+    );
+    assert_eq!(sent.lock().unwrap().len(), 2);
+}
+
+#[test]
+fn hybrid_result_replay_reuses_one_query_embedding_and_disabled_preserves_model_bytes() {
+    let db = Db::new();
+    add_legacy(&db, TEXT);
+    add_legacy(&db, "无关的另一条旧记录。");
+    // AF288: keep the replay test above the small-scope enumeration budget.
+    let rt = RecallRuntime::default();
+    let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let req = request("hybrid-once");
+    let config = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let calls = std::cell::Cell::new(0);
+    let callback = |query: &str| {
+        assert_eq!(query, req.binding.query);
+        calls.set(calls.get() + 1);
+        Err("injected_embedding_unavailable".into())
+    };
+    let retrieval = recall::Retrieval {
+        config: &config,
+        query: Some(&callback),
+    };
+    let first = rt
+        .run_with_retrieval(
+            &mut db.open(),
+            &req,
+            Budget {
+                records: 1,
+                ..Default::default()
+            },
+            Some(&provider),
+            &retrieval,
+        )
+        .unwrap();
+    assert_eq!(first.retrieval.status, RetrievalStatus::Unavailable);
+    assert_eq!(calls.get(), 1);
+    assert_eq!(
+        rt.run_with_retrieval(
+            &mut db.open(),
+            &req,
+            Budget {
+                records: 1,
+                ..Default::default()
+            },
+            Some(&provider),
+            &retrieval
+        )
+        .unwrap(),
+        first
+    );
+    assert_eq!(calls.get(), 1);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let fresh = RecallRuntime::default();
+    assert!(
+        fresh
+            .run_with_retrieval(
+                &mut db.open(),
+                &req,
+                Budget {
+                    records: 1,
+                    ..Default::default()
+                },
+                Some(&provider),
+                &retrieval
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("not_retained")
+    );
+    assert_eq!(calls.get(), 1);
+    assert_eq!(sent.lock().unwrap().len(), 2);
+
+    let baseline_db = Db::new();
+    let disabled_db = Db::new();
+    let (base_provider, base_sent) = mocked(
+        &baseline_db,
+        vec![envelope(r1_out("judge")), envelope(r4_out())],
+    );
+    let (disabled_provider, disabled_sent) = mocked(
+        &disabled_db,
+        vec![envelope(r1_out("judge")), envelope(r4_out())],
+    );
+    let req = request("byte-equivalence");
+    let base = RecallRuntime::default()
+        .run(
+            &mut baseline_db.open(),
+            &req,
+            Budget::default(),
+            Some(&base_provider),
+        )
+        .unwrap();
+    let disabled = RecallRuntime::default()
+        .run_with_retrieval(
+            &mut disabled_db.open(),
+            &req,
+            Budget::default(),
+            Some(&disabled_provider),
+            &recall::Retrieval {
+                config: &embedding::Config::default(),
+                query: Some(&|_| panic!("disabled embedding called")),
+            },
+        )
+        .unwrap();
+    assert_eq!(base, disabled);
+    assert_eq!(*base_sent.lock().unwrap(), *disabled_sent.lock().unwrap());
+    for body in base_sent.lock().unwrap().iter() {
+        assert!(!body["input"].as_str().unwrap().contains("retrieval\""));
+    }
+}
+
+#[test]
+fn missing_or_different_index_binding_is_pending_even_with_no_source_segments() {
+    let db = Db::new();
+    add_legacy(&db, TEXT);
+    add_legacy(&db, "无关的另一条旧记录。");
+    crate::chat::ChatMemoryService::new(db.open(), Default::default())
+        .unwrap()
+        .call("memory_forget", json!({"source_id":"s-purple"}), || false)
+        .unwrap();
+    let (p, _) = mocked(
+        &db,
+        vec![envelope(r1_out("judge")), envelope(r1_out("judge"))],
+    );
+    let binding = embedding::Binding::from_tags(
+        embedding::Model::Qwen,
+        &json!({"models":[{"name":embedding::Model::Qwen.tag(),"digest":"a".repeat(64)}]}),
+    )
+    .unwrap();
+    let cfg = embedding::Config {
+        enabled: true,
+        ..Default::default()
+    };
+    let callback = |_: &str| {
+        let mut vector = vec![0.0; embedding::DIMENSIONS];
+        vector[0] = 1.0;
+        Ok(embedding::QueryVector {
+            binding: binding.clone(),
+            vector,
+        })
+    };
+    for attempt in 0..2 {
+        if attempt == 1 {
+            let mut changed = binding.clone();
+            changed.digest = "b".repeat(64);
+            db.open()
+                .set_embedding_binding(embedding_index::Binding::new(changed).unwrap())
+                .unwrap();
+        }
+        let out = RecallRuntime::default()
+            .run_with_retrieval(
+                &mut db.open(),
+                &request(&format!("unbound-zero-{attempt}")),
+                Budget {
+                    records: 1,
+                    ..Default::default()
+                },
+                Some(&p),
+                &recall::Retrieval {
+                    config: &cfg,
+                    query: Some(&callback),
+                },
+            )
+            .unwrap();
+        assert_eq!(out.retrieval.status, RetrievalStatus::Pending);
+        assert_eq!(out.retrieval.segments_total, 0);
+        assert!(!out.completeness.plan_complete);
+    }
+}
+
+#[test]
+fn af383_recall_attempt_explicitly_links_saved_prepare_source() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        diagnostics::record_for(
+            "af383-prepare",
+            "run_start",
+            || json!({"tool":"memory_prepare"}),
+        );
+        diagnostics::record_for(
+            "af383-prepare",
+            "source_receipt",
+            || json!({"source":{"source_id":"af383-source","status":"stored"}}),
+        );
+        let parent = diagnostics::TraceContext::for_run("af383-prepare");
+        RecallRuntime::default()
+            .run_cancellable_with_retrieval(
+                &mut db.open(),
+                &request("af383"),
+                Budget::default(),
+                Some(&provider),
+                false,
+                &|| false,
+                &recall::Retrieval {
+                    config: &Default::default(),
+                    query: None,
+                },
+                Some(&parent),
+            )
+            .unwrap();
+    });
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let parent = &events.iter().find(|e| e["kind"] == "run_start").unwrap()["meta"]["trace_id"];
+    for event in events.iter().filter(|e| {
+        matches!(
+            e["kind"].as_str(),
+            Some("model_start" | "r3_evidence" | "r5_final" | "retrieval")
+        )
+    }) {
+        assert_eq!(&event["meta"]["parent_trace_id"], parent);
+        assert_eq!(event["meta"]["source_id"], "af383-source");
+    }
+}
+
+#[test]
+fn af383_prepare_host_path_passes_received_source_to_offline_recall() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"enrichment_mode":"off"})).unwrap(),
+    )
+    .unwrap();
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    let result = diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        service.call_with_global_context(
+            "memory_prepare",
+            json!({"user_turn":{"text":"我在练习版画。","session_id":"af383-host",
+        "turn_id":"synthetic","capture_source":true,"observed_at":AT},"offline":true}),
+            || false,
+        )
+    });
+    let body = result.structured_content.unwrap();
+    assert_eq!(body["source"]["status"], "stored");
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let root = events.iter().find(|e| e["kind"] == "run_start").unwrap();
+    let receipt = events
+        .iter()
+        .find(|e| e["kind"] == "source_receipt")
+        .unwrap();
+    assert_eq!(receipt["meta"]["source_id"], body["source"]["source_id"]);
+    let final_event = events.iter().find(|e| e["kind"] == "r5_final").unwrap();
+    assert_eq!(
+        final_event["meta"]["parent_trace_id"],
+        root["meta"]["trace_id"]
+    );
+    assert_eq!(
+        final_event["meta"]["source_id"],
+        body["source"]["source_id"]
+    );
+    assert!(!events.iter().any(|e| e["kind"] == "model_start"));
 }

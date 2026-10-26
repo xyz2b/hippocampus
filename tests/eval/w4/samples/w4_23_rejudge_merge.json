@@ -1,8 +1,9 @@
 {
   "id": "w4_23_rejudge_merge",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 2,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF322",
   "focus": "重判已提交断言为 reinforce：值与限定语相同、来源不同，证据并入旧记录，已提交记录退出投影",
   "boundary_with": "w4_14_rejudge_committed",
   "sources": {
@@ -206,6 +207,135 @@
       "s-362 的证据只计一次，同一来源重放不再增加计数",
       "不得把 70 归并到自身",
       "不得把值或限定语不同的断言按此方式归并（见 w4_14、w4_10）"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "reinforce",
+            "targets": [
+              55
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-112",
+              "s-362"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "55": {
+              "stored_status": "active",
+              "reinforcement_count": "+1",
+              "evidence_added": [
+                "s-362"
+              ]
+            },
+            "70": {
+              "from_candidate": 0,
+              "merged_into": 55,
+              "projected": false
+            }
+          },
+          "new_records": 0,
+          "candidate_update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          },
+          "receipt": {
+            "replacement_map": {
+              "70": 55
+            }
+          },
+          "recall": {
+            "current": [
+              "55（每天一杯，两条原文依据）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得同时返回 55 与 70 两份等效记录",
+          "s-362 的证据只计一次，同一来源重放不再增加计数",
+          "不得把 70 归并到自身",
+          "不得把值或限定语不同的断言按此方式归并（见 w4_14、w4_10）"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "reinforce",
+            "targets": [
+              55
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-112",
+              "s-362"
+            ],
+            "effective": {
+              "role": "event",
+              "quote": {
+                "text": "每天"
+              },
+              "interp": {
+                "kind": "recurring"
+              },
+              "anchor": "said_on"
+            },
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "55": {
+              "stored_status": "active",
+              "reinforcement_count": "+1",
+              "evidence_added": [
+                "s-362"
+              ]
+            },
+            "70": {
+              "from_candidate": 0,
+              "merged_into": 55,
+              "projected": false
+            }
+          },
+          "new_records": 0,
+          "candidate_update": {
+            "status": "pending",
+            "reasons": [
+              "update_scope_incomplete"
+            ]
+          },
+          "receipt": {
+            "replacement_map": {
+              "70": 55
+            }
+          },
+          "recall": {
+            "current": [
+              "55（每天一杯，两条原文依据）"
+            ]
+          }
+        },
+        "must_not": [
+          "不得同时返回 55 与 70 两份等效记录",
+          "s-362 的证据只计一次，同一来源重放不再增加计数",
+          "不得把 70 归并到自身",
+          "不得把值或限定语不同的断言按此方式归并（见 w4_14、w4_10）"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [

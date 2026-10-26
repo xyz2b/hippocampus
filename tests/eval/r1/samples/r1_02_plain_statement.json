@@ -59,23 +59,52 @@
   "task_id": null
  },
  "expect": {
-  "need": "context_only",
-  "current_evidence": "assertion_present",
-  "type": [
-   "single",
-   "open"
-  ],
-  "subject": "self",
-  "conditions": [],
-  "time": null,
-  "plan.op": [
-   "lookup",
-   "list"
-  ],
-  "plan.filter.relation": [
-   "fact",
-   null
+  "alternatives": [
+   {
+    "need": "context_only",
+    "current_evidence": "assertion_present",
+    "type": [
+     "single",
+     "open"
+    ],
+    "subject": "self",
+    "conditions": [],
+    "time": null,
+    "plan.op": [
+     "lookup",
+     "list"
+    ],
+    "plan.filter.relation": [
+     "visited",
+     "fact",
+     null
+    ]
+   },
+   {
+    "need": "judge",
+    "current_evidence": "assertion_present",
+    "type": [
+     "single",
+     "open"
+    ],
+    "subject": "self",
+    "conditions": [],
+    "time": null,
+    "plan.op": [
+     "lookup",
+     "list"
+    ],
+    "plan.filter.relation": [
+     "visited",
+     "fact",
+     null
+    ]
+   }
   ]
  },
- "note": "陈述句也要召回相关上下文（target-design 2.5），但没有要判断的问题。"
+ "note": "AF247：可只取上下文或判断陈述支持/新旧关系；两支均须 assertion_present/self，不以可能存在旧记录作为唯一理由。",
+ "label_revision": {
+  "decision": "AF247",
+  "date": "2026-10-11"
+ }
 }

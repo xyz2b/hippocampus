@@ -1,8 +1,9 @@
 {
   "id": "w4_13_state_change_date_unknown",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 2,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF322",
   "focus": "现实变化、没有生效时间：旧记录结束时间未知",
   "boundary_with": "w4_01_state_change",
   "sources": {
@@ -182,6 +183,123 @@
     "must_not": [
       "结束时间不得回填为接收日 2026-09-25（W5）",
       "历史查询中不得把 64 当作一直有效（contracts 2.5 end_unknown）"
+    ],
+    "alternatives": [
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              64
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-304",
+              "s-350"
+            ],
+            "effective": null,
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "64": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown",
+              "valid_to": null
+            },
+            "new": {
+              "from_candidate": 0,
+              "history": [
+                64
+              ],
+              "stored_status": "active",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            }
+          },
+          "recall": {
+            "current": [
+              "new（腾讯）"
+            ],
+            "history": [
+              "64（字节跳动，结束时间未知）"
+            ]
+          }
+        },
+        "must_not": [
+          "结束时间不得回填为接收日 2026-09-25（W5）",
+          "历史查询中不得把 64 当作一直有效（contracts 2.5 end_unknown）"
+        ]
+      },
+      {
+        "decisions": [
+          {
+            "candidate": 0,
+            "status": "decided",
+            "action": "state_change",
+            "targets": [
+              64
+            ],
+            "resolves_relations": [],
+            "basis_sources": [
+              "s-304",
+              "s-350"
+            ],
+            "effective": {
+              "role": "validity",
+              "quote": {
+                "text": "现在"
+              },
+              "interp": {
+                "kind": "unknown"
+              },
+              "anchor": "said_on"
+            },
+            "relation_scope": null,
+            "pending_reason": null
+          }
+        ],
+        "after": {
+          "records": {
+            "64": {
+              "stored_status": "superseded",
+              "termination_reason": "StateChanged",
+              "ended": "end_unknown",
+              "valid_to": null
+            },
+            "new": {
+              "from_candidate": 0,
+              "history": [
+                64
+              ],
+              "stored_status": "active",
+              "update": {
+                "status": "judged",
+                "reasons": []
+              }
+            }
+          },
+          "recall": {
+            "current": [
+              "new（腾讯）"
+            ],
+            "history": [
+              "64（字节跳动，结束时间未知）"
+            ]
+          }
+        },
+        "must_not": [
+          "结束时间不得回填为接收日 2026-09-25（W5）",
+          "历史查询中不得把 64 当作一直有效（contracts 2.5 end_unknown）"
+        ]
+      }
     ]
   },
   "rejected_alternatives": [],

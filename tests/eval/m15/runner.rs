@@ -268,11 +268,11 @@ pub(super) fn run() {
         (
             format!(
                 "{}/responses",
-                std::env::var("DEEPSEEK_BASE_URL")
+                std::env::var("HUOSHAN_DEEPSEEK_BASE_URL")
                     .expect("live base URL")
                     .trim_end_matches('/')
             ),
-            std::env::var("DEEPSEEK_API_KEY").expect("live API key"),
+            std::env::var("HUOSHAN_DEEPSEEK_API_KEY").expect("live API key"),
         )
     });
     let recorder = Arc::new(campaign_recorder(
@@ -545,16 +545,16 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
         assert!(input.get("model").is_none());
         assert!(input.get("expect_common").is_none());
         match request["text"]["format"]["name"].as_str().unwrap() {
-            "w1_v3" => {
+            "w1_v5" => {
                 let text = &input["current_user_message"];
                 json!({"candidates":[{"kind":"assertion","speech":"user_statement","subject":{"entity_id":"self"},
                     "relation":"fact","memory_type":"fact","value":{"kind":"text","text":text,"quote":{"text":text}},
                     "sentence":{"text":text},"polarity":"affirm","strength":null,"uncertainty":null,"conditions":[],"times":[]}],"memory_requests":[]})
             }
-            "w3_v3" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
+            "w3_v6" => json!({"reviews":input["candidates"].as_array().unwrap().iter().map(|c|
                 json!({"candidate":c["index"],"verdict":"supported","problems":[],"episode_value":"not_applicable"})).collect::<Vec<_>>(),
                 "coverage":{"status":"complete","missing":[]},"request_reviews":[]}),
-            "w4_v4" => {
+            "w4_v5" => {
                 let c = &input["w4_input"]["candidates"][0];
                 let r = &input["w4_input"]["records"][0];
                 json!({"decisions":[{"candidate":c["index"],"status":"decided","action":"reinforce","targets":[r["id"]],
@@ -565,7 +565,7 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
                 json!({"need":"judge","current_evidence":"assertion_present","type":"single","subject":{"entity_id":"self"},
                 "relation":"fact","conditions":[],"time":null,"plan":{"op":"lookup","filter":{"relation":"fact","time":null},"unit":null}})
             }
-            "r4_v6" => {
+            "r4_v7" => {
                 let r = &input["evidence"]["records"][0];
                 if !r.is_null() {
                     json!({"verdict":"supported","facts":[{"statement":r["candidate"]["sentence"]["text"],
@@ -610,6 +610,17 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
             .filter(|s| s["step"] == "message")
             .collect();
         assert_eq!(writes.len(), 4);
+        for step in &writes {
+            if step["source"]["enrichment"] != "committed" {
+                eprintln!(
+                    "M15_WRITE_NOT_COMMITTED {}",
+                    json!({"message":step["message"],
+                    "enrichment":step["source"]["enrichment"],"error":step["source"]["error"],
+                    "round":step["source"]["task"]["round"],"model_diagnostics":step["model_diagnostics"],
+                    "diagnostic":step["source"]["result"]["w4_input_meta"]["diagnostic"]})
+                );
+            }
+        }
         assert!(
             writes
                 .iter()

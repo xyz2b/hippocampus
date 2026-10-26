@@ -33,17 +33,17 @@ pub(super) fn read_target_plan(dir: &Path) -> Result<Option<Value>, String> {
     Ok(Some(plan))
 }
 
-fn stage_name(request: &Value) -> &str {
+pub(super) fn stage_name(request: &Value) -> &str {
     match request
         .pointer("/text/format/name")
         .and_then(Value::as_str)
         .unwrap_or("unknown")
     {
-        "w1_v1" | "w1_v2" | "w1_v3" => "W1",
-        "w3_v1" | "w3_v2" | "w3_v3" => "W3",
-        "w4_v2" | "w4_v3" | "w4_v4" => "W4",
+        "w1_v1" | "w1_v2" | "w1_v4" | "w1_v5" => "W1",
+        "w3_v1" | "w3_v2" | "w3_v4" | "w3_v5" | "w3_v6" => "W3",
+        "w4_v2" | "w4_v3" | "w4_v5" => "W4",
         "r1_v1" | "r1_v2" => "R1",
-        "r4_v3" | "r4_v4" | "r4_v5" | "r4_v6" => "R4",
+        "r4_v3" | "r4_v4" | "r4_v5" | "r4_v7" => "R4",
         other => other,
     }
 }
@@ -371,6 +371,34 @@ fn retired_recording_configuration_keeps_active_bindings_strict() {
     }
 }
 
+// This core is also compiled into the offline library replay tests. The opt-in
+// integration runner supplies these hooks without pulling its live runner into the library.
+pub(super) trait AbHooks: Send + Sync + std::panic::RefUnwindSafe {
+    fn config(&self, case: &str, address: &str, calls: u64) -> ChatConfig;
+    fn upstream(&self, request: &Value) -> Result<&(String, String), String>;
+    fn invalidate(&self);
+    fn checkpoint(
+        &self,
+        recorder: &Recorder,
+        case: &str,
+        key: &str,
+        db: &TempDb,
+        ids: &BTreeMap<String, String>,
+    ) -> Result<(), String>;
+    #[allow(clippy::too_many_arguments)]
+    fn respond(
+        &self,
+        recorder: &Recorder,
+        case: &str,
+        op: &str,
+        position: usize,
+        request: &Value,
+        canonical: &Value,
+        mapping: &BTreeMap<String, String>,
+        send: &mut dyn FnMut() -> Result<(u16, String), String>,
+    ) -> Result<(u16, String), String>;
+}
+
 pub(super) struct Recorder {
     pub(super) dir: PathBuf,
     pub(super) configuration: Value,
@@ -384,8 +412,9 @@ pub(super) struct Recorder {
     source_databases: Mutex<HashMap<String, PathBuf>>,
     pub(super) run_id: String,
     pub(super) send_log: Mutex<Value>,
-    log_dir: PathBuf,
+    pub(super) log_dir: PathBuf,
     pub(super) sent: AtomicUsize,
+    pub(super) ab: Option<Arc<dyn AbHooks>>,
     target_plan: Option<Value>,
     target_refused: std::sync::atomic::AtomicBool,
     target_used: Mutex<BTreeSet<(String, String, String)>>,
@@ -423,6 +452,7 @@ impl Recorder {
             log_dir,
             run_id,
             sent: AtomicUsize::new(0),
+            ab: None,
             target_plan,
             target_refused: std::sync::atomic::AtomicBool::new(false),
             target_used: Mutex::default(),
@@ -608,6 +638,23 @@ impl Recorder {
             result
         };
         let canonical = normalized(request, &mapping)?;
+        if let Some(arm) = &self.ab {
+            let mut send = Some(send);
+            let response = arm.respond(
+                self,
+                case,
+                &operation,
+                position,
+                request,
+                &canonical,
+                &mapping,
+                &mut || send.take().unwrap()(),
+            );
+            if response.is_err() {
+                arm.invalidate();
+            }
+            return response;
+        }
         let fp = recall_models::fingerprint(&canonical);
         let reverse = mapping
             .iter()
@@ -775,10 +822,17 @@ pub(super) fn run_case(case: &Value, recorder: &Recorder, address: &str) -> Valu
     )));
     let service = ChatMemoryService::new(
         db.open(),
-        config(case_id, address, counts(case).iter().sum()),
+        recorder.ab.as_ref().map_or_else(
+            || config(case_id, address, counts(case).iter().sum()),
+            |arm| arm.config(case_id, address, counts(case).iter().sum()),
+        ),
     )
     .unwrap();
     run_case_on(case, recorder, service, db)
+}
+
+pub(super) fn opaque_id(value: &Value) -> String {
+    recall_models::fingerprint(value).replace(':', "_")
 }
 
 pub(super) fn run_case_on(
@@ -806,7 +860,17 @@ pub(super) fn run_case_on(
                 .filter(|m| m.get("task_id") == message.get("task_id"))
                 .map(|m| m["text"].clone())
                 .collect();
-            let mut args = json!({"text":message["text"],"session_id":format!("eval-{case_id}"),"turn_id":id,
+            let session = if recorder.ab.is_some() {
+                opaque_id(&json!(["session", case_id]))
+            } else {
+                format!("eval-{case_id}")
+            };
+            let turn = if recorder.ab.is_some() {
+                opaque_id(&json!(["turn", case_id, id]))
+            } else {
+                id.to_owned()
+            };
+            let mut args = json!({"text":message["text"],"session_id":session,"turn_id":turn,
                 "history":history,"capture_source":true,"observed_at":message["observed_at"].as_i64().unwrap_or(CLOCK+60*index as i64)});
             if let Some(task) = message.get("task_id") {
                 args["task_id"] = task.clone();
@@ -822,7 +886,23 @@ pub(super) fn run_case_on(
                 service.enrich_source(source).map_err(|e| e.to_string())
             });
             blocked = recorder.missing(case_id);
-            steps.push(json!({"step":"message","message":id,"received":received,"result":result,"model_diagnostics":model_diagnostics,"missing":blocked}));
+            if let Some(arm) = &recorder.ab {
+                arm.checkpoint(recorder, case_id, &format!("write:{id}"), &db, &source_ids)
+                    .unwrap();
+            }
+            let mut step = json!({"step":"message","message":id,"received":received,"result":result,"model_diagnostics":model_diagnostics,"missing":blocked});
+            if result
+                .as_ref()
+                .ok()
+                .is_none_or(|r| r["enrichment"]["status"] != "committed")
+            {
+                let state = db.open().read().unwrap();
+                if let Some(source) = state.sources.values().find(|s| s.id == source) {
+                    step["failed_source"] = json!({"enrichment":source.enrichment,"error":source.error,
+                        "round":source.task.round,"diagnostic":source.result.as_ref().map(|r| &r["w4_input_meta"]["diagnostic"])});
+                }
+            }
+            steps.push(step);
         }
         for question in case["questions"]
             .as_array()
@@ -834,8 +914,13 @@ pub(super) fn run_case_on(
             let at = question["at"]
                 .as_i64()
                 .unwrap_or(CLOCK + 60 * index as i64 + 30);
+            let request_id = if recorder.ab.is_some() {
+                opaque_id(&json!(["recall", case_id, id]))
+            } else {
+                format!("eval-{case_id}-{id}")
+            };
             let mut args = json!({"query":question["query"],"context":question["context"],"at":at,
-                "request_id":format!("eval-{case_id}-{id}")});
+                "request_id":request_id});
             if let Some(task) = question.get("task_id") {
                 args["task_id"] = task.clone();
             }
@@ -844,11 +929,22 @@ pub(super) fn run_case_on(
                 continue;
             }
             recorder.begin(case_id, &format!("recall:{id}"), &source_ids);
+            if let Some(arm) = &recorder.ab {
+                arm.checkpoint(recorder, case_id, &format!("before:{id}"), &db, &source_ids)
+                    .unwrap();
+            }
             let (result, model_diagnostics) = diagnostics::capture_model_events(|| {
                 service
                     .call("memory_recall", args, || false)
                     .unwrap_or_else(|e| panic!("{case_id}/{id}: {e}"))
             });
+            if recorder.ab.is_some() {
+                assert_eq!(
+                    result.pointer("/retrieval/status"),
+                    Some(&json!("disabled")),
+                    "AF255 requires retrieval disabled"
+                );
+            }
             let missing = recorder.missing(case_id);
             let state = db.open().read().unwrap();
             let source_state: BTreeMap<_, _> = source_ids
@@ -888,4 +984,33 @@ pub(super) fn try_write_json(path: &Path, value: &Value) -> Result<(), String> {
 
 pub(super) fn write_json(path: &Path, value: &Value) {
     try_write_json(path, value).unwrap();
+}
+
+/// Failure-only diagnostics for synthetic loopback tests; never include requests or credentials.
+pub(super) fn assert_fixture_sends(recorder: &Recorder, result: &Value, expected: usize) {
+    let sent = recorder.sent.load(Ordering::Relaxed);
+    if sent != expected {
+        let case = result["case"].as_str().unwrap();
+        let stages: Vec<_> = recorder
+            .calls(case)
+            .iter()
+            .map(|c| json!({"operation":c["operation"],"stage":c["stage"],"origin":c["origin"]}))
+            .collect();
+        let steps: Vec<_> = result["steps"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| {
+                json!({"step":s["step"],"message":s["message"],"question":s["question"],
+                "state":s["state"],"result":s["result"],"source":s["failed_source"],
+                "model_diagnostics":s["model_diagnostics"]})
+            })
+            .collect();
+        eprintln!(
+            "FIXTURE_SEND_MISMATCH {}",
+            json!({"expected":expected,"sent":sent,
+            "steps":steps,"stages":stages,"proxy_errors":recorder.send_log.lock().unwrap()["proxy_errors"]})
+        );
+    }
+    assert_eq!(sent, expected);
 }

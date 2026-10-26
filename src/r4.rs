@@ -1,4 +1,4 @@
-//! r4.v6 的机械核验与计算。引用/结构失效拒绝整份输出；不能精确计算单独返回不足。
+//! r4.v7 的机械核验与计算。引用/结构失效拒绝整份输出；不能精确计算单独返回不足。
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::contract::*;
@@ -101,7 +101,7 @@ pub fn assemble_old_basis(
     ctx: &Context<'_>,
     text_of: &dyn Fn(&str) -> Option<String>,
 ) -> R4Output {
-    let mut assembled = output.clone();
+    let mut assembled = restore_references(output, ctx, text_of);
     for fact in &mut assembled.facts {
         let targets: Option<Vec<_>> = fact
             .record_ids
@@ -158,6 +158,216 @@ pub fn assemble_old_basis(
         }
     }
     assembled
+}
+
+// AF264: a finite quote-only encoding table, not a general text decoder.
+fn encoded_quotes() -> Vec<(String, char)> {
+    let mut variants = Vec::new();
+    for ch in ['“', '”', '‘', '’', '「', '」', '『', '』'] {
+        let latin: String = ch.to_string().bytes().map(char::from).collect();
+        let twice: String = latin.bytes().map(char::from).collect();
+        variants.extend([(latin, ch), (twice, ch)]);
+    }
+    // Windows-1252's printable C1 variants also occur in double-encoded quotes.
+    for (text, ch) in [
+        ("â€œ", '“'),
+        ("â€\u{9d}", '”'),
+        ("â€˜", '‘'),
+        ("â€™", '’'),
+        ("Ã¢Â€Âœ", '“'),
+        ("Ã¢Â€Â\u{9d}", '”'),
+        ("Ã¢Â€Â˜", '‘'),
+        ("Ã¢Â€Â™", '’'),
+    ] {
+        variants.push((text.into(), ch));
+    }
+    variants.sort_by_key(|(s, _)| std::cmp::Reverse(s.len()));
+    variants
+}
+
+/// Balanced quotation delimiters share tokens; word apostrophes stay literal.
+/// Byte ranges always address the unchanged input, including multibyte encodings.
+fn quote_tokens(text: &str, encodings: &[(String, char)]) -> Option<Vec<(u32, usize, usize)>> {
+    let mut tokens = Vec::new();
+    let mut stack = Vec::new();
+    let mut at = 0;
+    while at < text.len() {
+        let literal = text[at..].chars().next()?;
+        let (ch, len) = encodings
+            .iter()
+            .find(|(s, _)| text[at..].starts_with(s))
+            .map(|(s, ch)| (*ch, s.len()))
+            .unwrap_or((literal, literal.len_utf8()));
+        let end = at + len;
+        let word_apostrophe = matches!(ch, '\'' | '‘' | '’')
+            && text[..at]
+                .chars()
+                .next_back()
+                .is_some_and(|ch| ch.is_ascii_alphanumeric())
+            && text[end..]
+                .chars()
+                .next()
+                .is_some_and(|ch| ch.is_ascii_alphanumeric());
+        let token = if word_apostrophe {
+            if len != literal.len_utf8() {
+                return None;
+            }
+            ch as u32
+        } else {
+            let closing = match ch {
+                '“' => Some('”'),
+                '‘' => Some('’'),
+                '「' => Some('」'),
+                '『' => Some('』'),
+                _ => None,
+            };
+            if let Some(close) = closing {
+                stack.push(close);
+                u32::MAX
+            } else if matches!(ch, '”' | '’' | '」' | '』') {
+                if stack.pop() != Some(ch) {
+                    return None;
+                }
+                u32::MAX - 1
+            } else if matches!(ch, '"' | '\'') {
+                if stack.last() == Some(&ch) {
+                    stack.pop();
+                    u32::MAX - 1
+                } else {
+                    stack.push(ch);
+                    u32::MAX
+                }
+            } else {
+                ch as u32
+            }
+        };
+        tokens.push((token, at, end));
+        at = end;
+    }
+    stack.is_empty().then_some(tokens)
+}
+
+fn recover_reference(quote: &str, fragments: &[&str], body: &str) -> Option<String> {
+    let needle = quote_tokens(quote, &encoded_quotes())?;
+    if needle.is_empty() {
+        return None;
+    }
+    let mut matches = BTreeSet::new();
+    for fragment in fragments {
+        let Some(tokens) = quote_tokens(fragment, &[]) else {
+            continue;
+        };
+        for window in tokens.windows(needle.len()) {
+            if !window.iter().map(|t| t.0).eq(needle.iter().map(|t| t.0)) {
+                continue;
+            }
+            let original = &fragment[window[0].1..window.last()?.2];
+            // Deduplicate overlapping raw/record copies by their real source position.
+            // Multiple occurrences, even outside the retained fragment, are ambiguous.
+            for (start, _) in body
+                .char_indices()
+                .filter(|(i, _)| body[*i..].starts_with(original))
+            {
+                matches.insert((start, start + original.len()));
+                if matches.len() > 1 {
+                    return None;
+                }
+            }
+        }
+    }
+    let (start, end) = matches.into_iter().next()?;
+    Some(body[start..end].into())
+}
+
+fn restore_references(
+    output: &R4Output,
+    ctx: &Context<'_>,
+    text_of: &dyn Fn(&str) -> Option<String>,
+) -> R4Output {
+    let mut restored = output.clone();
+    let evidence = restored
+        .facts
+        .iter_mut()
+        .flat_map(|f| &mut f.evidence)
+        .chain(
+            restored
+                .compute
+                .iter_mut()
+                .flat_map(|p| p.items.iter_mut().flat_map(|i| &mut i.evidence)),
+        );
+    for reference in evidence {
+        let mut exact = reference.quote.clone();
+        if ctx.restore(&mut exact, &reference.source).is_ok() {
+            continue;
+        }
+        let fragments = ctx.fragments(&reference.source);
+        let body = match &reference.source {
+            SourceRef::Stored { source_id } => text_of(source_id),
+            SourceRef::Current {} if ctx.plan.review_current_message() => ctx
+                .evidence
+                .current_message
+                .as_ref()
+                .map(|m| m.text.clone()),
+            _ => None,
+        };
+        if let Some(original) =
+            body.and_then(|body| recover_reference(&reference.quote.text, &fragments, &body))
+        {
+            reference.quote.text = original;
+        }
+    }
+    restored
+}
+
+#[cfg(test)]
+mod quote_recovery_tests {
+    use super::*;
+
+    #[test]
+    fn af264_only_balanced_unique_quote_layout_or_fixed_encoding_is_recovered() {
+        let body = "I’m reading \"Orchid\" today.";
+        for quote in [
+            "I’m reading 'Orchid' today.",
+            "I’m reading 「Orchid」 today.",
+            "I’m reading 『Orchid』 today.",
+            "I’m reading â\u{80}\u{9c}Orchidâ\u{80}\u{9d} today.",
+            "I’m reading Ã¢Â€ÂœOrchidÃ¢Â€Â\u{9d} today.",
+        ] {
+            assert_eq!(
+                recover_reference(quote, &[body, body], body),
+                Some(body.into()),
+                "{quote}"
+            );
+        }
+        for quote in [
+            "I’m reading 'Orchid today.",
+            "I’m reading ‘Orchid\" today.",
+            "I'm reading 'Orchid' today.",
+            "I’m reading 'Orchid' tomorrow.",
+            "I’m  reading 'Orchid' today.",
+            "I’m reading 'orchid' today.",
+        ] {
+            assert_eq!(recover_reference(quote, &[body], body), None, "{quote}");
+        }
+        let repeated = format!("{body} {body}");
+        assert_eq!(
+            recover_reference("I’m reading 'Orchid' today.", &[&repeated], &repeated),
+            None
+        );
+        assert_eq!(
+            recover_reference("I’m reading 'Orchid' today.", &["today."], body),
+            None
+        );
+        assert_eq!(
+            recover_reference("I’m reading 'Orchid' today.", &[body], "deleted"),
+            None
+        );
+        let alternatives = "我读了\"青灯\"。我读了「青灯」。";
+        assert_eq!(
+            recover_reference("我读了'青灯'。", &[alternatives], alternatives),
+            None
+        );
+    }
 }
 
 impl Context<'_> {

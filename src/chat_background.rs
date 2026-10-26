@@ -1,4 +1,4 @@
-//! One MCP worker; SQLite tasks are authoritative, bounded notifications only wake a scan.
+//! Independent enrichment and derived-index workers; bounded notifications only wake a scan.
 use super::*;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -34,13 +34,108 @@ impl BackgroundWorker {
 
 impl Drop for BackgroundWorker {
     fn drop(&mut self) {
-        // Do not hold MCP shutdown open for an already sent HTTP request. Its durable lease and
-        // reservation recover after restart; a missing result is failed, never resent.
+        // Do not hold MCP shutdown open for a sent HTTP request. W4 reservations and the
+        // derived index's separately rate-limited lease recover under their respective rules.
         self.stop();
     }
 }
 
 impl ChatMemoryService {
+    /// Independent derived index: no W-stage mode, credentials or generative budget.
+    pub fn start_embedding_background(&mut self) -> PersistenceResult<Option<BackgroundWorker>> {
+        if !self.config.embedding.enabled || !crate::embedding::runtime_network_allowed() {
+            return Ok(None);
+        }
+        let stopped = Arc::new(AtomicBool::new(false));
+        let config = self.config.embedding.clone();
+        let stop = Arc::clone(&stopped);
+        self.spawn_embedding_with(
+            move || crate::embedding_index::Runner::runtime(config, stop),
+            stopped,
+        )
+        .map(Some)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn spawn_embedding(
+        &mut self,
+        runner: crate::embedding_index::Runner,
+        stopped: Arc<AtomicBool>,
+    ) -> PersistenceResult<BackgroundWorker> {
+        self.spawn_embedding_with(move || Ok(runner), stopped)
+    }
+
+    fn spawn_embedding_with(
+        &mut self,
+        create: impl FnOnce() -> PersistenceResult<crate::embedding_index::Runner> + Send + 'static,
+        stopped: Arc<AtomicBool>,
+    ) -> PersistenceResult<BackgroundWorker> {
+        if self.embedding_wake.is_some() {
+            return Err("embedding worker already started".into());
+        }
+        let (wake, receiver) = sync_channel(1);
+        let operation = self.operation();
+        let stop = Arc::clone(&stopped);
+        #[cfg(test)]
+        let (idle_sender, idle) = sync_channel(1);
+        let thread = std::thread::Builder::new()
+            .name("pmr-embedding".into())
+            .spawn(move || {
+                // Build/drop reqwest's blocking client on this thread, outside MCP's Tokio runtime.
+                let runner = match create() {
+                    Ok(runner) => runner,
+                    Err(_) => {
+                        eprintln!("embedding worker: local client unavailable");
+                        return;
+                    }
+                };
+                let mut service = match operation.connect() {
+                    Ok(service) => service,
+                    Err(_) => {
+                        eprintln!("embedding worker: operation connection unavailable");
+                        return;
+                    }
+                };
+                while !stop.load(Ordering::SeqCst) {
+                    if runner.once(&mut service.store).is_err() {
+                        eprintln!("embedding worker: cache scan/execution failed");
+                    }
+                    #[cfg(test)]
+                    let _ = idle_sender.try_send(());
+                    // Durable cadence/backoff still applies after a wake or another process's claim.
+                    match receiver.recv_timeout(Duration::from_secs(5)) {
+                        Ok(()) | Err(RecvTimeoutError::Timeout) => (),
+                        Err(RecvTimeoutError::Disconnected) => break,
+                    }
+                }
+            })?;
+        self.embedding_wake = Some(wake.clone());
+        Ok(BackgroundWorker {
+            stopped,
+            wake,
+            thread: Some(thread),
+            #[cfg(test)]
+            idle,
+        })
+    }
+
+    /// Explicit bounded CLI maintenance; does not start a resident worker or reserve model calls.
+    pub fn drain_embeddings(&mut self, max_batches: usize) -> PersistenceResult<Value> {
+        if !(1..=100).contains(&max_batches) {
+            return Err("max_batches must be 1..100".into());
+        }
+        if !self.config.embedding.enabled || !crate::embedding::runtime_network_allowed() {
+            return Ok(
+                json!({"status":"disabled", "attempted_batches":0, "stats":self.store.embedding_stats()?}),
+            );
+        }
+        crate::embedding_index::Runner::runtime(
+            self.config.embedding.clone(),
+            Arc::new(AtomicBool::new(false)),
+        )?
+        .drain(&mut self.store, max_batches)
+    }
+
     /// Start once before the service mutex. Off or missing budget keeps the worker inert.
     pub fn start_background(&mut self) -> PersistenceResult<Option<BackgroundWorker>> {
         if self.config.enrichment_mode == EnrichmentMode::Off || self.config.model_budget.is_none()
@@ -215,7 +310,59 @@ impl ChatMemoryService {
     }
 
     #[cfg(test)]
+    pub(crate) fn inject_embedding_query(
+        &mut self,
+        query: Arc<
+            dyn Fn(&str) -> crate::embedding::Result<crate::embedding::QueryVector> + Send + Sync,
+        >,
+    ) {
+        self.config.embedding.enabled = true;
+        self.embedding_query = Some(query);
+    }
+
+    #[cfg(test)]
     pub(crate) fn inject_model_client(&mut self, client: OpenAiClient) {
         self.model_client_override = Some(client);
+    }
+}
+
+#[cfg(test)]
+mod embedding_lifecycle_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn embedding_client_lifecycle_is_outside_the_mcp_async_runtime_without_requests() {
+        let root =
+            std::env::temp_dir().join(format!("embedding-async-{}", crate::diagnostics::new_id()));
+        let mut service = ChatMemoryService::new(
+            SqliteMemoryStore::open(root.join("memory.sqlite3"), "worker".into()).unwrap(),
+            ChatConfig {
+                enrichment_mode: EnrichmentMode::Off,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let stopped = Arc::new(AtomicBool::new(false));
+        let stop = stopped.clone();
+        let worker = service
+            .spawn_embedding_with(
+                move || {
+                    assert_eq!(std::thread::current().name(), Some("pmr-embedding"));
+                    // Disabled runner builds/drops a real blocking client but never resolves or embeds.
+                    crate::embedding_index::Runner::runtime(
+                        crate::embedding::Config::default(),
+                        stop,
+                    )
+                },
+                stopped,
+            )
+            .unwrap();
+        worker.wait_idle();
+        worker.stop_and_join().unwrap();
+        let calls = service.store.embedding_stats().unwrap();
+        assert_eq!(calls.metadata_calls, 0);
+        assert_eq!(calls.embedding_calls, 0);
+        drop(service);
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

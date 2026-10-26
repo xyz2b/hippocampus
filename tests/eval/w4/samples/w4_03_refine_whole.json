@@ -1,8 +1,9 @@
 {
   "id": "w4_03_refine_whole",
-  "contract": "w4.v2",
+  "contract": "w4.v5",
   "batch": 1,
-  "label_status": "draft",
+  "label_status": "reviewed",
+  "label_revision": "AF276",
   "focus": "细化 refine：新断言覆盖并修订整个旧断言",
   "boundary_with": "w4_04_coexist_partial",
   "sources": {
@@ -213,7 +214,7 @@
       "why": "新句以“更准确地说”修订同一个整体习惯，没有新的限定条件"
     }
   ],
-  "note": "通用 fact 只按本次全文检索取候选，范围不完整；对已明确定位的目标 30，细化仍可执行，但新记录的更新状态保留 pending/update_scope_incomplete。“每天早上”为周期时间，保留原文，换算状态 unknown，不生成连续日期区间。",
+  "note": "本固定输入模拟未能穷举授权范围的检索，coverage=false（不是通用 fact 永远不完整）；对已明确定位的目标 30，细化仍可执行，但新记录的更新状态保留 pending/update_scope_incomplete。“每天早上”为周期时间，保留原文，换算状态 unknown，不生成连续日期区间。",
   "qualifier_marks": {
     "candidate:0": {
       "times": [

@@ -59,17 +59,35 @@
   "task_id": null
  },
  "expect": {
-  "need": "judge",
-  "current_evidence": "query_only",
-  "type": "aggregate",
-  "subject": "self",
-  "conditions": [],
-  "time": null,
-  "plan.op": "list",
-  "plan.filter.relation": [
-   "allergic_to",
-   null
+  "alternatives": [
+   {
+    "need": "judge",
+    "current_evidence": "query_only",
+    "type": "aggregate",
+    "subject": "self",
+    "conditions": [],
+    "time": null,
+    "plan.op": "list",
+    "plan.filter.relation": [
+     "allergic_to",
+     null
+    ]
+   },
+   {
+    "need": "judge",
+    "current_evidence": "query_only",
+    "type": "single",
+    "subject": "self",
+    "conditions": [],
+    "time": null,
+    "plan.op": "lookup",
+    "plan.filter.relation": "allergic_to"
+   }
   ]
  },
- "note": null
+ "note": "AF272：保留 aggregate/list；有效 allergic_to 关系过滤会枚举该关系全部记录，因此也接受 single/lookup，但该分支必须有 filter.relation=allergic_to。预算截断仍须如实报告，不接受无关系过滤的 lookup。",
+ "label_revision": {
+  "decision": "AF272",
+  "date": "2026-10-11"
+ }
 }
