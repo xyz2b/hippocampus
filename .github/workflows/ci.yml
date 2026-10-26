@@ -1,0 +1,32 @@
+name: Offline checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PMR_MODEL_NETWORK: offline
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build binaries
+        run: cargo build --locked --workspace --bins
+      - name: Core without model HTTP
+        run: PMR_MODEL_NETWORK=deny cargo test --locked -p hippocampus --test contract_types --test persistence --test w2_offline --test w4_offline
+      - name: MCP integration
+        run: PMR_MODEL_NETWORK=offline PMR_INSPECTOR_BINARY="$PWD/target/debug/pmr-inspector" cargo test --locked --test mcp_stdio
+      - name: Inspector
+        run: cargo test --locked -p pmr-inspector
+      - name: Historical scoring
+        run: python3 -B -m unittest discover -s tests/eval/scoring -v

@@ -24,7 +24,7 @@ Anthropic 按 SDK 根地址约定追加 `/v1/messages`；也接受已带 `/v1` �
 Qwen 使用 openai_chat、上述完整 Ollama 模型名、QWEN_BASE_URL、effort=omit、
 thinking=true/false；还须提供实际 context_tokens、model_revision 和已核实的 context_proof
 （含 tokenizer_revision、byte_level_bpe、template_token_bound），详见
-[运行时配置](../../../docs/architecture/recall-runtime.md#显式多模型接入af119)。
+[运行时配置](../../../docs/configuration.md#online-enrichment-and-recall)。
 缺证明或超限项单独报告发送前拒绝，不冒充模型评分失败。
 
 只有明确设置 EVAL_RECORD=N 才允许真实发送；localhost 也受此限制。

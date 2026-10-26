@@ -1,18 +1,18 @@
-//! W5 提交（contracts.md 2.5）：执行已核验的 W4 决定，不交给旧确定性策略重判。
+//! W5 提交（docs/architecture/contracts.md Write contracts）：执行已核验的 W4 决定，不交给旧确定性策略重判。
 //!
 //! 一次调用处理一个依赖组，对应一个 SQLite 写事务（T2）；回执按组 ID 保存，重放同一组
 //! 不产生任何变更。提交必须持有该原文任务的有效认领（attempt_id、running、租约未过期），
 //! 否则 claim_lost 且零写入。W4 输入时记下每个目标的快照指纹；提交时目标已变、更新的原文
 //! 已先应用、所在任务已被标为过期或依据来源已删除，该组记为 needs_rejudge，零业务写入，
-//! 且同一组以后只返回 needs_rejudge，不能重试旧决定（docs/architecture/w5-acceptance.md
-//! A1–A7）。候选的证据必须来自所认领的原文；租约按取得写锁后的时间判断。
-//! 存储形状（docs/architecture/w5-storage.md，当前数据库版本 9、回执格式仍为 v8）已一次定好：关系、更新状态、归并映射、
+//! 且同一组以后只返回 needs_rejudge，不能重试旧决定（docs/architecture/contracts.md
+//! Write contracts）。候选的证据必须来自所认领的原文；租约按取得写锁后的时间判断。
+//! 存储形状（docs/architecture.md，当前数据库版本 9、回执格式仍为 v8）已一次定好：关系、更新状态、归并映射、
 //! 回执格式标记，以及组与决定上后续各段要用的字段。
 //!
-//! 更新状态（w5-storage.md 第 3 节）：每个决定的 UpdateState 由代码按检索范围与 W4 待定原因
+//! 更新状态（docs/architecture.md Storage, concurrency and deletion）：每个决定的 UpdateState 由代码按检索范围与 W4 待定原因
 //! 生成，随回执保存；产生的记录同时写入 `record_updates`。待定决定不对旧目标执行动作：
 //! 断言作为新记录提交并标 pending，撤回零写入（候选与原文由上游保留）。
-//! 冲突关系（w5-storage.md 第 4 节）：conflict 决定插入新记录并与全部目标组成 open 关系，旧版本
+//! 冲突关系（docs/architecture.md Storage, concurrency and deletion）：conflict 决定插入新记录并与全部目标组成 open 关系，旧版本
 //! 不结束；resolves_relations 在同一事务内把关系置为 resolved 并保存解决依据；替代 open 关系成员
 //! 而本组未解决该关系时，关系与成员不变，替代记录标 update_relation_unclear。关系快照（目标所在
 //! open 关系编号集合与涉及关系的指纹）在写锁内重查，变化即整组 needs_rejudge。依据片段须逐字
@@ -60,7 +60,7 @@ pub struct UpdateState {
     pub reasons: Vec<UpdateReason>,
 }
 
-/// 一次显式重判覆盖了哪些缺口（w5-storage.md 第 3 节）。只有覆盖了的旧原因才清除。
+/// 一次显式重判覆盖了哪些缺口（docs/architecture.md Storage, concurrency and deletion）。只有覆盖了的旧原因才清除。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct RejudgeCoverage {
     /// 本次组的检索范围完整。
@@ -873,7 +873,7 @@ fn commit_group_checked(
                 .find(|c| c.index == decision.candidate)
                 .ok_or("W5 decision refers to a missing candidate")?;
             let fresh = decision_update(group, decision, replaces_unresolved[&decision.candidate]);
-            // 重判复用时按 w5-storage.md 第 3 节逐项清除：本次覆盖了的旧缺口才去掉。
+            // 重判复用时按 docs/architecture.md Storage, concurrency and deletion逐项清除：本次覆盖了的旧缺口才去掉。
             let coverage = entry.committed_id.map(|committed| RejudgeCoverage {
                 scope_complete: group.scope_complete,
                 decided: decision.pending_reason.is_none(),

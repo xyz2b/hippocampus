@@ -1,6 +1,6 @@
 # 历史基线原始结果
 
-`0517000/`：第一阶段现状基线（见 `docs/architecture/phase1-baseline.md`）的完整原始结果，每个用例一个文件：
+`0517000/`：第一阶段现状基线（见 [离线评分说明](../../../docs/architecture/common-scoring-view.md)）的完整原始结果，每个用例一个文件：
 
 - `steps[].step = "intake"`：`memory_prepare` 的完整返回，以及该步之后存储中的全部记忆（`memories_after`）。
 - `steps[].step = "question"`：`memory_recall` 的完整返回（含旧 `answer_contract`）。
