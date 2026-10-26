@@ -853,6 +853,7 @@ impl RecallRuntime {
             implicit_at,
             cancelled,
             None,
+            None,
         )
         .map(|(out, _)| out)
     }
@@ -874,6 +875,7 @@ impl RecallRuntime {
             false,
             &|| false,
             Some(retrieval),
+            None,
         )
         .map(|(o, _)| o)
     }
@@ -886,6 +888,7 @@ impl RecallRuntime {
         implicit_at: bool,
         cancelled: &dyn Fn() -> bool,
         retrieval: &recall::Retrieval<'_>,
+        trace_parent: Option<&crate::diagnostics::TraceContext>,
     ) -> PersistenceResult<RecallOutput> {
         self.run_inner(
             store,
@@ -896,6 +899,7 @@ impl RecallRuntime {
             implicit_at,
             cancelled,
             Some(retrieval),
+            trace_parent,
         )
         .map(|(o, _)| o)
     }
@@ -916,6 +920,7 @@ impl RecallRuntime {
             None,
             false,
             &|| false,
+            None,
             None,
         )
     }
@@ -954,6 +959,7 @@ impl RecallRuntime {
                 config: embedding,
                 query: None,
             }),
+            None,
         )
         .map(|(out, _)| out)
     }
@@ -972,6 +978,7 @@ impl RecallRuntime {
         implicit_at: bool,
         cancelled: &dyn Fn() -> bool,
         retrieval: Option<&recall::Retrieval<'_>>,
+        trace_parent: Option<&crate::diagnostics::TraceContext>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         check_cancelled(cancelled)?;
         if store.owner() != &request.owner {
@@ -1057,7 +1064,14 @@ impl RecallRuntime {
             flight.wait(cancelled)?;
             // 共用回执/安全快照/缓存检查；等待期间删除阻断，普通进度沿用读快照。
             return self.execute(
-                store, request, budget, provider, bootstrap, cancelled, retrieval,
+                store,
+                request,
+                budget,
+                provider,
+                bootstrap,
+                cancelled,
+                retrieval,
+                trace_parent,
             );
         }
         let guard = FlightGuard {
@@ -1066,7 +1080,14 @@ impl RecallRuntime {
             flight,
         };
         let result = self.execute(
-            store, request, budget, provider, bootstrap, cancelled, retrieval,
+            store,
+            request,
+            budget,
+            provider,
+            bootstrap,
+            cancelled,
+            retrieval,
+            trace_parent,
         );
         *guard
             .flight
@@ -1090,6 +1111,7 @@ impl RecallRuntime {
         )>,
         cancelled: &dyn Fn() -> bool,
         retrieval: Option<&recall::Retrieval<'_>>,
+        trace_parent: Option<&crate::diagnostics::TraceContext>,
     ) -> PersistenceResult<(RecallOutput, Option<crate::r4::OutputAudit>)> {
         check_cancelled(cancelled)?;
         let state = store.read()?;
@@ -1141,9 +1163,11 @@ impl RecallRuntime {
             retrieval,
         )?;
         let attempt = crate::diagnostics::new_id();
-        let trace = crate::diagnostics::TraceContext::attempt(&attempt).with_deps(
-            crate::diagnostics::ContentDeps::incomplete("query_context_and_entity_directory"),
-        );
+        let trace = crate::diagnostics::TraceContext::attempt(&attempt)
+            .with_parent(trace_parent)
+            .with_deps(crate::diagnostics::ContentDeps::incomplete(
+                "query_context_and_entity_directory",
+            ));
         let existing = store.transaction(|s| {
             if let Some(old) = s.receipts.get(&operation) {
                 if old.request["fingerprint"] != binding { return Err("recall_request_mismatch".into()); }

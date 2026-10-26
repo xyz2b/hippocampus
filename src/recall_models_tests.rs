@@ -3564,3 +3564,116 @@ fn missing_or_different_index_binding_is_pending_even_with_no_source_segments() 
         assert!(!out.completeness.plan_complete);
     }
 }
+
+#[test]
+fn af383_recall_attempt_explicitly_links_saved_prepare_source() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let (provider, sent) = mocked(&db, vec![envelope(r1_out("judge")), envelope(r4_out())]);
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        diagnostics::record_for(
+            "af383-prepare",
+            "run_start",
+            || json!({"tool":"memory_prepare"}),
+        );
+        diagnostics::record_for(
+            "af383-prepare",
+            "source_receipt",
+            || json!({"source":{"source_id":"af383-source","status":"stored"}}),
+        );
+        let parent = diagnostics::TraceContext::for_run("af383-prepare");
+        RecallRuntime::default()
+            .run_cancellable_with_retrieval(
+                &mut db.open(),
+                &request("af383"),
+                Budget::default(),
+                Some(&provider),
+                false,
+                &|| false,
+                &recall::Retrieval {
+                    config: &Default::default(),
+                    query: None,
+                },
+                Some(&parent),
+            )
+            .unwrap();
+    });
+    assert_eq!(sent.lock().unwrap().len(), 2);
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let parent = &events.iter().find(|e| e["kind"] == "run_start").unwrap()["meta"]["trace_id"];
+    for event in events.iter().filter(|e| {
+        matches!(
+            e["kind"].as_str(),
+            Some("model_start" | "r3_evidence" | "r5_final" | "retrieval")
+        )
+    }) {
+        assert_eq!(&event["meta"]["parent_trace_id"], parent);
+        assert_eq!(event["meta"]["source_id"], "af383-source");
+    }
+}
+
+#[test]
+fn af383_prepare_host_path_passes_received_source_to_offline_recall() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let db = Db::new();
+    let mut service = crate::chat::ChatMemoryService::new(
+        db.open(),
+        serde_json::from_value(json!({"enrichment_mode":"off"})).unwrap(),
+    )
+    .unwrap();
+    let rows = Arc::new(Mutex::new(Vec::new()));
+    let result = diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+        service.call_with_global_context(
+            "memory_prepare",
+            json!({"user_turn":{"text":"我在练习版画。","session_id":"af383-host",
+        "turn_id":"synthetic","capture_source":true,"observed_at":AT},"offline":true}),
+            || false,
+        )
+    });
+    let body = result.structured_content.unwrap();
+    assert_eq!(body["source"]["status"], "stored");
+    let events: Vec<Value> = String::from_utf8(rows.lock().unwrap().clone())
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let root = events.iter().find(|e| e["kind"] == "run_start").unwrap();
+    let receipt = events
+        .iter()
+        .find(|e| e["kind"] == "source_receipt")
+        .unwrap();
+    assert_eq!(receipt["meta"]["source_id"], body["source"]["source_id"]);
+    let final_event = events.iter().find(|e| e["kind"] == "r5_final").unwrap();
+    assert_eq!(
+        final_event["meta"]["parent_trace_id"],
+        root["meta"]["trace_id"]
+    );
+    assert_eq!(
+        final_event["meta"]["source_id"],
+        body["source"]["source_id"]
+    );
+    assert!(!events.iter().any(|e| e["kind"] == "model_start"));
+}

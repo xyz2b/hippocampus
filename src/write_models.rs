@@ -675,6 +675,8 @@ impl WriteModelProvider {
             .iter()
             .any(|c| c.status != w2::Status::Rejected)
         {
+            trace.record("w3_skipped", || json!({"reason":if batch.candidates.is_empty() {"no_candidates"} else {"all_rejected"},
+                "candidates":batch.candidates.len()}));
             return Ok(UpstreamBatch {
                 w2: batch,
                 review: None,

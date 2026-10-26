@@ -473,10 +473,9 @@ fn ordering_diagnostic_survives_rollback_and_writer_failure() {
         }
         let file = std::fs::read_dir(&root)
             .unwrap()
-            .next()
-            .unwrap()
-            .unwrap()
-            .path();
+            .map(|entry| entry.unwrap().path())
+            .find(|path| path.extension().is_some_and(|ext| ext == "jsonl"))
+            .expect("diagnostic JSONL file");
         let rows = std::fs::read_to_string(file)
             .unwrap()
             .lines()

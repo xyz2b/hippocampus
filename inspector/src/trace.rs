@@ -728,7 +728,11 @@ fn export_with_policy(
                         }
                     }
                     "transaction_committed" => {
-                        require(required(data, "owner")? == &captured.owner, "$.data.owner")?;
+                        if let Some(owner) = data.get("owner") {
+                            require(owner == &captured.owner, "$.data.owner")?;
+                        } else if row["trace_version"] != "2" {
+                            required(data, "owner")?;
+                        }
                         for key in ["read_revision", "committed_revision"] {
                             if let Some(revision) = data.get(key).filter(|value| !value.is_null()) {
                                 run[key] = json!(
@@ -738,6 +742,16 @@ fn export_with_policy(
                                         .unwrap_or_else(|| revision.to_string())
                                 );
                             }
+                        }
+                        if data["after"].is_null() {
+                            require(
+                                data["committed_revision"].is_u64()
+                                    && data["revision_observability"] == "persisted",
+                                "$.data.committed_revision/revision_observability",
+                            )?;
+                            span["recognition"] = json!("transaction_summary");
+                            spans.push(span);
+                            return Ok(());
                         }
                         let before = required(data, "before")?;
                         let after = required(data, "after")?;
@@ -1152,7 +1166,8 @@ fn export_with_policy(
                         }
                     }
                     "global_context" => {}
-                    "w2_summary" | "w5_commit" | "r3_evidence" | "r5_final" => {
+                    "w2_summary" | "w3_skipped" | "w4_plan" | "w5_commit" | "r3_evidence"
+                    | "r5_final" => {
                         span["recognition"] = json!("summary");
                     }
                     _ => {
@@ -1267,6 +1282,15 @@ fn export_with_policy(
             run["evidence_status"] = json!("evidence_incomplete");
         }
         run["spans"] = json!(spans);
+        if spans.iter().any(|s| {
+            s["name"] == "w5_commit"
+                && s["status"] == "completed"
+                && s["output"]["product_ids"]
+                    .as_array()
+                    .is_some_and(|ids| !ids.is_empty())
+        }) {
+            run["save_status"] = json!("committed");
+        }
         run["write_changes"] = json!(write_changes);
         all_calls.extend(calls);
         runs.push(run);
@@ -1300,6 +1324,149 @@ mod tests {
         let result = export_runtime(&path, true);
         std::fs::remove_file(path).unwrap();
         result.unwrap()
+    }
+
+    #[test]
+    fn af383_pipeline_metadata_and_skip_summaries_survive_export() {
+        let path =
+            std::env::temp_dir().join(format!("af383-inspector-{}.jsonl", std::process::id()));
+        let data = [
+            (
+                "D",
+                None,
+                Some("s"),
+                None,
+                "source_receipt",
+                json!({"source":{"source_id":"s","status":"stored"}}),
+            ),
+            (
+                "A",
+                Some("D"),
+                Some("s"),
+                Some("attempt"),
+                "w3_skipped",
+                json!({"reason":"no_candidates","candidates":0}),
+            ),
+            (
+                "A",
+                Some("D"),
+                Some("s"),
+                Some("attempt"),
+                "w4_plan",
+                json!({"groups":0,"held":0,"model_called":false,"reason":"no_supported_candidates","decisions":{}}),
+            ),
+            (
+                "B",
+                Some("D"),
+                Some("s"),
+                Some("attempt"),
+                "w5_commit",
+                json!({"product_ids":[1],"decision_types":["new"]}),
+            ),
+            (
+                "C",
+                Some("D"),
+                None,
+                Some("recall"),
+                "r5_final",
+                json!({"status":"supported","facts":1}),
+            ),
+        ];
+        let rows=data.iter().enumerate().map(|(i,(trace,parent,source,attempt,kind,body))|
+            format!("{}\n",json!({"trace_version":"2","event_id":i.to_string(),"at":"fixture",
+                "kind":kind,"body":body,"content_deps":{},
+                "meta":{"trace_id":trace,"parent_trace_id":parent,"source_id":source,"attempt_id":attempt}}))).collect::<String>();
+        std::fs::write(&path, rows).unwrap();
+        let out = export_runtime(&path, true).unwrap();
+        assert_eq!(out["meta"]["parse_errors"], json!([]));
+        let runs = out["runs"].as_array().unwrap();
+        assert_eq!(runs.len(), 4);
+        for r in runs {
+            for span in r["spans"].as_array().unwrap() {
+                assert_eq!(span["status"], "completed");
+                if span["trace_meta"]["trace_id"] != "D" {
+                    assert_eq!(span["trace_meta"]["parent_trace_id"], "D");
+                }
+            }
+        }
+        let plan = runs
+            .iter()
+            .flat_map(|r| r["spans"].as_array().unwrap())
+            .find(|s| s["name"] == "w4_plan")
+            .unwrap();
+        assert_eq!(plan["recognition"], "summary");
+        assert_eq!(plan["output"]["model_called"], false);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn af381_v2_summary_commit_and_pipeline_summaries_are_completed() {
+        let path = std::env::temp_dir().join(format!("af381-{}.jsonl", std::process::id()));
+        let events = vec![
+            (
+                "transaction_committed",
+                json!({"before":null,"after":null,"business_changed":true,
+                "sources_changed":true,"committed_revision":8,"read_revision":7,
+                "counts":{"relations":1,"sources":2,"updates":3},"duration_ms":2,"revision_observability":"persisted"}),
+            ),
+            (
+                "w2_summary",
+                json!({"total":2,"admitted":1,"unresolved":1,"rejected":0,"reasons":{}}),
+            ),
+            (
+                "w5_commit",
+                json!({"decision_types":["new"],"product_ids":[12],"ids_truncated":false,"revision":8}),
+            ),
+            (
+                "r3_evidence",
+                json!({"records":1,"raw":2,"record_ids":[12],"source_ids":["s"],
+                "ids_truncated":false,"id_limit":128,"completeness":{}}),
+            ),
+            (
+                "r5_final",
+                json!({"status":"insufficient","facts":0,"computed":0,"records":1,"raw":2}),
+            ),
+            (
+                "retrieval",
+                json!({"status":"unavailable","query_error":"connect","index_state":"pending",
+                "query_elapsed_ms":3,"cache_elapsed_ms":1,"sources_total":2,"sources_indexed":0,
+                "segments_total":4,"segments_indexed":0}),
+            ),
+        ];
+        let rows: Vec<_> = events
+            .iter()
+            .enumerate()
+            .map(|(i, (kind, body))| {
+                json!({"trace_version":"2","event_id":i.to_string(),"kind":kind,"at":"fixture",
+                "meta":{"trace_id":"internal","attempt_id":"attempt"},"content_deps":{},"body":body})
+            })
+            .collect();
+        std::fs::write(
+            &path,
+            rows.iter().map(|r| format!("{r}\n")).collect::<String>(),
+        )
+        .unwrap();
+        let bundle = export_runtime(&path, true).unwrap();
+        assert_eq!(bundle["meta"]["parse_errors"], json!([]));
+        let run = &bundle["runs"][0];
+        assert_eq!(run["committed_revision"], "8");
+        assert_eq!(run["save_status"], "committed");
+        let spans = run["spans"].as_array().unwrap();
+        assert_eq!(spans.len(), 6);
+        assert!(
+            spans
+                .iter()
+                .all(|s| s["status"] == "completed" && s.get("error").is_none())
+        );
+        assert_eq!(spans[0]["recognition"], "transaction_summary");
+        assert_eq!(spans[2]["output"]["product_ids"], json!([12]));
+        // No persisted revision => no invented successful commit.
+        let mut invalid = rows[0].clone();
+        invalid["body"]["committed_revision"] = Value::Null;
+        std::fs::write(&path, format!("{invalid}\n")).unwrap();
+        let invalid = export_runtime(&path, true).unwrap();
+        assert_eq!(invalid["runs"][0]["spans"][0]["status"], "incomplete");
+        std::fs::remove_file(path).unwrap();
     }
 
     #[test]

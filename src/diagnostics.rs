@@ -396,6 +396,8 @@ pub(crate) fn full_snapshots() -> bool {
 #[derive(Clone, Debug)]
 pub struct TraceContext {
     trace_id: String,
+    parent_trace_id: Option<String>,
+    model_starts: Arc<Mutex<std::collections::BTreeMap<String, usize>>>,
     deps: ContentDeps,
     source_id: Option<String>,
     generation: Option<u64>,
@@ -427,6 +429,8 @@ impl TraceContext {
                 time::OffsetDateTime::now_utc().unix_timestamp_nanos(),
                 TRACE_SEQUENCE.fetch_add(1, Ordering::Relaxed)
             ),
+            parent_trace_id: None,
+            model_starts: Arc::new(Mutex::new(Default::default())),
             deps: ContentDeps::incomplete("not_proven"),
             source_id: None,
             generation: None,
@@ -445,6 +449,28 @@ impl TraceContext {
             origin_at_ns: attempt_origin(attempt_id),
             ..Self::new()
         }
+        .with_parent(attempt_parent(attempt_id, source_id).as_ref())
+    }
+    pub(crate) fn with_parent(mut self, parent: Option<&Self>) -> Self {
+        if let Some(parent) = parent {
+            self.parent_trace_id = Some(parent.trace_id.clone());
+            if self.source_id.is_none() {
+                self.source_id = parent.source_id.clone();
+            }
+            // Preserve the earliest frozen input across the parent/child lifetime.
+            let origin = parent.origin_at_ns.load(Ordering::Relaxed);
+            if origin > 0 {
+                let _ =
+                    self.origin_at_ns
+                        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |old| {
+                            Some(if old == 0 { origin } else { old.min(origin) })
+                        });
+            }
+        }
+        self
+    }
+    pub(crate) fn for_run(operation: &str) -> Self {
+        legacy_context(operation)
     }
     pub(crate) fn unbound(mut self, reason: &'static str) -> Self {
         self.deps.block(reason);
@@ -488,13 +514,27 @@ impl TraceContext {
                 })
             });
     }
+    pub(crate) fn model_called(&self, prefix: &str) -> bool {
+        self.model_starts
+            .lock()
+            .ok()
+            .is_some_and(|counts| counts.keys().any(|s| s.starts_with(prefix)))
+    }
     fn envelope(&self, kind: &str, mut body: Value) -> Value {
         if matches!(kind, "model_start" | "run_start") {
             self.mark_origin();
         }
+        if kind == "model_start" {
+            if let Some(stage) = body["stage"].as_str() {
+                if let Ok(mut counts) = self.model_starts.lock() {
+                    *counts.entry(stage.into()).or_default() += 1;
+                }
+            }
+        }
         scrub(&mut body);
         let mut meta = json!({"trace_id":self.trace_id,"source_id":self.source_id,
             "generation":self.generation,"round":self.round,"attempt_id":self.attempt_id,
+            "parent_trace_id":self.parent_trace_id,
             "origin_at_unix_ns":match self.origin_at_ns.load(Ordering::Relaxed) {0=>None,n=>Some(n)}});
         // Safe metadata is constructed, not copied wholesale from diagnostic bodies.
         for key in ["call_id", "stage", "phase", "status", "local_outcome"] {
@@ -689,13 +729,66 @@ pub fn record_for(run_id: &str, kind: &str, data: impl FnOnce() -> Value) {
         return;
     }
     // Legacy callers cannot prove dependencies. Never expose their host-supplied ID.
-    let context = legacy_context(run_id).with_deps(ContentDeps::incomplete(unbound_reason(kind)));
-    record_context(&context, kind, data);
+    let mut context =
+        legacy_context(run_id).with_deps(ContentDeps::incomplete(unbound_reason(kind)));
+    let data = data();
+    if kind == "source_receipt" {
+        if let Some(id) = data["source"]["source_id"]
+            .as_str()
+            .or_else(|| data["source_id"].as_str())
+            .or_else(|| data["id"].as_str())
+        {
+            context.source_id = Some(id.into());
+            if let Ok(mut parents) = SOURCE_PARENTS.get_or_init(Default::default).lock() {
+                if parents.len() >= 4096 {
+                    parents.clear();
+                }
+                parents.insert(id.into(), context.clone());
+            }
+            // Same opaque run identity, now with the accepted message's internal source ID.
+            update_legacy_source(run_id, id);
+        }
+    }
+    record_context(&context, kind, || data);
+}
+static SOURCE_PARENTS: OnceLock<Mutex<std::collections::BTreeMap<String, TraceContext>>> =
+    OnceLock::new();
+fn attempt_parent(attempt: &str, source: &str) -> Option<TraceContext> {
+    static PARENTS: OnceLock<Mutex<std::collections::BTreeMap<String, Option<TraceContext>>>> =
+        OnceLock::new();
+    let mut parents = PARENTS.get_or_init(Default::default).lock().ok()?;
+    if let Some(parent) = parents.get(attempt) {
+        return parent.clone();
+    }
+    // Bounded diagnostic correlation; at capacity omit links instead of guessing.
+    if parents.len() >= 4096 {
+        return None;
+    }
+    let parent = source_parent(source);
+    parents.insert(attempt.into(), parent.clone());
+    parent
+}
+fn source_parent(id: &str) -> Option<TraceContext> {
+    SOURCE_PARENTS
+        .get_or_init(Default::default)
+        .lock()
+        .ok()?
+        .get(id)
+        .cloned()
+}
+static IDS: OnceLock<Mutex<std::collections::BTreeMap<Vec<u8>, TraceContext>>> = OnceLock::new();
+fn update_legacy_source(run_id: &str, source: &str) {
+    let key = ring::digest::digest(&ring::digest::SHA256, run_id.as_bytes())
+        .as_ref()
+        .to_vec();
+    if let Ok(mut ids) = IDS.get_or_init(Default::default).lock() {
+        if let Some(context) = ids.get_mut(&key) {
+            context.source_id = Some(source.into());
+        }
+    }
 }
 fn legacy_context(run_id: &str) -> TraceContext {
     // Process-local opaque IDs preserve legacy correlation without retaining host strings.
-    static IDS: OnceLock<Mutex<std::collections::BTreeMap<Vec<u8>, TraceContext>>> =
-        OnceLock::new();
     let key = ring::digest::digest(&ring::digest::SHA256, run_id.as_bytes())
         .as_ref()
         .to_vec();
@@ -816,11 +909,7 @@ pub(crate) fn record(kind: &str, data: impl FnOnce() -> Value) {
     }
     let id = RUN.with(|run| run.borrow().clone());
     if let Some(id) = id {
-        record_context(
-            &legacy_context(&id).with_deps(ContentDeps::incomplete(unbound_reason(kind))),
-            kind,
-            data,
-        );
+        record_for(&id, kind, data);
     } else if collecting(kind) {
         collect_metadata(kind, &data());
     }
@@ -863,6 +952,58 @@ mod tests {
             "observed_at":1,"request":{"text":"虚构记录正文","history":history,"capture_source":true},"enrichment":"committed",
             "error":null,"result":null,"base_revision":0,"index":{},"task":{}})).unwrap()
     }
+    #[test]
+    fn af383_explicit_parent_source_and_attempt_survive_threads() {
+        with_test_writer(Box::new(Vec::<u8>::new()), || {
+            let _operation = Operation::enter("private-host-operation-af383");
+            record("run_start", || json!({"tool":"memory_prepare"}));
+            record(
+                "source_receipt",
+                || json!({"source":{"source_id":"internal-af383","status":"stored"}}),
+            );
+            let parent = TraceContext::for_run("private-host-operation-af383");
+            let receipt = parent.envelope("source_receipt", json!({}));
+            assert_eq!(receipt["meta"]["source_id"], "internal-af383");
+            let child = TraceContext::source("internal-af383", 1, 2, "attempt-af383");
+            let event = child.envelope("model_start", json!({"stage":"w1_v5"}));
+            assert_eq!(
+                event["meta"]["parent_trace_id"],
+                receipt["meta"]["trace_id"]
+            );
+            let recall = TraceContext::attempt("recall-af383").with_parent(Some(&parent));
+            assert_eq!(
+                recall.envelope("r5_final", json!({}))["meta"]["source_id"],
+                "internal-af383"
+            );
+            // Replaying a receipt under another run must not re-parent an existing attempt.
+            record_for(
+                "other-operation-af383",
+                "source_receipt",
+                || json!({"source":{"source_id":"internal-af383","status":"stored"}}),
+            );
+            let w5 = std::thread::spawn(|| {
+                TraceContext::source("internal-af383", 1, 2, "attempt-af383")
+                    .envelope("w5_commit", json!({}))
+            })
+            .join()
+            .unwrap();
+            assert_eq!(
+                event["meta"]["parent_trace_id"],
+                w5["meta"]["parent_trace_id"]
+            );
+            assert_eq!(
+                event["meta"]["origin_at_unix_ns"],
+                w5["meta"]["origin_at_unix_ns"]
+            );
+            assert!(!w5["meta"].to_string().contains("private-host-operation"));
+        });
+        assert!(
+            TraceContext::source("unseen-af383", 1, 1, "unseen-attempt-af383")
+                .envelope("w5_commit", json!({}))["meta"]["parent_trace_id"]
+                .is_null()
+        );
+    }
+
     #[test]
     fn af378_init_is_read_only_idempotent_and_rejects_invalid_inputs() {
         let dir = std::env::temp_dir().join(format!("af378-{}", new_id()));

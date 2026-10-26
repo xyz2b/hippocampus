@@ -4566,3 +4566,93 @@ fn af371_w4_proves_frozen_sources_and_records_and_output_inherits_them() {
     );
     assert!(events.iter().any(|e| e["kind"] == "w5_commit"));
 }
+
+#[test]
+fn af383_w3_skip_and_code_only_w4_have_explicit_summaries() {
+    struct Sink(Arc<Mutex<Vec<u8>>>);
+    impl std::io::Write for Sink {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    for mode in ["empty", "rejected", "new"] {
+        let db = Db::new();
+        let text = "我使用铅笔。";
+        let key = db.start(text);
+        let mut input = if mode == "empty" {
+            json!({"memory_requests":[],"candidates":[]})
+        } else {
+            w1(text)
+        };
+        if mode == "rejected" {
+            input["candidates"][0]["value"]["quote"]["text"] = json!("原文不存在的片段");
+        }
+        let mut responses = vec![Ok(envelope(&input.to_string()))];
+        if mode == "new" {
+            responses.push(Ok(envelope(&w3().to_string())));
+        }
+        let (provider, sent) = mocked(&db, responses);
+        let rows = Arc::new(Mutex::new(Vec::new()));
+        crate::diagnostics::with_test_writer(Box::new(Sink(rows.clone())), || {
+            let _operation = crate::diagnostics::Operation::enter("af383-write");
+            crate::diagnostics::record("run_start", || json!({"tool":"memory_remember"}));
+            crate::diagnostics::record("source_receipt", || {
+                db.open().read().unwrap().sources[&key].status()
+            });
+            run_all(&db, &key, &provider)
+        });
+        let events: Vec<Json> = String::from_utf8(rows.lock().unwrap().clone())
+            .unwrap()
+            .lines()
+            .map(|s| serde_json::from_str(s).unwrap())
+            .collect();
+        let root = events.iter().find(|e| e["kind"] == "run_start").unwrap();
+        for event in events.iter().filter(|e| {
+            matches!(
+                e["kind"].as_str(),
+                Some("model_start" | "w2_summary" | "w4_plan" | "w5_commit")
+            )
+        }) {
+            assert_eq!(event["meta"]["parent_trace_id"], root["meta"]["trace_id"]);
+        }
+        let plan = events
+            .iter()
+            .find(|e| e["kind"] == "w4_plan")
+            .expect("code-only W4 still has a plan summary");
+        assert_eq!(plan["body"]["model_called"], false);
+        assert_eq!(plan["body"]["held"], 0);
+        assert_eq!(
+            plan["body"]["not_admitted"],
+            if mode == "rejected" { 1 } else { 0 }
+        );
+        assert_eq!(
+            plan["body"]["reason"],
+            if mode == "new" {
+                "all_new_code_decided"
+            } else {
+                "no_supported_candidates"
+            }
+        );
+        if mode != "new" {
+            let skipped = events.iter().find(|e| e["kind"] == "w3_skipped").unwrap();
+            assert_eq!(
+                skipped["body"]["reason"],
+                if mode == "empty" {
+                    "no_candidates"
+                } else {
+                    "all_rejected"
+                }
+            );
+        } else {
+            assert!(events.iter().any(|e| e["kind"] == "w5_commit"));
+        }
+        assert_eq!(
+            sent.lock().unwrap().len(),
+            if mode == "new" { 2 } else { 1 }
+        );
+    }
+}

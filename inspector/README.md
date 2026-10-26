@@ -190,3 +190,19 @@ PMR_TRACE_DIR=/path/to/private-traces pmr-mcp --init-trace-epoch --db /path/to/m
 诊断目录须已存在且权限为 0700；必须明确给出数据库和 owner，不读取运行时配置、不启动 worker、不调用模型。命令只读打开现有 DB（不迁移、不创建 owner、不写业务表），在 `trace.lock` 下读取当前 revision/墓碑摘要，清理所有 `trace-*.jsonl` 后原子发布与运行时相同的删除纪元。返回 JSON 的 `cleanup_status=partial` / `cleanup_failures` 表示仍有旧文件未清理，其正文仍被隐藏；需人工排查目录权限。数据库不可读、owner 不存在或目录权限不当时拒绝初始化。
 
 已有有效纪元且该 owner 墓碑摘要一致时返回 `already_initialized`，不清理新日志、不改纪元。成功后重启服务与 Inspector：新起点的 v2 事件可显示，旧/缺失起点、显式已删依赖仍隐藏。此命令会清空该目录内所有 owner 的旧调用日志；备份和已导出文件不受影响。不要用此命令把运行中的旧调用追认为新调用。
+
+
+### 默认事务摘要展示（AF381）
+
+v2 `transaction_committed` 的 `committed_revision` 与 `revision_observability=persisted` 是提交证据；默认 `before/after=null` 不表示失败。页面显示读取/提交修订号、业务/来源变化标志与提交后总计数；完整快照未采集时不推断逐条 diff。逐条产物 ID 与决定类型来自独立 `w5_commit` 摘要，两组列表不假定逐项对应。W2、R3、R5 与新版 retrieval 按各自明确字段展示；检索 unavailable 或最终 insufficient 不等同于事件未完成。
+
+零调用验证：`cargo test -p pmr-inspector --no-fail-fast`；`node inspector/tests/af381-summary-ui.js`（合成数据、离线页面函数测试）。
+
+
+### 消息流水线（AF383）
+
+运行详情默认展示 W0–W5、R1–R5 固定泳道，原始 run 详情仍可展开。只按内部 source_id、parent_trace_id 关联，整理轮次与 attempt 分列；W5 即使使用另一个 trace_id，也可通过来源/父级回到同一消息。召回子 attempt 从发起 run 显式接收 TraceContext，prepare 已保存来源时携带 source_id。后台来源关联为有界、仅内存诊断映射，W5 沿用同 attempt 的父级；进程重启或关联未采集时 parent 可空，页面仅尝试按明确来源 ID 关联，孤立运行单独保留，不按时间或证据中提及的来源猜归属。
+
+W3 零候选/全拒收记录 w3_skipped；W4 即使未发模型请求也记录 w4_plan（组数、暂存数、实际模型调用标记、固定原因和决定计数）。计划与 W5 成功提交分开。复用计划不重新推断决定计数；缺失模型响应、摘要或阶段均如实标示，不补造历史。所有关联发生在原有服务端隐私过滤之后，删除纪元与依赖检查不放宽。
+
+验证：`node inspector/tests/af383-pipeline-ui.js`；`cargo test --lib af383`；`cargo test -p pmr-inspector --no-fail-fast`。均使用合成数据或注入传输，不发送真实模型请求。

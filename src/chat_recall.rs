@@ -236,6 +236,7 @@ impl ChatMemoryService {
             implicit_at,
             cancelled,
             &retrieval,
+            Some(&crate::diagnostics::TraceContext::for_run(operation)),
         )?;
         Ok(serde_json::to_value(result)?)
     }
