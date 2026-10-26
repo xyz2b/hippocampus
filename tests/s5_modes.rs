@@ -6,7 +6,7 @@ fn explicit_modes_off_capture_and_bounded_inline_through_mcp() {
             "--check",
             "modes",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()

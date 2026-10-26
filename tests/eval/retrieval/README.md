@@ -3,8 +3,8 @@
 目的：在真实 SQLite 上量化现有 R2/R3 的检索缺口，为后续混合检索提供冻结对照。固定注入 R1，不运行 W1–W4/R4，不接 provider，不评价 R1 理解能力或最终语义回答。
 
 ```sh
-PMR_MODEL_NETWORK=deny cargo build --tests
-PMR_MODEL_NETWORK=deny cargo test --test retrieval_eval -- --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=deny cargo build --tests
+HIPPOCAMPUS_MODEL_NETWORK=deny cargo test --test retrieval_eval -- --nocapture
 ```
 
 输出覆盖写入 `target/eval-retrieval/af173/report.json` 与 `report.md`，不写入历史评测目录。数据库在系统临时目录创建，结束后删除。
@@ -66,7 +66,7 @@ records=64 与8均为20/32道非空 required 题全覆盖；required 命中21/33
 
 固定模型为 `qwen3-embedding:0.6b` 和 `bge-m3`（接受 Ollama 的 `bge-m3:latest` 返回名）。二者要求 1024 维。按照 [Qwen 官方模型卡](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B)，Qwen 查询固定为 `Instruct: Given a personal memory query, retrieve relevant passages that answer the query\nQuery:{query}`，文档为原片段；[BGE-M3 官方模型卡](https://huggingface.co/BAAI/bge-m3) 的 dense 查询与文档均不加指令。
 
-客户端只允许 `http(s)://127.0.0.1[:port]/` 或 `localhost` 根地址，默认 `http://127.0.0.1:11434`。禁代理、重定向、自动重试；localhost 固定解析为 127.0.0.1，不自动转 IPv6、云端或备用模型。`PMR_MODEL_NETWORK=deny` 禁止所有本机 HTTP；缺省 offline 只允许上述本机地址，live 也不扩大本实验的端点范围。metadata 中的 remote_host/remote_model 非空字段会被拒绝。
+客户端只允许 `http(s)://127.0.0.1[:port]/` 或 `localhost` 根地址，默认 `http://127.0.0.1:11434`。禁代理、重定向、自动重试；localhost 固定解析为 127.0.0.1，不自动转 IPv6、云端或备用模型。`HIPPOCAMPUS_MODEL_NETWORK=deny` 禁止所有本机 HTTP；缺省 offline 只允许上述本机地址，live 也不扩大本实验的端点范围。metadata 中的 remote_host/remote_model 非空字段会被拒绝。
 
 `/api/tags` 权重 digest、`/api/show` 本地 embedding 能力和维度必须可核对；否则拒绝发送。每次嵌入前后再次核对 digest。digest、标签、维度、查询/文档格式、分段版本、请求内容以及来源/owner/task/字节偏移都绑定录制。按 [Ollama embed API](https://docs.ollama.com/api/embed) 显式发送 `truncate=false`，固定批量最多16、不静默截断；校验响应数量/顺序位置、模型、维度、有限数值、非零范数和有界响应（8 MiB），再以 f64 范数归一化为 f32。数量/位置对应遵循 API 数组顺序，代码不判断向量语义。usage 缺失记 null，不猜 token 数。
 
@@ -75,13 +75,13 @@ records=64 与8均为20/32道非空 required 题全覆盖；required 命中21/33
 先产生当前 AF173 对照报告（新增的输入指纹用于防止误用旧报告，指标和评分不变）：
 
 ```sh
-PMR_MODEL_NETWORK=deny cargo test --test retrieval_eval af173_retrieval_baseline -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=deny cargo test --test retrieval_eval af173_retrieval_baseline -- --exact --nocapture
 ```
 
 **只干跑，不访问 Ollama，不创建录制或账本**：
 
 ```sh
-PMR_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=dry-run cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=dry-run cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
 ```
 
 当前冻结语料：137 个正文片段、34 个去重问题；每模型9次文档批次 +3次问题批次 +2次同问题首次/暖探针 = **14次嵌入**，两模型合计 **28次**。每模型最多30次元数据 HTTP（初始 tags/show 两次、每次嵌入前后 tags）；完整成功录制共最多88次本机 HTTP，其中28次为嵌入。仅指纹元数据查询不占嵌入额度。干跑的 digest 为未解析，不能声称已检查模型安装/权重/维度；请求数是全新完整 campaign 上限，续跑不会重新分配已占槽位。
@@ -89,7 +89,7 @@ PMR_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=dry-run cargo test --test retrieval_
 **下列录制命令会实际使用本机模型，仅在另行获准后执行；本次实现未执行**：
 
 ```sh
-PMR_MODEL_NETWORK=offline RETRIEVAL_EMBED_MODE=record RETRIEVAL_EMBED_LIMIT=28 cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=offline RETRIEVAL_EMBED_MODE=record RETRIEVAL_EMBED_LIMIT=28 cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
 ```
 
 可用 `RETRIEVAL_EMBED_BASE_URL=http://127.0.0.1:11434` 指定本机服务。每模型在 `target/eval-retrieval/af175/recordings/<model>/` 冻结14槽；发送前原子落盘并 fsync 已占槽，逐次持久化规范化向量、严格请求指纹、结果摘要、usage 与 elapsed/load/total duration。录制成功后退出再续跑直接复用；已占槽但无录制只标记 `unrecorded_inflight`、不重发，不恢复额度。有失败录制不重试，并停止该模型余下新请求；向量缺失时不计算 vector/hybrid 分数。输入/权重/格式变化使 campaign 或录制失效，拒绝自动重置额度。并发锁残留必须人工核查，工具不自动解锁。
@@ -97,7 +97,7 @@ PMR_MODEL_NETWORK=offline RETRIEVAL_EMBED_MODE=record RETRIEVAL_EMBED_LIMIT=28 c
 **严格零调用回放**（不构造 HTTP 客户端）：
 
 ```sh
-PMR_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=replay cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=replay cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
 ```
 
 回放只认证录制时的 digest，不查询当前模型是否已变。录制报告保存到 `reports-record/`；当前 AF178 回放报告保存到 `reports-af178/` 的 `report.json` / `report.md`，不覆盖 AF173、AF177 或历史模型评测报告。
@@ -130,7 +130,7 @@ DF 的一份文档是一条活的、具有范围内记录的来源正文，同�
 `serde_json` 的 **dev-dependency** 启用 `float_roundtrip`：修复录制中 `elapsed_ms` 等数值解析后差1 ULP造成的摘要误报。请求指纹、结果摘要仍逐字节严格比较，不使用容差、不重写录制；差1 ULP的实际篡改仍拒绝。默认回放不再需要额外 `--features`：
 
 ```sh
-PMR_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=replay cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=deny RETRIEVAL_EMBED_MODE=replay cargo test --test retrieval_eval af175::af175_local_embedding_experiment -- --exact --nocapture
 ```
 
 `replay-af178` 是同义入口，结果也写 `target/eval-retrieval/af175/reports-af178/`。两模型全部28条录制严格复用，发送数为0；缺失、过期或损坏即失败，不自动补请求。旧录制、账本和 `reports-record/`、`reports-af177/` 不变。
@@ -159,8 +159,8 @@ Q19 两预算下由现状未覆盖变为 lexical-df 全覆盖，目标排第一�
 生产 DF 已在 `src/lexical.rs` 统一实现；AF178 不再复制分词/计分。AF175 历史模拟及录制指纹保留；AF185 使用真实 R2/R3 与 DB v11 向量缓存，注入严格复用的查询向量，不连接 Ollama。旧实验报告/录制不覆盖，新 JSON/Markdown 写 `target/eval-retrieval/af185/`。
 
 ```sh
-PMR_MODEL_NETWORK=offline cargo test --release --test retrieval_eval af185_production_strict_vector_replay -- --ignored --nocapture
-PMR_MODEL_NETWORK=offline cargo test --test retrieval_eval af185_ -- --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=offline cargo test --release --test retrieval_eval af185_production_strict_vector_replay -- --ignored --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=offline cargo test --test retrieval_eval af185_ -- --nocapture
 ```
 
 第一条需要本机已有完整 AF175 录制，显式执行，缺失/指纹变化直接失败、零补发。两模型×两预算在生产路径计算必需全覆盖/MRR/precision、来源原文覆盖、截断及 retrieval 覆盖，保留实际枚举路径；逐题验证 owner/主体/任务/删除硬门槛。每题 opt-out 与未接入路径的 R4 输入逐字节比较。目标必需全覆盖32/32；指标如实报告，不修改冻结标签。第二条覆盖部分/损坏缓存、重开、查询失败及删除并发，不依赖网络。
@@ -171,7 +171,7 @@ AF185 本轮 release 严格回放约96秒（两模型160次生产组装及80题�
 
 ## AF288 小库修正复验
 
-运行上述 `af185_production_strict_vector_replay`（建议 release，PMR_MODEL_NETWORK=deny）；当前报告写入独立 `target/eval-retrieval/af288/`，保留 AF185 历史报告。严格复用28条 AF175向量录制，不发新请求。DF 单来源词元保留，其他仍严格>20%排除；开启混合检索时小主体范围不受关系提示阻挡，按记录数先尝试穷举再裁剪。R4 包变化不允许复用不匹配的模型录制。
+运行上述 `af185_production_strict_vector_replay`（建议 release，HIPPOCAMPUS_MODEL_NETWORK=deny）；当前报告写入独立 `target/eval-retrieval/af288/`，保留 AF185 历史报告。严格复用28条 AF175向量录制，不发新请求。DF 单来源词元保留，其他仍严格>20%排除；开启混合检索时小主体范围不受关系提示阻挡，按记录数先尝试穷举再裁剪。R4 包变化不允许复用不匹配的模型录制。
 
 AF288 零调用复验：28/28 向量录制严格复用，过期0；安全违规0、disabled证据逐字节一致。与原 AF185 相比以下指标均不变：
 

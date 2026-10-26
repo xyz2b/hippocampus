@@ -158,7 +158,7 @@ fn live(limit: Option<usize>, cap: usize, model: &str, base: &str) -> Result<Liv
     if limit != Some(cap) {
         return Ok(None);
     }
-    if std::env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live")
+    if std::env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() != Ok("live")
         || model == "ep-af216-unresolved-pro"
         || base == "https://af216.invalid/v1"
     {

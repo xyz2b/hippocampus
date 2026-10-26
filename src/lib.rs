@@ -20,6 +20,7 @@ mod retrieval;
 mod scope;
 mod sqlite;
 mod staging;
+pub mod startup;
 mod store;
 mod temporal;
 pub mod w2;

@@ -21,12 +21,12 @@ The chat client and model provider have their own retention policies. A local
 model is also a separately configured service, not an implicit privacy guarantee.
 
 Automatic enrichment can be disabled with `enrichment_mode=off`; set
-`PMR_MODEL_NETWORK=deny` to deny model HTTP calls throughout the service.
+`HIPPOCAMPUS_MODEL_NETWORK=deny` to deny model HTTP calls throughout the service.
 A single request's `offline=true` does not stop previously authorized background work.
 The program does not automatically load `.env` files.
 
 Diagnostics, stderr output, backups and exports can contain sensitive content.
-`PMR_OPENAI_TRACE_CONTENT` is enabled by the variable's presence, even if its value
+`HIPPOCAMPUS_OPENAI_TRACE_CONTENT` is enabled by the variable's presence, even if its value
 is `0`. Full trace snapshots are separately opt-in and can include extensive state.
 Keep database, configuration, trace and backup directories private. Do not share
 Inspector authorization links. Inspector listens on loopback and reads existing

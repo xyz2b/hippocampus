@@ -397,6 +397,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "hippo-inspector"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "bytes",
+ "hippocampus",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "regex",
+ "ring",
+ "rusqlite",
+ "serde_json",
+ "subtle",
+ "time",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "hippocampus"
 version = "0.1.0"
 dependencies = [
@@ -838,26 +858,6 @@ name = "pkg-config"
 version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
-
-[[package]]
-name = "pmr-inspector"
-version = "0.1.0"
-dependencies = [
- "base64",
- "bytes",
- "hippocampus",
- "http-body-util",
- "hyper",
- "hyper-util",
- "regex",
- "ring",
- "rusqlite",
- "serde_json",
- "subtle",
- "time",
- "tokio",
- "url",
-]
 
 [[package]]
 name = "potential_utf"

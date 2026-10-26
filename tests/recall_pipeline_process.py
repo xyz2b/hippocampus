@@ -61,8 +61,8 @@ def main():
         server = http.server.ThreadingHTTPServer(("127.0.0.1",0),Fixture)
         threading.Thread(target=server.serve_forever,daemon=True).start()
         stack.callback(server.server_close); stack.callback(server.shutdown)
-        env = {k:v for k,v in os.environ.items() if not k.startswith(("PMR_","OPENAI_","DEEPSEEK_"))}
-        env.update(PMR_MODEL_NETWORK="offline",DEEPSEEK_API_KEY="fixture-key",DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1")
+        env = {k:v for k,v in os.environ.items() if not k.startswith(("PMR_", "HIPPOCAMPUS_","OPENAI_","DEEPSEEK_"))}
+        env.update(HIPPOCAMPUS_MODEL_NETWORK="offline",DEEPSEEK_API_KEY="fixture-key",DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1")
         config = root / "config.json"
         config.write_text(json.dumps({"recall_pipeline":"recall_v3","enrichment_mode":"off",
             "recall_models":{"r1":"pro-fixture","r4":"pro-fixture","reasoning_effort":{"r1":"minimal","r4":"minimal"}},

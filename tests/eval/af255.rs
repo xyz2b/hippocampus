@@ -795,7 +795,7 @@ pub(super) fn run(arm: &str) {
     let recorder = Arc::new(recorder);
     let (address, stop, handle) = server(recorder.clone(), None).unwrap();
     unsafe {
-        std::env::set_var("PMR_MODEL_NETWORK", "offline");
+        std::env::set_var("HIPPOCAMPUS_MODEL_NETWORK", "offline");
         std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
     }
     let output = dir.join(if live { "run.json" } else { "run-replay.json" });
@@ -945,7 +945,7 @@ mod tests {
         );
         assert!(
             cfg.recall_models.as_ref().unwrap().providers.is_empty(),
-            "explicit R4 providers require PMR_MODEL_NETWORK=live and would gate the offline recording proxy"
+            "explicit R4 providers require HIPPOCAMPUS_MODEL_NETWORK=live and would gate the offline recording proxy"
         );
         assert_eq!(cfg.recall_models.unwrap().r4, "gpt-6.1-sol");
     }
@@ -1281,7 +1281,7 @@ fn af255_production_loopback_roundtrip_reuses_write_state_and_only_changes_r4() 
     let ar = Arc::new(a.recorder(false, None, slots(&[case.clone()]), true));
     let (address, stop, handle) = server(ar.clone(), Some(fixture)).unwrap();
     unsafe {
-        std::env::set_var("PMR_MODEL_NETWORK", "offline");
+        std::env::set_var("HIPPOCAMPUS_MODEL_NETWORK", "offline");
         std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
     }
     let first = run_case(&case, &ar, &address);

@@ -19,9 +19,9 @@ impl Drop for Root {
     }
 }
 fn cli(args: &[&str], mode: &str) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+    Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
         .args(args)
-        .env("PMR_MODEL_NETWORK", mode)
+        .env("HIPPOCAMPUS_MODEL_NETWORK", mode)
         .output()
         .unwrap()
 }

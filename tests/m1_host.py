@@ -37,12 +37,12 @@ def main():
         config = root / "config.json"
         # Only disable automatic enrichment. Both pipeline selectors and models are omitted.
         config.write_text(json.dumps({"enrichment_mode": "off"}))
-        env = {k: v for k, v in os.environ.items() if not k.startswith(("PMR_", "DEEPSEEK_", "OPENAI_"))}
-        env["PMR_MODEL_NETWORK"] = "deny"
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("PMR_", "HIPPOCAMPUS_", "DEEPSEEK_", "OPENAI_"))}
+        env["HIPPOCAMPUS_MODEL_NETWORK"] = "deny"
         if args.check == "trace":
             trace = root / "trace"
             trace.mkdir(mode=0o700)
-            env["PMR_TRACE_DIR"] = str(trace)
+            env["HIPPOCAMPUS_TRACE_DIR"] = str(trace)
         client = Client(args.binary.resolve(), db, env, "alice", config=config)
         try:
             tools = {t["name"]: t for t in client.rpc("tools/list", {})["tools"]}
@@ -155,7 +155,7 @@ def main():
         if args.check == "modes":
             # Missing default endpoint is explicit for an authorized background worker, with no send.
             config.write_text(json.dumps({"model_budget": {"group_id": "missing-default", "max_calls": 3}, "background_operation_limit": 3}))
-            env.update(PMR_MODEL_NETWORK="offline", DEEPSEEK_BASE_URL="http://127.0.0.1:1/v1", DEEPSEEK_API_KEY="synthetic-unused")
+            env.update(HIPPOCAMPUS_MODEL_NETWORK="offline", DEEPSEEK_BASE_URL="http://127.0.0.1:1/v1", DEEPSEEK_API_KEY="synthetic-unused")
             worker = Client(args.binary.resolve(), db, env, "alice", config=config)
             try:
                 stored = worker.call("memory_remember", {**turn, "turn_id": "missing-endpoint"})

@@ -405,7 +405,7 @@ fn cli_source_status_is_read_only_and_sends_no_models() {
     let before = serde_json::to_value(db.open("alice").read().unwrap()).unwrap();
     let args = db.0.with_extension("args.json");
     std::fs::write(&args, serde_json::to_vec(&json!({"source_id":id})).unwrap()).unwrap();
-    let output = std::process::Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
         .args([
             "--db",
             db.0.to_str().unwrap(),
@@ -416,7 +416,7 @@ fn cli_source_status_is_read_only_and_sends_no_models() {
             "--arguments",
             args.to_str().unwrap(),
         ])
-        .env("PMR_MODEL_NETWORK", "deny")
+        .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
         .env_remove("DEEPSEEK_API_KEY")
         .env_remove("DEEPSEEK_PRO_MODEL")
         .output()

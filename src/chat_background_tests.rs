@@ -182,14 +182,14 @@ fn background_candidate_diagnostics_are_durable_and_optional() {
         let mut command = std::process::Command::new(std::env::current_exe().unwrap());
         command
             .args(["--exact", &child, "--nocapture"])
-            .env("PMR_BACKGROUND_TRACE_TEST", mode)
-            .env_remove("PMR_TRACE_DIR");
+            .env("HIPPOCAMPUS_BACKGROUND_TRACE_TEST", mode)
+            .env_remove("HIPPOCAMPUS_TRACE_DIR");
         match mode {
             "enabled" => {
-                command.env("PMR_TRACE_DIR", &trace);
+                command.env("HIPPOCAMPUS_TRACE_DIR", &trace);
             }
             "failed" => {
-                command.env("PMR_TRACE_DIR", trace.join("missing-directory"));
+                command.env("HIPPOCAMPUS_TRACE_DIR", trace.join("missing-directory"));
             }
             _ => (),
         }
@@ -267,7 +267,7 @@ fn background_candidate_diagnostics_are_durable_and_optional() {
 
 #[test]
 fn background_trace_child() {
-    if std::env::var_os("PMR_BACKGROUND_TRACE_TEST").is_none() {
+    if std::env::var_os("HIPPOCAMPUS_BACKGROUND_TRACE_TEST").is_none() {
         return;
     }
     let db = Db::new();

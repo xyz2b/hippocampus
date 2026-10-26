@@ -236,7 +236,7 @@ fn recall_pipeline_cli_offline_dispatch_and_bootstrap() {
         let mut request = query(if bootstrap { "bootstrap" } else { "cli" });
         request["bootstrap"] = json!(bootstrap);
         std::fs::write(&args, request.to_string()).unwrap();
-        let result = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+        let result = Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
             .args([
                 "--db",
                 db.0.to_str().unwrap(),
@@ -249,7 +249,7 @@ fn recall_pipeline_cli_offline_dispatch_and_bootstrap() {
                 "--arguments",
                 args.to_str().unwrap(),
             ])
-            .env("PMR_MODEL_NETWORK", "deny")
+            .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
             .env_remove("DEEPSEEK_API_KEY")
             .env_remove("DEEPSEEK_BASE_URL")
             .output()
@@ -276,7 +276,7 @@ fn recall_pipeline_http_cli_end_to_end() {
         .args([
             "tests/recall_pipeline_process.py",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .output()
         .unwrap();
@@ -340,7 +340,7 @@ fn mcp_online_recall_http_concurrency_barriers() {
         .args([
             "tests/mcp_recall_concurrency.py",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .output()
         .unwrap();

@@ -29,7 +29,7 @@ with explicit gaps and are not automatically reinterpreted by models.
    even when their values are false, null or empty. Do not silently rewrite them.
    Clients must use `recall.v11` and stable request IDs, including bootstrap.
 5. Verify the upgrade against a separate backup copy first, with automatic enrichment
-   off and `PMR_MODEL_NETWORK=deny`. Confirm original text, legacy records, owner
+   off and `HIPPOCAMPUS_MODEL_NETWORK=deny`. Confirm original text, legacy records, owner
    isolation, source status and configuration before enabling online capability.
    Do not test destructive operations against the only production copy.
 

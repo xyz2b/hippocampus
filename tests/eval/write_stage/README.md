@@ -577,25 +577,25 @@ cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact -
 角色与生产缺省对齐：`DEEPSEEK_PRO_MODEL`、`HUOSHAN_DEEPSEEK_BASE_URL`，W1/W3 low，输出上限 32768/16384，超时 360 秒。不覆盖用户生产配置。干跑不读密钥、不发送、不创建目录或账本；环境缺模型/地址时使用明确的干跑占位，真实录制拒绝占位：
 
 ```sh
-PMR_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_DRY_RUN=1 EVAL_RECORD=12 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_DRY_RUN=1 EVAL_RECORD=12 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
 本轮未执行的录制命令（须另行授权，先加载真实端点环境）：
 
 ```sh
-PMR_MODEL_NETWORK=live EVAL_AF193=1 EVAL_RECORD=12 \
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF193=1 EVAL_RECORD=12 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-产物仅写 `target/eval-time-af193/{recordings,campaign,report.json}`。首次发送前冻结全部 12 槽身份与额度，逐调用发送前落盘、响应后立即存录制；失败也占槽，不重试、不自动重发在途槽。续跑同命令、同模型与端点，只发送剩余槽，累计不超过 12。仅接受录制额度 12 或严格回放 0；禁止其他阶段、模型/强度/样本过滤覆盖。发送前需 `PMR_MODEL_NETWORK=live`，bootstrap/offline 不会发送。
+产物仅写 `target/eval-time-af193/{recordings,campaign,report.json}`。首次发送前冻结全部 12 槽身份与额度，逐调用发送前落盘、响应后立即存录制；失败也占槽，不重试、不自动重发在途槽。续跑同命令、同模型与端点，只发送剩余槽，累计不超过 12。仅接受录制额度 12 或严格回放 0；禁止其他阶段、模型/强度/样本过滤覆盖。发送前需 `HIPPOCAMPUS_MODEL_NETWORK=live`，bootstrap/offline 不会发送。
 
 ```sh
 # 严格回放，仍须保留录制时的模型与地址，密钥不需要。
-PMR_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_RECORD=0 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF193=1 EVAL_RECORD=0 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 # 只读统计历史录制的提示词影响，不修改任何历史产物。
-PMR_MODEL_NETWORK=offline EVAL_AF193=impact \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF193=impact \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -608,26 +608,26 @@ PMR_MODEL_NETWORK=offline EVAL_AF193=impact \
 AF193 的 12 次实测中 W3 6/6、W1 4/6；t01/t06 的持续状态被 W1 压缩为说话当天。AF196 仅补充 W1 的持续状态时间规则，不改 W3、schema、契约或标签。`EVAL_AF196=1` 复用相同六场景与盲化输入，仅 W1 各一次，Pro low、上限32768、超时360秒；W3/W4/R1/R4=0。
 
 ```sh
-PMR_MODEL_NETWORK=offline EVAL_AF196=1 EVAL_DRY_RUN=1 EVAL_RECORD=6 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF196=1 EVAL_DRY_RUN=1 EVAL_RECORD=6 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
-独立产物为 `target/eval-time-af196/{recordings,campaign,report.json}`，独立标签 `af196-pro-low`。首次发送前冻结全部6槽身份与额度、每调用先落盘 started，再发送；不重试，失败或在途仍占额度，续跑跳过在途槽且不重发。仅接受 `EVAL_RECORD=6`（录制/续跑）或0（严格回放），其他覆盖与 AF193 相同，两个入口不可同时启用。干跑不读取密钥、不创建产物；真实录制仍要求已加载真实模型/地址和 `PMR_MODEL_NETWORK=live`。
+独立产物为 `target/eval-time-af196/{recordings,campaign,report.json}`，独立标签 `af196-pro-low`。首次发送前冻结全部6槽身份与额度、每调用先落盘 started，再发送；不重试，失败或在途仍占额度，续跑跳过在途槽且不重发。仅接受 `EVAL_RECORD=6`（录制/续跑）或0（严格回放），其他覆盖与 AF193 相同，两个入口不可同时启用。干跑不读取密钥、不创建产物；真实录制仍要求已加载真实模型/地址和 `HIPPOCAMPUS_MODEL_NETWORK=live`。
 
 ### AF198：第三轮，真实输出串联诊断
 
 `EVAL_AF198=1` 复用 AF193 六个虚构场景与原标签，每场景两次独立重复：该次真实 W1 输出经生产 W2 核验后构造 W3 输入。最大24次（W1 12、W3 12），Pro low，输出上限32768/16384、超时360秒。W1 失败、解码失败或 W2 无非拒收候选时，W3 不发送；不以固定理想候选补位。部分拒收时仅送审非拒收项，保留原始候选索引。
 
 ```sh
-PMR_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_DRY_RUN=1 EVAL_RECORD=24 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_DRY_RUN=1 EVAL_RECORD=24 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 
 # Claude 复核后录制/续跑：预先加载 DEEPSEEK_PRO_MODEL/BASE_URL/API_KEY，不打印密钥
-PMR_MODEL_NETWORK=live EVAL_AF198=1 EVAL_RECORD=24 \
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF198=1 EVAL_RECORD=24 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 
 # 严格离线回放，不读取密钥；缺录制或过期如实拒绝，已发送在途保留缺口
-PMR_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_RECORD=0 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF198=1 EVAL_RECORD=0 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -651,7 +651,7 @@ chain 固定 24 槽（6×2×W1/W3），使用生产 DeepSeek Pro、W1/W3 low、3
 
 points 固定 4 槽（W4 2 + R4 2）：预置两条共享完整原句的片段记录，修改一项、另一项保持。W4 medium/16384，R4 minimal/4096；实际 W4 输出经 prepare→validate→plan→W5 事务提交，R4 从该 SQLite 快照的生产 R3 证据包生成，不调用 R1。W4 评分检查目标和动作；R4 核验与实际证据保留供语义复核。
 
-每个 campaign 固定总额度和完整槽位/派生规则，各依赖槽在发送前持久化精确请求及上游输出身份；物理发送前占额度，不重试，不重发中断在途槽。干跑不读取密钥、不创建账本或录制。授权后才可去掉 `EVAL_DRY_RUN=1` 并设置 `PMR_MODEL_NETWORK=live` 与 DEEPSEEK 环境变量；离线严格回放用 `EVAL_RECORD=0`，新目录缺口如实报告。不要将本轮授权额度转移给其他 campaign。
+每个 campaign 固定总额度和完整槽位/派生规则，各依赖槽在发送前持久化精确请求及上游输出身份；物理发送前占额度，不重试，不重发中断在途槽。干跑不读取密钥、不创建账本或录制。授权后才可去掉 `EVAL_DRY_RUN=1` 并设置 `HIPPOCAMPUS_MODEL_NETWORK=live` 与 DEEPSEEK 环境变量；离线严格回放用 `EVAL_RECORD=0`，新目录缺口如实报告。不要将本轮授权额度转移给其他 campaign。
 
 当前契约 W1 v5、W3 v6、W4 v5、R4 v7、recall v10（AF288 升宿主协议并修小库检索，W 侧不变）；R1 v2、DB v11 不变。当前请求与旧 W 阶段/R4 的契约及提示词身份不同，旧录制严格报告过期；保留历史录制/标签/报告，不改指纹以复用。AF96/AF101 等历史冻结提示词继续保留，不能当作当前提示词验证结果。
 
@@ -664,15 +664,15 @@ points 固定 4 槽（W4 2 + R4 2）：预置两条共享完整原句的片段�
 
 ```sh
 # 零调用干跑；无需密钥，不创建 campaign/录制
-PMR_MODEL_NETWORK=offline EVAL_AF216=chain EVAL_DRY_RUN=1 EVAL_RECORD=16 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF216=chain EVAL_DRY_RUN=1 EVAL_RECORD=16 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
-PMR_MODEL_NETWORK=offline EVAL_AF216=points EVAL_DRY_RUN=1 EVAL_RECORD=8 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF216=points EVAL_DRY_RUN=1 EVAL_RECORD=8 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 
 # 获准录制后：保留同一 DEEPSEEK_PRO_MODEL/BASE_URL，另外提供 API_KEY，改 offline 为 live，去掉 EVAL_DRY_RUN
 # 严格回放：同一配置、offline、EVAL_RECORD=0，不发请求
 # AF206 历史录制重算：保留录制时模型/端点，报告另存，原录制/标签/账本/报告不改
-PMR_MODEL_NETWORK=offline EVAL_AF206=recount EVAL_RECORD=0 \
+HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_AF206=recount EVAL_RECORD=0 \
   cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 

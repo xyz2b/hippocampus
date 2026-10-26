@@ -286,7 +286,7 @@ pub(super) fn run() -> Result<(), String> {
         return Ok(());
     }
     let live = if limit.is_some() {
-        if std::env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live")
+        if std::env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() != Ok("live")
             || model == "ep-af264-unresolved-pro"
             || base == "https://af264.invalid/v1"
         {

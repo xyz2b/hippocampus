@@ -4006,7 +4006,7 @@ fn af83_w1_diagnostics_are_private_and_do_not_retry() {
                 "--nocapture",
             ])
             .env("AF83_W1_TRACE_PROBE", "1")
-            .env("PMR_TRACE_DIR", &root)
+            .env("HIPPOCAMPUS_TRACE_DIR", &root)
             .output()
             .unwrap();
         assert!(

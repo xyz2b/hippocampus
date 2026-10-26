@@ -1129,7 +1129,7 @@ pub(crate) mod tests {
 
     #[test]
     fn budget_process_worker() {
-        let Some(path) = std::env::var_os("PMR_BUDGET_TEST_DB") else {
+        let Some(path) = std::env::var_os("HIPPOCAMPUS_BUDGET_TEST_DB") else {
             return;
         };
         let budget = ModelBudget::new(
@@ -1159,8 +1159,8 @@ pub(crate) mod tests {
             .map(|_| {
                 std::process::Command::new(std::env::current_exe().unwrap())
                     .args(["--exact", "model_budget::tests::budget_process_worker"])
-                    .env("PMR_BUDGET_TEST_DB", &ledger.path)
-                    .env("PMR_MODEL_NETWORK", "deny")
+                    .env("HIPPOCAMPUS_BUDGET_TEST_DB", &ledger.path)
+                    .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
                     .stdout(std::process::Stdio::null())
                     .spawn()
                     .unwrap()

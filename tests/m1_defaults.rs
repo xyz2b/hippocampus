@@ -383,14 +383,14 @@ fn m1_legacy_file_configuration_is_rejected_before_creating_database() {
         let db = Db::new();
         let config = db.0.with_extension("json");
         std::fs::write(&config, json!({field:"legacy"}).to_string()).unwrap();
-        let result = std::process::Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+        let result = std::process::Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
             .args([
                 "--db",
                 db.0.to_str().unwrap(),
                 "--config",
                 config.to_str().unwrap(),
             ])
-            .env("PMR_MODEL_NETWORK", "deny")
+            .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
             .output()
             .unwrap();
         assert!(!result.status.success());
@@ -459,7 +459,7 @@ fn m1_missing_pro_endpoint_fails_online_before_any_physical_send() {
         r#"{"query":"我住在哪？","request_id":"online"}"#,
     )
     .unwrap();
-    let out = std::process::Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
         .args([
             "--db",
             db.0.to_str().unwrap(),
@@ -475,7 +475,7 @@ fn m1_missing_pro_endpoint_fails_online_before_any_physical_send() {
         .env_remove("DEEPSEEK_PRO_MODEL")
         .env("DEEPSEEK_BASE_URL", "http://127.0.0.1:1/v1")
         .env("DEEPSEEK_API_KEY", "synthetic-unused")
-        .env("PMR_MODEL_NETWORK", "offline")
+        .env("HIPPOCAMPUS_MODEL_NETWORK", "offline")
         .output()
         .unwrap();
     assert!(!out.status.success());
@@ -505,14 +505,14 @@ fn m1_retired_recall_config_is_rejected_before_database_open_without_rewriting()
         let config = db.0.with_extension("json");
         let original = json!({field:value}).to_string();
         std::fs::write(&config, &original).unwrap();
-        let output = std::process::Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
             .args([
                 "--db",
                 db.0.to_str().unwrap(),
                 "--config",
                 config.to_str().unwrap(),
             ])
-            .env("PMR_MODEL_NETWORK", "deny")
+            .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
             .output()
             .unwrap();
         assert!(!output.status.success());

@@ -25,7 +25,7 @@ context.summary=summary;
 const rendered=evaluate("renderTransactionDetail({name:'transaction_committed',status:'completed',output:summary})");
 assert.match(rendered,/已提交 · 事务变更摘要/);
 assert.match(rendered,/7 → 8/);
-assert.match(rendered,/PMR_TRACE_FULL_SNAPSHOTS=1/);
+assert.match(rendered,/HIPPOCAMPUS_TRACE_FULL_SNAPSHOTS=1/);
 assert.doesNotMatch(rendered,/事务尚未确认提交/);
 assert.match(evaluate("stageResult({name:'transaction_committed',status:'completed',output:summary})"),/已提交/);
 for(const name of ['w2_summary','w5_commit','r3_evidence','r5_final','retrieval']){

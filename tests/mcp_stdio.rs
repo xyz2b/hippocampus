@@ -6,7 +6,7 @@ fn mcp_stdio_persistence_roundtrip() {
             "--check",
             "smoke",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
@@ -27,7 +27,7 @@ fn mcp_global_context_fallback() {
             "--check",
             "global",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
@@ -48,7 +48,7 @@ fn mcp_prepare_saves_before_recall() {
             "--check",
             "prepare",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
@@ -69,7 +69,7 @@ fn s1_diagnostic_evidence() {
             "--check",
             "trace",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
@@ -90,7 +90,7 @@ fn s2_independent_source_capture() {
             "--check",
             "source",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()

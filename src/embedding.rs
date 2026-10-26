@@ -58,7 +58,7 @@ impl Config {
 
 /// Runtime permission is stricter than the separately authorized AF175 experiment.
 pub fn runtime_network_allowed() -> bool {
-    runtime_policy(&std::env::var("PMR_MODEL_NETWORK").unwrap_or_default())
+    runtime_policy(&std::env::var("HIPPOCAMPUS_MODEL_NETWORK").unwrap_or_default())
 }
 fn runtime_policy(mode: &str) -> bool {
     mode == "live"
@@ -348,7 +348,9 @@ pub struct Ollama {
 impl Ollama {
     pub fn new(base: &str) -> Result<Self> {
         let base = endpoint(base)?;
-        network_policy(&std::env::var("PMR_MODEL_NETWORK").unwrap_or_else(|_| "offline".into()))?;
+        network_policy(
+            &std::env::var("HIPPOCAMPUS_MODEL_NETWORK").unwrap_or_else(|_| "offline".into()),
+        )?;
         let host = base.host_str().unwrap();
         let address =
             SocketAddr::from((Ipv4Addr::LOCALHOST, base.port_or_known_default().unwrap()));
@@ -379,7 +381,9 @@ impl Ollama {
         if self.runtime && !runtime_network_allowed() {
             return Err("embedding_network_disabled".into());
         }
-        network_policy(&std::env::var("PMR_MODEL_NETWORK").unwrap_or_else(|_| "offline".into()))?;
+        network_policy(
+            &std::env::var("HIPPOCAMPUS_MODEL_NETWORK").unwrap_or_else(|_| "offline".into()),
+        )?;
         #[cfg(test)]
         if let Some(transport) = &self.transport {
             let result = transport(path, body, remaining)?;

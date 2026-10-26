@@ -435,7 +435,7 @@ pub(super) fn run() {
         let (address, stop, handle) = server(recorder.clone(), None).unwrap();
         // Only this suite mutates provider environment, before constructing production clients.
         unsafe {
-            std::env::set_var("PMR_MODEL_NETWORK", "offline");
+            std::env::set_var("HIPPOCAMPUS_MODEL_NETWORK", "offline");
             std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
         }
         let results = parallel_cases(&cases, jobs, |case| {
@@ -1139,7 +1139,7 @@ fn v3_production_http_roundtrip_uses_all_five_stages() {
     let recorder = Arc::new(Recorder::new(dir.clone(), Some(7), None));
     let (address, stop, handle) = server(recorder.clone(), Some(fixture)).unwrap();
     unsafe {
-        std::env::set_var("PMR_MODEL_NETWORK", "offline");
+        std::env::set_var("HIPPOCAMPUS_MODEL_NETWORK", "offline");
         std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
     }
     let first = run_case(&case, &recorder, &address);

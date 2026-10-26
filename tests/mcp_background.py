@@ -82,8 +82,8 @@ def main():
         threading.Thread(target=server.serve_forever, daemon=True).start()
         stack.callback(server.server_close)
         stack.callback(server.shutdown)
-        env = {k: v for k, v in os.environ.items() if not k.startswith(("PMR_", "OPENAI_", "DEEPSEEK_"))}
-        env.update(PMR_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("PMR_", "HIPPOCAMPUS_", "OPENAI_", "DEEPSEEK_"))}
+        env.update(HIPPOCAMPUS_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
                    DEEPSEEK_BASE_URL=f"http://127.0.0.1:{server.server_port}/v1")
         db = root / "memory.sqlite3"
         config = root / "joint.json"
