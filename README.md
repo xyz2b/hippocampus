@@ -16,7 +16,7 @@ not by the installed service.
 git clone https://github.com/xyz2b/hippocampus.git
 cd hippocampus
 cargo build --locked --workspace --bins
-./target/debug/pmr-mcp --help
+./target/debug/hippo-mcp --help
 ```
 
 Create `memory-config.json` outside the repository (or in your private configuration
@@ -34,13 +34,13 @@ calls and stores only original text that you explicitly authorize it to retain.
 {
   "mcpServers": {
     "hippocampus": {
-      "command": "/absolute/path/to/hippocampus/target/debug/pmr-mcp",
+      "command": "/absolute/path/to/hippocampus/target/debug/hippo-mcp",
       "args": [
         "--db", "/absolute/path/to/memory.sqlite3",
         "--owner", "local-user",
         "--config", "/absolute/path/to/memory-config.json"
       ],
-      "env": {"PMR_MODEL_NETWORK":"deny"}
+      "env": {"HIPPOCAMPUS_MODEL_NETWORK":"deny"}
     }
   }
 }
@@ -73,12 +73,12 @@ returned raw text is context, not a verified current fact.
 ## Online models / 可选在线能力
 
 Online extraction and recall require your own endpoint, key and model ID,
-`PMR_MODEL_NETWORK=live`, and an explicitly authorized finite persistent budget.
+`HIPPOCAMPUS_MODEL_NETWORK=live`, and an explicitly authorized finite persistent budget.
 The [configuration guide](docs/configuration.md) describes roles, network gates,
 logging and an example budget. Inspect defaults with:
 
 ```sh
-./target/debug/pmr-mcp --print-default-config
+./target/debug/hippo-mcp --print-default-config
 ```
 
 默认后台整理最多使用 W1/W3/W4 三次，前台召回最多使用 R1/R4 两次，消耗同一总授权。
@@ -111,9 +111,27 @@ current replay completeness or production quality.
 当前只支持 `recall.v11`。升级前阅读[备份与升级](docs/architecture/m1-cutover.md)。
 更轻量的本地模型架构仍属于探索方向，不是本版提供的替代流水线。
 
-The Rust package is `hippocampus`; compatible commands remain `pmr-mcp` and
-`pmr-inspector`, environment variables retain `PMR_*`, and the default data directory
-is `~/.local/share/personal-memory-runtime/`.
+The Rust package is `hippocampus`. Commands are now `hippo-mcp` and
+`hippo-inspector`, environment variables use `HIPPOCAMPUS_*`, and the default data
+directory is `~/.local/share/hippocampus/`. Old command names and `PMR_*` variables
+are not supported. Both binaries reject known old variables at startup without
+using or displaying their values; help and default-config output remain available.
+
+To migrate an existing installation:
+
+1. Stop all related processes and back up the data directory, including SQLite WAL files.
+2. Only if the destination directory does not exist, move the entire directory:
+   `mv "$HOME/.local/share/personal-memory-runtime" "$HOME/.local/share/hippocampus"`.
+   If the destination already exists, resolve it manually first; do not overwrite it.
+3. Update binary paths in MCP clients and launch scripts, replace all `PMR_*`
+   environment names with `HIPPOCAMPUS_*`, and update explicit database, config,
+   budget database and trace paths (including paths in `runtime.json`).
+4. Rebuild/restart the service and Inspector; reopen the Inspector login link.
+
+Without explicit `--db`, either binary refuses to start when the old default
+database exists and the new default database is missing, even if the new directory
+already exists. No automatic migration occurs. These steps do not authorize or
+perform changes to an existing deployment.
 
 ## Development / 开发验证
 
@@ -124,8 +142,8 @@ and changes canonical receipt serialization.
 
 ```sh
 cargo build --locked --workspace --bins
-PMR_MODEL_NETWORK=offline PMR_INSPECTOR_BINARY="$PWD/target/debug/pmr-inspector" cargo test --locked -p hippocampus
-PMR_MODEL_NETWORK=offline cargo test --locked -p pmr-inspector
+HIPPOCAMPUS_MODEL_NETWORK=offline HIPPOCAMPUS_INSPECTOR_BINARY="$PWD/target/debug/hippo-inspector" cargo test --locked -p hippocampus
+HIPPOCAMPUS_MODEL_NETWORK=offline cargo test --locked -p hippo-inspector
 python3 -B -m unittest discover -s tests/eval/scoring -v
 ```
 

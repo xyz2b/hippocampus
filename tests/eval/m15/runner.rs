@@ -292,7 +292,7 @@ pub(super) fn run() {
     } else {
         let (address, stop, handle) = server(recorder.clone(), None).unwrap();
         unsafe {
-            std::env::set_var("PMR_MODEL_NETWORK", "offline");
+            std::env::set_var("HIPPOCAMPUS_MODEL_NETWORK", "offline");
             std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
         }
         let result = run_on(&case, &recorder, &address);
@@ -588,7 +588,7 @@ fn m15_mvp_prepare_background_and_new_session_http_replay() {
         ));
         let (address, stop, handle) = server(recorder.clone(), Some(fixture)).unwrap();
         unsafe {
-            std::env::set_var("PMR_MODEL_NETWORK", "offline");
+            std::env::set_var("HIPPOCAMPUS_MODEL_NETWORK", "offline");
             std::env::set_var("DEEPSEEK_API_KEY", "eval-replay");
         }
         let result = run_on(&sample(), &recorder, &address);

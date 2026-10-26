@@ -458,7 +458,7 @@ fn ordering_diagnostic_survives_rollback_and_writer_failure() {
         let output = std::process::Command::new(std::env::current_exe().unwrap())
             .args(["--exact", "ordering_diagnostic_probe", "--nocapture"])
             .env("AF78_DIAGNOSTIC_PROBE", kind)
-            .env("PMR_TRACE_DIR", &root)
+            .env("HIPPOCAMPUS_TRACE_DIR", &root)
             .output()
             .unwrap();
         assert!(
@@ -1171,8 +1171,8 @@ fn af371_w5_only_follows_successful_commit_and_full_snapshots_are_opt_in() {
         let result = std::process::Command::new(std::env::current_exe().unwrap())
             .args(["--exact", "af371_commit_trace_probe", "--nocapture"])
             .env("AF371_COMMIT_TRACE_PROBE", "1")
-            .env("PMR_TRACE_DIR", &trace)
-            .env("PMR_TRACE_FULL_SNAPSHOTS", full)
+            .env("HIPPOCAMPUS_TRACE_DIR", &trace)
+            .env("HIPPOCAMPUS_TRACE_FULL_SNAPSHOTS", full)
             .output()
             .unwrap();
         assert!(

@@ -1,6 +1,6 @@
 # Configuration / 配置
 
-Run `pmr-mcp --print-default-config` for the complete configuration supported by
+Run `hippo-mcp --print-default-config` for the complete configuration supported by
 your binary. Pass its JSON file with `--config`, and explicitly select `--db` and
 `--owner`. The service reads process environment variables; it does **not** load
 `.env`. A desktop MCP client may not inherit your terminal environment, so configure
@@ -12,7 +12,7 @@ its `env` explicitly. Do not store credentials in tracked JSON files.
 {"enrichment_mode":"off"}
 ```
 
-Combine this with `PMR_MODEL_NETWORK=deny`. Original-text retention still requires
+Combine this with `HIPPOCAMPUS_MODEL_NETWORK=deny`. Original-text retention still requires
 explicit permission for the whole message/history and `capture_source=true`.
 `source.status` and `enrichment.status` describe different outcomes.
 
@@ -34,7 +34,7 @@ contain these placeholders (replace them before enabling online operation):
 
 ```json
 {
-  "PMR_MODEL_NETWORK": "live",
+  "HIPPOCAMPUS_MODEL_NETWORK": "live",
   "DEEPSEEK_BASE_URL": "https://your-provider.example/v1",
   "DEEPSEEK_API_KEY": "YOUR_PRIVATE_KEY",
   "DEEPSEEK_PRO_MODEL": "YOUR_PRO_MODEL_OR_ENDPOINT_ID"
@@ -70,13 +70,13 @@ They are not public endpoints or configuration examples.
 | `DEEPSEEK_BASE_URL` | Default provider API base URL |
 | `DEEPSEEK_API_KEY` | Default provider secret; supply privately |
 | `DEEPSEEK_PRO_MODEL` | Your default Pro model/endpoint ID; not required for source-only mode |
-| `PMR_MODEL_NETWORK` | `deny`, `offline`, or `live` |
-| `PMR_MODEL_TIMEOUT_SECS` | Adapter timeout setting; stage budgets also bound calls |
+| `HIPPOCAMPUS_MODEL_NETWORK` | `deny`, `offline`, or `live` |
+| `HIPPOCAMPUS_MODEL_TIMEOUT_SECS` | Adapter timeout setting; stage budgets also bound calls |
 | `HOME` | Default local data paths; explicit CLI paths avoid relying on it |
 | Names in `base_url_env` / `api_key_env` | User-selected variables for explicit providers; no fixed exhaustive list |
 
-Some direct adapter entry points additionally read `PMR_MODEL_BUDGET_DB`,
-`PMR_MODEL_BUDGET_OWNER`, `PMR_MODEL_BUDGET_CONFIG` and `PMR_MODEL_OPERATION_ID`.
+Some direct adapter entry points additionally read `HIPPOCAMPUS_MODEL_BUDGET_DB`,
+`HIPPOCAMPUS_MODEL_BUDGET_OWNER`, `HIPPOCAMPUS_MODEL_BUDGET_CONFIG` and `HIPPOCAMPUS_MODEL_OPERATION_ID`.
 These must be supplied together when that path is used. Normal MCP setup uses the
 JSON `model_budget`; do not copy these advanced variables into every client.
 
@@ -84,10 +84,10 @@ JSON `model_budget`; do not copy these advanced variables into every client.
 
 | Variable | Behavior |
 | --- | --- |
-| `PMR_TRACE_DIR` | Enables runtime JSONL traces in a pre-created private directory |
-| `PMR_TRACE_FULL_SNAPSHOTS=1` | With tracing enabled, records full diagnostic snapshots; default off |
-| `PMR_OPENAI_TRACE` | Presence enables legacy attempt/response metadata on stderr |
-| `PMR_OPENAI_TRACE_CONTENT` | **Presence enables model output on stderr; even `=0` enables it** |
+| `HIPPOCAMPUS_TRACE_DIR` | Enables runtime JSONL traces in a pre-created private directory |
+| `HIPPOCAMPUS_TRACE_FULL_SNAPSHOTS=1` | With tracing enabled, records full diagnostic snapshots; default off |
+| `HIPPOCAMPUS_OPENAI_TRACE` | Presence enables legacy attempt/response metadata on stderr |
+| `HIPPOCAMPUS_OPENAI_TRACE_CONTENT` | **Presence enables model output on stderr; even `=0` enables it** |
 
 Leave diagnostic variables absent unless needed. Content traces, full snapshots,
 stderr, exports and backups may retain personal information. Full snapshots can
@@ -96,7 +96,7 @@ independent copies. See [security boundaries](../SECURITY.md).
 
 ### Tests and evaluation
 
-`PMR_INSPECTOR_BINARY` selects an explicitly built Inspector for Python drivers.
+`HIPPOCAMPUS_INSPECTOR_BINARY` selects an explicitly built Inspector for Python drivers.
 `EVAL_*`, `RETRIEVAL_EMBED_*` and diagnostic probe variables are test controls,
 not normal client configuration. See [evaluation commands](../tests/eval/README-v3.md).
 Leave `EVAL_RECORD` **unset** for replay; `0` is not a universal offline switch.
@@ -112,3 +112,9 @@ bindings are checked; a stale or partial index must not be described as complete
 statements during bootstrap, potentially including health and residence details.
 Read the [snapshot policy](architecture/recall-runtime.md#stored-statement-snapshot)
 before enabling it. It is not a current-fact or complete-list answer.
+
+Both binaries reject the 13 former `PMR_*` variable names at startup, even if
+empty or accompanied by the new names. Only names are reported, never values.
+`--help` and `hippo-mcp --print-default-config` bypass this check. Direct library
+and example callers read only the new names; the startup rejection applies to the
+two binaries. See the [migration steps](../README.md) for data and client paths.

@@ -158,7 +158,7 @@ impl fmt::Display for OpenAiAdapterError {
             }
             Self::NetworkDisabled => write!(
                 formatter,
-                "model network disabled; PMR_MODEL_NETWORK=live explicitly enables provider calls"
+                "model network disabled; HIPPOCAMPUS_MODEL_NETWORK=live explicitly enables provider calls"
             ),
             Self::ContextUnproven => write!(formatter, "model_context_unproven"),
             Self::ContextExceeded => write!(formatter, "model_context_exceeded"),
@@ -281,7 +281,7 @@ fn model_network_allowed(mode: &str, url: &reqwest::Url) -> Result<bool, OpenAiA
             .is_some_and(|ip| ip.is_loopback())),
         "live" => Ok(true),
         _ => Err(OpenAiAdapterError::InvalidContext(
-            "PMR_MODEL_NETWORK must be deny, offline, or live".into(),
+            "HIPPOCAMPUS_MODEL_NETWORK must be deny, offline, or live".into(),
         )),
     }
 }
@@ -339,12 +339,12 @@ impl OpenAiClient {
         if api_key.trim().is_empty() {
             return Err(OpenAiAdapterError::MissingApiKey);
         }
-        let mode = env::var("PMR_MODEL_NETWORK").unwrap_or_else(|_| "offline".into());
+        let mode = env::var("HIPPOCAMPUS_MODEL_NETWORK").unwrap_or_else(|_| "offline".into());
         let network_allowed = model_network_allowed(&mode, &parsed_url)?;
         let mut builder = Client::builder()
             // Long intake extractions can generate tens of thousands of tokens; 180 s cut them off.
             .timeout(Duration::from_secs(
-                env::var("PMR_MODEL_TIMEOUT_SECS")
+                env::var("HIPPOCAMPUS_MODEL_TIMEOUT_SECS")
                     .ok()
                     .and_then(|secs| secs.parse().ok())
                     .unwrap_or(600),
@@ -388,7 +388,7 @@ impl OpenAiClient {
         if key.is_empty() && provider.protocol != ProviderProtocol::OpenaiChat {
             return Err(OpenAiAdapterError::MissingApiKey);
         }
-        client.network_allowed = env::var("PMR_MODEL_NETWORK").as_deref() == Ok("live");
+        client.network_allowed = env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() == Ok("live");
         client.provider = Some(provider);
         Ok(client)
     }
@@ -542,10 +542,10 @@ impl OpenAiClient {
             env::var("DEEPSEEK_API_KEY").map_err(|_| OpenAiAdapterError::MissingApiKey)?;
         let client = Self::new(base_url, api_key)?;
         let keys = [
-            "PMR_MODEL_BUDGET_DB",
-            "PMR_MODEL_BUDGET_OWNER",
-            "PMR_MODEL_BUDGET_CONFIG",
-            "PMR_MODEL_OPERATION_ID",
+            "HIPPOCAMPUS_MODEL_BUDGET_DB",
+            "HIPPOCAMPUS_MODEL_BUDGET_OWNER",
+            "HIPPOCAMPUS_MODEL_BUDGET_CONFIG",
+            "HIPPOCAMPUS_MODEL_OPERATION_ID",
         ];
         let values = keys.map(|key| env::var(key).ok());
         if values.iter().all(Option::is_none) {
@@ -553,7 +553,7 @@ impl OpenAiClient {
         }
         let [Some(path), Some(owner), Some(config), Some(operation)] = values else {
             return Err(OpenAiAdapterError::Budget(
-                "all PMR_MODEL_BUDGET_DB/OWNER/CONFIG and PMR_MODEL_OPERATION_ID are required"
+                "all HIPPOCAMPUS_MODEL_BUDGET_DB/OWNER/CONFIG and HIPPOCAMPUS_MODEL_OPERATION_ID are required"
                     .into(),
             ));
         };
@@ -767,7 +767,7 @@ impl OpenAiClient {
             "provider":reqwest::Url::parse(&self.responses_url).ok().and_then(|u| u.host_str().map(str::to_owned))})
         });
         let call_id = self.call_count.fetch_add(1, Ordering::Relaxed) + 1;
-        if env::var_os("PMR_OPENAI_TRACE").is_some() {
+        if env::var_os("HIPPOCAMPUS_OPENAI_TRACE").is_some() {
             eprintln!(
                 "[openai-attempt] {}",
                 json!({"client_attempt":call_id,"schema":schema_name})
@@ -805,7 +805,7 @@ impl OpenAiClient {
             #[cfg(not(test))]
             let (status, envelope) = execute(http_request)?;
             http_status = Some(status);
-            // Usage accounting is unconditional; PMR_TRACE_DIR never controls the budget ledger.
+            // Usage accounting is unconditional; HIPPOCAMPUS_TRACE_DIR never controls the budget ledger.
             if !(200..300).contains(&status) {
                 usage = envelope.get("usage").filter(|v| !v.is_null()).cloned();
                 diagnostic_response = envelope.clone();
@@ -832,7 +832,7 @@ impl OpenAiClient {
                     "observability":"business_message_allowlist; reasoning bodies excluded"})
                 };
             }
-            if env::var_os("PMR_OPENAI_TRACE").is_some() {
+            if env::var_os("HIPPOCAMPUS_OPENAI_TRACE").is_some() {
                 eprintln!(
                     "[openai-response] {}",
                     json!({"schema":schema_name,"response_id":envelope.get("id"),
@@ -847,7 +847,7 @@ impl OpenAiClient {
                 })?;
                 model_provider::check_output(schema, &parsed)?;
             }
-            if env::var_os("PMR_OPENAI_TRACE_CONTENT").is_some() {
+            if env::var_os("HIPPOCAMPUS_OPENAI_TRACE_CONTENT").is_some() {
                 eprintln!(
                     "[openai-output] {}",
                     json!({"schema":schema_name,"output":output})
@@ -1721,7 +1721,7 @@ mod tests {
         assert_ne!(r4, identity(ModelStage::R4, "https://different.invalid/v1"));
         assert_eq!(client.model_call_count(), 0);
         assert!(client.model_budget_report().is_empty());
-        if env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live") {
+        if env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() != Ok("live") {
             let local = OpenAiClient::new_for_provider(
                 "http://127.0.0.1:11434/v1",
                 "",

@@ -251,9 +251,9 @@ pub(super) fn run() -> Result<(), String> {
     }
     let sends = check(&cases, limit)?;
     let live = if sends > 0 {
-        if std::env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live") {
+        if std::env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() != Ok("live") {
             return Err(format!(
-                "{trial} real recording requires PMR_MODEL_NETWORK=live; nothing sent"
+                "{trial} real recording requires HIPPOCAMPUS_MODEL_NETWORK=live; nothing sent"
             ));
         }
         if model == "ep-af193-unresolved-pro" || base == "https://af193.invalid/v1" {

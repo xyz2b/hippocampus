@@ -189,7 +189,7 @@ pub fn deletion_signature(mut ids: Vec<String>) -> String {
 
 /// Called only after a source deletion has committed. Never alters its business result.
 pub(crate) fn sources_deleted(revision: u64, owner: &str, deleted: Vec<String>) {
-    let Some(dir) = std::env::var_os("PMR_TRACE_DIR") else {
+    let Some(dir) = std::env::var_os("HIPPOCAMPUS_TRACE_DIR") else {
         return;
     };
     let writer = WRITER.get_or_init(|| Mutex::new(None));
@@ -204,12 +204,12 @@ pub(crate) fn sources_deleted(revision: u64, owner: &str, deleted: Vec<String>) 
         Ok(0) => {}
         Ok(_) => {
             failed();
-            eprintln!("[pmr-trace] deletion_cleanup_failed: old files remain hidden");
+            eprintln!("[hippo-trace] deletion_cleanup_failed: old files remain hidden");
         }
         Err(_) => {
             failed();
             eprintln!(
-                "[pmr-trace] deletion_epoch_failed: forget committed; trace cleanup incomplete"
+                "[hippo-trace] deletion_epoch_failed: forget committed; trace cleanup incomplete"
             );
         }
     }
@@ -389,7 +389,7 @@ fn digest(value: &Value) -> String {
 }
 /// Expensive full snapshots are a separate, explicit local debug option.
 pub(crate) fn full_snapshots() -> bool {
-    enabled() && std::env::var("PMR_TRACE_FULL_SNAPSHOTS").as_deref() == Ok("1")
+    enabled() && std::env::var("HIPPOCAMPUS_TRACE_FULL_SNAPSHOTS").as_deref() == Ok("1")
 }
 
 /// Diagnostic-only context. Never serialized into model input, checkpoints or budget policy.
@@ -609,7 +609,7 @@ pub fn enabled() -> bool {
     if TEST_WRITER.with(|w| w.borrow().is_some()) {
         return true;
     }
-    std::env::var_os("PMR_TRACE_DIR").is_some()
+    std::env::var_os("HIPPOCAMPUS_TRACE_DIR").is_some()
 }
 pub fn incomplete() -> bool {
     enabled() && FAILED.load(Ordering::Relaxed)
@@ -618,7 +618,7 @@ pub fn incomplete() -> bool {
 fn failed() {
     FAILED.store(true, Ordering::Relaxed);
     eprintln!(
-        "[pmr-trace] evidence_incomplete: diagnostic write failed; business result unchanged"
+        "[hippo-trace] evidence_incomplete: diagnostic write failed; business result unchanged"
     );
 }
 
@@ -830,7 +830,7 @@ fn write_context(context: &TraceContext, kind: &str, data: impl FnOnce() -> Valu
         });
         return;
     }
-    let Some(dir) = std::env::var_os("PMR_TRACE_DIR").map(std::path::PathBuf::from) else {
+    let Some(dir) = std::env::var_os("HIPPOCAMPUS_TRACE_DIR").map(std::path::PathBuf::from) else {
         return;
     };
     let writer = WRITER.get_or_init(|| Mutex::new(None));
@@ -1078,7 +1078,7 @@ mod tests {
 
     #[test]
     fn af375_rotation_cleanup_and_failure_do_not_change_forget() {
-        // A child isolates PMR_TRACE_DIR from concurrently running test threads.
+        // A child isolates HIPPOCAMPUS_TRACE_DIR from concurrently running test threads.
         if std::env::var_os("AF375_TRACE_CHILD").is_none() {
             let dir = std::env::temp_dir().join(format!("af375-runtime-{}", new_id()));
             std::fs::create_dir(&dir).unwrap();
@@ -1094,14 +1094,14 @@ mod tests {
                     "--nocapture",
                 ])
                 .env("AF375_TRACE_CHILD", "1")
-                .env("PMR_TRACE_DIR", &dir)
+                .env("HIPPOCAMPUS_TRACE_DIR", &dir)
                 .status()
                 .unwrap();
             std::fs::remove_dir_all(dir).unwrap();
             assert!(status.success());
             return;
         }
-        let dir = std::path::PathBuf::from(std::env::var_os("PMR_TRACE_DIR").unwrap());
+        let dir = std::path::PathBuf::from(std::env::var_os("HIPPOCAMPUS_TRACE_DIR").unwrap());
         let owner = crate::UserId::from("fixture-owner");
         let mut store =
             crate::SqliteMemoryStore::open(dir.join("fixture.sqlite"), owner.clone()).unwrap();

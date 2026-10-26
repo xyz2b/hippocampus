@@ -1,20 +1,20 @@
 # hippocampus Memory Inspector
 
-`pmr-inspector` is a separate Rust binary in this workspace. It reads existing
+`hippo-inspector` is a separate Rust binary in this workspace. It reads existing
 SQLite data, logs and traces without starting MCP, calling models or modifying
 memory. Stopping Inspector does not stop the memory service.
 
 ## Start
 
 ```sh
-./scripts/start-memory-inspector.sh --trace-dir "$HOME/.local/share/personal-memory-runtime/traces"
+./scripts/start-memory-inspector.sh --trace-dir "$HOME/.local/share/hippocampus/traces"
 ```
 
 The script incrementally builds release assets before starting. For explicit paths:
 
 ```sh
-cargo build --locked -p pmr-inspector --release
-./target/release/pmr-inspector --port 8765 --owner local-user \
+cargo build --locked -p hippo-inspector --release
+./target/release/hippo-inspector --port 8765 --owner local-user \
   --db /absolute/path/to/memory.sqlite3 \
   --log /absolute/path/to/service.log \
   --trace-dir /absolute/path/to/traces
@@ -27,7 +27,7 @@ only to `127.0.0.1`. Use `--help` for the complete CLI.
 | Option | Default / meaning |
 | --- | --- |
 | `--port` | 8765; use 0 to allocate a free port |
-| `--db` | `~/.local/share/personal-memory-runtime/memory.sqlite3` |
+| `--db` | `~/.local/share/hippocampus/memory.sqlite3` |
 | `--owner` | `local-user` |
 | `--log` | Repeatable; otherwise reads `personal-memory.log` and `launchd.stderr.log` under `~/Library/Application Support/tunnel-client/logs/` |
 | `--trace-dir` | Disabled by default; reads runtime `trace-*.jsonl` |
@@ -36,7 +36,7 @@ only to `127.0.0.1`. Use `--help` for the complete CLI.
 
 Set paths explicitly when the defaults do not match your installation. Pre-create
 trace directories with private permissions (0700 on Unix); runtime logging uses
-`PMR_TRACE_DIR`. Binaries embed the HTML and historical example, so rebuild/restart
+`HIPPOCAMPUS_TRACE_DIR`. Binaries embed the HTML and historical example, so rebuild/restart
 after changing assets. Installed binaries do not require Python, Node or source files.
 
 ## What the views mean
@@ -70,9 +70,9 @@ or copied files cannot be revoked. Keep dumps, traces, logs and authorization li
 private; see [security boundaries](../SECURITY.md).
 
 ```sh
-./target/release/pmr-inspector --db /absolute/path/to/memory.sqlite3 \
+./target/release/hippo-inspector --db /absolute/path/to/memory.sqlite3 \
   --owner local-user --log /absolute/path/to/service.log --dump
-./target/release/pmr-inspector --db /absolute/path/to/memory.sqlite3 \
+./target/release/hippo-inspector --db /absolute/path/to/memory.sqlite3 \
   --owner local-user --export-trace /absolute/path/to/trace-ID.jsonl
 ```
 
@@ -90,9 +90,9 @@ of that archive. Loading it does not make a model call.
 
 ```sh
 cargo build --locked --workspace --bins
-PMR_MODEL_NETWORK=offline cargo test --locked -p pmr-inspector
+HIPPOCAMPUS_MODEL_NETWORK=offline cargo test --locked -p hippo-inspector
 node tests/s1_inspector.js
-PMR_INSPECTOR_BINARY="$PWD/target/debug/pmr-inspector" python3 -B tests/s0_offline.py
+HIPPOCAMPUS_INSPECTOR_BINARY="$PWD/target/debug/hippo-inspector" python3 -B tests/s0_offline.py
 ```
 
 Run these from the repository root. Tests use synthetic fixtures or the existing
@@ -100,3 +100,10 @@ historical package. Schema/UI drivers require Node.js; the application does not.
 Test the root package separately, since workspace-wide serde_json feature unification
 changes its canonical receipt test behavior. Historical scripts requiring private
 archives are not part of the public CI entry point.
+
+The old `pmr-inspector` command is no longer provided. Known `PMR_*` environment
+names cause startup to fail (including dump/export), except for `--help`.
+Without explicit `--db`, an existing old default database with no new default
+database also blocks startup. Follow the [migration steps](../README.md); the
+Inspector never moves data automatically. The renamed login cookie requires
+reopening the startup login link after restarting.

@@ -36,7 +36,7 @@ exactly the same parameters rather than starting another save operation.
 `memory_source_status` provides current progress without model calls.
 
 Bootstrap and `offline=true` skip recall models. Neither stops an already authorized
-background worker. Use `enrichment_mode=off` and `PMR_MODEL_NETWORK=deny` for a
+background worker. Use `enrichment_mode=off` and `HIPPOCAMPUS_MODEL_NETWORK=deny` for a
 source-only service. `memory_validate_answer` is a zero-call mechanical check of a
 narrow unchanged answer against a still-valid same-process result; it cannot
 validate arbitrary generated prose.

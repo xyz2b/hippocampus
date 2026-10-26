@@ -2992,7 +2992,7 @@ mod af175 {
             let output = std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact", "af175::af185_delete_child", "--nocapture"])
                 .env("AF185_DELETE_CHILD_DB", &db.0)
-                .env("PMR_MODEL_NETWORK", "deny")
+                .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
                 .output()
                 .unwrap();
             assert!(

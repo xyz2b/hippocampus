@@ -717,10 +717,10 @@ fn af288_trace_is_private_fixed_metadata_and_does_not_change_results() {
             "af288_empty_scope_no_embedding_and_failed_query_keeps_rare_lexical_hit",
             "--nocapture",
         ])
-        .env("PMR_MODEL_NETWORK", "deny")
-        .env_remove("PMR_TRACE_DIR");
+        .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
+        .env_remove("HIPPOCAMPUS_TRACE_DIR");
         if enabled {
-            cmd.env("PMR_TRACE_DIR", &dir);
+            cmd.env("HIPPOCAMPUS_TRACE_DIR", &dir);
         }
         let out = cmd.output().unwrap();
         assert!(

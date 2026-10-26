@@ -79,7 +79,7 @@ impl ChatMemoryService {
         #[cfg(test)]
         let (idle_sender, idle) = sync_channel(1);
         let thread = std::thread::Builder::new()
-            .name("pmr-embedding".into())
+            .name("hippo-embedding".into())
             .spawn(move || {
                 // Build/drop reqwest's blocking client on this thread, outside MCP's Tokio runtime.
                 let runner = match create() {
@@ -153,7 +153,7 @@ impl ChatMemoryService {
         #[cfg(test)]
         let (idle_sender, idle) = sync_channel(1);
         let thread = std::thread::Builder::new()
-            .name("pmr-enrichment".into())
+            .name("hippo-enrichment".into())
             .spawn(move || {
                 let mut service = match operation.connect() {
                     Ok(service) => service,
@@ -347,7 +347,7 @@ mod embedding_lifecycle_tests {
         let worker = service
             .spawn_embedding_with(
                 move || {
-                    assert_eq!(std::thread::current().name(), Some("pmr-embedding"));
+                    assert_eq!(std::thread::current().name(), Some("hippo-embedding"));
                     // Disabled runner builds/drops a real blocking client but never resolves or embeds.
                     crate::embedding_index::Runner::runtime(
                         crate::embedding::Config::default(),

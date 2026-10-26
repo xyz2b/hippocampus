@@ -392,7 +392,7 @@ pub(super) fn run() -> Result<(), String> {
         return Ok(());
     }
     let live = if limit == Some(4) {
-        if std::env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live")
+        if std::env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() != Ok("live")
             || model == "ep-af206-unresolved-pro"
             || base == "https://af206.invalid/v1"
         {

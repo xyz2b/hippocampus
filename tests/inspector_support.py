@@ -1,7 +1,7 @@
 """Test drivers for the Rust Inspector; no Python server or data conversion.
 
-Build with: cargo build --release -p pmr-inspector
-PMR_INSPECTOR_BINARY may select another explicitly built Inspector binary.
+Build with: cargo build --release -p hippo-inspector
+HIPPOCAMPUS_INSPECTOR_BINARY may select another explicitly built Inspector binary.
 """
 import json
 import os
@@ -35,9 +35,9 @@ def schema_check(bundle):
 
 
 def inspector_binary():
-    binary = Path(os.environ.get("PMR_INSPECTOR_BINARY", ROOT / "target/release/pmr-inspector")).resolve()
+    binary = Path(os.environ.get("HIPPOCAMPUS_INSPECTOR_BINARY", ROOT / "target/release/hippo-inspector")).resolve()
     if not binary.is_file():
-        raise RuntimeError("Build Inspector first: cargo build --release -p pmr-inspector")
+        raise RuntimeError("Build Inspector first: cargo build --release -p hippo-inspector")
     return binary
 
 
@@ -71,7 +71,7 @@ def start_inspector(db, owner, logs, trace_dir=None):
         if not match:
             raise RuntimeError("Rust Inspector startup failed (credentials withheld)")
         port, token = int(match[1]), match[2]
-        yield SimpleNamespace(server_port=port, token=token, cookie_name=f"pmr_inspector_{port}",
+        yield SimpleNamespace(server_port=port, token=token, cookie_name=f"hippo_inspector_{port}",
                               origin=f"http://127.0.0.1:{port}")
     finally:
         if process.poll() is None:

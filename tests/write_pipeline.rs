@@ -91,7 +91,7 @@ fn write_pipeline_cli_inline_captures_and_queues_without_starting_worker() {
     .unwrap();
     let arguments = db.0.with_extension("turn.json");
     std::fs::write(&arguments, turn("inline-cli").to_string()).unwrap();
-    let output = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+    let output = Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
         .args([
             "--db",
             db.0.to_str().unwrap(),
@@ -326,7 +326,7 @@ fn write_pipeline_cli_preserves_the_source_less_order_barrier() {
         serde_json::to_vec(&config("w4_runtime_v1", "deferred")).unwrap(),
     )
     .unwrap();
-    let output = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+    let output = Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
         .args([
             "--db",
             db.0.to_str().unwrap(),
@@ -339,7 +339,7 @@ fn write_pipeline_cli_preserves_the_source_less_order_barrier() {
         ])
         .env("DEEPSEEK_BASE_URL", "http://127.0.0.1:1/v1")
         .env("DEEPSEEK_API_KEY", "synthetic-test-key")
-        .env("PMR_MODEL_NETWORK", "deny")
+        .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
         .output()
         .unwrap();
     assert!(
@@ -402,7 +402,7 @@ fn write_pipeline_order_barrier_precedes_unavailable_provider_setup() {
         )
         .unwrap();
         let (_, source) = db.source("older");
-        let mut command = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_hippo-mcp"));
         command
             .args([
                 "--db",
@@ -414,7 +414,7 @@ fn write_pipeline_order_barrier_precedes_unavailable_provider_setup() {
                 "--enrich-source",
                 &source.id,
             ])
-            .env("PMR_MODEL_NETWORK", "offline")
+            .env("HIPPOCAMPUS_MODEL_NETWORK", "offline")
             .env_remove("DEEPSEEK_PRO_MODEL");
         if missing == "credentials" {
             command
@@ -469,7 +469,7 @@ fn write_pipeline_missing_credentials_do_not_repeat_the_first_job() {
         serde_json::to_vec(&config("w4_runtime_v1", "deferred")).unwrap(),
     )
     .unwrap();
-    let output = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"))
+    let output = Command::new(env!("CARGO_BIN_EXE_hippo-mcp"))
         .args([
             "--db",
             db.0.to_str().unwrap(),
@@ -483,7 +483,7 @@ fn write_pipeline_missing_credentials_do_not_repeat_the_first_job() {
         ])
         .env_remove("DEEPSEEK_BASE_URL")
         .env_remove("DEEPSEEK_API_KEY")
-        .env("PMR_MODEL_NETWORK", "deny")
+        .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
         .output()
         .unwrap();
     assert!(
@@ -510,7 +510,7 @@ fn http_cli(mode: &str) {
         .args([
             "tests/write_pipeline_process.py",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
             "--mode",
             mode,
         ])

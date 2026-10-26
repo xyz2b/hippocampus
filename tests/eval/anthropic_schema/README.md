@@ -25,8 +25,8 @@ EVAL_AF236=1 EVAL_DRY_RUN=1 EVAL_AF236_ROUND=2 cargo test --test anthropic_schem
 真实运行由 Claude 复核后执行，不由本轮实现发起：
 
 ```sh
-PMR_MODEL_NETWORK=live EVAL_AF236=1 EVAL_RECORD=6 cargo test --test anthropic_schema_eval af236_diagnostic -- --exact --nocapture
-PMR_MODEL_NETWORK=live EVAL_AF236=1 EVAL_RECORD=6 EVAL_AF236_ROUND=2 cargo test --test anthropic_schema_eval af236_diagnostic -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF236=1 EVAL_RECORD=6 cargo test --test anthropic_schema_eval af236_diagnostic -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF236=1 EVAL_RECORD=6 EVAL_AF236_ROUND=2 cargo test --test anthropic_schema_eval af236_diagnostic -- --exact --nocapture
 ```
 
 固定独立根目录 `target/eval-anthropic-schema-af236/`；campaign 冻结全部
@@ -75,9 +75,9 @@ Claude 复核后执行的录制命令（本实现阶段未执行）：
 
 ```sh
 # 先加载 ANTHROPIC_BASE_URL、ANTHROPIC_API_KEY；不打印密钥。
-PMR_MODEL_NETWORK=live EVAL_AF238=1 EVAL_RECORD=6 cargo test --test anthropic_schema_eval af238_diagnostic -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF238=1 EVAL_RECORD=6 cargo test --test anthropic_schema_eval af238_diagnostic -- --exact --nocapture
 # 仅在首轮六条全部成功后运行：
-PMR_MODEL_NETWORK=live EVAL_AF238=1 EVAL_RECORD=5 EVAL_AF238_ROUND=2 cargo test --test anthropic_schema_eval af238_diagnostic -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF238=1 EVAL_RECORD=5 EVAL_AF238_ROUND=2 cargo test --test anthropic_schema_eval af238_diagnostic -- --exact --nocapture
 ```
 
 单次上限 4096 输出 token、360 秒；冷/暖输出上限 24576/20480，合计 45056。
@@ -104,7 +104,7 @@ Claude 复核后录制（本实现阶段未执行；先加载 `ANTHROPIC_BASE_UR
 `ANTHROPIC_API_KEY`，不打印密钥）：
 
 ```sh
-PMR_MODEL_NETWORK=live EVAL_AF240=1 EVAL_RECORD=3 cargo test --test anthropic_schema_eval af240_diagnostic -- --exact --nocapture
+HIPPOCAMPUS_MODEL_NETWORK=live EVAL_AF240=1 EVAL_RECORD=3 cargo test --test anthropic_schema_eval af240_diagnostic -- --exact --nocapture
 ```
 
 上限 3 次、12288 输出 token，逐条原始响应、usage、核验结果立即落盘。

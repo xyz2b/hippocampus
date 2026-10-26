@@ -6,7 +6,7 @@ fn run(case: &str) {
         .args([
             "tests/mcp_visibility.py",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
             "--case",
             case,
         ])

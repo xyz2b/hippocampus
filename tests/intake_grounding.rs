@@ -4,7 +4,7 @@ fn frozen_candidates_need_independent_source_review_through_mcp() {
         .args([
             "tests/intake_grounding_process.py",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()

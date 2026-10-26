@@ -111,7 +111,7 @@ fn main() -> Result<()> {
     let all_args: Vec<_> = env::args().skip(1).collect();
     if matches!(all_args.first().map(String::as_str), Some("--help" | "-h")) {
         println!(
-            "longmemeval_e2_send --jobs JOBS.jsonl --output NEW.jsonl --budget-db ISOLATED.sqlite3 --reader-budget READER.json --judge-budget JUDGE.json [--send [--live]]\nDefault prepares and verifies jobs without credentials or model calls. --send permits offline loopback fixtures; --send --live additionally requires explicit PMR_MODEL_NETWORK=live for an authorized provider run. Output is create_new; no overwrite or automatic retry."
+            "longmemeval_e2_send --jobs JOBS.jsonl --output NEW.jsonl --budget-db ISOLATED.sqlite3 --reader-budget READER.json --judge-budget JUDGE.json [--send [--live]]\nDefault prepares and verifies jobs without credentials or model calls. --send permits offline loopback fixtures; --send --live additionally requires explicit HIPPOCAMPUS_MODEL_NETWORK=live for an authorized provider run. Output is create_new; no overwrite or automatic retry."
         );
         return Ok(());
     }
@@ -135,13 +135,13 @@ fn main() -> Result<()> {
             _ => return Err(format!("unknown or incomplete argument: {arg}").into()),
         }
     }
-    let declared_network_mode = env::var("PMR_MODEL_NETWORK").ok();
+    let declared_network_mode = env::var("HIPPOCAMPUS_MODEL_NETWORK").ok();
     let network_mode = declared_network_mode.as_deref().unwrap_or("offline");
     if !matches!(network_mode, "deny" | "offline" | "live") {
-        return Err("PMR_MODEL_NETWORK must be deny, offline, or live".into());
+        return Err("HIPPOCAMPUS_MODEL_NETWORK must be deny, offline, or live".into());
     }
     if live && (!send || declared_network_mode.as_deref() != Some("live")) {
-        return Err("--live requires --send and explicit PMR_MODEL_NETWORK=live".into());
+        return Err("--live requires --send and explicit HIPPOCAMPUS_MODEL_NETWORK=live".into());
     }
     if send && network_mode == "live" && !live {
         return Err("live model sends also require --live".into());

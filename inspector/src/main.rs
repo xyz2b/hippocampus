@@ -367,7 +367,7 @@ async fn handle(req: Request<Incoming>, server: Arc<Server>) -> Result<Response<
 }
 fn usage() {
     println!(
-        "hippocampus Memory Inspector · 本地只读服务\n\n用法: pmr-inspector [--port PORT] [--db PATH] [--owner ID] [--log PATH ...] [--trace-dir PATH]\n       pmr-inspector --dump [上述数据参数]\n       pmr-inspector --export-trace PATH\n\n默认端口 8765；仅监听 127.0.0.1。--dump/--export-trace 输出脱敏 JSON，不启动 HTTP。"
+        "hippocampus Memory Inspector · 本地只读服务\n\n用法: hippo-inspector [--port PORT] [--db PATH] [--owner ID] [--log PATH ...] [--trace-dir PATH]\n       hippo-inspector --dump [上述数据参数]\n       hippo-inspector --export-trace PATH\n\n默认端口 8765；仅监听 127.0.0.1。--dump/--export-trace 输出脱敏 JSON，不启动 HTTP。"
     )
 }
 #[tokio::main]
@@ -379,7 +379,7 @@ async fn main() {
 }
 async fn run() -> Result<(), String> {
     let home = PathBuf::from(std::env::var_os("HOME").ok_or("HOME 未设置；请提供用户环境")?);
-    let data = home.join(".local/share/personal-memory-runtime");
+    let data = home.join(".local/share/hippocampus");
     let log_dir = home.join("Library/Application Support/tunnel-client/logs");
     let mut config = Config {
         db: data.join("memory.sqlite3"),
@@ -389,6 +389,7 @@ async fn run() -> Result<(), String> {
     };
     let mut port = 8765u16;
     let mut dump = false;
+    let mut db_explicit = false;
     let mut export = None;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -405,7 +406,10 @@ async fn run() -> Result<(), String> {
                     .parse()
                     .map_err(|_| "端口必须在 0..65535")?
             }
-            "--db" => config.db = args.next().ok_or("--db 缺少值")?.into(),
+            "--db" => {
+                config.db = args.next().ok_or("--db 缺少值")?.into();
+                db_explicit = true;
+            }
             "--owner" => config.owner = args.next().ok_or("--owner 缺少值")?,
             "--log" => config.logs.push(args.next().ok_or("--log 缺少值")?.into()),
             "--trace-dir" => {
@@ -416,6 +420,10 @@ async fn run() -> Result<(), String> {
             }
             _ => return Err(format!("未知参数 {arg}；使用 --help 查看用法")),
         }
+    }
+    hippocampus::startup::reject_legacy_env()?;
+    if !db_explicit {
+        config.db = hippocampus::startup::default_db(&home).map_err(|e| e.to_string())?;
     }
     if config.logs.is_empty() {
         config.logs = vec![
@@ -451,7 +459,7 @@ async fn run() -> Result<(), String> {
         origin,
         host,
         token: URL_SAFE_NO_PAD.encode(random),
-        cookie_name: format!("pmr_inspector_{port}"),
+        cookie_name: format!("hippo_inspector_{port}"),
     });
     println!(
         "hippocampus Memory Inspector: {}/?token={}",

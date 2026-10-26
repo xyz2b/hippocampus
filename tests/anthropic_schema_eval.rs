@@ -820,7 +820,7 @@ fn run(cfg: Config, prefix: &str, default_root: &str) {
         "each round requires its explicit allowance"
     );
     assert_eq!(
-        std::env::var("PMR_MODEL_NETWORK").as_deref(),
+        std::env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref(),
         Ok("live"),
         "real calls require live authorization"
     );

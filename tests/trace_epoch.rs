@@ -27,9 +27,9 @@ fn af378_cli_requires_explicit_scope_and_initializes_without_writing_database() 
     drop(conn);
     let before = std::fs::read(&db).unwrap();
     let command = || {
-        let mut c = Command::new(env!("CARGO_BIN_EXE_pmr-mcp"));
-        c.env("PMR_TRACE_DIR", &dir)
-            .env("PMR_MODEL_NETWORK", "deny")
+        let mut c = Command::new(env!("CARGO_BIN_EXE_hippo-mcp"));
+        c.env("HIPPOCAMPUS_TRACE_DIR", &dir)
+            .env("HIPPOCAMPUS_MODEL_NETWORK", "deny")
             .arg("--init-trace-epoch");
         c
     };
@@ -56,7 +56,7 @@ fn af378_cli_requires_explicit_scope_and_initializes_without_writing_database() 
             .arg("--db")
             .arg(&db)
             .args(["--owner", "fixture-owner"])
-            .env_remove("PMR_TRACE_DIR")
+            .env_remove("HIPPOCAMPUS_TRACE_DIR")
             .output()
             .unwrap()
             .status

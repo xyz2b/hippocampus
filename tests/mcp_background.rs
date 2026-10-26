@@ -7,7 +7,7 @@ fn mcp_background_http_deferred_startup_and_foreground_barrier() {
         .args([
             "tests/mcp_background.py",
             "--binary",
-            env!("CARGO_BIN_EXE_pmr-mcp"),
+            env!("CARGO_BIN_EXE_hippo-mcp"),
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()

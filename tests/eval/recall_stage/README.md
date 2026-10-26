@@ -35,7 +35,7 @@ AF264 独立诊断使用四个虚构固定输入（引号、问题专属条件�
 ```sh
 EVAL_AF264=trial EVAL_DRY_RUN=1 EVAL_RECORD=8 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 # 仅由获准执行方录制；先加载 HUOSHAN_DEEPSEEK_BASE_URL/API_KEY 和 DEEPSEEK_PRO_MODEL。
-EVAL_AF264=trial PMR_MODEL_NETWORK=live EVAL_RECORD=8 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
+EVAL_AF264=trial HIPPOCAMPUS_MODEL_NETWORK=live EVAL_RECORD=8 cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 # 严格复用 AF255 A 的原请求/输出；禁止 EVAL_RECORD，不改原录制或人工台账。
 EVAL_AF264=replay cargo test --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
@@ -105,7 +105,7 @@ AF227 修订记录在各样本的 `label_revision`；未改样本保留历史 co
 零调用离线重评可用：
 
 ```sh
-env -u EVAL_RECORD PMR_MODEL_NETWORK=offline EVAL_STAGES=r1,r4 \
+env -u EVAL_RECORD HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_STAGES=r1,r4 \
   cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -118,7 +118,7 @@ AF272 已撤回本轮集合成员判别提示词，恢复原提示词字节。**
 `EVAL_AF268=history`（兼容 `trial`）只核对原报告与原录制的完整绑定/输出，然后展示历史结果，不生成当前请求、不要求当前提示词指纹、不访问模型、不改写历史产物。默认测试不运行该入口；`EVAL_RECORD` 只允许缺省或0，其他值拒绝。历史输入与虚构期望保留在 `af268.rs` 及原请求绑定中。
 
 ```sh
-EVAL_AF268=history EVAL_RECORD=0 PMR_MODEL_NETWORK=offline \
+EVAL_AF268=history EVAL_RECORD=0 HIPPOCAMPUS_MODEL_NETWORK=offline \
   cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -129,7 +129,7 @@ EVAL_AF268=history EVAL_RECORD=0 PMR_MODEL_NETWORK=offline \
 以下入口用当前恢复的完整 R1 请求严格匹配 AF250 五档200条原录制，0发送；不复用过期输出、不补录、不修改原报告/台账。独立报告为 `target/eval-r1-af272/report.json` 与 `report.md`，分列原/新自动字段分数与 r1_03 每次结果；新增标签的通过仍需人工确认，不冒用旧人工裁定。R4 不重评。
 
 ```sh
-EVAL_AF268=af250 EVAL_RECORD=0 PMR_MODEL_NETWORK=offline \
+EVAL_AF268=af250 EVAL_RECORD=0 HIPPOCAMPUS_MODEL_NETWORK=offline \
   cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -168,7 +168,7 @@ EVAL_RECALL_COMPARE=af230 EVAL_RECORD=549 cargo test --offline --test write_stag
 离线重评（不发送，旧录制/账本/报告不变，仅写新报告）：
 
 ```sh
-env -u EVAL_RECORD PMR_MODEL_NETWORK=offline EVAL_RECALL_COMPARE=af230 \
+env -u EVAL_RECORD HIPPOCAMPUS_MODEL_NETWORK=offline EVAL_RECALL_COMPARE=af230 \
   cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```
 
@@ -195,7 +195,7 @@ AF247（2026-10-11）不修改输入、ID、提示词、请求指纹、provider�
 以下命令严格复用 AF230 现有录制，0发送，报告另写 `target/eval-providers/recall-af228/reports-af247/<五档选择>/`：
 
 ```sh
-env -u EVAL_RECORD -u EVAL_GATE PMR_MODEL_NETWORK=offline \
+env -u EVAL_RECORD -u EVAL_GATE HIPPOCAMPUS_MODEL_NETWORK=offline \
   EVAL_RECALL_COMPARE=af230 EVAL_RECALL_REPORT_DIR=reports-af247 \
   cargo test --offline --test write_stage_eval write_stage_eval_suite -- --exact --nocapture
 ```

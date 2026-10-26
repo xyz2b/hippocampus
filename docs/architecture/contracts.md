@@ -72,7 +72,7 @@ Foreground recall uses at most two model stages, background enrichment at most
 three per message, sharing finite persistent authorization. Failed attempts consume
 budget; no automatic retry expands authorization. Bootstrap and request-level
 offline recall skip recall models but do not cancel already authorized background
-work. Full-service denial uses `PMR_MODEL_NETWORK=deny`.
+work. Full-service denial uses `HIPPOCAMPUS_MODEL_NETWORK=deny`.
 
 `memory_validate_answer` makes no model call. It checks a narrow mechanically
 verifiable unchanged answer against an available same-process result and source

@@ -548,7 +548,7 @@ pub(super) fn run() -> Result<(), String> {
     }
     trial.check(limit)?;
     let live = if limit == Some(trial.cap) {
-        if std::env::var("PMR_MODEL_NETWORK").as_deref() != Ok("live")
+        if std::env::var("HIPPOCAMPUS_MODEL_NETWORK").as_deref() != Ok("live")
             || model == "ep-af198-unresolved-pro"
             || base == "https://af198.invalid/v1"
         {

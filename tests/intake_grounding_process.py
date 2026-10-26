@@ -287,7 +287,7 @@ def run_case(binary, directory, env, mode, name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--binary", type=Path, default=ROOT / "target/debug/pmr-mcp")
+    parser.add_argument("--binary", type=Path, default=ROOT / "target/debug/hippo-mcp")
     parser.add_argument("--modes", nargs="+", choices=["inline", "deferred", "explicit", "unauthorized"],
                         default=["inline", "deferred", "explicit", "unauthorized"])
     parser.add_argument("--cases", nargs="+", choices=list(CASES), default=list(CASES))
@@ -315,8 +315,8 @@ def main():
             stack.callback(server.shutdown)
             endpoint = f"http://127.0.0.1:{server.server_port}/v1"
         clean = {key: value for key, value in os.environ.items()
-                 if not key.startswith(("DEEPSEEK_", "OPENAI_", "PMR_"))}
-        env = dict(clean, PMR_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
+                 if not key.startswith(("DEEPSEEK_", "OPENAI_", "PMR_", "HIPPOCAMPUS_"))}
+        env = dict(clean, HIPPOCAMPUS_MODEL_NETWORK="offline", DEEPSEEK_PRO_MODEL="pro-fixture", DEEPSEEK_API_KEY="local-fixture-key",
                    DEEPSEEK_BASE_URL=endpoint,
                    NO_PROXY="127.0.0.1,localhost")
         rows = [run_case(binary, directory, env, mode, name) for mode in args.modes for name in args.cases]

@@ -49,9 +49,9 @@ def main():
     parser.add_argument("--binary", type=Path, default=Path("target/debug/examples/source_search"))
     options = parser.parse_args()
     binary = options.binary.resolve()
-    env = dict(os.environ, PMR_MODEL_NETWORK="deny")
+    env = dict(os.environ, HIPPOCAMPUS_MODEL_NETWORK="deny")
     for key in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL", "OPENAI_API_KEY", "OPENAI_BASE_URL",
-                "PMR_TRACE_DIR", "PMR_OPENAI_TRACE", "PMR_OPENAI_TRACE_CONTENT"):
+                "HIPPOCAMPUS_TRACE_DIR", "HIPPOCAMPUS_OPENAI_TRACE", "HIPPOCAMPUS_OPENAI_TRACE_CONTENT"):
         env.pop(key, None)
     checks = []
     with tempfile.TemporaryDirectory(prefix="pmr-s3-process-") as directory:
@@ -62,7 +62,7 @@ def main():
         def run(*args, owner="owner-a", success=True, trace=None):
             result = subprocess.run(
                 [str(binary), "--db", str(db), "--owner", owner, *args],
-                env=env | ({"PMR_TRACE_DIR": str(trace)} if trace else {}),
+                env=env | ({"HIPPOCAMPUS_TRACE_DIR": str(trace)} if trace else {}),
                 text=True, capture_output=True, timeout=20,
             )
             assert (result.returncode == 0) == success, result.stdout + result.stderr
